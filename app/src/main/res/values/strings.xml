@@ -1,0 +1,13 @@
+<resources>
+
+    <string name="app_name">Echo</string>
+
+    <string name="home">Home</string>
+    <string name="library">Library</string>
+    <string name="search">Search</string>
+
+    <string name="extensions">Extensions</string>
+    <string name="settings">Settings</string>
+    <string name="play_pause">Play/Pause</string>
+
+</resources>
