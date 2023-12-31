@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="collapsed_cover_size">72dp</dimen>
-    <dimen name="max_cover_size">280dp</dimen>
-</resources>
+    <dimen name="max_cover_size">360dp</dimen></resources>

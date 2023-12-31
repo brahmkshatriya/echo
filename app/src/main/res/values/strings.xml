@@ -9,5 +9,7 @@
     <string name="extensions">Extensions</string>
     <string name="settings">Settings</string>
     <string name="play_pause">Play/Pause</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
 
 </resources>
