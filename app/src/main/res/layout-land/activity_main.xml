@@ -21,6 +21,7 @@
         android:layout_width="72dp"
         android:layout_height="match_parent"
         android:background="?attr/colorSurfaceContainerLowest"
+        android:paddingBottom="72dp"
         app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
         app:itemIconTint="@color/bottom_item_icon"
         app:labelVisibilityMode="labeled"

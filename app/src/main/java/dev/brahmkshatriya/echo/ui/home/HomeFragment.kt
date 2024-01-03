@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
-import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
+import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
 
 class HomeFragment : Fragment() {
 
@@ -23,7 +23,6 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         PlayerViewModel.handleBackPress(this)
-        updatePaddingWithSystemInsets(binding.root)
-
+        updateBottomMarginWithSystemInsets(binding.root)
     }
 }
