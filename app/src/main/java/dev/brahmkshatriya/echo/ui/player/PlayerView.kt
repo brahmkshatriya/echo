@@ -12,9 +12,19 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.BottomPlayerBinding
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 
-class PlayerView(activity: MainActivity, view: View, binding: BottomPlayerBinding) {
+class PlayerView(
+    private val activity: MainActivity,
+    private val view: View,
+    private val binding: BottomPlayerBinding
+) {
+
+    val viewModel by activity.viewModels<PlayerViewModel>()
 
     init {
+        applyView()
+    }
+
+    private fun applyView() {
 
         updatePaddingWithSystemInsets(binding.expandedContainer, false)
         view.setOnClickListener {
@@ -22,10 +32,8 @@ class PlayerView(activity: MainActivity, view: View, binding: BottomPlayerBindin
         }
 
         val bottomBehavior = BottomSheetBehavior.from(view)
-        val viewModel by activity.viewModels<PlayerViewModel>()
-
         val navView = activity.navView
-        val bottomNavHeight = 140.dpToPx
+        val bottomNavHeight = (140 * getSystem().displayMetrics.density).toInt()
         val collapsedCoverSize =
             activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
 
@@ -55,6 +63,4 @@ class PlayerView(activity: MainActivity, view: View, binding: BottomPlayerBindin
             }
         }
     }
-
-    private val Int.dpToPx: Int get() = (this * getSystem().displayMetrics.density).toInt()
 }

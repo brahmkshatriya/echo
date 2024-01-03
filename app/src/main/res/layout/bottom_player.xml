@@ -19,10 +19,11 @@
             android:layout_margin="24dp"
             android:layout_weight="1">
 
-            <ImageView
+            <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/expandedTrackCover"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
                 android:background="?attr/colorSurfaceContainerHigh"
                 android:importantForAccessibility="no"
                 android:scaleType="fitCenter"
@@ -213,8 +214,7 @@
                         android:layout_height="wrap_content"
                         android:button="@drawable/anim_play_pause"
                         android:contentDescription="@string/play_pause"
-                        app:buttonTint="?attr/colorPrimary"
-                        app:icon="@drawable/anim_play_pause" />
+                        app:buttonTint="?attr/colorPrimary" />
 
                 </FrameLayout>
 
