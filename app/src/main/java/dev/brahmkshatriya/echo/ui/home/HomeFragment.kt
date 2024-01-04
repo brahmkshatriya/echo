@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.utils.ShimmerAdapter
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
 import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
 
@@ -24,5 +26,9 @@ class HomeFragment : Fragment() {
 
         PlayerViewModel.handleBackPress(this)
         updateBottomMarginWithSystemInsets(binding.root)
+
+        binding.homeRecyclerView.adapter = ShimmerAdapter()
+        binding.homeRecyclerView.layoutManager = LinearLayoutManager(context)
+
     }
 }
