@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.player
 
-import android.content.res.Resources.getSystem
 import android.view.View
 import androidx.activity.viewModels
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -10,6 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.BottomPlayerBinding
+import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 
 class PlayerView(
@@ -33,7 +33,7 @@ class PlayerView(
 
         val bottomBehavior = BottomSheetBehavior.from(view)
         val navView = activity.navView
-        val bottomNavHeight = (140 * getSystem().displayMetrics.density).toInt()
+        val bottomNavHeight = 140.dpToPx()
         val collapsedCoverSize =
             activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
 

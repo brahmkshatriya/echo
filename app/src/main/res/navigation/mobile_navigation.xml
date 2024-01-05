@@ -8,12 +8,12 @@
     <fragment
         android:id="@+id/navigation_home"
         android:name="dev.brahmkshatriya.echo.ui.home.HomeFragment"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_recycler" />
 
     <fragment
         android:id="@+id/navigation_library"
         android:name="dev.brahmkshatriya.echo.ui.library.LibraryFragment"
-        tools:layout="@layout/fragment_library" />
+        tools:layout="@layout/fragment_recycler" />
 
     <fragment
         android:id="@+id/navigation_search"

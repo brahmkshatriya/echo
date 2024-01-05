@@ -16,7 +16,7 @@ class ShimmerAdapter : RecyclerView.Adapter<ShimmerAdapter.ShimmerViewHolder>() 
         return ShimmerViewHolder(binding)
     }
 
-    override fun getItemCount(): Int = 10
+    override fun getItemCount(): Int = 3
 
     override fun onBindViewHolder(holder: ShimmerViewHolder, position: Int) {}
 }

@@ -11,10 +11,9 @@
         style="@style/PlayerContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0"
+        android:translationY="@dimen/collapsed_cover_size"
         android:background="?attr/colorSurfaceContainerLow"
-        android:baselineAligned="false"
-        tools:alpha="1">
+        android:baselineAligned="false">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             style="@style/PlayerContainerChild"
