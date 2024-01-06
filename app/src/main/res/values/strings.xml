@@ -11,5 +11,9 @@
     <string name="play_pause">Play/Pause</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
+    <string name="extension">Extension</string>
+    <string name="offline">Offline</string>
+    <string name="add_extension">Add Extension</string>
+    <string name="extension_settings">Extension Settings</string>
 
 </resources>

@@ -19,4 +19,9 @@
         android:id="@+id/navigation_search"
         android:name="dev.brahmkshatriya.echo.ui.search.SearchFragment"
         tools:layout="@layout/fragment_search" />
+
+    <dialog
+        android:id="@+id/dialog_extension"
+        android:name="dev.brahmkshatriya.echo.ui.dialogs.ExtensionDialogFragment"
+        tools:layout="@layout/dialog_extension"/>
 </navigation>

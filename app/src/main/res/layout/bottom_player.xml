@@ -11,14 +11,14 @@
         style="@style/PlayerContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:translationY="@dimen/collapsed_cover_size"
         android:background="?attr/colorSurfaceContainerLow"
-        android:baselineAligned="false">
+        android:baselineAligned="false"
+        android:translationY="@dimen/collapsed_cover_size"
+        tools:translationY="0dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            style="@style/PlayerContainerChild"
-            android:layout_margin="24dp"
-            android:layout_weight="1">
+            style="@style/PlayerContainerCover"
+            android:layout_margin="24dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/expandedTrackCover"
@@ -39,10 +39,10 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
         <LinearLayout
             style="@style/PlayerContainerChild"
-            android:layout_weight="1"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
             android:orientation="vertical"
             android:paddingStart="12dp"
             android:paddingEnd="12dp">
@@ -216,7 +216,8 @@
                         android:layout_height="wrap_content"
                         android:button="@drawable/anim_play_pause"
                         android:contentDescription="@string/play_pause"
-                        app:buttonTint="?attr/colorPrimary" />
+                        app:buttonTint="?attr/colorPrimary"
+                        app:iconSize="24dp" />
 
                 </FrameLayout>
 

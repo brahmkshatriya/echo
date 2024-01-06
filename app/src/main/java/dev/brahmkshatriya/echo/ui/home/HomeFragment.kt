@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
-import dev.brahmkshatriya.echo.ui.utils.HeaderAdapter
-import dev.brahmkshatriya.echo.ui.utils.ShimmerAdapter
+import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
+import dev.brahmkshatriya.echo.ui.adapters.ShimmerAdapter
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
