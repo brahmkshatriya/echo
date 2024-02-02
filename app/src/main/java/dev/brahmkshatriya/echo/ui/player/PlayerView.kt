@@ -53,9 +53,7 @@ class PlayerView(
             }
         })
 
-        viewModel.collapsePlayer = {
-            bottomBehavior.state = STATE_COLLAPSED
-        }
+        viewModel.bottomSheetBehavior = bottomBehavior
 
         view.post {
             bottomBehavior.state = viewModel.playerCollapsed.value.let {

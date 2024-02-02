@@ -1,22 +1,34 @@
 package dev.brahmkshatriya.echo.ui.player
 
+import android.view.View
+import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class PlayerViewModel : ViewModel() {
-    var collapsePlayer: (() -> Unit)? = null
+    var bottomSheetBehavior: BottomSheetBehavior<View>? = null
     val playerCollapsed = MutableStateFlow(true)
 
     fun backPressedCallback(callback: ((Boolean) -> Unit)?): OnBackPressedCallback {
         val backPress = object : OnBackPressedCallback(false) {
+            override fun handleOnBackStarted(backEvent: BackEventCompat) {
+                bottomSheetBehavior?.startBackProgress(backEvent)
+            }
+            override fun handleOnBackProgressed(backEvent: BackEventCompat) {
+                bottomSheetBehavior?.updateBackProgress(backEvent)
+            }
             override fun handleOnBackPressed() {
-                collapsePlayer?.invoke()
+                bottomSheetBehavior?.handleBackInvoked()
+            }
+            override fun handleOnBackCancelled() {
+                bottomSheetBehavior?.cancelBackProgress()
             }
         }
         viewModelScope.launch {
