@@ -21,11 +21,38 @@ const val ALBUM_AUTH = "album/"
 const val TRACK_AUTH = "track/"
 
 fun Context.searchTracksLocally(query: String, page: Int, pageSize: Int): List<Track> {
-
     val whereCondition =
         "${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
     val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
 
+    return queryTracks(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.getAllTracks(page: Int, pageSize: Int): List<Track> {
+    val whereCondition = ""
+    val selectionArgs = arrayOf<String>()
+    return queryTracks(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.getRandomTracks(page: Int, pageSize: Int): List<Track> {
+    val whereCondition = ""
+    val selectionArgs = arrayOf<String>()
+    return queryTracks(whereCondition, selectionArgs, page, pageSize).shuffled()
+}
+
+fun Context.getTracksByArtist(artist: Artist.Small, page: Int, pageSize: Int): List<Track> {
+    val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
+    val selectionArgs = arrayOf(artist.uri.lastPathSegment!!)
+    return queryTracks(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.getTracksByAlbum(album: Album.Small, page: Int, pageSize: Int): List<Track> {
+    val whereCondition = "${MediaStore.Audio.Media.ALBUM_ID} = ?"
+    val selectionArgs = arrayOf(album.uri.lastPathSegment!!)
+    return queryTracks(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.queryTracks(whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int) : List<Track>{
     val tracks = mutableListOf<Track>()
     createCursor(
         contentResolver = contentResolver,
@@ -88,11 +115,8 @@ fun Context.searchTracksLocally(query: String, page: Int, pageSize: Int): List<T
     return tracks
 }
 
-fun Context.searchArtistsLocally(query: String, page: Int, pageSize: Int): List<Artist.WithCover> {
+fun Context.queryArtists(whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int): List<Artist.WithCover> {
     val artists = mutableListOf<Artist.WithCover>()
-    val whereCondition = "${MediaStore.Audio.Artists.ARTIST} LIKE ?"
-    val selectionArgs = arrayOf("%$query%")
-
     createCursor(
         contentResolver = contentResolver,
         collection = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
@@ -125,11 +149,20 @@ fun Context.searchArtistsLocally(query: String, page: Int, pageSize: Int): List<
     return artists
 }
 
-fun Context.searchAlbumsLocally(query: String, page: Int, pageSize: Int): List<Album.WithCover> {
-    val albums = mutableListOf<Album.WithCover>()
-    val whereCondition = "${MediaStore.Audio.Albums.ALBUM} LIKE ?"
+fun Context.searchArtistsLocally(query: String, page: Int, pageSize: Int): List<Artist.WithCover> {
+    val whereCondition = "${MediaStore.Audio.Artists.ARTIST} LIKE ?"
     val selectionArgs = arrayOf("%$query%")
+    return queryArtists(whereCondition, selectionArgs, page, pageSize)
+}
 
+fun Context.getAllArtists(page: Int, pageSize: Int): List<Artist.WithCover> {
+    val whereCondition = ""
+    val selectionArgs = arrayOf<String>()
+    return queryArtists(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.queryAlbums(whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int): List<Album.WithCover> {
+    val albums = mutableListOf<Album.WithCover>()
     createCursor(
         contentResolver = contentResolver,
         collection = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
@@ -167,6 +200,40 @@ fun Context.searchAlbumsLocally(query: String, page: Int, pageSize: Int): List<A
         }
     }
     return albums
+}
+
+fun Context.searchAlbumsLocally(query: String, page: Int, pageSize: Int): List<Album.WithCover> {
+    val whereCondition = "${MediaStore.Audio.Albums.ALBUM} LIKE ?"
+    val selectionArgs = arrayOf("%$query%")
+    return queryAlbums(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.getAllAlbums(page: Int, pageSize: Int): List<Album.WithCover> {
+    val whereCondition = ""
+    val selectionArgs = arrayOf<String>()
+    return queryAlbums(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.getAlbumsByArtist(artist: Artist.Small, page: Int, pageSize: Int): List<Album.WithCover> {
+    val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
+    val selectionArgs = arrayOf(artist.uri.lastPathSegment!!)
+    return queryAlbums(whereCondition, selectionArgs, page, pageSize)
+}
+
+fun Context.getStreamableUriFromTrack(track: Track): Uri? {
+    val cursor = contentResolver.query(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        arrayOf(MediaStore.Audio.Media.DATA),
+        "${MediaStore.Audio.Media._ID} = ?",
+        arrayOf(track.uri.lastPathSegment!!),
+        null
+    )
+    cursor?.use {
+        if (it.moveToFirst()) {
+            return Uri.parse(it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)))
+        }
+    }
+    return null
 }
 
 fun createCursor(
