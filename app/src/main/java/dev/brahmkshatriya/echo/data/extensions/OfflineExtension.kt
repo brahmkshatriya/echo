@@ -10,7 +10,9 @@ import dev.brahmkshatriya.echo.data.clients.SearchClient
 import dev.brahmkshatriya.echo.data.models.MediaItem
 import dev.brahmkshatriya.echo.data.models.QuickSearchItem
 import dev.brahmkshatriya.echo.data.models.toMediaItem
-import dev.brahmkshatriya.echo.data.offline.searchLocally
+import dev.brahmkshatriya.echo.data.offline.searchAlbumsLocally
+import dev.brahmkshatriya.echo.data.offline.searchArtistsLocally
+import dev.brahmkshatriya.echo.data.offline.searchTracksLocally
 import kotlinx.coroutines.flow.Flow
 import java.io.IOException
 
@@ -18,10 +20,20 @@ class OfflineExtension(val context:Context) : SearchClient {
     override suspend fun quickSearch(query: String): List<QuickSearchItem> = listOf()
 
     override suspend fun search(query: String): Map<String, Flow<PagingData<MediaItem>>> {
-        return mapOf("Result" to toPagingSource { page, pageSize ->
-            context.searchLocally(query, page, pageSize)
+        return mapOf(
+            "Tracks" to toPagingSource { page, pageSize ->
+            context.searchTracksLocally(query, page, pageSize)
                 .map { it.toMediaItem() }
-        })
+            },
+            "Artists" to toPagingSource { page, pageSize ->
+                context.searchArtistsLocally(query, page, pageSize)
+                    .map { it.toMediaItem() }
+            },
+            "Albums" to toPagingSource { page, pageSize ->
+                context.searchAlbumsLocally(query, page, pageSize)
+                    .map { it.toMediaItem() }
+            }
+        )
     }
 
     private fun <TData : Any> toPagingSource(dataCallback: suspend (Int, Int) -> List<TData>): Flow<PagingData<TData>> {

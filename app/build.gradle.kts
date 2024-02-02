@@ -64,8 +64,10 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48.1")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
 
-    implementation("io.coil-kt:coil:2.5.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.paging:paging-runtime-ktx:3.2.1")
     implementation("androidx.paging:paging-common-ktx:3.2.1")
 
     testImplementation(kotlin("reflect"))

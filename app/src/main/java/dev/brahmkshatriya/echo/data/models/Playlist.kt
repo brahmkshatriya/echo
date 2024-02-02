@@ -14,13 +14,13 @@ sealed class Playlist{
     open class WithCover(
         override val uri: Uri,
         override val title: String,
-        open val cover: FileUrl?
+        open val cover: ImageHolder?
     ) : Small(uri, title)
 
     data class Full(
         override val uri: Uri,
         override val title: String,
-        override val cover: FileUrl?,
+        override val cover: ImageHolder?,
         val author: User?,
         val tracks: Flow<PagingData<Track.Small>>,
         val creationDate: String?,

@@ -12,13 +12,13 @@ sealed class Artist {
     open class WithCover(
         override val uri: Uri,
         override val name: String,
-        open val cover: FileUrl?
+        open val cover: ImageHolder?
     ) : Small(uri, name)
 
     data class Full(
         override val uri: Uri,
         override val name: String,
-        override val cover: FileUrl?,
+        override val cover: ImageHolder?,
         val description: String?,
         val followers: Int? = null,
     ) : WithCover(uri, name, cover)

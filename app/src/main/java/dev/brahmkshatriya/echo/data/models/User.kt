@@ -11,6 +11,6 @@ sealed class User {
     open class WithCover(
         override val uri: Uri,
         override val name: String,
-        open val cover: FileUrl?,
+        open val cover: ImageHolder?,
     ) : Small(uri, name)
 }

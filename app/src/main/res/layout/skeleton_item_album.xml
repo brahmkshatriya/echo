@@ -13,7 +13,7 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="24dp"
+        android:layout_height="24sp"
         android:layout_marginEnd="24dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/rounded_rectangle" />
