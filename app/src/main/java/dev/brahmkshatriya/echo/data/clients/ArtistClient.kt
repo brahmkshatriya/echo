@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.data.clients
 import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.data.models.Artist
 import dev.brahmkshatriya.echo.data.models.MediaItem
-import dev.brahmkshatriya.echo.data.models.Playlist
 import kotlinx.coroutines.flow.Flow
 
 interface ArtistClient {
@@ -11,5 +10,4 @@ interface ArtistClient {
     suspend fun getMediaItems(artist: Artist.Full): Map<String, Flow<PagingData<MediaItem>>>
     suspend fun subscribe(artist: Artist.Small): Boolean
     suspend fun unsubscribe(artist: Artist.Small): Boolean
-    suspend fun radio(artist: Artist.Full): Playlist.Full
 }

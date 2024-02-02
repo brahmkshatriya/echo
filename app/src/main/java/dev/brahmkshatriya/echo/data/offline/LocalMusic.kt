@@ -20,13 +20,13 @@ const val ARTIST_AUTH = "artist/"
 const val ALBUM_AUTH = "album/"
 const val TRACK_AUTH = "track/"
 
-fun Context.searchTracksLocally(query: String, page: Int, pageSize: Int): List<Track.Small> {
+fun Context.searchTracksLocally(query: String, page: Int, pageSize: Int): List<Track> {
 
     val whereCondition =
         "${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
     val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
 
-    val tracks = mutableListOf<Track.Small>()
+    val tracks = mutableListOf<Track>()
     createCursor(
         contentResolver = contentResolver,
         collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -71,7 +71,7 @@ fun Context.searchTracksLocally(query: String, page: Int, pageSize: Int): List<T
             val artistUri = Uri.parse("$URI$ARTIST_AUTH${it.getLong(artistIdColumn)}")
             val albumUri = Uri.parse("$URI$ALBUM_AUTH${it.getLong(albumIdColumn)}")
             tracks.add(
-                Track.Small(
+                Track(
                     uri = uri,
                     title = it.getString(titleColumn),
                     artists = listOf(Artist.Small(artistUri, it.getString(artistColumn))),

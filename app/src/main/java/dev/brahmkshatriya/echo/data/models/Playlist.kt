@@ -22,7 +22,7 @@ sealed class Playlist{
         override val title: String,
         override val cover: ImageHolder?,
         val author: User?,
-        val tracks: Flow<PagingData<Track.Small>>,
+        val tracks: Flow<PagingData<Track>>,
         val creationDate: String?,
         val duration: Long?,
         val description: String?,

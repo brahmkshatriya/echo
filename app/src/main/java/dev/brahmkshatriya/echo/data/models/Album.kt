@@ -21,7 +21,7 @@ sealed class Album {
         override val title: String,
         override val cover: ImageHolder?,
         override val artists: List<Artist.Small>,
-        val tracks: List<Track.Small>,
+        val tracks: List<Track>,
         val releaseDate: String?,
         val publisher: String?,
         val duration: Long?,
