@@ -15,5 +15,6 @@
     <string name="offline">Offline</string>
     <string name="add_extension">Add Extension</string>
     <string name="extension_settings">Extension Settings</string>
+    <string name="more">More</string>
 
 </resources>

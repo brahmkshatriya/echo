@@ -1,19 +1,16 @@
 package dev.brahmkshatriya.echo.ui.search
 
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemAdapter
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemComparator
+import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
 import kotlinx.coroutines.flow.collectLatest
@@ -38,25 +35,23 @@ class SearchFragment : Fragment() {
         updateBottomMarginWithSystemInsets(binding.root)
 
         binding.catSearchView.setupWithSearchBar(binding.catSearchBar)
-        binding.catSearchView.editText.setOnEditorActionListener { textView, actionId, keyEvent ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) {
-                textView.text.toString().ifBlank { null }?.let {
+        binding.catSearchView.editText.setOnEditorActionListener { textView, _, _ ->
+            textView.text.toString().ifBlank { null }?.let {
                     observeSearchFlow(it)
+                    binding.catSearchBar.setText(it)
                     binding.catSearchView.hide()
-                    return@setOnEditorActionListener true
                 }
-            }
             false
         }
-        binding.catRecyclerView.layoutManager = GridLayoutManager(context, 3)
+        binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.catRecyclerView.adapter = adapter
     }
 
-    private val adapter = MediaItemAdapter(MediaItemComparator)
+    private val adapter = MediaItemsContainerAdapter(lifecycleScope)
     private fun observeSearchFlow(query: String) {
         lifecycleScope.launch {
             searchViewModel.search(query).collectLatest { pagingData ->
-                (binding.catRecyclerView.adapter as MediaItemAdapter).submitData(pagingData)
+                adapter.submitData(pagingData)
             }
         }
     }

@@ -7,33 +7,44 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import dev.brahmkshatriya.echo.data.clients.SearchClient
-import dev.brahmkshatriya.echo.data.models.MediaItem
+import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.data.models.QuickSearchItem
 import dev.brahmkshatriya.echo.data.models.toMediaItem
 import dev.brahmkshatriya.echo.data.offline.searchAlbumsLocally
 import dev.brahmkshatriya.echo.data.offline.searchArtistsLocally
 import dev.brahmkshatriya.echo.data.offline.searchTracksLocally
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
-class OfflineExtension(val context:Context) : SearchClient {
+class OfflineExtension(val context: Context) : SearchClient {
     override suspend fun quickSearch(query: String): List<QuickSearchItem> = listOf()
 
-    override suspend fun search(query: String): Map<String, Flow<PagingData<MediaItem>>> {
-        return mapOf(
-            "Tracks" to toPagingSource { page, pageSize ->
-            context.searchTracksLocally(query, page, pageSize)
-                .map { it.toMediaItem() }
-            },
-            "Artists" to toPagingSource { page, pageSize ->
-                context.searchArtistsLocally(query, page, pageSize)
-                    .map { it.toMediaItem() }
-            },
-            "Albums" to toPagingSource { page, pageSize ->
-                context.searchAlbumsLocally(query, page, pageSize)
-                    .map { it.toMediaItem() }
-            }
+    override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
+        val result = listOf(
+            MediaItemsContainer(
+                "Tracks",
+                toPagingSource { page, pageSize ->
+                    context.searchTracksLocally(query, page, pageSize)
+                        .map { it.toMediaItem() }
+                }
+            ),
+            MediaItemsContainer(
+                "Artists",
+                toPagingSource { page, pageSize ->
+                    context.searchArtistsLocally(query, page, pageSize)
+                        .map { it.toMediaItem() }
+                }
+            ),
+            MediaItemsContainer(
+                "Albums",
+                toPagingSource { page, pageSize ->
+                    context.searchAlbumsLocally(query, page, pageSize)
+                        .map { it.toMediaItem() }
+                }
+            )
         )
+        emit(PagingData.from(result))
     }
 
     private fun <TData : Any> toPagingSource(dataCallback: suspend (Int, Int) -> List<TData>): Flow<PagingData<TData>> {
@@ -50,7 +61,7 @@ class OfflineExtension(val context:Context) : SearchClient {
         private val dataRequest: suspend (Int, Int) -> List<TData>,
         private val startPage: Int = 1,
         private val pageSize: Int = 10
-    )  : PagingSource<Int, TData>() {
+    ) : PagingSource<Int, TData>() {
         override fun getRefreshKey(state: PagingState<Int, TData>): Int? {
             return state.anchorPosition?.let { anchorPosition ->
                 state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)

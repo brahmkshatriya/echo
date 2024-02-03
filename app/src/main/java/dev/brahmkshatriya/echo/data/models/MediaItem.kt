@@ -7,7 +7,7 @@ sealed class MediaItem {
     data class PlaylistItem(val playlist: Playlist.WithCover) : MediaItem()
 }
 
-fun Track.toMediaItem() = MediaItem.TrackItem(this)
+fun Track.toMediaItem() = MediaItem.TrackItem(this).also { println(it.track.title) }
 fun Album.WithCover.toMediaItem() = MediaItem.AlbumItem(this)
 fun Artist.WithCover.toMediaItem() = MediaItem.ArtistItem(this)
 fun Playlist.WithCover.toMediaItem() = MediaItem.PlaylistItem(this)

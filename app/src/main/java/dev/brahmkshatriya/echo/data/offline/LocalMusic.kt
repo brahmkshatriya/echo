@@ -69,7 +69,7 @@ fun Context.queryTracks(whereCondition: String, selectionArgs: Array<String>, pa
         ),
         whereCondition = whereCondition,
         selectionArgs = selectionArgs,
-        orderBy = "ALPHABET",
+        orderBy = MediaStore.Audio.Media.TRACK,
         orderAscending = true,
         limit = pageSize,
         offset = (page - 1) * pageSize
@@ -119,14 +119,14 @@ fun Context.queryArtists(whereCondition: String, selectionArgs: Array<String>, p
     val artists = mutableListOf<Artist.WithCover>()
     createCursor(
         contentResolver = contentResolver,
-        collection = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+        collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         projection = arrayOf(
             MediaStore.Audio.Artists._ID,
-            MediaStore.Audio.Artists.ARTIST
+            MediaStore.Audio.Artists.ARTIST,
         ),
         whereCondition = whereCondition,
         selectionArgs = selectionArgs,
-        orderBy = "ALPHABET",
+        orderBy = MediaStore.Audio.Artists.ARTIST,
         orderAscending = true,
         limit = pageSize,
         offset = (page - 1) * pageSize
@@ -153,7 +153,24 @@ fun Context.searchArtistsLocally(query: String, page: Int, pageSize: Int): List<
     val whereCondition = "${MediaStore.Audio.Artists.ARTIST} LIKE ?"
     val selectionArgs = arrayOf("%$query%")
     return queryArtists(whereCondition, selectionArgs, page, pageSize)
+//    val artistUri: Uri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI
+//    val projection = arrayOf(MediaStore.Audio.Artists.ARTIST)
+//    val cursor = contentResolver.query(artistUri, projection, null, null, null)
+//    if (cursor != null && cursor.moveToFirst()) {
+//        val artistColumn = cursor.getColumnIndex(MediaStore.Audio.Artists.ARTIST)
+//        do {
+//            val artist = cursor.getString(artistColumn)
+//            if (artist != null) {
+//                println("Artists : $artist")
+//            }
+//        } while (cursor.moveToNext())
+//        cursor.close()
+//    } else {
+//        println("Artists : No artists found")
+//    }
+//    return emptyList()
 }
+
 
 fun Context.getAllArtists(page: Int, pageSize: Int): List<Artist.WithCover> {
     val whereCondition = ""
@@ -173,7 +190,7 @@ fun Context.queryAlbums(whereCondition: String, selectionArgs: Array<String>, pa
         ),
         whereCondition = whereCondition,
         selectionArgs = selectionArgs,
-        orderBy = "ALPHABET",
+        orderBy = MediaStore.Audio.Albums.ALBUM,
         orderAscending = true,
         limit = pageSize,
         offset = (page - 1) * pageSize
@@ -206,6 +223,28 @@ fun Context.searchAlbumsLocally(query: String, page: Int, pageSize: Int): List<A
     val whereCondition = "${MediaStore.Audio.Albums.ALBUM} LIKE ?"
     val selectionArgs = arrayOf("%$query%")
     return queryAlbums(whereCondition, selectionArgs, page, pageSize)
+//    val albumUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
+//    val projection = arrayOf(MediaStore.Audio.Albums.ALBUM, MediaStore.Audio.Albums.ARTIST)
+//
+//    val cursor = contentResolver.query(albumUri, projection, null, null, null)
+//
+//    if (cursor != null && cursor.moveToFirst()) {
+//        val albumColumn = cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)
+//        val artistColumn = cursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST)
+//        do {
+//            val album = cursor.getString(albumColumn)
+//            val artist = cursor.getString(artistColumn)
+//            if (album != null) {
+//                // Do something with the album and artist information
+//                println("Albums: $album, Artist: $artist")
+//            }
+//        } while (cursor.moveToNext())
+//        cursor.close()
+//    } else {
+//        println("Albums : No albums found")
+//    }
+//
+//    return emptyList()
 }
 
 fun Context.getAllAlbums(page: Int, pageSize: Int): List<Album.WithCover> {
@@ -261,10 +300,7 @@ fun createCursor(
 
     else -> {
         val orderDirection = if (orderAscending) "ASC" else "DESC"
-        var order = when (orderBy) {
-            "ALPHABET" -> "${MediaStore.Audio.Media.TITLE}, ${MediaStore.Audio.Media.ARTIST} $orderDirection"
-            else -> "${MediaStore.Audio.Media.DATE_ADDED} $orderDirection"
-        }
+        var order = "$orderBy $orderDirection"
         order += " LIMIT $limit OFFSET $offset"
         contentResolver.query(collection, projection, whereCondition, selectionArgs, order)
     }
@@ -282,17 +318,10 @@ fun createSelectionBundle(
     // Limit & Offset
     putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
     putInt(ContentResolver.QUERY_ARG_OFFSET, offset)
-    when (orderBy) {
-        "ALPHABET" -> putStringArray(
-            ContentResolver.QUERY_ARG_SORT_COLUMNS,
-            arrayOf(MediaStore.Files.FileColumns.TITLE)
-        )
-
-        else -> putStringArray(
-            ContentResolver.QUERY_ARG_SORT_COLUMNS,
-            arrayOf(MediaStore.Files.FileColumns.DATE_ADDED)
-        )
-    }
+    putStringArray(
+        ContentResolver.QUERY_ARG_SORT_COLUMNS,
+        arrayOf(orderBy)
+    )
     val orderDirection = if (orderAscending)
         ContentResolver.QUERY_SORT_DIRECTION_ASCENDING
     else

@@ -11,5 +11,5 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val offlineExtension: OfflineExtension
 ) : ViewModel() {
-    suspend fun search(query: String) = offlineExtension.search(query)["Tracks"]!!.cachedIn(viewModelScope)
+    suspend fun search(query: String) = offlineExtension.search(query).cachedIn(viewModelScope)
 }
