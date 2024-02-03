@@ -2,7 +2,7 @@ package dev.brahmkshatriya.echo.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.LifecycleOwner
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,10 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemMediaRecyclerBinding
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import dev.brahmkshatriya.echo.ui.utils.observeFlow
 
-class MediaItemsContainerAdapter(private val lifecycleScope: LifecycleCoroutineScope) :
+class MediaItemsContainerAdapter(private val lifecycleOwner: LifecycleOwner) :
     PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
         MediaItemsContainerComparator
     ) {
@@ -22,7 +21,6 @@ class MediaItemsContainerAdapter(private val lifecycleScope: LifecycleCoroutineS
             .inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
-    private val map = mutableMapOf<MediaItemsContainer, MediaItemAdapter>()
     override fun onBindViewHolder(holder: MediaItemsContainerHolder, position: Int) {
         val item = getItem(position) ?: return
         val binding = holder.binding
@@ -31,19 +29,9 @@ class MediaItemsContainerAdapter(private val lifecycleScope: LifecycleCoroutineS
             LinearLayoutManager(binding.root.context, HORIZONTAL, false)
         val adapter = MediaItemAdapter()
         binding.recyclerView.adapter = adapter
-        lifecycleScope.launch {
-            item.flow.collectLatest {
-                adapter.submitData(it)
-                adapter.snapshot().items.forEach { item ->
-                    println("Bruh : $item")
-                }
-            }
+        item.flow.observeFlow(lifecycleOwner) {
+            adapter.submitData(it)
         }
-        map[item] = adapter
-    }
-
-    fun getAdapter(item: MediaItemsContainer): MediaItemAdapter? {
-        return map[item]
     }
 
     class MediaItemsContainerHolder(val binding: ItemMediaRecyclerBinding) :

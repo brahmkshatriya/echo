@@ -6,15 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.utils.observeFlow
 import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -37,22 +35,18 @@ class SearchFragment : Fragment() {
         binding.catSearchView.setupWithSearchBar(binding.catSearchBar)
         binding.catSearchView.editText.setOnEditorActionListener { textView, _, _ ->
             textView.text.toString().ifBlank { null }?.let {
-                    observeSearchFlow(it)
+                    searchViewModel.search(it)
                     binding.catSearchBar.setText(it)
                     binding.catSearchView.hide()
                 }
             false
         }
+        val adapter = MediaItemsContainerAdapter(viewLifecycleOwner)
         binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.catRecyclerView.adapter = adapter
-    }
-
-    private val adapter = MediaItemsContainerAdapter(lifecycleScope)
-    private fun observeSearchFlow(query: String) {
-        lifecycleScope.launch {
-            searchViewModel.search(query).collectLatest { pagingData ->
-                adapter.submitData(pagingData)
-            }
+        searchViewModel.result.observeFlow(viewLifecycleOwner) {
+            if(it!=null)
+                adapter.submitData(it)
         }
     }
 }

@@ -22,7 +22,7 @@
             android:layout_margin="8dp"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textSize="16sp"
+            android:textSize="20sp"
             tools:text="@string/library" />
 
         <Button
