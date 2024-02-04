@@ -2,7 +2,7 @@ package dev.brahmkshatriya.echo.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Lifecycle
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,9 +10,8 @@ import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemMediaRecyclerBinding
-import dev.brahmkshatriya.echo.ui.utils.observeFlow
 
-class MediaItemsContainerAdapter(private val lifecycleOwner: LifecycleOwner) :
+class MediaItemsContainerAdapter(private val lifecycle: Lifecycle) :
     PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
         MediaItemsContainerComparator
     ) {
@@ -29,9 +28,7 @@ class MediaItemsContainerAdapter(private val lifecycleOwner: LifecycleOwner) :
             LinearLayoutManager(binding.root.context, HORIZONTAL, false)
         val adapter = MediaItemAdapter()
         binding.recyclerView.adapter = adapter
-        item.flow.observeFlow(lifecycleOwner) {
-            adapter.submitData(it)
-        }
+        adapter.submitData(lifecycle, item.list)
     }
 
     class MediaItemsContainerHolder(val binding: ItemMediaRecyclerBinding) :

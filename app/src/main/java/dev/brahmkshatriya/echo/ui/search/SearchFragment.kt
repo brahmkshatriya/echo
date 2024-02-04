@@ -6,13 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.observeFlow
-import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
+import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -27,25 +29,30 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         PlayerViewModel.handleBackPress(this) {
             if (!it) binding.catSearchView.hide()
         }
-        updateBottomMarginWithSystemInsets(binding.root)
 
-        binding.catSearchView.setupWithSearchBar(binding.catSearchBar)
+        updatePaddingWithSystemInsets(binding.catRecyclerView)
+
+        val header = SearchHeaderAdapter(searchViewModel.query) {
+            binding.catSearchView.setupWithSearchBar(it)
+        }
+
         binding.catSearchView.editText.setOnEditorActionListener { textView, _, _ ->
             textView.text.toString().ifBlank { null }?.let {
-                    searchViewModel.search(it)
-                    binding.catSearchBar.setText(it)
-                    binding.catSearchView.hide()
-                }
+                searchViewModel.search(it)
+                header.setText(it)
+                binding.catSearchView.hide()
+            }
             false
         }
-        val adapter = MediaItemsContainerAdapter(viewLifecycleOwner)
+        val adapter = MediaItemsContainerAdapter(lifecycle)
         binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.catRecyclerView.adapter = adapter
+        binding.catRecyclerView.adapter = ConcatAdapter(header, adapter)
         searchViewModel.result.observeFlow(viewLifecycleOwner) {
-            if(it!=null)
+            if (it != null)
                 adapter.submitData(it)
         }
     }

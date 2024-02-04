@@ -2,6 +2,8 @@ package dev.brahmkshatriya.echo.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.Lifecycle
+import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -42,6 +44,10 @@ class MediaItemAdapter :
                 item.playlist.cover?.loadInto(binding.imageView)
             }
         }
+    }
+
+    fun submitData(lifecycle: Lifecycle, list: List<MediaItem>) {
+        submitData(lifecycle, PagingData.from(list))
     }
 
     class MediaItemHolder(val binding: ItemMediaBinding) : RecyclerView.ViewHolder(binding.root)

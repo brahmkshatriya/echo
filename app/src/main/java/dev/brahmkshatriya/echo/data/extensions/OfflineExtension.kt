@@ -7,12 +7,12 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import dev.brahmkshatriya.echo.data.clients.SearchClient
+import dev.brahmkshatriya.echo.data.models.MediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.data.models.QuickSearchItem
-import dev.brahmkshatriya.echo.data.models.toMediaItem
-import dev.brahmkshatriya.echo.data.offline.searchAlbumsLocally
-import dev.brahmkshatriya.echo.data.offline.searchArtistsLocally
-import dev.brahmkshatriya.echo.data.offline.searchTracksLocally
+import dev.brahmkshatriya.echo.data.offline.LocalAlbum
+import dev.brahmkshatriya.echo.data.offline.LocalArtist
+import dev.brahmkshatriya.echo.data.offline.LocalTrack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
@@ -24,24 +24,18 @@ class OfflineExtension(val context: Context) : SearchClient {
         val result = listOf(
             MediaItemsContainer(
                 "Tracks",
-                toPagingSource { page, pageSize ->
-                    context.searchTracksLocally(query, page, pageSize)
-                        .map { it.toMediaItem() }
-                }
+                LocalTrack.search(context, query, 1, 50)
+                    .map { it.toMediaItem() }
             ),
             MediaItemsContainer(
                 "Artists",
-                toPagingSource { page, pageSize ->
-                    context.searchArtistsLocally(query, page, pageSize)
-                        .map { it.toMediaItem() }
-                }
+                LocalArtist.search(context, query, 1, 50)
+                    .map { it.toMediaItem() }
             ),
             MediaItemsContainer(
                 "Albums",
-                toPagingSource { page, pageSize ->
-                    context.searchAlbumsLocally(query, page, pageSize)
-                        .map { it.toMediaItem() }
-                }
+                LocalAlbum.search(context, query, 1, 50)
+                    .map { it.toMediaItem() }
             )
         )
         emit(PagingData.from(result))

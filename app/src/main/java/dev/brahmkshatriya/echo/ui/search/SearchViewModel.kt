@@ -18,10 +18,12 @@ class SearchViewModel @Inject constructor(
     private val offlineExtension: OfflineExtension
 ) : ViewModel() {
 
-    val _result : MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
+    private val _result: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
     val result = _result.asStateFlow()
+    var query: String? = null
 
     fun search(query: String) {
+        this.query = query
         viewModelScope.launch(Dispatchers.IO) {
             offlineExtension.search(query).collectLatest {
                 _result.value = it
