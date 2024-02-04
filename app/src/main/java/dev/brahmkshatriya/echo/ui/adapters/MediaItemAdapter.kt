@@ -8,10 +8,13 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.data.models.MediaItem
+import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemMediaBinding
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 
-class MediaItemAdapter :
+class MediaItemAdapter(
+    private val play : (Track) -> Unit
+) :
     PagingDataAdapter<MediaItem, MediaItemAdapter.MediaItemHolder>(
         MediaItemComparator
     ) {
@@ -27,6 +30,9 @@ class MediaItemAdapter :
             is MediaItem.TrackItem -> {
                 binding.title.text = item.track.title
                 item.track.cover?.loadInto(binding.imageView)
+                binding.root.setOnClickListener {
+                    play(item.track)
+                }
             }
 
             is MediaItem.AlbumItem -> {

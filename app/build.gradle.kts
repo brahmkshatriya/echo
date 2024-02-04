@@ -62,6 +62,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
 
     implementation("com.google.dagger:hilt-android:2.48.1")
+    implementation("androidx.media3:media3-session:1.2.1")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")

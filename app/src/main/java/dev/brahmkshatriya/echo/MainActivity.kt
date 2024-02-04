@@ -1,14 +1,18 @@
 package dev.brahmkshatriya.echo
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.media.AudioManager
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationBarView
+import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerView
@@ -37,6 +41,18 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         navView.setupWithNavController(navController)
 
-        PlayerView(this, binding.bottomPlayerContainer, binding.bottomPlayer)
+        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture.addListener(
+            {
+                PlayerView(
+                    this,
+                    controllerFuture.get(),
+                    binding.bottomPlayerContainer,
+                    binding.bottomPlayer
+                )
+            },
+            MoreExecutors.directExecutor()
+        )
     }
 }

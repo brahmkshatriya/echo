@@ -7,17 +7,22 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import dev.brahmkshatriya.echo.data.clients.SearchClient
+import dev.brahmkshatriya.echo.data.clients.TrackClient
 import dev.brahmkshatriya.echo.data.models.MediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.data.models.QuickSearchItem
+import dev.brahmkshatriya.echo.data.models.StreamableAudio
+import dev.brahmkshatriya.echo.data.models.StreamableAudio.Companion.toAudio
+import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.data.offline.LocalAlbum
 import dev.brahmkshatriya.echo.data.offline.LocalArtist
+import dev.brahmkshatriya.echo.data.offline.LocalStream
 import dev.brahmkshatriya.echo.data.offline.LocalTrack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
-class OfflineExtension(val context: Context) : SearchClient {
+class OfflineExtension(val context: Context) : SearchClient, TrackClient {
     override suspend fun quickSearch(query: String): List<QuickSearchItem> = listOf()
 
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
@@ -80,5 +85,9 @@ class OfflineExtension(val context: Context) : SearchClient {
                 return LoadResult.Error(exception)
             }
         }
+    }
+
+    override suspend fun getStreamable(track: Track): StreamableAudio {
+        return LocalStream.getFromTrack(context, track)?.toAudio() ?: throw IOException("Track not found")
     }
 }

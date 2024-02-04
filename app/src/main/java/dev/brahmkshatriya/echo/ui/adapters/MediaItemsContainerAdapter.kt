@@ -9,9 +9,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemMediaRecyclerBinding
 
-class MediaItemsContainerAdapter(private val lifecycle: Lifecycle) :
+class MediaItemsContainerAdapter(
+    private val lifecycle: Lifecycle,
+    private val play: (Track) -> Unit,
+) :
     PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
         MediaItemsContainerComparator
     ) {
@@ -26,7 +30,7 @@ class MediaItemsContainerAdapter(private val lifecycle: Lifecycle) :
         binding.textView.text = item.title
         binding.recyclerView.layoutManager =
             LinearLayoutManager(binding.root.context, HORIZONTAL, false)
-        val adapter = MediaItemAdapter()
+        val adapter = MediaItemAdapter(play)
         binding.recyclerView.adapter = adapter
         adapter.submitData(lifecycle, item.list)
     }

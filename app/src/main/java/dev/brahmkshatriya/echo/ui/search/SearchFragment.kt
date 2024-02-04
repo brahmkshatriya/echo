@@ -30,7 +30,9 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        PlayerViewModel.handleBackPress(this) {
+        val playerViewModel by activityViewModels<PlayerViewModel>()
+
+        playerViewModel.handleBackPress(this) {
             if (!it) binding.catSearchView.hide()
         }
 
@@ -48,7 +50,9 @@ class SearchFragment : Fragment() {
             }
             false
         }
-        val adapter = MediaItemsContainerAdapter(lifecycle)
+        val adapter = MediaItemsContainerAdapter(lifecycle){
+            playerViewModel.play(it)
+        }
         binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.catRecyclerView.adapter = ConcatAdapter(header, adapter)
         searchViewModel.result.observeFlow(viewLifecycleOwner) {
