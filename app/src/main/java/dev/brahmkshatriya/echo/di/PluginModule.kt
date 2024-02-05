@@ -5,6 +5,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.brahmkshatriya.echo.data.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.data.clients.SearchClient
+import dev.brahmkshatriya.echo.data.clients.TrackClient
 import dev.brahmkshatriya.echo.data.extensions.OfflineExtension
 import javax.inject.Singleton
 
@@ -12,9 +15,20 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class PluginModule {
 
+    private var offline : OfflineExtension? = null
+    private fun getOfflineExtension(app: Application) = offline ?: OfflineExtension(app).also {
+        offline = it
+    }
+
     @Provides
     @Singleton
-    fun providesOfflineExtension(app: Application) =
-        OfflineExtension(app)
+    fun provideSearchClient(app: Application) : SearchClient = getOfflineExtension(app)
 
+    @Provides
+    @Singleton
+    fun provideHomeClient(app: Application) : HomeFeedClient = getOfflineExtension(app)
+
+    @Provides
+    @Singleton
+    fun provideTrackClient(app: Application) : TrackClient = getOfflineExtension(app)
 }

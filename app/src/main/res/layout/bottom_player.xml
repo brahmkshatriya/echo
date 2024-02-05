@@ -93,14 +93,14 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="-2dp"
                 android:layout_marginEnd="-2dp"
-                app:trackHeight="4dp"
-                app:thumbHeight="16dp"
-                app:thumbWidth="16dp"
-                android:value="0.2"
-                app:thumbTrackGapSize="12dp"
-                app:trackColorActive="?colorTertiary"
+                app:labelBehavior="gone"
                 app:thumbColor="?colorTertiary"
-                app:trackColorInactive="?colorTertiaryContainer" />
+                app:thumbHeight="16dp"
+                app:thumbTrackGapSize="12dp"
+                app:thumbWidth="16dp"
+                app:trackColorActive="?colorTertiary"
+                app:trackColorInactive="?colorTertiaryContainer"
+                app:trackHeight="4dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -128,18 +128,20 @@
                         android:id="@+id/expandedProgressBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:indicatorSize="64dp"
                         android:indeterminate="true"
-                        android:visibility="gone" />
-                <com.google.android.material.checkbox.MaterialCheckBox
-                    android:id="@+id/trackPlayPause"
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    android:button="@drawable/anim_play_pause_48dp"
-                    android:contentDescription="@string/play_pause"
-                    app:buttonTint="?attr/colorPrimary"
-                    tools:ignore="DuplicateSpeakableTextCheck" />
+                        android:visibility="gone"
+                        app:indicatorSize="64dp" />
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/trackPlayPause"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:button="@drawable/anim_play_pause_48dp"
+                        android:contentDescription="@string/play_pause"
+                        app:buttonTint="?attr/colorPrimary"
+                        tools:ignore="DuplicateSpeakableTextCheck" />
                 </FrameLayout>
+
                 <Button
                     android:id="@+id/trackNext"
                     style="?attr/materialIconButtonStyle"
@@ -180,12 +182,12 @@
                 android:id="@+id/collapsedSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
-                app:trackThickness="2dp"
                 app:indicatorColor="?colorTertiary"
                 app:trackColor="?colorTertiaryContainer"
-                android:layout_gravity="bottom" />
+                app:trackThickness="2dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -239,7 +241,7 @@
                         android:layout_height="wrap_content"
                         android:button="@drawable/anim_play_pause"
                         android:contentDescription="@string/play_pause"
-                        app:buttonTint="@color/bottom_item_icon"
+                        app:buttonTint="@color/button_play_pause"
                         app:iconSize="24dp" />
 
                 </FrameLayout>

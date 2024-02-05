@@ -16,5 +16,7 @@
     <string name="add_extension">Add Extension</string>
     <string name="extension_settings">Extension Settings</string>
     <string name="more">More</string>
+    <string name="retry">Retry</string>
+    <string name="failed_loading">Failed Loading</string>
 
 </resources>

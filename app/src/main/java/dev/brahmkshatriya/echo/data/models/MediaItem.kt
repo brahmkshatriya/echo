@@ -11,5 +11,8 @@ sealed class MediaItem {
         fun Album.WithCover.toMediaItem() = AlbumItem(this)
         fun Artist.WithCover.toMediaItem() = ArtistItem(this)
         fun Playlist.WithCover.toMediaItem() = PlaylistItem(this)
+
+        fun List<MediaItem>.toMediaItemsContainer(title: String, subtitle: String? = null)
+            = MediaItemsContainer.Category(title, this, subtitle)
     }
 }

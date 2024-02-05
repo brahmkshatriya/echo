@@ -9,6 +9,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.checkbox.MaterialCheckBox.OnCheckedStateChangedListener
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_UNCHECKED
 import dev.brahmkshatriya.echo.MainActivity
@@ -74,18 +75,15 @@ class PlayerView(
     }
 
     private fun connect() {
-        binding.trackPlayPause.addOnCheckedStateChangedListener { _, state ->
+        val playPauseListener = OnCheckedStateChangedListener { _, state ->
             when (state) {
                 STATE_CHECKED -> player.play()
                 STATE_UNCHECKED -> player.pause()
             }
         }
-        binding.collapsedTrackPlayPause.addOnCheckedStateChangedListener { _, state ->
-            when (state) {
-                STATE_CHECKED -> player.play()
-                STATE_UNCHECKED -> player.pause()
-            }
-        }
+
+        binding.trackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
+        binding.collapsedTrackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
 
         binding.trackNext.setOnClickListener {
             player.seekToNextMediaItem()
@@ -101,7 +99,7 @@ class PlayerView(
             }
         }
 
-        val listener = PlayerListener(player, binding)
+        val listener = PlayerListener(player, binding, playPauseListener)
         player.addListener(listener)
 
         activity.lifecycleScope.launch {

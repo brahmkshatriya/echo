@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
-import dev.brahmkshatriya.echo.ui.adapters.ShimmerAdapter
+import dev.brahmkshatriya.echo.ui.adapters.ContainerLoadingAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
@@ -36,7 +36,7 @@ class LibraryFragment : Fragment() {
 
         val headerAdapter = HeaderAdapter(R.string.library)
 
-        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ShimmerAdapter())
+        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ContainerLoadingAdapter{  })
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
     }

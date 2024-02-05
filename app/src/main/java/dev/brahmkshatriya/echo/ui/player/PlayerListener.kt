@@ -7,12 +7,17 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
+import com.google.android.material.checkbox.MaterialCheckBox
 import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.databinding.BottomPlayerBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 
-class PlayerListener(val player: MediaController, val binding: BottomPlayerBinding) :
+class PlayerListener(
+    val player: MediaController,
+    val binding: BottomPlayerBinding,
+    val playPauseListener: MaterialCheckBox.OnCheckedStateChangedListener
+) :
     Player.Listener {
     init {
         //Poll each second to update the seekbar
@@ -21,6 +26,8 @@ class PlayerListener(val player: MediaController, val binding: BottomPlayerBindi
             override fun run() {
                 binding.collapsedSeekBar.progress = player.currentPosition.toInt()
                 binding.expandedSeekBar.value = player.currentPosition.toFloat()
+
+                binding.collapsedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
 
                 binding.trackCurrentTime.text = player.currentPosition.toTimeString()
 
@@ -40,19 +47,29 @@ class PlayerListener(val player: MediaController, val binding: BottomPlayerBindi
             Player.STATE_READY -> {
                 binding.trackPlayPause.isEnabled = true
                 binding.collapsedTrackPlayPause.isEnabled = true
+
+                if(player.duration == C.TIME_UNSET) throw IllegalStateException("Duration is not set")
+
+                binding.collapsedSeekBar.isIndeterminate = false
+                binding.expandedSeekBar.isEnabled = true
+
+                binding.collapsedSeekBar.max = player.duration.toInt() + 100
+                binding.expandedSeekBar.valueTo = player.duration.toFloat() + 100
+
+                binding.trackTotalTime.text = player.duration.toTimeString()
             }
         }
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        binding.trackPlayPause.isEnabled = false
-        binding.collapsedTrackPlayPause.isEnabled = false
+        binding.trackPlayPause.removeOnCheckedStateChangedListener(playPauseListener)
+        binding.collapsedTrackPlayPause.removeOnCheckedStateChangedListener(playPauseListener)
 
         binding.trackPlayPause.isChecked = isPlaying
         binding.collapsedTrackPlayPause.isChecked = isPlaying
 
-        binding.trackPlayPause.isEnabled = true
-        binding.collapsedTrackPlayPause.isEnabled = true
+        binding.trackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
+        binding.collapsedTrackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
     }
 
 
@@ -93,19 +110,6 @@ class PlayerListener(val player: MediaController, val binding: BottomPlayerBindi
 
             binding.trackCurrentTime.text = newPosition.positionMs.toTimeString()
         }
-    }
-
-    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        if (!playWhenReady) return
-        if(player.duration == C.TIME_UNSET) return
-
-        binding.collapsedSeekBar.isIndeterminate = false
-        binding.expandedSeekBar.isEnabled = true
-
-        binding.collapsedSeekBar.max = player.duration.toInt()
-        binding.expandedSeekBar.valueTo = player.duration.toFloat()
-
-        binding.trackTotalTime.text = player.duration.toTimeString()
     }
 
     override fun onPlaylistMetadataChanged(mediaMetadata: MediaMetadata) {

@@ -13,10 +13,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
-import dev.brahmkshatriya.echo.ui.adapters.ShimmerAdapter
+import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapters.ContainerLoadingAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
+import dev.brahmkshatriya.echo.ui.utils.observeFlow
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 
 @AndroidEntryPoint
@@ -39,9 +41,26 @@ class HomeFragment : Fragment() {
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 
         val headerAdapter = HeaderAdapter(R.string.home)
+        val mediaItemsContainerAdapter =
+            MediaItemsContainerAdapter(viewLifecycleOwner.lifecycle, playerViewModel::play)
 
-        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ShimmerAdapter())
+        mediaItemsContainerAdapter.withLoadStateFooter(ContainerLoadingAdapter{
+            homeViewModel.loadFeed(homeViewModel.genre)
+        })
+
+        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, mediaItemsContainerAdapter)
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
+        binding.swipeRefresh.setOnRefreshListener {
+            homeViewModel.loadFeed(homeViewModel.genre)
+        }
+
+        homeViewModel.feed.observeFlow(viewLifecycleOwner) {
+            binding.swipeRefresh.isRefreshing = false
+            if (it == null) return@observeFlow
+            mediaItemsContainerAdapter.submitData(it)
+        }
+
+        homeViewModel.loadFeed(homeViewModel.genre)
     }
 }
