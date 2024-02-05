@@ -87,13 +87,20 @@
                     tools:text="00:00" />
             </FrameLayout>
 
-            <SeekBar
-                android:id="@+id/expandedProgressBar"
+            <com.google.android.material.slider.Slider
+                android:id="@+id/expandedSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginStart="-2dp"
-                android:layout_marginEnd="-2dp" />
-
+                android:layout_marginEnd="-2dp"
+                app:trackHeight="4dp"
+                app:thumbHeight="16dp"
+                app:thumbWidth="16dp"
+                android:value="0.2"
+                app:thumbTrackGapSize="12dp"
+                app:trackColorActive="?colorTertiary"
+                app:thumbColor="?colorTertiary"
+                app:trackColorInactive="?colorTertiaryContainer" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -111,6 +118,19 @@
                     app:icon="@drawable/ic_skip_previous_40dp"
                     app:iconSize="40dp" />
 
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp">
+
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/expandedProgressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:indicatorSize="64dp"
+                        android:indeterminate="true"
+                        android:visibility="gone" />
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/trackPlayPause"
                     android:layout_width="72dp"
@@ -119,7 +139,7 @@
                     android:contentDescription="@string/play_pause"
                     app:buttonTint="?attr/colorPrimary"
                     tools:ignore="DuplicateSpeakableTextCheck" />
-
+                </FrameLayout>
                 <Button
                     android:id="@+id/trackNext"
                     style="?attr/materialIconButtonStyle"
@@ -156,11 +176,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ProgressBar
+            <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/collapsedSeekBar"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                app:trackThickness="2dp"
+                app:indicatorColor="?colorTertiary"
+                app:trackColor="?colorTertiaryContainer"
                 android:layout_gravity="bottom" />
 
             <LinearLayout
@@ -202,13 +226,12 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp">
 
-                    <ProgressBar
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
                         android:id="@+id/collapsedProgressBar"
-                        style="?android:attr/progressBarStyle"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:alpha="0"
-                        android:indeterminate="true" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"
+                        android:visibility="gone" />
 
                     <com.google.android.material.checkbox.MaterialCheckBox
                         android:id="@+id/collapsedTrackPlayPause"
@@ -216,7 +239,7 @@
                         android:layout_height="wrap_content"
                         android:button="@drawable/anim_play_pause"
                         android:contentDescription="@string/play_pause"
-                        app:buttonTint="?attr/colorPrimary"
+                        app:buttonTint="@color/bottom_item_icon"
                         app:iconSize="24dp" />
 
                 </FrameLayout>
