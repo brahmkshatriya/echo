@@ -12,6 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
+import dev.brahmkshatriya.echo.ui.player.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.observeFlow
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
@@ -21,6 +22,7 @@ class SearchFragment : Fragment() {
 
     private lateinit var binding: FragmentSearchBinding
     private val searchViewModel: SearchViewModel by activityViewModels()
+    private val playerViewModel: PlayerViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, parent, false)
@@ -30,9 +32,8 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val playerViewModel by activityViewModels<PlayerViewModel>()
 
-        playerViewModel.handleBackPress(this) {
+        PlayerBackButtonHelper.addCallback(this) {
             if (!it) binding.catSearchView.hide()
         }
 

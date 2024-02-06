@@ -15,7 +15,7 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
-import dev.brahmkshatriya.echo.ui.player.PlayerView
+import dev.brahmkshatriya.echo.ui.player.Player
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         controllerFuture.addListener(
             {
-                PlayerView(
+                Player(
                     this,
                     controllerFuture.get(),
                     binding.bottomPlayerContainer,

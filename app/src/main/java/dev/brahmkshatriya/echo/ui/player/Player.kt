@@ -22,7 +22,7 @@ import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class PlayerView(
+class Player(
     private val activity: MainActivity,
     private val player: MediaController,
     private val view: View,
@@ -51,7 +51,7 @@ class PlayerView(
 
         bottomBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                viewModel.playerCollapsed.value = (newState == STATE_COLLAPSED)
+                PlayerBackButtonHelper.playerCollapsed.value = (newState == STATE_COLLAPSED)
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -65,10 +65,10 @@ class PlayerView(
             }
         })
 
-        viewModel.bottomSheetBehavior = bottomBehavior
+        PlayerBackButtonHelper.bottomSheetBehavior = bottomBehavior
 
         view.post {
-            bottomBehavior.state = viewModel.playerCollapsed.value.let {
+            bottomBehavior.state = PlayerBackButtonHelper.playerCollapsed.value.let {
                 if (it) STATE_COLLAPSED else STATE_EXPANDED
             }
         }
