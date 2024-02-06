@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 
@@ -14,6 +15,10 @@ class PlaybackService : MediaSessionService() {
         super.onCreate()
         val player = ExoPlayer.Builder(this).build()
         mediaSession = MediaSession.Builder(this, player).build()
+        setMediaNotificationProvider(
+            DefaultMediaNotificationProvider.Builder(this).build()
+                .also { it.setSmallIcon(R.drawable.ic_mono) }
+        )
     }
 
     override fun onDestroy() {

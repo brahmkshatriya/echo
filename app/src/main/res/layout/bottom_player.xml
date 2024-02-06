@@ -87,20 +87,19 @@
                     tools:text="00:00" />
             </FrameLayout>
 
-            <com.google.android.material.slider.Slider
+            <SeekBar
                 android:id="@+id/expandedSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginStart="-2dp"
                 android:layout_marginEnd="-2dp"
-                app:labelBehavior="gone"
-                app:thumbColor="?colorTertiary"
-                app:thumbHeight="16dp"
-                app:thumbTrackGapSize="12dp"
-                app:thumbWidth="16dp"
-                app:trackColorActive="?colorTertiary"
-                app:trackColorInactive="?colorTertiaryContainer"
-                app:trackHeight="4dp" />
+                android:progressTint="?colorTertiary"
+                android:secondaryProgressTint="?colorTertiary"
+                android:progressBackgroundTint="?attr/colorOutlineVariant"
+                android:progress="10"
+                android:secondaryProgress="20"
+                android:thumb="@drawable/ic_thumb"
+                android:thumbTint="?colorTertiary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -178,16 +177,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.google.android.material.progressindicator.LinearProgressIndicator
+            <ProgressBar
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:id="@+id/collapsedSeekBar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="2dp"
                 android:layout_gravity="bottom"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                app:indicatorColor="?colorTertiary"
-                app:trackColor="?colorTertiaryContainer"
-                app:trackThickness="2dp" />
+                android:progressTint="?colorTertiary"
+                android:secondaryProgressTint="?colorTertiary"
+                android:progressBackgroundTint="?attr/colorOutlineVariant" />
 
             <LinearLayout
                 android:layout_width="match_parent"

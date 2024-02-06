@@ -14,9 +14,9 @@ import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 
 class PlayerListener(
-    val player: MediaController,
-    val binding: BottomPlayerBinding,
-    val playPauseListener: MaterialCheckBox.OnCheckedStateChangedListener
+    private val player: MediaController,
+    private val binding: BottomPlayerBinding,
+    private val playPauseListener: MaterialCheckBox.OnCheckedStateChangedListener
 ) :
     Player.Listener {
     init {
@@ -24,18 +24,21 @@ class PlayerListener(
         val handler = Handler(Looper.getMainLooper())
         val runnable = object : Runnable {
             override fun run() {
-                binding.collapsedSeekBar.progress = player.currentPosition.toInt()
-                binding.expandedSeekBar.value = player.currentPosition.toFloat()
+                if(!binding.expandedSeekBar.isPressed) {
+                    binding.collapsedSeekBar.progress = player.currentPosition.toInt()
+                    binding.collapsedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
 
-                binding.collapsedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
-
-                binding.trackCurrentTime.text = player.currentPosition.toTimeString()
-
+                    binding.expandedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
+                    binding.expandedSeekBar.progress = player.currentPosition.toInt()
+                    
+                    binding.trackCurrentTime.text = player.currentPosition.toTimeString()
+                }
                 handler.postDelayed(this, 1000)
             }
         }
         handler.post(runnable)
     }
+
     @SuppressLint("SwitchIntDef")
     override fun onPlaybackStateChanged(playbackState: Int) {
         when (playbackState) {
@@ -48,13 +51,13 @@ class PlayerListener(
                 binding.trackPlayPause.isEnabled = true
                 binding.collapsedTrackPlayPause.isEnabled = true
 
-                if(player.duration == C.TIME_UNSET) throw IllegalStateException("Duration is not set")
+                if (player.duration == C.TIME_UNSET) throw IllegalStateException("Duration is not set")
 
                 binding.collapsedSeekBar.isIndeterminate = false
                 binding.expandedSeekBar.isEnabled = true
 
-                binding.collapsedSeekBar.max = player.duration.toInt() + 100
-                binding.expandedSeekBar.valueTo = player.duration.toFloat() + 100
+                binding.collapsedSeekBar.max = player.duration.toInt()
+                binding.expandedSeekBar.max = player.duration.toInt()
 
                 binding.trackTotalTime.text = player.duration.toTimeString()
             }
@@ -106,7 +109,7 @@ class PlayerListener(
     ) {
         if (reason != Player.DISCONTINUITY_REASON_SEEK && reason != Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
             binding.collapsedSeekBar.progress = newPosition.positionMs.toInt()
-            binding.expandedSeekBar.value = newPosition.positionMs.toFloat()
+            binding.expandedSeekBar.progress = newPosition.positionMs.toInt()
 
             binding.trackCurrentTime.text = newPosition.positionMs.toTimeString()
         }

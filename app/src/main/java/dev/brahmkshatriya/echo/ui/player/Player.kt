@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.ui.player
 
 import android.view.View
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
@@ -17,6 +19,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.data.models.StreamableAudio
 import dev.brahmkshatriya.echo.databinding.BottomPlayerBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toMetaData
+import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 import kotlinx.coroutines.flow.collectLatest
@@ -29,7 +32,7 @@ class Player(
     private val binding: BottomPlayerBinding
 ) {
 
-    val viewModel by activity.viewModels<PlayerViewModel>()
+    private val viewModel: PlayerViewModel by activity.viewModels()
 
     init {
         applyView()
@@ -93,11 +96,20 @@ class Player(
             player.seekToPreviousMediaItem()
         }
 
-        binding.expandedSeekBar.addOnChangeListener { _, value, fromUser ->
-            if (fromUser) {
-                player.seekTo(value.toLong())
+
+        binding.expandedSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+                binding.trackCurrentTime.text = p1.toLong().toTimeString()
             }
-        }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {}
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+                p0?.progress?.let {
+                    player.seekTo(it.toLong())
+                    binding.trackCurrentTime.text = it.toLong().toTimeString()
+                }
+            }
+        })
 
         val listener = PlayerListener(player, binding, playPauseListener)
         player.addListener(listener)
