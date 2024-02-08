@@ -9,7 +9,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
+import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerBackButtonHelper
@@ -51,9 +53,15 @@ class SearchFragment : Fragment() {
             }
             false
         }
-        val adapter = MediaItemsContainerAdapter(lifecycle){
-            playerViewModel.play(it)
-        }
+        val adapter = MediaItemsContainerAdapter(lifecycle, object : ClickListener<Track> {
+            override fun onClick(item: Track) {
+                playerViewModel.play(item)
+            }
+
+            override fun onLongClick(item: Track) {
+                playerViewModel.addToQueue(item)
+            }
+        })
         binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.catRecyclerView.adapter = ConcatAdapter(header, adapter)
         searchViewModel.result.observeFlow(viewLifecycleOwner) {

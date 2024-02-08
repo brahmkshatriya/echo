@@ -19,12 +19,18 @@ class HomeViewModel @Inject constructor(
     private val homeClient: HomeFeedClient
 ) : ViewModel() {
 
+    init {
+        viewModelScope.launch {
+            loadFeed()
+        }
+    }
+
     private val _feed: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
     val feed = _feed.asStateFlow()
 
     val genre: String? = null
 
-    fun loadFeed(genre: String?) {
+    fun loadFeed() {
         viewModelScope.launch(Dispatchers.IO) {
             println("Loading Data")
             homeClient.getHomeFeed(genre).cachedIn(viewModelScope).collectLatest {

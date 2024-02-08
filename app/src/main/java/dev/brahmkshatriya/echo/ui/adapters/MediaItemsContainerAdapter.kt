@@ -4,7 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Lifecycle
+import androidx.paging.LoadState
 import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
@@ -18,10 +20,24 @@ import dev.brahmkshatriya.echo.ui.utils.loadInto
 
 class MediaItemsContainerAdapter(
     private val lifecycle: Lifecycle,
-    private val play: (Track) -> Unit,
+    private val listener: ClickListener<Track>,
 ) : PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
     MediaItemsContainerComparator
 ) {
+
+    fun withLoadingFooter(): ConcatAdapter {
+        val footer = ContainerLoadingAdapter {
+            retry()
+        }
+        addLoadStateListener { loadStates ->
+            footer.loadState = when (loadStates.refresh) {
+                is LoadState.NotLoading -> loadStates.append
+                else -> loadStates.refresh
+            }
+        }
+        return ConcatAdapter(this, footer)
+    }
+
     override fun getItemViewType(position: Int): Int {
         return getItem(position)?.let {
             when (it) {
@@ -57,7 +73,7 @@ class MediaItemsContainerAdapter(
                 binding.textView.text = category.title
                 binding.recyclerView.layoutManager =
                     LinearLayoutManager(binding.root.context, HORIZONTAL, false)
-                val adapter = MediaItemAdapter(play)
+                val adapter = MediaItemAdapter(listener)
                 binding.recyclerView.adapter = adapter
                 adapter.submitData(lifecycle, category.list)
             }
@@ -65,7 +81,11 @@ class MediaItemsContainerAdapter(
             is MediaItemsContainerBinding.Track -> {
                 val binding = holder.container.binding
                 val track = (item as MediaItemsContainer.TrackItem).track
-                binding.root.setOnClickListener { play(track) }
+                binding.root.setOnClickListener { listener.onClick(track) }
+                binding.root.setOnLongClickListener {
+                    listener.onLongClick(track)
+                    true
+                }
 
                 binding.title.text = track.title
 

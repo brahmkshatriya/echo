@@ -93,18 +93,16 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="-2dp"
                 android:layout_marginEnd="-2dp"
+                android:progressBackgroundTint="?attr/colorOutlineVariant"
                 android:progressTint="?colorTertiary"
                 android:secondaryProgressTint="?colorTertiary"
-                android:progressBackgroundTint="?attr/colorOutlineVariant"
-                android:progress="10"
-                android:secondaryProgress="20"
                 android:thumb="@drawable/ic_thumb"
                 android:thumbTint="?colorTertiary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
+                android:gravity="center"
                 android:orientation="horizontal">
 
                 <Button
@@ -115,7 +113,8 @@
                     android:contentDescription="@string/previous"
                     android:enabled="false"
                     app:icon="@drawable/ic_skip_previous_40dp"
-                    app:iconSize="40dp" />
+                    app:iconSize="40dp"
+                    app:iconTint="@color/button_player" />
 
                 <FrameLayout
                     android:layout_width="wrap_content"
@@ -137,7 +136,8 @@
                         android:layout_height="72dp"
                         android:button="@drawable/anim_play_pause_48dp"
                         android:contentDescription="@string/play_pause"
-                        app:buttonTint="?attr/colorPrimary"
+                        android:enabled="false"
+                        app:buttonTint="@color/button_play_pause"
                         tools:ignore="DuplicateSpeakableTextCheck" />
                 </FrameLayout>
 
@@ -149,7 +149,8 @@
                     android:contentDescription="@string/next"
                     android:enabled="false"
                     app:icon="@drawable/ic_skip_next_40dp"
-                    app:iconSize="40dp" />
+                    app:iconSize="40dp"
+                    app:iconTint="@color/button_player" />
 
 
             </LinearLayout>
@@ -178,14 +179,14 @@
             android:layout_height="match_parent">
 
             <ProgressBar
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:id="@+id/collapsedSeekBar"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_gravity="bottom"
+                android:progressBackgroundTint="?attr/colorOutlineVariant"
                 android:progressTint="?colorTertiary"
-                android:secondaryProgressTint="?colorTertiary"
-                android:progressBackgroundTint="?attr/colorOutlineVariant" />
+                android:secondaryProgressTint="?colorTertiary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -239,6 +240,7 @@
                         android:layout_height="wrap_content"
                         android:button="@drawable/anim_play_pause"
                         android:contentDescription="@string/play_pause"
+                        android:enabled="false"
                         app:buttonTint="@color/button_play_pause"
                         app:iconSize="24dp" />
 

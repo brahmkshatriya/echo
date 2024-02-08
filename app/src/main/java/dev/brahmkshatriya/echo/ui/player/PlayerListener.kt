@@ -1,11 +1,11 @@
 package dev.brahmkshatriya.echo.ui.player
 
 import android.annotation.SuppressLint
-import android.os.Handler
-import android.os.Looper
-import androidx.media3.common.C
+import android.view.View
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import com.google.android.material.checkbox.MaterialCheckBox
 import dev.brahmkshatriya.echo.data.models.Track
@@ -13,30 +13,24 @@ import dev.brahmkshatriya.echo.databinding.BottomPlayerBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 
+
 class PlayerListener(
     private val player: MediaController,
     private val binding: BottomPlayerBinding,
     private val playPauseListener: MaterialCheckBox.OnCheckedStateChangedListener
-) :
-    Player.Listener {
-    init {
-        //Poll each second to update the seekbar
-        val handler = Handler(Looper.getMainLooper())
-        val runnable = object : Runnable {
-            override fun run() {
-                if(!binding.expandedSeekBar.isPressed) {
-                    binding.collapsedSeekBar.progress = player.currentPosition.toInt()
-                    binding.collapsedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
+) : Player.Listener {
 
-                    binding.expandedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
-                    binding.expandedSeekBar.progress = player.currentPosition.toInt()
-                    
-                    binding.trackCurrentTime.text = player.currentPosition.toTimeString()
-                }
-                handler.postDelayed(this, 1000)
+    private val updateProgressRunnable = Runnable { updateProgress() }
+
+    init {
+        val listener = this
+        binding.root.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(p0: View) {}
+            override fun onViewDetachedFromWindow(p0: View) {
+                player.removeListener(listener)
             }
-        }
-        handler.post(runnable)
+        })
+        binding.root.post(updateProgressRunnable)
     }
 
     @SuppressLint("SwitchIntDef")
@@ -51,7 +45,7 @@ class PlayerListener(
                 binding.trackPlayPause.isEnabled = true
                 binding.collapsedTrackPlayPause.isEnabled = true
 
-                if (player.duration == C.TIME_UNSET) throw IllegalStateException("Duration is not set")
+//                if (player.duration == C.TIME_UNSET) throw IllegalStateException("Duration is not set")
 
                 binding.collapsedSeekBar.isIndeterminate = false
                 binding.expandedSeekBar.isEnabled = true
@@ -62,6 +56,7 @@ class PlayerListener(
                 binding.trackTotalTime.text = player.duration.toTimeString()
             }
         }
+        updateProgress()
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -73,17 +68,13 @@ class PlayerListener(
 
         binding.trackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
         binding.collapsedTrackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
+
     }
 
-
-    private val tracks = mutableMapOf<MediaMetadata, Track>()
-    fun map(metadata: MediaMetadata, track: Track) {
-        tracks[metadata] = track
-    }
-
+    val map = mutableMapOf<MediaMetadata, Track>()
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+        val track = map[mediaMetadata] ?: return
 
-        val track = tracks[mediaMetadata] ?: return
         binding.collapsedTrackTitle.text = track.title
         binding.expandedTrackTitle.text = track.title
 
@@ -103,20 +94,53 @@ class PlayerListener(
     }
 
     override fun onPositionDiscontinuity(
-        oldPosition: Player.PositionInfo,
-        newPosition: Player.PositionInfo,
-        reason: Int
+        oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int
     ) {
-        if (reason != Player.DISCONTINUITY_REASON_SEEK && reason != Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
-            binding.collapsedSeekBar.progress = newPosition.positionMs.toInt()
-            binding.expandedSeekBar.progress = newPosition.positionMs.toInt()
-
-            binding.trackCurrentTime.text = newPosition.positionMs.toTimeString()
-        }
+        updateNavigation()
+        updateProgress()
     }
 
-    override fun onPlaylistMetadataChanged(mediaMetadata: MediaMetadata) {
-        super.onPlaylistMetadataChanged(mediaMetadata)
-        println(mediaMetadata)
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        updateNavigation()
+        updateProgress()
+    }
+
+    private fun updateProgress() {
+        if (!binding.root.isAttachedToWindow) return
+
+        if (!binding.expandedSeekBar.isPressed) {
+            binding.collapsedSeekBar.progress = player.currentPosition.toInt()
+            binding.collapsedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
+
+            binding.expandedSeekBar.secondaryProgress = player.bufferedPosition.toInt()
+            binding.expandedSeekBar.progress = player.currentPosition.toInt()
+
+            binding.trackCurrentTime.text = player.currentPosition.toTimeString()
+        }
+
+        binding.root.removeCallbacks(updateProgressRunnable)
+        val playbackState = player.playbackState
+        if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
+            var delayMs: Long
+            if (player.playWhenReady && playbackState == ExoPlayer.STATE_READY) {
+                delayMs = 1000 - player.currentPosition % 1000
+                if (delayMs < 200) {
+                    delayMs += 1000
+                }
+            } else {
+                delayMs = 1000
+            }
+            binding.root.postDelayed(updateProgressRunnable, delayMs)
+        }
+
+    }
+
+    private fun updateNavigation() {
+        if (!binding.root.isAttachedToWindow) return
+        val index = player.currentMediaItemIndex
+        val enablePrevious = index >= 0
+        val enableNext = index < player.mediaItemCount - 1
+        binding.trackNext.isEnabled = enableNext
+        binding.trackPrevious.isEnabled = enablePrevious
     }
 }

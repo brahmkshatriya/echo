@@ -6,12 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
-import dev.brahmkshatriya.echo.ui.adapters.ContainerLoadingAdapter
+import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerBackButtonHelper
@@ -42,25 +44,33 @@ class HomeFragment : Fragment() {
 
         val headerAdapter = HeaderAdapter(R.string.home)
         val mediaItemsContainerAdapter =
-            MediaItemsContainerAdapter(viewLifecycleOwner.lifecycle, playerViewModel::play)
+            MediaItemsContainerAdapter(viewLifecycleOwner.lifecycle, object : ClickListener<Track> {
+                override fun onClick(item: Track) {
+                    playerViewModel.play(item)
+                }
 
-        mediaItemsContainerAdapter.withLoadStateFooter(ContainerLoadingAdapter {
-            homeViewModel.loadFeed(homeViewModel.genre)
-        })
+                override fun onLongClick(item: Track) {
+                    playerViewModel.addToQueue(item)
+                }
+            })
 
-        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, mediaItemsContainerAdapter)
+        val concat = mediaItemsContainerAdapter.withLoadingFooter()
+
+        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, concat)
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
         binding.swipeRefresh.setOnRefreshListener {
-            homeViewModel.loadFeed(homeViewModel.genre)
+            mediaItemsContainerAdapter.refresh()
+        }
+
+        mediaItemsContainerAdapter.addLoadStateListener {
+            binding.swipeRefresh.isRefreshing = it.refresh is LoadState.Loading
         }
 
         homeViewModel.feed.observeFlow(viewLifecycleOwner) {
-            binding.swipeRefresh.isRefreshing = false
             if (it == null) return@observeFlow
             mediaItemsContainerAdapter.submitData(it)
         }
 
-        homeViewModel.loadFeed(homeViewModel.genre)
     }
 }

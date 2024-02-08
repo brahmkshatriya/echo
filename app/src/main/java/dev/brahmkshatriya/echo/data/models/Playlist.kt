@@ -1,10 +1,8 @@
 package dev.brahmkshatriya.echo.data.models
 
 import android.net.Uri
-import androidx.paging.PagingData
-import kotlinx.coroutines.flow.Flow
 
-sealed class Playlist{
+sealed class Playlist {
 
     open class Small(
         open val uri: Uri,
@@ -22,7 +20,7 @@ sealed class Playlist{
         override val title: String,
         override val cover: ImageHolder?,
         val author: User?,
-        val tracks: Flow<PagingData<Track>>,
+        val tracks: List<Track>,
         val creationDate: String?,
         val duration: Long?,
         val description: String?,

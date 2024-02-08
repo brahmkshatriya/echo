@@ -16,9 +16,7 @@ import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_UNCHECKED
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.data.models.StreamableAudio
 import dev.brahmkshatriya.echo.databinding.BottomPlayerBinding
-import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toMetaData
 import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
@@ -89,11 +87,11 @@ class Player(
         binding.collapsedTrackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
 
         binding.trackNext.setOnClickListener {
-            player.seekToNextMediaItem()
+            player.seekToNext()
         }
 
         binding.trackPrevious.setOnClickListener {
-            player.seekToPreviousMediaItem()
+            player.seekToPrevious()
         }
 
 
@@ -114,31 +112,26 @@ class Player(
         val listener = PlayerListener(player, binding, playPauseListener)
         player.addListener(listener)
 
+        fun addToQueue(it: TrackWithStream?): MediaItem? {
+            it ?: return null
+            val item = it.mediaItemBuilder()
+            listener.map[item.mediaMetadata] = it.track
+            player.addMediaItem(item)
+            player.prepare()
+            player.play()
+            return item
+        }
+
         activity.lifecycleScope.launch {
-            viewModel.audioFlow.collectLatest { pair ->
-                pair?.run {
-                    val track = this.first
-                    val metadata = track.toMetaData()
-                    listener.map(metadata, track)
-
-                    val builder = MediaItem.Builder()
-                        .setMediaMetadata(metadata)
-                    val item = when (val audio = this.second) {
-                        is StreamableAudio.StreamableFile -> {
-                            builder.setUri(audio.uri)
-                        }
-
-                        is StreamableAudio.StreamableUrl -> {
-                            builder.setUri(audio.url.url)
-                        }
-
-                        is StreamableAudio.ByteStreamAudio -> TODO()
-                    }
-                    player.setMediaItem(item.build())
-                    player.prepare()
-                    player.play()
+            launch {
+                viewModel.audioFlow.collectLatest {
+//                    val item = addToQueue(it) ?: return@collectLatest
                 }
-
+            }
+            launch {
+                viewModel.audioQueueFlow.collectLatest {
+                    addToQueue(it)
+                }
             }
         }
     }

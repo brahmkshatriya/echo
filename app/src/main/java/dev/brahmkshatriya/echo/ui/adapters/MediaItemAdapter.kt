@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.databinding.ItemMediaBinding
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 
 class MediaItemAdapter(
-    private val play : (Track) -> Unit
+    private val listener: ClickListener<Track>
 ) :
     PagingDataAdapter<MediaItem, MediaItemAdapter.MediaItemHolder>(
         MediaItemComparator
@@ -31,7 +31,11 @@ class MediaItemAdapter(
                 binding.title.text = item.track.title
                 item.track.cover?.loadInto(binding.imageView)
                 binding.root.setOnClickListener {
-                    play(item.track)
+                    listener.onClick(item.track)
+                }
+                binding.root.setOnLongClickListener {
+                    listener.onLongClick(item.track)
+                    true
                 }
             }
 
