@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.ui.player
 
+import android.content.res.Resources
+import android.graphics.Rect
 import android.view.View
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
@@ -39,14 +41,19 @@ class Player(
 
     private fun applyView() {
 
-        updatePaddingWithSystemInsets(binding.expandedContainer, false)
+        updatePaddingWithSystemInsets(binding.expandedContainer)
         view.setOnClickListener {
             BottomSheetBehavior.from(view).state = STATE_EXPANDED
         }
 
         val bottomBehavior = BottomSheetBehavior.from(view)
         val navView = activity.navView
-        val bottomNavHeight = 140.dpToPx()
+        val bottomNavHeight =
+            if (navView !is BottomNavigationView)
+                -(Resources.getSystem().displayMetrics.heightPixels + Rect().apply {
+                    activity.window.decorView.getWindowVisibleDisplayFrame(this)
+                }.top)
+            else 140.dpToPx()
         val collapsedCoverSize =
             activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
 
@@ -59,10 +66,7 @@ class Player(
                 binding.collapsedContainer.translationY = -collapsedCoverSize * slideOffset
                 binding.expandedContainer.translationY = collapsedCoverSize * (1 - slideOffset)
 
-                if (navView is BottomNavigationView)
-                    navView.translationY = bottomNavHeight * slideOffset
-                else
-                    navView.translationX = -bottomNavHeight * slideOffset
+                navView.translationY = bottomNavHeight * slideOffset
             }
         })
 
@@ -118,14 +122,17 @@ class Player(
             listener.map[item.mediaMetadata] = it.track
             player.addMediaItem(item)
             player.prepare()
-            player.play()
+            player.playWhenReady = true
             return item
         }
 
         activity.lifecycleScope.launch {
             launch {
-                viewModel.audioFlow.collectLatest {
-//                    val item = addToQueue(it) ?: return@collectLatest
+                viewModel.audioIndexFlow.collectLatest {
+                    it ?: return@collectLatest
+                    player.seekToDefaultPosition(it)
+//                    binding.trackNext.post {
+//                    }
                 }
             }
             launch {

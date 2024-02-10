@@ -11,36 +11,35 @@
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="72dp"
+        android:layout_marginStart="80dp"
         android:layout_marginBottom="72dp"
         app:defaultNavHost="true"
-        app:navGraph="@navigation/mobile_navigation"/>
-
-    <com.google.android.material.navigationrail.NavigationRailView
-        android:id="@+id/nav_view"
-        android:layout_width="72dp"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurfaceContainerLowest"
-        android:paddingBottom="72dp"
-        app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
-        app:itemIconTint="@color/bottom_item_icon"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu"
-        app:menuGravity="center" />
+        app:navGraph="@navigation/mobile_navigation" />
 
     <FrameLayout
         android:id="@+id/bottom_player_container"
-        android:layout_width="match_parent"
-        android:background="?attr/colorSurfaceContainerLow"
         style="@style/ApplyInsets"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurfaceContainerLow"
         app:behavior_peekHeight="72dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-        android:layout_height="match_parent">
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <include
             android:id="@+id/bottom_player"
             layout="@layout/bottom_player" />
 
     </FrameLayout>
+
+    <com.google.android.material.navigationrail.NavigationRailView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurfaceContainerLowest"
+        app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
+        app:itemIconTint="@color/bottom_item_icon"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu"
+        app:menuGravity="center" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -14,7 +14,7 @@
         android:background="?attr/colorSurfaceContainerLow"
         android:baselineAligned="false"
         android:translationY="@dimen/collapsed_cover_size"
-        tools:translationY="0dp">
+        tools:translationY="72dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             style="@style/PlayerContainerCover"
@@ -167,6 +167,7 @@
 
         <ImageView
             android:id="@+id/collapsedTrackCover"
+            android:layout_marginStart="@dimen/sideRailViewWidth"
             android:layout_width="@dimen/collapsed_cover_size"
             android:layout_height="@dimen/collapsed_cover_size"
             android:background="?attr/colorSurfaceContainerHigh"

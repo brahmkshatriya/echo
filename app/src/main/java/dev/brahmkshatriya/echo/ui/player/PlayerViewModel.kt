@@ -6,7 +6,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.data.clients.TrackClient
 import dev.brahmkshatriya.echo.data.models.Track
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,24 +16,30 @@ class PlayerViewModel @Inject constructor(
 //    private val radioClient: RadioClient
 ) : ViewModel() {
 
-    val audioFlow = MutableStateFlow<TrackWithStream?>(null)
+    val audioIndexFlow = MutableStateFlow<Int?>(null)
     val audioQueueFlow = MutableStateFlow<TrackWithStream?>(null)
 
     private suspend fun loadStreamable(track: Track) =
         TrackWithStream(track, trackClient.getStreamable(track))
 
+
+    val queue = mutableListOf<TrackWithStream>()
+    private suspend fun loadAndAddToQueue(track: Track): Int {
+        val stream = loadStreamable(track)
+        queue.add(stream)
+        audioQueueFlow.value = stream
+        return queue.count() - 1
+    }
+
     fun play(track: Track) {
         viewModelScope.launch(Dispatchers.IO) {
-            val stream = loadStreamable(track)
-            audioQueueFlow.value = stream
-            delay(10)
-            audioFlow.value = stream
+            audioIndexFlow.value = loadAndAddToQueue(track)
         }
     }
 
     fun addToQueue(track: Track) {
         viewModelScope.launch(Dispatchers.IO) {
-            audioQueueFlow.value = loadStreamable(track)
+            loadAndAddToQueue(track)
         }
     }
 
