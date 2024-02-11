@@ -44,14 +44,15 @@ class Player(
 
     private fun applyViewChanges() {
 
-        updatePaddingWithSystemInsets(binding.expandedContainer)
-
+        updatePaddingWithSystemInsets(binding.expandedContainer, false)
+        binding.expandedContainer.requestApplyInsets()
+        
         val bottomBehavior = BottomSheetBehavior.from(container)
         container.setOnClickListener {
             bottomBehavior.state = STATE_EXPANDED
         }
 
-        val navView = activity.navView
+        val navView = activity.binding.navView
         val bottomNavHeight =
             if (navView !is BottomNavigationView) {
                 val height = Resources.getSystem().displayMetrics.heightPixels

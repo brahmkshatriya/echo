@@ -14,7 +14,7 @@
         android:background="?attr/colorSurfaceContainerLow"
         android:baselineAligned="false"
         android:translationY="@dimen/collapsed_cover_size"
-        tools:translationY="72dp">
+        tools:translationY="0dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             style="@style/PlayerContainerCover"
@@ -163,13 +163,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorSurfaceContainerLow"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        tools:translationY="-72dp">
 
         <ImageView
             android:id="@+id/collapsedTrackCover"
-            android:layout_marginStart="@dimen/sideRailViewWidth"
             android:layout_width="@dimen/collapsed_cover_size"
             android:layout_height="@dimen/collapsed_cover_size"
+            android:layout_marginStart="@dimen/sideRailViewWidth"
             android:background="?attr/colorSurfaceContainerHigh"
             android:importantForAccessibility="no"
             tools:ignore="ImageContrastCheck"
