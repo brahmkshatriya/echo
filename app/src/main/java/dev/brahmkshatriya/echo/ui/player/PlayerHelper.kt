@@ -3,15 +3,38 @@ package dev.brahmkshatriya.echo.ui.player
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import androidx.core.net.toUri
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.data.models.ImageHolder
+import dev.brahmkshatriya.echo.data.models.StreamableAudio
 import dev.brahmkshatriya.echo.data.models.Track
 import java.nio.ByteBuffer
 
 
 interface PlayerHelper {
     companion object {
+
+        fun mediaItemBuilder(track:Track, audio: StreamableAudio): MediaItem {
+            val builder = MediaItem.Builder()
+
+            val item = when (audio) {
+                is StreamableAudio.StreamableFile -> {
+                    builder.setUri(audio.uri)
+                }
+
+                is StreamableAudio.StreamableUrl -> {
+                    builder.setUri(audio.url.url)
+                }
+
+                is StreamableAudio.ByteStreamAudio -> TODO()
+            }
+
+            val metadata = track.toMetaData()
+            item.setMediaMetadata(metadata)
+
+            return item.build()
+        }
 
         @SuppressLint("UnsafeOptInUsageError")
         fun Track.toMetaData() = MediaMetadata.Builder()
