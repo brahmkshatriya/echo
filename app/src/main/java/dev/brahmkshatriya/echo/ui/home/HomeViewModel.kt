@@ -32,9 +32,7 @@ class HomeViewModel @Inject constructor(
 
     fun loadFeed() {
         viewModelScope.launch(Dispatchers.IO) {
-            println("Loading Data")
             homeClient.getHomeFeed(genre).cachedIn(viewModelScope).collectLatest {
-                println("Data Received")
                 _feed.value = it
             }
         }
