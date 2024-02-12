@@ -34,7 +34,6 @@ class PlayerViewModel @Inject constructor(
     private suspend fun loadStreamable(track: Track) =
         TrackWithStream(track, trackClient.getStreamable(track))
 
-
     private val queue = mutableListOf<TrackWithStream>()
     private suspend fun loadAndAddToQueue(track: Track): Int {
         val stream = loadStreamable(track)

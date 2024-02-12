@@ -194,6 +194,9 @@ class Player(
 
         val listener = uiViewModel.getListener(player)
         player.addListener(listener)
+        player.currentMediaItem?.let {
+            listener.update(it.mediaId)
+        }
 
         activity.apply {
             observe(playerViewModel.playPause) {

@@ -34,7 +34,7 @@ class PlaybackService : MediaSessionService() {
             .putExtra("fromNotification", true)
 
         val pendingIntent = PendingIntent
-            .getActivity(this, 0, intent,PendingIntent.FLAG_IMMUTABLE)
+            .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         mediaSession = MediaSession.Builder(this, player)
             .setSessionActivity(pendingIntent)

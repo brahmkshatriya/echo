@@ -40,12 +40,14 @@ class PlayerListener(
         viewModel.isPlaying.value = isPlaying
     }
 
+    companion object {
+        val tracks = mutableMapOf<String, Track>()
+    }
 
-    private val tracks = mutableMapOf<String,Track>()
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val id = mediaItem?.mediaId ?: return
         val track = mediaItem.localConfiguration?.tag as Track?
-        if(track != null) tracks[id] = track
+        if (track != null) tracks[id] = track
         viewModel.track.value = tracks[id] ?: return
     }
 
@@ -77,7 +79,6 @@ class PlayerListener(
             }
             handler.postDelayed(updateProgressRunnable, delayMs)
         }
-
     }
 
     private fun updateNavigation() {
@@ -86,5 +87,14 @@ class PlayerListener(
         val enableNext = index < player.mediaItemCount - 1
         viewModel.nextEnabled.value = enableNext
         viewModel.previousEnabled.value = enablePrevious
+    }
+
+    fun update(mediaId: String){
+        viewModel.track.value = tracks[mediaId]
+        viewModel.totalDuration.value = player.duration.toInt()
+        viewModel.isPlaying.value = player.isPlaying
+        viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
+        updateNavigation()
+        updateProgress()
     }
 }
