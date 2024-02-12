@@ -5,12 +5,10 @@ import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dev.brahmkshatriya.echo.MainActivity
+import dev.brahmkshatriya.echo.ui.utils.observe
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 object PlayerBackButtonHelper {
 
@@ -37,11 +35,9 @@ object PlayerBackButtonHelper {
                 bottomSheetBehavior?.cancelBackProgress()
             }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            playerCollapsed.collectLatest {
-                backPress.isEnabled = !it
-                callback?.invoke(it)
-            }
+        viewLifecycleOwner.observe(playerCollapsed) {
+            backPress.isEnabled = !it
+            callback?.invoke(it)
         }
         return backPress
     }

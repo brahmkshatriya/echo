@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.player
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
-import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
@@ -40,9 +40,13 @@ class PlayerListener(
         viewModel.isPlaying.value = isPlaying
     }
 
-    val map = mutableMapOf<MediaMetadata, Track>()
-    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-        viewModel.track.value = map[mediaMetadata]
+
+    private val tracks = mutableMapOf<String,Track>()
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        val id = mediaItem?.mediaId ?: return
+        val track = mediaItem.localConfiguration?.tag as Track?
+        if(track != null) tracks[id] = track
+        viewModel.track.value = tracks[id] ?: return
     }
 
     override fun onPositionDiscontinuity(

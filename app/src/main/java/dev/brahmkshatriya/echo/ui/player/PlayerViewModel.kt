@@ -7,7 +7,7 @@ import dev.brahmkshatriya.echo.data.clients.TrackClient
 import dev.brahmkshatriya.echo.data.models.StreamableAudio
 import dev.brahmkshatriya.echo.data.models.Track
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,14 +22,14 @@ class PlayerViewModel @Inject constructor(
         val audio: StreamableAudio
     )
 
-    val playPause: MutableStateFlow<Boolean?> = MutableStateFlow(null)
+    val playPause: MutableSharedFlow<Boolean> = MutableSharedFlow()
 
-    val seekTo: MutableStateFlow<Long?> = MutableStateFlow(null)
-    val seekToPrevious: MutableStateFlow<Unit?> = MutableStateFlow(null)
-    val seekToNext: MutableStateFlow<Unit?> = MutableStateFlow(null)
+    val seekTo: MutableSharedFlow<Long> = MutableSharedFlow()
+    val seekToPrevious: MutableSharedFlow<Unit> = MutableSharedFlow()
+    val seekToNext: MutableSharedFlow<Unit> = MutableSharedFlow()
 
-    val audioIndexFlow = MutableStateFlow<Int?>(null)
-    val audioQueueFlow = MutableStateFlow<TrackWithStream?>(null)
+    val audioIndexFlow = MutableSharedFlow<Int>()
+    val audioQueueFlow = MutableSharedFlow<TrackWithStream>()
 
     private suspend fun loadStreamable(track: Track) =
         TrackWithStream(track, trackClient.getStreamable(track))
@@ -39,13 +39,13 @@ class PlayerViewModel @Inject constructor(
     private suspend fun loadAndAddToQueue(track: Track): Int {
         val stream = loadStreamable(track)
         queue.add(stream)
-        audioQueueFlow.value = stream
+        audioQueueFlow.emit(stream)
         return queue.count() - 1
     }
 
     fun play(track: Track) {
         viewModelScope.launch(Dispatchers.IO) {
-            audioIndexFlow.value = loadAndAddToQueue(track)
+            audioIndexFlow.emit(loadAndAddToQueue(track))
         }
     }
 

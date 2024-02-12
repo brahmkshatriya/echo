@@ -16,7 +16,7 @@ import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
-import dev.brahmkshatriya.echo.ui.utils.observeFlow
+import dev.brahmkshatriya.echo.ui.utils.observe
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 
 @AndroidEntryPoint
@@ -64,9 +64,9 @@ class SearchFragment : Fragment() {
         })
         binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.catRecyclerView.adapter = ConcatAdapter(header, adapter)
-        searchViewModel.result.observeFlow(viewLifecycleOwner) {
-            if (it != null)
-                adapter.submitData(it)
+
+        observe(searchViewModel.result){
+            if (it != null) adapter.submitData(it)
         }
     }
 }

@@ -6,31 +6,30 @@ import android.view.View
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.media3.session.MediaController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.checkbox.MaterialCheckBox.OnCheckedStateChangedListener
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
-import com.google.android.material.checkbox.MaterialCheckBox.STATE_UNCHECKED
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.mediaItemBuilder
 import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.ui.utils.collect
-import dev.brahmkshatriya.echo.ui.utils.collectAndRemove
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
+import dev.brahmkshatriya.echo.ui.utils.emit
 import dev.brahmkshatriya.echo.ui.utils.loadInto
+import dev.brahmkshatriya.echo.ui.utils.observe
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class Player(
     private val activity: MainActivity,
     private val player: MediaController
 ) {
-    private val binding = activity.binding.bottomPlayer
+    private val playerBinding = activity.binding.bottomPlayer
     private val container = activity.binding.bottomPlayerContainer as View
 
     private val playerViewModel: PlayerViewModel by activity.viewModels()
@@ -44,9 +43,9 @@ class Player(
 
     private fun applyViewChanges() {
 
-        updatePaddingWithSystemInsets(binding.expandedContainer, false)
-        binding.expandedContainer.requestApplyInsets()
-        
+        updatePaddingWithSystemInsets(playerBinding.expandedContainer, false)
+        playerBinding.expandedContainer.requestApplyInsets()
+
         val bottomBehavior = BottomSheetBehavior.from(container)
         container.setOnClickListener {
             bottomBehavior.state = STATE_EXPANDED
@@ -59,8 +58,7 @@ class Player(
                 val frame = Rect()
                 activity.window.decorView.getWindowVisibleDisplayFrame(frame)
                 -(height + frame.top)
-            } else
-                140.dpToPx()
+            } else 140.dpToPx()
         val collapsedCoverSize =
             activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
 
@@ -70,8 +68,10 @@ class Player(
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                binding.collapsedContainer.translationY = -collapsedCoverSize * slideOffset
-                binding.expandedContainer.translationY = collapsedCoverSize * (1 - slideOffset)
+                playerBinding.collapsedContainer.translationY =
+                    -collapsedCoverSize * slideOffset
+                playerBinding.expandedContainer.translationY =
+                    collapsedCoverSize * (1 - slideOffset)
 
                 navView.translationY = bottomNavHeight * slideOffset
             }
@@ -84,103 +84,109 @@ class Player(
                 if (it) STATE_COLLAPSED else STATE_EXPANDED
             }
         }
+        activity.observe(activity.fromNotification) {
+            bottomBehavior.state = STATE_EXPANDED
+        }
     }
 
     private fun connectUiToViewModel() {
-        val playPauseListener = OnCheckedStateChangedListener { _, state ->
-            playerViewModel.playPause.value = when (state) {
-                STATE_CHECKED -> true
-                STATE_UNCHECKED -> false
-                else -> null
+        fun <T> MutableSharedFlow<T>.emit(block: () -> T) {
+            activity.emit(this, block)
+        }
+
+        val playPauseListener = object : OnCheckedStateChangedListener {
+            var enabled = true
+            override fun onCheckedStateChangedListener(checkBox: MaterialCheckBox, state: Int) {
+                if (enabled) playerViewModel.playPause.emit {
+                    when (state) {
+                        STATE_CHECKED -> true
+                        else -> false
+                    }
+                }
             }
         }
 
-        binding.trackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
-        binding.collapsedTrackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
+        playerBinding.trackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
+        playerBinding.collapsedTrackPlayPause.addOnCheckedStateChangedListener(playPauseListener)
 
-        binding.trackNext.setOnClickListener {
-            playerViewModel.seekToNext.value = Unit
+        playerBinding.trackNext.setOnClickListener {
+            playerViewModel.seekToNext.emit {}
         }
 
-        binding.trackPrevious.setOnClickListener {
-            playerViewModel.seekToPrevious.value = Unit
+        playerBinding.trackPrevious.setOnClickListener {
+            playerViewModel.seekToPrevious.emit {}
         }
 
 
-        binding.expandedSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        playerBinding.expandedSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                binding.trackCurrentTime.text = p1.toLong().toTimeString()
+                playerBinding.trackCurrentTime.text = p1.toLong().toTimeString()
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {}
             override fun onStopTrackingTouch(p0: SeekBar?) {
                 p0?.progress?.let {
-                    playerViewModel.seekTo.value = it.toLong()
+                    playerViewModel.seekTo.emit { it.toLong() }
                 }
             }
         })
 
 
-        activity.lifecycleScope.launch {
-            collect(uiViewModel.track) { track ->
-                track ?: return@collect
+        activity.apply {
+            observe(uiViewModel.track) { track ->
+                track ?: return@observe
 
-                binding.collapsedTrackTitle.text = track.title
-                binding.expandedTrackTitle.text = track.title
+                playerBinding.collapsedTrackTitle.text = track.title
+                playerBinding.expandedTrackTitle.text = track.title
 
                 track.artists.joinToString(" ") { it.name }.run {
-                    binding.collapsedTrackAuthor.text = this
-                    binding.expandedTrackAuthor.text = this
+                    playerBinding.collapsedTrackAuthor.text = this
+                    playerBinding.expandedTrackAuthor.text = this
                 }
                 track.cover?.run {
-                    loadInto(binding.collapsedTrackCover)
-                    loadInto(binding.expandedTrackCover)
+                    loadInto(playerBinding.collapsedTrackCover)
+                    loadInto(playerBinding.expandedTrackCover)
                 }
             }
 
-            collect(uiViewModel.nextEnabled) {
-                binding.trackNext.isEnabled = it
+            observe(uiViewModel.nextEnabled) {
+                playerBinding.trackNext.isEnabled = it
             }
-            collect(uiViewModel.previousEnabled) {
-                binding.trackPrevious.isEnabled = it
-            }
-
-            collect(uiViewModel.isPlaying) {
-                binding.trackPlayPause
-                    .removeOnCheckedStateChangedListener(playPauseListener)
-                binding.collapsedTrackPlayPause
-                    .removeOnCheckedStateChangedListener(playPauseListener)
-
-                binding.trackPlayPause.isChecked = it
-                binding.collapsedTrackPlayPause.isChecked = it
-
-                binding.trackPlayPause
-                    .addOnCheckedStateChangedListener(playPauseListener)
-                binding.collapsedTrackPlayPause
-                    .addOnCheckedStateChangedListener(playPauseListener)
+            observe(uiViewModel.previousEnabled) {
+                playerBinding.trackPrevious.isEnabled = it
             }
 
-            collect(uiViewModel.buffering) {
-                binding.collapsedSeekBar.isIndeterminate = it
-                binding.expandedSeekBar.isEnabled = !it
-                binding.trackPlayPause.isEnabled = !it
-                binding.collapsedTrackPlayPause.isEnabled = !it
+            observe(uiViewModel.isPlaying) {
+                playPauseListener.enabled = false
+                playerBinding.trackPlayPause.isChecked = it
+                playerBinding.collapsedTrackPlayPause.isChecked = it
+                playPauseListener.enabled = true
             }
-            collect(uiViewModel.progress) { (current, buffered) ->
-                if (!binding.expandedSeekBar.isPressed) {
-                    binding.collapsedSeekBar.progress = current
-                    binding.collapsedSeekBar.secondaryProgress = buffered
 
-                    binding.expandedSeekBar.secondaryProgress = buffered
-                    binding.expandedSeekBar.progress = current
+            observe(uiViewModel.buffering) {
+                playerBinding.collapsedSeekBar.isIndeterminate = it
+                playerBinding.expandedSeekBar.isEnabled = !it
+                playerBinding.trackPlayPause.isEnabled = !it
+                playerBinding.collapsedTrackPlayPause.isEnabled = !it
+            }
+
+            observe(uiViewModel.totalDuration) {
+                playerBinding.collapsedSeekBar.max = it
+                playerBinding.expandedSeekBar.max = it
+
+                playerBinding.trackTotalTime.text = it.toLong().toTimeString()
+            }
+
+            observe(uiViewModel.progress) { (current, buffered) ->
+                if (!playerBinding.expandedSeekBar.isPressed) {
+                    playerBinding.collapsedSeekBar.progress = current
+                    playerBinding.collapsedSeekBar.secondaryProgress = buffered
+
+                    playerBinding.expandedSeekBar.secondaryProgress = buffered
+                    playerBinding.expandedSeekBar.progress = current
                 }
             }
-            collect(uiViewModel.totalDuration) {
-                binding.collapsedSeekBar.max = it
-                binding.expandedSeekBar.max = it
 
-                binding.trackTotalTime.text = it.toLong().toTimeString()
-            }
         }
     }
 
@@ -189,30 +195,28 @@ class Player(
         val listener = uiViewModel.getListener(player)
         player.addListener(listener)
 
-        activity.lifecycleScope.launch {
-            collectAndRemove(playerViewModel.playPause) {
+        activity.apply {
+            observe(playerViewModel.playPause) {
                 if (it) player.play() else player.pause()
             }
-            collectAndRemove(playerViewModel.seekToPrevious) {
+            observe(playerViewModel.seekToPrevious) {
                 player.seekToPrevious()
             }
-            collectAndRemove(playerViewModel.seekToNext) {
+            observe(playerViewModel.seekToNext) {
                 player.seekToNext()
             }
-            collectAndRemove(playerViewModel.audioIndexFlow) {
+            observe(playerViewModel.audioIndexFlow) {
                 player.seekToDefaultPosition(it)
             }
-            collectAndRemove(playerViewModel.seekTo){
+            observe(playerViewModel.seekTo) {
                 player.seekTo(it)
             }
-            collectAndRemove(playerViewModel.audioQueueFlow) {
+            observe(playerViewModel.audioQueueFlow) {
                 val item = mediaItemBuilder(it.track, it.audio)
-                listener.map[item.mediaMetadata] = it.track
                 player.addMediaItem(item)
                 player.prepare()
                 player.playWhenReady = true
             }
         }
-
     }
 }

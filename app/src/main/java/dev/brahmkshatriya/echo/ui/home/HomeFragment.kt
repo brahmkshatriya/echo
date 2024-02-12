@@ -20,7 +20,7 @@ import dev.brahmkshatriya.echo.ui.player.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
-import dev.brahmkshatriya.echo.ui.utils.observeFlow
+import dev.brahmkshatriya.echo.ui.utils.observe
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 
 @AndroidEntryPoint
@@ -67,10 +67,8 @@ class HomeFragment : Fragment() {
             binding.swipeRefresh.isRefreshing = it.refresh is LoadState.Loading
         }
 
-        homeViewModel.feed.observeFlow(viewLifecycleOwner) {
-            if (it == null) return@observeFlow
-            mediaItemsContainerAdapter.submitData(it)
+        observe(homeViewModel.feed) {
+            if (it != null) mediaItemsContainerAdapter.submitData(it)
         }
-
     }
 }
