@@ -81,10 +81,14 @@ class PlayerListener(
         }
     }
 
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        updateNavigation()
+    }
+
     private fun updateNavigation() {
         val index = player.currentMediaItemIndex
-        val enablePrevious = index >= 0
-        val enableNext = index < player.mediaItemCount - 1
+        val enablePrevious =  index >= 0
+        val enableNext = player.hasNextMediaItem()
         viewModel.nextEnabled.value = enableNext
         viewModel.previousEnabled.value = enablePrevious
     }

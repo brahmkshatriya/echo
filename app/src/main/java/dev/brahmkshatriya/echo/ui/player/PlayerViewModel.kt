@@ -23,10 +23,10 @@ class PlayerViewModel @Inject constructor(
     )
 
     val playPause: MutableSharedFlow<Boolean> = MutableSharedFlow()
-
     val seekTo: MutableSharedFlow<Long> = MutableSharedFlow()
     val seekToPrevious: MutableSharedFlow<Unit> = MutableSharedFlow()
     val seekToNext: MutableSharedFlow<Unit> = MutableSharedFlow()
+    val repeat: MutableSharedFlow<Int> = MutableSharedFlow()
 
     val audioIndexFlow = MutableSharedFlow<Int>()
     val audioQueueFlow = MutableSharedFlow<TrackWithStream>()

@@ -15,7 +15,7 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
-import dev.brahmkshatriya.echo.ui.player.Player
+import dev.brahmkshatriya.echo.ui.player.initPlayer
 import dev.brahmkshatriya.echo.ui.utils.checkPermissions
 import dev.brahmkshatriya.echo.ui.utils.emit
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
         val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-        val listener = Runnable { Player(this, controllerFuture.get()) }
+        val listener = Runnable { initPlayer(this, controllerFuture.get()) }
         controllerFuture.addListener(listener, MoreExecutors.directExecutor())
     }
 
