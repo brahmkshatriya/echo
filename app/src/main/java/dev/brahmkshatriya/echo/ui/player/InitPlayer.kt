@@ -17,6 +17,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.checkbox.MaterialCheckBox.OnCheckedStateChangedListener
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
@@ -30,6 +31,7 @@ import dev.brahmkshatriya.echo.ui.utils.loadInto
 import dev.brahmkshatriya.echo.ui.utils.observe
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlin.math.max
 
 fun initPlayer(
     activity: MainActivity,
@@ -65,30 +67,34 @@ fun initPlayer(
 
     bottomBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
-            PlayerBackButtonHelper.playerCollapsed.value = (newState == STATE_COLLAPSED)
+            PlayerBackButtonHelper.playerCollapsed.value = newState
+            if (newState == STATE_HIDDEN)
+                playerViewModel.clearQueue()
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            val offset = max(0f, slideOffset)
             playerBinding.collapsedContainer.translationY =
-                -collapsedCoverSize * slideOffset
+                -collapsedCoverSize * offset
             playerBinding.expandedContainer.translationY =
-                collapsedCoverSize * (1 - slideOffset)
+                collapsedCoverSize * (1 - offset)
 
-            navView.translationY = bottomNavHeight * slideOffset
+            navView.translationY = bottomNavHeight * offset
         }
     })
 
     PlayerBackButtonHelper.bottomSheetBehavior = bottomBehavior
 
     container.post {
-        bottomBehavior.state = PlayerBackButtonHelper.playerCollapsed.value.let {
-            if (it) STATE_COLLAPSED else STATE_EXPANDED
-        }
+        bottomBehavior.state = PlayerBackButtonHelper.playerCollapsed.value
     }
     activity.observe(activity.fromNotification) {
         bottomBehavior.state = STATE_EXPANDED
     }
 
+    playerBinding.playerClose.setOnClickListener {
+        bottomBehavior.state = STATE_HIDDEN
+    }
 
     //Connect the UI to the ViewModel
 
@@ -147,7 +153,7 @@ fun initPlayer(
 
     val repeatMode = player.repeatMode
     playerBinding.trackRepeat.icon = drawables[repeatModes.indexOf(repeatMode)]
-    playerBinding.trackRepeat.alpha = if(repeatMode == REPEAT_MODE_OFF) 0.4f else 1f
+    playerBinding.trackRepeat.alpha = if (repeatMode == REPEAT_MODE_OFF) 0.4f else 1f
     (playerBinding.trackRepeat.icon as Animatable).start()
 
     playerBinding.trackRepeat.setOnClickListener {
@@ -247,6 +253,8 @@ fun initPlayer(
         }
         observe(playerViewModel.audioIndexFlow) {
             player.seekToDefaultPosition(it)
+            if (bottomBehavior.state == STATE_HIDDEN)
+                bottomBehavior.state = STATE_COLLAPSED
         }
         observe(playerViewModel.seekTo) {
             player.seekTo(it)
@@ -259,6 +267,11 @@ fun initPlayer(
             player.addMediaItem(item)
             player.prepare()
             player.playWhenReady = true
+        }
+        observe(playerViewModel.clearQueueFlow) {
+            player.pause()
+            player.clearMediaItems()
+            player.stop()
         }
     }
 }

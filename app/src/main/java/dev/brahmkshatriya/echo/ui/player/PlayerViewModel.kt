@@ -30,6 +30,7 @@ class PlayerViewModel @Inject constructor(
 
     val audioIndexFlow = MutableSharedFlow<Int>()
     val audioQueueFlow = MutableSharedFlow<TrackWithStream>()
+    val clearQueueFlow = MutableSharedFlow<Unit>()
 
     private suspend fun loadStreamable(track: Track) =
         TrackWithStream(track, trackClient.getStreamable(track))
@@ -51,6 +52,13 @@ class PlayerViewModel @Inject constructor(
     fun addToQueue(track: Track) {
         viewModelScope.launch(Dispatchers.IO) {
             loadAndAddToQueue(track)
+        }
+    }
+
+    fun clearQueue() {
+        queue.clear()
+        viewModelScope.launch {
+            clearQueueFlow.emit(Unit)
         }
     }
 

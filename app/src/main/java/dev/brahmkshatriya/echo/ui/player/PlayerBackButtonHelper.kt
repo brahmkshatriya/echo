@@ -6,6 +6,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.ui.utils.observe
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 object PlayerBackButtonHelper {
 
     var bottomSheetBehavior: BottomSheetBehavior<View>? = null
-    val playerCollapsed = MutableStateFlow(true)
+    val playerCollapsed = MutableStateFlow(STATE_HIDDEN)
     private fun backPressedCallback(
         viewLifecycleOwner: LifecycleOwner,
         callback: ((Boolean) -> Unit)?
@@ -36,8 +38,9 @@ object PlayerBackButtonHelper {
             }
         }
         viewLifecycleOwner.observe(playerCollapsed) {
-            backPress.isEnabled = !it
-            callback?.invoke(it)
+            val expanded = it == STATE_EXPANDED
+            backPress.isEnabled = expanded
+            callback?.invoke(expanded)
         }
         return backPress
     }
@@ -48,9 +51,7 @@ object PlayerBackButtonHelper {
                 ?: throw IllegalArgumentException("Fragment must be attached to MainActivity")
             val backPressedCallback =
                 backPressedCallback(viewLifecycleOwner, callback)
-            mainActivity.onBackPressedDispatcher.addCallback(
-                viewLifecycleOwner,
-                backPressedCallback
-            )
+            mainActivity.onBackPressedDispatcher
+                .addCallback(viewLifecycleOwner, backPressedCallback)
         }
 }

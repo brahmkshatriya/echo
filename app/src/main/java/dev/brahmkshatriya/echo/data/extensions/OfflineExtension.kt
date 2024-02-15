@@ -57,19 +57,19 @@ class OfflineExtension(val context: Context) : SearchClient, TrackClient, HomeFe
             return try {
                 val items = if (page == 0) {
                     val albums = LocalAlbum.getAll(context, page, pageSize)
-                        .map { it.toMediaItem() }
-                    val tracks = LocalTrack.getAll(context, page, pageSize)
-                        .map { it.toMediaItem() }
+                        .map { it.toMediaItem() }.ifEmpty { null }
+                    val tracks = LocalTrack.getShuffled(context, page, pageSize)
+                        .map { it.toMediaItem() }.ifEmpty { null }
                     val artists = LocalArtist.getAll(context, page, pageSize)
-                        .map { it.toMediaItem() }
+                        .map { it.toMediaItem() }.ifEmpty { null }
                     val result = listOfNotNull(
-                        tracks.toMediaItemsContainer("Tracks"),
-                        albums.toMediaItemsContainer("Albums"),
-                        artists.toMediaItemsContainer("Artists")
+                        tracks?.toMediaItemsContainer("Tracks"),
+                        albums?.toMediaItemsContainer("Albums"),
+                        artists?.toMediaItemsContainer("Artists")
                     )
                     result
                 } else {
-                    LocalTrack.getShuffled(context, page, pageSize)
+                    LocalTrack.getAll(context, page, pageSize)
                         .map { MediaItemsContainer.TrackItem(it) }
                 }
                 val nextKey =

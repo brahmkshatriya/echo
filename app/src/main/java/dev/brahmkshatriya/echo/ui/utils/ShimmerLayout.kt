@@ -18,4 +18,9 @@ class ShimmerLayoutSelf @JvmOverloads constructor(
             repeatCount = Animation.INFINITE
         }
     }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        startAnimation(animation)
+    }
 }

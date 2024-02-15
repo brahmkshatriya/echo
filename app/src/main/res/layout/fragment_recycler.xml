@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
+        android:paddingBottom="80dp"
         tools:itemCount="1"
         tools:listitem="@layout/item_main_header" />
 

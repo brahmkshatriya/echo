@@ -151,6 +151,22 @@ class MediaItemsContainerAdapter(
         override fun areContentsTheSame(
             oldItem: MediaItemsContainer,
             newItem: MediaItemsContainer
-        ) = areItemsTheSame(oldItem, newItem)
+        ): Boolean {
+            when (oldItem) {
+                is MediaItemsContainer.Category -> {
+                    val newCategory = newItem as? MediaItemsContainer.Category
+                    newCategory ?: return true
+                    oldItem.list.forEach {
+                        if (!newCategory.list.contains(it)) return false
+                    }
+                }
+
+                is MediaItemsContainer.TrackItem -> {
+                    val newTrack = newItem as? MediaItemsContainer.TrackItem
+                    return oldItem.track == newTrack?.track
+                }
+            }
+            return true
+        }
     }
 }

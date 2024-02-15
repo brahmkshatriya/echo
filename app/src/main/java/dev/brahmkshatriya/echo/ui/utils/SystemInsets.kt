@@ -7,10 +7,15 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 
-fun updatePaddingWithSystemInsets(view: View, bottom: Boolean = true) {
+fun updatePaddingWithSystemInsets(view: View, bottom: Boolean = false) {
     ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
         val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-        v.updatePadding(insets.left, insets.top, insets.right, if (bottom) insets.bottom else 0)
+        v.updatePadding(
+            insets.left,
+            insets.top,
+            insets.right,
+            if (bottom) insets.bottom else v.paddingBottom
+        )
         WindowInsetsCompat.CONSUMED
     }
 }

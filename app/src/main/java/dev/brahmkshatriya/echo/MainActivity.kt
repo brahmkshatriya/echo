@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.player.initPlayer
 import dev.brahmkshatriya.echo.ui.utils.checkPermissions
 import dev.brahmkshatriya.echo.ui.utils.emit
+import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 @AndroidEntryPoint
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         val navView = binding.navView as NavigationBarView
         val navHostFragment = binding.navHostFragment.getFragment<NavHostFragment>()
         navView.setupWithNavController(navHostFragment.navController)
+        updateBottomMarginWithSystemInsets(binding.navHostFragment)
 
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
         val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()

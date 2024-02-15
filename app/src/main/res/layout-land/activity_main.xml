@@ -12,7 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="80dp"
-        android:layout_marginBottom="72dp"
         app:defaultNavHost="true"
         app:navGraph="@navigation/mobile_navigation" />
 
@@ -23,6 +22,7 @@
         android:layout_height="match_parent"
         android:background="?attr/colorSurfaceContainerLow"
         app:behavior_peekHeight="72dp"
+        app:behavior_hideable="true"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <include
