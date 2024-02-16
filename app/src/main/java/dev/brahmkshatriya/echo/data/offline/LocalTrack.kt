@@ -37,13 +37,23 @@ interface LocalTrack {
             return context.queryTracks(whereCondition, selectionArgs, page, pageSize).shuffled()
         }
 
-        fun getByArtist(context: Context, artist: Artist.Small, page: Int, pageSize: Int): List<Track> {
+        fun getByArtist(
+            context: Context,
+            artist: Artist.Small,
+            page: Int,
+            pageSize: Int
+        ): List<Track> {
             val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
             val selectionArgs = arrayOf(artist.uri.lastPathSegment!!)
             return context.queryTracks(whereCondition, selectionArgs, page, pageSize)
         }
 
-        fun getByAlbum(context: Context, album: Album.Small, page: Int, pageSize: Int): List<Track> {
+        fun getByAlbum(
+            context: Context,
+            album: Album.Small,
+            page: Int,
+            pageSize: Int
+        ): List<Track> {
             val whereCondition = "${MediaStore.Audio.Media.ALBUM_ID} = ?"
             val selectionArgs = arrayOf(album.uri.lastPathSegment!!)
             return context.queryTracks(whereCondition, selectionArgs, page, pageSize)
@@ -115,6 +125,13 @@ interface LocalTrack {
                 }
             }
             return tracks
+        }
+
+        fun get(context: Context, uri: String): Track? {
+            val id = uri.substringAfterLast('/')
+            val whereCondition = "${MediaStore.Audio.Media._ID} = ?"
+            val selectionArgs = arrayOf(id)
+            return context.queryTracks(whereCondition, selectionArgs, 0, 1).firstOrNull()
         }
     }
 

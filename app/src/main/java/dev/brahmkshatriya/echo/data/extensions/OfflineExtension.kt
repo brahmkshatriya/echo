@@ -88,6 +88,10 @@ class OfflineExtension(val context: Context) : SearchClient, TrackClient, HomeFe
         }
     }
 
+    override suspend fun getTrack(uri: String): Track {
+        return LocalTrack.get(context, uri) ?: throw IOException("Track not found")
+    }
+
     override suspend fun getStreamable(track: Track): StreamableAudio {
         return LocalStream.getFromTrack(context, track)?.toAudio()
             ?: throw IOException("Track not found")

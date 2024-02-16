@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
+import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.data.models.Track
@@ -168,5 +169,12 @@ class MediaItemsContainerAdapter(
             }
             return true
         }
+    }
+
+    class ListCallback : ListUpdateCallback {
+        override fun onChanged(position: Int, count: Int, payload: Any?) {}
+        override fun onMoved(fromPosition: Int, toPosition: Int) {}
+        override fun onInserted(position: Int, count: Int) {}
+        override fun onRemoved(position: Int, count: Int) {}
     }
 }

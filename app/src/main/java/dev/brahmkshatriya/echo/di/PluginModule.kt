@@ -22,6 +22,10 @@ class PluginModule {
 
     @Provides
     @Singleton
+    fun provideExtension(app: Application) : OfflineExtension = getOfflineExtension(app)
+
+    @Provides
+    @Singleton
     fun provideSearchClient(app: Application) : SearchClient = getOfflineExtension(app)
 
     @Provides
