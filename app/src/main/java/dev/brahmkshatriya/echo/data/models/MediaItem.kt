@@ -15,4 +15,20 @@ sealed class MediaItem {
         fun List<MediaItem>.toMediaItemsContainer(title: String, subtitle: String? = null)
             = MediaItemsContainer.Category(title, this, subtitle)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if(other is MediaItem) {
+            return when(this) {
+                is TrackItem -> this.track.uri == (other as? TrackItem)?.track?.uri
+                is AlbumItem -> this.album.uri == (other as? AlbumItem)?.album?.uri
+                is ArtistItem -> this.artist.uri == (other as? ArtistItem)?.artist?.uri
+                is PlaylistItem -> this.playlist.uri == (other as? PlaylistItem)?.playlist?.uri
+            }
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
 }

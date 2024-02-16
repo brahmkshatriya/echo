@@ -156,8 +156,8 @@ class MediaItemsContainerAdapter(
                 is MediaItemsContainer.Category -> {
                     val newCategory = newItem as? MediaItemsContainer.Category
                     newCategory ?: return true
-                    oldItem.list.forEach {
-                        if (!newCategory.list.contains(it)) return false
+                    oldItem.list.forEachIndexed { index, mediaItem ->
+                        if (newCategory.list.getOrNull(index) != mediaItem) return false
                     }
                 }
 
