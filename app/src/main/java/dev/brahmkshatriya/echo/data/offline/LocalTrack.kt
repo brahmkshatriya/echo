@@ -127,8 +127,8 @@ interface LocalTrack {
             return tracks
         }
 
-        fun get(context: Context, uri: String): Track? {
-            val id = uri.substringAfterLast('/')
+        fun get(context: Context, uri: Uri): Track? {
+            val id = uri.lastPathSegment ?: return null
             val whereCondition = "${MediaStore.Audio.Media._ID} = ?"
             val selectionArgs = arrayOf(id)
             return context.queryTracks(whereCondition, selectionArgs, 0, 1).firstOrNull()

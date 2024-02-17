@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.data.extensions
 
 import android.content.Context
+import android.net.Uri
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -9,8 +10,8 @@ import androidx.paging.PagingState
 import dev.brahmkshatriya.echo.data.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.data.clients.SearchClient
 import dev.brahmkshatriya.echo.data.clients.TrackClient
-import dev.brahmkshatriya.echo.data.models.MediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.data.models.MediaItem.Companion.toMediaItemsContainer
+import dev.brahmkshatriya.echo.data.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.data.models.EchoMediaItem.Companion.toMediaItemsContainer
 import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.data.models.QuickSearchItem
 import dev.brahmkshatriya.echo.data.models.StreamableAudio
@@ -28,11 +29,12 @@ class OfflineExtension(val context: Context) : SearchClient, TrackClient, HomeFe
     override suspend fun quickSearch(query: String): List<QuickSearchItem> = listOf()
 
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
-        val albums = LocalAlbum.search(context, query, 1, 50)
+        val trimmed = query.trim()
+        val albums = LocalAlbum.search(context, trimmed, 1, 50)
             .map { it.toMediaItem() }.ifEmpty { null }
-        val tracks = LocalTrack.search(context, query, 1, 50)
+        val tracks = LocalTrack.search(context, trimmed, 1, 50)
             .map { it.toMediaItem() }.ifEmpty { null }
-        val artists = LocalArtist.search(context, query, 1, 50)
+        val artists = LocalArtist.search(context, trimmed, 1, 50)
             .map { it.toMediaItem() }.ifEmpty { null }
 
         val result = listOfNotNull(
@@ -88,8 +90,8 @@ class OfflineExtension(val context: Context) : SearchClient, TrackClient, HomeFe
         }
     }
 
-    override suspend fun getTrack(uri: String): Track {
-        return LocalTrack.get(context, uri) ?: throw IOException("Track not found")
+    override suspend fun getTrack(uri: Uri): Track? {
+        return LocalTrack.get(context, uri)
     }
 
     override suspend fun getStreamable(track: Track): StreamableAudio {

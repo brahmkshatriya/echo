@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.player
 
 import android.view.View
 import androidx.activity.BackEventCompat

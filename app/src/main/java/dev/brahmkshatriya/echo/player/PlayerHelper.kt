@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.player
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.data.models.ImageHolder
 import dev.brahmkshatriya.echo.data.models.StreamableAudio
 import dev.brahmkshatriya.echo.data.models.Track
+import dev.brahmkshatriya.echo.player.PlayerListener.Companion.tracks
 import java.nio.ByteBuffer
 
 
@@ -34,6 +35,7 @@ interface PlayerHelper {
             item.setMediaMetadata(metadata)
             item.setMediaId(track.uri.toString())
             item.setTag(track)
+            tracks[track.uri.toString()] = track
             return item.build()
         }
 
@@ -42,6 +44,8 @@ interface PlayerHelper {
             .setTitle(title)
             .setArtist(artists.firstOrNull()?.name)
             .setArtwork(cover)
+            .setIsPlayable(true)
+            .setIsBrowsable(false)
             .build()
 
         @UnstableApi

@@ -6,16 +6,17 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.media3.session.MediaController
+import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationBarView
-import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
-import dev.brahmkshatriya.echo.ui.player.initPlayer
+import dev.brahmkshatriya.echo.player.PlaybackService
+import dev.brahmkshatriya.echo.player.initPlayer
 import dev.brahmkshatriya.echo.ui.utils.checkPermissions
 import dev.brahmkshatriya.echo.ui.utils.emit
 import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
@@ -46,9 +47,9 @@ class MainActivity : AppCompatActivity() {
         updateBottomMarginWithSystemInsets(binding.navHostFragment)
 
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        val controllerFuture = MediaBrowser.Builder(this, sessionToken).buildAsync()
         val listener = Runnable { initPlayer(this, controllerFuture.get()) }
-        controllerFuture.addListener(listener, MoreExecutors.directExecutor())
+        controllerFuture.addListener(listener, ContextCompat.getMainExecutor(this))
     }
 
     override fun onNewIntent(intent: Intent?) {

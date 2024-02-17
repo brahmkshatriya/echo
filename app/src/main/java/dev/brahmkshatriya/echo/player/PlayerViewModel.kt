@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

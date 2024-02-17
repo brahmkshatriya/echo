@@ -16,8 +16,8 @@ import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
-import dev.brahmkshatriya.echo.ui.player.PlayerBackButtonHelper
-import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.player.PlayerBackButtonHelper
+import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.observe

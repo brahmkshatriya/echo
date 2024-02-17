@@ -5,8 +5,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -24,23 +26,33 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.MUSIC_PLAYER" />
+
+                <category android:name="android.intent.category.APP_MUSIC" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <service
-            android:name=".PlaybackService"
+            android:name=".player.PlaybackService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"
             android:permission="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="androidx.media3.session.MediaLibraryService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 

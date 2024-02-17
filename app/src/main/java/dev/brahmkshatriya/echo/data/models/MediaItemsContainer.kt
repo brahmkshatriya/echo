@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.data.models
 sealed class MediaItemsContainer {
     data class Category(
         val title: String,
-        val list: List<MediaItem>,
+        val list: List<EchoMediaItem>,
         val subtitle: String? = null
     ) : MediaItemsContainer()
 

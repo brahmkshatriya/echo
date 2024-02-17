@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.player
 
 import android.annotation.SuppressLint
 import android.os.Handler

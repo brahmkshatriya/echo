@@ -16,7 +16,7 @@ import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
-import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 
 class MediaItemsContainerAdapter(

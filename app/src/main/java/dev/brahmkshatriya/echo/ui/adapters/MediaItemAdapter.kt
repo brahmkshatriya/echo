@@ -7,7 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.data.models.MediaItem
+import dev.brahmkshatriya.echo.data.models.EchoMediaItem
 import dev.brahmkshatriya.echo.data.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemMediaBinding
 import dev.brahmkshatriya.echo.ui.utils.loadInto
@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.ui.utils.loadInto
 class MediaItemAdapter(
     private val listener: ClickListener<Track>
 ) :
-    PagingDataAdapter<MediaItem, MediaItemAdapter.MediaItemHolder>(
+    PagingDataAdapter<EchoMediaItem, MediaItemAdapter.MediaItemHolder>(
         MediaItemComparator
     ) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = MediaItemHolder(
@@ -27,7 +27,7 @@ class MediaItemAdapter(
         val item = getItem(position) ?: return
         val binding = holder.binding
         when (item) {
-            is MediaItem.TrackItem -> {
+            is EchoMediaItem.TrackItem -> {
                 binding.title.text = item.track.title
                 item.track.cover?.loadInto(binding.imageView)
                 binding.root.setOnClickListener {
@@ -39,43 +39,43 @@ class MediaItemAdapter(
                 }
             }
 
-            is MediaItem.AlbumItem -> {
+            is EchoMediaItem.AlbumItem -> {
                 binding.title.text = item.album.title
                 item.album.cover?.loadInto(binding.imageView)
             }
 
-            is MediaItem.ArtistItem -> {
+            is EchoMediaItem.ArtistItem -> {
                 binding.title.text = item.artist.name
                 item.artist.cover?.loadInto(binding.imageView)
             }
 
-            is MediaItem.PlaylistItem -> {
+            is EchoMediaItem.PlaylistItem -> {
                 binding.title.text = item.playlist.title
                 item.playlist.cover?.loadInto(binding.imageView)
             }
         }
     }
 
-    fun submitData(lifecycle: Lifecycle, list: List<MediaItem>) {
+    fun submitData(lifecycle: Lifecycle, list: List<EchoMediaItem>) {
         submitData(lifecycle, PagingData.from(list))
     }
 
     class MediaItemHolder(val binding: ItemMediaBinding) : RecyclerView.ViewHolder(binding.root)
 
-    companion object MediaItemComparator : DiffUtil.ItemCallback<MediaItem>() {
-        override fun areItemsTheSame(oldItem: MediaItem, newItem: MediaItem): Boolean {
-            if (oldItem is MediaItem.TrackItem && newItem is MediaItem.TrackItem)
+    companion object MediaItemComparator : DiffUtil.ItemCallback<EchoMediaItem>() {
+        override fun areItemsTheSame(oldItem: EchoMediaItem, newItem: EchoMediaItem): Boolean {
+            if (oldItem is EchoMediaItem.TrackItem && newItem is EchoMediaItem.TrackItem)
                 return oldItem.track.uri == newItem.track.uri
-            if (oldItem is MediaItem.AlbumItem && newItem is MediaItem.AlbumItem)
+            if (oldItem is EchoMediaItem.AlbumItem && newItem is EchoMediaItem.AlbumItem)
                 return oldItem.album.uri == newItem.album.uri
-            if (oldItem is MediaItem.ArtistItem && newItem is MediaItem.ArtistItem)
+            if (oldItem is EchoMediaItem.ArtistItem && newItem is EchoMediaItem.ArtistItem)
                 return oldItem.artist.uri == newItem.artist.uri
-            if (oldItem is MediaItem.PlaylistItem && newItem is MediaItem.PlaylistItem)
+            if (oldItem is EchoMediaItem.PlaylistItem && newItem is EchoMediaItem.PlaylistItem)
                 return oldItem.playlist.uri == newItem.playlist.uri
             return false
         }
 
-        override fun areContentsTheSame(oldItem: MediaItem, newItem: MediaItem): Boolean {
+        override fun areContentsTheSame(oldItem: EchoMediaItem, newItem: EchoMediaItem): Boolean {
             return oldItem == newItem
         }
     }

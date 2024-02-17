@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.player
 
 import android.animation.ObjectAnimator
 import android.content.res.Resources
@@ -12,7 +12,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
-import androidx.media3.session.MediaController
+import androidx.media3.session.MediaBrowser
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
@@ -23,8 +23,8 @@ import com.google.android.material.checkbox.MaterialCheckBox.OnCheckedStateChang
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.mediaItemBuilder
-import dev.brahmkshatriya.echo.ui.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.mediaItemBuilder
+import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.emit
 import dev.brahmkshatriya.echo.ui.utils.loadInto
@@ -35,7 +35,7 @@ import kotlin.math.max
 
 fun initPlayer(
     activity: MainActivity,
-    player: MediaController
+    player: MediaBrowser
 ) {
     val playerBinding = activity.binding.bottomPlayer
     val container = activity.binding.bottomPlayerContainer as View
@@ -68,8 +68,10 @@ fun initPlayer(
     bottomBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             PlayerBackButtonHelper.playerCollapsed.value = newState
-            if (newState == STATE_HIDDEN)
-                playerViewModel.clearQueue()
+            when (newState) {
+                STATE_HIDDEN -> playerViewModel.clearQueue()
+                else -> bottomBehavior.isHideable = newState != STATE_EXPANDED
+            }
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
