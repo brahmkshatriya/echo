@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.data.models.Track
+import dev.brahmkshatriya.echo.common.data.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.data.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
@@ -92,11 +92,12 @@ class MediaItemsContainerAdapter(
 
                 track.cover?.loadInto(binding.imageView)
 
-                if (track.album == null) {
+                val album = track.album
+                if (album == null) {
                     binding.album.visibility = View.GONE
                 } else {
                     binding.album.visibility = View.VISIBLE
-                    binding.album.text = track.album.title
+                    binding.album.text = album.title
                 }
 
                 if (track.artists.isEmpty()) {
@@ -106,11 +107,12 @@ class MediaItemsContainerAdapter(
                     binding.artist.text = track.artists.joinToString(" ") { it.name }
                 }
 
-                if (track.duration == null) {
+                val duration = track.duration
+                if (duration == null) {
                     binding.duration.visibility = View.GONE
                 } else {
                     binding.duration.visibility = View.VISIBLE
-                    binding.duration.text = track.duration.toTimeString()
+                    binding.duration.text = duration.toTimeString()
                 }
             }
         }

@@ -14,7 +14,7 @@ import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.data.extensions.OfflineExtension
+import dev.brahmkshatriya.echo.common.data.clients.ExtensionClient
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -24,7 +24,7 @@ class PlaybackService : MediaLibraryService() {
     lateinit var app: Application
 
     @Inject
-    lateinit var extension: OfflineExtension
+    lateinit var extension: ExtensionClient
 
     private var mediaLibrarySession: MediaLibrarySession? = null
 

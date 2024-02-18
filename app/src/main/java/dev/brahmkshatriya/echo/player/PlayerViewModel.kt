@@ -3,9 +3,9 @@ package dev.brahmkshatriya.echo.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.data.clients.TrackClient
-import dev.brahmkshatriya.echo.data.models.StreamableAudio
-import dev.brahmkshatriya.echo.data.models.Track
+import dev.brahmkshatriya.echo.common.data.clients.TrackClient
+import dev.brahmkshatriya.echo.common.data.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.data.models.Track
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch

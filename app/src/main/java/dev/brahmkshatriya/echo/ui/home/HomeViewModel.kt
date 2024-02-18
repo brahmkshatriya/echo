@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.data.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.data.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.data.models.MediaItemsContainer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

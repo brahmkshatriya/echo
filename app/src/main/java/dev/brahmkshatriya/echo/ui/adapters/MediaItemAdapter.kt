@@ -7,8 +7,8 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.data.models.EchoMediaItem
-import dev.brahmkshatriya.echo.data.models.Track
+import dev.brahmkshatriya.echo.common.data.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.data.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemMediaBinding
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 

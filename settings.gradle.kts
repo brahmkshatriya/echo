@@ -16,4 +16,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Echo"
 include(":app")
- 
+include(":plugger")
+include(":LocalExtenzion")
+include(":common")

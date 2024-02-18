@@ -7,10 +7,10 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.paging.AsyncPagingDataDiffer
 import com.google.common.util.concurrent.ListenableFuture
-import dev.brahmkshatriya.echo.data.clients.SearchClient
-import dev.brahmkshatriya.echo.data.clients.TrackClient
-import dev.brahmkshatriya.echo.data.models.EchoMediaItem
-import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.data.clients.SearchClient
+import dev.brahmkshatriya.echo.common.data.clients.TrackClient
+import dev.brahmkshatriya.echo.common.data.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.data.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
