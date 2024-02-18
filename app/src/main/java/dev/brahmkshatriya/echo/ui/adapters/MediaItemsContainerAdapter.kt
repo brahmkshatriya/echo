@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.common.data.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.common.data.models.Track
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString

@@ -14,7 +14,7 @@ import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.data.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import javax.inject.Inject
 
 @AndroidEntryPoint

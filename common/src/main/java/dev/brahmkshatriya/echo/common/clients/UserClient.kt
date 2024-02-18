@@ -1,10 +1,10 @@
-package dev.brahmkshatriya.echo.common.data.clients
+package dev.brahmkshatriya.echo.common.clients
 
 import androidx.paging.PagingData
-import dev.brahmkshatriya.echo.common.data.models.Artist
-import dev.brahmkshatriya.echo.common.data.models.Playlist
-import dev.brahmkshatriya.echo.common.data.models.Track
-import dev.brahmkshatriya.echo.common.data.models.User
+import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.User
 import kotlinx.coroutines.flow.Flow
 
 interface UserClient {

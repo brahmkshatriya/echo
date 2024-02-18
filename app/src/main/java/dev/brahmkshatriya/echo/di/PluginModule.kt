@@ -5,10 +5,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.brahmkshatriya.echo.common.data.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.data.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.common.data.clients.SearchClient
-import dev.brahmkshatriya.echo.common.data.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.data.extensions.LocalExtensionRepo
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import tel.jeelpa.plugger.PluginRepo
@@ -16,6 +17,8 @@ import tel.jeelpa.plugger.RepoComposer
 import tel.jeelpa.plugger.models.PluginConfiguration
 import tel.jeelpa.plugger.pluginloader.AndroidPluginLoader
 import tel.jeelpa.plugger.pluginloader.apk.ApkPluginLoader
+import tel.jeelpa.plugger.pluginloader.file.FilePluginConfig
+import tel.jeelpa.plugger.pluginloader.file.FileSystemPluginLoader
 import javax.inject.Singleton
 
 
@@ -29,17 +32,16 @@ class PluginModule {
         application: Application
     ): PluginRepo<ExtensionClient> {
 
-//        // init the core loader
         val loader = AndroidPluginLoader(application)
-//        val filePluginConfig = FilePluginConfig(application.filesDir.absolutePath)
-        val apkPluginConfig = PluginConfiguration(packagePrefix = "dev.brahmkshatriya.echo")
+        val filePluginConfig = FilePluginConfig(application.filesDir.absolutePath, ".echo")
+        val apkPluginConfig = PluginConfiguration("dev.brahmkshatriya.echo")
 
-        // create 2 loaders and merge them into 1
-        val composer = RepoComposer<ExtensionClient>(
-//            FileSystemPluginLoader(application, filePluginConfig, loader),
+        val composer = RepoComposer(
+            FileSystemPluginLoader(application, filePluginConfig, loader),
             ApkPluginLoader(application, apkPluginConfig, loader),
-//            LocalExtensionRepo()
+            LocalExtensionRepo()
         )
+
         return ContextProviderForRepo(application, composer)
     }
 

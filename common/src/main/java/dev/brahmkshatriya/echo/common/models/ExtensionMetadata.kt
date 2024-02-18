@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.models
+package dev.brahmkshatriya.echo.common.models
 
 data class ExtensionMetadata(
     val name: String,

@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.common.data.offline
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
-import dev.brahmkshatriya.echo.common.data.models.Artist
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.ARTIST_AUTH
 import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.URI
 import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.createCursor

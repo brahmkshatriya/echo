@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.di
 
 import android.content.Context
-import dev.brahmkshatriya.echo.common.data.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import tel.jeelpa.plugger.PluginRepo
@@ -14,5 +14,4 @@ class ContextProviderForRepo(
         pluginRepo.getAllPlugins().map { list ->
             list.onEach { it.context = context }
         }
-
 }

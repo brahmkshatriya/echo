@@ -7,18 +7,18 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import dev.brahmkshatriya.echo.common.data.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.data.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.common.data.clients.SearchClient
-import dev.brahmkshatriya.echo.common.data.clients.TrackClient
-import dev.brahmkshatriya.echo.common.data.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.data.models.EchoMediaItem.Companion.toMediaItemsContainer
-import dev.brahmkshatriya.echo.common.data.models.ExtensionMetadata
-import dev.brahmkshatriya.echo.common.data.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.common.data.models.QuickSearchItem
-import dev.brahmkshatriya.echo.common.data.models.StreamableAudio
-import dev.brahmkshatriya.echo.common.data.models.StreamableAudio.Companion.toAudio
-import dev.brahmkshatriya.echo.common.data.models.Track
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.data.offline.LocalAlbum
 import dev.brahmkshatriya.echo.common.data.offline.LocalArtist
 import dev.brahmkshatriya.echo.common.data.offline.LocalStream
@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
-class OfflineExtenzion : ExtensionClient(), SearchClient, TrackClient, HomeFeedClient {
+class OfflineExtenzion : _root_ide_package_.dev.brahmkshatriya.echo.common.clients.ExtensionClient(), SearchClient, TrackClient, HomeFeedClient {
 
     override fun getMetadata() = ExtensionMetadata(
         name = "Offline",

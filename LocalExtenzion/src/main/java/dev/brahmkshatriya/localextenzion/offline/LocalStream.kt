@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.common.data.offline
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
-import dev.brahmkshatriya.echo.common.data.models.Track
+import dev.brahmkshatriya.echo.common.models.Track
 
 interface LocalStream {
     companion object {

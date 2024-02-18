@@ -1,7 +1,7 @@
-package dev.brahmkshatriya.echo.common.data.models
+package dev.brahmkshatriya.echo.common.models
 
 import android.net.Uri
-import dev.brahmkshatriya.echo.common.data.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import java.io.InputStream
 
 sealed class StreamableAudio {

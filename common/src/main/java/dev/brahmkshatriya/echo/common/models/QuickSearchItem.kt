@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.models
+package dev.brahmkshatriya.echo.common.models
 
 sealed class QuickSearchItem {
     data class SearchQueryItem(val query: String) : QuickSearchItem()

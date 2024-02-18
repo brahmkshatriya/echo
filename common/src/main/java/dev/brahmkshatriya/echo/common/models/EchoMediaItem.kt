@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.models
+package dev.brahmkshatriya.echo.common.models
 
 sealed class EchoMediaItem {
     data class TrackItem(val track: Track) : EchoMediaItem()

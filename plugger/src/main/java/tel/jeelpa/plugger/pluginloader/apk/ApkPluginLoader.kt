@@ -17,6 +17,7 @@ class ApkPluginLoader<TPlugin>(
     private val loader: PluginLoader = AndroidPluginLoader(context),
 ) : PluginRepo<TPlugin> {
 
+    private val apkManifestParser = ApkPluginManifestParser(configuration)
     private val stateFlow = MutableStateFlow(getStaticPlugins())
 
     companion object {
@@ -30,7 +31,6 @@ class ApkPluginLoader<TPlugin>(
     }
 
     private fun getStaticPlugins(): List<TPlugin> {
-        val apkManifestParser = ApkPluginManifestParser(configuration)
         return context.packageManager
             .getInstalledPackages(PACKAGE_FLAGS)
             .filter {

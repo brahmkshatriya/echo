@@ -6,9 +6,9 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import dev.brahmkshatriya.echo.common.data.models.ImageHolder
-import dev.brahmkshatriya.echo.common.data.models.StreamableAudio
-import dev.brahmkshatriya.echo.common.data.models.Track
+import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.player.PlayerListener.Companion.tracks
 import java.nio.ByteBuffer
 

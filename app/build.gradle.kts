@@ -45,7 +45,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":common"))
+
+    implementation("com.github.brahmkshatriya:Echo-Common:1.0.0")
+    implementation("com.github.JeelPatel231:plugger:1.0.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.1")
 
@@ -66,7 +68,6 @@ dependencies {
 
     implementation("androidx.media3:media3-exoplayer:1.2.1")
     implementation("androidx.media3:media3-session:1.2.1")
-    implementation(project(":plugger"))
 
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
 

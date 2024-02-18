@@ -4,10 +4,10 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
-import dev.brahmkshatriya.echo.common.data.models.Album
-import dev.brahmkshatriya.echo.common.data.models.Artist
-import dev.brahmkshatriya.echo.common.data.models.ImageHolder.Companion.toImageHolder
-import dev.brahmkshatriya.echo.common.data.models.Track
+import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.ALBUM_AUTH
 import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.ARTIST_AUTH
 import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.TRACK_AUTH

@@ -1,7 +1,7 @@
-package dev.brahmkshatriya.echo.common.data.clients
+package dev.brahmkshatriya.echo.common.clients
 
 import android.content.Context
-import dev.brahmkshatriya.echo.common.data.models.ExtensionMetadata
+import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
 
 abstract class ExtensionClient {
     lateinit var context: Context

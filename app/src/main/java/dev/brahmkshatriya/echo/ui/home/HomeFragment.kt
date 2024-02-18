@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.data.models.Track
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
