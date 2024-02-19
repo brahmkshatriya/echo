@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.utils
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import dev.brahmkshatriya.echo.data.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.ImageHolder
 
 fun ImageHolder.loadInto(imageView: ImageView) {
     if (this is ImageHolder.BitmapHolder)

@@ -2,7 +2,7 @@ package dev.brahmkshatriya.echo.player
 
 import androidx.lifecycle.ViewModel
 import androidx.media3.session.MediaController
-import dev.brahmkshatriya.echo.data.models.Track
+import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class PlayerUIViewModel : ViewModel() {
