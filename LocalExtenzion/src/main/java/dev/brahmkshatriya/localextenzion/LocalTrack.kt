@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.offline
+package dev.brahmkshatriya.localextenzion
 
 import android.content.ContentUris
 import android.content.Context
@@ -8,11 +8,11 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.ALBUM_AUTH
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.ARTIST_AUTH
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.TRACK_AUTH
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.URI
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.createCursor
+import dev.brahmkshatriya.localextenzion.LocalHelper.Companion.ALBUM_AUTH
+import dev.brahmkshatriya.localextenzion.LocalHelper.Companion.ARTIST_AUTH
+import dev.brahmkshatriya.localextenzion.LocalHelper.Companion.TRACK_AUTH
+import dev.brahmkshatriya.localextenzion.LocalHelper.Companion.URI
+import dev.brahmkshatriya.localextenzion.LocalHelper.Companion.createCursor
 
 interface LocalTrack {
 

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.offline
+package dev.brahmkshatriya.localextenzion
 
 import android.content.ContentResolver
 import android.database.Cursor

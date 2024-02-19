@@ -19,15 +19,11 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.common.data.offline.LocalAlbum
-import dev.brahmkshatriya.echo.common.data.offline.LocalArtist
-import dev.brahmkshatriya.echo.common.data.offline.LocalStream
-import dev.brahmkshatriya.echo.common.data.offline.LocalTrack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
-class OfflineExtenzion : _root_ide_package_.dev.brahmkshatriya.echo.common.clients.ExtensionClient(), SearchClient, TrackClient, HomeFeedClient {
+class OfflineExtenzion : ExtensionClient(), SearchClient, TrackClient, HomeFeedClient {
 
     override fun getMetadata() = ExtensionMetadata(
         name = "Offline",
@@ -56,7 +52,7 @@ class OfflineExtenzion : _root_ide_package_.dev.brahmkshatriya.echo.common.clien
         emit(PagingData.from(result))
     }
 
-    class OfflinePagingSource(val context: Context) : PagingSource<Int, MediaItemsContainer>() {
+    class OfflinePagingSource(private val context: Context) : PagingSource<Int, MediaItemsContainer>() {
         override fun getRefreshKey(state: PagingState<Int, MediaItemsContainer>): Int? {
             return state.anchorPosition?.let { anchorPosition ->
                 state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)

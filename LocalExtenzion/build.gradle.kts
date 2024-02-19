@@ -36,7 +36,7 @@ android {
 }
 
 dependencies {
-    compileOnly(project(":common"))
+    compileOnly("com.github.brahmkshatriya:echo-common:0.0.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
