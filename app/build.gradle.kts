@@ -45,6 +45,10 @@ android {
 }
 
 dependencies {
+
+    implementation("com.github.brahmkshatriya:echo-common:0.0.1")
+    implementation("com.github.JeelPatel231:plugger:1.0.1")
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.1")
 
     implementation("androidx.appcompat:appcompat:1.6.1")

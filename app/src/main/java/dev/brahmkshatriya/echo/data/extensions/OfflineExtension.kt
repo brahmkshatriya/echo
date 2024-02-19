@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.extensions
+package dev.brahmkshatriya.echo.common.data.extensions
 
 import android.content.Context
 import android.net.Uri
@@ -7,25 +7,36 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import dev.brahmkshatriya.echo.data.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.data.clients.SearchClient
-import dev.brahmkshatriya.echo.data.clients.TrackClient
-import dev.brahmkshatriya.echo.data.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.data.models.EchoMediaItem.Companion.toMediaItemsContainer
-import dev.brahmkshatriya.echo.data.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.data.models.QuickSearchItem
-import dev.brahmkshatriya.echo.data.models.StreamableAudio
-import dev.brahmkshatriya.echo.data.models.StreamableAudio.Companion.toAudio
-import dev.brahmkshatriya.echo.data.models.Track
-import dev.brahmkshatriya.echo.data.offline.LocalAlbum
-import dev.brahmkshatriya.echo.data.offline.LocalArtist
-import dev.brahmkshatriya.echo.data.offline.LocalStream
-import dev.brahmkshatriya.echo.data.offline.LocalTrack
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
+import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.data.offline.LocalAlbum
+import dev.brahmkshatriya.echo.common.data.offline.LocalArtist
+import dev.brahmkshatriya.echo.common.data.offline.LocalStream
+import dev.brahmkshatriya.echo.common.data.offline.LocalTrack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
-class OfflineExtension(val context: Context) : SearchClient, TrackClient, HomeFeedClient {
+class OfflineExtension : ExtensionClient(), SearchClient, TrackClient, HomeFeedClient {
+
+    override fun getMetadata() = ExtensionMetadata(
+        name = "Offline",
+        version = "1.0.0",
+        description = "Local media library",
+        author = "Echo",
+        iconUrl = null
+    )
+
     override suspend fun quickSearch(query: String): List<QuickSearchItem> = listOf()
 
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
@@ -108,5 +119,6 @@ class OfflineExtension(val context: Context) : SearchClient, TrackClient, HomeFe
         ),
         pagingSourceFactory = { OfflinePagingSource(context) }
     ).flow
+
 
 }
