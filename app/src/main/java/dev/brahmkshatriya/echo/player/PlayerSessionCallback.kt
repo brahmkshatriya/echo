@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.player
 
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaLibraryService
@@ -32,50 +34,59 @@ class PlayerSessionCallback(
         MediaItemsContainerAdapter.ListCallback(),
     )
 
+    private val handler = Handler(Looper.getMainLooper())
+    private fun toast(message: String) {
+        handler.post {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onAddMediaItems(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo,
         mediaItems: MutableList<MediaItem>
-    ): ListenableFuture<MutableList<MediaItem>> = scope.future {
+    ): ListenableFuture<MutableList<MediaItem>> {
 
-        fun default(reason: String): MutableList<MediaItem> {
-            println(reason)
-            Toast.makeText(context.applicationContext, reason, Toast.LENGTH_SHORT).show()
-            return mediaItems
+        //Look at the first item's search query, if it's null, return the super method
+        val query = mediaItems.firstOrNull()?.requestMetadata?.searchQuery
+            ?: return super.onAddMediaItems(mediaSession, controller, mediaItems)
+
+        fun default(reason: String): ListenableFuture<MutableList<MediaItem>> {
+            toast(reason)
+            return super.onAddMediaItems(mediaSession, controller, mediaItems)
         }
 
-        val query =
-            mediaItems.firstOrNull()?.requestMetadata?.searchQuery
-                ?: return@future default("No search query")
+        if (extension !is SearchClient)
+            return default("Extension does not support Searching")
+        if (extension !is TrackClient)
+            return default("Extension does not support Streaming Tracks")
 
-        if (extension !is TrackClient) return@future default("Extension is not a TrackClient")
-        if (extension !is SearchClient) return@future default("Extension is not a SearchClient")
+        return scope.future {
+            differ.submitData(extension.search(query).first())
+            val list = differ.snapshot().items.map {
+                when (it) {
+                    is MediaItemsContainer.Category -> {
+                        it.list.mapNotNull { item ->
+                            if (item is EchoMediaItem.TrackItem) {
+                                val track = item.track
+                                val stream = extension.getStreamable(track)
+                                println(track.title)
+                                PlayerHelper.mediaItemBuilder(track, stream)
+                            } else null
+                        }
+                    }
 
-        println(query)
-
-        differ.submitData(extension.search(query).first())
-        val list = differ.snapshot().items.map {
-            when (it) {
-                is MediaItemsContainer.Category -> {
-                    it.list.mapNotNull { item ->
-                        if (item is EchoMediaItem.TrackItem) {
-                            val track = item.track
-                            val stream = extension.getStreamable(track)
-                            println(track.title)
-                            PlayerHelper.mediaItemBuilder(track, stream)
-                        } else null
+                    is MediaItemsContainer.TrackItem -> {
+                        val track = it.track
+                        val stream = extension.getStreamable(track)
+                        listOf(PlayerHelper.mediaItemBuilder(track, stream))
                     }
                 }
-
-                is MediaItemsContainer.TrackItem -> {
-                    val track = it.track
-                    val stream = extension.getStreamable(track)
-                    listOf(PlayerHelper.mediaItemBuilder(track, stream))
-                }
-            }
-        }.flatten()
-        if (list.isEmpty()) return@future default("Couldn't find anything related to $query")
-        list.toMutableList()
+            }.flatten()
+            if (list.isEmpty())
+                return@future default("Couldn't find anything related to $query").get()
+            list.toMutableList()
+        }
     }
 
 
@@ -243,8 +254,6 @@ class PlayerSessionCallback(
 //        }.also {
 //            println("onGetChildren")
 //        }
-
-
 
 
 //    private fun browsableMediaItem(
