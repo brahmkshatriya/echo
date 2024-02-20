@@ -11,6 +11,7 @@ import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.player.PlayerListener.Companion.tracks
 import java.nio.ByteBuffer
+import kotlin.math.roundToLong
 
 
 interface PlayerHelper {
@@ -72,7 +73,7 @@ interface PlayerHelper {
 
 
         fun Long.toTimeString(): String {
-            val seconds = this / 1000
+            val seconds = (this.toFloat() / 1000).roundToLong()
             val minutes = seconds / 60
             val hours = minutes / 60
             return if (hours > 0) {

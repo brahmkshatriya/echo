@@ -15,15 +15,15 @@ import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.session.MediaBrowser
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.checkbox.MaterialCheckBox.OnCheckedStateChangedListener
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.mediaItemBuilder
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.emit
@@ -33,11 +33,9 @@ import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlin.math.max
 
-fun initPlayer(
-    activity: MainActivity,
-    player: MediaBrowser
+fun createPlayer(
+    activity: MainActivity
 ) {
-    println("init player")
 
     val playerBinding = activity.binding.bottomPlayer
     val container = activity.binding.bottomPlayerContainer as View
@@ -69,6 +67,7 @@ fun initPlayer(
 
     bottomBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
+            if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
             PlayerBackButtonHelper.playerCollapsed.value = newState
             when (newState) {
                 STATE_HIDDEN -> playerViewModel.clearQueue()
@@ -156,7 +155,7 @@ fun initPlayer(
         REPEAT_MODE_ALL
     )
 
-    val repeatMode = player.repeatMode
+    val repeatMode = uiViewModel.repeatMode
     playerBinding.trackRepeat.icon = drawables[repeatModes.indexOf(repeatMode)]
     playerBinding.trackRepeat.alpha = if (repeatMode == REPEAT_MODE_OFF) 0.4f else 1f
     (playerBinding.trackRepeat.icon as Animatable).start()
@@ -196,6 +195,9 @@ fun initPlayer(
                 loadInto(playerBinding.collapsedTrackCover)
                 loadInto(playerBinding.expandedTrackCover)
             }
+
+            if (bottomBehavior.state == STATE_HIDDEN)
+                bottomBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
 
         observe(uiViewModel.nextEnabled) {
@@ -236,11 +238,14 @@ fun initPlayer(
             }
         }
     }
+}
 
+fun startPlayer(activity: MainActivity, player: MediaBrowser){
 
-    //Connect the ViewModel to the Player
+    val playerViewModel: PlayerViewModel by activity.viewModels()
+    val uiViewModel: PlayerUIViewModel by activity.viewModels()
 
-    val listener = uiViewModel.getListener(player)
+    val listener = PlayerListener(player, uiViewModel)
     player.addListener(listener)
     player.currentMediaItem?.let {
         listener.update(it.mediaId)
@@ -261,8 +266,6 @@ fun initPlayer(
         observe(playerViewModel.audioIndexFlow) {
             if (it >= 0) {
                 player.seekToDefaultPosition(it)
-                if (bottomBehavior.state == STATE_HIDDEN)
-                    bottomBehavior.state = STATE_COLLAPSED
             }
         }
         observe(playerViewModel.seekTo) {
@@ -272,7 +275,7 @@ fun initPlayer(
             player.repeatMode = it
         }
         observe(playerViewModel.audioQueueFlow) {
-            val item = mediaItemBuilder(it.track, it.audio)
+            val item = PlayerHelper.mediaItemBuilder(it.track, it.audio)
             player.addMediaItem(item)
             player.prepare()
             player.playWhenReady = true

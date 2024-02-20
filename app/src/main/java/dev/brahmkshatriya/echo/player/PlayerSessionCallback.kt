@@ -82,7 +82,6 @@ class PlayerSessionCallback(
                             if (item is EchoMediaItem.TrackItem) {
                                 val track = item.track
                                 val stream = extension.getStreamable(track)
-                                println(track.title)
                                 PlayerHelper.mediaItemBuilder(track, stream)
                             } else null
                         }

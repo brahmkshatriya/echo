@@ -3,17 +3,16 @@ package dev.brahmkshatriya.echo.player
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.session.MediaController
+import androidx.media3.session.MediaBrowser
 import dev.brahmkshatriya.echo.common.models.Track
 
 
 class PlayerListener(
-    private val player: MediaController,
+    private val player: MediaBrowser,
     private val viewModel: PlayerUIViewModel
 ) : Player.Listener {
 
@@ -65,7 +64,9 @@ class PlayerListener(
     }
 
     private fun updateProgress() {
-        viewModel.progress.value = player.currentPosition.toInt() to player.bufferedPosition.toInt()
+        if (player.isConnected)
+            viewModel.progress.value =
+                player.currentPosition.toInt() to player.bufferedPosition.toInt()
         handler.removeCallbacks(updateProgressRunnable)
         val playbackState = player.playbackState
         if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
@@ -84,23 +85,21 @@ class PlayerListener(
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateNavigation()
+        viewModel.repeatMode = repeatMode
     }
 
     private fun updateNavigation() {
         val index = player.currentMediaItemIndex
-        val enablePrevious =  index >= 0
+        val enablePrevious = index >= 0
         val enableNext = player.hasNextMediaItem()
         viewModel.nextEnabled.value = enableNext
         viewModel.previousEnabled.value = enablePrevious
     }
 
-    fun update(mediaId: String){
-        println("Update ${player.duration == C.TIME_UNSET}")
+    fun update(mediaId: String) {
         viewModel.track.value = tracks[mediaId]
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
-        updateNavigation()
-        updateProgress()
     }
 }
