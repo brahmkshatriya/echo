@@ -13,11 +13,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
+import dev.brahmkshatriya.echo.player.PlayerBackButtonHelper
+import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
-import dev.brahmkshatriya.echo.player.PlayerBackButtonHelper
-import dev.brahmkshatriya.echo.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.utils.autoCleared
 import dev.brahmkshatriya.echo.ui.utils.dpToPx
 import dev.brahmkshatriya.echo.ui.utils.observe
@@ -55,16 +56,24 @@ class HomeFragment : Fragment() {
             })
 
         val concat = mediaItemsContainerAdapter.withLoadingFooter()
-
-        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, concat)
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
-
         binding.swipeRefresh.setOnRefreshListener {
             mediaItemsContainerAdapter.refresh()
         }
-
         mediaItemsContainerAdapter.addLoadStateListener {
             binding.swipeRefresh.isRefreshing = it.refresh is LoadState.Loading
+        }
+
+        val concatAdapter = ConcatAdapter(headerAdapter, concat)
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+
+        observe(homeViewModel.homeFeedFlow.flow) {
+            binding.recyclerView.adapter = if (it != null) {
+                binding.swipeRefresh.isEnabled = true
+                concatAdapter
+            } else {
+                binding.swipeRefresh.isEnabled = false
+                NotSupportedAdapter(R.string.home)
+            }
         }
 
         observe(homeViewModel.feed) {

@@ -7,6 +7,8 @@ import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.di.MutableExtensionFlow
+import dev.brahmkshatriya.echo.ui.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,23 +18,27 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val homeClient: HomeFeedClient
+    val homeFeedFlow: MutableExtensionFlow
 ) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            loadFeed()
+            observe(homeFeedFlow.flow) {
+                homeClient = it as? HomeFeedClient
+                loadFeed()
+            }
         }
     }
 
-    private val _feed: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
+     private val _feed: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
     val feed = _feed.asStateFlow()
 
     val genre: String? = null
+    private var homeClient: HomeFeedClient? = null
 
     fun loadFeed() {
         viewModelScope.launch(Dispatchers.IO) {
-            homeClient.getHomeFeed(genre).cachedIn(viewModelScope).collectLatest {
+            homeClient?.getHomeFeed(genre)?.cachedIn(viewModelScope)?.collectLatest {
                 _feed.value = it
             }
         }

@@ -10,8 +10,9 @@ import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.data.extensions.LocalExtensionRepo
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import tel.jeelpa.plugger.PluginRepo
 import tel.jeelpa.plugger.RepoComposer
 import tel.jeelpa.plugger.models.PluginConfiguration
@@ -36,40 +37,38 @@ class PluginModule {
         val filePluginConfig = FilePluginConfig(application.filesDir.absolutePath, ".echo")
         val apkPluginConfig = PluginConfiguration("dev.brahmkshatriya.echo")
 
-        val composer = RepoComposer(
+        return RepoComposer(
             FileSystemPluginLoader(application, filePluginConfig, loader),
-            ApkPluginLoader(application, apkPluginConfig, loader),
-            LocalExtensionRepo()
+            ApkPluginLoader(application, apkPluginConfig, loader, ApkManifestParser()),
+            LocalExtensionRepo(application)
         )
-
-        return ContextProviderForRepo(application, composer)
     }
 
-    @Provides
-    @Singleton
-    fun getExtensionClients(pluginLoader: PluginRepo<ExtensionClient>): List<ExtensionClient> {
-        val clients = runBlocking { pluginLoader.getAllPlugins().first() }
-        return clients
-    }
+    private val mutableExtensionFlow = MutableExtensionFlow(MutableStateFlow(null))
+    private val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
 
     @Provides
     @Singleton
-    fun provideExtension(pluginLoader: PluginRepo<ExtensionClient>): ExtensionClient =
-        getExtensionClients(pluginLoader).first()
+    fun provideExtensionSharedFlow() = mutableExtensionFlow
 
     @Provides
     @Singleton
-    fun provideSearchClient(pluginLoader: PluginRepo<ExtensionClient>): SearchClient =
-        provideExtension(pluginLoader) as SearchClient
+    fun providesExtensionClient() =
+        ExtensionFlow(extensionFlow)
 
     @Provides
     @Singleton
-    fun provideHomeClient(pluginLoader: PluginRepo<ExtensionClient>): HomeFeedClient =
-        provideExtension(pluginLoader) as HomeFeedClient
+    fun providesSearchClient() =
+        SearchFlow(extensionFlow.map { it as? SearchClient })
 
     @Provides
     @Singleton
-    fun provideTrackClient(pluginLoader: PluginRepo<ExtensionClient>): TrackClient =
-        provideExtension(pluginLoader) as TrackClient
+    fun providesHomeClient() =
+        HomeFeedFlow(extensionFlow.map { it as? HomeFeedClient })
+
+    @Provides
+    @Singleton
+    fun providesTrackClient() =
+        TrackFlow(extensionFlow.map { it as? TrackClient })
 
 }

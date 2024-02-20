@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.player
 
-import android.app.Application
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
@@ -9,25 +9,36 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.paging.AsyncPagingDataDiffer
 import com.google.common.util.concurrent.ListenableFuture
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
+import dev.brahmkshatriya.echo.ui.utils.observe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.plus
 
 
 class PlayerSessionCallback(
-    private val context: Application,
-    private val extension: Any
+    private val context: Context,
+    extensionFlow: Flow<ExtensionClient?>
 ) : MediaLibraryService.MediaLibrarySession.Callback {
 
     private val scope = CoroutineScope(Dispatchers.IO) + Job()
+    init {
+        scope.observe(extensionFlow){
+            extension = it
+        }
+    }
+
+    private var extension : ExtensionClient? = null
+
 
     private val differ = AsyncPagingDataDiffer(
         MediaItemsContainerAdapter,
@@ -55,7 +66,8 @@ class PlayerSessionCallback(
             toast(reason)
             return super.onAddMediaItems(mediaSession, controller, mediaItems)
         }
-
+        val extension = extension
+            ?: return default("Extension isn't loaded.")
         if (extension !is SearchClient)
             return default("Extension does not support Searching")
         if (extension !is TrackClient)

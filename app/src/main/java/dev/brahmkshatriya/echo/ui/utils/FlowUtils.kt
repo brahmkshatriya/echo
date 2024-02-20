@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -20,4 +21,8 @@ fun <T> LifecycleOwner.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
 
 fun <T> LifecycleOwner.emit(flow: MutableSharedFlow<T>, block: () -> T) {
     lifecycleScope.launch { flow.emit(block()) }
+}
+
+fun <T> CoroutineScope.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
+    launch { flow.collect(block) }
 }

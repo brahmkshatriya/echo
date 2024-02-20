@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.player
 
-import android.app.Application
 import android.app.PendingIntent
 import android.content.Intent
 import androidx.annotation.OptIn
@@ -14,17 +13,13 @@ import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.di.ExtensionFlow
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
-
     @Inject
-    lateinit var app: Application
-
-    @Inject
-    lateinit var extension: ExtensionClient
+    lateinit var extension: ExtensionFlow
 
     private var mediaLibrarySession: MediaLibrarySession? = null
 
@@ -49,9 +44,10 @@ class PlaybackService : MediaLibraryService() {
         val pendingIntent = PendingIntent
             .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        mediaLibrarySession = MediaLibrarySession.Builder(this, player, PlayerSessionCallback(app, extension))
-            .setSessionActivity(pendingIntent)
-            .build()
+        mediaLibrarySession =
+            MediaLibrarySession.Builder(this, player, PlayerSessionCallback(this, extension.flow))
+                .setSessionActivity(pendingIntent)
+                .build()
 
         val notificationProvider = DefaultMediaNotificationProvider
             .Builder(this)

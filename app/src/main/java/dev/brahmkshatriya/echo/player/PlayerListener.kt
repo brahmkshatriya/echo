@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.player
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -94,6 +95,7 @@ class PlayerListener(
     }
 
     fun update(mediaId: String){
+        println("Update ${player.duration == C.TIME_UNSET}")
         viewModel.track.value = tracks[mediaId]
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying

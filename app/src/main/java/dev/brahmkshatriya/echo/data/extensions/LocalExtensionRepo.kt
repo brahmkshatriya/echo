@@ -1,12 +1,11 @@
 package dev.brahmkshatriya.echo.data.extensions
 
+import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.data.extensions.OfflineExtension
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import tel.jeelpa.plugger.PluginRepo
 
-class LocalExtensionRepo : PluginRepo<ExtensionClient> {
-    override fun getAllPlugins(): Flow<List<ExtensionClient>> =
-        flowOf(listOf(OfflineExtension()))
+class LocalExtensionRepo(val context: Context) : PluginRepo<ExtensionClient> {
+    override fun getAllPlugins(exceptionHandler: (Exception) -> Unit) =
+        flowOf(listOf(OfflineExtension(context)))
 }

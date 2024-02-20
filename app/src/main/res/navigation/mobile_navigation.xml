@@ -22,6 +22,6 @@
 
     <dialog
         android:id="@+id/dialog_extension"
-        android:name="dev.brahmkshatriya.echo.ui.dialogs.ExtensionDialogFragment"
+        android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragment"
         tools:layout="@layout/dialog_extension"/>
 </navigation>

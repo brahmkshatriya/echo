@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.di.SearchFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,17 +16,27 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchClient: SearchClient
+    val searchFlow: SearchFlow
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            searchFlow.flow.collectLatest {
+                searchClient = it
+            }
+        }
+    }
 
     private val _result: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
     val result = _result.asStateFlow()
     var query: String? = null
 
+    private var searchClient: SearchClient? = null
+
     fun search(query: String) {
         this.query = query
         viewModelScope.launch(Dispatchers.IO) {
-            searchClient.search(query).collectLatest {
+            searchClient?.search(query)?.collectLatest {
                 _result.value = it
             }
         }

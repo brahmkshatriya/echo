@@ -6,6 +6,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.di.TrackFlow
+import dev.brahmkshatriya.echo.ui.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -13,9 +15,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val trackClient: TrackClient,
+    trackFlow: TrackFlow,
 //    private val radioClient: RadioClient
 ) : ViewModel() {
+
+    val fromNotification: MutableSharedFlow<Boolean> = MutableSharedFlow()
+
+    private var trackClient: TrackClient? = null
+    init {
+        viewModelScope.observe(trackFlow.flow){
+            trackClient = it
+        }
+    }
 
     data class TrackWithStream(
         val track: Track,
@@ -32,15 +43,18 @@ class PlayerViewModel @Inject constructor(
     val audioQueueFlow = MutableSharedFlow<TrackWithStream>()
     val clearQueueFlow = MutableSharedFlow<Unit>()
 
-    private suspend fun loadStreamable(track: Track) =
-        TrackWithStream(track, trackClient.getStreamable(track))
-
+    private suspend fun loadStreamable(track: Track): TrackWithStream? {
+        val stream = trackClient?.getStreamable(track) ?: return null
+        return TrackWithStream(track, stream)
+    }
     private val queue = mutableListOf<TrackWithStream>()
     private suspend fun loadAndAddToQueue(track: Track): Int {
         val stream = loadStreamable(track)
-        queue.add(stream)
-        audioQueueFlow.emit(stream)
-        return queue.count() - 1
+        return stream?.let {
+            queue.add(it)
+            audioQueueFlow.emit(it)
+            queue.count() - 1
+        } ?: -1
     }
 
     fun play(track: Track) {

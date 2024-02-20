@@ -37,6 +37,8 @@ fun initPlayer(
     activity: MainActivity,
     player: MediaBrowser
 ) {
+    println("init player")
+
     val playerBinding = activity.binding.bottomPlayer
     val container = activity.binding.bottomPlayerContainer as View
 
@@ -89,9 +91,10 @@ fun initPlayer(
 
     container.post {
         bottomBehavior.state = PlayerBackButtonHelper.playerCollapsed.value
+        container.translationY = 0f
     }
-    activity.observe(activity.fromNotification) {
-        bottomBehavior.state = STATE_EXPANDED
+    activity.observe(playerViewModel.fromNotification) {
+        if (it) bottomBehavior.state = STATE_EXPANDED
     }
 
     playerBinding.playerClose.setOnClickListener {
@@ -249,14 +252,18 @@ fun initPlayer(
         }
         observe(playerViewModel.seekToPrevious) {
             player.seekToPrevious()
+            player.playWhenReady = true
         }
         observe(playerViewModel.seekToNext) {
             player.seekToNext()
+            player.playWhenReady = true
         }
         observe(playerViewModel.audioIndexFlow) {
-            player.seekToDefaultPosition(it)
-            if (bottomBehavior.state == STATE_HIDDEN)
-                bottomBehavior.state = STATE_COLLAPSED
+            if (it >= 0) {
+                player.seekToDefaultPosition(it)
+                if (bottomBehavior.state == STATE_HIDDEN)
+                    bottomBehavior.state = STATE_COLLAPSED
+            }
         }
         observe(playerViewModel.seekTo) {
             player.seekTo(it)

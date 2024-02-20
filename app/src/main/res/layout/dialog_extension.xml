@@ -35,15 +35,12 @@
             android:padding="24dp">
 
             <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/toggleButton"
+                android:id="@+id/buttonToggleGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:selectionRequired="true"
-                app:singleSelection="true">
-
-
-            </com.google.android.material.button.MaterialButtonToggleGroup>
+                app:singleSelection="true"/>
 
             <Button
                 android:id="@+id/addExtension"

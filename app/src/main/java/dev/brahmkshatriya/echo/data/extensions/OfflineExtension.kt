@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.extensions
+package dev.brahmkshatriya.echo.data.extensions
 
 import android.content.Context
 import android.net.Uri
@@ -11,6 +11,10 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.data.offline.LocalAlbum
+import dev.brahmkshatriya.echo.common.data.offline.LocalArtist
+import dev.brahmkshatriya.echo.common.data.offline.LocalStream
+import dev.brahmkshatriya.echo.common.data.offline.LocalTrack
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
@@ -19,15 +23,11 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.common.data.offline.LocalAlbum
-import dev.brahmkshatriya.echo.common.data.offline.LocalArtist
-import dev.brahmkshatriya.echo.common.data.offline.LocalStream
-import dev.brahmkshatriya.echo.common.data.offline.LocalTrack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
-class OfflineExtension : ExtensionClient(), SearchClient, TrackClient, HomeFeedClient {
+class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, TrackClient, HomeFeedClient {
 
     override fun getMetadata() = ExtensionMetadata(
         name = "Offline",

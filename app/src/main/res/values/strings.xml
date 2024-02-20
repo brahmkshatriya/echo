@@ -19,5 +19,6 @@
     <string name="retry">Retry</string>
     <string name="failed_loading">Failed Loading</string>
     <string name="repeat">Repeat</string>
+    <string name="is_not_supported">%1$s is not supported in this Extension!</string>
 
 </resources>

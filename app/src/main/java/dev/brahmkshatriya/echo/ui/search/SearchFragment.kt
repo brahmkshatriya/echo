@@ -9,13 +9,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.ui.adapters.ClickListener
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
-import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
 import dev.brahmkshatriya.echo.player.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.adapters.ClickListener
+import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
+import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
 import dev.brahmkshatriya.echo.ui.utils.observe
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 
@@ -33,7 +35,6 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
 
         PlayerBackButtonHelper.addCallback(this) {
             if (!it) binding.catSearchView.hide()
@@ -62,8 +63,17 @@ class SearchFragment : Fragment() {
                 playerViewModel.addToQueue(item)
             }
         })
+
+        val concatAdapter = ConcatAdapter(header, adapter)
         binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.catRecyclerView.adapter = ConcatAdapter(header, adapter)
+
+        observe(searchViewModel.searchFlow.flow) {
+            binding.catRecyclerView.adapter = if (it != null) {
+                concatAdapter
+            } else {
+                NotSupportedAdapter(R.string.search)
+            }
+        }
 
         observe(searchViewModel.result){
             if (it != null) adapter.submitData(it)
