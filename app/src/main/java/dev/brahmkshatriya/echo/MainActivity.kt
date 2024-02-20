@@ -88,11 +88,7 @@ class MainActivity : AppCompatActivity() {
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
         MediaBrowser.Builder(this, sessionToken).buildAsync().also {
             controllerFuture = it
-            val listener = Runnable {
-                tryWith {
-                    startPlayer(this, it.get())
-                }
-            }
+            val listener = Runnable { tryWith { startPlayer(this, it.get()) } }
             it.addListener(listener, ContextCompat.getMainExecutor(this))
         }
     }

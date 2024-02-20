@@ -5,6 +5,7 @@ import android.content.res.Resources
 import android.graphics.Rect
 import android.graphics.drawable.Animatable
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.viewModels
@@ -131,13 +132,22 @@ fun createPlayer(
         (playerBinding.trackPrevious.icon as Animatable).start()
     }
 
+    var expandedAnimator: ObjectAnimator? = null
+    var collapsedAnimator: ObjectAnimator? = null
     playerBinding.expandedSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        var touched = false
         override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-            playerBinding.trackCurrentTime.text = p1.toLong().toTimeString()
+            if (touched)
+                playerBinding.trackCurrentTime.text = p1.toLong().toTimeString()
         }
 
-        override fun onStartTrackingTouch(p0: SeekBar?) {}
+        override fun onStartTrackingTouch(p0: SeekBar?) {
+            touched = true
+            expandedAnimator?.cancel()
+        }
+
         override fun onStopTrackingTouch(p0: SeekBar?) {
+            touched = false
             p0?.progress?.let {
                 playerViewModel.seekTo.emit { it.toLong() }
             }
@@ -230,17 +240,36 @@ fun createPlayer(
 
         observe(uiViewModel.progress) { (current, buffered) ->
             if (!playerBinding.expandedSeekBar.isPressed) {
-                playerBinding.collapsedSeekBar.progress = current
                 playerBinding.collapsedSeekBar.secondaryProgress = buffered
-
                 playerBinding.expandedSeekBar.secondaryProgress = buffered
-                playerBinding.expandedSeekBar.progress = current
+
+                var old = playerBinding.expandedSeekBar.progress
+                if(old == 0) old = current
+                val duration = (current - old).toLong()
+                println("Duration: $duration, Current: $current, Progress: $old")
+                playerBinding.collapsedSeekBar.apply {
+                    collapsedAnimator?.cancel()
+                    collapsedAnimator = ObjectAnimator
+                        .ofInt(this, "progress", current)
+                        .setDuration(duration)
+                    collapsedAnimator?.interpolator = LinearInterpolator()
+                    collapsedAnimator?.start()
+                }
+                playerBinding.expandedSeekBar.apply {
+                    expandedAnimator?.cancel()
+                    expandedAnimator = ObjectAnimator
+                        .ofInt(this, "progress", current)
+                        .setDuration(duration)
+                    expandedAnimator?.interpolator = LinearInterpolator()
+                    expandedAnimator?.start()
+                }
+                playerBinding.trackCurrentTime.text = current.toLong().toTimeString()
             }
         }
     }
 }
 
-fun startPlayer(activity: MainActivity, player: MediaBrowser){
+fun startPlayer(activity: MainActivity, player: MediaBrowser) {
 
     val playerViewModel: PlayerViewModel by activity.viewModels()
     val uiViewModel: PlayerUIViewModel by activity.viewModels()
