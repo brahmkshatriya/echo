@@ -33,6 +33,7 @@ import dev.brahmkshatriya.echo.ui.utils.observe
 import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlin.math.max
+import kotlin.math.min
 
 fun createPlayer(
     activity: MainActivity
@@ -244,8 +245,8 @@ fun createPlayer(
                 playerBinding.expandedSeekBar.secondaryProgress = buffered
 
                 var old = playerBinding.expandedSeekBar.progress
-                if(old == 0) old = current
-                val duration = (current - old).toLong()
+                if (old == 0) old = current
+                val duration = min(1000L, max(0L, (current - old).toLong()))
                 println("Duration: $duration, Current: $current, Progress: $old")
                 playerBinding.collapsedSeekBar.apply {
                     collapsedAnimator?.cancel()
