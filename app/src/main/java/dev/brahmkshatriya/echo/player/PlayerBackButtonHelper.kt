@@ -6,6 +6,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.MainActivity
@@ -15,29 +16,37 @@ import kotlinx.coroutines.flow.MutableStateFlow
 object PlayerBackButtonHelper {
 
     var bottomSheetBehavior: BottomSheetBehavior<View>? = null
-    val playerCollapsed = MutableStateFlow(STATE_HIDDEN)
+    var playlistBehavior: BottomSheetBehavior<View>? = null
+
+    val playerSheetState = MutableStateFlow(STATE_HIDDEN)
+    val playlistState = MutableStateFlow(STATE_COLLAPSED)
     private fun backPressedCallback(
         viewLifecycleOwner: LifecycleOwner,
         callback: ((Boolean) -> Unit)?
     ): OnBackPressedCallback {
         val backPress = object : OnBackPressedCallback(false) {
+            fun getBehaviour() = playlistBehavior?.state?.let {
+                if (it == STATE_EXPANDED) playlistBehavior
+                else bottomSheetBehavior
+            }
+
             override fun handleOnBackStarted(backEvent: BackEventCompat) {
-                bottomSheetBehavior?.startBackProgress(backEvent)
+                getBehaviour()?.startBackProgress(backEvent)
             }
 
             override fun handleOnBackProgressed(backEvent: BackEventCompat) {
-                bottomSheetBehavior?.updateBackProgress(backEvent)
+                getBehaviour()?.updateBackProgress(backEvent)
             }
 
             override fun handleOnBackPressed() {
-                bottomSheetBehavior?.handleBackInvoked()
+                getBehaviour()?.handleBackInvoked()
             }
 
             override fun handleOnBackCancelled() {
-                bottomSheetBehavior?.cancelBackProgress()
+                getBehaviour()?.cancelBackProgress()
             }
         }
-        viewLifecycleOwner.observe(playerCollapsed) {
+        viewLifecycleOwner.observe(playerSheetState) {
             val expanded = it == STATE_EXPANDED
             backPress.isEnabled = expanded
             callback?.invoke(expanded)

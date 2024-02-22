@@ -1,21 +1,33 @@
 package dev.brahmkshatriya.echo.player
 
 import android.animation.ObjectAnimator
-import android.content.res.Resources
-import android.graphics.Rect
+import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.graphics.drawable.Animatable
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.LinearInterpolator
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.session.MediaBrowser
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.ItemTouchHelper.DOWN
+import androidx.recyclerview.widget.ItemTouchHelper.START
+import androidx.recyclerview.widget.ItemTouchHelper.UP
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -26,21 +38,25 @@ import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.ui.utils.dpToPx
+import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
 import dev.brahmkshatriya.echo.ui.utils.emit
 import dev.brahmkshatriya.echo.ui.utils.loadInto
 import dev.brahmkshatriya.echo.ui.utils.observe
-import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlin.math.max
 import kotlin.math.min
 
+
+@SuppressLint("NotifyDataSetChanged")
 fun createPlayer(
     activity: MainActivity
 ) {
 
     val playerBinding = activity.binding.bottomPlayer
+    val playlistBinding = playerBinding.bottomPlaylist
+
     val container = activity.binding.bottomPlayerContainer as View
+    val playlistContainer = playerBinding.bottomPlaylistContainer as View
 
     val playerViewModel: PlayerViewModel by activity.viewModels()
     val uiViewModel: PlayerUIViewModel by activity.viewModels()
@@ -48,58 +64,64 @@ fun createPlayer(
 
     // Apply the UI Changes
 
-    updatePaddingWithSystemInsets(playerBinding.expandedContainer, false)
-    playerBinding.expandedContainer.requestApplyInsets()
+    val navView = activity.binding.navView
+    val bottomPlayerBehavior = BottomSheetBehavior.from(container)
+    val bottomPlaylistBehavior = BottomSheetBehavior.from(playlistContainer)
 
-    val bottomBehavior = BottomSheetBehavior.from(container)
     container.setOnClickListener {
-        bottomBehavior.state = STATE_EXPANDED
+        bottomPlayerBehavior.state = STATE_EXPANDED
     }
 
-    val navView = activity.binding.navView
-    val bottomNavHeight =
-        if (navView !is BottomNavigationView) {
-            val height = Resources.getSystem().displayMetrics.heightPixels
-            val frame = Rect()
-            activity.window.decorView.getWindowVisibleDisplayFrame(frame)
-            -(height + frame.top)
-        } else 140.dpToPx()
-    val collapsedCoverSize =
-        activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
+    bottomPlaylistBehavior.addBottomSheetCallback(object :
+        BottomSheetBehavior.BottomSheetCallback() {
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+            bottomPlayerBehavior.isDraggable = newState == STATE_COLLAPSED
+            if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
+            playerBinding.expandedSeekBar.isEnabled = newState != STATE_EXPANDED
+            PlayerBackButtonHelper.playlistState.value = newState
+        }
 
-    bottomBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            val offset = 1 - slideOffset
+            playlistBinding.root.translationY = -uiViewModel.playlistTranslationY * offset
+            playlistBinding.playlistRecyclerContainer.alpha = slideOffset
+            playerBinding.expandedBackground.alpha = slideOffset
+        }
+    })
+
+    val collapsedCoverSize = activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
+    bottomPlayerBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
-            PlayerBackButtonHelper.playerCollapsed.value = newState
+            PlayerBackButtonHelper.playerSheetState.value = newState
             when (newState) {
                 STATE_HIDDEN -> playerViewModel.clearQueue()
-                else -> bottomBehavior.isHideable = newState != STATE_EXPANDED
+                else -> bottomPlayerBehavior.isHideable = newState != STATE_EXPANDED
             }
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
             val offset = max(0f, slideOffset)
-            playerBinding.collapsedContainer.translationY =
-                -collapsedCoverSize * offset
-            playerBinding.expandedContainer.translationY =
-                collapsedCoverSize * (1 - offset)
-
-            navView.translationY = bottomNavHeight * offset
+            playerBinding.collapsedContainer.translationY = -collapsedCoverSize * offset
+            playerBinding.expandedContainer.translationY = collapsedCoverSize * (1 - offset)
+            navView.translationY = uiViewModel.bottomNavTranslateY * offset
         }
     })
 
-    PlayerBackButtonHelper.bottomSheetBehavior = bottomBehavior
+    PlayerBackButtonHelper.bottomSheetBehavior = bottomPlayerBehavior
+    PlayerBackButtonHelper.playlistBehavior = bottomPlaylistBehavior
 
     container.post {
-        bottomBehavior.state = PlayerBackButtonHelper.playerCollapsed.value
+        bottomPlayerBehavior.state = PlayerBackButtonHelper.playerSheetState.value
+        bottomPlaylistBehavior.state = PlayerBackButtonHelper.playlistState.value
         container.translationY = 0f
     }
     activity.observe(playerViewModel.fromNotification) {
-        if (it) bottomBehavior.state = STATE_EXPANDED
+        if (it) bottomPlayerBehavior.state = STATE_EXPANDED
     }
 
     playerBinding.playerClose.setOnClickListener {
-        bottomBehavior.state = STATE_HIDDEN
+        bottomPlayerBehavior.state = STATE_HIDDEN
     }
 
     //Connect the UI to the ViewModel
@@ -138,8 +160,7 @@ fun createPlayer(
     playerBinding.expandedSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
         var touched = false
         override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-            if (touched)
-                playerBinding.trackCurrentTime.text = p1.toLong().toTimeString()
+            if (touched) playerBinding.trackCurrentTime.text = p1.toLong().toTimeString()
         }
 
         override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -161,26 +182,17 @@ fun createPlayer(
         AppCompatResources.getDrawable(activity, R.drawable.ic_no_repeat_to_repeat_40dp)
     )
     val repeatModes = listOf(
-        REPEAT_MODE_ONE,
-        REPEAT_MODE_OFF,
-        REPEAT_MODE_ALL
+        REPEAT_MODE_ONE, REPEAT_MODE_OFF, REPEAT_MODE_ALL
     )
-
-    val repeatMode = uiViewModel.repeatMode
-    playerBinding.trackRepeat.icon = drawables[repeatModes.indexOf(repeatMode)]
-    playerBinding.trackRepeat.alpha = if (repeatMode == REPEAT_MODE_OFF) 0.4f else 1f
-    (playerBinding.trackRepeat.icon as Animatable).start()
 
     playerBinding.trackRepeat.setOnClickListener {
         playerBinding.trackRepeat.icon = when (playerBinding.trackRepeat.icon) {
             drawables[0] -> drawables[1].apply {
-                ObjectAnimator.ofFloat(it, "alpha", 1f, 0.4f)
-                    .setDuration(400).start()
+                ObjectAnimator.ofFloat(it, "alpha", 1f, 0.4f).setDuration(400).start()
             }
 
             drawables[1] -> drawables[2].apply {
-                ObjectAnimator.ofFloat(it, "alpha", 0.4f, 1f)
-                    .setDuration(400).start()
+                ObjectAnimator.ofFloat(it, "alpha", 0.4f, 1f).setDuration(400).start()
             }
 
             else -> drawables[0]
@@ -189,6 +201,52 @@ fun createPlayer(
         playerViewModel.repeat.emit {
             repeatModes[drawables.indexOf(playerBinding.trackRepeat.icon)]
         }
+    }
+
+    val repeatMode = uiViewModel.repeatMode
+    playerBinding.trackRepeat.icon = drawables[repeatModes.indexOf(repeatMode)]
+    playerBinding.trackRepeat.alpha = if (repeatMode == REPEAT_MODE_OFF) 0.4f else 1f
+    (playerBinding.trackRepeat.icon as Animatable).start()
+
+
+    val linearLayoutManager = LinearLayoutManager(activity, VERTICAL, false)
+    val callback = object : ItemTouchHelper.SimpleCallback(UP or DOWN, START) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            playerViewModel.moveQueueItems(
+                viewHolder.bindingAdapterPosition, target.bindingAdapterPosition
+            )
+            return true
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            playerViewModel.removeQueueItem(
+                viewHolder.bindingAdapterPosition
+            )
+        }
+    }
+    val touchHelper = ItemTouchHelper(callback)
+    val adapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
+        override fun onDragHandleClicked(viewHolder: PlaylistAdapter.ViewHolder) {
+            touchHelper.startDrag(viewHolder)
+        }
+
+        override fun onItemClicked(position: Int) {
+            playerViewModel.audioIndexFlow.emit { position }
+        }
+
+        override fun onItemClosedClicked(position: Int) {
+            playerViewModel.removeQueueItem(position)
+        }
+    })
+
+    playlistBinding.playlistRecycler.apply {
+        layoutManager = linearLayoutManager
+        this.adapter = adapter
+        touchHelper.attachToRecyclerView(this)
     }
 
     activity.apply {
@@ -207,8 +265,13 @@ fun createPlayer(
                 loadInto(playerBinding.expandedTrackCover)
             }
 
-            if (bottomBehavior.state == STATE_HIDDEN)
-                bottomBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            container.post {
+                if (bottomPlayerBehavior.state == STATE_HIDDEN) {
+                    bottomPlayerBehavior.state = STATE_COLLAPSED
+                    bottomPlaylistBehavior.state = STATE_COLLAPSED
+                    bottomPlayerBehavior.isDraggable = true
+                }
+            }
         }
 
         observe(uiViewModel.nextEnabled) {
@@ -247,28 +310,138 @@ fun createPlayer(
                 var old = playerBinding.expandedSeekBar.progress
                 if (old == 0) old = current
                 val duration = min(1000L, max(0L, (current - old).toLong()))
-                println("Duration: $duration, Current: $current, Progress: $old")
                 playerBinding.collapsedSeekBar.apply {
                     collapsedAnimator?.cancel()
-                    collapsedAnimator = ObjectAnimator
-                        .ofInt(this, "progress", current)
-                        .setDuration(duration)
+                    collapsedAnimator =
+                        ObjectAnimator.ofInt(this, "progress", current).setDuration(duration)
                     collapsedAnimator?.interpolator = LinearInterpolator()
                     collapsedAnimator?.start()
                 }
                 playerBinding.expandedSeekBar.apply {
                     expandedAnimator?.cancel()
-                    expandedAnimator = ObjectAnimator
-                        .ofInt(this, "progress", current)
-                        .setDuration(duration)
+                    expandedAnimator =
+                        ObjectAnimator.ofInt(this, "progress", current).setDuration(duration)
                     expandedAnimator?.interpolator = LinearInterpolator()
                     expandedAnimator?.start()
                 }
                 playerBinding.trackCurrentTime.text = current.toLong().toTimeString()
             }
         }
+        observe(uiViewModel.playlist) {
+            val viewHolder =
+                playlistBinding.playlistRecycler.findViewHolderForAdapterPosition(it) as PlaylistAdapter.ViewHolder?
+            adapter.setCurrent(viewHolder)
+        }
+
+        observe(playerViewModel.clearQueueFlow) {
+            adapter.notifyDataSetChanged()
+            println("Cleared")
+            container.post {
+                bottomPlayerBehavior.isDraggable = true
+                container.post {
+                    if (bottomPlayerBehavior.state != STATE_HIDDEN) {
+                        bottomPlayerBehavior.state = STATE_HIDDEN
+                        println("State changed")
+                    }
+                }
+            }
+        }
+
+        observe(playerViewModel.audioQueueFlow) {
+            (it.localConfiguration?.tag as? Int)?.let { index ->
+                adapter.notifyItemInserted(index)
+            }
+        }
     }
 }
+
+fun attachPlayerView(
+    activity: MainActivity
+) {
+
+    val playerBinding = activity.binding.bottomPlayer
+    val playlistBinding = playerBinding.bottomPlaylist
+
+    val container = activity.binding.bottomPlayerContainer as View
+    val playlistContainer = playerBinding.bottomPlaylistContainer as View
+
+    val uiViewModel: PlayerUIViewModel by activity.viewModels()
+
+    val bottomPlayerBehavior = BottomSheetBehavior.from(container)
+    val playlistBehavior = BottomSheetBehavior.from(playlistContainer)
+
+    val peekHeight = activity.resources.getDimension(R.dimen.bottom_player_peek_height).toInt()
+    val playlistPeekHeight = activity.resources.getDimension(R.dimen.playlist_peek_height).toInt()
+
+    val navView = activity.binding.navView
+
+    val orientation: Int = activity.resources.configuration.orientation
+
+    ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
+        val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        bottomPlayerBehavior.peekHeight = peekHeight + systemInsets.bottom
+        playlistBehavior.peekHeight = playlistPeekHeight + systemInsets.bottom
+        insets
+    }
+
+    if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+        navView.post {
+            uiViewModel.bottomNavTranslateY = navView.height
+        }
+    } else {
+        navView.post {
+            uiViewModel.bottomNavTranslateY = -navView.height
+        }
+
+        // Need to manually handle system insets for landscape mode
+        // since we can't use the fitSystemWindows on the root view,
+        // or the playlist bottom sheet will be hidden behind the navigation bar
+        ViewCompat.setOnApplyWindowInsetsListener(
+            playerBinding.expandedTrackCoverContainer
+        ) { view, insets ->
+            val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            view.updateLayoutParams<MarginLayoutParams> {
+                topMargin = systemInsets.top
+                bottomMargin = systemInsets.bottom
+                leftMargin = systemInsets.left
+            }
+
+            playerBinding.collapsedContainer.updateLayoutParams<MarginLayoutParams> {
+                leftMargin = systemInsets.left
+                rightMargin = systemInsets.right
+            }
+
+            playerBinding.collapsePlayer.updateLayoutParams<MarginLayoutParams> {
+                topMargin = systemInsets.top
+            }
+
+            playerBinding.expandedTrackInfoContainer.updatePadding(
+                right = systemInsets.right,
+                top = systemInsets.top,
+                bottom = systemInsets.bottom
+            )
+
+            playerBinding.bottomPlaylistContainer.updatePadding(
+                left = 0,
+                right = 0,
+                bottom = systemInsets.bottom
+            )
+
+            uiViewModel.bottomNavTranslateY = -(navView.height + systemInsets.top)
+            insets
+        }
+    }
+
+
+    ViewCompat.setOnApplyWindowInsetsListener(playlistBinding.root) { _, insets ->
+        val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        uiViewModel.playlistTranslationY = systemInsets.top
+        playlistBinding.root.translationY = -uiViewModel.playlistTranslationY.toFloat()
+        insets
+    }
+}
+
 
 fun startPlayer(activity: MainActivity, player: MediaBrowser) {
 
@@ -279,6 +452,9 @@ fun startPlayer(activity: MainActivity, player: MediaBrowser) {
     player.addListener(listener)
     player.currentMediaItem?.let {
         listener.update(it.mediaId)
+        activity.emit(uiViewModel.playlist) {
+            player.currentMediaItemIndex
+        }
     }
 
     activity.apply {
@@ -296,6 +472,7 @@ fun startPlayer(activity: MainActivity, player: MediaBrowser) {
         observe(playerViewModel.audioIndexFlow) {
             if (it >= 0) {
                 player.seekToDefaultPosition(it)
+                uiViewModel.playlist.emit(it)
             }
         }
         observe(playerViewModel.seekTo) {
@@ -305,8 +482,7 @@ fun startPlayer(activity: MainActivity, player: MediaBrowser) {
             player.repeatMode = it
         }
         observe(playerViewModel.audioQueueFlow) {
-            val item = PlayerHelper.mediaItemBuilder(it.track, it.audio)
-            player.addMediaItem(item)
+            player.addMediaItem(it)
             player.prepare()
             player.playWhenReady = true
         }
@@ -314,6 +490,12 @@ fun startPlayer(activity: MainActivity, player: MediaBrowser) {
             player.pause()
             player.clearMediaItems()
             player.stop()
+        }
+        observe(playerViewModel.itemMovedFlow) { (new, old) ->
+            player.moveMediaItem(old, new)
+        }
+        observe(playerViewModel.itemRemovedFlow) {
+            player.removeMediaItem(it)
         }
     }
 }

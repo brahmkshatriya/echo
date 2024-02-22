@@ -9,7 +9,6 @@ import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.player.PlayerListener.Companion.tracks
 import java.nio.ByteBuffer
 import kotlin.math.roundToLong
 
@@ -17,7 +16,11 @@ import kotlin.math.roundToLong
 interface PlayerHelper {
     companion object {
 
-        fun mediaItemBuilder(track:Track, audio: StreamableAudio): MediaItem {
+        fun mediaItemBuilder(
+            queue: MutableList<Pair<String, Track>>,
+            track: Track,
+            audio: StreamableAudio
+        ): MediaItem {
             val builder = MediaItem.Builder()
 
             val item = when (audio) {
@@ -34,9 +37,12 @@ interface PlayerHelper {
 
             val metadata = track.toMetaData()
             item.setMediaMetadata(metadata)
-            item.setMediaId(track.uri.toString())
-            item.setTag(track)
-            tracks[track.uri.toString()] = track
+
+            val mediaId = track.uri.toString()
+            item.setMediaId(mediaId)
+
+            queue.add(mediaId to track)
+            item.setTag(queue.size)
             return item.build()
         }
 

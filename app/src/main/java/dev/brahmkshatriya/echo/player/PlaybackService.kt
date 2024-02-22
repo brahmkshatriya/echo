@@ -58,13 +58,24 @@ class PlaybackService : MediaLibraryService() {
         setMediaNotificationProvider(notificationProvider)
     }
 
+    @OptIn(UnstableApi::class)
     override fun onDestroy() {
         mediaLibrarySession?.run {
             player.release()
+            Global.queue.clear()
             release()
             mediaLibrarySession = null
         }
         super.onDestroy()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        mediaLibrarySession?.run {
+            if(!player.isPlaying){
+                onDestroy()
+            }
+        }
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaLibrarySession

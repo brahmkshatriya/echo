@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.paging.AsyncPagingDataDiffer
@@ -31,13 +32,14 @@ class PlayerSessionCallback(
 ) : MediaLibraryService.MediaLibrarySession.Callback {
 
     private val scope = CoroutineScope(Dispatchers.IO) + Job()
+
     init {
-        scope.observe(extensionFlow){
+        scope.observe(extensionFlow) {
             extension = it
         }
     }
 
-    private var extension : ExtensionClient? = null
+    private var extension: ExtensionClient? = null
 
 
     private val differ = AsyncPagingDataDiffer(
@@ -66,12 +68,15 @@ class PlayerSessionCallback(
             toast(reason)
             return super.onAddMediaItems(mediaSession, controller, mediaItems)
         }
+
         val extension = extension
             ?: return default("Extension isn't loaded.")
         if (extension !is SearchClient)
             return default("Extension does not support Searching")
         if (extension !is TrackClient)
             return default("Extension does not support Streaming Tracks")
+
+        val queue = Global.queue
 
         return scope.future {
             differ.submitData(extension.search(query).first())
@@ -82,7 +87,7 @@ class PlayerSessionCallback(
                             if (item is EchoMediaItem.TrackItem) {
                                 val track = item.track
                                 val stream = extension.getStreamable(track)
-                                PlayerHelper.mediaItemBuilder(track, stream)
+                                PlayerHelper.mediaItemBuilder(queue, track, stream)
                             } else null
                         }
                     }
@@ -90,7 +95,7 @@ class PlayerSessionCallback(
                     is MediaItemsContainer.TrackItem -> {
                         val track = it.track
                         val stream = extension.getStreamable(track)
-                        listOf(PlayerHelper.mediaItemBuilder(track, stream))
+                        listOf(PlayerHelper.mediaItemBuilder(queue, track, stream))
                     }
                 }
             }.flatten()
@@ -100,7 +105,23 @@ class PlayerSessionCallback(
         }
     }
 
-
+    @UnstableApi
+    override fun onSetMediaItems(
+        mediaSession: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        mediaItems: MutableList<MediaItem>,
+        startIndex: Int,
+        startPositionMs: Long
+    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+        Global.queue.clear()
+        return super.onSetMediaItems(
+            mediaSession,
+            controller,
+            mediaItems,
+            startIndex,
+            startPositionMs
+        )
+    }
     //CAN BE USED FOR ANDROID AUTO SUPPORT, BUT IDK I DONT WANT TO ADD IT RN
     //HALF OF IT IS KANGED FROM INNERTUNE
 

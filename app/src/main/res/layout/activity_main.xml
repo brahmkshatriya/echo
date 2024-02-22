@@ -15,6 +15,22 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/mobile_navigation" />
 
+    <FrameLayout
+        android:id="@+id/bottom_player_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurfaceContainerLow"
+        android:translationY="152dp"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="@dimen/bottom_player_peek_height"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <include
+            android:id="@+id/bottom_player"
+            layout="@layout/bottom_player" />
+
+    </FrameLayout>
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
         android:layout_width="match_parent"
@@ -25,22 +41,5 @@
         app:itemIconTint="@color/bottom_item_icon"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
-
-    <FrameLayout
-        android:id="@+id/bottom_player_container"
-        style="@style/ApplyInsets"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurfaceContainerLow"
-        android:translationY="152dp"
-        app:behavior_peekHeight="152dp"
-        app:behavior_hideable="true"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
-        <include
-            android:id="@+id/bottom_player"
-            layout="@layout/bottom_player" />
-
-    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

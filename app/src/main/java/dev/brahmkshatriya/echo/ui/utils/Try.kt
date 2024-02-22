@@ -1,10 +1,10 @@
 package dev.brahmkshatriya.echo.ui.utils
 
-fun <T> tryWith(block: () -> T): T? {
+fun <T> tryWith(print: Boolean, block: () -> T): T? {
     return try {
         block()
     } catch (e: Exception) {
-        e.printStackTrace()
+        if (print) e.printStackTrace()
         null
     }
 }

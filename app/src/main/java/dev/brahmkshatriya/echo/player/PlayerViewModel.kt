@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
@@ -11,6 +12,7 @@ import dev.brahmkshatriya.echo.ui.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import java.util.Collections
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,16 +24,18 @@ class PlayerViewModel @Inject constructor(
     val fromNotification: MutableSharedFlow<Boolean> = MutableSharedFlow()
 
     private var trackClient: TrackClient? = null
+
     init {
-        viewModelScope.observe(trackFlow.flow){
+        viewModelScope.observe(trackFlow.flow) {
             trackClient = it
         }
     }
 
-    data class TrackWithStream(
-        val track: Track,
-        val audio: StreamableAudio
-    )
+    val audioIndexFlow = MutableSharedFlow<Int>()
+    val audioQueueFlow = MutableSharedFlow<MediaItem>()
+    val clearQueueFlow = MutableSharedFlow<Unit>()
+    val itemMovedFlow = MutableSharedFlow<Pair<Int, Int>>()
+    val itemRemovedFlow: MutableSharedFlow<Int> = MutableSharedFlow()
 
     val playPause: MutableSharedFlow<Boolean> = MutableSharedFlow()
     val seekTo: MutableSharedFlow<Long> = MutableSharedFlow()
@@ -39,21 +43,18 @@ class PlayerViewModel @Inject constructor(
     val seekToNext: MutableSharedFlow<Unit> = MutableSharedFlow()
     val repeat: MutableSharedFlow<Int> = MutableSharedFlow()
 
-    val audioIndexFlow = MutableSharedFlow<Int>()
-    val audioQueueFlow = MutableSharedFlow<TrackWithStream>()
-    val clearQueueFlow = MutableSharedFlow<Unit>()
-
-    private suspend fun loadStreamable(track: Track): TrackWithStream? {
-        val stream = trackClient?.getStreamable(track) ?: return null
-        return TrackWithStream(track, stream)
+    private suspend fun loadStreamable(track: Track): StreamableAudio? {
+        return trackClient?.getStreamable(track) ?: return null
     }
-    private val queue = mutableListOf<TrackWithStream>()
+
+    private val queue = Global.queue
+
     private suspend fun loadAndAddToQueue(track: Track): Int {
         val stream = loadStreamable(track)
         return stream?.let {
-            queue.add(it)
-            audioQueueFlow.emit(it)
-            queue.count() - 1
+            val item = PlayerHelper.mediaItemBuilder(queue, track, it)
+            audioQueueFlow.emit(item)
+            queue.size - 1
         } ?: -1
     }
 
@@ -73,6 +74,24 @@ class PlayerViewModel @Inject constructor(
         queue.clear()
         viewModelScope.launch {
             clearQueueFlow.emit(Unit)
+        }
+    }
+
+    fun moveQueueItems(new: Int, old: Int) {
+        Collections.swap(queue, new, old)
+        viewModelScope.launch {
+            itemMovedFlow.emit(new to old)
+        }
+    }
+
+    fun removeQueueItem(index: Int) {
+        queue.removeAt(index)
+        println(queue.size)
+        viewModelScope.launch {
+            if (queue.size == 0)
+                clearQueueFlow.emit(Unit)
+            else
+                itemRemovedFlow.emit(index)
         }
     }
 

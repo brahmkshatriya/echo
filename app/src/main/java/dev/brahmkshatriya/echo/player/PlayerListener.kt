@@ -8,8 +8,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaBrowser
-import dev.brahmkshatriya.echo.common.models.Track
-
 
 class PlayerListener(
     private val player: MediaBrowser,
@@ -40,15 +38,9 @@ class PlayerListener(
         viewModel.isPlaying.value = isPlaying
     }
 
-    companion object {
-        val tracks = mutableMapOf<String, Track>()
-    }
-
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val id = mediaItem?.mediaId ?: return
-        val track = mediaItem.localConfiguration?.tag as Track?
-        if (track != null) tracks[id] = track
-        viewModel.track.value = tracks[id] ?: return
+        viewModel.track.value = Global.getTrack(id)
     }
 
     override fun onPositionDiscontinuity(
@@ -97,7 +89,7 @@ class PlayerListener(
     }
 
     fun update(mediaId: String) {
-        viewModel.track.value = tracks[mediaId]
+        viewModel.track.value = Global.getTrack(mediaId)
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING

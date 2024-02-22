@@ -6,53 +6,33 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurfaceContainerLow">
 
-    <View
-        android:id="@+id/expandedBackground"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"
-        android:background="?attr/colorSurfaceContainerLowest" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/expandedContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:baselineAligned="false"
         android:clipToPadding="false"
-        android:fitsSystemWindows="true"
         android:translationY="@dimen/collapsed_cover_size"
         tools:translationY="0dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/collapsePlayer"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:contentDescription="@string/collapse_player"
-            android:padding="8dp"
-            app:icon="@drawable/ic_expand_more"
-            app:iconSize="24dp"
-            app:iconTint="@color/button_player"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <View
+            android:id="@+id/expandedBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0"
+            android:background="?attr/colorSurfaceContainerLowest" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/expandedTrackCoverContainer"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/coordinatorLayout"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:padding="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/coordinatorLayout"
             app:layout_constraintHeight_max="@dimen/max_cover_size"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/collapsePlayer"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_max="@dimen/max_cover_size">
-
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/expandedTrackCover"
@@ -61,8 +41,8 @@
                 android:background="?attr/colorSurfaceContainerHigh"
                 android:importantForAccessibility="no"
                 android:scaleType="fitCenter"
-                app:layout_constraintDimensionRatio="1,1"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1,1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -73,21 +53,25 @@
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/coordinatorLayout"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginStart="12dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_marginEnd="12dp"
             android:orientation="vertical"
+            android:padding="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toEndOf="@id/expandedTrackCoverContainer"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_min="360dp"
+            app:layout_constraintWidth_percent="0.5">
 
             <LinearLayout
                 android:id="@+id/expandedTrackInfoContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="92dp"
-                android:gravity="center"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="96dp"
+                android:gravity="bottom|center_horizontal"
                 android:orientation="vertical">
 
                 <TextView
@@ -173,8 +157,8 @@
                         app:iconTint="@color/button_player" />
 
                     <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                        android:layout_width="72dp"
+                        android:layout_height="72dp">
 
                         <com.google.android.material.progressindicator.CircularProgressIndicator
                             android:id="@+id/expandedProgressBar"
@@ -218,38 +202,50 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/collapsePlayer"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/collapse_player"
+                android:padding="8dp"
+                app:icon="@drawable/ic_expand_more"
+                app:iconSize="24dp"
+                app:iconTint="@color/button_player" />
+
+            <LinearLayout
+                android:id="@+id/bottomPlaylistContainer"
+                style="@style/Widget.Material3.BottomSheet"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="?attr/colorSurfaceContainerLowest"
+                android:fitsSystemWindows="true"
+                android:clipToPadding="false"
+                android:orientation="vertical"
+                app:behavior_hideable="false"
+                app:behavior_peekHeight="72dp"
+                app:layout_behavior="@string/bottom_sheet_behavior"
+                app:paddingBottomSystemWindowInsets="false"
+                app:marginLeftSystemWindowInsets="false"
+                app:marginRightSystemWindowInsets="false">
+
+                <include
+                    android:id="@+id/bottom_playlist"
+                    layout="@layout/bottom_playlist" />
+            </LinearLayout>
+
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <LinearLayout
-        android:id="@+id/bottomPlaylistContainer"
-        style="@style/Widget.Material3.BottomSheet"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:backgroundTint="?attr/colorSurfaceContainerLowest"
-        android:fitsSystemWindows="true"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        app:behavior_hideable="false"
-        app:behavior_peekHeight="72dp"
-        app:marginLeftSystemWindowInsets="false"
-        app:marginRightSystemWindowInsets="false"
-        app:paddingBottomSystemWindowInsets="false"
-        app:layout_behavior="@string/bottom_sheet_behavior"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large">
-
-        <include
-            android:id="@+id/bottom_playlist"
-            layout="@layout/bottom_playlist" />
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/collapsedContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorSurfaceContainerLow"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        tools:translationY="-72dp">
 
         <ImageView
             android:id="@+id/collapsedTrackCover"

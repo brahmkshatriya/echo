@@ -17,12 +17,11 @@
 
     <FrameLayout
         android:id="@+id/bottom_player_container"
-        style="@style/ApplyInsets"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/colorSurfaceContainerLow"
         android:translationY="72dp"
-        app:behavior_peekHeight="72dp"
+        app:behavior_peekHeight="@dimen/bottom_player_peek_height"
         app:behavior_hideable="true"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
