@@ -7,8 +7,6 @@ import android.graphics.drawable.Animatable
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.LinearInterpolator
-import android.widget.SeekBar
-import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.ViewCompat
@@ -35,6 +33,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLIN
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.checkbox.MaterialCheckBox.OnCheckedStateChangedListener
 import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
+import com.google.android.material.slider.Slider
+import com.google.android.material.slider.Slider.OnSliderTouchListener
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
@@ -157,24 +157,23 @@ fun createPlayer(
 
     var expandedAnimator: ObjectAnimator? = null
     var collapsedAnimator: ObjectAnimator? = null
-    playerBinding.expandedSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-        var touched = false
-        override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-            if (touched) playerBinding.trackCurrentTime.text = p1.toLong().toTimeString()
-        }
-
-        override fun onStartTrackingTouch(p0: SeekBar?) {
-            touched = true
-            expandedAnimator?.cancel()
-        }
-
-        override fun onStopTrackingTouch(p0: SeekBar?) {
-            touched = false
-            p0?.progress?.let {
-                playerViewModel.seekTo.emit { it.toLong() }
+    playerBinding.expandedSeekBar.apply {
+        addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                playerBinding.trackCurrentTime.text = value.toLong().toTimeString()
             }
         }
-    })
+        addOnSliderTouchListener(object : OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                expandedAnimator?.cancel()
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                playerViewModel.seekTo.emit { slider.value.toLong() }
+            }
+        })
+    }
+
 
     val drawables = listOf(
         AppCompatResources.getDrawable(activity, R.drawable.ic_repeat_to_repeat_one_40dp),
@@ -297,32 +296,52 @@ fun createPlayer(
 
         observe(uiViewModel.totalDuration) {
             playerBinding.collapsedSeekBar.max = it
-            playerBinding.expandedSeekBar.max = it
-
+            playerBinding.collapsedSeekBarBuffer.max = it
+            playerBinding.expandedSeekBarBuffer.max = it
+            expandedAnimator?.cancel()
+            playerBinding.expandedSeekBar.apply {
+                value = min(value, it.toFloat())
+                valueTo = 1f + it
+            }
             playerBinding.trackTotalTime.text = it.toLong().toTimeString()
+        }
+
+        fun View.getAnimator(property: String, value: Float) =
+            ObjectAnimator.ofFloat(this, property, value)
+
+        fun View.getAnimator(property: String, value: Int) =
+            ObjectAnimator.ofInt(this, property, value)
+
+        val interpolator = LinearInterpolator()
+        fun View.startAnimation(property: String, value: Number, duration: Long): ObjectAnimator {
+            val animator = when (value) {
+                is Float -> getAnimator(property, value)
+                is Int -> getAnimator(property, value)
+                else -> throw IllegalStateException()
+            }
+            animator.interpolator = interpolator
+            animator.duration = duration
+            animator.start()
+            return animator
         }
 
         observe(uiViewModel.progress) { (current, buffered) ->
             if (!playerBinding.expandedSeekBar.isPressed) {
-                playerBinding.collapsedSeekBar.secondaryProgress = buffered
-                playerBinding.expandedSeekBar.secondaryProgress = buffered
+                playerBinding.collapsedSeekBarBuffer.progress = buffered
+                playerBinding.expandedSeekBarBuffer.progress = buffered
 
-                var old = playerBinding.expandedSeekBar.progress
-                if (old == 0) old = current
+                var old = playerBinding.expandedSeekBar.value
+                if (old == 0f) old = current.toFloat()
                 val duration = min(1000L, max(0L, (current - old).toLong()))
+
                 playerBinding.collapsedSeekBar.apply {
                     collapsedAnimator?.cancel()
-                    collapsedAnimator =
-                        ObjectAnimator.ofInt(this, "progress", current).setDuration(duration)
-                    collapsedAnimator?.interpolator = LinearInterpolator()
-                    collapsedAnimator?.start()
+                    collapsedAnimator = startAnimation("progress", current, duration)
                 }
                 playerBinding.expandedSeekBar.apply {
                     expandedAnimator?.cancel()
-                    expandedAnimator =
-                        ObjectAnimator.ofInt(this, "progress", current).setDuration(duration)
-                    expandedAnimator?.interpolator = LinearInterpolator()
-                    expandedAnimator?.start()
+                    val curr = min(current.toFloat(), valueTo)
+                    expandedAnimator = startAnimation("value", curr, duration)
                 }
                 playerBinding.trackCurrentTime.text = current.toLong().toTimeString()
             }
