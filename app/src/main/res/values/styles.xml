@@ -3,12 +3,6 @@
     <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">?attr/colorPrimary</item>
     </style>
-    <style name="ApplyInsets">
-        <item name="paddingTopSystemWindowInsets">true</item>
-        <item name="paddingBottomSystemWindowInsets">true</item>
-        <item name="paddingLeftSystemWindowInsets">true</item>
-        <item name="paddingRightSystemWindowInsets">true</item>
-    </style>
     <style name="TopAppBarHeader">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

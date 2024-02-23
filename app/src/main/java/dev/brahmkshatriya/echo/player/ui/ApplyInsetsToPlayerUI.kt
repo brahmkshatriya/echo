@@ -2,7 +2,7 @@ package dev.brahmkshatriya.echo.player.ui
 
 import android.content.res.Configuration
 import android.view.View
-import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -58,25 +58,28 @@ fun applyInsetsToPlayerUI(
         ) { view, insets ->
             val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
-            view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            view.updateLayoutParams<MarginLayoutParams> {
                 topMargin = systemInsets.top
                 bottomMargin = systemInsets.bottom
                 leftMargin = systemInsets.left
             }
 
-            playerBinding.collapsedContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            playerBinding.collapsedContainer.updateLayoutParams<MarginLayoutParams> {
                 leftMargin = systemInsets.left
                 rightMargin = systemInsets.right
             }
 
-            playerBinding.collapsePlayer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            playerBinding.collapsePlayer.updateLayoutParams<MarginLayoutParams> {
                 topMargin = systemInsets.top
             }
 
             playerBinding.expandedTrackInfoContainer.updatePadding(
-                right = systemInsets.right,
                 top = systemInsets.top,
                 bottom = systemInsets.bottom
+            )
+
+            playerBinding.coordinatorLayout.updatePadding(
+                right = systemInsets.right
             )
 
             playerBinding.bottomPlaylistContainer.updatePadding(
