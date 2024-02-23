@@ -11,7 +11,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.NavHostFragment
@@ -25,14 +24,14 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.player.PlaybackService
 import dev.brahmkshatriya.echo.player.PlayerViewModel
-import dev.brahmkshatriya.echo.player.attachPlayerView
-import dev.brahmkshatriya.echo.player.createPlayer
-import dev.brahmkshatriya.echo.player.startPlayer
+import dev.brahmkshatriya.echo.player.ui.applyInsetsToPlayerUI
+import dev.brahmkshatriya.echo.player.ui.connectPlayerToUI
+import dev.brahmkshatriya.echo.player.ui.createPlayerUI
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
-import dev.brahmkshatriya.echo.ui.utils.checkPermissions
-import dev.brahmkshatriya.echo.ui.utils.emit
-import dev.brahmkshatriya.echo.ui.utils.tryWith
-import dev.brahmkshatriya.echo.ui.utils.updateBottomMarginWithSystemInsets
+import dev.brahmkshatriya.echo.utils.checkPermissions
+import dev.brahmkshatriya.echo.utils.emit
+import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.utils.updateBottomMarginWithSystemInsets
 import tel.jeelpa.plugger.PluginRepo
 import javax.inject.Inject
 
@@ -59,9 +58,8 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge(
             SystemBarStyle.auto(TRANSPARENT, TRANSPARENT),
-            SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
+            SystemBarStyle.dark(TRANSPARENT)
         )
-        WindowInsetsControllerCompat(window, binding.root).isAppearanceLightNavigationBars = true
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets -> insets }
 
         checkPermissions(this)
@@ -81,8 +79,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        createPlayer(this)
-        attachPlayerView(this)
+        createPlayerUI(this)
+        applyInsetsToPlayerUI(this)
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -98,7 +96,10 @@ class MainActivity : AppCompatActivity() {
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
         MediaBrowser.Builder(this, sessionToken).buildAsync().also {
             controllerFuture = it
-            val listener = Runnable { tryWith(false) { startPlayer(this, it.get()) } }
+            val listener = Runnable {
+                val browser = tryWith(false) { it.get() } ?: return@Runnable
+                connectPlayerToUI(this, browser)
+            }
             it.addListener(listener, ContextCompat.getMainExecutor(this))
         }
     }

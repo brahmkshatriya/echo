@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.player.ui
 
 import android.annotation.SuppressLint
 import android.os.Handler
@@ -8,6 +8,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaBrowser
+import dev.brahmkshatriya.echo.player.Global
 
 class PlayerListener(
     private val player: MediaBrowser,
@@ -93,5 +94,6 @@ class PlayerListener(
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
+        viewModel.playlist.value = player.currentMediaItemIndex
     }
 }

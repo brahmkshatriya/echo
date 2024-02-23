@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.player.Global
-import dev.brahmkshatriya.echo.ui.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadInto
 
 class PlaylistAdapter(
     val callback: Callback

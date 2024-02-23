@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemMediaBinding
-import dev.brahmkshatriya.echo.ui.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemAdapter(
     private val listener: ClickListener<Track>

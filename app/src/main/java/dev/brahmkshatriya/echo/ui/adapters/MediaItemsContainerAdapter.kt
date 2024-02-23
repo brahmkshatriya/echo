@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.ui.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemsContainerAdapter(
     private val lifecycle: Lifecycle,

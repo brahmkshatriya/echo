@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.player.ui
 
 import androidx.lifecycle.ViewModel
 import dev.brahmkshatriya.echo.common.models.Track

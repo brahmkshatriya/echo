@@ -13,8 +13,8 @@ import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonChec
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionBinding
-import dev.brahmkshatriya.echo.ui.utils.loadInto
-import dev.brahmkshatriya.echo.ui.utils.observe
+import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.observe
 
 
 class ExtensionDialogFragment : DialogFragment() {

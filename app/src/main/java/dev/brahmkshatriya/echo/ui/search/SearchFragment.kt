@@ -12,14 +12,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.player.PlayerBackButtonHelper
+import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
-import dev.brahmkshatriya.echo.ui.utils.observe
-import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
+import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.updatePaddingWithSystemInsets
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {

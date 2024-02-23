@@ -1,22 +1,15 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.player.ui
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.res.Configuration
 import android.graphics.drawable.Animatable
 import android.view.View
-import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.LinearInterpolator
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
-import androidx.core.view.updatePadding
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
-import androidx.media3.session.MediaBrowser
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.DOWN
 import androidx.recyclerview.widget.ItemTouchHelper.START
@@ -38,17 +31,18 @@ import com.google.android.material.slider.Slider.OnSliderTouchListener
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
-import dev.brahmkshatriya.echo.ui.utils.emit
-import dev.brahmkshatriya.echo.ui.utils.loadInto
-import dev.brahmkshatriya.echo.ui.utils.observe
+import dev.brahmkshatriya.echo.utils.emit
+import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlin.math.max
 import kotlin.math.min
 
 
 @SuppressLint("NotifyDataSetChanged")
-fun createPlayer(
+fun createPlayerUI(
     activity: MainActivity
 ) {
 
@@ -354,14 +348,10 @@ fun createPlayer(
 
         observe(playerViewModel.clearQueueFlow) {
             adapter.notifyDataSetChanged()
-            println("Cleared")
             container.post {
-                bottomPlayerBehavior.isDraggable = true
-                container.post {
-                    if (bottomPlayerBehavior.state != STATE_HIDDEN) {
-                        bottomPlayerBehavior.state = STATE_HIDDEN
-                        println("State changed")
-                    }
+                if (bottomPlayerBehavior.state != STATE_HIDDEN) {
+                    bottomPlayerBehavior.state = STATE_HIDDEN
+                    println("State changed")
                 }
             }
         }
@@ -370,151 +360,6 @@ fun createPlayer(
             (it.localConfiguration?.tag as? Int)?.let { index ->
                 adapter.notifyItemInserted(index)
             }
-        }
-    }
-}
-
-fun attachPlayerView(
-    activity: MainActivity
-) {
-
-    val playerBinding = activity.binding.bottomPlayer
-    val playlistBinding = playerBinding.bottomPlaylist
-
-    val container = activity.binding.bottomPlayerContainer as View
-    val playlistContainer = playerBinding.bottomPlaylistContainer as View
-
-    val uiViewModel: PlayerUIViewModel by activity.viewModels()
-
-    val bottomPlayerBehavior = BottomSheetBehavior.from(container)
-    val playlistBehavior = BottomSheetBehavior.from(playlistContainer)
-
-    val peekHeight = activity.resources.getDimension(R.dimen.bottom_player_peek_height).toInt()
-    val playlistPeekHeight = activity.resources.getDimension(R.dimen.playlist_peek_height).toInt()
-
-    val navView = activity.binding.navView
-
-    val orientation: Int = activity.resources.configuration.orientation
-
-    ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
-        val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        bottomPlayerBehavior.peekHeight = peekHeight + systemInsets.bottom
-        playlistBehavior.peekHeight = playlistPeekHeight + systemInsets.bottom
-        insets
-    }
-
-    if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-        navView.post {
-            uiViewModel.bottomNavTranslateY = navView.height
-        }
-    } else {
-        navView.post {
-            uiViewModel.bottomNavTranslateY = -navView.height
-        }
-
-        // Need to manually handle system insets for landscape mode
-        // since we can't use the fitSystemWindows on the root view,
-        // or the playlist bottom sheet will be hidden behind the navigation bar
-        ViewCompat.setOnApplyWindowInsetsListener(
-            playerBinding.expandedTrackCoverContainer
-        ) { view, insets ->
-            val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-            view.updateLayoutParams<MarginLayoutParams> {
-                topMargin = systemInsets.top
-                bottomMargin = systemInsets.bottom
-                leftMargin = systemInsets.left
-            }
-
-            playerBinding.collapsedContainer.updateLayoutParams<MarginLayoutParams> {
-                leftMargin = systemInsets.left
-                rightMargin = systemInsets.right
-            }
-
-            playerBinding.collapsePlayer.updateLayoutParams<MarginLayoutParams> {
-                topMargin = systemInsets.top
-            }
-
-            playerBinding.expandedTrackInfoContainer.updatePadding(
-                right = systemInsets.right,
-                top = systemInsets.top,
-                bottom = systemInsets.bottom
-            )
-
-            playerBinding.bottomPlaylistContainer.updatePadding(
-                left = 0,
-                right = 0,
-                bottom = systemInsets.bottom
-            )
-
-            uiViewModel.bottomNavTranslateY = -(navView.height + systemInsets.top)
-            insets
-        }
-    }
-
-
-    ViewCompat.setOnApplyWindowInsetsListener(playlistBinding.root) { _, insets ->
-        val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        uiViewModel.playlistTranslationY = systemInsets.top
-        playlistBinding.root.translationY = -uiViewModel.playlistTranslationY.toFloat()
-        insets
-    }
-}
-
-
-fun startPlayer(activity: MainActivity, player: MediaBrowser) {
-
-    val playerViewModel: PlayerViewModel by activity.viewModels()
-    val uiViewModel: PlayerUIViewModel by activity.viewModels()
-
-    val listener = PlayerListener(player, uiViewModel)
-    player.addListener(listener)
-    player.currentMediaItem?.let {
-        listener.update(it.mediaId)
-        activity.emit(uiViewModel.playlist) {
-            player.currentMediaItemIndex
-        }
-    }
-
-    activity.apply {
-        observe(playerViewModel.playPause) {
-            if (it) player.play() else player.pause()
-        }
-        observe(playerViewModel.seekToPrevious) {
-            player.seekToPrevious()
-            player.playWhenReady = true
-        }
-        observe(playerViewModel.seekToNext) {
-            player.seekToNext()
-            player.playWhenReady = true
-        }
-        observe(playerViewModel.audioIndexFlow) {
-            if (it >= 0) {
-                player.seekToDefaultPosition(it)
-                uiViewModel.playlist.emit(it)
-            }
-        }
-        observe(playerViewModel.seekTo) {
-            player.seekTo(it)
-        }
-        observe(playerViewModel.repeat) {
-            player.repeatMode = it
-        }
-        observe(playerViewModel.audioQueueFlow) {
-            player.addMediaItem(it)
-            player.prepare()
-            player.playWhenReady = true
-        }
-        observe(playerViewModel.clearQueueFlow) {
-            player.pause()
-            player.clearMediaItems()
-            player.stop()
-        }
-        observe(playerViewModel.itemMovedFlow) { (new, old) ->
-            player.moveMediaItem(old, new)
-        }
-        observe(playerViewModel.itemRemovedFlow) {
-            player.removeMediaItem(it)
         }
     }
 }

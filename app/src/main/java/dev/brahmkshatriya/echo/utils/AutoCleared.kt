@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.utils
+package dev.brahmkshatriya.echo.utils
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver

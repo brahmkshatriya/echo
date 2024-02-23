@@ -58,7 +58,6 @@ class PlaybackService : MediaLibraryService() {
         setMediaNotificationProvider(notificationProvider)
     }
 
-    @OptIn(UnstableApi::class)
     override fun onDestroy() {
         mediaLibrarySession?.run {
             player.release()

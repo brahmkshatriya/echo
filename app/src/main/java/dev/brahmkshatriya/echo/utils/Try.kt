@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.utils
+package dev.brahmkshatriya.echo.utils
 
 fun <T> tryWith(print: Boolean, block: () -> T): T? {
     return try {

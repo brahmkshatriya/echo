@@ -13,16 +13,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
-import dev.brahmkshatriya.echo.player.PlayerBackButtonHelper
+import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
-import dev.brahmkshatriya.echo.ui.utils.autoCleared
-import dev.brahmkshatriya.echo.ui.utils.dpToPx
-import dev.brahmkshatriya.echo.ui.utils.observe
-import dev.brahmkshatriya.echo.ui.utils.updatePaddingWithSystemInsets
+import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.updatePaddingWithSystemInsets
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {

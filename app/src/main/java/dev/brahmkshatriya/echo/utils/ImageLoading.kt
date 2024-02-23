@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.utils
+package dev.brahmkshatriya.echo.utils
 
 import android.graphics.drawable.Drawable
 import android.widget.ImageView

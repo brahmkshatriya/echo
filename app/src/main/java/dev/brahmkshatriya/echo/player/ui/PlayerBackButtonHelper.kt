@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.player.ui
 
 import android.view.View
 import androidx.activity.BackEventCompat
@@ -10,7 +10,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPS
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.MainActivity
-import dev.brahmkshatriya.echo.ui.utils.observe
+import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableStateFlow
 
 object PlayerBackButtonHelper {
