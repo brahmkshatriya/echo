@@ -8,14 +8,14 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
-          cache: gradle
+          cache: 'gradle'
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -28,9 +28,13 @@ jobs:
         with:
           path: app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Send file README.md to discord channel
-        uses: sinshutu/upload-to-discord@master
+      - name: Upload APK to Discord
+        shell: bash
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          args: app/build/outputs/apk/debug/app-debug.apk
+          VERSION: ${{ github.event.head_commit.id }}
+          CONTENT: ${{ github.event.head_commit.message }}
+          ROLE: ${{ secrets.DISCORD_PING_ROLE_ID }}
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          contentbody=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
+          curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n\n${contentbody:1:-1}\"}" -F "echo_beta=@app/build/outputs/apk/debug/app-debug.apk" ${{ evn.WEBHOOK }}
