@@ -15,6 +15,17 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/mobile_navigation" />
 
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?attr/colorSurfaceContainerLowest"
+        app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
+        app:itemIconTint="@color/bottom_item_icon"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
+
     <FrameLayout
         android:id="@+id/bottom_player_container"
         android:layout_width="match_parent"
@@ -30,16 +41,5 @@
             layout="@layout/bottom_player" />
 
     </FrameLayout>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="?attr/colorSurfaceContainerLowest"
-        app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
-        app:itemIconTint="@color/bottom_item_icon"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

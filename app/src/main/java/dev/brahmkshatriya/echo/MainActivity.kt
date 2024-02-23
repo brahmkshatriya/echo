@@ -3,7 +3,10 @@ package dev.brahmkshatriya.echo
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -54,7 +57,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            SystemBarStyle.auto(TRANSPARENT, TRANSPARENT),
+            if (isNightMode())
+                SystemBarStyle.dark(TRANSPARENT)
+            else
+                SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
+        )
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets -> insets }
 
         checkPermissions(this)
@@ -77,6 +87,9 @@ class MainActivity : AppCompatActivity() {
         createPlayerUI(this)
         applyInsetsToPlayerUI(this)
     }
+
+    fun isNightMode() =
+        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_NO
 
     override fun onNewIntent(intent: Intent?) {
         intent?.hasExtra("fromNotification")?.let {
