@@ -42,6 +42,7 @@ class PlayerListener(
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val id = mediaItem?.mediaId ?: return
         viewModel.track.value = Global.getTrack(id)
+        viewModel.playlist.value = player.currentMediaItemIndex
     }
 
     override fun onPositionDiscontinuity(

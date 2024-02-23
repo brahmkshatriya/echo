@@ -206,27 +206,29 @@ fun createPlayerUI(
 
 
     val linearLayoutManager = LinearLayoutManager(activity, VERTICAL, false)
+    var adapter: PlaylistAdapter? = null
     val callback = object : ItemTouchHelper.SimpleCallback(UP or DOWN, START) {
         override fun onMove(
             recyclerView: RecyclerView,
             viewHolder: RecyclerView.ViewHolder,
             target: RecyclerView.ViewHolder
         ): Boolean {
-            playerViewModel.moveQueueItems(
-                viewHolder.bindingAdapterPosition, target.bindingAdapterPosition
-            )
+            val new = viewHolder.bindingAdapterPosition
+            val old = target.bindingAdapterPosition
+            playerViewModel.moveQueueItems(new, old)
+            adapter?.notifyItemMoved(new, old)
             return true
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            playerViewModel.removeQueueItem(
-                viewHolder.bindingAdapterPosition
-            )
+            val pos = viewHolder.bindingAdapterPosition
+            playerViewModel.removeQueueItem(pos)
+            adapter?.notifyItemRemoved(pos)
         }
     }
     val touchHelper = ItemTouchHelper(callback)
-    val adapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
-        override fun onDragHandleClicked(viewHolder: PlaylistAdapter.ViewHolder) {
+    adapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
+        override fun onDragHandleTouched(viewHolder: PlaylistAdapter.ViewHolder) {
             touchHelper.startDrag(viewHolder)
         }
 
@@ -236,8 +238,11 @@ fun createPlayerUI(
 
         override fun onItemClosedClicked(position: Int) {
             playerViewModel.removeQueueItem(position)
+            adapter?.notifyItemRemoved(position)
         }
     })
+
+
 
     playlistBinding.playlistRecycler.apply {
         layoutManager = linearLayoutManager
@@ -264,9 +269,9 @@ fun createPlayerUI(
             container.post {
                 if (bottomPlayerBehavior.state == STATE_HIDDEN) {
                     bottomPlayerBehavior.isHideable = false
+                    bottomPlayerBehavior.isDraggable = true
                     bottomPlayerBehavior.state = STATE_COLLAPSED
                     bottomPlaylistBehavior.state = STATE_COLLAPSED
-                    bottomPlayerBehavior.isDraggable = true
                 }
             }
         }
@@ -345,9 +350,13 @@ fun createPlayerUI(
             }
         }
         observe(uiViewModel.playlist) {
-            val viewHolder =
-                playlistBinding.playlistRecycler.findViewHolderForAdapterPosition(it) as PlaylistAdapter.ViewHolder?
-            adapter.setCurrent(viewHolder)
+            playlistBinding.playlistRecycler.apply {
+                post {
+                    val viewHolder =
+                        findViewHolderForAdapterPosition(it) as PlaylistAdapter.ViewHolder?
+                    adapter.setCurrent(viewHolder)
+                }
+            }
         }
 
         observe(playerViewModel.clearQueueFlow) {

@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.ui.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.MotionEvent.ACTION_DOWN
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
@@ -16,18 +18,22 @@ class PlaylistAdapter(
 
     open class Callback {
         open fun onItemClicked(position: Int) {}
-        open fun onDragHandleClicked(viewHolder: ViewHolder) {}
+        open fun onDragHandleTouched(viewHolder: ViewHolder) {}
         open fun onItemClosedClicked(position: Int) {}
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     inner class ViewHolder(val binding: ItemPlaylistItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         init {
             binding.playlistItemClose.setOnClickListener {
                 callback.onItemClosedClicked(bindingAdapterPosition)
             }
-            binding.playlistItemDragHandle.setOnClickListener {
-                callback.onDragHandleClicked(this)
+            binding.playlistItemDragHandle.setOnTouchListener { _, event ->
+                if (event.actionMasked != ACTION_DOWN)
+                    return@setOnTouchListener false
+                callback.onDragHandleTouched(this)
+                true
             }
             binding.root.setOnClickListener {
                 callback.onItemClicked(bindingAdapterPosition)
@@ -47,15 +53,20 @@ class PlaylistAdapter(
         binding.playlistItemTitle.text = track.title
         track.cover?.loadInto(binding.playlistItemImageView)
         binding.playlistItemAuthor.text = track.artists.joinToString(", ") { it.name }
-        binding.playlistCurrentItem.isVisible = holder == oldViewHolder
+        if (position == currentPosition) {
+            binding.playlistCurrentItem.isVisible = true
+            oldViewHolder = holder
+        }
     }
 
+    private var currentPosition = 0
     private var oldViewHolder: ViewHolder? = null
     fun setCurrent(viewHolder: ViewHolder?) {
         oldViewHolder?.binding?.playlistCurrentItem?.isVisible = false
-        oldViewHolder = viewHolder
-        viewHolder?.binding?.playlistCurrentItem?.apply {
-            isVisible = true
+        viewHolder?.apply {
+            binding.playlistCurrentItem.isVisible = true
+            currentPosition = bindingAdapterPosition
+            oldViewHolder = this
         }
     }
 }

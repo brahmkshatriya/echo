@@ -32,7 +32,6 @@ fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
         observe(playerViewModel.audioIndexFlow) {
             if (it >= 0) {
                 player.seekToDefaultPosition(it)
-                uiViewModel.playlist.emit(it)
             }
         }
         observe(playerViewModel.seekTo) {
