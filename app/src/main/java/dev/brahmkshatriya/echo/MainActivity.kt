@@ -3,9 +3,7 @@ package dev.brahmkshatriya.echo
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
-import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
-import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -56,10 +54,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        enableEdgeToEdge(
-            SystemBarStyle.auto(TRANSPARENT, TRANSPARENT),
-            SystemBarStyle.dark(TRANSPARENT)
-        )
+        enableEdgeToEdge()
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets -> insets }
 
         checkPermissions(this)
