@@ -37,4 +37,4 @@ jobs:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           contentbody=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
-          curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n\n${contentbody:1:-1}\"}" -F "echo_beta=@app/build/outputs/apk/debug/app-debug.apk" ${{ evn.WEBHOOK }}
+          curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n\n${contentbody:1:-1}\"}" -F "echo_beta=@app/build/outputs/apk/debug/app-debug.apk" ${{ env.WEBHOOK }}
