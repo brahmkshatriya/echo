@@ -1,6 +1,6 @@
 name: build
 
-on: [ push, pull_request, workflow_dispatch ]
+on: [ push, workflow_dispatch ]
 
 jobs:
   build:
@@ -27,16 +27,3 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Upload APK to Discord
-        shell: bash
-        env:
-          VERSION: ${{ github.event.head_commit.id }}
-          CONTENT: ${{ github.event.head_commit.message }}
-          ROLE: ${{ secrets.DISCORD_PING_ROLE_ID }}
-          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run: |
-          content=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
-          version=$( echo ${{ env.VERSION }} | cut -c1-7 )
-          mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/${version}.apk
-          curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${version}**\n${content:1:-1}\"}" -F "echo_beta=@app/build/outputs/apk/debug/${version}.apk" ${{ env.WEBHOOK }}
