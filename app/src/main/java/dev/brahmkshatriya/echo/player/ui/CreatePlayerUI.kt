@@ -70,6 +70,7 @@ fun createPlayerUI(
         BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             bottomPlayerBehavior.isDraggable = newState == STATE_COLLAPSED
+
             if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
             playerBinding.expandedSeekBar.isEnabled = newState != STATE_EXPANDED
             PlayerBackButtonHelper.playlistState.value = newState
@@ -86,12 +87,12 @@ fun createPlayerUI(
     val collapsedCoverSize = activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
     bottomPlayerBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
+            bottomPlayerBehavior.isHideable = newState != STATE_EXPANDED
+
             if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
             PlayerBackButtonHelper.playerSheetState.value = newState
-            when (newState) {
-                STATE_HIDDEN -> playerViewModel.clearQueue()
-                else -> bottomPlayerBehavior.isHideable = newState != STATE_EXPANDED
-            }
+            if (newState == STATE_HIDDEN)
+                playerViewModel.clearQueue()
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -113,9 +114,11 @@ fun createPlayerUI(
     activity.observe(playerViewModel.fromNotification) {
         if (it) bottomPlayerBehavior.state = STATE_EXPANDED
     }
-
     playerBinding.playerClose.setOnClickListener {
         bottomPlayerBehavior.state = STATE_HIDDEN
+    }
+    playerBinding.collapsePlayer.setOnClickListener {
+        bottomPlayerBehavior.state = STATE_COLLAPSED
     }
 
     //Connect the UI to the ViewModel
@@ -260,6 +263,7 @@ fun createPlayerUI(
 
             container.post {
                 if (bottomPlayerBehavior.state == STATE_HIDDEN) {
+                    bottomPlayerBehavior.isHideable = false
                     bottomPlayerBehavior.state = STATE_COLLAPSED
                     bottomPlaylistBehavior.state = STATE_COLLAPSED
                     bottomPlayerBehavior.isDraggable = true
@@ -350,6 +354,7 @@ fun createPlayerUI(
             adapter.notifyDataSetChanged()
             container.post {
                 if (bottomPlayerBehavior.state != STATE_HIDDEN) {
+                    bottomPlayerBehavior.isHideable = true
                     bottomPlayerBehavior.state = STATE_HIDDEN
                     println("State changed")
                 }

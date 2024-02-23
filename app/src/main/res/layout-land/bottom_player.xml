@@ -147,11 +147,12 @@
                         app:trackHeight="4dp" />
 
                 </FrameLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
                     android:gravity="center"
                     android:orientation="horizontal">
 
@@ -193,6 +194,7 @@
                             android:id="@+id/trackPlayPause"
                             android:layout_width="72dp"
                             android:layout_height="72dp"
+                            android:background="@drawable/ripple_68dp"
                             android:button="@drawable/anim_play_pause_48dp"
                             android:contentDescription="@string/play_pause"
                             android:enabled="false"
@@ -216,6 +218,7 @@
                         android:id="@+id/trackHeart"
                         android:layout_width="64dp"
                         android:layout_height="64dp"
+                        android:background="@drawable/ripple_60dp"
                         android:button="@drawable/anim_heart_40dp"
                         android:contentDescription="@string/play_pause"
                         app:buttonTint="@color/button_player"
@@ -241,15 +244,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="?attr/colorSurfaceContainerLowest"
-                android:fitsSystemWindows="true"
                 android:clipToPadding="false"
+                android:fitsSystemWindows="true"
                 android:orientation="vertical"
                 app:behavior_hideable="false"
                 app:behavior_peekHeight="72dp"
                 app:layout_behavior="@string/bottom_sheet_behavior"
-                app:paddingBottomSystemWindowInsets="false"
                 app:marginLeftSystemWindowInsets="false"
-                app:marginRightSystemWindowInsets="false">
+                app:marginRightSystemWindowInsets="false"
+                app:paddingBottomSystemWindowInsets="false">
 
                 <include
                     android:id="@+id/bottom_playlist"
@@ -358,8 +361,9 @@
 
                         <com.google.android.material.checkbox.MaterialCheckBox
                             android:id="@+id/collapsedTrackPlayPause"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/ripple_44dp"
                             android:button="@drawable/anim_play_pause"
                             android:contentDescription="@string/play_pause"
                             android:enabled="false"
