@@ -44,8 +44,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":common"))
 
-    implementation("com.github.brahmkshatriya:echo-common:1.0.2")
     implementation("com.github.brahmkshatriya:plugger:1.0.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.1")
@@ -71,7 +71,7 @@ dependencies {
     ksp("com.google.dagger:hilt-android-compiler:2.48.1")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    ksp("com.github.bumptech.glide:compiler:4.14.2")
+    ksp("com.github.bumptech.glide:ksp:4.14.2")
 
     implementation("androidx.paging:paging-runtime-ktx:3.2.1")
     implementation("androidx.paging:paging-common-ktx:3.2.1")
