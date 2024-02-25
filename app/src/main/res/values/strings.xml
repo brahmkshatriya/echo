@@ -12,7 +12,6 @@
     <string name="previous">Previous</string>
     <string name="next">Next</string>
     <string name="extension">Extension</string>
-    <string name="offline">Offline</string>
     <string name="add_extension">Add Extension</string>
     <string name="extension_settings">Extension Settings</string>
     <string name="more">More</string>
@@ -20,12 +19,12 @@
     <string name="failed_loading">Failed Loading</string>
     <string name="repeat">Repeat</string>
     <string name="is_not_supported">%1$s is not supported in this Extension!</string>
-    <string name="nothing_up_next">Nothing up next</string>
     <string name="drag_to_change_playlist_position">Drag to change playlist position</string>
     <string name="up_next">Up Next</string>
     <string name="close">Close</string>
     <string name="collapse_player">Collapse the player</string>
     <string name="shuffle">Shuffle</string>
     <string name="clear_playlist">Clear playlist</string>
+    <string name="playlist">Playlist</string>
 
 </resources>

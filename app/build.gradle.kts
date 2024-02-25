@@ -1,8 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
 }
 
@@ -48,8 +47,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":common"))
 
-    implementation("com.github.brahmkshatriya:echo-common:1.0.2")
     implementation("com.github.brahmkshatriya:plugger:1.0.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.1")
@@ -72,9 +71,10 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.2.1")
     implementation("androidx.media3:media3-session:1.2.1")
 
-    kapt("com.google.dagger:hilt-android-compiler:2.48.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.48.1")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    ksp("com.github.bumptech.glide:ksp:4.14.2")
 
     implementation("androidx.paging:paging-runtime-ktx:3.2.1")
     implementation("androidx.paging:paging-common-ktx:3.2.1")
@@ -84,8 +84,4 @@ dependencies {
 
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-}
-
-kapt {
-    correctErrorTypes = true
 }

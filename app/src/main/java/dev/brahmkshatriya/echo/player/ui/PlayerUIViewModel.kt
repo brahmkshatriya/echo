@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.player.ui
 
 import androidx.lifecycle.ViewModel
-import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.player.Global
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class PlayerUIViewModel : ViewModel() {
@@ -9,7 +9,7 @@ class PlayerUIViewModel : ViewModel() {
     var bottomNavTranslateY: Int = 0
     var repeatMode: Int = 0
 
-    val track = MutableStateFlow<Track?>(null)
+    val track = MutableStateFlow(Global.queue.firstOrNull()?.second)
     val playlist = MutableStateFlow(0)
 
     val progress = MutableStateFlow(0 to 0)

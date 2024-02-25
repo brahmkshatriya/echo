@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.offline
+package dev.brahmkshatriya.echo.data.offline
 
 import android.content.Context
 import android.net.Uri

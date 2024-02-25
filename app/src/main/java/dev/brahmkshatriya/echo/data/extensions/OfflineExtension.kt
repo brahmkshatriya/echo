@@ -11,10 +11,10 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.data.offline.LocalAlbum
-import dev.brahmkshatriya.echo.common.data.offline.LocalArtist
-import dev.brahmkshatriya.echo.common.data.offline.LocalStream
-import dev.brahmkshatriya.echo.common.data.offline.LocalTrack
+import dev.brahmkshatriya.echo.data.offline.LocalAlbum
+import dev.brahmkshatriya.echo.data.offline.LocalArtist
+import dev.brahmkshatriya.echo.data.offline.LocalStream
+import dev.brahmkshatriya.echo.data.offline.LocalTrack
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
