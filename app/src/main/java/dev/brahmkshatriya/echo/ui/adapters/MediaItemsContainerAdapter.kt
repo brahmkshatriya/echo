@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
@@ -90,7 +91,7 @@ class MediaItemsContainerAdapter(
 
                 binding.title.text = track.title
 
-                track.cover?.loadInto(binding.imageView)
+                track.cover.loadInto(binding.imageView, R.drawable.art_music)
 
                 val album = track.album
                 if (album == null) {

@@ -53,6 +53,9 @@ class PlayerListener(
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        if(player.currentMediaItem == null) {
+            viewModel.track.value = null
+        }
         updateNavigation()
         updateProgress()
     }

@@ -86,7 +86,6 @@ class PlayerViewModel @Inject constructor(
 
     fun removeQueueItem(index: Int) {
         queue.removeAt(index)
-        println(queue.size)
         viewModelScope.launch {
             if (queue.size == 0)
                 clearQueueFlow.emit(Unit)

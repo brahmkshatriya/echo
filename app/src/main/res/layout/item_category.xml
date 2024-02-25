@@ -52,6 +52,6 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         app:layoutManager="LinearLayoutManager"
-        tools:listitem="@layout/item_media" />
+        tools:listitem="@layout/item_media_track" />
 
 </LinearLayout>

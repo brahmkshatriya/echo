@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.offline
+package dev.brahmkshatriya.echo.data.offline
 
 import android.content.ContentResolver
 import android.database.Cursor
@@ -15,6 +15,8 @@ interface LocalHelper {
         const val TRACK_AUTH = "track/"
         const val ALBUM_AUTH = "album/"
         const val ARTIST_AUTH = "artist/"
+
+        val ARTWORK_URI = Uri.parse("content://media/external/audio/albumart")
 
         fun createCursor(
             contentResolver: ContentResolver,

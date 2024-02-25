@@ -12,7 +12,8 @@ sealed class Playlist {
     open class WithCover(
         override val uri: Uri,
         override val title: String,
-        open val cover: ImageHolder?
+        open val cover: ImageHolder?,
+        val subtitle: String? = null,
     ) : Small(uri, title)
 
     data class Full(

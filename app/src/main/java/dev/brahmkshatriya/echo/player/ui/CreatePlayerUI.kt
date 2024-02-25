@@ -251,8 +251,20 @@ fun createPlayerUI(
     }
 
     activity.apply {
+
+        fun playlistCleared() {
+
+            container.post {
+                if (bottomPlayerBehavior.state != STATE_HIDDEN) {
+                    bottomPlayerBehavior.isHideable = true
+                    bottomPlayerBehavior.state = STATE_HIDDEN
+                    adapter.notifyDataSetChanged()
+                }
+            }
+        }
+
         observe(uiViewModel.track) { track ->
-            track ?: return@observe
+            track ?: return@observe playlistCleared()
 
             playerBinding.collapsedTrackTitle.text = track.title
             playerBinding.expandedTrackTitle.text = track.title
@@ -262,8 +274,8 @@ fun createPlayerUI(
                 playerBinding.expandedTrackAuthor.text = this
             }
             track.cover?.run {
-                loadInto(playerBinding.collapsedTrackCover)
-                loadInto(playerBinding.expandedTrackCover)
+                loadInto(playerBinding.collapsedTrackCover, R.drawable.art_music)
+                loadInto(playerBinding.expandedTrackCover, R.drawable.art_music)
             }
 
             container.post {
@@ -360,14 +372,7 @@ fun createPlayerUI(
         }
 
         observe(playerViewModel.clearQueueFlow) {
-            adapter.notifyDataSetChanged()
-            container.post {
-                if (bottomPlayerBehavior.state != STATE_HIDDEN) {
-                    bottomPlayerBehavior.isHideable = true
-                    bottomPlayerBehavior.state = STATE_HIDDEN
-                    println("State changed")
-                }
-            }
+            playlistCleared()
         }
 
         observe(playerViewModel.audioQueueFlow) {

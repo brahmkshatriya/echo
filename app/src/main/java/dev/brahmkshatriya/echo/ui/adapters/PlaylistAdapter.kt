@@ -6,6 +6,7 @@ import android.view.MotionEvent.ACTION_DOWN
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.player.Global
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -51,7 +52,7 @@ class PlaylistAdapter(
         val binding = holder.binding
         val track = list[position].second
         binding.playlistItemTitle.text = track.title
-        track.cover?.loadInto(binding.playlistItemImageView)
+        track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
         binding.playlistItemAuthor.text = track.artists.joinToString(", ") { it.name }
         if (position == currentPosition) {
             binding.playlistCurrentItem.isVisible = true

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.data.offline
+package dev.brahmkshatriya.echo.data.offline
 
 import android.content.ContentUris
 import android.content.Context
@@ -8,11 +8,12 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.ALBUM_AUTH
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.ARTIST_AUTH
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.TRACK_AUTH
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.URI
-import dev.brahmkshatriya.echo.common.data.offline.LocalHelper.Companion.createCursor
+import dev.brahmkshatriya.echo.data.offline.LocalHelper.Companion.ALBUM_AUTH
+import dev.brahmkshatriya.echo.data.offline.LocalHelper.Companion.ARTIST_AUTH
+import dev.brahmkshatriya.echo.data.offline.LocalHelper.Companion.ARTWORK_URI
+import dev.brahmkshatriya.echo.data.offline.LocalHelper.Companion.TRACK_AUTH
+import dev.brahmkshatriya.echo.data.offline.LocalHelper.Companion.URI
+import dev.brahmkshatriya.echo.data.offline.LocalHelper.Companion.createCursor
 
 interface LocalTrack {
 
@@ -100,10 +101,8 @@ interface LocalTrack {
 
                 while (it.moveToNext()) {
                     val uri = Uri.parse("$URI$TRACK_AUTH${it.getLong(idColumn)}")
-                    val sArtworkUri = Uri
-                        .parse("content://media/external/audio/albumart")
                     val coverUri = ContentUris.withAppendedId(
-                        sArtworkUri,
+                        ARTWORK_URI,
                         it.getLong(albumIdColumn)
                     )
 
