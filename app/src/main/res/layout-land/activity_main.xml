@@ -6,6 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <View
+        android:alpha="0.5"
+        android:id="@+id/status_bar_scrim"
+        android:background="?attr/colorSurface"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
