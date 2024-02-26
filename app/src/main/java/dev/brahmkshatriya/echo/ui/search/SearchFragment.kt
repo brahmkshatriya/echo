@@ -6,27 +6,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.player.PlayerViewModel
+import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
+import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.updatePaddingWithSystemInsets
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
 
-    private lateinit var binding: FragmentSearchBinding
+    private var binding: FragmentSearchBinding by autoCleared()
     private val searchViewModel: SearchViewModel by activityViewModels()
     private val playerViewModel: PlayerViewModel by activityViewModels()
+
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, parent, false)
@@ -54,13 +57,28 @@ class SearchFragment : Fragment() {
             }
             false
         }
-        val adapter = MediaItemsContainerAdapter(lifecycle, object : ClickListener<Track> {
-            override fun onClick(item: Track) {
-                playerViewModel.play(item)
+        val adapter = MediaItemsContainerAdapter(lifecycle, object : ClickListener<EchoMediaItem> {
+            override fun onClick(item: EchoMediaItem) {
+                when (item) {
+                    is EchoMediaItem.AlbumItem -> {
+//                        val extras = FragmentNavigatorExtras(view to "shared_element_container")
+                        binding.root.findNavController().navigate(R.id.fragment_album)
+                    }
+//                    is EchoMediaItem.ArtistItem -> TODO()
+//                    is EchoMediaItem.PlaylistItem -> TODO()
+                    is EchoMediaItem.TrackItem -> playerViewModel.play(item.track)
+                    else -> {}
+                }
             }
 
-            override fun onLongClick(item: Track) {
-                playerViewModel.addToQueue(item)
+            override fun onLongClick(item: EchoMediaItem) {
+                when (item) {
+//                    is EchoMediaItem.AlbumItem -> TODO()
+//                    is EchoMediaItem.ArtistItem -> TODO()
+//                    is EchoMediaItem.PlaylistItem -> TODO()
+                    is EchoMediaItem.TrackItem -> playerViewModel.addToQueue(item.track)
+                    else -> {}
+                }
             }
         })
 
@@ -75,7 +93,7 @@ class SearchFragment : Fragment() {
             }
         }
 
-        observe(searchViewModel.result){
+        observe(searchViewModel.result) {
             if (it != null) adapter.submitData(it)
         }
     }

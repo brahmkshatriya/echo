@@ -21,6 +21,8 @@ class ShimmerLayoutSelf @JvmOverloads constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        startAnimation(animation)
+        tryWith(true) {
+            startAnimation(animation)
+        }
     }
 }

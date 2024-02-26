@@ -20,6 +20,11 @@
         android:name="dev.brahmkshatriya.echo.ui.search.SearchFragment"
         tools:layout="@layout/fragment_search" />
 
+    <fragment
+        android:id="@+id/fragment_album"
+        android:name="dev.brahmkshatriya.echo.ui.album.AlbumFragment"
+        tools:layout="@layout/fragment_collapsing_bar" />
+
     <dialog
         android:id="@+id/dialog_extension"
         android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragment"

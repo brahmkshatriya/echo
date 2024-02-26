@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
-import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemMediaAlbumBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaArtistBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaPlaylistBinding
@@ -20,7 +19,7 @@ import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemAdapter(
-    private val listener: ClickListener<Track>
+    private val listener: ClickListener<EchoMediaItem>
 ) : PagingDataAdapter<EchoMediaItem, MediaItemAdapter.MediaItemHolder>(MediaItemComparator) {
 
     override fun getItemViewType(position: Int): Int {
@@ -66,18 +65,22 @@ class MediaItemAdapter(
     override fun onBindViewHolder(holder: MediaItemHolder, position: Int) {
         val item = getItem(position) ?: return
         val container = holder.container
+
+        holder.itemView.apply {
+            setOnClickListener {
+                listener.onClick(item)
+            }
+            setOnLongClickListener {
+                listener.onLongClick(item)
+                true
+            }
+        }
+
         when (item) {
             is EchoMediaItem.TrackItem -> {
                 val binding = (container as MediaItemsBinding.Track).binding
                 binding.title.text = item.track.title
                 item.track.cover.loadInto(binding.imageView, R.drawable.art_music)
-                binding.root.setOnClickListener {
-                    listener.onClick(item.track)
-                }
-                binding.root.setOnLongClickListener {
-                    listener.onLongClick(item.track)
-                    true
-                }
                 var subtitle = ""
                 item.track.duration?.toTimeString()?.let {
                     subtitle += it
@@ -153,6 +156,7 @@ class MediaItemAdapter(
                         binding.imageView1.isVisible = true
                         binding.imageView2.isVisible = false
                     }
+
                     else -> {
                         binding.imageView1.isVisible = true
                         binding.imageView2.isVisible = true
@@ -166,7 +170,7 @@ class MediaItemAdapter(
         submitData(lifecycle, PagingData.from(list))
     }
 
-    class MediaItemHolder(val container: MediaItemsBinding) :
+    inner class MediaItemHolder(val container: MediaItemsBinding) :
         RecyclerView.ViewHolder(
             when (container) {
                 is MediaItemsBinding.Track -> container.binding.root

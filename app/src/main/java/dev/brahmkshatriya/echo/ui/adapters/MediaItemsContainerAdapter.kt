@@ -13,8 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
@@ -22,7 +23,7 @@ import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemsContainerAdapter(
     private val lifecycle: Lifecycle,
-    private val listener: ClickListener<Track>,
+    private val listener: ClickListener<EchoMediaItem>,
 ) : PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
     MediaItemsContainerComparator
 ) {
@@ -68,7 +69,7 @@ class MediaItemsContainerAdapter(
 
     override fun onBindViewHolder(holder: MediaItemsContainerHolder, position: Int) {
         val item = getItem(position) ?: return
-        when (holder.container) {
+        val echoMediaItem = when (holder.container) {
             is MediaItemsContainerBinding.Category -> {
                 val binding = holder.container.binding
                 val category = item as MediaItemsContainer.Category
@@ -78,21 +79,14 @@ class MediaItemsContainerAdapter(
                 val adapter = MediaItemAdapter(listener)
                 binding.recyclerView.adapter = adapter
                 adapter.submitData(lifecycle, category.list)
+                null
             }
 
             is MediaItemsContainerBinding.Track -> {
                 val binding = holder.container.binding
                 val track = (item as MediaItemsContainer.TrackItem).track
-                binding.root.setOnClickListener { listener.onClick(track) }
-                binding.root.setOnLongClickListener {
-                    listener.onLongClick(track)
-                    true
-                }
-
                 binding.title.text = track.title
-
                 track.cover.loadInto(binding.imageView, R.drawable.art_music)
-
                 val album = track.album
                 if (album == null) {
                     binding.album.visibility = View.GONE
@@ -100,14 +94,12 @@ class MediaItemsContainerAdapter(
                     binding.album.visibility = View.VISIBLE
                     binding.album.text = album.title
                 }
-
                 if (track.artists.isEmpty()) {
                     binding.artist.visibility = View.GONE
                 } else {
                     binding.artist.visibility = View.VISIBLE
                     binding.artist.text = track.artists.joinToString(" ") { it.name }
                 }
-
                 val duration = track.duration
                 if (duration == null) {
                     binding.duration.visibility = View.GONE
@@ -115,9 +107,20 @@ class MediaItemsContainerAdapter(
                     binding.duration.visibility = View.VISIBLE
                     binding.duration.text = duration.toTimeString()
                 }
+                track.toMediaItem()
             }
         }
-
+        echoMediaItem?.let {
+            holder.itemView.apply {
+                setOnClickListener {
+                    listener.onClick(echoMediaItem)
+                }
+                setOnLongClickListener {
+                    listener.onLongClick(echoMediaItem)
+                    true
+                }
+            }
+        }
     }
 
     sealed class MediaItemsContainerBinding {
@@ -125,7 +128,7 @@ class MediaItemsContainerAdapter(
         data class Track(val binding: ItemTrackBinding) : MediaItemsContainerBinding()
     }
 
-    class MediaItemsContainerHolder(val container: MediaItemsContainerBinding) :
+    inner class MediaItemsContainerHolder(val container: MediaItemsContainerBinding) :
         RecyclerView.ViewHolder(
             when (container) {
                 is MediaItemsContainerBinding.Category -> container.binding.root
