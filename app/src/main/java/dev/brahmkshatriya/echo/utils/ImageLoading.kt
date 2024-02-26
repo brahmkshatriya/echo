@@ -1,35 +1,48 @@
 package dev.brahmkshatriya.echo.utils
 
+import android.content.Context
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.request.target.CustomViewTarget
-import com.bumptech.glide.request.transition.Transition
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.common.models.ImageHolder
+import okhttp3.Headers.Companion.toHeaders
+
+private fun ImageHolder?.createRequest(
+    context: Context,
+    placeholder: Int?,
+    errorDrawable: Int?
+): ImageRequest.Builder {
+    val request = ImageRequest.Builder(context)
+    var error = errorDrawable
+    if (error == null) error = placeholder
+
+    if (this == null) {
+        if (error != null) request.data(error)
+        return request
+    }
+    when (this) {
+        is ImageHolder.BitmapHolder -> request.data(bitmap)
+        is ImageHolder.UrlHolder -> {
+            request.data(url)
+            request.headers(headers.toHeaders())
+        }
+        is ImageHolder.UriHolder -> request.data(uri)
+    }
+    placeholder?.let { request.placeholder(it) }
+    error?.let { request.error(it) }
+    return request
+}
 
 fun ImageHolder?.loadInto(
     imageView: ImageView,
     placeholder: Int? = null,
     errorDrawable: Int? = null
 ) {
-    var error = errorDrawable
-    if (error == null) error = placeholder
-
-    if (this == null) {
-        if (error != null) Glide.with(imageView).load(error).into(imageView)
-        return
-    }
-
-    var builder = when (this) {
-        is ImageHolder.BitmapHolder -> Glide.with(imageView).load(this.bitmap)
-        is ImageHolder.UrlHolder -> Glide.with(imageView).load(GlideUrl(this.url) { this.headers })
-        is ImageHolder.UriHolder -> Glide.with(imageView).load(this.uri)
-    }
-    placeholder?.let { builder = builder.placeholder(it) }
-    error?.let { builder = builder.error(it) }
-    builder.into(imageView)
+    var request = createRequest(imageView.context, placeholder, errorDrawable)
+    request = request.target(imageView)
+    imageView.context.imageLoader.enqueue(request.build())
 }
 
 fun ImageHolder?.loadInto(
@@ -37,34 +50,8 @@ fun ImageHolder?.loadInto(
     placeholder: Int? = null,
     errorDrawable: Int? = null
 ) {
-    var error = errorDrawable
-    if (error == null) error = placeholder
-
-    if (this == null) {
-        if (error != null) Glide.with(button).load(error).into(MaterialButtonTarget(button))
-        return
-    }
-    var builder = when (this) {
-        is ImageHolder.BitmapHolder -> Glide.with(button).load(this.bitmap)
-        is ImageHolder.UrlHolder -> Glide.with(button).load(GlideUrl(this.url) { this.headers })
-        is ImageHolder.UriHolder -> Glide.with(button).load(this.uri)
-    }
-    placeholder?.let { builder = builder.placeholder(it) }
-    error?.let { builder = builder.error(it) }
-    builder.into(MaterialButtonTarget(button))
-}
-
-class MaterialButtonTarget(private val button: MaterialButton) :
-    CustomViewTarget<MaterialButton, Drawable>(button) {
-    override fun onLoadFailed(errorDrawable: Drawable?) {
-        button.icon = errorDrawable
-    }
-
-    override fun onResourceCleared(placeholder: Drawable?) {
-        button.icon = placeholder
-    }
-
-    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-        button.icon = resource
-    }
+    var request = createRequest(button.context, placeholder, errorDrawable)
+    val icon: (Drawable?) -> Unit = { button.icon = it }
+    request = request.target(icon, icon, icon)
+    button.context.imageLoader.enqueue(request.build())
 }
