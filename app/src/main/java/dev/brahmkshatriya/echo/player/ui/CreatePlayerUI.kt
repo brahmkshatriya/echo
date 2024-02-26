@@ -273,9 +273,21 @@ fun createPlayerUI(
                 playerBinding.collapsedTrackAuthor.text = this
                 playerBinding.expandedTrackAuthor.text = this
             }
-            track.cover?.run {
+            track.cover.run {
                 loadInto(playerBinding.collapsedTrackCover, R.drawable.art_music)
                 loadInto(playerBinding.expandedTrackCover, R.drawable.art_music)
+
+                //Incomplete Dynamic Colors for Bottom Player
+//                lifecycleScope.launch(Dispatchers.IO) {
+//                    val req = createRequest(activity).allowHardware(false).build()
+//                    val result =
+//                        (imageLoader.execute(req) as? SuccessResult)?.drawable ?: return@launch
+//                    val bitmap = (result as BitmapDrawable).bitmap
+//
+//                    launch(Dispatchers.Main) {
+//                    }
+//                }
+
             }
 
             container.post {

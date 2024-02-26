@@ -9,10 +9,10 @@ import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import okhttp3.Headers.Companion.toHeaders
 
-private fun ImageHolder?.createRequest(
+fun ImageHolder?.createRequest(
     context: Context,
-    placeholder: Int?,
-    errorDrawable: Int?
+    placeholder: Int? = null,
+    errorDrawable: Int? = null
 ): ImageRequest.Builder {
     val request = ImageRequest.Builder(context)
     var error = errorDrawable
