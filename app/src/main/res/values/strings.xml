@@ -26,5 +26,6 @@
     <string name="shuffle">Shuffle</string>
     <string name="clear_playlist">Clear playlist</string>
     <string name="playlist">Playlist</string>
+    <string name="loading">Loading…</string>
 
 </resources>

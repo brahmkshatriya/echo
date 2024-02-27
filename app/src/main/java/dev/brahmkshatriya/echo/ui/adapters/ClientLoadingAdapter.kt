@@ -5,19 +5,16 @@ import android.view.ViewGroup
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.databinding.ItemNotSupportedBinding
+import dev.brahmkshatriya.echo.databinding.ItemClientLoadingBinding
 
-class NotSupportedAdapter(
-    private val clientStringId: Int
-) : RecyclerView.Adapter<NotSupportedAdapter.ViewHolder>() {
+class ClientLoadingAdapter : RecyclerView.Adapter<ClientLoadingAdapter.ViewHolder>() {
 
     override fun getItemCount() = 1
 
-    class ViewHolder(val binding: ItemNotSupportedBinding) : RecyclerView.ViewHolder(binding.root)
+    class ViewHolder(val binding: ItemClientLoadingBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-        ItemNotSupportedBinding
-            .inflate(LayoutInflater.from(parent.context), parent, false)
+        ItemClientLoadingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
 
@@ -37,8 +34,5 @@ class NotSupportedAdapter(
                 else -> false
             }
         }
-        val clientName = binding.root.context.getString(clientStringId)
-        binding.notSupportedTextView.text =
-            binding.root.context.getString(R.string.is_not_supported, clientName)
     }
 }

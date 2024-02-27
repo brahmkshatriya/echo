@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:minWidth="320dp"
     android:background="?attr/colorSurface"
+    android:minWidth="320dp"
     android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -28,11 +28,18 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
-            android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:orientation="vertical"
             android:padding="24dp">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/progressIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/buttonToggleGroup"
@@ -40,27 +47,28 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:selectionRequired="true"
-                app:singleSelection="true"/>
+                app:singleSelection="true" />
 
             <Button
                 android:id="@+id/addExtension"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minHeight="48dp"
                 android:layout_marginTop="24dp"
                 android:gravity="start|center_vertical"
+                android:minHeight="48dp"
                 android:text="@string/add_extension"
                 app:icon="@drawable/ic_add_20dp"
                 app:iconSize="20dp" />
+
             <Button
                 android:id="@+id/extensionSettings"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minHeight="48dp"
                 android:layout_marginTop="8dp"
                 android:gravity="start|center_vertical"
+                android:minHeight="48dp"
                 android:text="@string/extension_settings"
                 app:icon="@drawable/ic_settings_outline_20dp"
                 app:iconSize="20dp" />

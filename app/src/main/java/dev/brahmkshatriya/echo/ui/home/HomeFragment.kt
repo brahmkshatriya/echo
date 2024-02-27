@@ -12,13 +12,14 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
-import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
+import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
@@ -60,12 +61,12 @@ class HomeFragment : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
         observe(homeViewModel.homeFeedFlow.flow) {
-            binding.recyclerView.adapter = if (it != null) {
-                binding.swipeRefresh.isEnabled = true
+            binding.recyclerView.adapter = getAdapterForExtension<HomeFeedClient>(
+                it,
+                R.string.home,
                 concatAdapter
-            } else {
-                binding.swipeRefresh.isEnabled = false
-                NotSupportedAdapter(R.string.home)
+            ) { client ->
+                binding.swipeRefresh.isEnabled = client != null
             }
         }
 

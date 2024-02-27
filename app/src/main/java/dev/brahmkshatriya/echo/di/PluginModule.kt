@@ -6,13 +6,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.common.clients.SearchClient
-import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.data.extensions.LocalExtensionRepo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import tel.jeelpa.plugger.PluginRepo
 import tel.jeelpa.plugger.RepoComposer
 import tel.jeelpa.plugger.models.PluginConfiguration
@@ -49,26 +45,10 @@ class PluginModule {
 
     @Provides
     @Singleton
-    fun provideExtensionSharedFlow() = mutableExtensionFlow
+    fun provideMutableExtensionFlow() = mutableExtensionFlow
 
     @Provides
     @Singleton
     fun providesExtensionClient() =
         ExtensionFlow(extensionFlow)
-
-    @Provides
-    @Singleton
-    fun providesSearchClient() =
-        SearchFlow(extensionFlow.map { it as? SearchClient })
-
-    @Provides
-    @Singleton
-    fun providesHomeClient() =
-        HomeFeedFlow(extensionFlow.map { it as? HomeFeedClient })
-
-    @Provides
-    @Singleton
-    fun providesTrackClient() =
-        TrackFlow(extensionFlow.map { it as? TrackClient })
-
 }

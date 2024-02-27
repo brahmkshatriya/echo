@@ -11,13 +11,14 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
-import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
+import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.updatePaddingWithSystemInsets
@@ -64,13 +65,10 @@ class SearchFragment : Fragment() {
         binding.catRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         observe(searchViewModel.searchFlow.flow) {
-            binding.catRecyclerView.adapter = if (it != null) {
-                concatAdapter
-            } else {
-                NotSupportedAdapter(R.string.search)
-            }
+            binding.catRecyclerView.adapter = getAdapterForExtension<SearchClient>(
+                it, R.string.search, concatAdapter
+            ) {}
         }
-
         observe(searchViewModel.result) {
             if (it != null) adapter.submitData(it)
         }

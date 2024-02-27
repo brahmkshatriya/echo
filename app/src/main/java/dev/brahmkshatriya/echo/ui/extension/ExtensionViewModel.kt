@@ -7,41 +7,39 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.di.MutableExtensionFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.PluginRepo
 import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
-    val mutableExtensionFlow: MutableExtensionFlow,
+    private val mutableExtensionFlow: MutableExtensionFlow,
     private val pluginRepo: PluginRepo<ExtensionClient>
 ) : ViewModel() {
 
-    val exceptionFlow = MutableSharedFlow<Exception>()
+    private val _exceptionFlow = MutableSharedFlow<Exception>()
+    val exceptionFlow = _exceptionFlow.asSharedFlow()
     init {
         viewModelScope.launch {
             extensionListFlow = pluginRepo.getAllPlugins { e ->
                 launch {
-                    exceptionFlow.emit(e)
+                    _exceptionFlow.emit(e)
                 }
             }
-            mutableExtensionFlow.flow.value = extensionListFlow?.first()?.firstOrNull()
+            mutableExtensionFlow.flow.value = extensionListFlow?.firstOrNull()?.firstOrNull()
         }
     }
 
-
-    var extensionListFlow: Flow<List<ExtensionClient>>? = null
-        set(value) {
-            field = value
-            viewModelScope.launch {
-                mutableExtensionFlow.flow.value = value?.first()?.firstOrNull()
-            }
-        }
+    private var extensionListFlow: Flow<List<ExtensionClient>>? = null
+    fun getExtensionList() = extensionListFlow
 
     fun setExtension(extension: ExtensionClient) {
         viewModelScope.launch {
             mutableExtensionFlow.flow.value = extension
         }
     }
+
+    fun getCurrentExtension() = mutableExtensionFlow.flow.value
 }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -37,14 +38,16 @@ class ExtensionDialogFragment : DialogFragment() {
         binding.addExtension.isEnabled = false
 
         var oldListener: OnButtonCheckedListener? = null
-        val extensionFlow = viewModel.extensionListFlow ?: return
-        observe(extensionFlow) { list ->
+        val extensionFlow = viewModel.getExtensionList()
+        if (extensionFlow != null) observe(extensionFlow) { list ->
             binding.buttonToggleGroup.removeAllViews()
 
             val map = list.mapIndexed { id, extension ->
-                val button = ButtonExtensionBinding
-                    .inflate(layoutInflater, binding.buttonToggleGroup, false)
-                    .root
+                val button = ButtonExtensionBinding.inflate(
+                        layoutInflater,
+                        binding.buttonToggleGroup,
+                        false
+                    ).root
                 val metadata = extension.getMetadata()
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
@@ -54,11 +57,10 @@ class ExtensionDialogFragment : DialogFragment() {
             }.toMap()
 
             val checked = map.filter {
-                it.value == viewModel.mutableExtensionFlow.flow.value
+                it.value == viewModel.getCurrentExtension()
             }.keys.firstOrNull()
 
-            if (checked != null)
-                binding.buttonToggleGroup.check(checked)
+            if (checked != null) binding.buttonToggleGroup.check(checked)
 
             val listener = OnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) map[checkedId]?.let {
@@ -70,6 +72,9 @@ class ExtensionDialogFragment : DialogFragment() {
                 addOnButtonCheckedListener(listener)
                 oldListener = listener
             }
+        }
+        else {
+            binding.progressIndicator.isVisible = true
         }
     }
 }

@@ -7,7 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.di.TrackFlow
+import dev.brahmkshatriya.echo.di.ExtensionFlow
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    trackFlow: TrackFlow,
+    trackFlow: ExtensionFlow,
 //    private val radioClient: RadioClient
 ) : ViewModel() {
 
@@ -27,7 +27,7 @@ class PlayerViewModel @Inject constructor(
 
     init {
         viewModelScope.observe(trackFlow.flow) {
-            trackClient = it
+            trackClient = it as? TrackClient
         }
     }
 
@@ -87,10 +87,8 @@ class PlayerViewModel @Inject constructor(
     fun removeQueueItem(index: Int) {
         queue.removeAt(index)
         viewModelScope.launch {
-            if (queue.size == 0)
-                clearQueueFlow.emit(Unit)
-            else
-                itemRemovedFlow.emit(index)
+            if (queue.size == 0) clearQueueFlow.emit(Unit)
+            else itemRemovedFlow.emit(index)
         }
     }
 

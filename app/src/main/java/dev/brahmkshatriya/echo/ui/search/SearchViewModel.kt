@@ -6,7 +6,7 @@ import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.di.SearchFlow
+import dev.brahmkshatriya.echo.di.ExtensionFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,13 +16,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    val searchFlow: SearchFlow
+    val searchFlow: ExtensionFlow
 ) : ViewModel() {
 
     init {
         viewModelScope.launch {
             searchFlow.flow.collectLatest {
-                searchClient = it
+                searchClient = it as? SearchClient
             }
         }
     }
