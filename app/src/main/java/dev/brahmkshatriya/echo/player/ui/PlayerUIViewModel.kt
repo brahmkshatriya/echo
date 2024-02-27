@@ -10,7 +10,7 @@ class PlayerUIViewModel : ViewModel() {
     var repeatMode: Int = 0
 
     val track = MutableStateFlow(Global.queue.firstOrNull()?.second)
-    val playlist = MutableStateFlow(0)
+    val playlist = MutableStateFlow<Int?>(null)
 
     val progress = MutableStateFlow(0 to 0)
     val totalDuration = MutableStateFlow(0)

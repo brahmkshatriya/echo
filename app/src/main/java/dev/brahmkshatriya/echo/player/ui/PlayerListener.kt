@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.player.ui
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -11,8 +12,7 @@ import androidx.media3.session.MediaBrowser
 import dev.brahmkshatriya.echo.player.Global
 
 class PlayerListener(
-    private val player: MediaBrowser,
-    private val viewModel: PlayerUIViewModel
+    private val player: MediaBrowser, private val viewModel: PlayerUIViewModel
 ) : Player.Listener {
 
     private val updateProgressRunnable = Runnable { updateProgress() }
@@ -40,9 +40,9 @@ class PlayerListener(
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        val id = mediaItem?.mediaId ?: return
-        viewModel.track.value = Global.getTrack(id)
-        viewModel.playlist.value = player.currentMediaItemIndex
+        viewModel.track.value = Global.getTrack(mediaItem?.mediaId)
+        viewModel.playlist.value =
+            player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
     }
 
     override fun onPositionDiscontinuity(
@@ -53,17 +53,17 @@ class PlayerListener(
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        if(player.currentMediaItem == null) {
+        if (player.currentMediaItem == null) {
             viewModel.track.value = null
+            viewModel.playlist.value = null
         }
         updateNavigation()
         updateProgress()
     }
 
     private fun updateProgress() {
-        if (player.isConnected)
-            viewModel.progress.value =
-                player.currentPosition.toInt() to player.bufferedPosition.toInt()
+        if (player.isConnected) viewModel.progress.value =
+            player.currentPosition.toInt() to player.bufferedPosition.toInt()
         handler.removeCallbacks(updateProgressRunnable)
         val playbackState = player.playbackState
         if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
@@ -93,11 +93,12 @@ class PlayerListener(
         viewModel.previousEnabled.value = enablePrevious
     }
 
-    fun update(mediaId: String) {
-        viewModel.track.value = Global.getTrack(mediaId)
+    fun update() {
+        viewModel.track.value = Global.getTrack(player.currentMediaItem?.mediaId)
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
-        viewModel.playlist.value = player.currentMediaItemIndex
+        viewModel.playlist.value =
+            player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
     }
 }

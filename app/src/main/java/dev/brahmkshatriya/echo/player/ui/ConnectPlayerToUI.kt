@@ -13,9 +13,7 @@ fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
 
     val listener = PlayerListener(player, uiViewModel)
     player.addListener(listener)
-    player.currentMediaItem?.let {
-        listener.update(it.mediaId)
-    }
+    listener.update()
 
     activity.apply {
         observe(playerViewModel.playPause) {

@@ -6,14 +6,31 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.di.MutableExtensionFlow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import tel.jeelpa.plugger.PluginRepo
 import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
-    val mutableExtensionFlow: MutableExtensionFlow
+    val mutableExtensionFlow: MutableExtensionFlow,
+    private val pluginRepo: PluginRepo<ExtensionClient>
 ) : ViewModel() {
+
+    val exceptionFlow = MutableSharedFlow<Exception>()
+    init {
+        viewModelScope.launch {
+            extensionListFlow = pluginRepo.getAllPlugins { e ->
+                launch {
+                    exceptionFlow.emit(e)
+                }
+            }
+            mutableExtensionFlow.flow.value = extensionListFlow?.first()?.firstOrNull()
+        }
+    }
+
+
     var extensionListFlow: Flow<List<ExtensionClient>>? = null
         set(value) {
             field = value
@@ -21,6 +38,7 @@ class ExtensionViewModel @Inject constructor(
                 mutableExtensionFlow.flow.value = value?.first()?.firstOrNull()
             }
         }
+
     fun setExtension(extension: ExtensionClient) {
         viewModelScope.launch {
             mutableExtensionFlow.flow.value = extension

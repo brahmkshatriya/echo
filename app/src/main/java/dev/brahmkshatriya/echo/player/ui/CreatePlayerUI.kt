@@ -253,14 +253,13 @@ fun createPlayerUI(
     activity.apply {
 
         fun playlistCleared() {
-
             container.post {
                 if (bottomPlayerBehavior.state != STATE_HIDDEN) {
                     bottomPlayerBehavior.isHideable = true
                     bottomPlayerBehavior.state = STATE_HIDDEN
-                    adapter.notifyDataSetChanged()
                 }
             }
+            adapter.notifyDataSetChanged()
         }
 
         observe(uiViewModel.track) { track ->
@@ -375,11 +374,7 @@ fun createPlayerUI(
         }
         observe(uiViewModel.playlist) {
             playlistBinding.playlistRecycler.apply {
-                post {
-                    val viewHolder =
-                        findViewHolderForAdapterPosition(it) as PlaylistAdapter.ViewHolder?
-                    adapter.setCurrent(viewHolder)
-                }
+                adapter.setCurrent(it)
             }
         }
 

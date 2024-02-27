@@ -6,18 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
-import dev.brahmkshatriya.echo.ui.adapters.ClickListener
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
+import dev.brahmkshatriya.echo.ui.adapters.MediaItemListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.NotSupportedAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -45,32 +44,9 @@ class HomeFragment : Fragment() {
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 
         val headerAdapter = HeaderAdapter(R.string.home)
-        val mediaItemsContainerAdapter =
-            MediaItemsContainerAdapter(lifecycle, object : ClickListener<EchoMediaItem> {
-                override fun onClick(item: EchoMediaItem) {
-                    when (item) {
-                        is EchoMediaItem.AlbumItem -> {
-//                        val extras = FragmentNavigatorExtras(view to "shared_element_container")
-                            binding.root.findNavController().navigate(R.id.fragment_album)
-                        }
-//                    is EchoMediaItem.ArtistItem -> TODO()
-//                    is EchoMediaItem.PlaylistItem -> TODO()
-                        is EchoMediaItem.TrackItem -> playerViewModel.play(item.track)
-                        else -> {}
-                    }
-
-                }
-
-                override fun onLongClick(item: EchoMediaItem) {
-                    when (item) {
-//                    is EchoMediaItem.AlbumItem -> TODO()
-//                    is EchoMediaItem.ArtistItem -> TODO()
-//                    is EchoMediaItem.PlaylistItem -> TODO()
-                        is EchoMediaItem.TrackItem -> playerViewModel.addToQueue(item.track)
-                        else -> {}
-                    }
-                }
-            })
+        val mediaItemsContainerAdapter = MediaItemsContainerAdapter(
+            lifecycle, MediaItemListener(findNavController(), playerViewModel)
+        )
 
         val concat = mediaItemsContainerAdapter.withLoadingFooter()
         binding.swipeRefresh.setOnRefreshListener {

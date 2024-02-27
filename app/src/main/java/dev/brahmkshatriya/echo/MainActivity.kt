@@ -23,7 +23,6 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.player.PlaybackService
 import dev.brahmkshatriya.echo.player.PlayerViewModel
@@ -33,17 +32,13 @@ import dev.brahmkshatriya.echo.player.ui.createPlayerUI
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.emit
+import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.utils.updateBottomMarginWithSystemInsets
-import tel.jeelpa.plugger.PluginRepo
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-
-    @Inject
-    lateinit var pluginRepo: PluginRepo<ExtensionClient>
 
     val binding by lazy(LazyThreadSafetyMode.NONE) {
         ActivityMainBinding.inflate(layoutInflater)
@@ -61,10 +56,8 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge(
             SystemBarStyle.auto(TRANSPARENT, TRANSPARENT),
-            if (isNightMode())
-                SystemBarStyle.dark(TRANSPARENT)
-            else
-                SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
+            if (isNightMode()) SystemBarStyle.dark(TRANSPARENT)
+            else SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
         )
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
@@ -80,21 +73,18 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navHostFragment.navController)
         updateBottomMarginWithSystemInsets(binding.navHostFragment)
 
-        if (extensionViewModel.extensionListFlow == null) {
-            extensionViewModel.extensionListFlow = pluginRepo.getAllPlugins { e ->
-                e.message?.let {
-                    val snack = Snackbar.make(binding.root, it, Snackbar.LENGTH_SHORT)
-                    if (binding.navView is BottomNavigationView)
-                        snack.setAnchorView(binding.navView)
-                    snack.show()
-                }
+        observe(extensionViewModel.exceptionFlow) { e ->
+            e.message?.let {
+                val snack = Snackbar.make(binding.root, it, Snackbar.LENGTH_SHORT)
+                if (binding.navView is BottomNavigationView) snack.setAnchorView(binding.navView)
+                snack.show()
             }
         }
         createPlayerUI(this)
         applyInsetsToPlayerUI(this)
     }
 
-    fun isNightMode() =
+    private fun isNightMode() =
         resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_NO
 
     override fun onNewIntent(intent: Intent?) {

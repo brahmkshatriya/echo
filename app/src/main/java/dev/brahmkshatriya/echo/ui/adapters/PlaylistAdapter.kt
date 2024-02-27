@@ -54,20 +54,17 @@ class PlaylistAdapter(
         binding.playlistItemTitle.text = track.title
         track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
         binding.playlistItemAuthor.text = track.artists.joinToString(", ") { it.name }
-        if (position == currentPosition) {
-            binding.playlistCurrentItem.isVisible = true
-            oldViewHolder = holder
-        }
+        binding.playlistCurrentItem.isVisible = position == currentPosition
     }
 
-    private var currentPosition = 0
-    private var oldViewHolder: ViewHolder? = null
-    fun setCurrent(viewHolder: ViewHolder?) {
-        oldViewHolder?.binding?.playlistCurrentItem?.isVisible = false
-        viewHolder?.apply {
-            binding.playlistCurrentItem.isVisible = true
-            currentPosition = bindingAdapterPosition
-            oldViewHolder = this
+    private var currentPosition: Int? = null
+    fun setCurrent(position: Int?) {
+        currentPosition?.let {
+            notifyItemChanged(it)
+        }
+        currentPosition = position
+        currentPosition?.let {
+            notifyItemChanged(it)
         }
     }
 }
