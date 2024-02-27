@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.databinding.ItemMediaArtistBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaPlaylistBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemAdapter(

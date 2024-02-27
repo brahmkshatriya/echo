@@ -242,12 +242,14 @@ fun createPlayerUI(
         }
     })
 
-
-
     playlistBinding.playlistRecycler.apply {
         layoutManager = linearLayoutManager
         this.adapter = adapter
         touchHelper.attachToRecyclerView(this)
+    }
+
+    playlistBinding.playlistClear.setOnClickListener {
+        playerViewModel.clearQueue()
     }
 
     activity.apply {

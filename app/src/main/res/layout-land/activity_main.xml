@@ -20,7 +20,7 @@
         android:layout_height="match_parent"
         android:layout_marginStart="80dp"
         app:defaultNavHost="true"
-        app:navGraph="@navigation/mobile_navigation" />
+        app:navGraph="@navigation/navigation" />
 
     <FrameLayout
         android:id="@+id/bottom_player_container"

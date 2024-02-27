@@ -27,5 +27,6 @@
     <string name="clear_playlist">Clear playlist</string>
     <string name="playlist">Playlist</string>
     <string name="loading">Loading…</string>
+    <string name="album">Album</string>
 
 </resources>

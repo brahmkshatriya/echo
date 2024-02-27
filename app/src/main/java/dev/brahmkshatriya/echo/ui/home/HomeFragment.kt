@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,10 +13,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
-import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
+import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -30,7 +28,6 @@ class HomeFragment : Fragment() {
 
     private var binding: FragmentRecyclerBinding by autoCleared()
     private val homeViewModel: HomeViewModel by activityViewModels()
-    private val playerViewModel: PlayerViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
@@ -46,7 +43,7 @@ class HomeFragment : Fragment() {
 
         val headerAdapter = HeaderAdapter(R.string.home)
         val mediaItemsContainerAdapter = MediaItemsContainerAdapter(
-            lifecycle, MediaItemListener(findNavController(), playerViewModel)
+            lifecycle, MediaItemClickListener(this)
         )
 
         val concat = mediaItemsContainerAdapter.withLoadingFooter()

@@ -6,16 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemListener
+import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
 import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
@@ -28,7 +26,6 @@ class SearchFragment : Fragment() {
 
     private var binding: FragmentSearchBinding by autoCleared()
     private val searchViewModel: SearchViewModel by activityViewModels()
-    private val playerViewModel: PlayerViewModel by activityViewModels()
 
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
@@ -58,7 +55,7 @@ class SearchFragment : Fragment() {
             false
         }
         val adapter = MediaItemsContainerAdapter(
-            lifecycle, MediaItemListener(findNavController(), playerViewModel)
+            lifecycle, MediaItemClickListener(this)
         )
 
         val concatAdapter = ConcatAdapter(header, adapter)

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--suppress NavigationFile -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/mobile_navigation"
+    android:id="@+id/navigation"
     app:startDestination="@+id/navigation_home">
 
     <fragment
@@ -21,12 +22,27 @@
         tools:layout="@layout/fragment_search" />
 
     <fragment
-        android:id="@+id/fragment_album"
+        android:id="@+id/navigation_album"
         android:name="dev.brahmkshatriya.echo.ui.album.AlbumFragment"
-        tools:layout="@layout/fragment_collapsing_bar" />
+        tools:layout="@layout/fragment_collapsing_bar">
+        <argument
+            android:name="albumSmall"
+            app:argType="dev.brahmkshatriya.echo.common.models.Album$Small"
+            app:nullable="true"
+            android:defaultValue="@null"/>
+        <argument
+            android:name="albumWithCover"
+            app:argType="dev.brahmkshatriya.echo.common.models.Album$WithCover"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
 
     <dialog
         android:id="@+id/dialog_extension"
         android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragment"
         tools:layout="@layout/dialog_extension"/>
+
+    <action
+        android:id="@+id/action_album"
+        app:destination="@id/navigation_album" />
 </navigation>

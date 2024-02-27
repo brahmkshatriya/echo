@@ -7,15 +7,15 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.player.Global
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class PlaylistAdapter(
-    val callback: Callback
+    val callback: Callback,
+    val list: MutableList<Pair<String, Track>> = Global.queue,
 ) : RecyclerView.Adapter<PlaylistAdapter.ViewHolder>() {
-
-    val list = Global.queue
 
     open class Callback {
         open fun onItemClicked(position: Int) {}
