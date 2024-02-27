@@ -65,11 +65,13 @@ dependencies {
 
     implementation("androidx.media3:media3-exoplayer:1.2.1")
     implementation("androidx.media3:media3-session:1.2.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.8.0")
+
+    //noinspection GradleDependency WHY DOES UPDATING THIS CHANGE RECYCLER'S ANIMATION???
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
 
     implementation("com.google.android.material:material:1.12.0-alpha03")
 
-    //noinspection GradleDependency
+    //noinspection GradleDependency Updating to 2.50, doesnt compile
     implementation("com.google.dagger:hilt-android:2.48")
     //noinspection GradleDependency
     ksp("com.google.dagger:hilt-android-compiler:2.48")
