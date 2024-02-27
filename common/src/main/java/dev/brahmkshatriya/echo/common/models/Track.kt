@@ -1,7 +1,10 @@
 package dev.brahmkshatriya.echo.common.models
 
 import android.net.Uri
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Track(
     val uri: Uri,
     val title: String,
@@ -12,4 +15,4 @@ data class Track(
     val plays: Int?,
     val releaseDate: String?,
     val liked: Boolean,
-)
+) : Parcelable

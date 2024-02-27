@@ -1,14 +1,18 @@
 package dev.brahmkshatriya.echo.common.models
 
 import android.net.Uri
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 sealed class Artist {
 
+    @Parcelize
     open class Small(
         open val uri: Uri,
         open val name: String
-    )
+    ) : Parcelable
 
+    @Parcelize
     open class WithCover(
         override val uri: Uri,
         override val name: String,
@@ -16,6 +20,7 @@ sealed class Artist {
         open val subtitle: String? = null
     ) : Small(uri, name)
 
+    @Parcelize
     data class Full(
         override val uri: Uri,
         override val name: String,
