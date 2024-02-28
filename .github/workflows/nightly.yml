@@ -20,11 +20,18 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
+      - name: Cook KeyStore
+        run:  echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
+      
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
         run: ./gradlew assembleDebug
+         -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks 
+         -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} 
+         -Pandroid.injected.signing.key.alias=key0
+         -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
