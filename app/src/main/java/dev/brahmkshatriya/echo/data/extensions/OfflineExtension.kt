@@ -126,17 +126,20 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
 
     override suspend fun getMediaItems(album: Album.Full): Flow<PagingData<MediaItemsContainer>> =
         flow {
-            val artist = album.artists.first()
-            val tracks =
-                LocalTrack.search(context, artist.name, 1, 50).filter { it.album?.uri != album.uri }
-                    .map { it.toMediaItem() }.ifEmpty { null }
-            val albums =
-                LocalAlbum.search(context, artist.name, 1, 50).filter { it.uri != album.uri }
-                    .map { it.toMediaItem() }.ifEmpty { null }
-            val result = listOfNotNull(
-                tracks?.toMediaItemsContainer("More from ${artist.name}"),
-                albums?.toMediaItemsContainer("Albums")
-            )
+            val artists = album.artists.map { it.name.split(",") }.flatten()
+
+            val result = artists.map { artist ->
+                val tracks =
+                    LocalTrack.search(context, artist, 1, 50).filter { it.album?.uri != album.uri }
+                        .map { it.toMediaItem() }.ifEmpty { null }
+                val albums =
+                    LocalAlbum.search(context, artist, 1, 50).filter { it.uri != album.uri }
+                        .map { it.toMediaItem() }.ifEmpty { null }
+                listOfNotNull(
+                    tracks?.toMediaItemsContainer("More from $artist"),
+                    albums?.toMediaItemsContainer("Albums")
+                )
+            }.flatten()
             emit(PagingData.from(result))
         }
 

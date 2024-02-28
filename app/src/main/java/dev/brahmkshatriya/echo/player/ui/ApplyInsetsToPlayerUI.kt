@@ -34,7 +34,7 @@ fun applyInsetsToPlayerUI(
 
     val orientation: Int = activity.resources.configuration.orientation
 
-    ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
+    ViewCompat.setOnApplyWindowInsetsListener(activity.binding.root) { _, insets ->
         val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         bottomPlayerBehavior.peekHeight = peekHeight + systemInsets.bottom
         playlistBehavior.peekHeight = playlistPeekHeight + systemInsets.bottom

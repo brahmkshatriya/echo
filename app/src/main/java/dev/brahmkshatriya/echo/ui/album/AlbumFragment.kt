@@ -59,7 +59,7 @@ class AlbumFragment : Fragment() {
         val mediaItemsContainerAdapter = MediaItemsContainerAdapter(lifecycle, clickListener)
         val concatAdapter = ConcatAdapter(trackAdapter, mediaItemsContainerAdapter)
 
-        binding.toolbar.title = album.title
+        binding.toolbar.title = album.title.trim()
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
             val inverted = 1 - offset

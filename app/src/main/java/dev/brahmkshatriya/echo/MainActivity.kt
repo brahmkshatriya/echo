@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             else SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
         )
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarScrim) { _, insets ->
             val i = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             binding.statusBarScrim.updateLayoutParams { height = i.top }
             insets
