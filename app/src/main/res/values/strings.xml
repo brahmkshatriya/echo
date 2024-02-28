@@ -28,5 +28,6 @@
     <string name="playlist">Playlist</string>
     <string name="loading">Loading…</string>
     <string name="album">Album</string>
+    <string name="number_dot">%1$d.</string>
 
 </resources>

@@ -22,7 +22,8 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentCollapsingBarBinding
-import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
+import dev.brahmkshatriya.echo.databinding.ItemTrackSmallBinding
+import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
@@ -98,7 +99,8 @@ class TrackAdapter(
 
     var list: List<Track>? = null
 
-    inner class ViewHolder(val binding: ItemTrackBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(val binding: ItemTrackSmallBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
                 val track = list?.get(bindingAdapterPosition) ?: return@setOnClickListener
@@ -108,7 +110,7 @@ class TrackAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-        ItemTrackBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        ItemTrackSmallBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
     override fun getItemCount() = list?.count() ?: 0
@@ -116,10 +118,19 @@ class TrackAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
         val track = list?.get(position) ?: return
-        binding.title.text = track.title
+        binding.itemNumber.text =
+            binding.root.context.getString(R.string.number_dot, (position + 1))
+        binding.itemTitle.text = track.title
         track.cover.loadInto(binding.imageView, R.drawable.art_music)
-        binding.artist.text = track.artists.joinToString(", ") { it.name }
-        binding.album.isVisible = albumVisible
+        var subtitle = ""
+        track.duration?.toTimeString()?.let {
+            subtitle += it
+        }
+        track.artists.joinToString(", ") { it.name }.let {
+            if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
+        }
+        binding.itemSubtitle.isVisible = subtitle.isNotEmpty()
+        binding.itemSubtitle.text = subtitle
     }
 
     @SuppressLint("NotifyDataSetChanged")

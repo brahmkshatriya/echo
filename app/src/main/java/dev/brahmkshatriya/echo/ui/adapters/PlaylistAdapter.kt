@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.player.Global
+import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class PlaylistAdapter(
@@ -52,8 +53,16 @@ class PlaylistAdapter(
         val track = list[position].second
         binding.playlistItemTitle.text = track.title
         track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
-        binding.playlistItemAuthor.text = track.artists.joinToString(", ") { it.name }
         binding.playlistCurrentItem.isVisible = position == currentPosition
+        var subtitle = ""
+        track.duration?.toTimeString()?.let {
+            subtitle += it
+        }
+        track.artists.joinToString(", ") { it.name }.let {
+            if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
+        }
+        binding.playlistItemAuthor.isVisible = subtitle.isNotEmpty()
+        binding.playlistItemAuthor.text = subtitle
     }
 
     private fun submitList(list: List<Pair<String, Track>>) {
