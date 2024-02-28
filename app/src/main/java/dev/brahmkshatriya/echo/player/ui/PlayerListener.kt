@@ -41,7 +41,6 @@ class PlayerListener(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         viewModel.track.value = Global.getTrack(mediaItem?.mediaId)
-        println("onMediaItemTransition: ${player.currentMediaItemIndex}")
         viewModel.playlist.value =
             player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
     }
@@ -56,7 +55,6 @@ class PlayerListener(
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         if (player.currentMediaItem == null) {
             viewModel.track.value = null
-            println("onTimelineChanged: null")
             viewModel.playlist.value = null
         }
         updateNavigation()
@@ -100,7 +98,6 @@ class PlayerListener(
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
-        println("update: ${player.currentMediaItemIndex}")
         viewModel.playlist.value =
             player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
     }
