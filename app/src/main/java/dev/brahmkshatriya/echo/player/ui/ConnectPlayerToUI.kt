@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.player.ui
 import androidx.activity.viewModels
 import androidx.media3.session.MediaBrowser
 import dev.brahmkshatriya.echo.MainActivity
+import dev.brahmkshatriya.echo.player.Global
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.observe
 
@@ -38,21 +39,22 @@ fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
         observe(playerViewModel.repeat) {
             player.repeatMode = it
         }
-        observe(playerViewModel.audioQueueFlow) {
-            player.addMediaItem(it)
+        observe(Global.addTrackFlow) { (index, item) ->
+            player.addMediaItem(index, item)
             player.prepare()
             player.playWhenReady = true
         }
-        observe(playerViewModel.clearQueueFlow) {
+        observe(Global.moveTrackFlow) { (new, old) ->
+            player.moveMediaItem(old, new)
+        }
+        observe(Global.removeTrackFlow) {
+            player.removeMediaItem(it)
+        }
+        observe(Global.clearQueueFlow) {
+            if(player.mediaItemCount == 0) return@observe
             player.pause()
             player.clearMediaItems()
             player.stop()
-        }
-        observe(playerViewModel.itemMovedFlow) { (new, old) ->
-            player.moveMediaItem(old, new)
-        }
-        observe(playerViewModel.itemRemovedFlow) {
-            player.removeMediaItem(it)
         }
     }
 }

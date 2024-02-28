@@ -31,8 +31,7 @@ class PlaylistAdapter(
                 callback.onItemClosedClicked(bindingAdapterPosition)
             }
             binding.playlistItemDragHandle.setOnTouchListener { _, event ->
-                if (event.actionMasked != ACTION_DOWN)
-                    return@setOnTouchListener false
+                if (event.actionMasked != ACTION_DOWN) return@setOnTouchListener false
                 callback.onDragHandleTouched(this)
                 true
             }
@@ -59,12 +58,9 @@ class PlaylistAdapter(
 
     private var currentPosition: Int? = null
     fun setCurrent(position: Int?) {
-        currentPosition?.let {
-            notifyItemChanged(it)
-        }
+        val old = currentPosition
         currentPosition = position
-        currentPosition?.let {
-            notifyItemChanged(it)
-        }
+        old?.let { notifyItemChanged(it) }
+        currentPosition?.let { notifyItemChanged(it) }
     }
 }

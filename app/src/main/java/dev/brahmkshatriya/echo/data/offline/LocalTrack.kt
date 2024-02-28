@@ -24,6 +24,9 @@ interface LocalTrack {
             val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
 
             return context.queryTracks(whereCondition, selectionArgs, page, pageSize)
+                .sortedBy(query) {
+                    it.title
+                }
         }
 
         fun getAll(context: Context, page: Int, pageSize: Int): List<Track> {

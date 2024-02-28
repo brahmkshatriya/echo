@@ -17,7 +17,6 @@ interface PlayerHelper {
     companion object {
 
         fun mediaItemBuilder(
-            queue: MutableList<Pair<String, Track>>,
             track: Track,
             audio: StreamableAudio
         ): MediaItem {
@@ -40,9 +39,6 @@ interface PlayerHelper {
 
             val mediaId = track.uri.toString()
             item.setMediaId(mediaId)
-
-            queue.add(mediaId to track)
-            item.setTag(queue.size)
             return item.build()
         }
 

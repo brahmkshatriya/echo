@@ -7,14 +7,12 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.data.offline.LocalAlbum
-import dev.brahmkshatriya.echo.data.offline.LocalArtist
-import dev.brahmkshatriya.echo.data.offline.LocalStream
-import dev.brahmkshatriya.echo.data.offline.LocalTrack
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
@@ -23,13 +21,19 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.data.offline.LocalAlbum
+import dev.brahmkshatriya.echo.data.offline.LocalArtist
+import dev.brahmkshatriya.echo.data.offline.LocalStream
+import dev.brahmkshatriya.echo.data.offline.LocalTrack
+import dev.brahmkshatriya.echo.data.offline.sortedBy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
-class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, TrackClient, HomeFeedClient {
+class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, TrackClient,
+    HomeFeedClient, AlbumClient {
 
-    override fun getMetadata() = ExtensionMetadata(
+    override val metadata = ExtensionMetadata(
         name = "Offline",
         version = "1.0.0",
         description = "Local media library",
@@ -41,18 +45,19 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
 
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
         val trimmed = query.trim()
-        val albums = LocalAlbum.search(context, trimmed, 1, 50)
-            .map { it.toMediaItem() }.ifEmpty { null }
-        val tracks = LocalTrack.search(context, trimmed, 1, 50)
-            .map { it.toMediaItem() }.ifEmpty { null }
-        val artists = LocalArtist.search(context, trimmed, 1, 50)
-            .map { it.toMediaItem() }.ifEmpty { null }
+        val albums =
+            LocalAlbum.search(context, trimmed, 1, 50).map { it.toMediaItem() }.ifEmpty { null }
+        val tracks =
+            LocalTrack.search(context, trimmed, 1, 50).map { it.toMediaItem() }.ifEmpty { null }
+        val artists =
+            LocalArtist.search(context, trimmed, 1, 50).map { it.toMediaItem() }.ifEmpty { null }
 
-        val result = listOfNotNull(
-            tracks?.toMediaItemsContainer("Tracks"),
-            albums?.toMediaItemsContainer("Albums"),
-            artists?.toMediaItemsContainer("Artists")
-        )
+        val result =
+            listOfNotNull(tracks?.let { it.first().track.title to it.toMediaItemsContainer("Tracks") },
+                albums?.let { it.first().album.title to it.toMediaItemsContainer("Albums") },
+                artists?.let { it.first().artist.name to it.toMediaItemsContainer("Artists") }).sortedBy(
+                query
+            ) { it.first }.map { it.second }
         emit(PagingData.from(result))
     }
 
@@ -69,12 +74,14 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
             val pageSize = params.loadSize
             return try {
                 val items = if (page == 0) {
-                    val albums = LocalAlbum.getAll(context, page, pageSize)
-                        .map { it.toMediaItem() }.ifEmpty { null }
-                    val tracks = LocalTrack.getShuffled(context, page, pageSize)
-                        .map { it.toMediaItem() }.ifEmpty { null }
-                    val artists = LocalArtist.getAll(context, page, pageSize)
-                        .map { it.toMediaItem() }.ifEmpty { null }
+                    val albums = LocalAlbum.getAll(context, page, pageSize).map { it.toMediaItem() }
+                        .ifEmpty { null }
+                    val tracks =
+                        LocalTrack.getShuffled(context, page, pageSize).map { it.toMediaItem() }
+                            .ifEmpty { null }
+                    val artists =
+                        LocalArtist.getAll(context, page, pageSize).map { it.toMediaItem() }
+                            .ifEmpty { null }
                     val result = listOfNotNull(
                         tracks?.toMediaItemsContainer("Tracks"),
                         albums?.toMediaItemsContainer("Albums"),
@@ -85,15 +92,12 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
                     LocalTrack.getAll(context, page, pageSize)
                         .map { MediaItemsContainer.TrackItem(it) }
                 }
-                val nextKey =
-                    if (items.isEmpty()) null
-                    else if (page == 0) 1
-                    else page + 1
+                val nextKey = if (items.isEmpty()) null
+                else if (page == 0) 1
+                else page + 1
 
                 LoadResult.Page(
-                    data = items,
-                    prevKey = if (page == 0) null else page - 1,
-                    nextKey = nextKey
+                    data = items, prevKey = if (page == 0) null else page - 1, nextKey = nextKey
                 )
             } catch (exception: IOException) {
                 return LoadResult.Error(exception)
@@ -112,13 +116,29 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
 
     override suspend fun getHomeGenres(): List<String> = listOf()
 
-    override suspend fun getHomeFeed(genre: String?) = Pager(
-        config = PagingConfig(
-            pageSize = 10,
-            enablePlaceholders = false
-        ),
-        pagingSourceFactory = { OfflinePagingSource(context) }
-    ).flow
+    override suspend fun getHomeFeed(genre: String?) = Pager(config = PagingConfig(
+        pageSize = 10, enablePlaceholders = false
+    ), pagingSourceFactory = { OfflinePagingSource(context) }).flow
+
+    override suspend fun loadAlbum(small: Album.Small): Album.Full {
+        return LocalAlbum.get(context, small.uri)
+    }
+
+    override suspend fun getMediaItems(album: Album.Full): Flow<PagingData<MediaItemsContainer>> =
+        flow {
+            val artist = album.artists.first()
+            val tracks =
+                LocalTrack.search(context, artist.name, 1, 50).filter { it.album?.uri != album.uri }
+                    .map { it.toMediaItem() }.ifEmpty { null }
+            val albums =
+                LocalAlbum.search(context, artist.name, 1, 50).filter { it.uri != album.uri }
+                    .map { it.toMediaItem() }.ifEmpty { null }
+            val result = listOfNotNull(
+                tracks?.toMediaItemsContainer("More from ${artist.name}"),
+                albums?.toMediaItemsContainer("Albums")
+            )
+            emit(PagingData.from(result))
+        }
 
 
 }

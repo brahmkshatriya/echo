@@ -76,7 +76,6 @@ class PlayerSessionCallback(
         if (extension !is TrackClient)
             return default("Extension does not support Streaming Tracks")
 
-        val queue = Global.queue
 
         return scope.future {
             differ.submitData(extension.search(query).first())
@@ -87,7 +86,7 @@ class PlayerSessionCallback(
                             if (item is EchoMediaItem.TrackItem) {
                                 val track = item.track
                                 val stream = extension.getStreamable(track)
-                                PlayerHelper.mediaItemBuilder(queue, track, stream)
+                                Global.addTrack(scope, track, stream).second
                             } else null
                         }
                     }
@@ -95,7 +94,7 @@ class PlayerSessionCallback(
                     is MediaItemsContainer.TrackItem -> {
                         val track = it.track
                         val stream = extension.getStreamable(track)
-                        listOf(PlayerHelper.mediaItemBuilder(queue, track, stream))
+                        listOf(Global.addTrack(scope, track, stream).second)
                     }
                 }
             }.flatten()
@@ -113,7 +112,7 @@ class PlayerSessionCallback(
         startIndex: Int,
         startPositionMs: Long
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        Global.queue.clear()
+        Global.clearQueue(scope)
         return super.onSetMediaItems(
             mediaSession,
             controller,

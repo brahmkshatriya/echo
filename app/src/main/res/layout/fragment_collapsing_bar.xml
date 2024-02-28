@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true">
@@ -14,44 +15,50 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             style="?attr/collapsingToolbarLayoutLargeStyle"
             android:layout_width="match_parent"
-            app:expandedTitleMarginStart="78dp"
+            android:layout_height="wrap_content"
             app:expandedTitleMarginBottom="20dp"
+            app:expandedTitleMarginEnd="72dp"
+            app:expandedTitleMarginStart="24dp"
+            app:contentScrim="?attr/colorSurfaceContainer"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
-            android:layout_height="wrap_content">
+            app:maxLines="2"
+            app:titleCollapseMode="scale">
 
             <ImageView
-                android:layout_gravity="bottom"
-                android:layout_marginStart="28dp"
-                android:layout_marginBottom="18dp"
-                android:src="@drawable/ic_album"
-                android:contentDescription="@string/album"
+                android:id="@+id/endIcon"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="28dp"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="@string/album"
+                android:src="@drawable/ic_album" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/albumCoverContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
                 android:layout_marginStart="24dp"
-                android:layout_marginTop="64dp"
+                android:layout_marginTop="72dp"
                 android:layout_marginEnd="24dp"
-                android:layout_marginBottom="64dp">
+                android:layout_marginBottom="72dp"
+                android:fitsSystemWindows="true">
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/albumCover"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
+                    android:transitionName="albumView"
                     android:background="?attr/colorSurfaceContainerHigh"
                     android:importantForAccessibility="no"
                     android:scaleType="fitCenter"
-                    app:layout_constraintHeight_max="@dimen/max_cover_size"
-                    app:layout_constraintWidth_max="@dimen/max_cover_size"
-                    app:layout_constraintDimensionRatio="1,1"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintDimensionRatio="1,1"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHeight_max="@dimen/max_cover_size"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="@dimen/max_cover_size"
                     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
                     tools:ignore="ImageContrastCheck" />
 
@@ -61,27 +68,35 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:title="@string/app_name"
+                android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
                 app:menu="@menu/back_more_menu"
-                app:navigationIcon="@drawable/ic_arrow_back"
                 app:navigationContentDescription="@string/close"
-                android:paddingEnd="16dp"
-                android:paddingStart="16dp"
-                android:background="@android:color/transparent"/>
+                tools:title="@tools:sample/lorem/random" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <View
+        android:id="@+id/toolbarOutline"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="-1dp"
+        android:alpha="0"
+        android:translationZ="1dp"
+        android:background="?attr/colorOutline"
+        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchorGravity="bottom" />
+
     <androidx.recyclerview.widget.RecyclerView
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingTop="24dp"
-        android:paddingBottom="@dimen/collapsed_cover_size"
-        tools:listitem="@layout/item_track"
-        android:layout_height="match_parent"/>
+        android:paddingBottom="96dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/item_track" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.transition.Hold
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
@@ -31,6 +32,7 @@ class HomeFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
+        exitTransition = Hold()
         return binding.root
     }
 
@@ -59,9 +61,7 @@ class HomeFragment : Fragment() {
 
         observe(homeViewModel.homeFeedFlow.flow) {
             binding.recyclerView.adapter = getAdapterForExtension<HomeFeedClient>(
-                it,
-                R.string.home,
-                concatAdapter
+                it, R.string.home, concatAdapter
             ) { client ->
                 binding.swipeRefresh.isEnabled = client != null
             }

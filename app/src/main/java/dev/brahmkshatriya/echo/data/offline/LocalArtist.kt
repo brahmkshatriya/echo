@@ -10,20 +10,28 @@ import dev.brahmkshatriya.echo.data.offline.LocalHelper.Companion.createCursor
 
 interface LocalArtist {
 
-    companion object{
-        fun search(context: Context, query: String, page: Int, pageSize: Int): List<Artist.WithCover> {
-            val whereCondition = "${MediaStore.Audio.Media.ARTIST} LIKE ?"
-            val selectionArgs = arrayOf("%$query%")
+    companion object {
+        fun search(
+            context: Context, query: String, page: Int, pageSize: Int
+        ): List<Artist.WithCover> {
+            val whereCondition =
+                "${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
+            val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
             return context.queryArtists(whereCondition, selectionArgs, page, pageSize)
+                .sortedBy(query) {
+                    it.name
+                }
         }
 
-        fun getAll(context: Context,page: Int, pageSize: Int): List<Artist.WithCover> {
+        fun getAll(context: Context, page: Int, pageSize: Int): List<Artist.WithCover> {
             val whereCondition = ""
             val selectionArgs = arrayOf<String>()
             return context.queryArtists(whereCondition, selectionArgs, page, pageSize)
         }
 
-        private fun Context.queryArtists(whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int): List<Artist.WithCover> {
+        private fun Context.queryArtists(
+            whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int
+        ): List<Artist.WithCover> {
             val artists = mutableListOf<Artist.WithCover>()
             createCursor(
                 contentResolver = contentResolver,

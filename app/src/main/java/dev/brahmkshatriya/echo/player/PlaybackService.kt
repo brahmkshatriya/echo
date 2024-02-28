@@ -14,6 +14,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -58,10 +62,12 @@ class PlaybackService : MediaLibraryService() {
         setMediaNotificationProvider(notificationProvider)
     }
 
+    private val scope = CoroutineScope(Dispatchers.IO) + Job()
+
     override fun onDestroy() {
         mediaLibrarySession?.run {
             player.release()
-            Global.queue.clear()
+            Global.clearQueue(scope)
             release()
             mediaLibrarySession = null
         }

@@ -40,6 +40,7 @@
             android:layout_width="128dp"
             android:layout_height="128dp"
             android:layout_marginTop="8dp"
+            android:transitionName="albumViewItem"
             android:background="?attr/colorSurfaceContainer"
             android:scaleType="fitCenter"
             app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"

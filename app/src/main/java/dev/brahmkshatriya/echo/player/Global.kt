@@ -1,8 +1,59 @@
 package dev.brahmkshatriya.echo.player
 
+import androidx.media3.common.MediaItem
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
+import java.util.Collections
 
 object Global {
     val queue = mutableListOf<Pair<String, Track>>()
-    fun getTrack(mediaId:String?) = queue.find { it.first == mediaId }?.second
+    fun getTrack(mediaId: String?) = queue.find { it.first == mediaId }?.second
+
+    private val _clearQueue = MutableSharedFlow<Unit>()
+    val clearQueueFlow = _clearQueue.asSharedFlow()
+    fun clearQueue(scope: CoroutineScope) {
+        queue.clear()
+        scope.launch {
+            _clearQueue.emit(Unit)
+        }
+    }
+
+    private val _removeTrack = MutableSharedFlow<Int>()
+    val removeTrackFlow = _removeTrack.asSharedFlow()
+    fun removeTrack(scope: CoroutineScope, index: Int) {
+        queue.removeAt(index)
+        scope.launch {
+            _removeTrack.emit(index)
+            if (queue.isEmpty()) _clearQueue.emit(Unit)
+        }
+    }
+
+    private val _addTrack = MutableSharedFlow<Pair<Int, MediaItem>>()
+    val addTrackFlow = _addTrack.asSharedFlow()
+    fun addTrack(
+        scope: CoroutineScope, track: Track, stream: StreamableAudio, positionOffset: Int = 0
+    ): Pair<Int,MediaItem> {
+        val item = PlayerHelper.mediaItemBuilder(track, stream)
+        val mediaId = item.mediaId
+        val index = queue.size - positionOffset
+
+        queue.add(index, mediaId to track)
+        scope.launch {
+            _addTrack.emit(index to item)
+        }
+        return index to item
+    }
+
+    private val _moveTrack = MutableSharedFlow<Pair<Int, Int>>()
+    val moveTrackFlow = _moveTrack.asSharedFlow()
+    fun moveTrack(scope: CoroutineScope, fromIndex: Int, toIndex: Int) {
+        Collections.swap(queue, fromIndex, toIndex)
+        scope.launch {
+            _moveTrack.emit(fromIndex to toIndex)
+        }
+    }
 }

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
@@ -30,6 +31,7 @@ import com.google.android.material.slider.Slider
 import com.google.android.material.slider.Slider.OnSliderTouchListener
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.player.Global
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
@@ -92,7 +94,7 @@ fun createPlayerUI(
             if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
             PlayerBackButtonHelper.playerSheetState.value = newState
             if (newState == STATE_HIDDEN)
-                playerViewModel.clearQueue()
+                Global.clearQueue(activity.lifecycleScope)
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -254,18 +256,8 @@ fun createPlayerUI(
 
     activity.apply {
 
-        fun playlistCleared() {
-            container.post {
-                if (bottomPlayerBehavior.state != STATE_HIDDEN) {
-                    bottomPlayerBehavior.isHideable = true
-                    bottomPlayerBehavior.state = STATE_HIDDEN
-                }
-            }
-            adapter.notifyDataSetChanged()
-        }
-
         observe(uiViewModel.track) { track ->
-            track ?: return@observe playlistCleared()
+            track ?: return@observe
 
             playerBinding.collapsedTrackTitle.text = track.title
             playerBinding.expandedTrackTitle.text = track.title
@@ -375,19 +367,21 @@ fun createPlayerUI(
             }
         }
         observe(uiViewModel.playlist) {
-            playlistBinding.playlistRecycler.apply {
-                adapter.setCurrent(it)
-            }
+            adapter.setCurrent(it)
         }
 
-        observe(playerViewModel.clearQueueFlow) {
-            playlistCleared()
+        observe(Global.addTrackFlow) { (index, _) ->
+            adapter.notifyItemInserted(index)
         }
 
-        observe(playerViewModel.audioQueueFlow) {
-            (it.localConfiguration?.tag as? Int)?.let { index ->
-                adapter.notifyItemInserted(index)
+        observe(Global.clearQueueFlow) {
+            container.post {
+                if (bottomPlayerBehavior.state != STATE_HIDDEN) {
+                    bottomPlayerBehavior.isHideable = true
+                    bottomPlayerBehavior.state = STATE_HIDDEN
+                }
             }
+            adapter.notifyDataSetChanged()
         }
     }
 }

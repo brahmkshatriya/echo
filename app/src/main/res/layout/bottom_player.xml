@@ -93,6 +93,7 @@
                     android:id="@+id/expandedTrackTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     tools:text="Nice Track Title" />
@@ -330,6 +331,7 @@
                         android:id="@+id/collapsedTrackTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
                         android:maxLines="1"
                         android:textStyle="bold"
                         tools:text="Nice Track Title" />
@@ -363,10 +365,10 @@
                             android:id="@+id/collapsedTrackPlayPause"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
+                            android:background="@drawable/ripple_44dp"
                             android:button="@drawable/anim_play_pause"
                             android:contentDescription="@string/play_pause"
                             android:enabled="false"
-                            android:background="@drawable/ripple_44dp"
                             app:buttonTint="@color/button_play_pause" />
 
                     </FrameLayout>

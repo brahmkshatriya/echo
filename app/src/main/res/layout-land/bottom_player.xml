@@ -77,6 +77,7 @@
                     android:id="@+id/expandedTrackTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     tools:text="Nice Track Title" />
@@ -125,6 +126,8 @@
                         android:layout_marginStart="12dp"
                         android:layout_marginEnd="12dp"
                         android:progress="40"
+                        app:trackThickness="8dp"
+                        app:trackCornerRadius="4dp"
                         app:indicatorColor="?attr/colorTertiaryContainer"
                         app:indicatorTrackGapSize="0dp"
                         app:trackColor="?attr/colorSurfaceContainerHigh" />
@@ -143,7 +146,7 @@
                         app:thumbWidth="16dp"
                         app:trackColorActive="?attr/colorTertiary"
                         app:trackColorInactive="@android:color/transparent"
-                        app:trackHeight="4dp" />
+                        app:trackHeight="8dp" />
 
                 </FrameLayout>
 
@@ -329,6 +332,7 @@
                         android:id="@+id/collapsedTrackTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
                         android:maxLines="1"
                         android:textStyle="bold"
                         tools:text="Nice Track Title" />

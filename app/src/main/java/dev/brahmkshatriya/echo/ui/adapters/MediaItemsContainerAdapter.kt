@@ -24,7 +24,7 @@ import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemsContainerAdapter(
     private val lifecycle: Lifecycle,
-    private val listener: ClickListener<EchoMediaItem>,
+    private val listener: ClickListener<Pair<View,EchoMediaItem>>,
 ) : PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
     MediaItemsContainerComparator
 ) {
@@ -108,7 +108,7 @@ class MediaItemsContainerAdapter(
                     binding.duration.visibility = View.VISIBLE
                     binding.duration.text = duration.toTimeString()
                 }
-                track.toMediaItem()
+                binding.imageView to track.toMediaItem()
             }
         }
         echoMediaItem?.let {

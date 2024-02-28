@@ -5,16 +5,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.transition.MaterialContainerTransform
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.models.Album
@@ -23,6 +24,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentCollapsingBarBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
+import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -41,35 +43,50 @@ class AlbumFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentCollapsingBarBinding.inflate(inflater, container, false)
+
+        val album: Album.Small = args.albumWithCover ?: args.albumSmall ?: return binding.root
+        binding.albumCover.transitionName = album.uri.toString()
+        sharedElementEnterTransition = MaterialContainerTransform()
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val album: Album.Small = args.albumWithCover ?: args.albumSmall ?: return
 
-        val adapter = TrackAdapter(MediaItemClickListener(this), true)
+        val clickListener = MediaItemClickListener(this)
+        val trackAdapter = TrackAdapter(clickListener, false)
+        val mediaItemsContainerAdapter = MediaItemsContainerAdapter(lifecycle, clickListener)
+        val concatAdapter = ConcatAdapter(trackAdapter, mediaItemsContainerAdapter)
 
         binding.toolbar.title = album.title
-        (album as? Album.WithCover)?.let {
-            it.cover.loadInto(binding.albumCover)
+        binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
+            val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
+            val inverted = 1 - offset
+            binding.endIcon.alpha = inverted
+            binding.albumCover.alpha = inverted
+            binding.toolbarOutline.alpha = offset
         }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root){ _, insets ->
-            val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            println(systemInsets)
-            binding.albumCoverContainer.updatePadding(top = systemInsets.top)
-            insets
+
+        (album as? Album.WithCover).let {
+            it?.cover.loadInto(binding.albumCover, R.drawable.art_album)
         }
-        binding.albumCoverContainer.requestApplyInsets()
+
+        binding.toolbar.setupWithNavController(findNavController())
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
-            extensionViewModel.getCurrentExtension(), R.string.album, adapter, true
+            extensionViewModel.getCurrentExtension(), R.string.album, concatAdapter, true
         ) { client ->
             if (client == null) return@getAdapterForExtension
             viewModel.loadAlbum(client, album)
-            observe(viewModel.albumFlow) {
-                it ?: return@observe
-                adapter.submitList(it.tracks)
-            }
+        }
+
+        observe(viewModel.albumFlow) {
+            if (it != null) trackAdapter.submitList(it.tracks)
+        }
+
+        observe(viewModel.result) {
+            if (it != null) mediaItemsContainerAdapter.submitData(it)
         }
     }
 }
@@ -85,7 +102,7 @@ class TrackAdapter(
         init {
             binding.root.setOnClickListener {
                 val track = list?.get(bindingAdapterPosition) ?: return@setOnClickListener
-                callback.onClick(track.toMediaItem())
+                callback.onClick(binding.imageView to track.toMediaItem())
             }
         }
     }

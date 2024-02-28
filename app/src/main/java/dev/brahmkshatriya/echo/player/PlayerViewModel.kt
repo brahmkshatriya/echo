@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
@@ -12,7 +11,6 @@ import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import java.util.Collections
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,11 +30,6 @@ class PlayerViewModel @Inject constructor(
     }
 
     val audioIndexFlow = MutableSharedFlow<Int>()
-    val audioQueueFlow = MutableSharedFlow<MediaItem>()
-    val clearQueueFlow = MutableSharedFlow<Unit>()
-    val itemMovedFlow = MutableSharedFlow<Pair<Int, Int>>()
-    val itemRemovedFlow: MutableSharedFlow<Int> = MutableSharedFlow()
-
     val playPause: MutableSharedFlow<Boolean> = MutableSharedFlow()
     val seekTo: MutableSharedFlow<Long> = MutableSharedFlow()
     val seekToPrevious: MutableSharedFlow<Unit> = MutableSharedFlow()
@@ -47,14 +40,10 @@ class PlayerViewModel @Inject constructor(
         return trackClient?.getStreamable(track) ?: return null
     }
 
-    private val queue = Global.queue
-
     private suspend fun loadAndAddToQueue(track: Track): Int {
         val stream = loadStreamable(track)
         return stream?.let {
-            val item = PlayerHelper.mediaItemBuilder(queue, track, it)
-            audioQueueFlow.emit(item)
-            queue.size - 1
+            Global.addTrack(viewModelScope, track, it).first
         } ?: -1
     }
 
@@ -71,25 +60,15 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun clearQueue() {
-        queue.clear()
-        viewModelScope.launch {
-            clearQueueFlow.emit(Unit)
-        }
+        Global.clearQueue(viewModelScope)
     }
 
     fun moveQueueItems(new: Int, old: Int) {
-        Collections.swap(queue, new, old)
-        viewModelScope.launch {
-            itemMovedFlow.emit(new to old)
-        }
+        Global.moveTrack(viewModelScope, old, new)
     }
 
     fun removeQueueItem(index: Int) {
-        queue.removeAt(index)
-        viewModelScope.launch {
-            if (queue.size == 0) clearQueueFlow.emit(Unit)
-            else itemRemovedFlow.emit(index)
-        }
+        Global.removeTrack(viewModelScope, index)
     }
 
 //    fun radio(track: Track){

@@ -1,7 +1,9 @@
 package dev.brahmkshatriya.echo.ui.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.paging.PagingData
@@ -20,7 +22,7 @@ import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemAdapter(
-    private val listener: ClickListener<EchoMediaItem>
+    private val listener: ClickListener<Pair<View, EchoMediaItem>>
 ) : PagingDataAdapter<EchoMediaItem, MediaItemAdapter.MediaItemHolder>(MediaItemComparator) {
 
     override fun getItemViewType(position: Int): Int {
@@ -36,30 +38,29 @@ class MediaItemAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = MediaItemHolder(
         when (viewType) {
-            0 -> MediaItemsBinding.Track(
-                ItemMediaTrackBinding
+            0 -> {
+                val binding = ItemMediaTrackBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-            )
+                MediaItemsBinding.Track(binding, binding.imageView)
+            }
 
-            1 -> MediaItemsBinding.Album(
-                ItemMediaAlbumBinding
+            1 -> {
+                val binding = ItemMediaAlbumBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-            )
+                MediaItemsBinding.Album(binding, binding.imageView)
+            }
 
-            2 -> MediaItemsBinding.Artist(
-                ItemMediaArtistBinding
+            2 -> {
+                val binding = ItemMediaArtistBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-            )
+                MediaItemsBinding.Artist(binding, binding.imageView)
+            }
 
-            3 -> MediaItemsBinding.Playlist(
-                ItemMediaPlaylistBinding
+            else -> {
+                val binding = ItemMediaPlaylistBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-            )
-
-            else -> MediaItemsBinding.Track(
-                ItemMediaTrackBinding
-                    .inflate(LayoutInflater.from(parent.context), parent, false)
-            )
+                MediaItemsBinding.Playlist(binding, binding.imageView)
+            }
         }
     )
 
@@ -69,10 +70,10 @@ class MediaItemAdapter(
 
         holder.itemView.apply {
             setOnClickListener {
-                listener.onClick(item)
+                listener.onClick( container.transitionView to item)
             }
             setOnLongClickListener {
-                listener.onLongClick(item)
+                listener.onLongClick(container.transitionView to item)
                 true
             }
         }
@@ -181,11 +182,18 @@ class MediaItemAdapter(
             }
         )
 
-    sealed class MediaItemsBinding {
-        data class Track(val binding: ItemMediaTrackBinding) : MediaItemsBinding()
-        data class Album(val binding: ItemMediaAlbumBinding) : MediaItemsBinding()
-        data class Artist(val binding: ItemMediaArtistBinding) : MediaItemsBinding()
-        data class Playlist(val binding: ItemMediaPlaylistBinding) : MediaItemsBinding()
+    sealed class MediaItemsBinding(open val transitionView: ImageView) {
+        data class Track(val binding: ItemMediaTrackBinding, override val transitionView: ImageView) :
+            MediaItemsBinding(transitionView)
+
+        data class Album(val binding: ItemMediaAlbumBinding, override val transitionView: ImageView) :
+            MediaItemsBinding(transitionView)
+
+        data class Artist(val binding: ItemMediaArtistBinding, override val transitionView: ImageView) :
+            MediaItemsBinding(transitionView)
+
+        data class Playlist(val binding: ItemMediaPlaylistBinding, override val transitionView: ImageView) :
+            MediaItemsBinding(transitionView)
     }
 
     companion object MediaItemComparator : DiffUtil.ItemCallback<EchoMediaItem>() {

@@ -48,7 +48,7 @@ class ExtensionDialogFragment : DialogFragment() {
                         binding.buttonToggleGroup,
                         false
                     ).root
-                val metadata = extension.getMetadata()
+                val metadata = extension.metadata
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
                 metadata.iconUrl?.toImageHolder().loadInto(button)
