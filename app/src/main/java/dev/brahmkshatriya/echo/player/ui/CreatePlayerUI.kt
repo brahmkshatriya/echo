@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.player.ui
 
 import android.animation.ObjectAnimator
-import android.annotation.SuppressLint
 import android.graphics.drawable.Animatable
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -43,7 +42,6 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-@SuppressLint("NotifyDataSetChanged")
 fun createPlayerUI(
     activity: MainActivity
 ) {
@@ -85,6 +83,11 @@ fun createPlayerUI(
             playerBinding.expandedBackground.alpha = slideOffset
         }
     })
+    playlistBinding.playlistTitleIcon.setOnClickListener {
+        bottomPlaylistBehavior.apply {
+            state = if (state == STATE_EXPANDED) STATE_COLLAPSED else STATE_EXPANDED
+        }
+    }
 
     val collapsedCoverSize = activity.resources.getDimension(R.dimen.collapsed_cover_size).toInt()
     bottomPlayerBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
@@ -367,21 +370,23 @@ fun createPlayerUI(
             }
         }
         observe(uiViewModel.playlist) {
-            adapter.setCurrent(it)
+            adapter.setCurrent(Global.queue, it)
         }
 
         observe(Global.addTrackFlow) { (index, _) ->
-            adapter.notifyItemInserted(index)
+            adapter.addItem(Global.queue, index)
         }
 
         observe(Global.clearQueueFlow) {
+            adapter.removeItems(Global.queue)
+            PlayerBackButtonHelper.playlistState.value = STATE_COLLAPSED
+            PlayerBackButtonHelper.playerSheetState.value = STATE_HIDDEN
             container.post {
                 if (bottomPlayerBehavior.state != STATE_HIDDEN) {
                     bottomPlayerBehavior.isHideable = true
                     bottomPlayerBehavior.state = STATE_HIDDEN
                 }
             }
-            adapter.notifyDataSetChanged()
         }
     }
 }

@@ -13,20 +13,30 @@
         android:paddingBottom="8dp"
         android:gravity="center"
         android:orientation="horizontal"
-        android:paddingStart="24dp"
+        android:paddingStart="8dp"
         android:paddingEnd="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/playlistTitleIcon"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/playlist"
+            android:padding="8dp"
+            app:icon="@drawable/ic_queue_music"
+            app:iconSize="24dp"
+            app:iconTint="@color/button_player"
+            app:strokeWidth="0dp" />
 
         <TextView
             android:id="@+id/playlistTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingBottom="16dp"
-            android:paddingTop="16dp"
             android:layout_weight="1"
-            android:drawablePadding="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
             android:text="@string/up_next"
             android:textSize="18sp"
-            app:drawableStartCompat="@drawable/ic_queue_music"
             app:drawableTint="@color/button_player" />
 
         <com.google.android.material.button.MaterialButton

@@ -10,13 +10,14 @@ import kotlinx.coroutines.launch
 import java.util.Collections
 
 object Global {
-    val queue = mutableListOf<Pair<String, Track>>()
-    fun getTrack(mediaId: String?) = queue.find { it.first == mediaId }?.second
+    private val _queue = mutableListOf<Pair<String, Track>>()
+    val queue get() = _queue.toList()
+    fun getTrack(mediaId: String?) = _queue.find { it.first == mediaId }?.second
 
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
     fun clearQueue(scope: CoroutineScope) {
-        queue.clear()
+        _queue.clear()
         scope.launch {
             _clearQueue.emit(Unit)
         }
@@ -25,10 +26,10 @@ object Global {
     private val _removeTrack = MutableSharedFlow<Int>()
     val removeTrackFlow = _removeTrack.asSharedFlow()
     fun removeTrack(scope: CoroutineScope, index: Int) {
-        queue.removeAt(index)
+        _queue.removeAt(index)
         scope.launch {
             _removeTrack.emit(index)
-            if (queue.isEmpty()) _clearQueue.emit(Unit)
+            if (_queue.isEmpty()) _clearQueue.emit(Unit)
         }
     }
 
@@ -36,12 +37,12 @@ object Global {
     val addTrackFlow = _addTrack.asSharedFlow()
     fun addTrack(
         scope: CoroutineScope, track: Track, stream: StreamableAudio, positionOffset: Int = 0
-    ): Pair<Int,MediaItem> {
+    ): Pair<Int, MediaItem> {
         val item = PlayerHelper.mediaItemBuilder(track, stream)
         val mediaId = item.mediaId
-        val index = queue.size - positionOffset
+        val index = _queue.size - positionOffset
 
-        queue.add(index, mediaId to track)
+        _queue.add(index, mediaId to track)
         scope.launch {
             _addTrack.emit(index to item)
         }
@@ -51,7 +52,7 @@ object Global {
     private val _moveTrack = MutableSharedFlow<Pair<Int, Int>>()
     val moveTrackFlow = _moveTrack.asSharedFlow()
     fun moveTrack(scope: CoroutineScope, fromIndex: Int, toIndex: Int) {
-        Collections.swap(queue, fromIndex, toIndex)
+        Collections.swap(_queue, fromIndex, toIndex)
         scope.launch {
             _moveTrack.emit(fromIndex to toIndex)
         }

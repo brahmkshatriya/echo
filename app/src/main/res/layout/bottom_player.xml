@@ -93,12 +93,14 @@
                     android:id="@+id/expandedTrackTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12sp"
                     android:textAlignment="center"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     tools:text="Nice Track Title" />
 
-                <FrameLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
@@ -114,10 +116,11 @@
 
                     <TextView
                         android:id="@+id/expandedTrackAuthor"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
+                        android:layout_weight="1"
                         android:padding="12dp"
+                        android:textAlignment="center"
                         android:textColor="?attr/colorPrimary"
                         android:textSize="16sp"
                         tools:text="Author" />
@@ -128,7 +131,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom|end"
                         tools:text="00:00" />
-                </FrameLayout>
+                </LinearLayout>
 
                 <FrameLayout
                     android:layout_width="wrap_content"
@@ -144,7 +147,9 @@
                         android:progress="40"
                         app:indicatorColor="?attr/colorTertiaryContainer"
                         app:indicatorTrackGapSize="0dp"
-                        app:trackColor="?attr/colorSurfaceContainerHigh" />
+                        app:trackColor="?attr/colorSurfaceContainerHigh"
+                        app:trackCornerRadius="4dp"
+                        app:trackThickness="8dp" />
 
                     <com.google.android.material.slider.Slider
                         android:id="@+id/expandedSeekBar"
@@ -160,7 +165,7 @@
                         app:thumbWidth="16dp"
                         app:trackColorActive="?attr/colorTertiary"
                         app:trackColorInactive="@android:color/transparent"
-                        app:trackHeight="4dp" />
+                        app:trackHeight="8dp" />
 
                 </FrameLayout>
 

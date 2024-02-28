@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.utils.loadInto
 
 class PlaylistAdapter(
     val callback: Callback,
-    val list: MutableList<Pair<String, Track>> = Global.queue,
+    var list: List<Pair<String, Track>> = Global.queue,
 ) : RecyclerView.Adapter<PlaylistAdapter.ViewHolder>() {
 
     open class Callback {
@@ -56,11 +56,27 @@ class PlaylistAdapter(
         binding.playlistCurrentItem.isVisible = position == currentPosition
     }
 
+    private fun submitList(list: List<Pair<String, Track>>) {
+        this.list = list
+    }
+
     private var currentPosition: Int? = null
-    fun setCurrent(position: Int?) {
+    fun setCurrent(list: List<Pair<String, Track>>, position: Int?) {
+        submitList(list)
         val old = currentPosition
         currentPosition = position
         old?.let { notifyItemChanged(it) }
         currentPosition?.let { notifyItemChanged(it) }
+    }
+
+    fun addItem(queue: List<Pair<String, Track>>, index: Int) {
+        submitList(queue)
+        notifyItemInserted(index)
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun removeItems(queue: List<Pair<String, Track>>) {
+        submitList(queue)
+        notifyDataSetChanged()
     }
 }
