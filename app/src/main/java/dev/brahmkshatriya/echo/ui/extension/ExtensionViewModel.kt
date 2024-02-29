@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.di.MutableExtensionFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.PluginRepo
@@ -19,6 +20,7 @@ class ExtensionViewModel @Inject constructor(
     private val pluginRepo: PluginRepo<ExtensionClient>
 ) : ViewModel() {
 
+    val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
     private val _exceptionFlow = MutableSharedFlow<Exception>()
     val exceptionFlow = _exceptionFlow.asSharedFlow()
     init {

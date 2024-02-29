@@ -1,31 +1,24 @@
 package dev.brahmkshatriya.echo.utils
 
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
-fun updatePaddingWithSystemInsets(view: View, bottom: Boolean = false) {
-    ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
+
+fun View.updatePaddingWithPlayerAndSystemInsets(playerState: Int, top: Boolean = true) {
+    ViewCompat.setOnApplyWindowInsetsListener(this) { v, windowInsets ->
         val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
         v.updatePadding(
-            insets.left,
-            insets.top,
-            insets.right,
-            if (bottom) insets.bottom else v.paddingBottom
+            left = insets.left,
+            top = if(top) insets.top else 0,
+            right = insets.right,
+            bottom = if (playerState != BottomSheetBehavior.STATE_HIDDEN)
+                insets.bottom + 88.dpToPx()
+            else insets.bottom + 8.dpToPx()
         )
-        WindowInsetsCompat.CONSUMED
+        windowInsets
     }
-}
-
-fun updateBottomMarginWithSystemInsets(view: View, consumeInsets: Boolean = false) {
-    ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-        v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            bottomMargin = insets.bottom
-        }
-        if (consumeInsets) WindowInsetsCompat.CONSUMED else windowInsets
-    }
+    ViewCompat.requestApplyInsets(this)
 }

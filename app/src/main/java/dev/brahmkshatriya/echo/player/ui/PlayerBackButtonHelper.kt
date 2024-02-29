@@ -22,7 +22,7 @@ object PlayerBackButtonHelper {
     val playlistState = MutableStateFlow(STATE_COLLAPSED)
     private fun backPressedCallback(
         viewLifecycleOwner: LifecycleOwner,
-        callback: ((Boolean) -> Unit)?
+        callback: ((Int) -> Unit)?
     ): OnBackPressedCallback {
         val backPress = object : OnBackPressedCallback(false) {
             fun getBehaviour() = playlistBehavior?.state?.let {
@@ -49,12 +49,12 @@ object PlayerBackButtonHelper {
         viewLifecycleOwner.observe(playerSheetState) {
             val expanded = it == STATE_EXPANDED
             backPress.isEnabled = expanded
-            callback?.invoke(expanded)
+            callback?.invoke(it)
         }
         return backPress
     }
 
-    fun addCallback(fragment: Fragment, callback: ((Boolean) -> Unit)? = null) =
+    fun addCallback(fragment: Fragment, callback: ((Int) -> Unit)? = null) =
         with(fragment) {
             val mainActivity = (requireActivity() as? MainActivity)
                 ?: throw IllegalArgumentException("Fragment must be attached to MainActivity")

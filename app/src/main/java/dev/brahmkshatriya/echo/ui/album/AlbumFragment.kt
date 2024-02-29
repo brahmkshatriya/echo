@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.album
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +25,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentCollapsingBarBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackSmallBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
@@ -31,34 +33,43 @@ import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 
 class AlbumFragment : Fragment() {
 
     private var binding: FragmentCollapsingBarBinding by autoCleared()
-    private val extensionViewModel: ExtensionViewModel by activityViewModels()
     private val viewModel: AlbumViewModel by viewModels()
-
+    private val extensionViewModel: ExtensionViewModel by activityViewModels()
     private val args: AlbumFragmentArgs by navArgs()
+
+    private val clickListener = MediaItemClickListener(this)
+    private val trackAdapter = TrackAdapter(clickListener, false)
+    private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
+    private val concatAdapter = ConcatAdapter(trackAdapter, mediaItemsContainerAdapter)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            drawingViewId = R.id.nav_host_fragment
+            duration = 1000
+            scrimColor = Color.TRANSPARENT
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentCollapsingBarBinding.inflate(inflater, container, false)
-
-        val album: Album.Small = args.albumWithCover ?: args.albumSmall ?: return binding.root
-        binding.albumCover.transitionName = album.uri.toString()
-        sharedElementEnterTransition = MaterialContainerTransform()
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        PlayerBackButtonHelper.addCallback(this) {
+            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it, false)
+        }
         val album: Album.Small = args.albumWithCover ?: args.albumSmall ?: return
 
-        val clickListener = MediaItemClickListener(this)
-        val trackAdapter = TrackAdapter(clickListener, false)
-        val mediaItemsContainerAdapter = MediaItemsContainerAdapter(lifecycle, clickListener)
-        val concatAdapter = ConcatAdapter(trackAdapter, mediaItemsContainerAdapter)
+
 
         binding.toolbar.title = album.title.trim()
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
@@ -75,11 +86,13 @@ class AlbumFragment : Fragment() {
 
         binding.toolbar.setupWithNavController(findNavController())
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
-        binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
-            extensionViewModel.getCurrentExtension(), R.string.album, concatAdapter, true
-        ) { client ->
-            if (client == null) return@getAdapterForExtension
-            viewModel.loadAlbum(client, album)
+        observe(extensionViewModel.extensionFlow) {
+            binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
+                it, R.string.album, concatAdapter, true
+            ) { client ->
+                if (client == null) return@getAdapterForExtension
+                viewModel.loadAlbum(client, album)
+            }
         }
 
         observe(viewModel.albumFlow) {
@@ -87,7 +100,7 @@ class AlbumFragment : Fragment() {
         }
 
         observe(viewModel.result) {
-            if (it != null) mediaItemsContainerAdapter.submitData(it)
+            if (it != null) mediaItemsContainerAdapter.submit(it)
         }
     }
 }

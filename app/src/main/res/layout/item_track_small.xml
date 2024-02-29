@@ -44,7 +44,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="24dp"
+                android:layout_marginStart="16dp"
                 android:layout_weight="1"
                 android:baselineAligned="false"
                 android:gravity="center"
@@ -74,7 +74,7 @@
                 android:layout_margin="8dp"
                 android:contentDescription="@string/next"
                 android:padding="8dp"
-                app:icon="@drawable/ic_more_vert"
+                app:icon="@drawable/ic_more_horiz"
                 app:iconSize="24dp"
                 app:iconTint="@color/button_player" />
         </LinearLayout>

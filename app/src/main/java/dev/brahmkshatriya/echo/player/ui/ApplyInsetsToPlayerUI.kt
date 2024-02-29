@@ -38,17 +38,19 @@ fun applyInsetsToPlayerUI(
         val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         bottomPlayerBehavior.peekHeight = peekHeight + systemInsets.bottom
         playlistBehavior.peekHeight = playlistPeekHeight + systemInsets.bottom
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            navView.post {
+                uiViewModel.bottomNavTranslateY = navView.height
+            }
+        } else {
+            navView.post {
+                uiViewModel.bottomNavTranslateY = -navView.height
+            }
+        }
         insets
     }
 
-    if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-        navView.post {
-            uiViewModel.bottomNavTranslateY = navView.height
-        }
-    } else {
-        navView.post {
-            uiViewModel.bottomNavTranslateY = -navView.height
-        }
+    if (orientation != Configuration.ORIENTATION_PORTRAIT) {
 
         // Need to manually handle system insets for landscape mode
         // since we can't use the fitSystemWindows on the root view,

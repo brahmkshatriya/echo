@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.transition.MaterialFadeThrough
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
@@ -15,17 +14,12 @@ import dev.brahmkshatriya.echo.ui.adapters.ContainerLoadingAdapter
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
-import dev.brahmkshatriya.echo.utils.updatePaddingWithSystemInsets
+import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 
 class LibraryFragment : Fragment() {
 
     private var binding: FragmentRecyclerBinding by autoCleared()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enterTransition = MaterialFadeThrough()
-        exitTransition = MaterialFadeThrough()
-    }
+    private val headerAdapter = HeaderAdapter(R.string.library)
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
@@ -35,11 +29,11 @@ class LibraryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        PlayerBackButtonHelper.addCallback(this)
-        updatePaddingWithSystemInsets(binding.recyclerView)
+        PlayerBackButtonHelper.addCallback(this) {
+            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it)
+        }
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 
-        val headerAdapter = HeaderAdapter(R.string.library)
 
         binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ContainerLoadingAdapter { })
         binding.recyclerView.layoutManager = LinearLayoutManager(context)

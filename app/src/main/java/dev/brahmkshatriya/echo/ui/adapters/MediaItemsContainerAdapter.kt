@@ -1,10 +1,14 @@
 package dev.brahmkshatriya.echo.ui.adapters
 
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
@@ -20,14 +24,18 @@ import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.ClickListener
+import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.utils.loadInto
+import java.lang.ref.WeakReference
 
 class MediaItemsContainerAdapter(
-    private val lifecycle: Lifecycle,
-    private val listener: ClickListener<Pair<View,EchoMediaItem>>,
+    fragment: Fragment,
+    private val listener: ClickListener<Pair<View, EchoMediaItem>> = MediaItemClickListener(fragment),
 ) : PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
     MediaItemsContainerComparator
 ) {
+
+    private val lifecycle = fragment.lifecycle
 
     fun withLoadingFooter(): ConcatAdapter {
         val footer = ContainerLoadingAdapter {
@@ -52,64 +60,23 @@ class MediaItemsContainerAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        0 -> MediaItemsContainerHolder(
-            MediaItemsContainerBinding.Category(
-                ItemCategoryBinding
-                    .inflate(LayoutInflater.from(parent.context), parent, false)
-            )
+        0 -> Category(
+            ItemCategoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
 
-        else -> MediaItemsContainerHolder(
-            MediaItemsContainerBinding.Track(
-                ItemTrackBinding
-                    .inflate(LayoutInflater.from(parent.context), parent, false)
-            )
+        else -> Track(
+            ItemTrackBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
     }
 
 
     override fun onBindViewHolder(holder: MediaItemsContainerHolder, position: Int) {
         val item = getItem(position) ?: return
-        val echoMediaItem = when (holder.container) {
-            is MediaItemsContainerBinding.Category -> {
-                val binding = holder.container.binding
-                val category = item as MediaItemsContainer.Category
-                binding.textView.text = category.title
-                binding.recyclerView.layoutManager =
-                    LinearLayoutManager(binding.root.context, HORIZONTAL, false)
-                val adapter = MediaItemAdapter(listener)
-                binding.recyclerView.adapter = adapter
-                adapter.submitData(lifecycle, category.list)
-                null
-            }
+        holder.bind()
 
-            is MediaItemsContainerBinding.Track -> {
-                val binding = holder.container.binding
-                val track = (item as MediaItemsContainer.TrackItem).track
-                binding.title.text = track.title
-                track.cover.loadInto(binding.imageView, R.drawable.art_music)
-                val album = track.album
-                if (album == null) {
-                    binding.album.visibility = View.GONE
-                } else {
-                    binding.album.visibility = View.VISIBLE
-                    binding.album.text = album.title
-                }
-                if (track.artists.isEmpty()) {
-                    binding.artist.visibility = View.GONE
-                } else {
-                    binding.artist.visibility = View.VISIBLE
-                    binding.artist.text = track.artists.joinToString(" ") { it.name }
-                }
-                val duration = track.duration
-                if (duration == null) {
-                    binding.duration.visibility = View.GONE
-                } else {
-                    binding.duration.visibility = View.VISIBLE
-                    binding.duration.text = duration.toTimeString()
-                }
-                binding.imageView to track.toMediaItem()
-            }
+        val echoMediaItem = when (item) {
+            is MediaItemsContainer.TrackItem -> holder.transitionView to item.track.toMediaItem()
+            else -> null
         }
         echoMediaItem?.let {
             holder.itemView.apply {
@@ -124,24 +91,119 @@ class MediaItemsContainerAdapter(
         }
     }
 
-    sealed class MediaItemsContainerBinding {
-        data class Category(val binding: ItemCategoryBinding) : MediaItemsContainerBinding()
-        data class Track(val binding: ItemTrackBinding) : MediaItemsContainerBinding()
+    //NESTED RECYCLER VIEW THINGS
+
+    private val stateViewModel: StateViewModel by fragment.viewModels()
+
+    class StateViewModel : ViewModel() {
+        val layoutManagerStates = hashMapOf<Int, Parcelable?>()
+        val visibleScrollableViews = hashMapOf<Int, WeakReference<Category>>()
     }
 
-    inner class MediaItemsContainerHolder(val container: MediaItemsContainerBinding) :
-        RecyclerView.ViewHolder(
-            when (container) {
-                is MediaItemsContainerBinding.Category -> container.binding.root
-                is MediaItemsContainerBinding.Track -> container.binding.root
+    suspend fun submit(pagingData: PagingData<MediaItemsContainer>) {
+        saveState()
+        submitData(pagingData)
+    }
+
+    init {
+        addLoadStateListener {
+            if (it.refresh == LoadState.Loading) clearState()
+        }
+    }
+
+    private fun clearState() {
+        stateViewModel.layoutManagerStates.clear()
+        stateViewModel.visibleScrollableViews.clear()
+    }
+
+    private fun saveState() {
+        stateViewModel.visibleScrollableViews.values.forEach { item ->
+            item.get()?.let { saveScrollState(it) }
+        }
+        stateViewModel.visibleScrollableViews.clear()
+    }
+
+    override fun onViewRecycled(holder: MediaItemsContainerHolder) {
+        super.onViewRecycled(holder)
+        if (holder is Category) saveScrollState(holder) {
+            stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
+        }
+    }
+
+    private fun saveScrollState(holder: Category, block: ((Category) -> Unit)? = null) {
+        val layoutManagerStates = stateViewModel.layoutManagerStates
+        layoutManagerStates[holder.bindingAdapterPosition] =
+            holder.layoutManager.onSaveInstanceState()
+        block?.invoke(holder)
+    }
+
+    // VIEW HOLDER
+
+    abstract inner class MediaItemsContainerHolder(itemView: View) :
+        RecyclerView.ViewHolder(itemView) {
+        abstract fun bind()
+        abstract val transitionView: View
+    }
+
+    inner class Category(val binding: ItemCategoryBinding) :
+        MediaItemsContainerHolder(binding.root) {
+        private val adapter = MediaItemAdapter(listener)
+        val layoutManager = LinearLayoutManager(binding.root.context, HORIZONTAL, false)
+        override fun bind() {
+            val item = getItem(bindingAdapterPosition) ?: return
+            val position = bindingAdapterPosition
+            val category = item as MediaItemsContainer.Category
+            binding.textView.text = category.title
+            binding.recyclerView.layoutManager = layoutManager
+            binding.recyclerView.adapter = adapter
+            adapter.submitData(lifecycle, category.list)
+            layoutManager.let {
+                val state: Parcelable? = stateViewModel.layoutManagerStates[position]
+                if (state != null) it.onRestoreInstanceState(state)
+                else it.scrollToPosition(0)
             }
-        )
+            stateViewModel.visibleScrollableViews[position] = WeakReference(this)
+        }
+
+        override val transitionView
+            get() = throw IllegalArgumentException()
+    }
+
+    inner class Track(val binding: ItemTrackBinding) : MediaItemsContainerHolder(binding.root) {
+        override fun bind() {
+            val item = getItem(bindingAdapterPosition) ?: return
+            val track = (item as MediaItemsContainer.TrackItem).track
+            binding.title.text = track.title
+            track.cover.loadInto(binding.imageView, R.drawable.art_music)
+            val album = track.album
+            if (album == null) {
+                binding.album.visibility = View.GONE
+            } else {
+                binding.album.visibility = View.VISIBLE
+                binding.album.text = album.title
+            }
+            if (track.artists.isEmpty()) {
+                binding.artist.visibility = View.GONE
+            } else {
+                binding.artist.visibility = View.VISIBLE
+                binding.artist.text = track.artists.joinToString(" ") { it.name }
+            }
+            val duration = track.duration
+            if (duration == null) {
+                binding.duration.visibility = View.GONE
+            } else {
+                binding.duration.visibility = View.VISIBLE
+                binding.duration.text = duration.toTimeString()
+            }
+        }
+
+        override val transitionView = binding.root
+    }
 
     companion object MediaItemsContainerComparator : DiffUtil.ItemCallback<MediaItemsContainer>() {
 
         override fun areItemsTheSame(
-            oldItem: MediaItemsContainer,
-            newItem: MediaItemsContainer
+            oldItem: MediaItemsContainer, newItem: MediaItemsContainer
         ): Boolean {
             return when (oldItem) {
                 is MediaItemsContainer.Category -> {
@@ -157,8 +219,7 @@ class MediaItemsContainerAdapter(
         }
 
         override fun areContentsTheSame(
-            oldItem: MediaItemsContainer,
-            newItem: MediaItemsContainer
+            oldItem: MediaItemsContainer, newItem: MediaItemsContainer
         ): Boolean {
             when (oldItem) {
                 is MediaItemsContainer.Category -> {

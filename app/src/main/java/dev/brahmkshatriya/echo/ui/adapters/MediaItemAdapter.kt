@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.ui.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.paging.PagingData
@@ -41,25 +40,25 @@ class MediaItemAdapter(
             0 -> {
                 val binding = ItemMediaTrackBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Track(binding, binding.imageView)
+                MediaItemsBinding.Track(binding, binding.title)
             }
 
             1 -> {
                 val binding = ItemMediaAlbumBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Album(binding, binding.imageView)
+                MediaItemsBinding.Album(binding, binding.title)
             }
 
             2 -> {
                 val binding = ItemMediaArtistBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Artist(binding, binding.imageView)
+                MediaItemsBinding.Artist(binding, binding.title)
             }
 
             else -> {
                 val binding = ItemMediaPlaylistBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Playlist(binding, binding.imageView)
+                MediaItemsBinding.Playlist(binding, binding.title)
             }
         }
     )
@@ -182,17 +181,17 @@ class MediaItemAdapter(
             }
         )
 
-    sealed class MediaItemsBinding(open val transitionView: ImageView) {
-        data class Track(val binding: ItemMediaTrackBinding, override val transitionView: ImageView) :
+    sealed class MediaItemsBinding(open val transitionView: View) {
+        data class Track(val binding: ItemMediaTrackBinding, override val transitionView: View) :
             MediaItemsBinding(transitionView)
 
-        data class Album(val binding: ItemMediaAlbumBinding, override val transitionView: ImageView) :
+        data class Album(val binding: ItemMediaAlbumBinding, override val transitionView: View) :
             MediaItemsBinding(transitionView)
 
-        data class Artist(val binding: ItemMediaArtistBinding, override val transitionView: ImageView) :
+        data class Artist(val binding: ItemMediaArtistBinding, override val transitionView: View) :
             MediaItemsBinding(transitionView)
 
-        data class Playlist(val binding: ItemMediaPlaylistBinding, override val transitionView: ImageView) :
+        data class Playlist(val binding: ItemMediaPlaylistBinding, override val transitionView: View) :
             MediaItemsBinding(transitionView)
     }
 

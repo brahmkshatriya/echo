@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:transitionName="albumView"
+    android:id="@+id/coordinatorLayout"
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -48,7 +50,6 @@
                     android:id="@+id/albumCover"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
-                    android:transitionName="albumView"
                     android:background="?attr/colorSurfaceContainerHigh"
                     android:importantForAccessibility="no"
                     android:scaleType="fitCenter"
@@ -94,9 +95,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingTop="24dp"
-        android:paddingBottom="96dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_track" />
+        tools:listitem="@layout/item_track_small" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

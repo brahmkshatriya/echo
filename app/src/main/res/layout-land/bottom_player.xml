@@ -92,9 +92,9 @@
 
                     <TextView
                         android:id="@+id/trackCurrentTime"
-                        android:layout_width="wrap_content"
+                        android:layout_width="64dp"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="bottom|start"
+                        android:layout_gravity="bottom"
                         android:textStyle="bold"
                         tools:text="00:00" />
 
@@ -111,9 +111,10 @@
 
                     <TextView
                         android:id="@+id/trackTotalTime"
-                        android:layout_width="wrap_content"
+                        android:layout_width="64dp"
+                        android:gravity="end"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="bottom|end"
+                        android:layout_gravity="bottom"
                         tools:text="00:00" />
                 </LinearLayout>
 
@@ -144,9 +145,9 @@
                         android:value="0.2"
                         app:labelBehavior="gone"
                         app:thumbColor="?attr/colorTertiary"
-                        app:thumbHeight="16dp"
+                        app:thumbHeight="24dp"
                         app:thumbTrackGapSize="0dp"
-                        app:thumbWidth="16dp"
+                        app:thumbWidth="24dp"
                         app:trackColorActive="?attr/colorTertiary"
                         app:trackColorInactive="@android:color/transparent"
                         app:trackHeight="8dp" />
@@ -325,7 +326,7 @@
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="24dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:baselineAligned="false"
                     android:gravity="center"

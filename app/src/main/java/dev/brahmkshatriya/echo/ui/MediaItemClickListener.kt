@@ -5,12 +5,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.transition.MaterialElevationScale
 import dev.brahmkshatriya.echo.NavigationDirections
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 
 class MediaItemClickListener(
-    private val fragment: Fragment
+    val fragment: Fragment
 ) : ClickListener<Pair<View, EchoMediaItem>> {
     override fun onClick(item: Pair<View, EchoMediaItem>) {
         val view = item.first
@@ -18,10 +19,18 @@ class MediaItemClickListener(
             is EchoMediaItem.AlbumItem -> NavigationDirections.actionAlbum(
                 albumWithCover = mediaItem.album
             ).let {
-                val transitionName = mediaItem.album.uri.toString()
+                val transitionName = "albumView"
                 view.transitionName = transitionName
                 val extras = FragmentNavigatorExtras(view to transitionName)
-                fragment.findNavController().navigate(it, extras)
+                fragment.run {
+                    exitTransition = MaterialElevationScale(false).apply {
+                        duration = 1000
+                    }
+                    reenterTransition = MaterialElevationScale(true).apply {
+                        duration = 1000
+                    }
+                    findNavController().navigate(it, extras)
+                }
             }
 
 //            is EchoMediaItem.ArtistItem -> TODO()

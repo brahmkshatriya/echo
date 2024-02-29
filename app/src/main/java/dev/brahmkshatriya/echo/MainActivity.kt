@@ -3,7 +3,8 @@ package dev.brahmkshatriya.echo
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
-import android.content.res.Configuration
+import android.content.res.Configuration.UI_MODE_NIGHT_MASK
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -34,7 +35,6 @@ import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith
-import dev.brahmkshatriya.echo.utils.updateBottomMarginWithSystemInsets
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -71,7 +71,6 @@ class MainActivity : AppCompatActivity() {
         val navView = binding.navView as NavigationBarView
         val navHostFragment = binding.navHostFragment.getFragment<NavHostFragment>()
         navView.setupWithNavController(navHostFragment.navController)
-        updateBottomMarginWithSystemInsets(binding.navHostFragment)
 
         observe(extensionViewModel.exceptionFlow) { e ->
             e.message?.let {
@@ -85,7 +84,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isNightMode() =
-        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_NO
+        resources.configuration.uiMode and UI_MODE_NIGHT_MASK != UI_MODE_NIGHT_NO
 
     override fun onNewIntent(intent: Intent?) {
         intent?.hasExtra("fromNotification")?.let {
