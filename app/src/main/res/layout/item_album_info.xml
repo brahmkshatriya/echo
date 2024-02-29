@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginHorizontal="24dp"
+    android:layout_marginTop="24dp"
+    android:layout_marginBottom="16dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/albumDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:layout_marginBottom="16dp"
+        tools:text="@tools:sample/lorem/random" />
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imageView"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="?attr/colorSurfaceContainer"
+            android:scaleType="fitCenter"
+            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
+            app:srcCompat="@drawable/art_artist"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/albumArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:textColor="?attr/colorPrimary"
+            android:maxLines="2"
+            tools:text="@tools:sample/first_names" />
+            <TextView
+                android:id="@+id/albumDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="2"
+                tools:text="@tools:sample/first_names" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/albumPlay"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_play"
+            android:text="@string/play"
+            android:layout_height="56dp"/>
+
+        <View
+            android:layout_width="16dp"
+            android:layout_height="match_parent"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/albumShuffle"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            app:icon="@drawable/ic_shuffle"
+            android:text="@string/shuffle"
+            android:layout_weight="1"
+            android:layout_height="56dp"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="24sp"
+        android:text="@string/songs" />
+
+</LinearLayout>

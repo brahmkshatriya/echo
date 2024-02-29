@@ -53,6 +53,15 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun play(tracks: List<Track>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            tracks.forEach {
+                loadAndAddToQueue(it)
+            }
+            audioIndexFlow.emit(0)
+        }
+    }
+
     fun addToQueue(track: Track) {
         viewModelScope.launch(Dispatchers.IO) {
             loadAndAddToQueue(track)
