@@ -11,6 +11,7 @@ import dagger.hilt.android.HiltAndroidApp
 class EchoApplication : Application() , ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
+            .allowHardware(false)
             .diskCache {
                 DiskCache.Builder()
                     .directory(cacheDir.resolve("image_cache"))

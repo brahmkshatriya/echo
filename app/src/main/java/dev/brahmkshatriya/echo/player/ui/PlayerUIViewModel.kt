@@ -1,8 +1,10 @@
 package dev.brahmkshatriya.echo.player.ui
 
+import android.view.View
 import androidx.lifecycle.ViewModel
 import dev.brahmkshatriya.echo.player.Global
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.lang.ref.WeakReference
 
 class PlayerUIViewModel : ViewModel() {
     var playlistTranslationY: Int = 0
@@ -19,4 +21,6 @@ class PlayerUIViewModel : ViewModel() {
     val isPlaying = MutableStateFlow(false)
     val nextEnabled = MutableStateFlow(false)
     val previousEnabled = MutableStateFlow(false)
+
+    var view: WeakReference<View> = WeakReference(null)
 }

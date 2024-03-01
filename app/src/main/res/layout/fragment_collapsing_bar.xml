@@ -2,11 +2,10 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:transitionName="albumView"
     android:background="?attr/colorSurface"
-    android:id="@+id/coordinatorLayout"
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -16,14 +15,13 @@
         android:fitsSystemWindows="true">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
-            style="?attr/collapsingToolbarLayoutLargeStyle"
+            style="@style/CollapsingBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:contentScrim="?attr/colorSurfaceContainer"
             app:expandedTitleMarginBottom="20dp"
             app:expandedTitleMarginEnd="72dp"
             app:expandedTitleMarginStart="24dp"
-            app:contentScrim="?attr/colorSurfaceContainer"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
             app:maxLines="2"
             app:titleCollapseMode="scale">
 
@@ -46,6 +44,46 @@
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="72dp"
                 android:fitsSystemWindows="true">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/albumCover2"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="18dp"
+                    android:layout_marginBottom="52dp"
+                    android:alpha="0.33"
+                    android:background="?attr/colorSurfaceContainerHigh"
+                    android:importantForAccessibility="no"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintDimensionRatio="1,1"
+                    app:layout_constraintEnd_toEndOf="@id/albumCover"
+                    app:layout_constraintHeight_max="@dimen/max_cover_size"
+                    app:layout_constraintStart_toStartOf="@id/albumCover"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="@dimen/max_cover_size"
+                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
+                    tools:ignore="ImageContrastCheck" />
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/albumCover1"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_marginBottom="24dp"
+                    android:alpha="0.66"
+                    android:background="?attr/colorSurfaceContainerHigh"
+                    android:importantForAccessibility="no"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintDimensionRatio="1,1"
+                    app:layout_constraintEnd_toEndOf="@id/albumCover"
+                    app:layout_constraintHeight_max="@dimen/max_cover_size"
+                    app:layout_constraintStart_toStartOf="@id/albumCover"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="@dimen/max_cover_size"
+                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
+                    tools:ignore="ImageContrastCheck" />
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/albumCover"
@@ -86,8 +124,8 @@
         android:layout_height="1dp"
         android:layout_marginTop="-1dp"
         android:alpha="0"
-        android:translationZ="1dp"
         android:background="?attr/colorOutline"
+        android:translationZ="1dp"
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 

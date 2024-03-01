@@ -15,13 +15,6 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/navigation" />
 
-    <View
-        android:alpha="0.5"
-        android:id="@+id/status_bar_scrim"
-        android:background="?attr/colorSurface"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"/>
-
     <FrameLayout
         android:id="@+id/bottom_player_container"
         android:layout_width="match_parent"

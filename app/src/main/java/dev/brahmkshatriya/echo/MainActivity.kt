@@ -12,9 +12,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.NavHostFragment
@@ -59,12 +56,6 @@ class MainActivity : AppCompatActivity() {
             if (isNightMode()) SystemBarStyle.dark(TRANSPARENT)
             else SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
         )
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarScrim) { _, insets ->
-            val i = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.statusBarScrim.updateLayoutParams { height = i.top }
-            insets
-        }
 
         checkPermissions(this)
 

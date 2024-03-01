@@ -117,5 +117,9 @@ interface LocalAlbum {
                 duration = duration
             )
         }
+
+        fun getShuffled(context: Context, page: Int, pageSize: Int): List<Album.WithCover> {
+            return getAll(context, page, pageSize).shuffled()
+        }
     }
 }

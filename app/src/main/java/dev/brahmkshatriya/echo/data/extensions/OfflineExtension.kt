@@ -53,11 +53,11 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
             LocalArtist.search(context, trimmed, 1, 50).map { it.toMediaItem() }.ifEmpty { null }
 
         val result =
-            listOfNotNull(tracks?.let { it.first().track.title to it.toMediaItemsContainer("Tracks") },
+            listOfNotNull(
+                tracks?.let { it.first().track.title to it.toMediaItemsContainer("Tracks") },
                 albums?.let { it.first().album.title to it.toMediaItemsContainer("Albums") },
-                artists?.let { it.first().artist.name to it.toMediaItemsContainer("Artists") }).sortedBy(
-                query
-            ) { it.first }.map { it.second }
+                artists?.let { it.first().artist.name to it.toMediaItemsContainer("Artists") }
+            ).sortedBy(query) { it.first }.map { it.second }
         emit(PagingData.from(result))
     }
 
@@ -74,13 +74,13 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
             val pageSize = params.loadSize
             return try {
                 val items = if (page == 0) {
-                    val albums = LocalAlbum.getAll(context, page, pageSize).map { it.toMediaItem() }
+                    val albums = LocalAlbum.getShuffled(context, page, pageSize).map { it.toMediaItem() }
                         .ifEmpty { null }
                     val tracks =
                         LocalTrack.getShuffled(context, page, pageSize).map { it.toMediaItem() }
                             .ifEmpty { null }
                     val artists =
-                        LocalArtist.getAll(context, page, pageSize).map { it.toMediaItem() }
+                        LocalArtist.getShuffled(context, page, pageSize).map { it.toMediaItem() }
                             .ifEmpty { null }
                     val result = listOfNotNull(
                         tracks?.toMediaItemsContainer("Tracks"),

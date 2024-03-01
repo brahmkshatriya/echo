@@ -4,11 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.transition.MaterialElevationScale
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
@@ -28,13 +33,17 @@ class SearchFragment : Fragment() {
     private val searchViewModel: SearchViewModel by activityViewModels()
 
     private val adapter = MediaItemsContainerAdapter(this)
-    private val header = SearchHeaderAdapter(searchViewModel.query) {
+    private val header = SearchHeaderAdapter {
         binding.catSearchView.setupWithSearchBar(it)
     }
     private val concatAdapter = ConcatAdapter(header, adapter)
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, parent, false)
+        enterTransition = MaterialElevationScale(true)
+        exitTransition = MaterialElevationScale(true)
+        reenterTransition = MaterialElevationScale(true)
+        returnTransition = MaterialElevationScale(true)
         return binding.root
     }
 
@@ -45,7 +54,17 @@ class SearchFragment : Fragment() {
             if (it == STATE_EXPANDED) binding.catSearchView.hide()
             binding.catRecyclerView.updatePaddingWithPlayerAndSystemInsets(it)
         }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarScrim) { _, insets ->
+            val i = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.statusBarScrim.updateLayoutParams { height = i.top }
+            insets
+        }
+        postponeEnterTransition()
+        binding.catRecyclerView.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
 
+        searchViewModel.query?.let { header.setText(it) }
         binding.catSearchView.editText.setOnEditorActionListener { textView, _, _ ->
             textView.text.toString().ifBlank { null }?.let {
                 searchViewModel.search(it)

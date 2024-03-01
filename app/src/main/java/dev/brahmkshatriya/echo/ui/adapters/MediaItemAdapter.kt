@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.databinding.ItemMediaPlaylistBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.ClickListener
+import dev.brahmkshatriya.echo.ui.album.albumImage
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemAdapter(
@@ -40,25 +41,25 @@ class MediaItemAdapter(
             0 -> {
                 val binding = ItemMediaTrackBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Track(binding, binding.title)
+                MediaItemsBinding.Track(binding, binding.imageView)
             }
 
             1 -> {
                 val binding = ItemMediaAlbumBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Album(binding, binding.title)
+                MediaItemsBinding.Album(binding, binding.root)
             }
 
             2 -> {
                 val binding = ItemMediaArtistBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Artist(binding, binding.title)
+                MediaItemsBinding.Artist(binding, binding.imageView)
             }
 
             else -> {
                 val binding = ItemMediaPlaylistBinding
                     .inflate(LayoutInflater.from(parent.context), parent, false)
-                MediaItemsBinding.Playlist(binding, binding.title)
+                MediaItemsBinding.Playlist(binding, binding.imageView)
             }
         }
     )
@@ -69,7 +70,7 @@ class MediaItemAdapter(
 
         holder.itemView.apply {
             setOnClickListener {
-                listener.onClick( container.transitionView to item)
+                listener.onClick(container.transitionView to item)
             }
             setOnLongClickListener {
                 listener.onLongClick(container.transitionView to item)
@@ -92,6 +93,7 @@ class MediaItemAdapter(
                 }
                 binding.subtitle.isVisible = subtitle.isNotEmpty()
                 binding.subtitle.text = subtitle
+                container.transitionView.transitionName = item.track.uri.toString()
             }
 
             is EchoMediaItem.AlbumItem -> {
@@ -102,28 +104,14 @@ class MediaItemAdapter(
                     loadInto(binding.imageView1)
                     loadInto(binding.imageView2)
                 }
-                when (item.album.numberOfTracks) {
-                    1 -> {
-                        binding.imageView1.isVisible = false
-                        binding.imageView2.isVisible = false
-                    }
-
-                    2 -> {
-                        binding.imageView1.isVisible = true
-                        binding.imageView2.isVisible = false
-                    }
-
-                    else -> {
-                        binding.imageView1.isVisible = true
-                        binding.imageView2.isVisible = true
-                    }
-                }
+                albumImage(item.album.numberOfTracks, binding.imageView1, binding.imageView2)
                 var subtitle = item.album.numberOfTracks.toString()
                 item.album.artists.joinToString(", ") { it.name }.let {
                     if (it.isNotBlank())
                         subtitle += if (subtitle.isNotBlank()) " • $it" else it
                 }
                 binding.subtitle.text = subtitle
+                container.transitionView.transitionName = item.album.uri.toString()
             }
 
             is EchoMediaItem.ArtistItem -> {
@@ -132,6 +120,7 @@ class MediaItemAdapter(
                 item.artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
                 binding.subtitle.isVisible = item.artist.subtitle.isNullOrBlank()
                 binding.subtitle.text = item.artist.subtitle
+                container.transitionView.transitionName = item.artist.uri.toString()
             }
 
             is EchoMediaItem.PlaylistItem -> {
@@ -147,22 +136,8 @@ class MediaItemAdapter(
                 binding.subtitle.text = item.playlist.subtitle
 
                 val tracks = (item.playlist as? Playlist.Full)?.tracks ?: emptyList()
-                when (tracks.size) {
-                    1 -> {
-                        binding.imageView1.isVisible = false
-                        binding.imageView2.isVisible = false
-                    }
-
-                    2 -> {
-                        binding.imageView1.isVisible = true
-                        binding.imageView2.isVisible = false
-                    }
-
-                    else -> {
-                        binding.imageView1.isVisible = true
-                        binding.imageView2.isVisible = true
-                    }
-                }
+                albumImage(tracks.size, binding.imageView1, binding.imageView2)
+                container.transitionView.transitionName = item.playlist.uri.toString()
             }
         }
     }
@@ -191,7 +166,10 @@ class MediaItemAdapter(
         data class Artist(val binding: ItemMediaArtistBinding, override val transitionView: View) :
             MediaItemsBinding(transitionView)
 
-        data class Playlist(val binding: ItemMediaPlaylistBinding, override val transitionView: View) :
+        data class Playlist(
+            val binding: ItemMediaPlaylistBinding,
+            override val transitionView: View
+        ) :
             MediaItemsBinding(transitionView)
     }
 

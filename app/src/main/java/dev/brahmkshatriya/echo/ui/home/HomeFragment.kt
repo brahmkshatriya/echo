@@ -4,12 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.transition.MaterialElevationScale
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
@@ -35,18 +39,33 @@ class HomeFragment : Fragment() {
     private val concat = mediaItemsContainerAdapter.withLoadingFooter()
     private val concatAdapter = ConcatAdapter(headerAdapter, concat)
 
+
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
+//        enterTransition = MaterialElevationScale(true)
+        exitTransition = MaterialElevationScale(true)
+        reenterTransition = MaterialElevationScale(true)
+        returnTransition = MaterialElevationScale(true)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         PlayerBackButtonHelper.addCallback(this) {
             binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it)
         }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarScrim) { _, insets ->
+            val i = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.statusBarScrim.updateLayoutParams { height = i.top }
+            insets
+        }
+
         postponeEnterTransition()
-        view.doOnPreDraw { startPostponedEnterTransition() }
+        binding.recyclerView.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
 
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 

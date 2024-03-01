@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.transition.MaterialContainerTransform
+import com.google.android.material.transition.MaterialElevationScale
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.models.Album
@@ -28,10 +30,8 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentCollapsingBarBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackSmallBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
-import dev.brahmkshatriya.echo.ui.adapters.AlbumHeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
@@ -45,14 +45,13 @@ class AlbumFragment : Fragment() {
     private var binding: FragmentCollapsingBarBinding by autoCleared()
     private val viewModel: AlbumViewModel by viewModels()
     private val extensionViewModel: ExtensionViewModel by activityViewModels()
-    private val playerViewModel: PlayerViewModel by activityViewModels()
     private val args: AlbumFragmentArgs by navArgs()
 
     private val clickListener = MediaItemClickListener(this)
     private val trackAdapter = TrackAdapter(clickListener, false)
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
     private val header = AlbumHeaderAdapter(object : AlbumHeaderAdapter.AlbumHeaderListener {
-        override fun onPlayClicked(album:Album.Full) {
+        override fun onPlayClicked(album: Album.Full) {
             Toast.makeText(context, "Todo", Toast.LENGTH_SHORT).show()
         }
 
@@ -61,22 +60,15 @@ class AlbumFragment : Fragment() {
         }
     })
     private val concatAdapter = ConcatAdapter(header, trackAdapter, mediaItemsContainerAdapter)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedElementEnterTransition = MaterialContainerTransform().apply {
-            drawingViewId = R.id.nav_host_fragment
-            duration = 1000
-        }
-        sharedElementReturnTransition = MaterialContainerTransform().apply {
-            drawingViewId = R.id.nav_host_fragment
-            duration = 1000
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentCollapsingBarBinding.inflate(inflater, container, false)
+        enterTransition = MaterialElevationScale(true)
+        exitTransition = MaterialElevationScale(true)
+        reenterTransition = MaterialElevationScale(true)
+        returnTransition = MaterialElevationScale(true)
         return binding.root
     }
 
@@ -94,19 +86,32 @@ class AlbumFragment : Fragment() {
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
             val inverted = 1 - offset
             binding.endIcon.alpha = inverted
-            binding.albumCover.alpha = inverted
             binding.toolbarOutline.alpha = offset
         }
         binding.toolbar.setupWithNavController(findNavController())
+        postponeEnterTransition()
+        binding.recyclerView.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
+
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
         val album: Album.Small = args.albumWithCover ?: args.albumSmall ?: return
+
+        binding.root.transitionName = album.uri.toString()
+        sharedElementEnterTransition = MaterialContainerTransform(requireContext(), true).apply {
+            drawingViewId = R.id.nav_host_fragment
+        }
         binding.toolbar.title = album.title.trim()
 
         (album as? Album.WithCover).let {
+            it?.numberOfTracks?.let { it1 ->
+                albumImage(it1, binding.albumCover1, binding.albumCover2)
+                it.cover.loadInto(binding.albumCover1, R.drawable.art_album)
+                it.cover.loadInto(binding.albumCover2, R.drawable.art_album)
+            }
             it?.cover.loadInto(binding.albumCover, R.drawable.art_album)
         }
-
 
         observe(extensionViewModel.extensionFlow) {
             binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(

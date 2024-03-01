@@ -11,6 +11,13 @@
         android:layout_height="match_parent"
         android:clipToPadding="false" />
 
+    <View
+        android:id="@+id/status_bar_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:alpha="0.5"
+        android:background="?attr/colorSurface" />
+
     <com.google.android.material.search.SearchView
         android:id="@+id/cat_search_view"
         android:layout_width="match_parent"

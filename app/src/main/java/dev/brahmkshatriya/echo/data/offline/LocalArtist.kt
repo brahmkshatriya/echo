@@ -68,5 +68,9 @@ interface LocalArtist {
             }
             return artists
         }
+
+        fun getShuffled(context: Context, page: Int, pageSize: Int): List<Artist.WithCover> {
+            return  getAll(context, page, pageSize).shuffled()
+        }
     }
 }

@@ -38,6 +38,7 @@ import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
+import java.lang.ref.WeakReference
 import kotlin.math.max
 import kotlin.math.min
 
@@ -256,6 +257,8 @@ fun createPlayerUI(
     playlistBinding.playlistClear.setOnClickListener {
         playerViewModel.clearQueue()
     }
+
+    uiViewModel.view = WeakReference(playerBinding.collapsedTrackCover)
 
     activity.apply {
 
