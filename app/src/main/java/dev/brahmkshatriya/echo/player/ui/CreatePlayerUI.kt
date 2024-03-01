@@ -34,6 +34,7 @@ import dev.brahmkshatriya.echo.player.Global
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
+import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
@@ -222,14 +223,14 @@ fun createPlayerUI(
             val new = viewHolder.bindingAdapterPosition
             val old = target.bindingAdapterPosition
             playerViewModel.moveQueueItems(new, old)
-            adapter?.notifyItemMoved(new, old)
+            adapter?.moveItems(old, new)
             return true
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val pos = viewHolder.bindingAdapterPosition
             playerViewModel.removeQueueItem(pos)
-            adapter?.notifyItemRemoved(pos)
+            adapter?.removeItem(pos)
         }
     }
     val touchHelper = ItemTouchHelper(callback)
@@ -244,9 +245,10 @@ fun createPlayerUI(
 
         override fun onItemClosedClicked(position: Int) {
             playerViewModel.removeQueueItem(position)
-            adapter?.notifyItemRemoved(position)
+            adapter?.removeItem(position)
         }
     })
+    adapter.submitList(Global.queue.map { it.second })
 
     playlistBinding.playlistRecycler.apply {
         layoutManager = linearLayoutManager
@@ -256,6 +258,17 @@ fun createPlayerUI(
 
     playlistBinding.playlistClear.setOnClickListener {
         playerViewModel.clearQueue()
+    }
+
+    playlistBinding.playlistShuffle.apply {
+        val stroke = 1.dpToPx()
+        strokeWidth = if(uiViewModel.shuffled.value) stroke else 0
+        setOnClickListener {
+            uiViewModel.shuffled.value = !uiViewModel.shuffled.value
+            val shuffled = uiViewModel.shuffled.value
+            playerViewModel.shuffle(shuffled)
+            strokeWidth = if(shuffled) stroke else 0
+        }
     }
 
     uiViewModel.view = WeakReference(playerBinding.collapsedTrackCover)
@@ -373,15 +386,15 @@ fun createPlayerUI(
             }
         }
         observe(uiViewModel.playlist) {
-            adapter.setCurrent(Global.queue, it)
+            adapter.setCurrent(it)
         }
 
-        observe(Global.addTrackFlow) { (index, _) ->
-            adapter.addItem(Global.queue, index)
+        observe(Global.addTrackFlow) { (index, _, item) ->
+            adapter.addItem(index, item)
         }
 
         observe(Global.clearQueueFlow) {
-            adapter.removeItems(Global.queue)
+            adapter.emptyItems()
             PlayerBackButtonHelper.playlistState.value = STATE_COLLAPSED
             PlayerBackButtonHelper.playerSheetState.value = STATE_HIDDEN
             container.post {
@@ -389,6 +402,12 @@ fun createPlayerUI(
                     bottomPlayerBehavior.isHideable = true
                     bottomPlayerBehavior.state = STATE_HIDDEN
                 }
+            }
+        }
+
+        observe(playerViewModel.shuffle) {
+            it.forEach { (i, j) ->
+                adapter.moveItems(i, j)
             }
         }
     }

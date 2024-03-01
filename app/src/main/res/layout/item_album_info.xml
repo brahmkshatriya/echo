@@ -78,26 +78,28 @@
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/albumPlay"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_weight="1"
-            android:text="@string/play"
-            app:icon="@drawable/ic_play" />
-
-        <View
-            android:layout_width="16dp"
-            android:layout_height="match_parent" />
-
-        <com.google.android.material.button.MaterialButton
             android:id="@+id/albumShuffle"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="1"
             android:text="@string/shuffle"
+            app:iconTint="?attr/colorTertiary"
+            android:textColor="?attr/colorTertiary"
             app:icon="@drawable/ic_shuffle" />
 
+        <View
+            android:layout_width="16dp"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/albumPlay"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:text="@string/play"
+            app:backgroundTint="?attr/colorTertiary"
+            app:icon="@drawable/ic_play" />
     </LinearLayout>
 
     <TextView

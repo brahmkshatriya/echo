@@ -21,6 +21,7 @@ class PlayerUIViewModel : ViewModel() {
     val isPlaying = MutableStateFlow(false)
     val nextEnabled = MutableStateFlow(false)
     val previousEnabled = MutableStateFlow(false)
+    val shuffled = MutableStateFlow(false)
 
     var view: WeakReference<View> = WeakReference(null)
 }

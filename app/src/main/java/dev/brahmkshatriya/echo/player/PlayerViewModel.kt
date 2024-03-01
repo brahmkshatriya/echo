@@ -35,6 +35,7 @@ class PlayerViewModel @Inject constructor(
     val seekToPrevious: MutableSharedFlow<Unit> = MutableSharedFlow()
     val seekToNext: MutableSharedFlow<Unit> = MutableSharedFlow()
     val repeat: MutableSharedFlow<Int> = MutableSharedFlow()
+    val shuffle: MutableSharedFlow<List<Pair<Int, Int>>> = MutableSharedFlow()
 
     private suspend fun loadStreamable(track: Track): StreamableAudio? {
         return trackClient?.getStreamable(track) ?: return null
@@ -54,11 +55,28 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun play(tracks: List<Track>) {
+        clearQueue()
         viewModelScope.launch(Dispatchers.IO) {
-            tracks.forEach {
-                loadAndAddToQueue(it)
+            tracks.forEachIndexed { index, track ->
+                if (index == 0) audioIndexFlow.emit(loadAndAddToQueue(track))
+                else loadAndAddToQueue(track)
             }
-            audioIndexFlow.emit(0)
+        }
+    }
+
+    private var oldList: List<Pair<Int, Int>>? = null
+    fun shuffle(shuffled: Boolean) {
+        println("Shuffling: $shuffled")
+        val list = if (shuffled) {
+            (0..<Global.queue.size).shuffled().mapIndexed { i, j -> i to j }
+                .also { oldList = it.asReversed() }
+        } else oldList ?: return
+        println(list)
+        viewModelScope.launch(Dispatchers.IO) {
+            shuffle.emit(list)
+        }
+        list.forEach { (i, j) ->
+            moveQueueItems(i, j)
         }
     }
 

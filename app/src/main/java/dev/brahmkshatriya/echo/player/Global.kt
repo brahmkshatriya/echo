@@ -17,10 +17,10 @@ object Global {
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
     fun clearQueue(scope: CoroutineScope) {
-        _queue.clear()
         scope.launch {
             _clearQueue.emit(Unit)
         }
+        _queue.clear()
     }
 
     private val _removeTrack = MutableSharedFlow<Int>()
@@ -33,7 +33,7 @@ object Global {
         }
     }
 
-    private val _addTrack = MutableSharedFlow<Pair<Int, MediaItem>>()
+    private val _addTrack = MutableSharedFlow<Triple<Int, MediaItem, Track>>()
     val addTrackFlow = _addTrack.asSharedFlow()
     fun addTrack(
         scope: CoroutineScope, track: Track, stream: StreamableAudio, positionOffset: Int = 0
@@ -44,7 +44,7 @@ object Global {
 
         _queue.add(index, mediaId to track)
         scope.launch {
-            _addTrack.emit(index to item)
+            _addTrack.emit(Triple(index, item, track))
         }
         return index to item
     }
