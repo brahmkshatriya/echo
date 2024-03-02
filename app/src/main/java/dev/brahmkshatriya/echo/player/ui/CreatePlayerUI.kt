@@ -6,7 +6,6 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
@@ -30,7 +29,6 @@ import com.google.android.material.slider.Slider
 import com.google.android.material.slider.Slider.OnSliderTouchListener
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.player.Global
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
@@ -99,7 +97,7 @@ fun createPlayerUI(
             if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
             PlayerBackButtonHelper.playerSheetState.value = newState
             if (newState == STATE_HIDDEN)
-                Global.clearQueue(activity.lifecycleScope)
+                playerViewModel.clearQueue()
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -213,7 +211,7 @@ fun createPlayerUI(
 
 
     val linearLayoutManager = LinearLayoutManager(activity, VERTICAL, false)
-    var adapter: PlaylistAdapter? = null
+
     val callback = object : ItemTouchHelper.SimpleCallback(UP or DOWN, START) {
         override fun onMove(
             recyclerView: RecyclerView,
@@ -223,18 +221,16 @@ fun createPlayerUI(
             val new = viewHolder.bindingAdapterPosition
             val old = target.bindingAdapterPosition
             playerViewModel.moveQueueItems(new, old)
-            adapter?.moveItems(old, new)
             return true
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val pos = viewHolder.bindingAdapterPosition
             playerViewModel.removeQueueItem(pos)
-            adapter?.removeItem(pos)
         }
     }
     val touchHelper = ItemTouchHelper(callback)
-    adapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
+    val adapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
         override fun onDragHandleTouched(viewHolder: PlaylistAdapter.ViewHolder) {
             touchHelper.startDrag(viewHolder)
         }
@@ -245,10 +241,9 @@ fun createPlayerUI(
 
         override fun onItemClosedClicked(position: Int) {
             playerViewModel.removeQueueItem(position)
-            adapter?.removeItem(position)
         }
     })
-    adapter.submitList(Global.queue.map { it.second })
+    adapter.submitList(uiViewModel.list)
 
     playlistBinding.playlistRecycler.apply {
         layoutManager = linearLayoutManager
@@ -262,12 +257,9 @@ fun createPlayerUI(
 
     playlistBinding.playlistShuffle.apply {
         val stroke = 1.dpToPx()
-        strokeWidth = if(uiViewModel.shuffled.value) stroke else 0
+        strokeWidth = if (uiViewModel.shuffled.value) stroke else 0
         setOnClickListener {
-            uiViewModel.shuffled.value = !uiViewModel.shuffled.value
-            val shuffled = uiViewModel.shuffled.value
-            playerViewModel.shuffle(shuffled)
-            strokeWidth = if(shuffled) stroke else 0
+            playerViewModel.shuffle(!uiViewModel.shuffled.value)
         }
     }
 
@@ -385,29 +377,22 @@ fun createPlayerUI(
                 playerBinding.trackCurrentTime.text = current.toLong().toTimeString()
             }
         }
-        observe(uiViewModel.playlist) {
-            adapter.setCurrent(it)
+        observe(uiViewModel.shuffled) {
+            val stroke = 1.dpToPx()
+            playlistBinding.playlistShuffle.strokeWidth = if (it) stroke else 0
         }
 
-        observe(Global.addTrackFlow) { (index, _, item) ->
-            adapter.addItem(index, item)
-        }
-
-        observe(Global.clearQueueFlow) {
-            adapter.emptyItems()
-            PlayerBackButtonHelper.playlistState.value = STATE_COLLAPSED
-            PlayerBackButtonHelper.playerSheetState.value = STATE_HIDDEN
-            container.post {
-                if (bottomPlayerBehavior.state != STATE_HIDDEN) {
-                    bottomPlayerBehavior.isHideable = true
-                    bottomPlayerBehavior.state = STATE_HIDDEN
+        observe(uiViewModel.listChangeFlow) {
+            adapter.submitList(uiViewModel.list)
+            if (uiViewModel.list.isEmpty()) {
+                PlayerBackButtonHelper.playlistState.value = STATE_COLLAPSED
+                PlayerBackButtonHelper.playerSheetState.value = STATE_HIDDEN
+                container.post {
+                    if (bottomPlayerBehavior.state != STATE_HIDDEN) {
+                        bottomPlayerBehavior.isHideable = true
+                        bottomPlayerBehavior.state = STATE_HIDDEN
+                    }
                 }
-            }
-        }
-
-        observe(playerViewModel.shuffle) {
-            it.forEach { (i, j) ->
-                adapter.moveItems(i, j)
             }
         }
     }

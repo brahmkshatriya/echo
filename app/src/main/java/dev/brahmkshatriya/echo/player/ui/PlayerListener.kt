@@ -9,7 +9,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaBrowser
-import dev.brahmkshatriya.echo.player.Global
 
 class PlayerListener(
     private val player: MediaBrowser, private val viewModel: PlayerUIViewModel
@@ -40,8 +39,9 @@ class PlayerListener(
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        viewModel.track.value = Global.getTrack(mediaItem?.mediaId)
-        viewModel.playlist.value =
+        viewModel.track.value = viewModel.getTrack(mediaItem?.mediaId)
+        println("playlist: ${player.currentMediaItemIndex}")
+        viewModel.currentIndex.value =
             player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
     }
 
@@ -55,10 +55,14 @@ class PlayerListener(
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         if (player.currentMediaItem == null) {
             viewModel.track.value = null
-            viewModel.playlist.value = null
+            viewModel.currentIndex.value = null
         }
         updateNavigation()
         updateProgress()
+    }
+
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        viewModel.shuffled.value = shuffleModeEnabled
     }
 
     private fun updateProgress() {
@@ -94,11 +98,12 @@ class PlayerListener(
     }
 
     fun update() {
-        viewModel.track.value = Global.getTrack(player.currentMediaItem?.mediaId)
+        viewModel.track.value = viewModel.getTrack(player.currentMediaItem?.mediaId)
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
-        viewModel.playlist.value =
+        viewModel.currentIndex.value =
             player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
+        viewModel.shuffled.value = player.shuffleModeEnabled
     }
 }

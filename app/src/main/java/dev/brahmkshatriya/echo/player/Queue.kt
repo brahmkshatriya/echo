@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.util.Collections
 
-object Global {
+class Queue {
     private val _queue = mutableListOf<Pair<String, Track>>()
     val queue get() = _queue.toList()
     fun getTrack(mediaId: String?) = _queue.find { it.first == mediaId }?.second
@@ -17,10 +17,10 @@ object Global {
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
     fun clearQueue(scope: CoroutineScope) {
+        _queue.clear()
         scope.launch {
             _clearQueue.emit(Unit)
         }
-        _queue.clear()
     }
 
     private val _removeTrack = MutableSharedFlow<Int>()
@@ -33,7 +33,7 @@ object Global {
         }
     }
 
-    private val _addTrack = MutableSharedFlow<Triple<Int, MediaItem, Track>>()
+    private val _addTrack = MutableSharedFlow<Pair<Int, MediaItem>>()
     val addTrackFlow = _addTrack.asSharedFlow()
     fun addTrack(
         scope: CoroutineScope, track: Track, stream: StreamableAudio, positionOffset: Int = 0
@@ -44,7 +44,7 @@ object Global {
 
         _queue.add(index, mediaId to track)
         scope.launch {
-            _addTrack.emit(Triple(index, item, track))
+            _addTrack.emit(index to item)
         }
         return index to item
     }

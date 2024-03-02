@@ -1,7 +1,9 @@
 package dev.brahmkshatriya.echo.ui.adapters
 
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
@@ -9,14 +11,14 @@ import dev.brahmkshatriya.echo.databinding.ItemMainHeaderBinding
 
 
 class HeaderAdapter(
-    private val header: Int
+    private val header: Int, private val chipListener: ((HeaderAdapter,String) -> Unit)? = null
 ) : RecyclerView.Adapter<HeaderAdapter.HeaderViewHolder>() {
+
     class HeaderViewHolder(val binding: ItemMainHeaderBinding) :
         RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = HeaderViewHolder(
-        ItemMainHeaderBinding
-            .inflate(LayoutInflater.from(parent.context), parent, false)
+        ItemMainHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
     override fun getItemCount(): Int = 1
@@ -38,5 +40,31 @@ class HeaderAdapter(
                 else -> false
             }
         }
+        binding.chipRecyclerView.apply {
+            adapter = ChipAdapter {
+                chipListener?.invoke(this@HeaderAdapter,it)
+            }.apply {
+                submitList(chips)
+            }
+
+            savedState?.let {
+                layoutManager?.onRestoreInstanceState(it)
+                savedState = null
+            }
+            isVisible = chips.isNotEmpty()
+        }
+    }
+
+    private var savedState: Parcelable? = null
+
+    override fun onViewRecycled(holder: HeaderViewHolder) {
+        super.onViewRecycled(holder)
+        savedState = holder.binding.chipRecyclerView.layoutManager?.onSaveInstanceState()
+    }
+
+    private var chips: List<Pair<Boolean, String>> = emptyList()
+    fun submitChips(chips: List<Pair<Boolean, String>>) {
+        this.chips = chips
+        notifyItemChanged(0)
     }
 }

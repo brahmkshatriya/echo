@@ -106,7 +106,7 @@ class MediaItemAdapter(
                 }
                 albumImage(item.album.numberOfTracks, binding.imageView1, binding.imageView2)
                 var subtitle = item.album.numberOfTracks.toString()
-                item.album.artists.joinToString(", ") { it.name }.let {
+                item.album.artist.name.let {
                     if (it.isNotBlank())
                         subtitle += if (subtitle.isNotBlank()) " • $it" else it
                 }
@@ -118,7 +118,7 @@ class MediaItemAdapter(
                 val binding = (container as MediaItemsBinding.Artist).binding
                 binding.title.text = item.artist.name
                 item.artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
-                binding.subtitle.isVisible = item.artist.subtitle.isNullOrBlank()
+                binding.subtitle.isVisible = !item.artist.subtitle.isNullOrBlank()
                 binding.subtitle.text = item.artist.subtitle
                 container.transitionView.transitionName = item.artist.uri.toString()
             }

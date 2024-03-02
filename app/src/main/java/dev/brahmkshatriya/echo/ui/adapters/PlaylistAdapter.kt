@@ -6,6 +6,7 @@ import android.view.MotionEvent.ACTION_DOWN
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
@@ -15,7 +16,7 @@ import dev.brahmkshatriya.echo.utils.loadInto
 
 class PlaylistAdapter(
     val callback: Callback
-) : RecyclerView.Adapter<PlaylistAdapter.ViewHolder>() {
+) : ListAdapter<Pair<Boolean, Track>, PlaylistAdapter.ViewHolder>(DiffCallback()) {
 
     open class Callback {
         open fun onItemClicked(position: Int) {}
@@ -41,9 +42,16 @@ class PlaylistAdapter(
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<Track>() {
-        override fun areItemsTheSame(oldItem: Track, newItem: Track) = oldItem.uri == newItem.uri
-        override fun areContentsTheSame(oldItem: Track, newItem: Track) = oldItem == newItem
+    class DiffCallback : DiffUtil.ItemCallback<Pair<Boolean, Track>>() {
+        override fun areItemsTheSame(
+            oldItem: Pair<Boolean, Track>,
+            newItem: Pair<Boolean, Track>
+        ): Boolean = oldItem.second.uri == newItem.second.uri
+
+        override fun areContentsTheSame(
+            oldItem: Pair<Boolean, Track>,
+            newItem: Pair<Boolean, Track>
+        ): Boolean = oldItem == newItem
 
     }
 
@@ -51,14 +59,13 @@ class PlaylistAdapter(
         ItemPlaylistItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
-    override fun getItemCount() = list.count()
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
-        val track = list[position]
+        val item = getItem(position)
+        val track = item.second
         binding.playlistItemTitle.text = track.title
         track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
-        binding.playlistCurrentItem.isVisible = position == currentPosition
+        binding.playlistCurrentItem.isVisible = item.first
         var subtitle = ""
         track.duration?.toTimeString()?.let {
             subtitle += it
@@ -71,41 +78,4 @@ class PlaylistAdapter(
     }
 
 
-    private var currentPosition: Int? = null
-    fun setCurrent(position: Int?) {
-        val old = currentPosition
-        currentPosition = position
-        old?.let { notifyItemChanged(it) }
-        currentPosition?.let { notifyItemChanged(it) }
-    }
-
-    val list = mutableListOf<Track>()
-
-    fun addItem(index: Int, track: Track) {
-        list.add(index, track)
-        notifyItemInserted(index)
-    }
-
-    fun removeItem(index: Int) {
-        list.removeAt(index)
-        notifyItemRemoved(index)
-    }
-
-    fun moveItems(fromIndex: Int, toIndex: Int) {
-        val item = list.removeAt(fromIndex)
-        list.add(toIndex, item)
-        notifyItemMoved(fromIndex, toIndex)
-    }
-
-    fun emptyItems() {
-        val oldSize = list.size
-        list.clear()
-        notifyItemRangeRemoved(0, oldSize)
-    }
-
-    fun submitList(tracks: List<Track>) {
-        emptyItems()
-        list.addAll(tracks)
-        notifyItemRangeInserted(0, tracks.size)
-    }
 }

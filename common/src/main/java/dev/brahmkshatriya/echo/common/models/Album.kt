@@ -17,7 +17,7 @@ sealed class Album {
         override val uri: Uri,
         override val title: String,
         open val cover: ImageHolder?,
-        open val artists: List<Artist.Small>,
+        open val artist: Artist.Small,
         open val numberOfTracks: Int,
     ) : Small(uri, title)
 
@@ -26,13 +26,13 @@ sealed class Album {
         override val uri: Uri,
         override val title: String,
         override val cover: ImageHolder?,
-        override val artists: List<Artist.Small>,
+        override val artist: Artist.Small,
         override val numberOfTracks: Int,
         val tracks: List<Track>,
         val releaseDate: String?,
         val publisher: String?,
         val duration: Long?,
         val description: String?,
-    ) : WithCover(uri, title, cover, artists, numberOfTracks)
+    ) : WithCover(uri, title, cover, artist, numberOfTracks)
 
 }

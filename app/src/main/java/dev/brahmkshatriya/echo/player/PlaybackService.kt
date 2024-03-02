@@ -24,6 +24,8 @@ import javax.inject.Inject
 class PlaybackService : MediaLibraryService() {
     @Inject
     lateinit var extension: ExtensionFlow
+    @Inject
+    lateinit var global: Queue
 
     private var mediaLibrarySession: MediaLibrarySession? = null
 
@@ -49,7 +51,7 @@ class PlaybackService : MediaLibraryService() {
             .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         mediaLibrarySession =
-            MediaLibrarySession.Builder(this, player, PlayerSessionCallback(this, extension.flow))
+            MediaLibrarySession.Builder(this, player, PlayerSessionCallback(this, global,extension.flow))
                 .setSessionActivity(pendingIntent)
                 .build()
 
@@ -67,7 +69,7 @@ class PlaybackService : MediaLibraryService() {
     override fun onDestroy() {
         mediaLibrarySession?.run {
             player.release()
-            Global.clearQueue(scope)
+            global.clearQueue(scope)
             release()
             mediaLibrarySession = null
         }

@@ -91,7 +91,7 @@ interface LocalAlbum {
                             uri = uri,
                             title = it.getString(albumColumn),
                             cover = coverUri.toImageHolder(),
-                            artists = listOf(Artist.Small(artistUri, it.getString(artistColumn))),
+                            artist = Artist.Small(artistUri, it.getString(artistColumn)),
                             numberOfTracks = it.getInt(tracksColumn),
                             releaseDate = it.getString(yearColumn),
                             tracks =  emptyList(),

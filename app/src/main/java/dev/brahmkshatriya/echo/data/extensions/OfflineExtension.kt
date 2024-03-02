@@ -27,6 +27,7 @@ import dev.brahmkshatriya.echo.data.offline.LocalStream
 import dev.brahmkshatriya.echo.data.offline.LocalTrack
 import dev.brahmkshatriya.echo.data.offline.sortedBy
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
@@ -46,22 +47,35 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
         val trimmed = query.trim()
         val albums =
-            LocalAlbum.search(context, trimmed, 1, 50).map { it.toMediaItem() }.ifEmpty { null }
+            LocalAlbum.search(context, trimmed, 1, 50).map { it.toMediaItem() }.toMutableList()
+                .ifEmpty { null }
         val tracks =
-            LocalTrack.search(context, trimmed, 1, 50).map { it.toMediaItem() }.ifEmpty { null }
+            LocalTrack.search(context, trimmed, 1, 50).map { it.toMediaItem() }.toMutableList()
+                .ifEmpty { null }
         val artists =
-            LocalArtist.search(context, trimmed, 1, 50).map { it.toMediaItem() }.ifEmpty { null }
+            LocalArtist.search(context, trimmed, 1, 50).map { it.toMediaItem() }.toMutableList()
+                .ifEmpty { null }
 
-        val result =
+        val exactMatch = artists?.firstOrNull { it.artist.name.equals(trimmed, true) }.also {
+            artists?.remove(it)
+        } ?: albums?.firstOrNull { it.album.title.equals(trimmed, true) }.also {
+            albums?.remove(it)
+        } ?: tracks?.firstOrNull { it.track.title.equals(trimmed, true) }.also {
+            tracks?.remove(it)
+        }
+        val result : MutableList<MediaItemsContainer> =
             listOfNotNull(
                 tracks?.let { it.first().track.title to it.toMediaItemsContainer("Tracks") },
                 albums?.let { it.first().album.title to it.toMediaItemsContainer("Albums") },
-                artists?.let { it.first().artist.name to it.toMediaItemsContainer("Artists") }
-            ).sortedBy(query) { it.first }.map { it.second }
+                artists?.let { it.first().artist.name to it.toMediaItemsContainer("Artists") }).sortedBy(
+                query
+            ) { it.first }.map { it.second }.toMutableList()
+        exactMatch?.toMediaItemsContainer()?.let { result.add(0, it) }
         emit(PagingData.from(result))
     }
 
-    class OfflinePagingSource(val context: Context) : PagingSource<Int, MediaItemsContainer>() {
+    class OfflinePagingSource(val context: Context, private val genre: StateFlow<String?>) :
+        PagingSource<Int, MediaItemsContainer>() {
         override fun getRefreshKey(state: PagingState<Int, MediaItemsContainer>): Int? {
             return state.anchorPosition?.let { anchorPosition ->
                 state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
@@ -73,24 +87,35 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
             val page = params.key ?: 0
             val pageSize = params.loadSize
             return try {
-                val items = if (page == 0) {
-                    val albums = LocalAlbum.getShuffled(context, page, pageSize).map { it.toMediaItem() }
-                        .ifEmpty { null }
-                    val tracks =
-                        LocalTrack.getShuffled(context, page, pageSize).map { it.toMediaItem() }
-                            .ifEmpty { null }
-                    val artists =
-                        LocalArtist.getShuffled(context, page, pageSize).map { it.toMediaItem() }
-                            .ifEmpty { null }
-                    val result = listOfNotNull(
-                        tracks?.toMediaItemsContainer("Tracks"),
-                        albums?.toMediaItemsContainer("Albums"),
-                        artists?.toMediaItemsContainer("Artists")
-                    )
-                    result
-                } else {
-                    LocalTrack.getAll(context, page, pageSize)
+                val items = when (genre.value) {
+                    "Tracks" -> LocalTrack.getAll(context, page, pageSize)
                         .map { MediaItemsContainer.TrackItem(it) }
+
+                    "Albums" -> LocalAlbum.getAll(context, page, pageSize)
+                        .map { MediaItemsContainer.AlbumItem(it) }
+
+                    "Artists" -> LocalArtist.getAll(context, page, pageSize)
+                        .map { MediaItemsContainer.ArtistItem(it) }
+
+                    else -> if (page == 0) {
+                        val albums =
+                            LocalAlbum.getShuffled(context, page, pageSize).map { it.toMediaItem() }
+                                .ifEmpty { null }
+                        val tracks =
+                            LocalTrack.getShuffled(context, page, pageSize).map { it.toMediaItem() }
+                                .ifEmpty { null }
+                        val artists = LocalArtist.getShuffled(context, page, pageSize)
+                            .map { it.toMediaItem() }.ifEmpty { null }
+                        val result = listOfNotNull(
+                            tracks?.toMediaItemsContainer("Tracks"),
+                            albums?.toMediaItemsContainer("Albums"),
+                            artists?.toMediaItemsContainer("Artists")
+                        )
+                        result
+                    } else {
+                        LocalTrack.getAll(context, page, pageSize)
+                            .map { MediaItemsContainer.TrackItem(it) }
+                    }
                 }
                 val nextKey = if (items.isEmpty()) null
                 else if (page == 0) 1
@@ -114,11 +139,15 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
             ?: throw IOException("Track not found")
     }
 
-    override suspend fun getHomeGenres(): List<String> = listOf()
+    override suspend fun getHomeGenres(): List<String> {
+        return listOf(
+            "All", "Tracks", "Albums", "Artists"
+        )
+    }
 
-    override suspend fun getHomeFeed(genre: String?) = Pager(config = PagingConfig(
+    override suspend fun getHomeFeed(genre: StateFlow<String?>) = Pager(config = PagingConfig(
         pageSize = 10, enablePlaceholders = false
-    ), pagingSourceFactory = { OfflinePagingSource(context) }).flow
+    ), pagingSourceFactory = { OfflinePagingSource(context, genre) }).flow
 
     override suspend fun loadAlbum(small: Album.Small): Album.Full {
         return LocalAlbum.get(context, small.uri)
@@ -126,20 +155,16 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
 
     override suspend fun getMediaItems(album: Album.Full): Flow<PagingData<MediaItemsContainer>> =
         flow {
-            val artists = album.artists.map { it.name.split(",") }.flatten()
-
-            val result = artists.map { artist ->
-                val tracks =
-                    LocalTrack.search(context, artist, 1, 50).filter { it.album?.uri != album.uri }
-                        .map { it.toMediaItem() }.ifEmpty { null }
-                val albums =
-                    LocalAlbum.search(context, artist, 1, 50).filter { it.uri != album.uri }
-                        .map { it.toMediaItem() }.ifEmpty { null }
-                listOfNotNull(
-                    tracks?.toMediaItemsContainer("More from $artist"),
-                    albums?.toMediaItemsContainer("Albums")
-                )
-            }.flatten()
+            val artist = album.artist.name
+            val tracks =
+                LocalTrack.search(context, artist, 1, 50).filter { it.album?.uri != album.uri }
+                    .map { it.toMediaItem() }.ifEmpty { null }
+            val albums = LocalAlbum.search(context, artist, 1, 50).filter { it.uri != album.uri }
+                .map { it.toMediaItem() }.ifEmpty { null }
+            val result = listOfNotNull(
+                tracks?.toMediaItemsContainer("More from $artist"),
+                albums?.toMediaItemsContainer("Albums")
+            )
             emit(PagingData.from(result))
         }
 

@@ -15,6 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
+    private val global: Queue,
     trackFlow: ExtensionFlow,
 //    private val radioClient: RadioClient
 ) : ViewModel() {
@@ -35,7 +36,12 @@ class PlayerViewModel @Inject constructor(
     val seekToPrevious: MutableSharedFlow<Unit> = MutableSharedFlow()
     val seekToNext: MutableSharedFlow<Unit> = MutableSharedFlow()
     val repeat: MutableSharedFlow<Int> = MutableSharedFlow()
-    val shuffle: MutableSharedFlow<List<Pair<Int, Int>>> = MutableSharedFlow()
+    val shuffle: MutableSharedFlow<Boolean> = MutableSharedFlow()
+
+    val clearQueueFlow = global.clearQueueFlow
+    val addTrackFlow = global.addTrackFlow
+    val moveTrackFlow = global.moveTrackFlow
+    val removeTrackFlow = global.removeTrackFlow
 
     private suspend fun loadStreamable(track: Track): StreamableAudio? {
         return trackClient?.getStreamable(track) ?: return null
@@ -44,7 +50,7 @@ class PlayerViewModel @Inject constructor(
     private suspend fun loadAndAddToQueue(track: Track): Int {
         val stream = loadStreamable(track)
         return stream?.let {
-            Global.addTrack(viewModelScope, track, it).first
+            global.addTrack(viewModelScope, track, it).first
         } ?: -1
     }
 
@@ -55,7 +61,6 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun play(tracks: List<Track>) {
-        clearQueue()
         viewModelScope.launch(Dispatchers.IO) {
             tracks.forEachIndexed { index, track ->
                 if (index == 0) audioIndexFlow.emit(loadAndAddToQueue(track))
@@ -64,19 +69,9 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    private var oldList: List<Pair<Int, Int>>? = null
     fun shuffle(shuffled: Boolean) {
-        println("Shuffling: $shuffled")
-        val list = if (shuffled) {
-            (0..<Global.queue.size).shuffled().mapIndexed { i, j -> i to j }
-                .also { oldList = it.asReversed() }
-        } else oldList ?: return
-        println(list)
-        viewModelScope.launch(Dispatchers.IO) {
-            shuffle.emit(list)
-        }
-        list.forEach { (i, j) ->
-            moveQueueItems(i, j)
+        viewModelScope.launch{
+            shuffle.emit(shuffled)
         }
     }
 
@@ -87,15 +82,15 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun clearQueue() {
-        Global.clearQueue(viewModelScope)
+        global.clearQueue(viewModelScope)
     }
 
     fun moveQueueItems(new: Int, old: Int) {
-        Global.moveTrack(viewModelScope, old, new)
+        global.moveTrack(viewModelScope, old, new)
     }
 
     fun removeQueueItem(index: Int) {
-        Global.removeTrack(viewModelScope, index)
+        global.removeTrack(viewModelScope, index)
     }
 
 //    fun radio(track: Track){

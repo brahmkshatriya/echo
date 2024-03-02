@@ -13,7 +13,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.transition.MaterialElevationScale
+import com.google.android.material.transition.platform.MaterialElevationScale
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
@@ -33,7 +33,11 @@ class HomeFragment : Fragment() {
     private var binding: FragmentRecyclerBinding by autoCleared()
     private val homeViewModel: HomeViewModel by activityViewModels()
 
-    private val headerAdapter = HeaderAdapter(R.string.home)
+    private val headerAdapter = HeaderAdapter(R.string.home){ a, it ->
+        homeViewModel.setGenre(it)
+        a.submitChips(homeViewModel.getGenres())
+        mediaItemsContainerAdapter.refresh()
+    }
     private val mediaItemsContainerAdapter =
         MediaItemsContainerAdapter(this)
     private val concat = mediaItemsContainerAdapter.withLoadingFooter()
@@ -42,10 +46,8 @@ class HomeFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
-//        enterTransition = MaterialElevationScale(true)
+        enterTransition = MaterialElevationScale(true)
         exitTransition = MaterialElevationScale(true)
-        reenterTransition = MaterialElevationScale(true)
-        returnTransition = MaterialElevationScale(true)
         return binding.root
     }
 
@@ -70,6 +72,7 @@ class HomeFragment : Fragment() {
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 
         binding.swipeRefresh.setOnRefreshListener {
+            homeViewModel.loadGenres()
             mediaItemsContainerAdapter.refresh()
         }
         mediaItemsContainerAdapter.addLoadStateListener {
@@ -85,6 +88,9 @@ class HomeFragment : Fragment() {
         }
         observe(homeViewModel.feed) {
             if (it != null) mediaItemsContainerAdapter.submit(it)
+        }
+        observe(homeViewModel.genres) {
+            headerAdapter.submitChips(homeViewModel.getGenres())
         }
     }
 }

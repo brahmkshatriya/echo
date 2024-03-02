@@ -7,13 +7,14 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
-import com.google.android.material.transition.MaterialElevationScale
+import com.google.android.material.transition.platform.MaterialElevationScale
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
@@ -35,6 +36,7 @@ class SearchFragment : Fragment() {
     private val adapter = MediaItemsContainerAdapter(this)
     private val header = SearchHeaderAdapter {
         binding.catSearchView.setupWithSearchBar(it)
+        binding.catSearchView.isVisible = true
     }
     private val concatAdapter = ConcatAdapter(header, adapter)
 
@@ -42,8 +44,6 @@ class SearchFragment : Fragment() {
         binding = FragmentSearchBinding.inflate(inflater, parent, false)
         enterTransition = MaterialElevationScale(true)
         exitTransition = MaterialElevationScale(true)
-        reenterTransition = MaterialElevationScale(true)
-        returnTransition = MaterialElevationScale(true)
         return binding.root
     }
 

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.transition.platform.MaterialElevationScale
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
@@ -23,6 +24,8 @@ class LibraryFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
+        enterTransition = MaterialElevationScale(true)
+        exitTransition = MaterialElevationScale(true)
         return binding.root
     }
 
@@ -33,7 +36,6 @@ class LibraryFragment : Fragment() {
             binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it)
         }
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
-
 
         binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ContainerLoadingAdapter { })
         binding.recyclerView.layoutManager = LinearLayoutManager(context)

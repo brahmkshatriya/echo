@@ -15,13 +15,45 @@
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/imageView"
-            android:layout_width="128dp"
-            android:layout_height="128dp"
-            android:background="?attr/colorSurfaceContainer"
-            android:scaleType="fitCenter"
-            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-8dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imageView2"
+                android:layout_width="116dp"
+                android:layout_height="116dp"
+                android:layout_gravity="center_horizontal"
+                android:alpha="0.33"
+                android:background="?attr/colorSurfaceContainer"
+                android:scaleType="fitCenter"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
+                tools:srcCompat="@tools:sample/avatars[2]" />
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imageView1"
+                android:layout_width="124dp"
+                android:layout_height="124dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:alpha="0.66"
+                android:background="?attr/colorSurfaceContainer"
+                android:scaleType="fitCenter"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
+                tools:srcCompat="@tools:sample/avatars[2]" />
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imageView"
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                android:layout_marginTop="8dp"
+                android:background="?attr/colorSurfaceContainer"
+                android:scaleType="fitCenter"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
+                tools:srcCompat="@tools:sample/avatars[2]" />
+
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -50,17 +82,6 @@
                 android:maxLines="1"
                 android:minHeight="24sp"
                 android:textColor="?colorPrimary"
-                tools:text="@tools:sample/lorem" />
-
-            <TextView
-                android:id="@+id/album"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:gravity="center_vertical"
-                android:maxLines="1"
-                android:minHeight="24sp"
-                android:textColor="?colorTertiary"
                 tools:text="@tools:sample/lorem" />
 
             <TextView

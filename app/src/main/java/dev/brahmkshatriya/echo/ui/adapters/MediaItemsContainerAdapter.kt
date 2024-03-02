@@ -4,6 +4,7 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
@@ -20,11 +21,15 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.databinding.ItemAlbumBinding
+import dev.brahmkshatriya.echo.databinding.ItemArtistBinding
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
+import dev.brahmkshatriya.echo.databinding.ItemPlaylistBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
+import dev.brahmkshatriya.echo.ui.album.albumImage
 import dev.brahmkshatriya.echo.utils.loadInto
 import java.lang.ref.WeakReference
 
@@ -55,8 +60,11 @@ class MediaItemsContainerAdapter(
             when (it) {
                 is MediaItemsContainer.Category -> 0
                 is MediaItemsContainer.TrackItem -> 1
+                is MediaItemsContainer.AlbumItem -> 2
+                is MediaItemsContainer.ArtistItem -> 3
+                is MediaItemsContainer.PlaylistItem -> 4
             }
-        } ?: 0
+        } ?: -1
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
@@ -64,9 +72,23 @@ class MediaItemsContainerAdapter(
             ItemCategoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
 
-        else -> Track(
+        1 -> Track(
             ItemTrackBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
+
+        2 -> Album(
+            ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        )
+
+        3 -> Artist(
+            ItemArtistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        )
+
+        4 -> Playlist(
+            ItemPlaylistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        )
+
+        else -> throw IllegalArgumentException("Unknown view type: $viewType")
     }
 
 
@@ -76,6 +98,9 @@ class MediaItemsContainerAdapter(
 
         val echoMediaItem = when (item) {
             is MediaItemsContainer.TrackItem -> holder.transitionView to item.track.toMediaItem()
+            is MediaItemsContainer.AlbumItem -> holder.transitionView to item.album.toMediaItem()
+            is MediaItemsContainer.ArtistItem -> holder.transitionView to item.artist.toMediaItem()
+            is MediaItemsContainer.PlaylistItem -> holder.transitionView to item.playlist.toMediaItem()
             else -> null
         }
         echoMediaItem?.let {
@@ -137,6 +162,7 @@ class MediaItemsContainerAdapter(
         block?.invoke(holder)
     }
 
+
     // VIEW HOLDER
 
     abstract inner class MediaItemsContainerHolder(itemView: View) :
@@ -195,6 +221,62 @@ class MediaItemsContainerAdapter(
                 binding.duration.visibility = View.VISIBLE
                 binding.duration.text = duration.toTimeString()
             }
+            binding.root.transitionName = track.uri.toString()
+        }
+
+        override val transitionView = binding.root
+    }
+
+    inner class Album(val binding: ItemAlbumBinding) : MediaItemsContainerHolder(binding.root) {
+        override fun bind() {
+            val item = getItem(bindingAdapterPosition) ?: return
+            val album = (item as MediaItemsContainer.AlbumItem).album
+            binding.title.text = album.title
+            album.cover.apply {
+                loadInto(binding.imageView, R.drawable.art_album)
+                loadInto(binding.imageView1)
+                loadInto(binding.imageView2)
+            }
+            albumImage(album.numberOfTracks, binding.imageView1, binding.imageView2)
+            binding.artist.text = album.artist.name
+            binding.duration.text = binding.root.context.resources.getQuantityString(
+                R.plurals.number_songs, album.numberOfTracks, album.numberOfTracks
+            )
+            binding.root.transitionName = album.uri.toString()
+        }
+
+        override val transitionView = binding.root
+    }
+
+    inner class Artist(val binding: ItemArtistBinding) : MediaItemsContainerHolder(binding.root) {
+        override fun bind() {
+            val item = getItem(bindingAdapterPosition) ?: return
+            val artist = (item as MediaItemsContainer.ArtistItem).artist
+            binding.title.text = artist.name
+            binding.subtitle.text = artist.subtitle
+            binding.subtitle.isVisible = !artist.subtitle.isNullOrBlank()
+            artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
+            binding.root.transitionName = artist.uri.toString()
+        }
+
+        override val transitionView = binding.root
+    }
+
+    inner class Playlist(val binding: ItemPlaylistBinding) :
+        MediaItemsContainerHolder(binding.root) {
+        override fun bind() {
+            val item = getItem(bindingAdapterPosition) ?: return
+            val playlist = (item as MediaItemsContainer.PlaylistItem).playlist
+            binding.title.text = playlist.title
+            playlist.cover.apply {
+                loadInto(binding.imageView, R.drawable.art_library_music)
+                loadInto(binding.imageView1)
+                loadInto(binding.imageView2)
+            }
+            albumImage(3, binding.imageView1, binding.imageView2)
+            binding.subtitle.text = playlist.subtitle
+            binding.subtitle.isVisible = !playlist.subtitle.isNullOrBlank()
+            binding.root.transitionName = playlist.uri.toString()
         }
 
         override val transitionView = binding.root
@@ -215,6 +297,21 @@ class MediaItemsContainerAdapter(
                     val newTrack = newItem as? MediaItemsContainer.TrackItem
                     oldItem.track.uri == newTrack?.track?.uri
                 }
+
+                is MediaItemsContainer.AlbumItem -> {
+                    val newAlbum = newItem as? MediaItemsContainer.AlbumItem
+                    oldItem.album.uri == newAlbum?.album?.uri
+                }
+
+                is MediaItemsContainer.ArtistItem -> {
+                    val newArtist = newItem as? MediaItemsContainer.ArtistItem
+                    oldItem.artist.uri == newArtist?.artist?.uri
+                }
+
+                is MediaItemsContainer.PlaylistItem -> {
+                    val newPlaylist = newItem as? MediaItemsContainer.PlaylistItem
+                    oldItem.playlist.uri == newPlaylist?.playlist?.uri
+                }
             }
         }
 
@@ -233,6 +330,21 @@ class MediaItemsContainerAdapter(
                 is MediaItemsContainer.TrackItem -> {
                     val newTrack = newItem as? MediaItemsContainer.TrackItem
                     return oldItem.track == newTrack?.track
+                }
+
+                is MediaItemsContainer.AlbumItem -> {
+                    val newAlbum = newItem as? MediaItemsContainer.AlbumItem
+                    return oldItem.album.uri == newAlbum?.album?.uri
+                }
+
+                is MediaItemsContainer.ArtistItem -> {
+                    val newArtist = newItem as? MediaItemsContainer.ArtistItem
+                    return oldItem.artist.uri == newArtist?.artist?.uri
+                }
+
+                is MediaItemsContainer.PlaylistItem -> {
+                    val newPlaylist = newItem as? MediaItemsContainer.PlaylistItem
+                    return oldItem.playlist.uri == newPlaylist?.playlist?.uri
                 }
             }
             return true

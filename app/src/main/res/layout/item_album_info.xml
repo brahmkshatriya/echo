@@ -15,8 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:ellipsize="end"
-        android:textSize="16sp"
-        tools:text="@string/number_songs" />
+        android:textSize="16sp"/>
 
     <TextView
         android:id="@+id/albumDescription"
@@ -36,8 +35,8 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/albumArtistCover"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
             android:background="?attr/colorSurfaceContainer"
             android:scaleType="fitCenter"
             app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
@@ -56,6 +55,7 @@
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="2"
+                android:textSize="18sp"
                 android:textColor="?attr/colorPrimary"
                 tools:text="@tools:sample/first_names" />
 
@@ -83,19 +83,16 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="1"
-            android:text="@string/shuffle"
-            app:iconTint="?attr/colorTertiary"
+            android:text="@string/radio"
             android:textColor="?attr/colorTertiary"
-            app:icon="@drawable/ic_shuffle" />
-
-        <View
-            android:layout_width="16dp"
-            android:layout_height="match_parent" />
+            app:icon="@drawable/ic_radio"
+            app:iconTint="?attr/colorTertiary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/albumPlay"
             android:layout_width="0dp"
             android:layout_height="56dp"
+            android:layout_marginStart="16dp"
             android:layout_weight="1"
             android:text="@string/play"
             app:backgroundTint="?attr/colorTertiary"

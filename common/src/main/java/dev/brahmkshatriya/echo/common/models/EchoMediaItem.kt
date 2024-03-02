@@ -12,6 +12,14 @@ sealed class EchoMediaItem {
         fun Artist.WithCover.toMediaItem() = ArtistItem(this)
         fun Playlist.WithCover.toMediaItem() = PlaylistItem(this)
 
+        fun EchoMediaItem.toMediaItemsContainer() =
+            when(this) {
+                is TrackItem -> MediaItemsContainer.TrackItem(this.track)
+                is AlbumItem -> MediaItemsContainer.AlbumItem(this.album)
+                is ArtistItem -> MediaItemsContainer.ArtistItem(this.artist)
+                is PlaylistItem -> MediaItemsContainer.PlaylistItem(this.playlist)
+            }
+
         fun List<EchoMediaItem>.toMediaItemsContainer(title: String, subtitle: String? = null)
             = MediaItemsContainer.Category(title, this, subtitle)
     }

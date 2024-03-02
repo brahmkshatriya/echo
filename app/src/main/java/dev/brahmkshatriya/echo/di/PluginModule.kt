@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.data.extensions.LocalExtensionRepo
+import dev.brahmkshatriya.echo.player.Queue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import tel.jeelpa.plugger.PluginRepo
@@ -51,4 +52,8 @@ class PluginModule {
     @Singleton
     fun providesExtensionClient() =
         ExtensionFlow(extensionFlow)
+
+    @Provides
+    @Singleton
+    fun provideGlobalQueue() = Queue()
 }

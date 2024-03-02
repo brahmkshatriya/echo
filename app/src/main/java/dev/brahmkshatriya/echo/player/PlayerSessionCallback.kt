@@ -28,7 +28,8 @@ import kotlinx.coroutines.plus
 
 class PlayerSessionCallback(
     private val context: Context,
-    extensionFlow: Flow<ExtensionClient?>
+    private val global: Queue,
+    extensionFlow: Flow<ExtensionClient?>,
 ) : MediaLibraryService.MediaLibrarySession.Callback {
 
     private val scope = CoroutineScope(Dispatchers.IO) + Job()
@@ -79,14 +80,14 @@ class PlayerSessionCallback(
 
         return scope.future {
             differ.submitData(extension.search(query).first())
-            val list = differ.snapshot().items.map {
+            val list = differ.snapshot().items.mapNotNull {
                 when (it) {
                     is MediaItemsContainer.Category -> {
                         it.list.mapNotNull { item ->
                             if (item is EchoMediaItem.TrackItem) {
                                 val track = item.track
                                 val stream = extension.getStreamable(track)
-                                Global.addTrack(scope, track, stream).second
+                                global.addTrack(scope, track, stream).second
                             } else null
                         }
                     }
@@ -94,8 +95,10 @@ class PlayerSessionCallback(
                     is MediaItemsContainer.TrackItem -> {
                         val track = it.track
                         val stream = extension.getStreamable(track)
-                        listOf(Global.addTrack(scope, track, stream).second)
+                        listOf(global.addTrack(scope, track, stream).second)
                     }
+
+                    else -> null
                 }
             }.flatten()
             if (list.isEmpty())
@@ -112,7 +115,7 @@ class PlayerSessionCallback(
         startIndex: Int,
         startPositionMs: Long
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        Global.clearQueue(scope)
+        global.clearQueue(scope)
         return super.onSetMediaItems(
             mediaSession,
             controller,
