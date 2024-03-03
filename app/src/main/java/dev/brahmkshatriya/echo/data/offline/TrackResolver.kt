@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
+import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -81,6 +82,7 @@ class TrackResolver(val context: Context) {
             val albumColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
             val albumIdColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val durationColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val releaseDateColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
 
             while (it.moveToNext()) {
                 val uri = Uri.parse("$URI$TRACK_AUTH${it.getLong(idColumn)}")
@@ -94,11 +96,19 @@ class TrackResolver(val context: Context) {
                     Track(
                         uri = uri,
                         title = it.getString(titleColumn),
-                        artists = listOf(Artist.Small(artistUri, it.getStringOrNull(artistColumn) ?: "PROBLEM CHILD")),
-                        album = Album.Small(albumUri, it.getString(albumColumn)),
+                        artists = listOf(
+                            Artist.Small(
+                                artistUri,
+                                it.getStringOrNull(artistColumn) ?: "PROBLEM CHILD"
+                            )
+                        ),
+                        album = Album.Small(
+                            albumUri,
+                            it.getStringOrNull(albumColumn) ?: "PROBLEM CHILD"
+                        ),
                         cover = coverUri.toImageHolder(),
-                        duration = it.getLong(durationColumn),
-                        releaseDate = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)),
+                        duration = it.getLongOrNull(durationColumn),
+                        releaseDate = it.getStringOrNull(releaseDateColumn),
                         plays = null,
                         liked = false,
                     )
