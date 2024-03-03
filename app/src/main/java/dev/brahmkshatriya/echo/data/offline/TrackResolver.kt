@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
+import androidx.core.database.getStringOrNull
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
@@ -93,7 +94,7 @@ class TrackResolver(val context: Context) {
                     Track(
                         uri = uri,
                         title = it.getString(titleColumn),
-                        artists = listOf(Artist.Small(artistUri, it.getString(artistColumn))),
+                        artists = listOf(Artist.Small(artistUri, it.getStringOrNull(artistColumn) ?: "PROBLEM CHILD")),
                         album = Album.Small(albumUri, it.getString(albumColumn)),
                         cover = coverUri.toImageHolder(),
                         duration = it.getLong(durationColumn),
