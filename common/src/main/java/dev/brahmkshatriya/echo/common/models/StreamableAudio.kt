@@ -10,7 +10,7 @@ sealed class StreamableAudio {
     data class ByteStreamAudio(val stream: InputStream) : StreamableAudio()
 
     companion object{
-        fun String?.toAudio() = this?.let { StreamableUrl(it.toImageHolder()) }
-        fun Uri?.toAudio() = this?.let { StreamableFile(it) }
+        fun String.toAudio() = StreamableUrl(this.toImageHolder())
+        fun Uri.toAudio() = StreamableFile(this)
     }
 }

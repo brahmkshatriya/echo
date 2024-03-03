@@ -12,7 +12,7 @@ import java.util.Collections
 class Queue {
     private val _queue = mutableListOf<Pair<String, Track>>()
     val queue get() = _queue.toList()
-    fun getTrack(mediaId: String?) = _queue.find { it.first == mediaId }?.second
+    fun getTrack(mediaId: String?) = queue.find { it.first == mediaId }?.second
 
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
