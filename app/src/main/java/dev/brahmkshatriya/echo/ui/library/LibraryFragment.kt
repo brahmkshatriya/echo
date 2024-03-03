@@ -20,7 +20,7 @@ import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 class LibraryFragment : Fragment() {
 
     private var binding: FragmentRecyclerBinding by autoCleared()
-    private val headerAdapter = HeaderAdapter(R.string.library)
+    private val headerAdapter = HeaderAdapter(this, R.string.library)
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)

@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
@@ -95,6 +96,10 @@ class PlayerListener(
         val enableNext = player.hasNextMediaItem()
         viewModel.nextEnabled.value = enableNext
         viewModel.previousEnabled.value = enablePrevious
+    }
+
+    override fun onPlayerError(error: PlaybackException) {
+        viewModel.createException(error)
     }
 
     fun update() {

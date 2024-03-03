@@ -2,10 +2,14 @@ package dev.brahmkshatriya.echo.player.ui
 
 import android.view.View
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.media3.common.PlaybackException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.player.Queue
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 
@@ -21,6 +25,14 @@ class PlayerUIViewModel @Inject constructor(
         get() = global.queue.mapIndexed { index, it -> (currentIndex.value == index) to it.second }
 
     fun getTrack(mediaId: String?) = global.getTrack(mediaId)
+    private val _exceptionFlow = MutableSharedFlow<PlaybackException>()
+    val exceptionFlow = _exceptionFlow
+
+    fun createException(error: PlaybackException) {
+        viewModelScope.launch {
+            _exceptionFlow.emit(error)
+        }
+    }
 
     val track = MutableStateFlow(global.queue.firstOrNull()?.second)
     val currentIndex = MutableStateFlow<Int?>(null)

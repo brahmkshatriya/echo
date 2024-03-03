@@ -32,6 +32,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
+import dev.brahmkshatriya.echo.ui.snackbar.SnackBarViewModel
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -394,6 +395,11 @@ fun createPlayerUI(
                     }
                 }
             }
+        }
+
+        val snackBarViewModel: SnackBarViewModel by viewModels()
+        observe(uiViewModel.exceptionFlow) { e ->
+            snackBarViewModel.submitException(e)
         }
     }
 }

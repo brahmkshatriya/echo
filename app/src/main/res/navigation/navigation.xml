@@ -45,4 +45,18 @@
     <action
         android:id="@+id/action_album"
         app:destination="@id/navigation_album" />
+
+    <fragment
+        android:id="@+id/navigation_exception"
+        android:name="dev.brahmkshatriya.echo.ui.snackbar.ExceptionFragment"
+        tools:layout="@layout/fragment_exception" >
+        <argument
+            android:name="exception"
+            app:argType="java.lang.Exception" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_exception"
+        app:destination="@id/navigation_exception" />
+
 </navigation>

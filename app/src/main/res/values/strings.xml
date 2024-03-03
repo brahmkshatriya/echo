@@ -36,5 +36,6 @@
     </plurals>
     <string name="songs">Songs</string>
     <string name="radio">Radio</string>
+    <string name="view">View</string>
 
 </resources>
