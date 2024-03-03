@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionFlow
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -17,6 +18,7 @@ import javax.inject.Inject
 class PlayerViewModel @Inject constructor(
     private val global: Queue,
     trackFlow: ExtensionFlow,
+    private val exceptionFlow: MutableSharedFlow<Exception>
 //    private val radioClient: RadioClient
 ) : ViewModel() {
 
@@ -44,7 +46,7 @@ class PlayerViewModel @Inject constructor(
     val removeTrackFlow = global.removeTrackFlow
 
     private suspend fun loadStreamable(track: Track): StreamableAudio? {
-        return trackClient?.getStreamable(track) ?: return null
+        return tryWith(exceptionFlow){ trackClient?.getStreamable(track) }
     }
 
     private suspend fun loadAndAddToQueue(track: Track): Int {

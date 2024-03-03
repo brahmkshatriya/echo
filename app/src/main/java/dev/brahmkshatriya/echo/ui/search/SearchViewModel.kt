@@ -7,7 +7,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.di.ExtensionFlow
+import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -16,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    val searchFlow: ExtensionFlow
+    val searchFlow: ExtensionFlow,
+    private val exceptionFlow: MutableSharedFlow<Exception>,
 ) : ViewModel() {
 
     init {
@@ -36,8 +39,10 @@ class SearchViewModel @Inject constructor(
     fun search(query: String) {
         this.query = query
         viewModelScope.launch(Dispatchers.IO) {
-            searchClient?.search(query)?.collectLatest {
-                _result.value = it
+            tryWith(exceptionFlow) {
+                searchClient?.search(query)?.collectLatest {
+                    _result.value = it
+                }
             }
         }
     }

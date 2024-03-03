@@ -9,7 +9,9 @@ import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.di.ExtensionFlow
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -17,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    val homeFeedFlow: ExtensionFlow
+    val homeFeedFlow: ExtensionFlow, private val exceptionFlow: MutableSharedFlow<Exception>
 ) : ViewModel() {
 
     private val _feed: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
@@ -34,12 +36,16 @@ class HomeViewModel @Inject constructor(
                 homeClient = it as? HomeFeedClient
                 genre.value = null
                 launch(Dispatchers.IO) {
-                    genres.value = homeClient?.getHomeGenres()
-                    genre.value = genres.value?.firstOrNull()
-                    homeClient?.getHomeFeed(genre.asStateFlow())?.cachedIn(viewModelScope)
-                        ?.collect { feed ->
-                            _feed.value = feed
-                        }
+                    tryWith(exceptionFlow) {
+                        genres.value = homeClient?.getHomeGenres()
+                        genre.value = genres.value?.firstOrNull()
+                    }
+                    tryWith(exceptionFlow) {
+                        homeClient?.getHomeFeed(genre.asStateFlow())?.cachedIn(viewModelScope)
+                            ?.collect { feed ->
+                                _feed.value = feed
+                            }
+                    }
                 }
             }
         }

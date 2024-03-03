@@ -6,7 +6,9 @@ import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -21,14 +23,18 @@ class AlbumViewModel : ViewModel() {
     private val mutableAlbumFlow: MutableStateFlow<Album.Full?> = MutableStateFlow(null)
     val albumFlow = mutableAlbumFlow.asStateFlow()
 
-    fun loadAlbum(albumClient: AlbumClient, album: Album.Small) {
+    fun loadAlbum(
+        albumClient: AlbumClient, exceptionFlow: MutableSharedFlow<Exception>, album: Album.Small
+    ) {
         if (initialized) return
         initialized = true
         viewModelScope.launch(Dispatchers.IO) {
-            albumClient.loadAlbum(album).let {
-                mutableAlbumFlow.value = it
-                albumClient.getMediaItems(it).collectLatest { data ->
-                    _result.value = data
+            tryWith(exceptionFlow) {
+                albumClient.loadAlbum(album).let {
+                    mutableAlbumFlow.value = it
+                    albumClient.getMediaItems(it).collectLatest { data ->
+                        _result.value = data
+                    }
                 }
             }
         }

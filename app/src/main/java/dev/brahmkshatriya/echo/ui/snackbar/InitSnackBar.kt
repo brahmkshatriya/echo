@@ -49,6 +49,7 @@ fun initSnackBar(activity: MainActivity) {
                 action = getString(R.string.view),
                 actionHandler = { view, navController ->
                     val action = ExceptionFragmentDirections.actionException(exception)
+                    view.transitionName = "exception"
                     val extras = FragmentNavigatorExtras(view to "exception")
                     navController.navigate(action, extras)
                 }

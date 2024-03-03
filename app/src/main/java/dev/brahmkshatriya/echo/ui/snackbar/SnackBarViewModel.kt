@@ -4,18 +4,22 @@ import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SnackBarViewModel : ViewModel() {
+@HiltViewModel
+class SnackBarViewModel @Inject constructor(
+    val mutableExceptionFlow : MutableSharedFlow<Exception>
+) : ViewModel() {
 
-    private val _exceptionFlow = MutableSharedFlow<Exception>()
-    val exceptionFlow = _exceptionFlow.asSharedFlow()
+    val exceptionFlow = mutableExceptionFlow.asSharedFlow()
 
     fun submitException(exception: Exception) {
         viewModelScope.launch {
-            _exceptionFlow.emit(exception)
+            mutableExceptionFlow.emit(exception)
         }
     }
 

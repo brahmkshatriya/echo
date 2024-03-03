@@ -35,11 +35,7 @@ class HeaderAdapter(
             when (menuItem.itemId) {
                 R.id.menu_settings -> {
                     val snackBarViewModel: SnackBarViewModel by fragment.activityViewModels()
-                    snackBarViewModel.create(
-                        SnackBarViewModel.Message(
-                            message = "Welcome to Echo", action = "Yay!"
-                        )
-                    )
+                    snackBarViewModel.submitException(Exception("You just clicked on Crash-O-Matic 3000 ultra pro max deluxe edition"))
                     true
                 }
 
