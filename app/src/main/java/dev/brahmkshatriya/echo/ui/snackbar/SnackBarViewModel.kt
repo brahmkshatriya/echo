@@ -26,7 +26,7 @@ class SnackBarViewModel @Inject constructor(
     data class Message(
         val message: String,
         val action: String,
-        val actionHandler: ((View, NavController) -> Unit)? = null
+        val actionHandler: ((View?, NavController) -> Unit)? = null
     )
 
     private val _messageFlow = MutableSharedFlow<Message>()

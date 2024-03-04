@@ -42,4 +42,12 @@
         app:menu="@menu/bottom_nav_menu"
         app:menuGravity="center" />
 
+    <FrameLayout
+        android:id="@+id/snackbar_container"
+        android:transitionName="exception"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

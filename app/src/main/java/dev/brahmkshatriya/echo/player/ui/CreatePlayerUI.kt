@@ -39,6 +39,7 @@ import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.lang.ref.WeakReference
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -106,6 +107,7 @@ fun createPlayerUI(
             playerBinding.collapsedContainer.translationY = -collapsedCoverSize * offset
             playerBinding.expandedContainer.translationY = collapsedCoverSize * (1 - offset)
             navView.translationY = uiViewModel.bottomNavTranslateY * offset
+            activity.binding.snackbarContainer.translationY = -collapsedCoverSize * (1 - abs(slideOffset))
         }
     })
 

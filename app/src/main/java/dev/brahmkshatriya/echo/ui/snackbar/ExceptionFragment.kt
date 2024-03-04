@@ -1,5 +1,8 @@
 package dev.brahmkshatriya.echo.ui.snackbar
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -64,7 +67,22 @@ class ExceptionFragment : Fragment() {
         binding.exceptionMessage.title = exception.message
         binding.exceptionDetails.text = exception.stackTraceToString()
 
+        binding.exceptionMessage.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.exception_copy -> {
+                    copyToClipboard(exception.message, exception.stackTraceToString())
+                    true
+                }
+
+                else -> false
+            }
+        }
     }
 
-
+    private fun copyToClipboard(label: String?, string: String) {
+        val clipboard =
+            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(label, string)
+        clipboard.setPrimaryClip(clip)
+    }
 }

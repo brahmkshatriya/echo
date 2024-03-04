@@ -15,6 +15,14 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/navigation" />
 
+    <FrameLayout
+        android:id="@+id/snackbar_container"
+        android:transitionName="exception"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="88dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
         android:layout_width="match_parent"

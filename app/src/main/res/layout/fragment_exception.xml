@@ -5,9 +5,9 @@
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:transitionName="exception"
     android:background="?attr/colorSurface"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:transitionName="exception">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -21,9 +21,9 @@
             android:layout_height="wrap_content"
             app:contentScrim="?attr/colorSurfaceContainer"
             app:expandedTitleMarginBottom="20dp"
-            app:expandedTitleMarginEnd="72dp"
+            app:expandedTitleMarginEnd="24dp"
             app:expandedTitleMarginStart="24dp"
-            app:maxLines="3"
+            app:maxLines="5"
             app:titleCollapseMode="scale">
 
 
@@ -36,6 +36,7 @@
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="72dp"
                 android:fitsSystemWindows="true">
+
                 <ImageView
                     android:id="@+id/exceptionIcon"
                     android:layout_width="wrap_content"
@@ -48,6 +49,7 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/exceptionMessage"
                 android:layout_width="match_parent"
+                app:menu="@menu/exception_menu"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
@@ -69,19 +71,25 @@
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
+
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/nested_scroll_view"
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:id="@+id/exceptionDetails"
-            android:padding="24dp"
-            tools:text="@tools:sample/lorem/random"
+        <HorizontalScrollView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/exceptionDetails"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="24dp"
+                android:textIsSelectable="true" />
+
+        </HorizontalScrollView>
 
     </androidx.core.widget.NestedScrollView>
 

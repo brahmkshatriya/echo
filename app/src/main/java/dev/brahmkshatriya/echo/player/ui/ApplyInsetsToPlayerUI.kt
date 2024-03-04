@@ -47,6 +47,9 @@ fun applyInsetsToPlayerUI(
                 uiViewModel.bottomNavTranslateY = -navView.height
             }
         }
+        activity.binding.snackbarContainer.updateLayoutParams {
+            height = systemInsets.bottom
+        }
         insets
     }
 

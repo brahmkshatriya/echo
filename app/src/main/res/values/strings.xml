@@ -37,5 +37,6 @@
     <string name="songs">Songs</string>
     <string name="radio">Radio</string>
     <string name="view">View</string>
+    <string name="copy">Copy</string>
 
 </resources>

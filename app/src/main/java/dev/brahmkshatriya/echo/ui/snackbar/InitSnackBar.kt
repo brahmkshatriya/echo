@@ -22,21 +22,22 @@ fun initSnackBar(activity: MainActivity) {
             val snackBar = Snackbar.make(
                 binding.root,
                 message.message,
-                Snackbar.LENGTH_INDEFINITE
+                Snackbar.LENGTH_LONG
             )
             snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
             snackBar.view.updateLayoutParams<MarginLayoutParams> { setMargins(0) }
+            snackBar.anchorView = binding.snackbarContainer
+
             snackBar.setAction(message.action) {
                 val actionHandler = message.actionHandler
-                if (actionHandler != null) actionHandler(snackBar.view, navController)
+                if (actionHandler != null) actionHandler(snackBar.anchorView, navController)
             }
-            snackBar.anchorView = binding.bottomPlayerContainer
-            snackBar.show()
             snackBar.addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                    snackBarViewModel.remove(message,event == DISMISS_EVENT_ACTION)
+                    snackBarViewModel.remove(message, event != DISMISS_EVENT_MANUAL)
                 }
             })
+            snackBar.show()
         }
 
         observe(snackBarViewModel.messageFlow) { message ->
@@ -49,8 +50,10 @@ fun initSnackBar(activity: MainActivity) {
                 action = getString(R.string.view),
                 actionHandler = { view, navController ->
                     val action = ExceptionFragmentDirections.actionException(exception)
-                    view.transitionName = "exception"
-                    val extras = FragmentNavigatorExtras(view to "exception")
+                    val extras = view?.let {
+                        view.transitionName = "exception"
+                        FragmentNavigatorExtras(view to "exception")
+                    } ?: FragmentNavigatorExtras()
                     navController.navigate(action, extras)
                 }
             )
