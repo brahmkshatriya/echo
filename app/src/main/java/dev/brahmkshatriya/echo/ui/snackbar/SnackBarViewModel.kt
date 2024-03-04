@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.snackbar
 
-import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -26,7 +25,7 @@ class SnackBarViewModel @Inject constructor(
     data class Message(
         val message: String,
         val action: String,
-        val actionHandler: ((View?, NavController) -> Unit)? = null
+        val actionHandler: ((NavController) -> Unit)? = null
     )
 
     private val _messageFlow = MutableSharedFlow<Message>()

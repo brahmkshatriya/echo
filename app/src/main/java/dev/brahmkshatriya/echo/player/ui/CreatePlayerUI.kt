@@ -65,6 +65,7 @@ fun createPlayerUI(
     val bottomPlaylistBehavior = BottomSheetBehavior.from(playlistContainer)
 
     container.setOnClickListener {
+        println("Container Clicked")
         bottomPlayerBehavior.state = STATE_EXPANDED
     }
 
@@ -120,7 +121,9 @@ fun createPlayerUI(
         container.translationY = 0f
     }
     activity.observe(playerViewModel.fromNotification) {
-        if (it) bottomPlayerBehavior.state = STATE_EXPANDED
+        if (it) bottomPlayerBehavior.state = STATE_EXPANDED.also {
+            println("From Notification expanded")
+        }
     }
     playerBinding.playerClose.setOnClickListener {
         bottomPlayerBehavior.state = STATE_HIDDEN
@@ -299,10 +302,9 @@ fun createPlayerUI(
 
             container.post {
                 if (bottomPlayerBehavior.state == STATE_HIDDEN) {
-                    bottomPlayerBehavior.isHideable = false
-                    bottomPlayerBehavior.isDraggable = true
                     bottomPlayerBehavior.state = STATE_COLLAPSED
                     bottomPlaylistBehavior.state = STATE_COLLAPSED
+                    bottomPlayerBehavior.isDraggable = true
                 }
             }
         }

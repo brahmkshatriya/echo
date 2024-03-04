@@ -17,7 +17,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.platform.MaterialContainerTransform
-import com.google.android.material.transition.platform.MaterialElevationScale
+import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.models.Album
@@ -66,8 +66,8 @@ class AlbumFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentCollapsingBarBinding.inflate(inflater, container, false)
-        enterTransition = MaterialElevationScale(true)
-        exitTransition = MaterialElevationScale(true)
+        enterTransition = MaterialFade()
+        exitTransition = MaterialFade()
         return binding.root
     }
 

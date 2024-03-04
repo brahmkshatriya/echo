@@ -9,14 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.transition.platform.MaterialContainerTransform
-import com.google.android.material.transition.platform.MaterialElevationScale
+import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
@@ -32,8 +30,8 @@ class ExceptionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentExceptionBinding.inflate(inflater, container, false)
-        enterTransition = MaterialElevationScale(true)
-        exitTransition = MaterialElevationScale(true)
+        enterTransition = MaterialFade()
+        exitTransition = MaterialFade()
         return binding.root
     }
 
@@ -54,14 +52,6 @@ class ExceptionFragment : Fragment() {
         }
 
         binding.exceptionMessage.setupWithNavController(findNavController())
-        postponeEnterTransition()
-        binding.nestedScrollView.doOnPreDraw {
-            startPostponedEnterTransition()
-        }
-
-        sharedElementEnterTransition = MaterialContainerTransform(requireContext(), true).apply {
-            drawingViewId = R.id.nav_host_fragment
-        }
 
         val exception = args.exception
         binding.exceptionMessage.title = exception.message

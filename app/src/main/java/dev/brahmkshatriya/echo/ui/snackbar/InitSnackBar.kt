@@ -4,7 +4,6 @@ import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.viewModels
 import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
-import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
 import dev.brahmkshatriya.echo.MainActivity
@@ -30,7 +29,7 @@ fun initSnackBar(activity: MainActivity) {
 
             snackBar.setAction(message.action) {
                 val actionHandler = message.actionHandler
-                if (actionHandler != null) actionHandler(snackBar.anchorView, navController)
+                if (actionHandler != null) actionHandler(navController)
             }
             snackBar.addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
@@ -48,13 +47,9 @@ fun initSnackBar(activity: MainActivity) {
             val message = SnackBarViewModel.Message(
                 message = exception.message ?: "An error occurred",
                 action = getString(R.string.view),
-                actionHandler = { view, navController ->
+                actionHandler = { navController ->
                     val action = ExceptionFragmentDirections.actionException(exception)
-                    val extras = view?.let {
-                        view.transitionName = "exception"
-                        FragmentNavigatorExtras(view to "exception")
-                    } ?: FragmentNavigatorExtras()
-                    navController.navigate(action, extras)
+                    navController.navigate(action)
                 }
             )
             snackBarViewModel.create(message)
