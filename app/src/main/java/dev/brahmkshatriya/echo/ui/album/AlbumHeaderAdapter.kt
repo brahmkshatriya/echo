@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.album
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -100,7 +99,6 @@ class AlbumHeaderAdapter(private val listener: AlbumHeaderListener) :
         binding.albumInfo.text = info
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun submit(album: Album.Full) {
         println("submitted")
         _album = album

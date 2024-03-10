@@ -12,32 +12,54 @@
     android:paddingBottom="4dp">
 
     <LinearLayout
+        android:layout_marginEnd="-8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:gravity="center_vertical"
-        android:minHeight="48sp"
-        android:orientation="vertical">
+        android:gravity="center"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textView"
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center_vertical"
+            android:minHeight="48sp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="20sp"
+                tools:text="@string/library" />
+
+            <TextView
+                android:id="@+id/subtitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.66"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:visibility="gone"
+                tools:text="@string/library" />
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/more"
+            style="?attr/materialIconButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="20sp"
-            tools:text="@string/library" />
+            android:contentDescription="@string/clear_playlist"
+            android:padding="8dp"
+            app:icon="@drawable/ic_more_horiz"
+            app:iconSize="24dp"
+            app:iconTint="@color/button_player" />
 
-        <TextView
-            android:id="@+id/subtitleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:alpha="0.66"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="16sp"
-            android:visibility="gone"
-            tools:text="@string/library" />
 
     </LinearLayout>
 

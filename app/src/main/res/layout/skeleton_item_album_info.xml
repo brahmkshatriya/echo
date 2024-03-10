@@ -11,104 +11,102 @@
         android:layout_marginBottom="16dp"
         android:orientation="vertical">
 
+        <View
+            android:layout_width="128dp"
+            android:layout_height="24sp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/rounded_rectangle" />
 
-    <View
-        android:layout_marginHorizontal="24dp"
-        android:layout_width="128dp"
-        android:layout_height="24sp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/rounded_rectangle" />
+        <View
+            android:layout_width="108dp"
+            android:layout_height="24sp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_rectangle" />
 
-    <View
-        android:layout_marginHorizontal="24dp"
-        android:layout_width="108dp"
-        android:layout_height="24sp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/rounded_rectangle" />
-
-
-    <LinearLayout
-        android:layout_marginHorizontal="24dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:background="?attr/colorSurfaceContainerHighest"
-            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:orientation="vertical">
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="?attr/colorSurfaceContainerHighest"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="108dp"
+                    android:layout_height="32sp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/rounded_rectangle" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="24dp"
+            android:orientation="horizontal">
 
             <View
-                android:layout_width="108dp"
-                android:layout_height="32sp"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
                 android:layout_gravity="center_vertical"
-                android:background="@drawable/rounded_rectangle" />
+                android:layout_weight="1"
+                android:background="@drawable/rounded_rectangle_more" />
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="match_parent" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_rectangle_more" />
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_marginHorizontal="24dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:orientation="horizontal">
 
         <View
-            android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_width="72dp"
+            android:layout_height="32dp"
             android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:background="@drawable/rounded_rectangle_more" />
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_rectangle" />
 
-        <View
-            android:layout_width="16dp"
-            android:layout_height="match_parent" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:background="@drawable/rounded_rectangle_more" />
-    </LinearLayout>
-
-    <View
-        android:layout_marginHorizontal="24dp"
-        android:layout_width="72dp"
-        android:layout_height="32dp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/rounded_rectangle" />
-
-        <include
-            layout="@layout/skeleton_item_track_small" />
+        <include layout="@layout/skeleton_item_track_small" />
 
         <FrameLayout
-            android:alpha="0.66"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <include
-                layout="@layout/skeleton_item_track_small" />
+            android:layout_height="match_parent"
+            android:alpha="0.66">
+
+            <include layout="@layout/skeleton_item_track_small" />
 
         </FrameLayout>
 
         <FrameLayout
-            android:alpha="0.33"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <include
-                layout="@layout/skeleton_item_track_small" />
+            android:layout_height="match_parent"
+            android:alpha="0.33">
+
+            <include layout="@layout/skeleton_item_track_small" />
 
         </FrameLayout>
     </LinearLayout>

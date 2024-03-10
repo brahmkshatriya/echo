@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.album
+package dev.brahmkshatriya.echo.ui.artist
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,14 +19,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.AlbumClient
-import dev.brahmkshatriya.echo.common.models.Album
-import dev.brahmkshatriya.echo.databinding.FragmentAlbumBinding
+import dev.brahmkshatriya.echo.common.clients.ArtistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.UserClient
+import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.databinding.FragmentArtistBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
-import dev.brahmkshatriya.echo.ui.adapters.TrackAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.ui.snackbar.SnackBarViewModel
@@ -34,38 +35,41 @@ import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
+import kotlinx.coroutines.flow.combine
 
-class AlbumFragment : Fragment() {
+class ArtistFragment : Fragment() {
 
-    private val args: AlbumFragmentArgs by navArgs()
+    private val args: ArtistFragmentArgs by navArgs()
 
-    private var binding: FragmentAlbumBinding by autoCleared()
+    private var binding: FragmentArtistBinding by autoCleared()
 
-    private val viewModel: AlbumViewModel by viewModels()
+    private val viewModel: ArtistViewModel by viewModels()
     private val extensionViewModel: ExtensionViewModel by activityViewModels()
     private val snackBarViewModel: SnackBarViewModel by activityViewModels()
     private val playerViewModel: PlayerViewModel by activityViewModels()
 
     private val clickListener = MediaItemClickListener(this)
-    private val trackAdapter = TrackAdapter(clickListener, false)
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
-    private val header = AlbumHeaderAdapter(object : AlbumHeaderAdapter.AlbumHeaderListener {
-        override fun onPlayClicked(album: Album.Full) {
-            playerViewModel.play(album.tracks)
+    private val header = ArtistHeaderAdapter(object : ArtistHeaderAdapter.ArtistHeaderListener {
+
+        override fun onSubscribeClicked(
+            artist: Artist.Full,
+            subscribe: Boolean,
+            adapter: ArtistHeaderAdapter
+        ) {
+            adapter.submitSubscribe(subscribe)
         }
 
-        override fun onShuffleClicked(album: Album.Full) {
-            album.tracks.forEach {
-                playerViewModel.addToQueue(it)
-            }
+        override fun onRadioClicked(artist: Artist.Full) {
         }
+
     })
-    private val concatAdapter = ConcatAdapter(header, trackAdapter, mediaItemsContainerAdapter)
+    private val concatAdapter = ConcatAdapter(header, mediaItemsContainerAdapter)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        binding = FragmentAlbumBinding.inflate(inflater, container, false)
+        binding = FragmentArtistBinding.inflate(inflater, container, false)
         enterTransition = MaterialFade()
         exitTransition = MaterialFade()
         return binding.root
@@ -95,35 +99,31 @@ class AlbumFragment : Fragment() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val album: Album.Small = args.albumWithCover ?: args.albumSmall ?: return
+        val artist: Artist.Small = args.artistWithCover ?: args.artistSmall ?: return
 
-        binding.root.transitionName = album.uri.toString()
+        binding.root.transitionName = artist.uri.toString()
         sharedElementEnterTransition = MaterialContainerTransform(requireContext(), true).apply {
             drawingViewId = R.id.nav_host_fragment
         }
-        binding.toolbar.title = album.title.trim()
+        binding.toolbar.title = artist.name.trim()
 
-        (album as? Album.WithCover).let {
-            it?.numberOfTracks?.let { it1 ->
-                albumImage(it1, binding.albumCover1, binding.albumCover2)
-                it.cover.loadInto(binding.albumCover1, R.drawable.art_album)
-                it.cover.loadInto(binding.albumCover2, R.drawable.art_album)
-            }
-            it?.cover.loadInto(binding.albumCover, R.drawable.art_album)
+        (artist as? Artist.WithCover).let {
+            it?.cover.loadInto(binding.albumCover, R.drawable.art_artist)
         }
 
         observe(extensionViewModel.extensionFlow) {
-            binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
-                it, R.string.album, concatAdapter, true
+            binding.recyclerView.adapter = getAdapterForExtension<ArtistClient>(
+                it, R.string.artist, concatAdapter, true
             ) { client ->
                 if (client == null) return@getAdapterForExtension
-                viewModel.loadAlbum(client, snackBarViewModel.mutableExceptionFlow, album)
+                viewModel.loadArtist(client, snackBarViewModel.mutableExceptionFlow, artist)
             }
         }
-        observe(viewModel.albumFlow) {
-            if (it != null) {
-                trackAdapter.submitList(it.tracks)
-                header.submit(it)
+        val headerFlow = viewModel.artistFlow
+            .combine(extensionViewModel.extensionFlow) { it, client -> it to client }
+        observe(headerFlow) { (artist, client) ->
+            if (artist != null && client != null) {
+                header.submit(artist, client is UserClient, client is RadioClient)
             }
         }
         observe(viewModel.result) {

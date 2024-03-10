@@ -1,8 +1,14 @@
 package dev.brahmkshatriya.echo.common.models
 
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+
 sealed class MediaItemsContainer {
     data class Category(
-        val title: String, val list: List<EchoMediaItem>, val subtitle: String? = null
+        val title: String,
+        val list: List<EchoMediaItem>,
+        val subtitle: String? = null,
+        val flow: Flow<PagingData<EchoMediaItem>>? = null
     ) : MediaItemsContainer()
 
     data class TrackItem(val track: Track) : MediaItemsContainer()

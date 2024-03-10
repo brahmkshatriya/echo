@@ -34,9 +34,16 @@
         <item quantity="one">%1$d Song</item>
         <item quantity="other">%1$d Songs</item>
     </plurals>
+    <plurals name="number_followers">
+        <item quantity="one">%1$d Follower</item>
+        <item quantity="other">%1$d Followers</item>
+    </plurals>
     <string name="songs">Songs</string>
     <string name="radio">Radio</string>
     <string name="view">View</string>
     <string name="copy">Copy</string>
+    <string name="artist">Artist</string>
+    <string name="unfollow">Unfollow</string>
+    <string name="follow">Follow</string>
 
 </resources>

@@ -30,8 +30,8 @@ class ArtistResolver(val context: Context) {
 
     private fun Context.queryArtists(
         whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int
-    ): List<Artist.WithCover> {
-        val artists = mutableListOf<Artist.WithCover>()
+    ): List<Artist.Full> {
+        val artists = mutableListOf<Artist.Full>()
         createCursor(
             contentResolver = contentResolver,
             collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -57,14 +57,22 @@ class ArtistResolver(val context: Context) {
                 ids.add(id)
                 val uri = Uri.parse("$URI$ARTIST_AUTH$id")
                 artists.add(
-                    Artist.WithCover(
+                    Artist.Full(
                         uri = uri,
                         name = it.getStringOrNull(artistColumn) ?: "THIS IS THE PROBLEM",
                         cover = null,
+                        description = null,
                     )
                 )
             }
         }
         return artists
+    }
+
+    fun get(uri: Uri) : Artist.Full {
+        val id = uri.lastPathSegment!!.toLong()
+        val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
+        val selectionArgs = arrayOf(id.toString())
+        return context.queryArtists(whereCondition, selectionArgs, 1, 1).first()
     }
 }

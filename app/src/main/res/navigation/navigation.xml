@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--suppress NavigationFile -->
+<?xml version="1.0" encoding="utf-8"?><!--suppress NavigationFile -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -22,34 +21,56 @@
         tools:layout="@layout/fragment_search" />
 
     <fragment
-        android:id="@+id/navigation_album"
-        android:name="dev.brahmkshatriya.echo.ui.album.AlbumFragment"
-        tools:layout="@layout/fragment_collapsing_bar">
+        android:id="@+id/navigation_artist"
+        android:name="dev.brahmkshatriya.echo.ui.artist.ArtistFragment"
+        tools:layout="@layout/fragment_artist">
         <argument
-            android:name="albumSmall"
-            app:argType="dev.brahmkshatriya.echo.common.models.Album$Small"
-            app:nullable="true"
-            android:defaultValue="@null"/>
+            android:name="artistSmall"
+            android:defaultValue="@null"
+            app:argType="dev.brahmkshatriya.echo.common.models.Artist$Small"
+            app:nullable="true" />
         <argument
-            android:name="albumWithCover"
-            app:argType="dev.brahmkshatriya.echo.common.models.Album$WithCover"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            android:name="artistWithCover"
+            android:defaultValue="@null"
+            app:argType="dev.brahmkshatriya.echo.common.models.Artist$WithCover"
+            app:nullable="true" />
     </fragment>
 
-    <dialog
-        android:id="@+id/dialog_extension"
-        android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragment"
-        tools:layout="@layout/dialog_extension"/>
+    <action
+        android:id="@+id/action_artist"
+        app:destination="@id/navigation_artist" />
+
+
+    <fragment
+        android:id="@+id/navigation_album"
+        android:name="dev.brahmkshatriya.echo.ui.album.AlbumFragment"
+        tools:layout="@layout/fragment_album">
+        <argument
+            android:name="albumSmall"
+            android:defaultValue="@null"
+            app:argType="dev.brahmkshatriya.echo.common.models.Album$Small"
+            app:nullable="true" />
+        <argument
+            android:name="albumWithCover"
+            android:defaultValue="@null"
+            app:argType="dev.brahmkshatriya.echo.common.models.Album$WithCover"
+            app:nullable="true" />
+    </fragment>
 
     <action
         android:id="@+id/action_album"
         app:destination="@id/navigation_album" />
 
+    <dialog
+        android:id="@+id/dialog_extension"
+        android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragment"
+        tools:layout="@layout/dialog_extension" />
+
+
     <fragment
         android:id="@+id/navigation_exception"
         android:name="dev.brahmkshatriya.echo.ui.snackbar.ExceptionFragment"
-        tools:layout="@layout/fragment_exception" >
+        tools:layout="@layout/fragment_exception">
         <argument
             android:name="exception"
             app:argType="java.lang.Exception" />
@@ -59,4 +80,11 @@
         android:id="@+id/action_exception"
         app:destination="@id/navigation_exception" />
 
+    <fragment
+        android:id="@+id/navigation_category"
+        android:name="dev.brahmkshatriya.echo.ui.category.CategoryFragment"
+        tools:layout="@layout/fragment_category" />
+    <action
+        android:id="@+id/action_category"
+        app:destination="@id/navigation_category" />
 </navigation>

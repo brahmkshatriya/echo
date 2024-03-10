@@ -18,8 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemAlbumBinding
 import dev.brahmkshatriya.echo.databinding.ItemArtistBinding
@@ -35,7 +33,7 @@ import java.lang.ref.WeakReference
 
 class MediaItemsContainerAdapter(
     fragment: Fragment,
-    private val listener: ClickListener<Pair<View, EchoMediaItem>> = MediaItemClickListener(fragment),
+    private val listener: ClickListener<Pair<View, MediaItemsContainer>> = MediaItemClickListener(fragment),
 ) : PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
     MediaItemsContainerComparator
 ) {
@@ -96,22 +94,13 @@ class MediaItemsContainerAdapter(
         val item = getItem(position) ?: return
         holder.bind()
 
-        val echoMediaItem = when (item) {
-            is MediaItemsContainer.TrackItem -> holder.transitionView to item.track.toMediaItem()
-            is MediaItemsContainer.AlbumItem -> holder.transitionView to item.album.toMediaItem()
-            is MediaItemsContainer.ArtistItem -> holder.transitionView to item.artist.toMediaItem()
-            is MediaItemsContainer.PlaylistItem -> holder.transitionView to item.playlist.toMediaItem()
-            else -> null
-        }
-        echoMediaItem?.let {
-            holder.itemView.apply {
-                setOnClickListener {
-                    listener.onClick(echoMediaItem)
-                }
-                setOnLongClickListener {
-                    listener.onLongClick(echoMediaItem)
-                    true
-                }
+        holder.clickView.apply {
+            setOnClickListener {
+                listener.onClick(this to item)
+            }
+            setOnLongClickListener {
+                listener.onLongClick(this to item)
+                true
             }
         }
     }
@@ -168,7 +157,7 @@ class MediaItemsContainerAdapter(
     abstract inner class MediaItemsContainerHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
         abstract fun bind()
-        abstract val transitionView: View
+        abstract val clickView: View
     }
 
     inner class Category(val binding: ItemCategoryBinding) :
@@ -189,10 +178,10 @@ class MediaItemsContainerAdapter(
                 else it.scrollToPosition(0)
             }
             stateViewModel.visibleScrollableViews[position] = WeakReference(this)
+            binding.more.isVisible = category.flow != null
         }
 
-        override val transitionView
-            get() = throw IllegalArgumentException()
+        override val clickView = binding.more
     }
 
     inner class Track(val binding: ItemTrackBinding) : MediaItemsContainerHolder(binding.root) {
@@ -224,7 +213,7 @@ class MediaItemsContainerAdapter(
             binding.root.transitionName = track.uri.toString()
         }
 
-        override val transitionView = binding.root
+        override val clickView = binding.root
     }
 
     inner class Album(val binding: ItemAlbumBinding) : MediaItemsContainerHolder(binding.root) {
@@ -245,7 +234,7 @@ class MediaItemsContainerAdapter(
             binding.root.transitionName = album.uri.toString()
         }
 
-        override val transitionView = binding.root
+        override val clickView = binding.root
     }
 
     inner class Artist(val binding: ItemArtistBinding) : MediaItemsContainerHolder(binding.root) {
@@ -259,7 +248,7 @@ class MediaItemsContainerAdapter(
             binding.root.transitionName = artist.uri.toString()
         }
 
-        override val transitionView = binding.root
+        override val clickView = binding.root
     }
 
     inner class Playlist(val binding: ItemPlaylistBinding) :
@@ -279,7 +268,7 @@ class MediaItemsContainerAdapter(
             binding.root.transitionName = playlist.uri.toString()
         }
 
-        override val transitionView = binding.root
+        override val clickView = binding.root
     }
 
     companion object MediaItemsContainerComparator : DiffUtil.ItemCallback<MediaItemsContainer>() {

@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemTrackSmallBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
@@ -25,7 +25,7 @@ class TrackAdapter(
         init {
             binding.root.setOnClickListener {
                 val track = list?.get(bindingAdapterPosition) ?: return@setOnClickListener
-                callback.onClick(binding.imageView to track.toMediaItem())
+                callback.onClick(binding.imageView to MediaItemsContainer.TrackItem(track))
             }
         }
     }

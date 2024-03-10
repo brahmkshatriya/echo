@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="24dp"
+    android:layout_marginTop="24dp"
+    android:layout_marginBottom="16dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/artistSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:ellipsize="end"
+        android:textSize="16sp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/artistSubscribe"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:enabled="false"
+            android:layout_weight="1"
+            android:text="@string/follow"
+            app:icon="@drawable/ic_artist" />
+
+        <com.google.android.material.button.MaterialButton
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/artistUnsubscribe"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:text="@string/unfollow"
+            app:icon="@drawable/ic_artist" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/artistRadio"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:layout_marginStart="16dp"
+            android:text="@string/radio"
+            android:textColor="@color/button_radio"
+            app:icon="@drawable/ic_radio"
+            app:iconTint="@color/button_radio" />
+
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/artistDescriptionContainer"
+        android:layout_width="match_parent"
+        app:contentPadding="16dp"
+        app:cardCornerRadius="20dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/artistDescription"
+            tools:text="@tools:sample/lorem/random"
+            android:layout_width="match_parent"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

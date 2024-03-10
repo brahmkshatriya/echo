@@ -84,9 +84,9 @@
             android:layout_height="56dp"
             android:layout_weight="1"
             android:text="@string/radio"
-            android:textColor="?attr/colorTertiary"
+            android:textColor="@color/button_radio"
             app:icon="@drawable/ic_radio"
-            app:iconTint="?attr/colorTertiary" />
+            app:iconTint="@color/button_radio" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/albumPlay"
@@ -95,7 +95,7 @@
             android:layout_marginStart="16dp"
             android:layout_weight="1"
             android:text="@string/play"
-            app:backgroundTint="?attr/colorTertiary"
+            app:backgroundTint="@color/button_radio"
             app:icon="@drawable/ic_play" />
     </LinearLayout>
 

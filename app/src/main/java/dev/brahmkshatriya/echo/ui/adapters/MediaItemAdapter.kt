@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemMediaAlbumBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaArtistBinding
@@ -22,7 +24,7 @@ import dev.brahmkshatriya.echo.ui.album.albumImage
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class MediaItemAdapter(
-    private val listener: ClickListener<Pair<View, EchoMediaItem>>
+    private val listener: ClickListener<Pair<View, MediaItemsContainer>>
 ) : PagingDataAdapter<EchoMediaItem, MediaItemAdapter.MediaItemHolder>(MediaItemComparator) {
 
     override fun getItemViewType(position: Int): Int {
@@ -68,12 +70,13 @@ class MediaItemAdapter(
         val item = getItem(position) ?: return
         val container = holder.container
 
+        val mediaItem = item.toMediaItemsContainer()
         holder.itemView.apply {
             setOnClickListener {
-                listener.onClick(container.transitionView to item)
+                listener.onClick(container.transitionView to mediaItem)
             }
             setOnLongClickListener {
-                listener.onLongClick(container.transitionView to item)
+                listener.onLongClick(container.transitionView to mediaItem)
                 true
             }
         }
