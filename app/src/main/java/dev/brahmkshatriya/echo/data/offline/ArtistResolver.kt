@@ -44,7 +44,7 @@ class ArtistResolver(val context: Context) {
             orderBy = MediaStore.Audio.Media.ARTIST,
             orderAscending = true,
             limit = pageSize,
-            offset = (page - 1) * pageSize,
+            offset = (page) * pageSize,
         )?.use {
             //Cache column indices.
             val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
@@ -73,6 +73,6 @@ class ArtistResolver(val context: Context) {
         val id = uri.lastPathSegment!!.toLong()
         val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
         val selectionArgs = arrayOf(id.toString())
-        return context.queryArtists(whereCondition, selectionArgs, 1, 1).first()
+        return context.queryArtists(whereCondition, selectionArgs, 0, 1).first()
     }
 }

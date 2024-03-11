@@ -49,12 +49,12 @@ class AlbumFragment : Fragment() {
     private val clickListener = MediaItemClickListener(this)
     private val trackAdapter = TrackAdapter(clickListener, false)
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
-    private val header = AlbumHeaderAdapter(object : AlbumHeaderAdapter.AlbumHeaderListener {
+    private val header = AlbumHeaderAdapter(clickListener,object : AlbumHeaderAdapter.AlbumHeaderListener {
         override fun onPlayClicked(album: Album.Full) {
             playerViewModel.play(album.tracks)
         }
 
-        override fun onShuffleClicked(album: Album.Full) {
+        override fun onRadioClicked(album: Album.Full) {
             album.tracks.forEach {
                 playerViewModel.addToQueue(it)
             }

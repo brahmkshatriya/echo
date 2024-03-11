@@ -47,11 +47,11 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
 
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
         val trimmed = query.trim()
-        val albums = albumResolver.search(trimmed, 1, 50).map { it.toMediaItem() }.toMutableList()
+        val albums = albumResolver.search(trimmed, 0, 10).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
-        val tracks = trackResolver.search(trimmed, 1, 50).map { it.toMediaItem() }.toMutableList()
+        val tracks = trackResolver.search(trimmed, 0, 10).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
-        val artists = artistResolver.search(trimmed, 1, 50).map { it.toMediaItem() }.toMutableList()
+        val artists = artistResolver.search(trimmed, 0, 10).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
 
         val exactMatch = artists?.firstOrNull { it.artist.name.equals(trimmed, true) }.also {
@@ -137,7 +137,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
                         )
                         result
                     } else {
-                        trackResolver.getAll(page, pageSize)
+                        trackResolver.getAll(page - 1, pageSize)
                             .map { MediaItemsContainer.TrackItem(it) }
                     }
                 }
@@ -169,14 +169,14 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
         flow {
 
             val albums =
-                albumResolver.getByArtist(artist, 1, 10).map { it.toMediaItem() }.ifEmpty { null }
+                albumResolver.getByArtist(artist, 0, 10).map { it.toMediaItem() }.ifEmpty { null }
             val albumFlow = object : PagedFlow<EchoMediaItem>() {
                 override fun loadItems(page: Int, pageSize: Int): List<EchoMediaItem> =
                     albumResolver.getByArtist(artist, page, pageSize).map { it.toMediaItem() }
             }.getFlow()
 
             val tracks =
-                trackResolver.getByArtist(artist, 1, 10).map { it.toMediaItem() }.ifEmpty { null }
+                trackResolver.getByArtist(artist, 0, 10).map { it.toMediaItem() }.ifEmpty { null }
             val trackFlow = object : PagedFlow<EchoMediaItem>() {
                 override fun loadItems(page: Int, pageSize: Int): List<EchoMediaItem> =
                     trackResolver.getByArtist(artist, page, pageSize).map { it.toMediaItem() }

@@ -37,9 +37,8 @@ class TrackResolver(val context: Context) {
     fun getByArtist(
         artist: Artist.Small, page: Int, pageSize: Int
     ): List<Track> {
-        val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
-        val selectionArgs = arrayOf(artist.uri.lastPathSegment!!)
-        return context.queryTracks(whereCondition, selectionArgs, page, pageSize)
+        val name = artist.name
+        return search(name, page, pageSize)
     }
 
     fun getByAlbum(
@@ -72,7 +71,7 @@ class TrackResolver(val context: Context) {
             orderBy = MediaStore.Audio.Media.TRACK,
             orderAscending = true,
             limit = pageSize,
-            offset = (page - 1) * pageSize
+            offset = (page) * pageSize
         )?.use {
             //Cache column indices.
             val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)

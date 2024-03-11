@@ -8,12 +8,17 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.utils.loadInto
 
-class AlbumHeaderAdapter(private val listener: AlbumHeaderListener) :
+class AlbumHeaderAdapter(
+    private val mediaListener: MediaItemClickListener,
+    private val listener: AlbumHeaderListener
+) :
     RecyclerView.Adapter<AlbumHeaderAdapter.ViewHolder>() {
 
     override fun getItemCount() = 1
@@ -22,15 +27,29 @@ class AlbumHeaderAdapter(private val listener: AlbumHeaderListener) :
         class Info(
             val binding: ItemAlbumInfoBinding,
             val album: Album.Full,
-            listener: AlbumHeaderListener
+            listener: AlbumHeaderListener,
+            mediaListener: MediaItemClickListener
         ) :
             ViewHolder(binding.root) {
             init {
-                binding.albumPlay.setOnClickListener {
-                    album.let { it1 -> listener.onPlayClicked(it1) }
+                val artist = MediaItemsContainer.ArtistItem(Artist.WithCover(
+                    album.artist.uri,
+                    album.artist.name,
+                    null
+                ))
+                binding.albumArtistContainer.setOnClickListener {
+                    mediaListener.onClick(it to artist)
                 }
-                binding.albumShuffle.setOnClickListener {
-                    album.let { it1 -> listener.onShuffleClicked(it1) }
+                binding.albumArtistContainer.setOnLongClickListener {
+                    mediaListener.onLongClick(it to artist)
+                    true
+                }
+
+                binding.albumPlay.setOnClickListener {
+                    listener.onPlayClicked(album)
+                }
+                binding.albumRadio.setOnClickListener {
+                    listener.onRadioClicked(album)
                 }
             }
         }
@@ -41,7 +60,7 @@ class AlbumHeaderAdapter(private val listener: AlbumHeaderListener) :
 
     interface AlbumHeaderListener {
         fun onPlayClicked(album: Album.Full)
-        fun onShuffleClicked(album: Album.Full)
+        fun onRadioClicked(album: Album.Full)
     }
 
     override fun getItemViewType(position: Int) = if (_album == null) 0 else 1
@@ -62,7 +81,8 @@ class AlbumHeaderAdapter(private val listener: AlbumHeaderListener) :
                     LayoutInflater.from(parent.context), parent, false
                 ),
                 album,
-                listener
+                listener,
+                mediaListener
             )
         }
     }
@@ -74,6 +94,7 @@ class AlbumHeaderAdapter(private val listener: AlbumHeaderListener) :
         val album = holder.album
         binding.albumArtist.text = album.artist.name
         binding.albumArtistSubtitle.isVisible = false
+        binding.albumArtistContainer.transitionName = album.artist.uri.toString()
         val art = album.artist
         (art as? Artist.WithCover)?.let {
             it.cover.loadInto(binding.albumArtistCover, R.drawable.art_artist)

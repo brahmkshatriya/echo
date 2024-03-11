@@ -179,6 +179,7 @@ class MediaItemsContainerAdapter(
             }
             stateViewModel.visibleScrollableViews[position] = WeakReference(this)
             binding.more.isVisible = category.flow != null
+            binding.more.transitionName = category.flow.hashCode().toString()
         }
 
         override val clickView = binding.more

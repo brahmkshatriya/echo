@@ -3,10 +3,8 @@ package dev.brahmkshatriya.echo.ui
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
-import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.NavigationDirections
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.player.PlayerViewModel
@@ -38,11 +36,10 @@ class MediaItemClickListener(
                 val categoryViewModel : CategoryViewModel by fragment.activityViewModels()
                 categoryViewModel.title = mediaItem.title
                 categoryViewModel.flow = mediaItem.flow
-                mediaItem.flow?.cachedIn(categoryViewModel.viewModelScope)
                 val action = NavigationDirections.actionCategory()
-                fragment.findNavController().navigate(action)
+                val extras = FragmentNavigatorExtras(view to view.transitionName)
+                fragment.findNavController().navigate(action, extras)
             }
-
 
             else -> {}
         }

@@ -32,9 +32,8 @@ class AlbumResolver(
     fun getByArtist(
         artist: Artist.Small, page: Int, pageSize: Int
     ): List<Album.WithCover> {
-        val whereCondition = "${MediaStore.Audio.Media.ARTIST} LIKE ?"
-        val selectionArgs = arrayOf("%${artist.name}%")
-        return context.queryAlbums(whereCondition, selectionArgs, page, pageSize)
+        val name = artist.name
+        return search(name, page, pageSize)
     }
 
     private fun Context.queryAlbums(
@@ -47,7 +46,8 @@ class AlbumResolver(
             projection = arrayOf(
                 MediaStore.Audio.Albums._ID,
                 MediaStore.Audio.Albums.ALBUM,
-                MediaStore.Audio.Albums.ARTIST,
+                MediaStore.Audio.Media.ARTIST_ID,
+                MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Albums.NUMBER_OF_SONGS,
                 MediaStore.Audio.Albums.FIRST_YEAR
             ),
@@ -56,12 +56,13 @@ class AlbumResolver(
             orderBy = MediaStore.Audio.Albums.ALBUM,
             orderAscending = true,
             limit = pageSize,
-            offset = (page - 1) * pageSize
+            offset = (page) * pageSize
         )?.use {
             //Cache column indices.
             val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID)
             val albumColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM)
-            val artistColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.ARTIST)
+            val artistColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val artistIdColumn =  it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
             val tracksColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.NUMBER_OF_SONGS)
             val yearColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.FIRST_YEAR)
             while (it.moveToNext()) {
@@ -69,7 +70,7 @@ class AlbumResolver(
                 val coverUri = ContentUris.withAppendedId(
                     ARTWORK_URI, it.getLong(idColumn)
                 )
-                val artistUri = Uri.parse("${URI}${ARTIST_AUTH}${it.getLong(idColumn)}")
+                val artistUri = Uri.parse("${URI}${ARTIST_AUTH}${it.getLong(artistIdColumn)}")
                 albums.add(
                     Album.Full(
                         uri = uri,

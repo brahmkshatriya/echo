@@ -9,6 +9,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.DOWN
 import androidx.recyclerview.widget.ItemTouchHelper.START
@@ -28,6 +29,7 @@ import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import com.google.android.material.slider.Slider
 import com.google.android.material.slider.Slider.OnSliderTouchListener
 import dev.brahmkshatriya.echo.MainActivity
+import dev.brahmkshatriya.echo.NavigationDirections
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
@@ -108,7 +110,8 @@ fun createPlayerUI(
             playerBinding.collapsedContainer.translationY = -collapsedCoverSize * offset
             playerBinding.expandedContainer.translationY = collapsedCoverSize * (1 - offset)
             navView.translationY = uiViewModel.bottomNavTranslateY * offset
-            activity.binding.snackbarContainer.translationY = -collapsedCoverSize * (1 - abs(slideOffset))
+            activity.binding.snackbarContainer.translationY =
+                -collapsedCoverSize * (1 - abs(slideOffset))
         }
     })
 
@@ -272,7 +275,8 @@ fun createPlayerUI(
     uiViewModel.view = WeakReference(playerBinding.collapsedTrackCover)
 
     activity.apply {
-
+        val navController = binding.navHostFragment
+            .getFragment<NavHostFragment>().navController
         observe(uiViewModel.track) { track ->
             track ?: return@observe
 
@@ -283,6 +287,14 @@ fun createPlayerUI(
                 playerBinding.collapsedTrackAuthor.text = this
                 playerBinding.expandedTrackAuthor.text = this
             }
+
+            playerBinding.expandedTrackAuthor.setOnClickListener {
+                val artist = track.artists.firstOrNull() ?: return@setOnClickListener
+                val action = NavigationDirections.actionArtist(artist)
+                bottomPlayerBehavior.state = STATE_COLLAPSED
+                navController.navigate(action  )
+            }
+
             track.cover.run {
                 loadInto(playerBinding.collapsedTrackCover, R.drawable.art_music)
                 loadInto(playerBinding.expandedTrackCover, R.drawable.art_music)
