@@ -16,6 +16,10 @@ fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
     listener.update()
 
     activity.apply {
+        observe(uiViewModel.radioFlow){
+            uiViewModel.track.value?.let { playerViewModel.radio(it) }
+        }
+
         observe(playerViewModel.playPause) {
             if (it) player.play() else player.pause()
         }

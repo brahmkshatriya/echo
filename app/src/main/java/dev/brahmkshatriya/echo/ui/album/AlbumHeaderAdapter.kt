@@ -88,6 +88,8 @@ class AlbumHeaderAdapter(
     }
 
     private var _album: Album.Full? = null
+    private var _radio: Boolean = false
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
@@ -118,11 +120,12 @@ class AlbumHeaderAdapter(
             info += "\n$it"
         }
         binding.albumInfo.text = info
+        binding.albumRadio.isVisible = _radio
     }
 
-    fun submit(album: Album.Full) {
-        println("submitted")
+    fun submit(album: Album.Full, radio: Boolean) {
         _album = album
+        _radio = radio
         notifyItemChanged(0)
     }
 }

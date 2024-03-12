@@ -5,13 +5,18 @@ import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.util.Collections
+import java.util.Collections.synchronizedList
 
 class Queue {
-    private val _queue = mutableListOf<Pair<String, Track>>()
-    val queue get() = _queue.toList()
+    private val _queue = synchronizedList(mutableListOf<Pair<String, Track>>())
+    val queue get() = synchronized(_queue) { _queue.toList() }
+
+    val currentIndex = MutableStateFlow<Int?>(null)
+
     fun getTrack(mediaId: String?) = queue.find { it.first == mediaId }?.second
 
     private val _clearQueue = MutableSharedFlow<Unit>()
@@ -36,17 +41,20 @@ class Queue {
     private val _addTrack = MutableSharedFlow<Pair<Int, MediaItem>>()
     val addTrackFlow = _addTrack.asSharedFlow()
     fun addTrack(
-        scope: CoroutineScope, track: Track, stream: StreamableAudio, positionOffset: Int = 0
+        scope: CoroutineScope, track: Track, stream: StreamableAudio, offset: Int = 0
     ): Pair<Int, MediaItem> {
         val item = PlayerHelper.mediaItemBuilder(track, stream)
         val mediaId = item.mediaId
-        val index = _queue.size - positionOffset
 
-        _queue.add(index, mediaId to track)
+        var position = currentIndex.value?.let {it + 1} ?: 0
+        position += offset
+        position = position.coerceIn(0, _queue.size)
+
+        _queue.add(position , mediaId to track)
         scope.launch {
-            _addTrack.emit(index to item)
+            _addTrack.emit(position to item)
         }
-        return index to item
+        return position to item
     }
 
     private val _moveTrack = MutableSharedFlow<Pair<Int, Int>>()

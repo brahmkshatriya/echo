@@ -3,7 +3,10 @@ package dev.brahmkshatriya.echo.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionFlow
@@ -19,7 +22,6 @@ class PlayerViewModel @Inject constructor(
     private val global: Queue,
     trackFlow: ExtensionFlow,
     private val exceptionFlow: MutableSharedFlow<Exception>
-//    private val radioClient: RadioClient
 ) : ViewModel() {
 
     val fromNotification: MutableSharedFlow<Boolean> = MutableSharedFlow()
@@ -46,7 +48,7 @@ class PlayerViewModel @Inject constructor(
     val removeTrackFlow = global.removeTrackFlow
 
     private suspend fun loadStreamable(track: Track): StreamableAudio? {
-        return tryWith(exceptionFlow){ trackClient?.getStreamable(track) }
+        return tryWith(exceptionFlow) { trackClient?.getStreamable(track) }
     }
 
     private suspend fun loadAndAddToQueue(track: Track): Int {
@@ -62,17 +64,20 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun play(tracks: List<Track>) {
+    fun play(tracks: List<Track>, play: Boolean = true) {
         viewModelScope.launch(Dispatchers.IO) {
-            tracks.forEachIndexed { index, track ->
-                if (index == 0) audioIndexFlow.emit(loadAndAddToQueue(track))
-                else loadAndAddToQueue(track)
+            tracks.firstOrNull()?.run {
+                val pos = loadAndAddToQueue(this)
+                if (play) audioIndexFlow.emit(pos)
+                tracks.drop(1).reversed().forEach {
+                    loadAndAddToQueue(it)
+                }
             }
         }
     }
 
     fun shuffle(shuffled: Boolean) {
-        viewModelScope.launch{
+        viewModelScope.launch {
             shuffle.emit(shuffled)
         }
     }
@@ -93,6 +98,36 @@ class PlayerViewModel @Inject constructor(
 
     fun removeQueueItem(index: Int) {
         global.removeTrack(viewModelScope, index)
+    }
+
+    fun radio(track: Track) {
+        if (trackClient is RadioClient) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val playlist = tryWith(exceptionFlow) { (trackClient as RadioClient).radio(track) }
+                    ?: return@launch
+                play(playlist.tracks, false)
+            }
+        }
+    }
+
+    fun radio(artist: Artist.Full){
+        if (trackClient is RadioClient) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val playlist = tryWith(exceptionFlow) { (trackClient as RadioClient).radio(artist) }
+                    ?: return@launch
+                play(playlist.tracks)
+            }
+        }
+    }
+
+    fun radio(album: Album.Full){
+        if (trackClient is RadioClient) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val playlist = tryWith(exceptionFlow) { (trackClient as RadioClient).radio(album) }
+                    ?: return@launch
+                play(playlist.tracks)
+            }
+        }
     }
 
 //    fun radio(track: Track){

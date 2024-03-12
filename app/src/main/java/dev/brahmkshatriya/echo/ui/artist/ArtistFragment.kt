@@ -61,6 +61,7 @@ class ArtistFragment : Fragment() {
         }
 
         override fun onRadioClicked(artist: Artist.Full) {
+            playerViewModel.radio(artist)
         }
 
     })

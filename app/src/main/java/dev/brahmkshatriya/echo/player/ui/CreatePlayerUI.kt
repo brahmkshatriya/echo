@@ -67,9 +67,10 @@ fun createPlayerUI(
     val bottomPlaylistBehavior = BottomSheetBehavior.from(playlistContainer)
 
     container.setOnClickListener {
-        println("Container Clicked")
         bottomPlayerBehavior.state = STATE_EXPANDED
     }
+
+    val linearLayoutManager = LinearLayoutManager(activity, VERTICAL, false)
 
     bottomPlaylistBehavior.addBottomSheetCallback(object :
         BottomSheetBehavior.BottomSheetCallback() {
@@ -78,6 +79,7 @@ fun createPlayerUI(
 
             if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
             playerBinding.expandedSeekBar.isEnabled = newState != STATE_EXPANDED
+            linearLayoutManager.scrollToPositionWithOffset(uiViewModel.currentIndex.value ?: 0, 0)
             PlayerBackButtonHelper.playlistState.value = newState
         }
 
@@ -219,8 +221,6 @@ fun createPlayerUI(
     (playerBinding.trackRepeat.icon as Animatable).start()
 
 
-    val linearLayoutManager = LinearLayoutManager(activity, VERTICAL, false)
-
     val callback = object : ItemTouchHelper.SimpleCallback(UP or DOWN, START) {
         override fun onMove(
             recyclerView: RecyclerView,
@@ -292,7 +292,7 @@ fun createPlayerUI(
                 val artist = track.artists.firstOrNull() ?: return@setOnClickListener
                 val action = NavigationDirections.actionArtist(artist)
                 bottomPlayerBehavior.state = STATE_COLLAPSED
-                navController.navigate(action  )
+                navController.navigate(action)
             }
 
             track.cover.run {
@@ -397,6 +397,10 @@ fun createPlayerUI(
         observe(uiViewModel.shuffled) {
             val stroke = 1.dpToPx()
             playlistBinding.playlistShuffle.strokeWidth = if (it) stroke else 0
+        }
+
+        observe(uiViewModel.currentIndex) {
+            linearLayoutManager.scrollToPositionWithOffset(it ?: 0, 0)
         }
 
         observe(uiViewModel.listChangeFlow) {

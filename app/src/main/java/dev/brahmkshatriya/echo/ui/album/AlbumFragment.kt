@@ -20,6 +20,7 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.databinding.FragmentAlbumBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
@@ -34,6 +35,7 @@ import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
+import kotlinx.coroutines.flow.combine
 
 class AlbumFragment : Fragment() {
 
@@ -55,9 +57,7 @@ class AlbumFragment : Fragment() {
         }
 
         override fun onRadioClicked(album: Album.Full) {
-            album.tracks.forEach {
-                playerViewModel.addToQueue(it)
-            }
+            playerViewModel.radio(album)
         }
     })
     private val concatAdapter = ConcatAdapter(header, trackAdapter, mediaItemsContainerAdapter)
@@ -120,10 +120,12 @@ class AlbumFragment : Fragment() {
                 viewModel.loadAlbum(client, snackBarViewModel.mutableExceptionFlow, album)
             }
         }
-        observe(viewModel.albumFlow) {
+        val headerFlow = viewModel.albumFlow
+            .combine(extensionViewModel.extensionFlow) { it, client -> it to client }
+        observe(headerFlow) { (it, client) ->
             if (it != null) {
                 trackAdapter.submitList(it.tracks)
-                header.submit(it)
+                header.submit(it, client is RadioClient)
             }
         }
         observe(viewModel.result) {

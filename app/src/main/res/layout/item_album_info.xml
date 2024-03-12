@@ -74,8 +74,10 @@
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_marginStart="-8dp"
+        android:layout_marginEnd="-8dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
@@ -85,6 +87,7 @@
             android:layout_height="56dp"
             android:layout_weight="1"
             android:text="@string/radio"
+            android:layout_marginHorizontal="8dp"
             android:textColor="@color/button_radio"
             app:icon="@drawable/ic_radio"
             app:iconTint="@color/button_radio" />
@@ -93,7 +96,7 @@
             android:id="@+id/albumPlay"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_marginStart="16dp"
+            android:layout_marginHorizontal="8dp"
             android:layout_weight="1"
             android:text="@string/play"
             app:backgroundTint="@color/button_radio"

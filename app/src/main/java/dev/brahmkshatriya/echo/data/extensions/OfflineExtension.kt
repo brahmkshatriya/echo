@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Album
@@ -16,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
@@ -23,13 +25,15 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.data.offline.AlbumResolver
 import dev.brahmkshatriya.echo.data.offline.ArtistResolver
 import dev.brahmkshatriya.echo.data.offline.TrackResolver
+import dev.brahmkshatriya.echo.data.offline.URI
 import dev.brahmkshatriya.echo.data.offline.sortedBy
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 
 class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, TrackClient,
-    HomeFeedClient, AlbumClient, ArtistClient {
+    HomeFeedClient, AlbumClient, ArtistClient, RadioClient {
 
     override val metadata = ExtensionMetadata(
         name = "Offline",
@@ -47,11 +51,11 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
 
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
         val trimmed = query.trim()
-        val albums = albumResolver.search(trimmed, 0, 10).map { it.toMediaItem() }.toMutableList()
+        val albums = albumResolver.search(trimmed, 0, 50).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
-        val tracks = trackResolver.search(trimmed, 0, 10).map { it.toMediaItem() }.toMutableList()
+        val tracks = trackResolver.search(trimmed, 0, 50).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
-        val artists = artistResolver.search(trimmed, 0, 10).map { it.toMediaItem() }.toMutableList()
+        val artists = artistResolver.search(trimmed, 0, 50).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
 
         val exactMatch = artists?.firstOrNull { it.artist.name.equals(trimmed, true) }.also {
@@ -80,6 +84,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
     }
 
     override suspend fun getStreamable(track: Track): StreamableAudio {
+        delay(100)
         return trackResolver.getStream(track).toAudio()
     }
 
@@ -188,4 +193,73 @@ class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, Tr
             )
             emit(PagingData.from(result))
         }
+
+    override suspend fun radio(track: Track): Playlist.Full {
+        val albumTracks = track.album?.let { trackResolver.getByAlbum(it, 0, 50) }
+        val trackArtist = track.artists.firstOrNull()
+        val artistTracks = trackArtist?.let { trackResolver.getByArtist(it, 0, 50) }
+        val randomTracks = trackResolver.getShuffled(0, 50)
+
+        val tracks = listOfNotNull(albumTracks, artistTracks, randomTracks)
+            .flatten()
+            .distinctBy { it.uri }
+            .toMutableList()
+
+        tracks.removeIf { it.uri == track.uri }
+        tracks.shuffle()
+
+        return Playlist.Full(
+            uri = Uri.parse("$URI${track.uri}"),
+            title = "${track.title} Radio",
+            cover = null,
+            author = null,
+            tracks = tracks,
+            creationDate = null,
+            duration = tracks.sumOf { it.duration ?: 0 },
+            description = "Radio based on ${track.title} by ${track.artists.firstOrNull()?.name}"
+        )
+    }
+
+    override suspend fun radio(album: Album.Small): Playlist.Full {
+        val albumTracks = trackResolver.getByAlbum(album, 0, 50)
+        val randomTracks = trackResolver.getShuffled(0, 50)
+        val tracks = listOfNotNull(albumTracks,  randomTracks)
+            .flatten()
+            .shuffled()
+            .distinctBy { it.uri }
+        return Playlist.Full(
+            uri = Uri.parse("$URI${album.uri}"),
+            title = "${album.title} Radio",
+            cover = null,
+            author = null,
+            tracks = tracks,
+            creationDate = null,
+            duration = tracks.sumOf { it.duration ?: 0 },
+            description = "Radio based on ${album.title}"
+        )
+    }
+
+    override suspend fun radio(artist: Artist.Small): Playlist.Full {
+        val artistTracks = trackResolver.getByArtist(artist, 0, 50)
+        val randomTracks = trackResolver.getShuffled(0, 50)
+        val tracks = listOfNotNull(artistTracks, randomTracks)
+            .flatten()
+            .shuffled()
+            .distinctBy { it.uri }
+
+        return Playlist.Full(
+            uri = Uri.parse("$URI${artist.uri}"),
+            title = "${artist.name} Radio",
+            cover = null,
+            author = null,
+            tracks = tracks,
+            creationDate = null,
+            duration = tracks.sumOf { it.duration ?: 0 },
+            description = "Radio based on ${artist.name}"
+        )
+    }
+
+    override suspend fun radio(playlist: Playlist.Small): Playlist.Full {
+        TODO("Not yet implemented")
+    }
 }

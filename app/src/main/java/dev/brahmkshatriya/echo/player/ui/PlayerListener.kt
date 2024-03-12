@@ -10,6 +10,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaBrowser
+import dev.brahmkshatriya.echo.common.models.Track
 
 class PlayerListener(
     private val player: MediaBrowser, private val viewModel: PlayerUIViewModel
@@ -41,9 +42,7 @@ class PlayerListener(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         viewModel.track.value = viewModel.getTrack(mediaItem?.mediaId)
-        println("playlist: ${player.currentMediaItemIndex}")
-        viewModel.currentIndex.value =
-            player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
+        viewModel.changeCurrent(player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it })
     }
 
     override fun onPositionDiscontinuity(
@@ -56,7 +55,7 @@ class PlayerListener(
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         if (player.currentMediaItem == null) {
             viewModel.track.value = null
-            viewModel.currentIndex.value = null
+            viewModel.changeCurrent(null)
         }
         updateNavigation()
         updateProgress()
@@ -66,9 +65,20 @@ class PlayerListener(
         viewModel.shuffled.value = shuffleModeEnabled
     }
 
+    private var lastRadioTrack : Track?= null
     private fun updateProgress() {
-        if (player.isConnected) viewModel.progress.value =
-            player.currentPosition.toInt() to player.bufferedPosition.toInt()
+        if (player.isConnected) {
+            viewModel.progress.value =
+                player.currentPosition.toInt() to player.bufferedPosition.toInt()
+            // radio if last item and song is 80% done
+            val percentage = player.currentPosition * 1f / player.duration
+            if (!player.hasNextMediaItem() && percentage > 0.8f) {
+                if (lastRadioTrack != viewModel.track.value) {
+                    lastRadioTrack = viewModel.track.value
+                    viewModel.radio()
+                }
+            }
+        }
         handler.removeCallbacks(updateProgressRunnable)
         val playbackState = player.playbackState
         if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
@@ -107,8 +117,7 @@ class PlayerListener(
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
-        viewModel.currentIndex.value =
-            player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it }
+        viewModel.changeCurrent(player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it })
         viewModel.shuffled.value = player.shuffleModeEnabled
     }
 }

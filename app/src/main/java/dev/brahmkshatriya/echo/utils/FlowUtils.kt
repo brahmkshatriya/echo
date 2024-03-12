@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 fun <T> Fragment.observe(flow: Flow<T>, callback: suspend (T) -> Unit) {
@@ -15,7 +16,7 @@ fun <T> Fragment.observe(flow: Flow<T>, callback: suspend (T) -> Unit) {
 
 fun <T> LifecycleOwner.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
     lifecycleScope.launch {
-        flow.flowWithLifecycle(lifecycle).collect(block)
+        flow.flowWithLifecycle(lifecycle).collectLatest(block)
     }
 }
 
@@ -24,5 +25,5 @@ fun <T> LifecycleOwner.emit(flow: MutableSharedFlow<T>, block: () -> T) {
 }
 
 fun <T> CoroutineScope.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
-    launch { flow.collect(block) }
+    launch { flow.collectLatest(block) }
 }
