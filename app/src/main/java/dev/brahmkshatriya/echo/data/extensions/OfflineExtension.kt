@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.data.extensions
 import android.content.Context
 import android.net.Uri
 import androidx.paging.PagingData
+import androidx.preference.PreferenceScreen
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -32,16 +33,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 
-class OfflineExtension(val context: Context) : ExtensionClient, SearchClient, TrackClient,
+class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, TrackClient,
     HomeFeedClient, AlbumClient, ArtistClient, RadioClient {
 
     override val metadata = ExtensionMetadata(
+        id="echo_offline",
         name = "Offline",
         version = "1.0.0",
         description = "Local media library",
         author = "Echo",
         iconUrl = null
     )
+
+    override fun setupPreferenceSettings(preferenceScreen: PreferenceScreen) {}
 
     val artistResolver = ArtistResolver(context)
     val albumResolver = AlbumResolver(context)

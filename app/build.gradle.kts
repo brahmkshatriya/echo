@@ -64,8 +64,10 @@ dependencies {
     implementation("androidx.paging:paging-common-ktx:3.2.1")
     implementation("androidx.paging:paging-runtime-ktx:3.2.1")
 
-    implementation("androidx.media3:media3-exoplayer:1.2.1")
-    implementation("androidx.media3:media3-session:1.2.1")
+    implementation("androidx.preference:preference-ktx:1.2.1")
+
+    implementation("androidx.media3:media3-exoplayer:1.3.0")
+    implementation("androidx.media3:media3-session:1.3.0")
 
     //noinspection GradleDependency WHY DOES UPDATING THIS CHANGE RECYCLER'S ANIMATION???
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
