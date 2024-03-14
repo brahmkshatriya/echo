@@ -33,7 +33,7 @@ class HomeFragment : Fragment() {
     private var binding: FragmentRecyclerBinding by autoCleared()
     private val homeViewModel: HomeViewModel by activityViewModels()
 
-    private val headerAdapter = HeaderAdapter(this, R.string.home) { a, it ->
+    private val headerAdapter = HeaderAdapter(R.string.home) { a, it ->
         homeViewModel.setGenre(it)
         a.submitChips(homeViewModel.getGenres())
         mediaItemsContainerAdapter.refresh()

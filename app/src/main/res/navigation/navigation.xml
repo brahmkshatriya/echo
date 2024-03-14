@@ -66,6 +66,9 @@
         android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragment"
         tools:layout="@layout/dialog_extension" />
 
+    <action
+        android:id="@+id/action_extension"
+        app:destination="@id/dialog_extension" />
 
     <fragment
         android:id="@+id/navigation_exception"
@@ -87,4 +90,12 @@
     <action
         android:id="@+id/action_category"
         app:destination="@id/navigation_category" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="dev.brahmkshatriya.echo.ui.settings.SettingsFragment"
+        tools:layout="@layout/fragment_settings_container" />
+    <action
+        android:id="@+id/action_settings"
+        app:destination="@id/navigation_settings" />
 </navigation>

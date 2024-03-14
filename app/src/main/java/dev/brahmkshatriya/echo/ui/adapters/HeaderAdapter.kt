@@ -4,17 +4,14 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemMainHeaderBinding
-import dev.brahmkshatriya.echo.ui.snackbar.SnackBarViewModel
-
+import dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragmentDirections
+import dev.brahmkshatriya.echo.ui.settings.SettingsFragmentDirections
 
 class HeaderAdapter(
-    private val fragment: Fragment,
     private val header: Int,
     private val chipListener: ((HeaderAdapter, String) -> Unit)? = null
 ) : RecyclerView.Adapter<HeaderAdapter.HeaderViewHolder>() {
@@ -34,13 +31,14 @@ class HeaderAdapter(
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_settings -> {
-                    val snackBarViewModel: SnackBarViewModel by fragment.activityViewModels()
-                    snackBarViewModel.submitException(Exception("You just clicked on Crash-O-Matic 3000 ultra pro max deluxe edition"))
+                    val action = SettingsFragmentDirections.actionSettings()
+                    binding.root.findNavController().navigate(action)
                     true
                 }
 
                 R.id.menu_extensions -> {
-                    binding.root.findNavController().navigate(R.id.dialog_extension)
+                    val action = ExtensionDialogFragmentDirections.actionExtension()
+                    binding.root.findNavController().navigate(action)
                     true
                 }
 

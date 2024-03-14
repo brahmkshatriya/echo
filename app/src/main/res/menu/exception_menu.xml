@@ -4,6 +4,6 @@
 
     <item
         android:id="@+id/exception_copy"
-        android:title="@string/copy"
+        android:title="@string/str_copy"
         app:showAsAction="never"/>
 </menu>

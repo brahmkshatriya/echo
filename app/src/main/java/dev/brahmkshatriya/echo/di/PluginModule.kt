@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.di
 
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -61,4 +63,10 @@ class PluginModule {
     @Provides
     @Singleton
     fun provideExceptionFlow() = MutableSharedFlow<Exception>()
+
+    @Provides
+    @Singleton
+    fun provideSettingsPreferences(application: Application): SharedPreferences =
+        application.getSharedPreferences(application.packageName, Context.MODE_PRIVATE)
+
 }

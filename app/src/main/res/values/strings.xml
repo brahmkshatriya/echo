@@ -41,9 +41,17 @@
     <string name="songs">Songs</string>
     <string name="radio">Radio</string>
     <string name="view">View</string>
-    <string name="copy">Copy</string>
+    <string name="str_copy">Copy</string>
     <string name="artist">Artist</string>
     <string name="unfollow">Unfollow</string>
     <string name="follow">Follow</string>
+    <string name="version">Version</string>
+    <string name="about">About</string>
+    <string name="general">General</string>
+    <string name="stop_player">Stop player</string>
+    <string name="stop_player_summary">Stop the player, when the app is removed from recents</string>
+    <string name="auto_start_radio">Auto Start Radio</string>
+    <string name="auto_start_radio_summary">Automatically add related songs of track in the playlist, to have an infinite queue</string>
+    <string name="track">Track</string>
 
 </resources>

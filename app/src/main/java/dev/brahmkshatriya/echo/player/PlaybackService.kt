@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.player
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -14,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionFlow
+import dev.brahmkshatriya.echo.ui.settings.PreferenceFragment.Companion.CLOSE_PLAYER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,6 +28,8 @@ class PlaybackService : MediaLibraryService() {
     lateinit var extension: ExtensionFlow
     @Inject
     lateinit var global: Queue
+    @Inject
+    lateinit var settings: SharedPreferences
 
     private var mediaLibrarySession: MediaLibrarySession? = null
 
@@ -78,11 +82,12 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         mediaLibrarySession?.run {
-            if(!player.isPlaying){
+            val stopPlayer = settings
+                .getBoolean(CLOSE_PLAYER, false)
+            if(!player.isPlaying || stopPlayer){
                 onDestroy()
             }
         }
-        super.onTaskRemoved(rootIntent)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaLibrarySession
