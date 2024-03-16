@@ -39,6 +39,7 @@
                 android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
                 app:navigationContentDescription="@string/close"
+                app:navigationIcon="@drawable/ic_back"
                 tools:title="@tools:sample/lorem/random" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

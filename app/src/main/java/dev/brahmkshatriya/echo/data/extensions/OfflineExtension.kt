@@ -3,6 +3,8 @@ package dev.brahmkshatriya.echo.data.extensions
 import android.content.Context
 import android.net.Uri
 import androidx.paging.PagingData
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceScreen
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
@@ -28,7 +30,6 @@ import dev.brahmkshatriya.echo.data.offline.ArtistResolver
 import dev.brahmkshatriya.echo.data.offline.TrackResolver
 import dev.brahmkshatriya.echo.data.offline.URI
 import dev.brahmkshatriya.echo.data.offline.sortedBy
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
@@ -45,8 +46,25 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         iconUrl = null
     )
 
-    override fun setupPreferenceSettings(preferenceScreen: PreferenceScreen) {}
+    override fun setupPreferenceSettings(preferenceScreen: PreferenceScreen) {
+        PreferenceCategory(context).apply {
+            title = "General"
+            key = "general"
+            isIconSpaceReserved = false
+            preferenceScreen.addPreference(this)
 
+            ListPreference(context).apply {
+                key = "sorting"
+                title = "Sorting"
+                entries = arrayOf("Date Added", "A to Z", "Z to A", "Year")
+                entryValues = arrayOf("date", "a_to_z", "z_to_a", "year")
+
+                addPreference(this)
+            }
+        }
+    }
+
+    private val sorting get() = preferences.getString("sorting", "a_to_z")!!
     val artistResolver = ArtistResolver(context)
     val albumResolver = AlbumResolver(context)
     val trackResolver = TrackResolver(context)
@@ -55,11 +73,11 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 
     override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
         val trimmed = query.trim()
-        val albums = albumResolver.search(trimmed, 0, 50).map { it.toMediaItem() }.toMutableList()
+        val albums = albumResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
-        val tracks = trackResolver.search(trimmed, 0, 50).map { it.toMediaItem() }.toMutableList()
+        val tracks = trackResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
-        val artists = artistResolver.search(trimmed, 0, 50).map { it.toMediaItem() }.toMutableList()
+        val artists = artistResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
             .ifEmpty { null }
 
         val exactMatch = artists?.firstOrNull { it.artist.name.equals(trimmed, true) }.also {
@@ -88,7 +106,6 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     }
 
     override suspend fun getStreamable(track: Track): StreamableAudio {
-        delay(100)
         return trackResolver.getStream(track).toAudio()
     }
 
@@ -102,41 +119,41 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         object : PagedFlow<MediaItemsContainer>() {
             override fun loadItems(page: Int, pageSize: Int): List<MediaItemsContainer> =
                 when (genre.value) {
-                    "Tracks" -> trackResolver.getAll(page, pageSize)
+                    "Tracks" -> trackResolver.getAll(page, pageSize, sorting)
                         .map { MediaItemsContainer.TrackItem(it) }
 
-                    "Albums" -> albumResolver.getAll(page, pageSize)
+                    "Albums" -> albumResolver.getAll(page, pageSize, sorting)
                         .map { MediaItemsContainer.AlbumItem(it) }
 
-                    "Artists" -> artistResolver.getAll(page, pageSize)
+                    "Artists" -> artistResolver.getAll(page, pageSize, sorting)
                         .map { MediaItemsContainer.ArtistItem(it) }
 
                     else -> if (page == 0) {
                         val albums =
-                            albumResolver.getShuffled(page, pageSize).map { it.toMediaItem() }
+                            albumResolver.getShuffled(pageSize).map { it.toMediaItem() }
                                 .ifEmpty { null }
 
                         val albumsFlow = object : PagedFlow<EchoMediaItem>() {
                             override fun loadItems(page: Int, pageSize: Int): List<EchoMediaItem> =
-                                albumResolver.getAll(page, pageSize).map { it.toMediaItem() }
+                                albumResolver.getAll(page, pageSize, sorting).map { it.toMediaItem() }
                         }.getFlow()
 
                         val tracks =
-                            trackResolver.getShuffled(page, pageSize).map { it.toMediaItem() }
+                            trackResolver.getShuffled(pageSize).map { it.toMediaItem() }
                                 .ifEmpty { null }
 
                         val tracksFlow = object : PagedFlow<EchoMediaItem>() {
                             override fun loadItems(page: Int, pageSize: Int): List<EchoMediaItem> =
-                                trackResolver.getAll(page, pageSize).map { it.toMediaItem() }
+                                trackResolver.getAll(page, pageSize, sorting).map { it.toMediaItem() }
                         }.getFlow()
 
                         val artists =
-                            artistResolver.getShuffled(page, pageSize).map { it.toMediaItem() }
+                            artistResolver.getShuffled(pageSize).map { it.toMediaItem() }
                                 .ifEmpty { null }
 
                         val artistsFlow = object : PagedFlow<EchoMediaItem>() {
                             override fun loadItems(page: Int, pageSize: Int): List<EchoMediaItem> =
-                                artistResolver.getAll(page, pageSize).map { it.toMediaItem() }
+                                artistResolver.getAll(page, pageSize, sorting).map { it.toMediaItem() }
                         }.getFlow()
 
                         val result = listOfNotNull(
@@ -146,7 +163,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
                         )
                         result
                     } else {
-                        trackResolver.getAll(page - 1, pageSize)
+                        trackResolver.getAll(page - 1, pageSize, sorting)
                             .map { MediaItemsContainer.TrackItem(it) }
                     }
                 }
@@ -159,9 +176,9 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     override suspend fun getMediaItems(album: Album.Full): Flow<PagingData<MediaItemsContainer>> =
         flow {
             val artist = album.artist.name
-            val tracks = trackResolver.search(artist, 1, 50).filter { it.album?.uri != album.uri }
+            val tracks = trackResolver.search(artist, 1, 50, sorting).filter { it.album?.uri != album.uri }
                 .map { it.toMediaItem() }.ifEmpty { null }
-            val albums = albumResolver.search(artist, 1, 50).filter { it.uri != album.uri }
+            val albums = albumResolver.search(artist, 1, 50, sorting).filter { it.uri != album.uri }
                 .map { it.toMediaItem() }.ifEmpty { null }
             val result = listOfNotNull(
                 tracks?.toMediaItemsContainer("More from $artist"),
@@ -178,17 +195,17 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         flow {
 
             val albums =
-                albumResolver.getByArtist(artist, 0, 10).map { it.toMediaItem() }.ifEmpty { null }
+                albumResolver.getByArtist(artist, 0, 10, sorting).map { it.toMediaItem() }.ifEmpty { null }
             val albumFlow = object : PagedFlow<EchoMediaItem>() {
                 override fun loadItems(page: Int, pageSize: Int): List<EchoMediaItem> =
-                    albumResolver.getByArtist(artist, page, pageSize).map { it.toMediaItem() }
+                    albumResolver.getByArtist(artist, page, pageSize, sorting).map { it.toMediaItem() }
             }.getFlow()
 
             val tracks =
-                trackResolver.getByArtist(artist, 0, 10).map { it.toMediaItem() }.ifEmpty { null }
+                trackResolver.getByArtist(artist, 0, 10, sorting).map { it.toMediaItem() }.ifEmpty { null }
             val trackFlow = object : PagedFlow<EchoMediaItem>() {
                 override fun loadItems(page: Int, pageSize: Int): List<EchoMediaItem> =
-                    trackResolver.getByArtist(artist, page, pageSize).map { it.toMediaItem() }
+                    trackResolver.getByArtist(artist, page, pageSize, sorting).map { it.toMediaItem() }
             }.getFlow()
 
             val result = listOfNotNull(
@@ -199,10 +216,10 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         }
 
     override suspend fun radio(track: Track): Playlist.Full {
-        val albumTracks = track.album?.let { trackResolver.getByAlbum(it, 0, 50) }
+        val albumTracks = track.album?.let { trackResolver.getByAlbum(it, 0, 25, sorting) }
         val trackArtist = track.artists.firstOrNull()
-        val artistTracks = trackArtist?.let { trackResolver.getByArtist(it, 0, 50) }
-        val randomTracks = trackResolver.getShuffled(0, 50)
+        val artistTracks = trackArtist?.let { trackResolver.getByArtist(it, 0, 25, sorting) }
+        val randomTracks = trackResolver.getShuffled(25)
 
         val tracks = listOfNotNull(albumTracks, artistTracks, randomTracks)
             .flatten()
@@ -225,8 +242,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     }
 
     override suspend fun radio(album: Album.Small): Playlist.Full {
-        val albumTracks = trackResolver.getByAlbum(album, 0, 50)
-        val randomTracks = trackResolver.getShuffled(0, 50)
+        val albumTracks = trackResolver.getByAlbum(album, 0, 25, sorting)
+        val randomTracks = trackResolver.getShuffled(25)
         val tracks = listOfNotNull(albumTracks,  randomTracks)
             .flatten()
             .shuffled()
@@ -244,8 +261,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     }
 
     override suspend fun radio(artist: Artist.Small): Playlist.Full {
-        val artistTracks = trackResolver.getByArtist(artist, 0, 50)
-        val randomTracks = trackResolver.getShuffled(0, 50)
+        val artistTracks = trackResolver.getByArtist(artist, 0, 25, sorting)
+        val randomTracks = trackResolver.getShuffled(25)
         val tracks = listOfNotNull(artistTracks, randomTracks)
             .flatten()
             .shuffled()

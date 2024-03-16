@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionFlow
-import dev.brahmkshatriya.echo.ui.settings.PreferenceFragment.Companion.AUTO_START_RADIO
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers

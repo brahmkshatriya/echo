@@ -8,28 +8,39 @@ import dev.brahmkshatriya.echo.common.models.Artist
 
 class ArtistResolver(val context: Context) {
 
-    fun search(query: String, page: Int, pageSize: Int): List<Artist.WithCover> {
+    private fun order() = MediaStore.Audio.Media.ARTIST
+    private fun ascending(sorting: String) = when (sorting) {
+        "a_to_z" -> true
+        "z_to_a" -> false
+        else -> true
+    }
+
+    fun search(query: String, page: Int, pageSize: Int, sorting: String): List<Artist.WithCover> {
         val whereCondition =
             "${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
         val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
-        return context.queryArtists(whereCondition, selectionArgs, page, pageSize)
+        return context.queryArtists(whereCondition, selectionArgs, page, pageSize, sorting)
             .sortedBy(query) {
                 it.name
             }
     }
 
-    fun getAll(page: Int, pageSize: Int): List<Artist.WithCover> {
+    fun getAll(page: Int, pageSize: Int, sorting: String): List<Artist.WithCover> {
         val whereCondition = ""
         val selectionArgs = arrayOf<String>()
-        return context.queryArtists(whereCondition, selectionArgs, page, pageSize)
+        return context.queryArtists(whereCondition, selectionArgs, page, pageSize, sorting)
     }
 
-    fun getShuffled(page: Int, pageSize: Int): List<Artist.WithCover> {
-        return getAll(page, pageSize).shuffled()
+    fun getShuffled(pageSize: Int): List<Artist.WithCover> {
+        return getAll(0, 100, "").shuffled().take(pageSize)
     }
 
     private fun Context.queryArtists(
-        whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int
+        whereCondition: String,
+        selectionArgs: Array<String>,
+        page: Int,
+        pageSize: Int,
+        sorting: String
     ): List<Artist.Full> {
         val artists = mutableListOf<Artist.Full>()
         createCursor(
@@ -41,8 +52,8 @@ class ArtistResolver(val context: Context) {
             ),
             whereCondition = whereCondition,
             selectionArgs = selectionArgs,
-            orderBy = MediaStore.Audio.Media.ARTIST,
-            orderAscending = true,
+            orderBy = order(),
+            orderAscending = ascending(sorting),
             limit = pageSize,
             offset = (page) * pageSize,
         )?.use {
@@ -69,10 +80,10 @@ class ArtistResolver(val context: Context) {
         return artists
     }
 
-    fun get(uri: Uri) : Artist.Full {
+    fun get(uri: Uri): Artist.Full {
         val id = uri.lastPathSegment!!.toLong()
         val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
         val selectionArgs = arrayOf(id.toString())
-        return context.queryArtists(whereCondition, selectionArgs, 0, 1).first()
+        return context.queryArtists(whereCondition, selectionArgs, 0, 1, "").first()
     }
 }

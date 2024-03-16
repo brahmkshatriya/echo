@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.adapters
 
+import android.content.Intent
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -9,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemMainHeaderBinding
 import dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragmentDirections
-import dev.brahmkshatriya.echo.ui.settings.SettingsFragmentDirections
+import dev.brahmkshatriya.echo.ui.settings.SettingsActivity
 
 class HeaderAdapter(
     private val header: Int,
@@ -31,8 +32,8 @@ class HeaderAdapter(
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_settings -> {
-                    val action = SettingsFragmentDirections.actionSettings()
-                    binding.root.findNavController().navigate(action)
+                    val intent = Intent(binding.root.context, SettingsActivity::class.java)
+                    binding.root.context.startActivity(intent)
                     true
                 }
 

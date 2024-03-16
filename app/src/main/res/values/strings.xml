@@ -53,5 +53,14 @@
     <string name="auto_start_radio">Auto Start Radio</string>
     <string name="auto_start_radio_summary">Automatically add related songs of track in the playlist, to have an infinite queue</string>
     <string name="track">Track</string>
+    <string name="about_summary">Learn more about Echo</string>
+    <string name="look_and_feel">Look and Feel</string>
+    <string name="audio">Audio</string>
+    <string name="look_and_feel_summary">UI and Animation Settings</string>
+    <string name="audio_summary">(Audiophiles gather here)</string>
+    <string name="extension_settings_summary">Settings of the selected extension</string>
+    <string name="behavior">Behavior</string>
+    <string name="theme">Theme</string>
+    <string name="theme_summary">Select between light and night</string>
 
 </resources>

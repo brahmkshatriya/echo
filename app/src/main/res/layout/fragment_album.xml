@@ -112,6 +112,7 @@
                 app:layout_collapseMode="pin"
                 app:menu="@menu/back_more_menu"
                 app:navigationContentDescription="@string/close"
+                app:navigationIcon="@drawable/ic_back"
                 tools:title="@tools:sample/lorem/random" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

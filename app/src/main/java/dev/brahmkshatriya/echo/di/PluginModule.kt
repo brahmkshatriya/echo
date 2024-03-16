@@ -36,12 +36,12 @@ class PluginModule {
         val loader = AndroidPluginLoader(application)
         val filePluginConfig = FilePluginConfig(application.filesDir.absolutePath, ".echo")
         val apkPluginConfig = PluginConfiguration("dev.brahmkshatriya.echo")
-
-        return RepoComposer(
+        val repo = RepoComposer(
             FileSystemPluginLoader(application, filePluginConfig, loader),
             ApkPluginLoader(application, apkPluginConfig, loader, ApkManifestParser()),
             LocalExtensionRepo(application)
         )
+        return RepoWithPreferences(application, repo)
     }
 
     private val mutableExtensionFlow = MutableExtensionFlow(MutableStateFlow(null))

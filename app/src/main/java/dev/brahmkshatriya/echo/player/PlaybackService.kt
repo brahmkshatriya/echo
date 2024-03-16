@@ -15,7 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionFlow
-import dev.brahmkshatriya.echo.ui.settings.PreferenceFragment.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.Companion.CLOSE_PLAYER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

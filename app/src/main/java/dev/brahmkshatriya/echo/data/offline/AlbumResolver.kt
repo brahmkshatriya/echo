@@ -9,35 +9,42 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 
 class AlbumResolver(
-    val context: Context
+    val context: Context,
 ) {
 
+    private fun order() = MediaStore.Audio.Albums.ALBUM
+    private fun ascending(sorting: String) = when (sorting) {
+        "a_to_z" -> true
+        "z_to_a" -> false
+        else -> true
+    }
+
     fun search(
-        query: String, page: Int, pageSize: Int
+        query: String, page: Int, pageSize: Int, sorting: String
     ): List<Album.WithCover> {
         val whereCondition =
             "${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
         val selectionArgs = arrayOf("%$query%", "%$query%")
-        return context.queryAlbums(whereCondition, selectionArgs, page, pageSize).sortedBy(query) {
+        return context.queryAlbums(whereCondition, selectionArgs, page, pageSize, sorting).sortedBy(query) {
             it.title
         }
     }
 
-    fun getAll(page: Int, pageSize: Int): List<Album.WithCover> {
+    fun getAll(page: Int, pageSize: Int, sorting: String): List<Album.WithCover> {
         val whereCondition = ""
         val selectionArgs = arrayOf<String>()
-        return context.queryAlbums(whereCondition, selectionArgs, page, pageSize)
+        return context.queryAlbums(whereCondition, selectionArgs, page, pageSize, sorting)
     }
 
     fun getByArtist(
-        artist: Artist.Small, page: Int, pageSize: Int
+        artist: Artist.Small, page: Int, pageSize: Int, sorting: String
     ): List<Album.WithCover> {
         val name = artist.name
-        return search(name, page, pageSize)
+        return search(name, page, pageSize, sorting)
     }
 
     private fun Context.queryAlbums(
-        whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int
+        whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int, sorting: String
     ): MutableList<Album.Full> {
         val albums = mutableListOf<Album.Full>()
         createCursor(
@@ -53,8 +60,8 @@ class AlbumResolver(
             ),
             whereCondition = whereCondition,
             selectionArgs = selectionArgs,
-            orderBy = MediaStore.Audio.Albums.ALBUM,
-            orderAscending = true,
+            orderBy = order(),
+            orderAscending = ascending(sorting),
             limit = pageSize,
             offset = (page) * pageSize
         )?.use {
@@ -94,15 +101,15 @@ class AlbumResolver(
         val id = uri.lastPathSegment!!.toLong()
         val whereCondition = "${MediaStore.Audio.Albums._ID} = ?"
         val selectionArgs = arrayOf(id.toString())
-        val album = context.queryAlbums(whereCondition, selectionArgs, 0, 1).first()
-        val tracks = trackResolver.getByAlbum(album, 0, 50)
+        val album = context.queryAlbums(whereCondition, selectionArgs, 0, 1, "").first()
+        val tracks = trackResolver.getByAlbum(album, 0, 50, "date")
         val duration = tracks.sumOf { it.duration ?: 0 }
         return album.copy(
             tracks = tracks, duration = duration
         )
     }
 
-    fun getShuffled(page: Int, pageSize: Int): List<Album.WithCover> {
-        return getAll(page, pageSize).shuffled()
+    fun getShuffled(pageSize: Int): List<Album.WithCover> {
+        return getAll(0, 100, "").shuffled().take(pageSize)
     }
 }

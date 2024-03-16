@@ -1,12 +1,14 @@
 package dev.brahmkshatriya.echo.ui.settings
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.fragment.app.activityViewModels
 import androidx.preference.Preference
-import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 
 class PreferenceFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -16,47 +18,65 @@ class PreferenceFragment : PreferenceFragmentCompat() {
         val screen = preferenceManager.createPreferenceScreen(context)
         preferenceScreen = screen
 
-        PreferenceCategory(context).apply {
-            title = getString(R.string.general)
-            key = "general"
+        Preference(context).apply {
+            title = getString(R.string.look_and_feel)
+            key = "look"
+            summary = getString(R.string.look_and_feel_summary)
+            icon = AppCompatResources.getDrawable(context, R.drawable.ic_palette)
+            layoutResource = R.layout.preference
             screen.addPreference(this)
-
-            SwitchPreferenceCompat(context).apply {
-                key = CLOSE_PLAYER
-                title = getString(R.string.stop_player)
-                summary = getString(R.string.stop_player_summary)
-                setDefaultValue(false)
-                addPreference(this)
-            }
-
-            SwitchPreferenceCompat(context).apply {
-                key = AUTO_START_RADIO
-                title = getString(R.string.auto_start_radio)
-                summary = getString(R.string.auto_start_radio_summary)
-                setDefaultValue(true)
-                addPreference(this)
-            }
         }
 
-        PreferenceCategory(context).apply {
+        Preference(context).apply {
+            title = getString(R.string.audio)
+            key = "audio"
+            summary = getString(R.string.audio_summary)
+            icon = AppCompatResources.getDrawable(context, R.drawable.ic_queue_music)
+            layoutResource = R.layout.preference
+            screen.addPreference(this)
+        }
+
+        Preference(context).apply {
+            title = getString(R.string.extension_settings)
+            key = "extension"
+            summary = getString(R.string.extension_settings_summary)
+            icon = AppCompatResources.getDrawable(context, R.drawable.ic_extension)
+            layoutResource = R.layout.preference
+            screen.addPreference(this)
+        }
+
+        Preference(context).apply {
             title = getString(R.string.about)
             key = "about"
+            summary = getString(R.string.about_summary)
+            icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
+            layoutResource = R.layout.preference
             screen.addPreference(this)
-
-            Preference(context).apply {
-                val version = context.packageManager
-                    .getPackageInfo(context.packageName, 0)
-                    .versionName
-                title = getString(R.string.version)
-                summary = version
-                isSelectable = false
-                addPreference(this)
-            }
         }
     }
 
-    companion object {
-        const val CLOSE_PLAYER = "close_player_when_app_closes"
-        const val AUTO_START_RADIO = "auto_start_radio"
+
+    @SuppressLint("CommitTransaction")
+    private fun startPreferenceFragment(title: CharSequence?, fragment: PreferenceFragmentCompat) {
+        requireActivity().supportFragmentManager
+            .beginTransaction()
+            .add(R.id.settingsFragmentContainerView, SettingsFragment(title,fragment))
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private val extensionViewModel: ExtensionViewModel by activityViewModels()
+
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        when (preference.key) {
+            "about" -> startPreferenceFragment(preference.title, AboutFragment())
+            "audio" -> startPreferenceFragment(preference.title, AudioFragment())
+            "extension" -> {
+                val extension = extensionViewModel.getCurrentExtension() ?: return false
+                startPreferenceFragment(extension.metadata.name, ExtensionFragment(extension))
+            }
+            "look" -> startPreferenceFragment(preference.title, LookFragment())
+        }
+        return super.onPreferenceTreeClick(preference)
     }
 }

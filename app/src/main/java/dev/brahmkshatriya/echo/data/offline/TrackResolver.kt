@@ -12,45 +12,62 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
 
 class TrackResolver(val context: Context) {
-    fun search(query: String, page: Int, pageSize: Int): List<Track> {
+
+    private fun order(sorting: String) = when (sorting) {
+        "date" -> MediaStore.Audio.Media.TRACK
+        "a_to_z" -> MediaStore.Audio.Media.TITLE
+        "z_to_a" -> MediaStore.Audio.Media.TITLE
+        "year" -> MediaStore.Audio.Media.YEAR
+        else -> MediaStore.Audio.Media.TITLE
+    }
+
+    private fun ascending(sorting: String) = when (sorting) {
+        "a_to_z" -> true
+        "z_to_a" -> false
+        else -> true
+    }
+
+    fun search(query: String, page: Int, pageSize: Int, sorting: String): List<Track> {
         val whereCondition =
             "${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
         val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
 
-        return context.queryTracks(whereCondition, selectionArgs, page, pageSize).sortedBy(query) {
+        return context.queryTracks(whereCondition, selectionArgs, page, pageSize, sorting).sortedBy(query) {
             it.title
         }
     }
 
-    fun getAll(page: Int, pageSize: Int): List<Track> {
+    fun getAll(page: Int, pageSize: Int, sorting: String): List<Track> {
         val whereCondition = ""
         val selectionArgs = arrayOf<String>()
-        return context.queryTracks(whereCondition, selectionArgs, page, pageSize)
+        return context.queryTracks(whereCondition, selectionArgs, page, pageSize, sorting)
     }
 
-    fun getShuffled(page: Int, pageSize: Int): List<Track> {
-        val whereCondition = ""
-        val selectionArgs = arrayOf<String>()
-        return context.queryTracks(whereCondition, selectionArgs, page, pageSize).shuffled()
+    fun getShuffled(pageSize: Int): List<Track> {
+        return getAll(0, 100, "").shuffled().take(pageSize)
     }
 
     fun getByArtist(
-        artist: Artist.Small, page: Int, pageSize: Int
+        artist: Artist.Small, page: Int, pageSize: Int, sorting: String
     ): List<Track> {
         val name = artist.name
-        return search(name, page, pageSize)
+        return search(name, page, pageSize, sorting)
     }
 
     fun getByAlbum(
-        album: Album.Small, page: Int, pageSize: Int
+        album: Album.Small, page: Int, pageSize: Int, sorting: String
     ): List<Track> {
         val whereCondition = "${MediaStore.Audio.Media.ALBUM_ID} = ?"
         val selectionArgs = arrayOf(album.uri.lastPathSegment!!)
-        return context.queryTracks(whereCondition, selectionArgs, page, pageSize)
+        return context.queryTracks(whereCondition, selectionArgs, page, pageSize, sorting)
     }
 
     private fun Context.queryTracks(
-        whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int
+        whereCondition: String,
+        selectionArgs: Array<String>,
+        page: Int,
+        pageSize: Int,
+        sorting: String
     ): List<Track> {
         val tracks = mutableListOf<Track>()
         createCursor(
@@ -68,8 +85,8 @@ class TrackResolver(val context: Context) {
             ),
             whereCondition = whereCondition,
             selectionArgs = selectionArgs,
-            orderBy = MediaStore.Audio.Media.TRACK,
-            orderAscending = true,
+            orderBy = order(sorting),
+            orderAscending = ascending(sorting),
             limit = pageSize,
             offset = (page) * pageSize
         )?.use {
@@ -121,7 +138,7 @@ class TrackResolver(val context: Context) {
         val id = uri.lastPathSegment ?: return null
         val whereCondition = "${MediaStore.Audio.Media._ID} = ?"
         val selectionArgs = arrayOf(id)
-        return context.queryTracks(whereCondition, selectionArgs, 0, 1).firstOrNull()
+        return context.queryTracks(whereCondition, selectionArgs, 0, 1, "").firstOrNull()
     }
 
     fun getStream(track: Track): Uri {
