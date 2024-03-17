@@ -26,12 +26,15 @@ import javax.inject.Inject
 class PlaybackService : MediaLibraryService() {
     @Inject
     lateinit var extension: ExtensionFlow
+
     @Inject
     lateinit var global: Queue
+
     @Inject
     lateinit var settings: SharedPreferences
 
     private var mediaLibrarySession: MediaLibrarySession? = null
+    private val scope = CoroutineScope(Dispatchers.IO) + Job()
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -48,6 +51,8 @@ class PlaybackService : MediaLibraryService() {
             .setAudioAttributes(audioAttributes, true)
             .build()
 
+        player.addListener(RadioListener(player, global, scope, settings, extension.flow))
+
         val intent = Intent(this, MainActivity::class.java)
             .putExtra("fromNotification", true)
 
@@ -55,7 +60,11 @@ class PlaybackService : MediaLibraryService() {
             .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         mediaLibrarySession =
-            MediaLibrarySession.Builder(this, player, PlayerSessionCallback(this, global,extension.flow))
+            MediaLibrarySession.Builder(
+                this,
+                player,
+                PlayerSessionCallback(this, scope, global, extension.flow)
+            )
                 .setSessionActivity(pendingIntent)
                 .build()
 
@@ -67,8 +76,6 @@ class PlaybackService : MediaLibraryService() {
 
         setMediaNotificationProvider(notificationProvider)
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO) + Job()
 
     override fun onDestroy() {
         mediaLibrarySession?.run {
@@ -84,7 +91,7 @@ class PlaybackService : MediaLibraryService() {
         mediaLibrarySession?.run {
             val stopPlayer = settings
                 .getBoolean(CLOSE_PLAYER, false)
-            if(!player.isPlaying || stopPlayer){
+            if (!player.isPlaying || stopPlayer) {
                 onDestroy()
             }
         }
@@ -93,3 +100,5 @@ class PlaybackService : MediaLibraryService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaLibrarySession
 
 }
+
+

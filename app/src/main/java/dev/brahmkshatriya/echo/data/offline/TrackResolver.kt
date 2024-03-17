@@ -9,6 +9,7 @@ import androidx.core.database.getStringOrNull
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Track
 
 class TrackResolver(val context: Context) {
@@ -101,17 +102,23 @@ class TrackResolver(val context: Context) {
             val releaseDateColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
 
             while (it.moveToNext()) {
-                val uri = Uri.parse("$URI$TRACK_AUTH${it.getLong(idColumn)}")
+                val id = it.getLong(idColumn)
+                val uri = Uri.parse("$URI$TRACK_AUTH${id}")
+                val albumId = it.getLong(albumIdColumn)
                 val coverUri = ContentUris.withAppendedId(
-                    ARTWORK_URI, it.getLong(albumIdColumn)
+                    ARTWORK_URI, albumId
                 )
 
                 val artistUri = Uri.parse("$URI$ARTIST_AUTH${it.getLong(artistIdColumn)}")
-                val albumUri = Uri.parse("$URI$ALBUM_AUTH${it.getLong(albumIdColumn)}")
+                val albumUri = Uri.parse("$URI$ALBUM_AUTH${albumId}")
                 tracks.add(
                     Track(
                         uri = uri,
                         title = it.getString(titleColumn),
+                        stream = ContentUris.withAppendedId(
+                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                            id,
+                        ).toAudio(),
                         artists = listOf(
                             Artist.Small(
                                 artistUri,
@@ -139,14 +146,6 @@ class TrackResolver(val context: Context) {
         val whereCondition = "${MediaStore.Audio.Media._ID} = ?"
         val selectionArgs = arrayOf(id)
         return context.queryTracks(whereCondition, selectionArgs, 0, 1, "").firstOrNull()
-    }
-
-    fun getStream(track: Track): Uri {
-        val id = track.uri.lastPathSegment ?: throw IllegalArgumentException("Invalid track uri")
-        return ContentUris.withAppendedId(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            id.toLong(),
-        )
     }
 
 }

@@ -13,7 +13,7 @@ interface UserClient {
     suspend fun user() : User.WithCover?
     suspend fun likedTracks() : Flow<PagingData<Track>>
     suspend fun playlists() : Flow<PagingData<Playlist.WithCover>>
-    suspend fun createPlaylist(name:String, description:String?, tracks: List<Track>) : Playlist.WithCover
+    suspend fun createPlaylist(name:String, description:String?, tracks: List<Track>)
     suspend fun like(track: Track): Boolean
     suspend fun unlike(track: Track): Boolean
     suspend fun subscribe(artist: Artist.Small): Boolean

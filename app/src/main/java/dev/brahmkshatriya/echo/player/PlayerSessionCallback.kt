@@ -18,21 +18,17 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
-import kotlinx.coroutines.plus
 
 
 class PlayerSessionCallback(
     private val context: Context,
+    private val scope: CoroutineScope,
     private val global: Queue,
     extensionFlow: Flow<ExtensionClient?>,
 ) : MediaLibraryService.MediaLibrarySession.Callback {
-
-    private val scope = CoroutineScope(Dispatchers.IO) + Job()
 
     init {
         scope.observe(extensionFlow) {
@@ -80,30 +76,28 @@ class PlayerSessionCallback(
 
         return scope.future {
             differ.submitData(extension.search(query).first())
-            val list = differ.snapshot().items.mapNotNull {
+            val tracks = differ.snapshot().items.mapNotNull {
                 when (it) {
                     is MediaItemsContainer.Category -> {
-                        it.list.mapNotNull { item ->
-                            if (item is EchoMediaItem.TrackItem) {
-                                val track = item.track
-                                val stream = extension.getStreamable(track)
-                                global.addTrack(scope, track, stream).second
-                            } else null
+                        val items = it.list.mapNotNull { item ->
+                            if (item is EchoMediaItem.TrackItem) item.track
+                            else null
                         }
+                        items
                     }
 
                     is MediaItemsContainer.TrackItem -> {
                         val track = it.track
-                        val stream = extension.getStreamable(track)
-                        listOf(global.addTrack(scope, track, stream).second)
+                        listOf(track)
                     }
 
                     else -> null
                 }
             }.flatten()
-            if (list.isEmpty())
+            if (tracks.isEmpty())
                 return@future default("Couldn't find anything related to $query").get()
-            list.toMutableList()
+            val items = global.addTracks(scope, tracks).second
+            items.toMutableList()
         }
     }
 
@@ -124,6 +118,7 @@ class PlayerSessionCallback(
             startPositionMs
         )
     }
+
     //CAN BE USED FOR ANDROID AUTO SUPPORT, BUT IDK I DONT WANT TO ADD IT RN
     //HALF OF IT IS KANGED FROM INNERTUNE
 

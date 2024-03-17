@@ -22,9 +22,11 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentAlbumBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
+import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.TrackAdapter
@@ -49,17 +51,29 @@ class AlbumFragment : Fragment() {
     private val playerViewModel: PlayerViewModel by activityViewModels()
 
     private val clickListener = MediaItemClickListener(this)
-    private val trackAdapter = TrackAdapter(clickListener, false)
-    private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
-    private val header = AlbumHeaderAdapter(clickListener,object : AlbumHeaderAdapter.AlbumHeaderListener {
-        override fun onPlayClicked(album: Album.Full) {
-            playerViewModel.play(album.tracks)
+    private val trackAdapter = TrackAdapter(object : ClickListener<Pair<List<Track>, Int>> {
+
+        override fun onClick(item: Pair<List<Track>, Int>) {
+            playerViewModel.play(item.first, item.second)
         }
 
-        override fun onRadioClicked(album: Album.Full) {
-            playerViewModel.radio(album)
+        override fun onLongClick(item: Pair<List<Track>, Int>) {
+            val track = item.first[item.second]
+            playerViewModel.addToQueue(track)
         }
+
     })
+    private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
+    private val header =
+        AlbumHeaderAdapter(clickListener, object : AlbumHeaderAdapter.AlbumHeaderListener {
+            override fun onPlayClicked(album: Album.Full) {
+                playerViewModel.play(album.tracks)
+            }
+
+            override fun onRadioClicked(album: Album.Full) {
+                playerViewModel.radio(album)
+            }
+        })
     private val concatAdapter = ConcatAdapter(header, trackAdapter, mediaItemsContainerAdapter)
 
     override fun onCreateView(

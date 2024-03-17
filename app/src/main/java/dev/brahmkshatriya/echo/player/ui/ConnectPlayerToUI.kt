@@ -16,9 +16,6 @@ fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
     listener.update()
 
     activity.apply {
-        observe(uiViewModel.radioFlow){
-            uiViewModel.track.value?.let { playerViewModel.radio(it) }
-        }
 
         observe(playerViewModel.playPause) {
             if (it) player.play() else player.pause()
@@ -46,7 +43,7 @@ fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
             player.shuffleModeEnabled = it
         }
         observe(playerViewModel.addTrackFlow) { (index, item) ->
-            player.addMediaItem(index, item)
+            player.addMediaItems(index, item)
             player.prepare()
             player.playWhenReady = true
         }

@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.player
 
 import androidx.media3.common.MediaItem
-import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -12,10 +11,12 @@ import java.util.Collections
 import java.util.Collections.synchronizedList
 
 class Queue {
+
     private val _queue = synchronizedList(mutableListOf<Pair<String, Track>>())
     val queue get() = synchronized(_queue) { _queue.toList() }
 
     val currentIndex = MutableStateFlow<Int?>(null)
+    val current get() = currentIndex.value?.let { queue.getOrNull(it)?.second }
 
     fun getTrack(mediaId: String?) = queue.find { it.first == mediaId }?.second
 
@@ -38,24 +39,37 @@ class Queue {
         }
     }
 
-    private val _addTrack = MutableSharedFlow<Pair<Int, MediaItem>>()
+    private val _addTrack = MutableSharedFlow<Pair<Int, List<MediaItem>>>()
     val addTrackFlow = _addTrack.asSharedFlow()
     fun addTrack(
-        scope: CoroutineScope, track: Track, stream: StreamableAudio, offset: Int = 0
-    ): Pair<Int, MediaItem> {
-        val item = PlayerHelper.mediaItemBuilder(track, stream)
-        val mediaId = item.mediaId
+        scope: CoroutineScope, track: Track, offset: Int = 0
+    ): Pair<Int, List<MediaItem>> {
+        return addTracks(scope, listOf(track), offset)
+    }
 
-        var position = currentIndex.value?.let {it + 1} ?: 0
+    fun addTracks(
+        scope: CoroutineScope, tracks: List<Track>, offset: Int = 0
+    ): Pair<Int, List<MediaItem>> {
+        var position = currentIndex.value?.let { it + 1 } ?: 0
         position += offset
         position = position.coerceIn(0, _queue.size)
 
-        _queue.add(position , mediaId to track)
-        scope.launch {
-            _addTrack.emit(position to item)
+        val items = tracks.map { track ->
+            val stream = track.stream ?: throw Exception("${track.title} is not streamable.")
+            val item = PlayerHelper.mediaItemBuilder(track, stream)
+            item
         }
-        return position to item
+        val queueItems = tracks.mapIndexed { index, track ->
+            items[index].mediaId to track
+        }
+        _queue.addAll(position, queueItems)
+        val mediaItems = position to items
+        scope.launch {
+            _addTrack.emit(mediaItems)
+        }
+        return mediaItems
     }
+
 
     private val _moveTrack = MutableSharedFlow<Pair<Int, Int>>()
     val moveTrackFlow = _moveTrack.asSharedFlow()

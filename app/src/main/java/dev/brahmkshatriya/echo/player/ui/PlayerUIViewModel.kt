@@ -8,7 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.player.Queue
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -35,21 +34,12 @@ class PlayerUIViewModel @Inject constructor(
         }
     }
 
-    fun radio() {
-        viewModelScope.launch {
-            _radioFlow.emit(Unit)
-        }
-    }
-
     fun changeCurrent(index: Int?) {
         global.currentIndex.value = index
     }
 
     val track = MutableStateFlow(global.queue.firstOrNull()?.second)
     val currentIndex = global.currentIndex
-
-    private val _radioFlow = MutableSharedFlow<Unit>()
-    val radioFlow = _radioFlow.asSharedFlow()
 
     val progress = MutableStateFlow(0 to 0)
     val totalDuration = MutableStateFlow(0)
