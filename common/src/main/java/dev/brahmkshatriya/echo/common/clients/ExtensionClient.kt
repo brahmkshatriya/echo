@@ -1,12 +1,12 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import android.content.SharedPreferences
-import androidx.preference.PreferenceScreen
 import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
+import dev.brahmkshatriya.echo.common.settings.Setting
 
 abstract class ExtensionClient {
     abstract val metadata: ExtensionMetadata
-    abstract fun setupPreferenceSettings(preferenceScreen: PreferenceScreen)
+    abstract val settings: List<Setting>
 
     val preferences get() = _preferences!!
 

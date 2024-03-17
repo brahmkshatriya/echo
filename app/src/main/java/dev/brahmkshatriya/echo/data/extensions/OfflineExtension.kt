@@ -3,9 +3,6 @@ package dev.brahmkshatriya.echo.data.extensions
 import android.content.Context
 import android.net.Uri
 import androidx.paging.PagingData
-import androidx.preference.ListPreference
-import androidx.preference.PreferenceCategory
-import androidx.preference.PreferenceScreen
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -22,9 +19,9 @@ import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
-import dev.brahmkshatriya.echo.common.models.StreamableAudio
-import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.settings.SettingCategory
+import dev.brahmkshatriya.echo.common.settings.SettingList
 import dev.brahmkshatriya.echo.data.offline.AlbumResolver
 import dev.brahmkshatriya.echo.data.offline.ArtistResolver
 import dev.brahmkshatriya.echo.data.offline.TrackResolver
@@ -46,23 +43,21 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         iconUrl = null
     )
 
-    override fun setupPreferenceSettings(preferenceScreen: PreferenceScreen) {
-        PreferenceCategory(context).apply {
-            title = "General"
-            key = "general"
-            isIconSpaceReserved = false
-            preferenceScreen.addPreference(this)
-
-            ListPreference(context).apply {
-                key = "sorting"
-                title = "Sorting"
-                entries = arrayOf("Date Added", "A to Z", "Z to A", "Year")
-                entryValues = arrayOf("date", "a_to_z", "z_to_a", "year")
-
-                addPreference(this)
-            }
-        }
-    }
+    override val settings = listOf(
+        SettingCategory(
+            title = "General",
+            key = "general",
+            items = listOf(
+                SettingList(
+                    title = "Sorting",
+                    key = "sorting",
+                    entryTitles = listOf("Date Added", "A to Z", "Z to A", "Year"),
+                    entryValues = listOf("date", "a_to_z", "z_to_a", "year"),
+                    defaultEntryIndex = 1
+                )
+            )
+        )
+    )
 
     private val sorting get() = preferences.getString("sorting", "a_to_z")!!
     val artistResolver = ArtistResolver(context)
@@ -103,10 +98,6 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 
     override suspend fun getTrack(uri: Uri): Track? {
         return trackResolver.get(uri)
-    }
-
-    override suspend fun getStreamable(track: Track): StreamableAudio {
-        return trackResolver.getStream(track).toAudio()
     }
 
     override suspend fun getHomeGenres(): List<String> {
