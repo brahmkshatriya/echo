@@ -51,13 +51,14 @@ class ArtistFragment : Fragment() {
     private val clickListener = MediaItemClickListener(this)
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
     private val header = ArtistHeaderAdapter(object : ArtistHeaderAdapter.ArtistHeaderListener {
-
         override fun onSubscribeClicked(
-            artist: Artist.Full,
-            subscribe: Boolean,
-            adapter: ArtistHeaderAdapter
+            artist: Artist.Full, subscribe: Boolean, adapter: ArtistHeaderAdapter
         ) {
-            adapter.submitSubscribe(subscribe)
+            val userClient = extensionViewModel.extensionFlow.value as? UserClient ?: return
+            val exceptionFlow = snackBarViewModel.mutableExceptionFlow
+            viewModel.subscribe(userClient, artist, exceptionFlow, subscribe) {
+                adapter.submitSubscribe(subscribe)
+            }
         }
 
         override fun onRadioClicked(artist: Artist.Full) {
@@ -120,8 +121,8 @@ class ArtistFragment : Fragment() {
                 viewModel.loadArtist(client, snackBarViewModel.mutableExceptionFlow, artist)
             }
         }
-        val headerFlow = viewModel.artistFlow
-            .combine(extensionViewModel.extensionFlow) { it, client -> it to client }
+        val headerFlow =
+            viewModel.artistFlow.combine(extensionViewModel.extensionFlow) { it, client -> it to client }
         observe(headerFlow) { (artist, client) ->
             if (artist != null && client != null) {
                 header.submit(artist, client is UserClient, client is RadioClient)

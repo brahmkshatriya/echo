@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
+import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.utils.tryWith
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ArtistViewModel : ViewModel() {
 
@@ -24,7 +26,9 @@ class ArtistViewModel : ViewModel() {
     val artistFlow = mutableArtistFlow.asStateFlow()
 
     fun loadArtist(
-        artistClient: ArtistClient, exceptionFlow: MutableSharedFlow<Exception>, artist: Artist.Small
+        artistClient: ArtistClient,
+        exceptionFlow: MutableSharedFlow<Exception>,
+        artist: Artist.Small
     ) {
         if (initialized) return
         initialized = true
@@ -36,6 +40,24 @@ class ArtistViewModel : ViewModel() {
                         _result.value = data
                     }
                 }
+            }
+        }
+    }
+
+    fun subscribe(
+        userClient: UserClient,
+        artist: Artist.Full,
+        exceptionFlow: MutableSharedFlow<Exception>,
+        subscribe: Boolean,
+        block: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            tryWith(exceptionFlow) {
+                if(subscribe) userClient.subscribe(artist)
+                else userClient.unsubscribe(artist)
+            }
+            withContext(Dispatchers.Main) {
+                block(subscribe)
             }
         }
     }
