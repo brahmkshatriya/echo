@@ -211,7 +211,7 @@ class MediaItemsContainerAdapter(
                 binding.duration.visibility = View.VISIBLE
                 binding.duration.text = duration.toTimeString()
             }
-            binding.root.transitionName = track.uri.toString()
+            binding.root.transitionName = track.id
         }
 
         override val clickView = binding.root
@@ -232,7 +232,7 @@ class MediaItemsContainerAdapter(
             binding.duration.text = binding.root.context.resources.getQuantityString(
                 R.plurals.number_songs, album.numberOfTracks, album.numberOfTracks
             )
-            binding.root.transitionName = album.uri.toString()
+            binding.root.transitionName = album.id
         }
 
         override val clickView = binding.root
@@ -246,7 +246,7 @@ class MediaItemsContainerAdapter(
             binding.subtitle.text = artist.subtitle
             binding.subtitle.isVisible = !artist.subtitle.isNullOrBlank()
             artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
-            binding.root.transitionName = artist.uri.toString()
+            binding.root.transitionName = artist.id
         }
 
         override val clickView = binding.root
@@ -266,7 +266,7 @@ class MediaItemsContainerAdapter(
             albumImage(3, binding.imageView1, binding.imageView2)
             binding.subtitle.text = playlist.subtitle
             binding.subtitle.isVisible = !playlist.subtitle.isNullOrBlank()
-            binding.root.transitionName = playlist.uri.toString()
+            binding.root.transitionName = playlist.id
         }
 
         override val clickView = binding.root
@@ -285,22 +285,22 @@ class MediaItemsContainerAdapter(
 
                 is MediaItemsContainer.TrackItem -> {
                     val newTrack = newItem as? MediaItemsContainer.TrackItem
-                    oldItem.track.uri == newTrack?.track?.uri
+                    oldItem.track.id == newTrack?.track?.id
                 }
 
                 is MediaItemsContainer.AlbumItem -> {
                     val newAlbum = newItem as? MediaItemsContainer.AlbumItem
-                    oldItem.album.uri == newAlbum?.album?.uri
+                    oldItem.album.id == newAlbum?.album?.id
                 }
 
                 is MediaItemsContainer.ArtistItem -> {
                     val newArtist = newItem as? MediaItemsContainer.ArtistItem
-                    oldItem.artist.uri == newArtist?.artist?.uri
+                    oldItem.artist.id == newArtist?.artist?.id
                 }
 
                 is MediaItemsContainer.PlaylistItem -> {
                     val newPlaylist = newItem as? MediaItemsContainer.PlaylistItem
-                    oldItem.playlist.uri == newPlaylist?.playlist?.uri
+                    oldItem.playlist.id == newPlaylist?.playlist?.id
                 }
             }
         }
@@ -324,17 +324,17 @@ class MediaItemsContainerAdapter(
 
                 is MediaItemsContainer.AlbumItem -> {
                     val newAlbum = newItem as? MediaItemsContainer.AlbumItem
-                    return oldItem.album.uri == newAlbum?.album?.uri
+                    return oldItem.album.id == newAlbum?.album?.id
                 }
 
                 is MediaItemsContainer.ArtistItem -> {
                     val newArtist = newItem as? MediaItemsContainer.ArtistItem
-                    return oldItem.artist.uri == newArtist?.artist?.uri
+                    return oldItem.artist.id == newArtist?.artist?.id
                 }
 
                 is MediaItemsContainer.PlaylistItem -> {
                     val newPlaylist = newItem as? MediaItemsContainer.PlaylistItem
-                    return oldItem.playlist.uri == newPlaylist?.playlist?.uri
+                    return oldItem.playlist.id == newPlaylist?.playlist?.id
                 }
             }
             return true

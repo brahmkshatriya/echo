@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
+import androidx.core.net.toUri
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
@@ -59,7 +60,7 @@ class TrackResolver(val context: Context) {
         album: Album.Small, page: Int, pageSize: Int, sorting: String
     ): List<Track> {
         val whereCondition = "${MediaStore.Audio.Media.ALBUM_ID} = ?"
-        val selectionArgs = arrayOf(album.uri.lastPathSegment!!)
+        val selectionArgs = arrayOf(album.id.toUri().lastPathSegment!!)
         return context.queryTracks(whereCondition, selectionArgs, page, pageSize, sorting)
     }
 
@@ -103,17 +104,17 @@ class TrackResolver(val context: Context) {
 
             while (it.moveToNext()) {
                 val id = it.getLong(idColumn)
-                val uri = Uri.parse("$URI$TRACK_AUTH${id}")
+                val uri = "$URI$TRACK_AUTH${id}"
                 val albumId = it.getLong(albumIdColumn)
                 val coverUri = ContentUris.withAppendedId(
                     ARTWORK_URI, albumId
                 )
 
-                val artistUri = Uri.parse("$URI$ARTIST_AUTH${it.getLong(artistIdColumn)}")
-                val albumUri = Uri.parse("$URI$ALBUM_AUTH${albumId}")
+                val artistUri = "$URI$ARTIST_AUTH${it.getLong(artistIdColumn)}"
+                val albumUri = "$URI$ALBUM_AUTH${albumId}"
                 tracks.add(
                     Track(
-                        uri = uri,
+                        id = uri,
                         title = it.getString(titleColumn),
                         stream = ContentUris.withAppendedId(
                             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,

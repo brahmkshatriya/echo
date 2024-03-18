@@ -46,7 +46,7 @@ class PlaylistAdapter(
         override fun areItemsTheSame(
             oldItem: Pair<Boolean, Track>,
             newItem: Pair<Boolean, Track>
-        ): Boolean = oldItem.second.uri == newItem.second.uri
+        ): Boolean = oldItem.second.id == newItem.second.id
 
         override fun areContentsTheSame(
             oldItem: Pair<Boolean, Track>,

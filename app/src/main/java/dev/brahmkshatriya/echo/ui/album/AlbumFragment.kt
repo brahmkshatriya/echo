@@ -111,7 +111,7 @@ class AlbumFragment : Fragment() {
 
         val album: Album.Small = args.albumWithCover ?: args.albumSmall ?: return
 
-        binding.root.transitionName = album.uri.toString()
+        binding.root.transitionName = album.id
         sharedElementEnterTransition = MaterialContainerTransform(requireContext(), true).apply {
             drawingViewId = R.id.nav_host_fragment
         }

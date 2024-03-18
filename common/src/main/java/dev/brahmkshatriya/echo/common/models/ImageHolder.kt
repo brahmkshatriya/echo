@@ -19,8 +19,8 @@ sealed class ImageHolder : Parcelable {
             return UriHolder(this)
         }
 
-        fun String.toImageHolder(headers: Map<String, String>? = null): UrlHolder {
-            return UrlHolder(this, headers ?: mapOf())
+        fun String.toImageHolder(headers: Map<String, String>): UrlHolder {
+            return UrlHolder(this, headers)
         }
 
         fun Bitmap.toImageHolder(): BitmapHolder {

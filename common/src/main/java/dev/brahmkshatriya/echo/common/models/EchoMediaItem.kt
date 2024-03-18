@@ -30,10 +30,10 @@ sealed class EchoMediaItem {
     override fun equals(other: Any?): Boolean {
         if (other is EchoMediaItem) {
             return when (this) {
-                is TrackItem -> this.track.uri == (other as? TrackItem)?.track?.uri
-                is AlbumItem -> this.album.uri == (other as? AlbumItem)?.album?.uri
-                is ArtistItem -> this.artist.uri == (other as? ArtistItem)?.artist?.uri
-                is PlaylistItem -> this.playlist.uri == (other as? PlaylistItem)?.playlist?.uri
+                is TrackItem -> this.track.id == (other as? TrackItem)?.track?.id
+                is AlbumItem -> this.album.id == (other as? AlbumItem)?.album?.id
+                is ArtistItem -> this.artist.id == (other as? ArtistItem)?.artist?.id
+                is PlaylistItem -> this.playlist.id == (other as? PlaylistItem)?.playlist?.id
             }
         }
         return false

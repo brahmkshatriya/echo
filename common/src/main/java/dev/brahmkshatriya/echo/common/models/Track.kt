@@ -1,12 +1,11 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.net.Uri
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Track(
-    val uri: Uri,
+    val id: String,
     val title: String,
     val stream: StreamableAudio? = null,
     val artists: List<Artist.Small> = listOf(),

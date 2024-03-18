@@ -103,7 +103,7 @@ class ArtistFragment : Fragment() {
 
         val artist: Artist.Small = args.artistWithCover ?: args.artistSmall ?: return
 
-        binding.root.transitionName = artist.uri.toString()
+        binding.root.transitionName = artist.id
         sharedElementEnterTransition = MaterialContainerTransform(requireContext(), true).apply {
             drawingViewId = R.id.nav_host_fragment
         }

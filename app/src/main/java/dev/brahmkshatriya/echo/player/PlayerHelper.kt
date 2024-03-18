@@ -37,7 +37,7 @@ interface PlayerHelper {
             val metadata = track.toMetaData()
             item.setMediaMetadata(metadata)
 
-            val mediaId = track.uri.toString()
+            val mediaId = track.id
             item.setMediaId(mediaId)
             return item.build()
         }

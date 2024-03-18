@@ -66,10 +66,10 @@ class ArtistResolver(val context: Context) {
                 val id = it.getLong(idColumn)
                 if (ids.contains(id)) continue
                 ids.add(id)
-                val uri = Uri.parse("$URI$ARTIST_AUTH$id")
+                val uri = "$URI$ARTIST_AUTH$id"
                 artists.add(
                     Artist.Full(
-                        uri = uri,
+                        id = uri,
                         name = it.getStringOrNull(artistColumn) ?: "THIS IS THE PROBLEM",
                         cover = null,
                         description = null,

@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.data.extensions
 
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.helpers.PagedFlow
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -96,8 +97,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         emit(PagingData.from(result))
     }
 
-    override suspend fun getTrack(uri: Uri): Track? {
-        return trackResolver.get(uri)
+    override suspend fun getTrack(id: String): Track? {
+        return trackResolver.get(id.toUri())
     }
 
     override suspend fun getHomeGenres(): List<String> {
@@ -161,15 +162,15 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         }.getFlow()
 
     override suspend fun loadAlbum(small: Album.Small): Album.Full {
-        return albumResolver.get(small.uri, trackResolver)
+        return albumResolver.get(small.id.toUri(), trackResolver)
     }
 
     override suspend fun getMediaItems(album: Album.Full): Flow<PagingData<MediaItemsContainer>> =
         flow {
             val artist = album.artist.name
-            val tracks = trackResolver.search(artist, 1, 50, sorting).filter { it.album?.uri != album.uri }
+            val tracks = trackResolver.search(artist, 1, 50, sorting).filter { it.album?.id != album.id }
                 .map { it.toMediaItem() }.ifEmpty { null }
-            val albums = albumResolver.search(artist, 1, 50, sorting).filter { it.uri != album.uri }
+            val albums = albumResolver.search(artist, 1, 50, sorting).filter { it.id != album.id }
                 .map { it.toMediaItem() }.ifEmpty { null }
             val result = listOfNotNull(
                 tracks?.toMediaItemsContainer("More from $artist"),
@@ -179,7 +180,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         }
 
     override suspend fun loadArtist(small: Artist.Small): Artist.Full {
-        return artistResolver.get(small.uri)
+        return artistResolver.get(small.id.toUri())
     }
 
     override suspend fun getMediaItems(artist: Artist.Full): Flow<PagingData<MediaItemsContainer>> =
@@ -214,14 +215,14 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 
         val tracks = listOfNotNull(albumTracks, artistTracks, randomTracks)
             .flatten()
-            .distinctBy { it.uri }
+            .distinctBy { it.id }
             .toMutableList()
 
-        tracks.removeIf { it.uri == track.uri }
+        tracks.removeIf { it.id == track.id }
         tracks.shuffle()
 
         return Playlist.Full(
-            uri = Uri.parse("$URI${track.uri}"),
+            id = "$URI${track.id}",
             title = "${track.title} Radio",
             cover = null,
             author = null,
@@ -238,9 +239,9 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         val tracks = listOfNotNull(albumTracks,  randomTracks)
             .flatten()
             .shuffled()
-            .distinctBy { it.uri }
+            .distinctBy { it.id }
         return Playlist.Full(
-            uri = Uri.parse("$URI${album.uri}"),
+            id = "$URI${album.id}",
             title = "${album.title} Radio",
             cover = null,
             author = null,
@@ -257,10 +258,10 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         val tracks = listOfNotNull(artistTracks, randomTracks)
             .flatten()
             .shuffled()
-            .distinctBy { it.uri }
+            .distinctBy { it.id }
 
         return Playlist.Full(
-            uri = Uri.parse("$URI${artist.uri}"),
+            id = "$URI${artist.id}",
             title = "${artist.name} Radio",
             cover = null,
             author = null,

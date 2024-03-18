@@ -11,7 +11,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionBinding
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -51,7 +50,7 @@ class ExtensionDialogFragment : DialogFragment() {
                 val metadata = extension.metadata
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
-                metadata.iconUrl?.toImageHolder().loadInto(button)
+                metadata.iconUrl?.loadInto(button)
                 button.id = id
                 id to extension
             }.toMap()

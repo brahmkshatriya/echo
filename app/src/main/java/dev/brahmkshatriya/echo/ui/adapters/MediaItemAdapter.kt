@@ -96,7 +96,7 @@ class MediaItemAdapter(
                 }
                 binding.subtitle.isVisible = subtitle.isNotEmpty()
                 binding.subtitle.text = subtitle
-                container.transitionView.transitionName = item.track.uri.toString()
+                container.transitionView.transitionName = item.track.id
             }
 
             is EchoMediaItem.AlbumItem -> {
@@ -114,7 +114,7 @@ class MediaItemAdapter(
                         subtitle += if (subtitle.isNotBlank()) " • $it" else it
                 }
                 binding.subtitle.text = subtitle
-                container.transitionView.transitionName = item.album.uri.toString()
+                container.transitionView.transitionName = item.album.id
             }
 
             is EchoMediaItem.ArtistItem -> {
@@ -123,7 +123,7 @@ class MediaItemAdapter(
                 item.artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
                 binding.subtitle.isVisible = !item.artist.subtitle.isNullOrBlank()
                 binding.subtitle.text = item.artist.subtitle
-                container.transitionView.transitionName = item.artist.uri.toString()
+                container.transitionView.transitionName = item.artist.id
             }
 
             is EchoMediaItem.PlaylistItem -> {
@@ -140,7 +140,7 @@ class MediaItemAdapter(
 
                 val tracks = (item.playlist as? Playlist.Full)?.tracks ?: emptyList()
                 albumImage(tracks.size, binding.imageView1, binding.imageView2)
-                container.transitionView.transitionName = item.playlist.uri.toString()
+                container.transitionView.transitionName = item.playlist.id
             }
         }
     }
@@ -179,13 +179,13 @@ class MediaItemAdapter(
     companion object MediaItemComparator : DiffUtil.ItemCallback<EchoMediaItem>() {
         override fun areItemsTheSame(oldItem: EchoMediaItem, newItem: EchoMediaItem): Boolean {
             if (oldItem is EchoMediaItem.TrackItem && newItem is EchoMediaItem.TrackItem)
-                return oldItem.track.uri == newItem.track.uri
+                return oldItem.track.id == newItem.track.id
             if (oldItem is EchoMediaItem.AlbumItem && newItem is EchoMediaItem.AlbumItem)
-                return oldItem.album.uri == newItem.album.uri
+                return oldItem.album.id == newItem.album.id
             if (oldItem is EchoMediaItem.ArtistItem && newItem is EchoMediaItem.ArtistItem)
-                return oldItem.artist.uri == newItem.artist.uri
+                return oldItem.artist.id == newItem.artist.id
             if (oldItem is EchoMediaItem.PlaylistItem && newItem is EchoMediaItem.PlaylistItem)
-                return oldItem.playlist.uri == newItem.playlist.uri
+                return oldItem.playlist.id == newItem.playlist.id
             return false
         }
 

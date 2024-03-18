@@ -33,7 +33,7 @@ class AlbumHeaderAdapter(
             ViewHolder(binding.root) {
             init {
                 val artist = MediaItemsContainer.ArtistItem(Artist.WithCover(
-                    album.artist.uri,
+                    album.artist.id,
                     album.artist.name,
                     null
                 ))
@@ -96,7 +96,7 @@ class AlbumHeaderAdapter(
         val album = holder.album
         binding.albumArtist.text = album.artist.name
         binding.albumArtistSubtitle.isVisible = false
-        binding.albumArtistContainer.transitionName = album.artist.uri.toString()
+        binding.albumArtistContainer.transitionName = album.artist.id
         val art = album.artist
         (art as? Artist.WithCover)?.let {
             it.cover.loadInto(binding.albumArtistCover, R.drawable.art_artist)

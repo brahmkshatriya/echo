@@ -73,17 +73,17 @@ class AlbumResolver(
             val tracksColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.NUMBER_OF_SONGS)
             val yearColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.FIRST_YEAR)
             while (it.moveToNext()) {
-                val uri = Uri.parse("${URI}${ALBUM_AUTH}${it.getLong(idColumn)}")
+                val uri = "${URI}${ALBUM_AUTH}${it.getLong(idColumn)}"
                 val coverUri = ContentUris.withAppendedId(
                     ARTWORK_URI, it.getLong(idColumn)
                 )
-                val artistUri = Uri.parse("${URI}${ARTIST_AUTH}${it.getLong(artistIdColumn)}")
+                val artistId = "${URI}${ARTIST_AUTH}${it.getLong(artistIdColumn)}"
                 albums.add(
                     Album.Full(
-                        uri = uri,
+                        id = uri,
                         title = it.getString(albumColumn),
                         cover = coverUri.toImageHolder(),
-                        artist = Artist.Small(artistUri, it.getString(artistColumn)),
+                        artist = Artist.Small(artistId, it.getString(artistColumn)),
                         numberOfTracks = it.getInt(tracksColumn),
                         releaseDate = it.getString(yearColumn),
                         tracks = emptyList(),

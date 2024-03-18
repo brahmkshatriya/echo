@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.extensions
+package dev.brahmkshatriya.echo.common.helpers
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig

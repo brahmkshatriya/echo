@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.net.Uri
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
@@ -8,22 +7,22 @@ sealed class Album {
 
     @Parcelize
     open class Small(
-        open val uri: Uri,
+        open val id: String,
         open val title: String
     ) : Parcelable
 
     @Parcelize
     open class WithCover(
-        override val uri: Uri,
+        override val id: String,
         override val title: String,
         open val cover: ImageHolder?,
         open val artist: Artist.Small,
         open val numberOfTracks: Int,
-    ) : Small(uri, title)
+    ) : Small(id, title)
 
     @Parcelize
     data class Full(
-        override val uri: Uri,
+        override val id: String,
         override val title: String,
         override val cover: ImageHolder?,
         override val artist: Artist.Small,
@@ -33,6 +32,6 @@ sealed class Album {
         val publisher: String?,
         val duration: Long?,
         val description: String?,
-    ) : WithCover(uri, title, cover, artist, numberOfTracks)
+    ) : WithCover(id, title, cover, artist, numberOfTracks)
 
 }

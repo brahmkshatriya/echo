@@ -43,7 +43,6 @@ android {
 
 dependencies {
     api("androidx.paging:paging-common-ktx:3.2.1")
-    api("androidx.preference:preference-ktx:1.2.1")
 }
 
 afterEvaluate {
