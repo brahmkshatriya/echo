@@ -95,6 +95,7 @@
                         android:layout_width="64dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom"
+                        android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold"
                         tools:text="00:00" />
 
@@ -105,7 +106,7 @@
                         android:layout_weight="1"
                         android:padding="12dp"
                         android:textAlignment="center"
-                        android:textColor="?attr/colorPrimary"
+                        android:textColor="?attr/colorTertiary"
                         android:textSize="16sp"
                         tools:text="Author" />
 
@@ -130,11 +131,12 @@
                         android:layout_marginStart="12dp"
                         android:layout_marginEnd="12dp"
                         android:progress="40"
+                        android:alpha="0.5"
                         app:trackThickness="8dp"
                         app:trackCornerRadius="4dp"
-                        app:indicatorColor="?attr/colorTertiaryContainer"
+                        app:indicatorColor="?attr/colorTertiary"
                         app:indicatorTrackGapSize="0dp"
-                        app:trackColor="?attr/colorSurfaceContainerHigh" />
+                        app:trackColor="?attr/colorOnSurface" />
 
                     <com.google.android.material.slider.Slider
                         android:id="@+id/expandedSeekBar"
@@ -150,7 +152,7 @@
                         app:thumbWidth="24dp"
                         app:trackColorActive="?attr/colorTertiary"
                         app:trackColorInactive="@android:color/transparent"
-                        app:trackHeight="8dp" />
+                        app:trackHeight="4dp" />
 
                 </FrameLayout>
 
@@ -193,7 +195,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:indeterminate="true"
-                            android:visibility="gone"
+                            app:indicatorColor="?attr/colorTertiary"
                             app:indicatorSize="64dp" />
 
                         <com.google.android.material.checkbox.MaterialCheckBox
@@ -204,7 +206,7 @@
                             android:button="@drawable/anim_play_pause_48dp"
                             android:contentDescription="@string/play_pause"
                             android:enabled="false"
-                            app:buttonTint="@color/button_play_pause"
+                            app:buttonTint="@color/button_player"
                             tools:ignore="DuplicateSpeakableTextCheck" />
                     </FrameLayout>
 
@@ -224,6 +226,7 @@
                         android:id="@+id/trackHeart"
                         android:layout_width="64dp"
                         android:layout_height="64dp"
+                        android:enabled="false"
                         android:background="@drawable/ripple_60dp"
                         android:button="@drawable/anim_heart_40dp"
                         android:contentDescription="@string/play_pause"
@@ -299,9 +302,10 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:progress="40"
-                app:indicatorColor="?attr/colorTertiaryContainer"
+                android:alpha="0.5"
+                app:indicatorColor="?attr/colorTertiary"
                 app:indicatorTrackGapSize="0dp"
-                app:trackColor="?attr/colorSurfaceContainerHigh"
+                app:trackColor="?attr/colorOnSurface"
                 app:trackThickness="2dp" />
 
             <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -339,6 +343,7 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"
                         tools:text="Nice Track Title" />
 
                     <TextView
@@ -346,6 +351,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:maxLines="1"
+                        android:textColor="?attr/colorOnSurface"
                         tools:text="Author" />
                 </LinearLayout>
 
@@ -374,7 +380,7 @@
                             android:button="@drawable/anim_play_pause"
                             android:contentDescription="@string/play_pause"
                             android:enabled="false"
-                            app:buttonTint="@color/button_play_pause" />
+                            app:buttonTint="@color/button_player" />
 
                     </FrameLayout>
 

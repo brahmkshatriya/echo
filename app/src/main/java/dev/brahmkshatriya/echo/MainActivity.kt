@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         applyInsetsToPlayerUI(this)
     }
 
-    private fun isNightMode() =
+    fun isNightMode() =
         resources.configuration.uiMode and UI_MODE_NIGHT_MASK != UI_MODE_NIGHT_NO
 
     override fun onNewIntent(intent: Intent?) {

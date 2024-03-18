@@ -1,15 +1,21 @@
 package dev.brahmkshatriya.echo.player.ui
 
 import android.animation.ObjectAnimator
+import android.content.res.ColorStateList
 import android.graphics.drawable.Animatable
+import android.graphics.drawable.BitmapDrawable
+import android.util.TypedValue
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.navigation.fragment.NavHostFragment
+import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.DOWN
 import androidx.recyclerview.widget.ItemTouchHelper.START
@@ -17,6 +23,8 @@ import androidx.recyclerview.widget.ItemTouchHelper.UP
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
+import coil.imageLoader
+import coil.request.SuccessResult
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
@@ -35,11 +43,14 @@ import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
 import dev.brahmkshatriya.echo.ui.snackbar.SnackBarViewModel
+import dev.brahmkshatriya.echo.utils.createRequest
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.max
@@ -196,17 +207,10 @@ fun createPlayerUI(
     val repeatModes = listOf(
         REPEAT_MODE_ONE, REPEAT_MODE_OFF, REPEAT_MODE_ALL
     )
-
     playerBinding.trackRepeat.setOnClickListener {
         playerBinding.trackRepeat.icon = when (playerBinding.trackRepeat.icon) {
-            drawables[0] -> drawables[1].apply {
-                ObjectAnimator.ofFloat(it, "alpha", 1f, 0.4f).setDuration(400).start()
-            }
-
-            drawables[1] -> drawables[2].apply {
-                ObjectAnimator.ofFloat(it, "alpha", 0.4f, 1f).setDuration(400).start()
-            }
-
+            drawables[0] -> drawables[1]
+            drawables[1] -> drawables[2]
             else -> drawables[0]
         }
         (playerBinding.trackRepeat.icon as Animatable).start()
@@ -217,7 +221,6 @@ fun createPlayerUI(
 
     val repeatMode = uiViewModel.repeatMode
     playerBinding.trackRepeat.icon = drawables[repeatModes.indexOf(repeatMode)]
-    playerBinding.trackRepeat.alpha = if (repeatMode == REPEAT_MODE_OFF) 0.4f else 1f
     (playerBinding.trackRepeat.icon as Animatable).start()
 
 
@@ -274,9 +277,56 @@ fun createPlayerUI(
 
     uiViewModel.view = WeakReference(playerBinding.collapsedTrackCover)
 
+    data class PlayerColors(
+        val background: Int,
+        val clickable: Int,
+        val body: Int,
+    )
+
+    fun applyColors(colors:PlayerColors) {
+        playerBinding.root.setBackgroundColor(colors.background)
+        playerBinding.collapsedContainer.setBackgroundColor(colors.background)
+
+        playerBinding.expandedTrackAuthor.setTextColor(colors.clickable)
+        val clickableState = ColorStateList.valueOf(colors.clickable)
+
+        playerBinding.expandedSeekBar.trackActiveTintList = clickableState
+        playerBinding.expandedSeekBar.thumbTintList = clickableState
+        playerBinding.expandedProgressBar.setIndicatorColor(colors.clickable)
+        playerBinding.collapsedProgressBar.setIndicatorColor(colors.clickable)
+        playerBinding.collapsedSeekBar.setIndicatorColor(colors.clickable)
+
+        playerBinding.expandedSeekBarBuffer.setIndicatorColor(colors.clickable)
+        playerBinding.collapsedSeekBarBuffer.setIndicatorColor(colors.clickable)
+
+        playerBinding.expandedSeekBarBuffer.trackColor = colors.body
+        playerBinding.collapsedSeekBarBuffer.trackColor = colors.body
+
+        playerBinding.trackCurrentTime.setTextColor(colors.body)
+        playerBinding.trackTotalTime.setTextColor(colors.body)
+        playerBinding.expandedTrackTitle.setTextColor(colors.body)
+
+        playerBinding.collapsedTrackAuthor.setTextColor(colors.body)
+        playerBinding.collapsedTrackTitle.setTextColor(colors.body)
+    }
+
     activity.apply {
         val navController = binding.navHostFragment
             .getFragment<NavHostFragment>().navController
+
+        val background = TypedValue()
+        theme.resolveAttribute(com.google.android.material.R.attr.colorSurfaceContainerLow, background, true)
+        val tertiary = TypedValue()
+        theme.resolveAttribute(com.google.android.material.R.attr.colorTertiary, tertiary, true)
+        val onSurface = TypedValue()
+        theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, onSurface, true)
+
+        val defaultColors = PlayerColors(
+            background.data,
+            tertiary.data,
+            onSurface.data
+        )
+
         observe(uiViewModel.track) { track ->
             track ?: return@observe
 
@@ -287,6 +337,7 @@ fun createPlayerUI(
                 playerBinding.collapsedTrackAuthor.text = this
                 playerBinding.expandedTrackAuthor.text = this
             }
+
 
             playerBinding.expandedTrackAuthor.setOnClickListener {
                 val artist = track.artists.firstOrNull() ?: return@setOnClickListener
@@ -299,16 +350,34 @@ fun createPlayerUI(
                 loadInto(playerBinding.collapsedTrackCover, R.drawable.art_music)
                 loadInto(playerBinding.expandedTrackCover, R.drawable.art_music)
 
-                //Incomplete Dynamic Colors for Bottom Player
-//                lifecycleScope.launch(Dispatchers.IO) {
-//                    val req = createRequest(activity).allowHardware(false).build()
-//                    val result =
-//                        (imageLoader.execute(req) as? SuccessResult)?.drawable ?: return@launch
-//                    val bitmap = (result as BitmapDrawable).bitmap
-//
-//                    launch(Dispatchers.Main) {
-//                    }
-//                }
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val req = createRequest(activity).build()
+                    val result =
+                        (imageLoader.execute(req) as? SuccessResult)?.drawable
+                    val bitmap = (result as? BitmapDrawable)?.bitmap
+                    val palette = bitmap?.let { Palette.from(it).generate() }
+
+                    val colors = palette?.run {
+                        val lightMode = !activity.isNightMode()
+                        val lightSwatch = lightVibrantSwatch
+                            ?: lightMutedSwatch ?: vibrantSwatch
+                        val darkSwatch =  darkVibrantSwatch
+                            ?:  darkMutedSwatch ?: mutedSwatch
+
+                        val bgSwatch = if(lightMode) lightSwatch else darkSwatch
+                        bgSwatch?.run {
+                            val clickSwatch = if (lightMode) darkSwatch else lightSwatch
+                            PlayerColors(rgb, clickSwatch?.rgb ?: titleTextColor, bodyTextColor)
+                        }
+                    } ?: defaultColors
+
+
+                    launch(Dispatchers.Main) {
+
+
+                        applyColors(colors)
+                    }
+                }
 
             }
 
@@ -336,7 +405,9 @@ fun createPlayerUI(
         }
 
         observe(uiViewModel.buffering) {
-            playerBinding.collapsedSeekBar.isIndeterminate = it
+            playerBinding.collapsedProgressBar.isVisible = it
+            playerBinding.expandedProgressBar.isVisible = it
+
             playerBinding.expandedSeekBar.isEnabled = !it
             playerBinding.trackPlayPause.isEnabled = !it
             playerBinding.collapsedTrackPlayPause.isEnabled = !it

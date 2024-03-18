@@ -70,6 +70,8 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.3.0")
     implementation("androidx.media3:media3-session:1.3.0")
 
+    implementation("androidx.palette:palette-ktx:1.0.0")
+
     //noinspection GradleDependency WHY DOES UPDATING THIS CHANGE RECYCLER'S ANIMATION???
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
 
