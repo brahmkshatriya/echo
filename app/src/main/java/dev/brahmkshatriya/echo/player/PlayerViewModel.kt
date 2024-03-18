@@ -52,7 +52,7 @@ class PlayerViewModel @Inject constructor(
     fun play(track: Track) {
         viewModelScope.launch {
             tryWith(exceptionFlow) {
-                val pos = global.addTrack(viewModelScope, track).first
+                val pos = global.addTrack(track).first
                 audioIndexFlow.emit(pos)
             }
         }
@@ -61,7 +61,7 @@ class PlayerViewModel @Inject constructor(
     fun play(tracks: List<Track>, playIndex: Int? = null) {
         viewModelScope.launch {
             tryWith(exceptionFlow) {
-                val pos = global.addTracks(viewModelScope, tracks).first
+                val pos = global.addTracks(tracks).first
                 playIndex?.let { audioIndexFlow.emit(pos + it) }
             }
         }
@@ -75,20 +75,26 @@ class PlayerViewModel @Inject constructor(
 
     fun addToQueue(track: Track) {
         viewModelScope.launch {
-            tryWith(exceptionFlow) { global.addTrack(viewModelScope, track) }
+            tryWith(exceptionFlow) { global.addTrack(track) }
         }
     }
 
     fun clearQueue() {
-        global.clearQueue(viewModelScope)
+        viewModelScope.launch {
+            global.clearQueue()
+        }
     }
 
     fun moveQueueItems(new: Int, old: Int) {
-        global.moveTrack(viewModelScope, old, new)
+        viewModelScope.launch {
+            global.moveTrack(old, new)
+        }
     }
 
     fun removeQueueItem(index: Int) {
-        global.removeTrack(viewModelScope, index)
+        viewModelScope.launch {
+            global.removeTrack(index)
+        }
     }
 
     private val radioException = Exception(

@@ -33,10 +33,10 @@ class RadioListener(
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (!player.hasNextMediaItem()) {
             val autoStartRadio = settings.getBoolean(AudioFragment.AUTO_START_RADIO, true)
-            if(autoStartRadio) queue.current?.let {
+            if (autoStartRadio) queue.current?.let {
                 scope.launch(Dispatchers.IO) {
                     val playlist = client?.radio(it)
-                    playlist?.tracks?.let { queue.addTracks(scope, it) }
+                    playlist?.tracks?.let { queue.addTracks(it) }
                 }
             }
         }

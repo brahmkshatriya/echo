@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.ui.settings.AudioFragment.Companion.CLOSE_PLAYER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
@@ -80,9 +81,11 @@ class PlaybackService : MediaLibraryService() {
     override fun onDestroy() {
         mediaLibrarySession?.run {
             player.release()
-            global.clearQueue(scope)
-            release()
-            mediaLibrarySession = null
+            scope.launch {
+                global.clearQueue()
+                release()
+                mediaLibrarySession = null
+            }
         }
         super.onDestroy()
     }

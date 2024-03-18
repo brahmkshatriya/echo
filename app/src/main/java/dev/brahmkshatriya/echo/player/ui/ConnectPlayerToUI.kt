@@ -54,7 +54,7 @@ fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
             player.removeMediaItem(it)
         }
         observe(playerViewModel.clearQueueFlow) {
-            if(player.mediaItemCount == 0) return@observe
+            if (player.mediaItemCount == 0) return@observe
             player.pause()
             player.clearMediaItems()
             player.stop()

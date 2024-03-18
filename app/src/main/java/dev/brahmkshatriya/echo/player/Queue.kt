@@ -2,11 +2,9 @@ package dev.brahmkshatriya.echo.player
 
 import androidx.media3.common.MediaItem
 import dev.brahmkshatriya.echo.common.models.Track
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
 import java.util.Collections
 import java.util.Collections.synchronizedList
 
@@ -22,33 +20,29 @@ class Queue {
 
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
-    fun clearQueue(scope: CoroutineScope) {
+    suspend fun clearQueue() {
         _queue.clear()
-        scope.launch {
-            _clearQueue.emit(Unit)
-        }
+        _clearQueue.emit(Unit)
     }
 
     private val _removeTrack = MutableSharedFlow<Int>()
     val removeTrackFlow = _removeTrack.asSharedFlow()
-    fun removeTrack(scope: CoroutineScope, index: Int) {
+    suspend fun removeTrack(index: Int) {
         _queue.removeAt(index)
-        scope.launch {
-            _removeTrack.emit(index)
-            if (_queue.isEmpty()) _clearQueue.emit(Unit)
-        }
+        _removeTrack.emit(index)
+        if (_queue.isEmpty()) _clearQueue.emit(Unit)
     }
 
     private val _addTrack = MutableSharedFlow<Pair<Int, List<MediaItem>>>()
     val addTrackFlow = _addTrack.asSharedFlow()
-    fun addTrack(
-        scope: CoroutineScope, track: Track, offset: Int = 0
+    suspend fun addTrack(
+        track: Track, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
-        return addTracks(scope, listOf(track), offset)
+        return addTracks(listOf(track), offset)
     }
 
-    fun addTracks(
-        scope: CoroutineScope, tracks: List<Track>, offset: Int = 0
+    suspend fun addTracks(
+        tracks: List<Track>, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
         var position = currentIndex.value?.let { it + 1 } ?: 0
         position += offset
@@ -64,19 +58,15 @@ class Queue {
         }
         _queue.addAll(position, queueItems)
         val mediaItems = position to items
-        scope.launch {
-            _addTrack.emit(mediaItems)
-        }
+        _addTrack.emit(mediaItems)
         return mediaItems
     }
 
 
     private val _moveTrack = MutableSharedFlow<Pair<Int, Int>>()
     val moveTrackFlow = _moveTrack.asSharedFlow()
-    fun moveTrack(scope: CoroutineScope, fromIndex: Int, toIndex: Int) {
+    suspend fun moveTrack(fromIndex: Int, toIndex: Int) {
         Collections.swap(_queue, fromIndex, toIndex)
-        scope.launch {
-            _moveTrack.emit(fromIndex to toIndex)
-        }
+        _moveTrack.emit(fromIndex to toIndex)
     }
 }

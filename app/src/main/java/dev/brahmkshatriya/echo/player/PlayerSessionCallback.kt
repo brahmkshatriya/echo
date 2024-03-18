@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
+import kotlinx.coroutines.launch
 
 
 class PlayerSessionCallback(
@@ -96,7 +97,7 @@ class PlayerSessionCallback(
             }.flatten()
             if (tracks.isEmpty())
                 return@future default("Couldn't find anything related to $query").get()
-            val items = global.addTracks(scope, tracks).second
+            val items = global.addTracks(tracks).second
             items.toMutableList()
         }
     }
@@ -109,7 +110,9 @@ class PlayerSessionCallback(
         startIndex: Int,
         startPositionMs: Long
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        global.clearQueue(scope)
+        scope.launch {
+            global.clearQueue()
+        }
         return super.onSetMediaItems(
             mediaSession,
             controller,
