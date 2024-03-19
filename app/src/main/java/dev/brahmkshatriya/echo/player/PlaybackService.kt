@@ -8,6 +8,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -49,7 +50,11 @@ class PlaybackService : MediaLibraryService() {
         val audioAttributes = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA)
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
 
-        val player = ExoPlayer.Builder(this, DataSourceFactory(this, global, throwableFlow))
+        val customDataSource = CustomDataSource.Factory(this, global, throwableFlow)
+        val factory = DefaultMediaSourceFactory(this)
+            .setDataSourceFactory(customDataSource)
+
+        val player = ExoPlayer.Builder(this, factory)
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setAudioAttributes(audioAttributes, true)
