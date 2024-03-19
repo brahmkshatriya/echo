@@ -7,7 +7,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.models.ImageHolder
-import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import java.nio.ByteBuffer
 import kotlin.math.roundToLong
@@ -17,23 +16,10 @@ interface PlayerHelper {
     companion object {
 
         fun mediaItemBuilder(
-            track: Track,
-            audio: StreamableAudio
+            track: Track
         ): MediaItem {
-            val builder = MediaItem.Builder()
-
-            val item = when (audio) {
-                is StreamableAudio.StreamableFile -> {
-                    builder.setUri(audio.uri)
-                }
-
-                is StreamableAudio.StreamableUrl -> {
-                    builder.setUri(audio.url.url)
-                }
-
-                is StreamableAudio.ByteStreamAudio -> TODO()
-            }
-
+            val item = MediaItem.Builder()
+            item.setUri(track.id)
             val metadata = track.toMetaData()
             item.setMediaMetadata(metadata)
 

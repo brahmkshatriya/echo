@@ -14,7 +14,9 @@ sealed class StreamableAudio : Parcelable {
     data class ByteStreamAudio(val stream: @RawValue InputStream) : StreamableAudio()
 
     companion object {
-        fun String.toAudio() = StreamableUrl(this.toImageHolder(mapOf()))
+        fun String.toAudio(headers: Map<String, String> = mapOf()) =
+            StreamableUrl(this.toImageHolder(headers))
+
         fun Uri.toAudio() = StreamableFile(this)
     }
 }

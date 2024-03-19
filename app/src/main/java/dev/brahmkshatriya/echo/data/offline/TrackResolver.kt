@@ -10,6 +10,8 @@ import androidx.core.net.toUri
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Track
 
@@ -116,10 +118,7 @@ class TrackResolver(val context: Context) {
                     Track(
                         id = uri,
                         title = it.getString(titleColumn),
-                        stream = ContentUris.withAppendedId(
-                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                            id,
-                        ).toAudio(),
+                        streamable = Streamable(uri, Streamable.Type.FILE),
                         artists = listOf(
                             Artist.Small(
                                 artistUri,
@@ -149,4 +148,11 @@ class TrackResolver(val context: Context) {
         return context.queryTracks(whereCondition, selectionArgs, 0, 1, "").firstOrNull()
     }
 
+    fun getStreamable(stream:Streamable): StreamableAudio{
+        val id = stream.id.toUri().lastPathSegment!!
+        return ContentUris.withAppendedId(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            id.toLong(),
+        ).toAudio()
+    }
 }

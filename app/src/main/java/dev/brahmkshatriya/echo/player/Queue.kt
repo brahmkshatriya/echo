@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.player
 
 import androidx.media3.common.MediaItem
+import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,13 +11,13 @@ import java.util.Collections.synchronizedList
 
 class Queue {
 
-    private val _queue = synchronizedList(mutableListOf<Pair<String, Track>>())
+    private val _queue = synchronizedList(mutableListOf<StreamableTrack>())
     val queue get() = synchronized(_queue) { _queue.toList() }
 
     val currentIndex = MutableStateFlow<Int?>(null)
-    val current get() = currentIndex.value?.let { queue.getOrNull(it)?.second }
+    val current get() = currentIndex.value?.let { queue.getOrNull(it) }
 
-    fun getTrack(mediaId: String?) = queue.find { it.first == mediaId }?.second
+    fun getTrack(mediaId: String?) = queue.find { it.id == mediaId }
 
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
@@ -36,25 +37,23 @@ class Queue {
     private val _addTrack = MutableSharedFlow<Pair<Int, List<MediaItem>>>()
     val addTrackFlow = _addTrack.asSharedFlow()
     suspend fun addTrack(
-        track: Track, offset: Int = 0
+        client: TrackClient, track: Track, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
-        return addTracks(listOf(track), offset)
+        return addTracks(client, listOf(track), offset)
     }
 
     suspend fun addTracks(
-        tracks: List<Track>, offset: Int = 0
+        client: TrackClient, tracks: List<Track>, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
         var position = currentIndex.value?.let { it + 1 } ?: 0
         position += offset
         position = position.coerceIn(0, _queue.size)
 
         val items = tracks.map { track ->
-            val stream = track.stream ?: throw Exception("${track.title} is not streamable.")
-            val item = PlayerHelper.mediaItemBuilder(track, stream)
-            item
+            PlayerHelper.mediaItemBuilder(track)
         }
-        val queueItems = tracks.mapIndexed { index, track ->
-            items[index].mediaId to track
+        val queueItems = tracks.map { track ->
+            StreamableTrack(track.id, track, client)
         }
         _queue.addAll(position, queueItems)
         val mediaItems = position to items
@@ -70,3 +69,9 @@ class Queue {
         _moveTrack.emit(fromIndex to toIndex)
     }
 }
+
+data class StreamableTrack(
+    val id: String,
+    val track: Track,
+    val client: TrackClient
+)

@@ -67,16 +67,16 @@ class PlayerSessionCallback(
             return super.onAddMediaItems(mediaSession, controller, mediaItems)
         }
 
-        val extension = extension
+        val client = extension
             ?: return default("Extension isn't loaded.")
-        if (extension !is SearchClient)
+        if (client !is SearchClient)
             return default("Extension does not support Searching")
-        if (extension !is TrackClient)
+        if (client !is TrackClient)
             return default("Extension does not support Streaming Tracks")
 
 
         return scope.future {
-            differ.submitData(extension.search(query).first())
+            differ.submitData(client.search(query).first())
             val tracks = differ.snapshot().items.mapNotNull {
                 when (it) {
                     is MediaItemsContainer.Category -> {
@@ -97,7 +97,7 @@ class PlayerSessionCallback(
             }.flatten()
             if (tracks.isEmpty())
                 return@future default("Couldn't find anything related to $query").get()
-            val items = global.addTracks(tracks).second
+            val items = global.addTracks(client, tracks).second
             items.toMutableList()
         }
     }

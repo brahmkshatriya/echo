@@ -20,6 +20,8 @@ import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingList
@@ -99,6 +101,10 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 
     override suspend fun getTrack(id: String): Track? {
         return trackResolver.get(id.toUri())
+    }
+
+    override suspend fun getStreamableAudio(streamable: Streamable): StreamableAudio {
+        return trackResolver.getStreamable(streamable)
     }
 
     override suspend fun getHomeGenres(): List<String> {

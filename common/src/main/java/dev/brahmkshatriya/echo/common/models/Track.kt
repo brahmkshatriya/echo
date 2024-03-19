@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 data class Track(
     val id: String,
     val title: String,
-    val stream: StreamableAudio? = null,
+    val streamable: Streamable? = null,
     val artists: List<Artist.Small> = listOf(),
     val album: Album.Small?,
     val cover: ImageHolder?,

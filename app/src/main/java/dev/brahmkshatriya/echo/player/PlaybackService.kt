@@ -19,10 +19,12 @@ import dev.brahmkshatriya.echo.ui.settings.AudioFragment.Companion.CLOSE_PLAYER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
+@UnstableApi
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
     @Inject
@@ -30,6 +32,9 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var global: Queue
+
+    @Inject
+    lateinit var throwableFlow: MutableSharedFlow<Throwable>
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -41,38 +46,27 @@ class PlaybackService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
 
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(C.USAGE_MEDIA)
-            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-            .build()
+        val audioAttributes = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
 
-        val player = ExoPlayer.Builder(this)
+        val player = ExoPlayer.Builder(this, DataSourceFactory(this, global, throwableFlow))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setAudioAttributes(audioAttributes, true)
             .build()
 
-        player.addListener(RadioListener(player, global, scope, settings, extension.flow))
+        player.addListener(RadioListener(player, global, scope, settings))
 
-        val intent = Intent(this, MainActivity::class.java)
-            .putExtra("fromNotification", true)
+        val intent = Intent(this, MainActivity::class.java).putExtra("fromNotification", true)
 
-        val pendingIntent = PendingIntent
-            .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        mediaLibrarySession =
-            MediaLibrarySession.Builder(
-                this,
-                player,
-                PlayerSessionCallback(this, scope, global, extension.flow)
-            )
-                .setSessionActivity(pendingIntent)
-                .build()
+        mediaLibrarySession = MediaLibrarySession.Builder(
+            this, player, PlayerSessionCallback(this, scope, global, extension.flow)
+        ).setSessionActivity(pendingIntent).build()
 
-        val notificationProvider = DefaultMediaNotificationProvider
-            .Builder(this)
-            .setChannelName(R.string.app_name)
-            .build()
+        val notificationProvider =
+            DefaultMediaNotificationProvider.Builder(this).setChannelName(R.string.app_name).build()
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
 
         setMediaNotificationProvider(notificationProvider)
@@ -92,8 +86,7 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         mediaLibrarySession?.run {
-            val stopPlayer = settings
-                .getBoolean(CLOSE_PLAYER, false)
+            val stopPlayer = settings.getBoolean(CLOSE_PLAYER, false)
             if (!player.isPlaying || stopPlayer) {
                 onDestroy()
             }
@@ -101,7 +94,6 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaLibrarySession
-
 }
 
 
