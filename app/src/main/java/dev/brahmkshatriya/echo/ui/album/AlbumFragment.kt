@@ -67,7 +67,7 @@ class AlbumFragment : Fragment() {
     private val header =
         AlbumHeaderAdapter(clickListener, object : AlbumHeaderAdapter.AlbumHeaderListener {
             override fun onPlayClicked(album: Album.Full) {
-                playerViewModel.play(album.tracks)
+                playerViewModel.play(album.tracks, 0)
             }
 
             override fun onRadioClicked(album: Album.Full) {
@@ -131,7 +131,7 @@ class AlbumFragment : Fragment() {
                 it, R.string.album, concatAdapter, true
             ) { client ->
                 if (client == null) return@getAdapterForExtension
-                viewModel.loadAlbum(client, snackBarViewModel.mutableExceptionFlow, album)
+                viewModel.loadAlbum(client, snackBarViewModel.mutableThrowableFlow, album)
             }
         }
         val headerFlow = viewModel.albumFlow
