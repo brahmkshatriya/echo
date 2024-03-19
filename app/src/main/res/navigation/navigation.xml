@@ -74,9 +74,6 @@
         android:id="@+id/navigation_exception"
         android:name="dev.brahmkshatriya.echo.ui.snackbar.ExceptionFragment"
         tools:layout="@layout/fragment_exception">
-        <argument
-            android:name="exception"
-            app:argType="java.lang.Exception" />
     </fragment>
 
     <action

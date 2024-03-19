@@ -27,13 +27,13 @@ class ArtistViewModel : ViewModel() {
 
     fun loadArtist(
         artistClient: ArtistClient,
-        exceptionFlow: MutableSharedFlow<Exception>,
+        throwableFlow: MutableSharedFlow<Throwable>,
         artist: Artist.Small
     ) {
         if (initialized) return
         initialized = true
         viewModelScope.launch(Dispatchers.IO) {
-            tryWith(exceptionFlow) {
+            tryWith(throwableFlow) {
                 artistClient.loadArtist(artist).let {
                     mutableArtistFlow.value = it
                     artistClient.getMediaItems(it).collectLatest { data ->
@@ -47,12 +47,12 @@ class ArtistViewModel : ViewModel() {
     fun subscribe(
         userClient: UserClient,
         artist: Artist.Full,
-        exceptionFlow: MutableSharedFlow<Exception>,
+        throwableFlow: MutableSharedFlow<Throwable>,
         subscribe: Boolean,
         block: (Boolean) -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            tryWith(exceptionFlow) {
+            tryWith(throwableFlow) {
                 if(subscribe) userClient.subscribe(artist)
                 else userClient.unsubscribe(artist)
             }

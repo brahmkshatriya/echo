@@ -22,7 +22,7 @@ import javax.inject.Inject
 class PlayerViewModel @Inject constructor(
     private val global: Queue,
     trackFlow: ExtensionFlow,
-    private val exceptionFlow: MutableSharedFlow<Exception>,
+    private val throwableFlow: MutableSharedFlow<Throwable>,
     application: Application
 ) : ViewModel() {
 
@@ -51,8 +51,9 @@ class PlayerViewModel @Inject constructor(
 
     fun play(track: Track) {
         viewModelScope.launch {
-            tryWith(exceptionFlow) {
-                val pos = global.addTrack(track).first
+            tryWith(throwableFlow) {
+                val client = trackClient ?: throw trackException
+                val pos = global.addTrack(client, track).first
                 audioIndexFlow.emit(pos)
             }
         }
@@ -60,8 +61,9 @@ class PlayerViewModel @Inject constructor(
 
     fun play(tracks: List<Track>, playIndex: Int? = null) {
         viewModelScope.launch {
-            tryWith(exceptionFlow) {
-                val pos = global.addTracks(tracks).first
+            tryWith(throwableFlow) {
+                val client = trackClient ?: throw trackException
+                val pos = global.addTracks(client, tracks).first
                 playIndex?.let { audioIndexFlow.emit(pos + it) }
             }
         }
@@ -75,7 +77,8 @@ class PlayerViewModel @Inject constructor(
 
     fun addToQueue(track: Track) {
         viewModelScope.launch {
-            tryWith(exceptionFlow) { global.addTrack(track) }
+            val client = trackClient ?: throw trackException
+            tryWith(throwableFlow) { global.addTrack(client, track) }
         }
     }
 
@@ -97,6 +100,12 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    private val trackException = Exception(
+        application.getString(
+            R.string.is_not_supported,
+            application.getString(R.string.track)
+        )
+    )
     private val radioException = Exception(
         application.getString(
             R.string.is_not_supported,
@@ -108,22 +117,22 @@ class PlayerViewModel @Inject constructor(
         val client = trackClient
         if (client is RadioClient) {
             viewModelScope.launch(Dispatchers.IO) {
-                val playlist = tryWith(exceptionFlow) { client.radio(artist) }
+                val playlist = tryWith(throwableFlow) { client.radio(artist) }
                     ?: return@launch
                 play(playlist.tracks, 0)
             }
-        } else viewModelScope.launch { exceptionFlow.emit(radioException) }
+        } else viewModelScope.launch { throwableFlow.emit(radioException) }
     }
 
     fun radio(album: Album.Full) {
         val client = trackClient
         if (client is RadioClient) {
             viewModelScope.launch(Dispatchers.IO) {
-                val playlist = tryWith(exceptionFlow) { client.radio(album) }
+                val playlist = tryWith(throwableFlow) { client.radio(album) }
                     ?: return@launch
                 play(playlist.tracks, 0)
             }
-        } else viewModelScope.launch { exceptionFlow.emit(radioException) }
+        } else viewModelScope.launch { throwableFlow.emit(radioException) }
     }
 
 }

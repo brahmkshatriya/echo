@@ -62,7 +62,7 @@ class PluginModule {
 
     @Provides
     @Singleton
-    fun provideExceptionFlow() = MutableSharedFlow<Exception>()
+    fun provideThrowableFlow() = MutableSharedFlow<Throwable>()
 
     @Provides
     @Singleton

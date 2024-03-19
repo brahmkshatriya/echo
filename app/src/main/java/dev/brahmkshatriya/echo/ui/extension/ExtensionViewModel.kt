@@ -21,13 +21,13 @@ class ExtensionViewModel @Inject constructor(
 ) : ViewModel() {
 
     val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
-    private val _exceptionFlow = MutableSharedFlow<Exception>()
-    val exceptionFlow = _exceptionFlow.asSharedFlow()
+    private val _throwableFlow = MutableSharedFlow<Throwable>()
+    val throwableFlow = _throwableFlow.asSharedFlow()
     init {
         viewModelScope.launch {
             extensionListFlow = pluginRepo.getAllPlugins { e ->
                 launch {
-                    _exceptionFlow.emit(e)
+                    _throwableFlow.emit(e)
                 }
             }
             mutableExtensionFlow.flow.value = extensionListFlow?.firstOrNull()?.firstOrNull()

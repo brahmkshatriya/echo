@@ -11,8 +11,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModel
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
@@ -22,8 +23,12 @@ import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 
 class ExceptionFragment : Fragment() {
-    private val args: ExceptionFragmentArgs by navArgs()
     private var binding: FragmentExceptionBinding by autoCleared()
+    private val viewmodel : ThrowableViewModel by activityViewModels()
+
+    class ThrowableViewModel : ViewModel() {
+        var throwable : Throwable? = null
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,14 +58,14 @@ class ExceptionFragment : Fragment() {
 
         binding.exceptionMessage.setupWithNavController(findNavController())
 
-        val exception = args.exception
-        binding.exceptionMessage.title = exception.message
-        binding.exceptionDetails.text = exception.stackTraceToString()
+        val throwable = viewmodel.throwable ?: return
+        binding.exceptionMessage.title = throwable.message
+        binding.exceptionDetails.text = throwable.stackTraceToString()
 
         binding.exceptionMessage.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.exception_copy -> {
-                    copyToClipboard(exception.message, exception.stackTraceToString())
+                    copyToClipboard(throwable.message, throwable.stackTraceToString())
                     true
                 }
 

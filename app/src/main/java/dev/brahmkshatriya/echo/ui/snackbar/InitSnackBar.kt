@@ -43,20 +43,22 @@ fun initSnackBar(activity: MainActivity) {
             createSnackBar(message)
         }
 
-        observe(snackBarViewModel.exceptionFlow) { exception ->
+        observe(snackBarViewModel.throwableFlow) { throwable ->
             val message = SnackBarViewModel.Message(
-                message = exception.message ?: "An error occurred",
+                message = throwable.message ?: "An error occurred",
                 action = getString(R.string.view),
                 actionHandler = { navController ->
-                    val action = ExceptionFragmentDirections.actionException(exception)
+                    val viewModel : ExceptionFragment.ThrowableViewModel by activity.viewModels()
+                    viewModel.throwable = throwable
+                    val action = ExceptionFragmentDirections.actionException()
                     navController.navigate(action)
                 }
             )
             snackBarViewModel.create(message)
         }
 
-        observe(extensionViewModel.exceptionFlow) { e ->
-            snackBarViewModel.submitException(e)
+        observe(extensionViewModel.throwableFlow) { e ->
+            snackBarViewModel.submitThrowable(e)
         }
     }
 }

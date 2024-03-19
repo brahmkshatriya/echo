@@ -489,8 +489,8 @@ fun createPlayerUI(
         }
 
         val snackBarViewModel: SnackBarViewModel by viewModels()
-        observe(uiViewModel.exceptionFlow) { e ->
-            snackBarViewModel.submitException(e)
+        observe(uiViewModel.throwableFlow) { e ->
+            snackBarViewModel.submitThrowable(e)
         }
     }
 }

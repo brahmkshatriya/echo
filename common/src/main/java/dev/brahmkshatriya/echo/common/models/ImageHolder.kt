@@ -5,13 +5,10 @@ import android.net.Uri
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-
+@Parcelize
 sealed class ImageHolder : Parcelable {
-    @Parcelize
     data class UrlHolder(val url: String, val headers: Map<String, String>) : ImageHolder()
-    @Parcelize
     data class UriHolder(val uri: Uri) : ImageHolder()
-    @Parcelize
     data class BitmapHolder(val bitmap: Bitmap) : ImageHolder()
 
     companion object {
@@ -19,7 +16,7 @@ sealed class ImageHolder : Parcelable {
             return UriHolder(this)
         }
 
-        fun String.toImageHolder(headers: Map<String, String>): UrlHolder {
+        fun String.toImageHolder(headers: Map<String, String> = mapOf()): UrlHolder {
             return UrlHolder(this, headers)
         }
 

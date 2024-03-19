@@ -24,12 +24,12 @@ class AlbumViewModel : ViewModel() {
     val albumFlow = mutableAlbumFlow.asStateFlow()
 
     fun loadAlbum(
-        albumClient: AlbumClient, exceptionFlow: MutableSharedFlow<Exception>, album: Album.Small
+        albumClient: AlbumClient, throwableFlow: MutableSharedFlow<Throwable>, album: Album.Small
     ) {
         if (initialized) return
         initialized = true
         viewModelScope.launch(Dispatchers.IO) {
-            tryWith(exceptionFlow) {
+            tryWith(throwableFlow) {
                 albumClient.loadAlbum(album).let {
                     mutableAlbumFlow.value = it
                     albumClient.getMediaItems(it).collectLatest { data ->

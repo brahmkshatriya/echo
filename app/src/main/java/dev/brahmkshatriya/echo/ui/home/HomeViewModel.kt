@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    val homeFeedFlow: ExtensionFlow, private val exceptionFlow: MutableSharedFlow<Exception>
+    val homeFeedFlow: ExtensionFlow, private val throwableFlow: MutableSharedFlow<Throwable>
 ) : ViewModel() {
 
     private val _feed: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
@@ -36,11 +36,11 @@ class HomeViewModel @Inject constructor(
                 homeClient = it as? HomeFeedClient
                 genre.value = null
                 launch(Dispatchers.IO) {
-                    tryWith(exceptionFlow) {
+                    tryWith(throwableFlow) {
                         genres.value = homeClient?.getHomeGenres()
                         genre.value = genres.value?.firstOrNull()
                     }
-                    tryWith(exceptionFlow) {
+                    tryWith(throwableFlow) {
                         homeClient?.getHomeFeed(genre.asStateFlow())?.cachedIn(viewModelScope)
                             ?.collect { feed ->
                                 _feed.value = feed

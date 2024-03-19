@@ -55,8 +55,8 @@ class ArtistFragment : Fragment() {
             artist: Artist.Full, subscribe: Boolean, adapter: ArtistHeaderAdapter
         ) {
             val userClient = extensionViewModel.extensionFlow.value as? UserClient ?: return
-            val exceptionFlow = snackBarViewModel.mutableExceptionFlow
-            viewModel.subscribe(userClient, artist, exceptionFlow, subscribe) {
+            val throwableFlow = snackBarViewModel.mutableThrowableFlow
+            viewModel.subscribe(userClient, artist, throwableFlow, subscribe) {
                 adapter.submitSubscribe(subscribe)
             }
         }
@@ -118,7 +118,7 @@ class ArtistFragment : Fragment() {
                 it, R.string.artist, concatAdapter, true
             ) { client ->
                 if (client == null) return@getAdapterForExtension
-                viewModel.loadArtist(client, snackBarViewModel.mutableExceptionFlow, artist)
+                viewModel.loadArtist(client, snackBarViewModel.mutableThrowableFlow, artist)
             }
         }
         val headerFlow =

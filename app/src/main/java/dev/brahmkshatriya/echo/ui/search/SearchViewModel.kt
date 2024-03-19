@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     val searchFlow: ExtensionFlow,
-    private val exceptionFlow: MutableSharedFlow<Exception>,
+    private val throwableFlow: MutableSharedFlow<Throwable>,
 ) : ViewModel() {
 
     init {
@@ -39,7 +39,7 @@ class SearchViewModel @Inject constructor(
     fun search(query: String) {
         this.query = query
         viewModelScope.launch(Dispatchers.IO) {
-            tryWith(exceptionFlow) {
+            tryWith(throwableFlow) {
                 searchClient?.search(query)?.collectLatest {
                     _result.value = it
                 }

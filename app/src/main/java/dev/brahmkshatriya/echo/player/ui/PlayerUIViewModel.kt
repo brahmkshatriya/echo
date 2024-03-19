@@ -22,15 +22,15 @@ class PlayerUIViewModel @Inject constructor(
     var repeatMode: Int = 0
 
     val list
-        get() = global.queue.mapIndexed { index, it -> (currentIndex.value == index) to it.second }
+        get() = global.queue.mapIndexed { index, it -> (currentIndex.value == index) to it.track }
 
-    fun getTrack(mediaId: String?) = global.getTrack(mediaId)
-    private val _exceptionFlow = MutableSharedFlow<PlaybackException>()
-    val exceptionFlow = _exceptionFlow
+    fun getTrack(mediaId: String?) = global.getTrack(mediaId)?.track
+    private val _throwableFlow = MutableSharedFlow<PlaybackException>()
+    val throwableFlow = _throwableFlow
 
     fun createException(error: PlaybackException) {
         viewModelScope.launch {
-            _exceptionFlow.emit(error)
+            _throwableFlow.emit(error)
         }
     }
 
@@ -38,7 +38,7 @@ class PlayerUIViewModel @Inject constructor(
         global.currentIndex.value = index
     }
 
-    val track = MutableStateFlow(global.queue.firstOrNull()?.second)
+    val track = MutableStateFlow(global.queue.firstOrNull()?.track)
     val currentIndex = global.currentIndex
 
     val progress = MutableStateFlow(0 to 0)
