@@ -5,13 +5,5 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 open class Streamable(
-    val id: String,
-    val type : Type
-) : Parcelable {
-    @Parcelize
-    enum class Type : Parcelable {
-        URL,
-        FILE,
-        STREAM
-    }
-}
+    val id: String
+) : Parcelable

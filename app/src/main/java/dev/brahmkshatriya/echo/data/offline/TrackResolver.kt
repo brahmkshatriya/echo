@@ -118,7 +118,7 @@ class TrackResolver(val context: Context) {
                     Track(
                         id = uri,
                         title = it.getString(titleColumn),
-                        streamable = Streamable(uri, Streamable.Type.FILE),
+                        streamable = Streamable(uri),
                         artists = listOf(
                             Artist.Small(
                                 artistUri,
