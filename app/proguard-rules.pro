@@ -1,2 +1,3 @@
 -keep class kotlin.** { *; }
 -keep class kotlinx.** { *; }
+-keep class dev.brahmkshatriya.echo.common.* { *; }
