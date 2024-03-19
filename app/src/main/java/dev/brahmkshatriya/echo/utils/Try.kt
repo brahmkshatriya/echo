@@ -25,6 +25,7 @@ suspend fun <T> tryWith(throwableFlow:MutableSharedFlow<Throwable>, block: suspe
         block()
     } catch (e: Throwable) {
         throwableFlow.emit(e)
+        println(e.stackTrace.toString())
         null
     }
 }

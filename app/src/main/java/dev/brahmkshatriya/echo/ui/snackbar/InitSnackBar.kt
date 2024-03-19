@@ -8,12 +8,11 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.utils.observe
 
 fun initSnackBar(activity: MainActivity) {
     val snackBarViewModel: SnackBarViewModel by activity.viewModels()
-    val extensionViewModel: ExtensionViewModel by activity.viewModels()
+
     activity.apply {
         val navController = binding.navHostFragment.getFragment<NavHostFragment>().navController
 
@@ -44,6 +43,7 @@ fun initSnackBar(activity: MainActivity) {
         }
 
         observe(snackBarViewModel.throwableFlow) { throwable ->
+            throwable.printStackTrace()
             val message = SnackBarViewModel.Message(
                 message = throwable.message ?: "An error occurred",
                 action = getString(R.string.view),
@@ -55,10 +55,6 @@ fun initSnackBar(activity: MainActivity) {
                 }
             )
             snackBarViewModel.create(message)
-        }
-
-        observe(extensionViewModel.throwableFlow) { e ->
-            snackBarViewModel.submitThrowable(e)
         }
     }
 }

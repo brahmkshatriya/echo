@@ -15,8 +15,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerUIViewModel @Inject constructor(
-    private val global: Queue
+    private val global: Queue,
+    private val mutableThrowableFlow: MutableSharedFlow<Throwable>
 ) : ViewModel() {
+
     var playlistTranslationY: Int = 0
     var bottomNavTranslateY: Int = 0
     var repeatMode: Int = 0
@@ -25,12 +27,10 @@ class PlayerUIViewModel @Inject constructor(
         get() = global.queue.mapIndexed { index, it -> (currentIndex.value == index) to it.track }
 
     fun getTrack(mediaId: String?) = global.getTrack(mediaId)?.track
-    private val _throwableFlow = MutableSharedFlow<PlaybackException>()
-    val throwableFlow = _throwableFlow
 
-    fun createException(error: PlaybackException) {
+    fun createException(exception: PlaybackException) {
         viewModelScope.launch {
-            _throwableFlow.emit(error)
+            mutableThrowableFlow.emit(exception)
         }
     }
 

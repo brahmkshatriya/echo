@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
-@UnstableApi
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
     @Inject

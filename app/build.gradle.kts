@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ApplicationBuildType
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -21,15 +23,17 @@ android {
     }
 
     buildTypes {
-        release {
+        fun ApplicationBuildType.applyProguard() {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+        release { applyProguard() }
         debug {
-            isMinifyEnabled = true
+            val isCI = System.getenv("CI")?.toBooleanStrictOrNull() ?: true
+            if (isCI) applyProguard()
         }
     }
     compileOptions {

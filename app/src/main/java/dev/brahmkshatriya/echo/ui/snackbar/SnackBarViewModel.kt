@@ -11,16 +11,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SnackBarViewModel @Inject constructor(
-    val mutableThrowableFlow : MutableSharedFlow<Throwable>
+    mutableThrowableFlow : MutableSharedFlow<Throwable>
 ) : ViewModel() {
 
     val throwableFlow = mutableThrowableFlow.asSharedFlow()
-
-    fun submitThrowable(throwable: Throwable) {
-        viewModelScope.launch {
-            mutableThrowableFlow.emit(throwable)
-        }
-    }
 
     data class Message(
         val message: String,

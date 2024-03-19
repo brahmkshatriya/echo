@@ -30,7 +30,6 @@ import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
-import dev.brahmkshatriya.echo.ui.snackbar.SnackBarViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
@@ -45,7 +44,6 @@ class ArtistFragment : Fragment() {
 
     private val viewModel: ArtistViewModel by viewModels()
     private val extensionViewModel: ExtensionViewModel by activityViewModels()
-    private val snackBarViewModel: SnackBarViewModel by activityViewModels()
     private val playerViewModel: PlayerViewModel by activityViewModels()
 
     private val clickListener = MediaItemClickListener(this)
@@ -55,7 +53,7 @@ class ArtistFragment : Fragment() {
             artist: Artist.Full, subscribe: Boolean, adapter: ArtistHeaderAdapter
         ) {
             val userClient = extensionViewModel.extensionFlow.value as? UserClient ?: return
-            val throwableFlow = snackBarViewModel.mutableThrowableFlow
+            val throwableFlow = extensionViewModel.throwableFlow
             viewModel.subscribe(userClient, artist, throwableFlow, subscribe) {
                 adapter.submitSubscribe(subscribe)
             }
@@ -118,7 +116,7 @@ class ArtistFragment : Fragment() {
                 it, R.string.artist, concatAdapter, true
             ) { client ->
                 if (client == null) return@getAdapterForExtension
-                viewModel.loadArtist(client, snackBarViewModel.mutableThrowableFlow, artist)
+                viewModel.loadArtist(client, extensionViewModel.throwableFlow, artist)
             }
         }
         val headerFlow =
