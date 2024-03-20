@@ -56,6 +56,16 @@ class LookFragment : PreferenceFragmentCompat() {
                 addPreference(this)
 
             }
+
+            SwitchPreferenceCompat(context).apply {
+                key = DYNAMIC_PLAYER
+                title = getString(R.string.dynamic_player)
+                summary = getString(R.string.dynamic_player_summary)
+                layoutResource = R.layout.preference_switch
+                isIconSpaceReserved = false
+                setDefaultValue(true)
+                addPreference(this)
+            }
         }
 
 
@@ -64,5 +74,6 @@ class LookFragment : PreferenceFragmentCompat() {
     companion object {
         const val THEME_KEY = "theme"
         const val AMOLED_KEY = "amoled"
+        const val DYNAMIC_PLAYER = "dynamic_player"
     }
 }

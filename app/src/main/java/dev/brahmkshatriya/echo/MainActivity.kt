@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Configuration.UI_MODE_NIGHT_MASK
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.graphics.Color.TRANSPARENT
@@ -30,11 +31,13 @@ import dev.brahmkshatriya.echo.ui.snackbar.initSnackBar
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.tryWith
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
 
+    @Inject lateinit var preferences: SharedPreferences
     val binding by lazy(LazyThreadSafetyMode.NONE) {
         ActivityMainBinding.inflate(layoutInflater)
     }

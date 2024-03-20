@@ -66,5 +66,7 @@
     <string name="amoled_summary">Picth Black, Pure Black</string>
     <string name="ui">UI</string>
     <string name="restart_app">Restart the app to apply changes</string>
+    <string name="dynamic_player">Dynamic Player Color</string>
+    <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
 
 </resources>

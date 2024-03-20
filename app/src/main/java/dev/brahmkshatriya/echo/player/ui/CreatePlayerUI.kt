@@ -42,6 +42,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.DYNAMIC_PLAYER
 import dev.brahmkshatriya.echo.utils.createRequest
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
@@ -59,6 +60,8 @@ import kotlin.math.min
 fun createPlayerUI(
     activity: MainActivity
 ) {
+
+    val preferences = activity.preferences
 
     val playerBinding = activity.binding.bottomPlayer
     val playlistBinding = playerBinding.bottomPlaylist
@@ -282,7 +285,7 @@ fun createPlayerUI(
         val body: Int,
     )
 
-    fun applyColors(colors:PlayerColors) {
+    fun applyColors(colors: PlayerColors) {
         playerBinding.root.setBackgroundColor(colors.background)
         playerBinding.collapsedContainer.setBackgroundColor(colors.background)
 
@@ -350,20 +353,20 @@ fun createPlayerUI(
                 loadInto(playerBinding.expandedTrackCover, R.drawable.art_music)
 
                 lifecycleScope.launch(Dispatchers.IO) {
-                    val req = createRequest(activity).build()
-                    val result =
-                        (imageLoader.execute(req) as? SuccessResult)?.drawable
-                    val bitmap = (result as? BitmapDrawable)?.bitmap
+                    val dynamicPlayer = preferences.getBoolean(DYNAMIC_PLAYER, true)
+                    val req = if (dynamicPlayer) createRequest(activity).build() else null
+                    val result = req?.let { imageLoader.execute(it) } as? SuccessResult
+                    val bitmap = (result?.drawable as? BitmapDrawable)?.bitmap
                     val palette = bitmap?.let { Palette.from(it).generate() }
 
                     val colors = palette?.run {
                         val lightMode = !activity.isNightMode()
                         val lightSwatch = lightVibrantSwatch
                             ?: lightMutedSwatch ?: vibrantSwatch
-                        val darkSwatch =  darkVibrantSwatch
-                            ?:  darkMutedSwatch ?: mutedSwatch
+                        val darkSwatch = darkVibrantSwatch
+                            ?: darkMutedSwatch ?: mutedSwatch
 
-                        val bgSwatch = if(lightMode) lightSwatch else darkSwatch
+                        val bgSwatch = if (lightMode) lightSwatch else darkSwatch
                         bgSwatch?.run {
                             val clickSwatch = if (lightMode) darkSwatch else lightSwatch
                             PlayerColors(rgb, clickSwatch?.rgb ?: titleTextColor, bodyTextColor)
