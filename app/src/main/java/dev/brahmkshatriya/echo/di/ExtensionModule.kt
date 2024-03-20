@@ -1,16 +1,15 @@
 package dev.brahmkshatriya.echo.di
 
 import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.data.extensions.ApkManifestParser
 import dev.brahmkshatriya.echo.data.extensions.LocalExtensionRepo
-import dev.brahmkshatriya.echo.player.Queue
-import kotlinx.coroutines.flow.MutableSharedFlow
+import dev.brahmkshatriya.echo.data.extensions.RepoWithPreferences
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import tel.jeelpa.plugger.PluginRepo
@@ -22,10 +21,9 @@ import tel.jeelpa.plugger.pluginloader.file.FilePluginConfig
 import tel.jeelpa.plugger.pluginloader.file.FileSystemPluginLoader
 import javax.inject.Singleton
 
-
 @Module
 @InstallIn(SingletonComponent::class)
-class PluginModule {
+class ExtensionModule {
 
     @Provides
     @Singleton
@@ -44,7 +42,13 @@ class PluginModule {
         return RepoWithPreferences(application, repo)
     }
 
-    private val mutableExtensionFlow = MutableExtensionFlow(MutableStateFlow(null))
+    // Dagger cannot directly infer Foo<Bar>, if Bar is an interface
+    // That means the Flow<Clients?> cannot be directly injected,
+    // So, we need to wrap it in a data class and inject that instead
+    data class MutableFlow(val flow: MutableStateFlow<ExtensionClient?>)
+    data class ExtensionFlow(val flow: Flow<ExtensionClient?>)
+
+    private val mutableExtensionFlow = MutableFlow(MutableStateFlow(null))
     private val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
 
     @Provides
@@ -53,20 +57,6 @@ class PluginModule {
 
     @Provides
     @Singleton
-    fun providesExtensionClient() =
-        ExtensionFlow(extensionFlow)
-
-    @Provides
-    @Singleton
-    fun provideGlobalQueue() = Queue()
-
-    @Provides
-    @Singleton
-    fun provideThrowableFlow() = MutableSharedFlow<Throwable>()
-
-    @Provides
-    @Singleton
-    fun provideSettingsPreferences(application: Application): SharedPreferences =
-        application.getSharedPreferences(application.packageName, Context.MODE_PRIVATE)
+    fun providesExtensionClient() = ExtensionFlow(extensionFlow)
 
 }

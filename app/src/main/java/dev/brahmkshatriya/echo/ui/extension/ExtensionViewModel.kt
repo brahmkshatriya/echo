@@ -1,10 +1,12 @@
 package dev.brahmkshatriya.echo.ui.extension
 
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.di.MutableExtensionFlow
+import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,8 +17,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
-    private val mutableExtensionFlow: MutableExtensionFlow,
+    private val mutableExtensionFlow: ExtensionModule.MutableFlow,
     private val pluginRepo: PluginRepo<ExtensionClient>,
+    private val preferences: SharedPreferences,
     val throwableFlow: MutableSharedFlow<Throwable>
 ) : ViewModel() {
 
@@ -27,12 +30,14 @@ class ExtensionViewModel @Inject constructor(
         if (initialized) return
         initialized = true
         viewModelScope.launch {
-            extensionListFlow = pluginRepo.getAllPlugins { e ->
-                launch {
-                    throwableFlow.emit(e)
-                }
-            }
-            mutableExtensionFlow.flow.value = extensionListFlow?.firstOrNull()?.firstOrNull()
+            extensionListFlow = pluginRepo.getAllPlugins {
+                launch { throwableFlow.emit(it) }
+            }.catchWith(throwableFlow)
+            val list = extensionListFlow?.firstOrNull()
+            val id = preferences.getString(LAST_EXTENSION_KEY, null)
+            mutableExtensionFlow.flow.value = list?.find {
+                it.metadata.id == id
+            } ?: list?.firstOrNull()
         }
     }
 
@@ -40,10 +45,15 @@ class ExtensionViewModel @Inject constructor(
     fun getExtensionList() = extensionListFlow
 
     fun setExtension(extension: ExtensionClient) {
+        preferences.edit().putString(LAST_EXTENSION_KEY, extension.metadata.id).apply()
         viewModelScope.launch {
             mutableExtensionFlow.flow.value = extension
         }
     }
 
     fun getCurrentExtension() = mutableExtensionFlow.flow.value
+
+    companion object {
+        const val LAST_EXTENSION_KEY = "last_extension"
+    }
 }

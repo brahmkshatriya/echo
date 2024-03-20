@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.di.ExtensionFlow
+import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val global: Queue,
-    trackFlow: ExtensionFlow,
+    trackFlow: ExtensionModule.ExtensionFlow,
     private val throwableFlow: MutableSharedFlow<Throwable>,
     application: Application
 ) : ViewModel() {

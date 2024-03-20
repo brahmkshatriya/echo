@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.extensions
+package dev.brahmkshatriya.echo.data
 
 import android.content.Context
 import androidx.core.net.toUri

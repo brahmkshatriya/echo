@@ -7,6 +7,8 @@ import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.DefaultMediaNotificationProvider
@@ -15,7 +17,7 @@ import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.di.ExtensionFlow
+import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.Companion.CLOSE_PLAYER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +30,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
     @Inject
-    lateinit var extension: ExtensionFlow
+    lateinit var extension: ExtensionModule.ExtensionFlow
 
     @Inject
     lateinit var global: Queue
@@ -38,6 +40,9 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var settings: SharedPreferences
+
+    @Inject
+    lateinit var cache: SimpleCache
 
     private var mediaLibrarySession: MediaLibrarySession? = null
     private val scope = CoroutineScope(Dispatchers.IO) + Job()
@@ -50,8 +55,14 @@ class PlaybackService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
 
         val customDataSource = CustomDataSource.Factory(this, global, throwableFlow)
+
+        val cacheDataSourceFactory =
+            CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(customDataSource)
+
         val factory = DefaultMediaSourceFactory(this)
-            .setDataSourceFactory(customDataSource)
+            .setDataSourceFactory(cacheDataSourceFactory)
 
         val player = ExoPlayer.Builder(this, factory)
             .setHandleAudioBecomingNoisy(true)

@@ -6,7 +6,7 @@ import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.di.ExtensionFlow
+import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.utils.catchWith
 import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    val searchFlow: ExtensionFlow,
+    val searchFlow: ExtensionModule.ExtensionFlow,
     private val throwableFlow: MutableSharedFlow<Throwable>,
 ) : ViewModel() {
 
