@@ -62,5 +62,9 @@
     <string name="behavior">Behavior</string>
     <string name="theme">Theme</string>
     <string name="theme_summary">Select between light and night</string>
+    <string name="amoled">Amoled</string>
+    <string name="amoled_summary">Picth Black, Pure Black</string>
+    <string name="ui">UI</string>
+    <string name="restart_app">Restart the app to apply changes</string>
 
 </resources>

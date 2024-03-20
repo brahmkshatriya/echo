@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurfaceContainerLow">
+    android:background="?attr/colorSurface">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/expandedContainer"
@@ -278,7 +278,7 @@
         android:id="@+id/collapsedContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurfaceContainerLow"
+        android:background="?attr/colorSurface"
         android:orientation="horizontal"
         tools:translationY="-72dp">
 
@@ -372,6 +372,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:indeterminate="true"
+                            app:indicatorColor="?attr/colorTertiary"
                             android:visibility="gone" />
 
                         <com.google.android.material.checkbox.MaterialCheckBox

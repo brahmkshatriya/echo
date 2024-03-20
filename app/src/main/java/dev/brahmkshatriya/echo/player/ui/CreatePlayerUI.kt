@@ -314,7 +314,7 @@ fun createPlayerUI(
             .getFragment<NavHostFragment>().navController
 
         val background = TypedValue()
-        theme.resolveAttribute(com.google.android.material.R.attr.colorSurfaceContainerLow, background, true)
+        theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, background, true)
         val tertiary = TypedValue()
         theme.resolveAttribute(com.google.android.material.R.attr.colorTertiary, tertiary, true)
         val onSurface = TypedValue()

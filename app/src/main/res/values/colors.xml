@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="amoled_bg">@color/white</color>
     <color name="amoled_fg">@color/black</color>
+    <color name="blue">#03A9F4</color>
 </resources>
