@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Track(
+open class Track(
     val id: String,
     val title: String,
     val streamable: Streamable? = null,
@@ -15,4 +15,6 @@ data class Track(
     val plays: Int?,
     val releaseDate: String?,
     val liked: Boolean
-) : Parcelable
+) : Parcelable{
+
+}

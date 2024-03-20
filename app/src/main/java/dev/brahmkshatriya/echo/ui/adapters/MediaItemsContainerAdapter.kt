@@ -29,11 +29,14 @@ import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.album.albumImage
 import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadWith
 import java.lang.ref.WeakReference
 
 class MediaItemsContainerAdapter(
     fragment: Fragment,
-    private val listener: ClickListener<Pair<View, MediaItemsContainer>> = MediaItemClickListener(fragment),
+    private val listener: ClickListener<Pair<View, MediaItemsContainer>> = MediaItemClickListener(
+        fragment
+    ),
 ) : PagingDataAdapter<MediaItemsContainer, MediaItemsContainerAdapter.MediaItemsContainerHolder>(
     MediaItemsContainerComparator
 ) {
@@ -191,26 +194,16 @@ class MediaItemsContainerAdapter(
             val track = (item as MediaItemsContainer.TrackItem).track
             binding.title.text = track.title
             track.cover.loadInto(binding.imageView, R.drawable.art_music)
-            val album = track.album
-            if (album == null) {
-                binding.album.visibility = View.GONE
-            } else {
-                binding.album.visibility = View.VISIBLE
-                binding.album.text = album.title
-            }
-            if (track.artists.isEmpty()) {
-                binding.artist.visibility = View.GONE
-            } else {
-                binding.artist.visibility = View.VISIBLE
-                binding.artist.text = track.artists.joinToString(" ") { it.name }
-            }
-            val duration = track.duration
-            if (duration == null) {
-                binding.duration.visibility = View.GONE
-            } else {
-                binding.duration.visibility = View.VISIBLE
-                binding.duration.text = duration.toTimeString()
-            }
+
+            binding.album.isVisible = track.album != null
+            binding.album.text = track.album?.title
+
+            binding.artist.isVisible = track.artists.isNotEmpty()
+            binding.artist.text = track.artists.joinToString(" ") { it.name }
+
+            binding.duration.isVisible = track.duration != null
+            binding.duration.text = track.duration?.toTimeString()
+
             binding.root.transitionName = track.id
         }
 
@@ -223,15 +216,25 @@ class MediaItemsContainerAdapter(
             val album = (item as MediaItemsContainer.AlbumItem).album
             binding.title.text = album.title
             album.cover.apply {
-                loadInto(binding.imageView, R.drawable.art_album)
-                loadInto(binding.imageView1)
-                loadInto(binding.imageView2)
+                loadWith(binding.imageView, R.drawable.art_album, null) {
+                    binding.imageView1.setImageDrawable(it)
+                    binding.imageView2.setImageDrawable(it)
+                }
             }
             albumImage(album.numberOfTracks, binding.imageView1, binding.imageView2)
-            binding.artist.text = album.artist.name
-            binding.duration.text = binding.root.context.resources.getQuantityString(
-                R.plurals.number_songs, album.numberOfTracks, album.numberOfTracks
-            )
+            binding.artist.isVisible = album.artists.isNotEmpty()
+            binding.artist.text = album.artists.joinToString(" ") { it.name }
+
+            binding.duration.isVisible = album.numberOfTracks != null
+            binding.duration.text = album.numberOfTracks?.let {
+                binding.root.context.resources.getQuantityString(
+                    R.plurals.number_songs, it, album.numberOfTracks
+                )
+            }
+
+            binding.subtitle.isVisible = !album.subtitle.isNullOrBlank()
+            binding.subtitle.text = album.subtitle
+
             binding.root.transitionName = album.id
         }
 
@@ -243,8 +246,10 @@ class MediaItemsContainerAdapter(
             val item = getItem(bindingAdapterPosition) ?: return
             val artist = (item as MediaItemsContainer.ArtistItem).artist
             binding.title.text = artist.name
-            binding.subtitle.text = artist.subtitle
+
             binding.subtitle.isVisible = !artist.subtitle.isNullOrBlank()
+            binding.subtitle.text = artist.subtitle
+
             artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
             binding.root.transitionName = artist.id
         }
@@ -259,9 +264,10 @@ class MediaItemsContainerAdapter(
             val playlist = (item as MediaItemsContainer.PlaylistItem).playlist
             binding.title.text = playlist.title
             playlist.cover.apply {
-                loadInto(binding.imageView, R.drawable.art_library_music)
-                loadInto(binding.imageView1)
-                loadInto(binding.imageView2)
+                loadWith(binding.imageView, R.drawable.art_library_music, null) {
+                    binding.imageView1.setImageDrawable(it)
+                    binding.imageView2.setImageDrawable(it)
+                }
             }
             albumImage(3, binding.imageView1, binding.imageView2)
             binding.subtitle.text = playlist.subtitle
@@ -319,7 +325,7 @@ class MediaItemsContainerAdapter(
 
                 is MediaItemsContainer.TrackItem -> {
                     val newTrack = newItem as? MediaItemsContainer.TrackItem
-                    return oldItem.track == newTrack?.track
+                    return oldItem.track.id == newTrack?.track?.id
                 }
 
                 is MediaItemsContainer.AlbumItem -> {

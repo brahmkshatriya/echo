@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.album
 import android.view.View
 import androidx.core.view.isVisible
 
-fun albumImage(tracks: Int, view1: View, view2: View) {
+fun albumImage(tracks: Int?, view1: View, view2: View) {
     when (tracks) {
         1 -> {
             view1.isVisible = false

@@ -8,13 +8,14 @@ import androidx.core.view.isVisible
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.ItemMainHeaderBinding
 import dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragmentDirections
 import dev.brahmkshatriya.echo.ui.settings.SettingsActivity
 
 class HeaderAdapter(
     private val header: Int,
-    private val chipListener: ((HeaderAdapter, String) -> Unit)? = null
+    private val chipListener: ((HeaderAdapter, Genre) -> Unit)? = null
 ) : RecyclerView.Adapter<HeaderAdapter.HeaderViewHolder>() {
 
     class HeaderViewHolder(val binding: ItemMainHeaderBinding) :
@@ -68,8 +69,8 @@ class HeaderAdapter(
         savedState = holder.binding.chipRecyclerView.layoutManager?.onSaveInstanceState()
     }
 
-    private var chips: List<Pair<Boolean, String>> = emptyList()
-    fun submitChips(chips: List<Pair<Boolean, String>>) {
+    private var chips: List<Pair<Boolean, Genre>> = emptyList()
+    fun submitChips(chips: List<Pair<Boolean, Genre>>) {
         this.chips = chips
         notifyItemChanged(0)
     }

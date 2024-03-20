@@ -6,13 +6,12 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import java.io.IOException
 
-abstract class PagedFlow<T : Any>(
-    private val pageSize: Int = 10
+class PagedFlow<T : Any>(
+    private val load : suspend (page: Int, pageSize: Int) -> List<T>
 ) {
-    abstract fun loadItems(page: Int, pageSize: Int): List<T>
 
     fun getFlow() = Pager(
-        config = PagingConfig(pageSize = pageSize, enablePlaceholders = false, initialLoadSize = pageSize),
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false, initialLoadSize = 10),
         pagingSourceFactory = {
             object : PagingSource<Int, T>() {
                 override fun getRefreshKey(state: PagingState<Int, T>): Int? {
@@ -26,7 +25,7 @@ abstract class PagedFlow<T : Any>(
                     val page = params.key ?: 0
                     val pageSize = params.loadSize
                     return try {
-                        val items = loadItems(page, pageSize)
+                        val items = load(page, pageSize)
                         val nextKey = if (items.isEmpty()) null
                         else page + 1
 

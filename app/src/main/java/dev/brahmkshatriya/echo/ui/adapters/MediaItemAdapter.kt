@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.ui.album.albumImage
 import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadWith
 
 class MediaItemAdapter(
     private val listener: ClickListener<Pair<View, MediaItemsContainer>>
@@ -102,14 +103,17 @@ class MediaItemAdapter(
             is EchoMediaItem.AlbumItem -> {
                 val binding = (container as MediaItemsBinding.Album).binding
                 binding.title.text = item.album.title
-                item.album.cover.apply {
-                    loadInto(binding.imageView, R.drawable.art_album)
-                    loadInto(binding.imageView1)
-                    loadInto(binding.imageView2)
+                item.album.cover.loadWith(binding.imageView, R.drawable.art_album, null) {
+                    binding.imageView1.setImageDrawable(it)
+                    binding.imageView2.setImageDrawable(it)
                 }
+
                 albumImage(item.album.numberOfTracks, binding.imageView1, binding.imageView2)
-                var subtitle = item.album.numberOfTracks.toString()
-                item.album.artist.name.let {
+                var subtitle = item.album.subtitle ?: ""
+                item.album.numberOfTracks?.let {
+                    subtitle += if (subtitle.isNotBlank()) " • $it" else it
+                }
+                item.album.artists.joinToString(", ") { it.name }.let {
                     if (it.isNotBlank())
                         subtitle += if (subtitle.isNotBlank()) " • $it" else it
                 }
@@ -129,10 +133,13 @@ class MediaItemAdapter(
             is EchoMediaItem.PlaylistItem -> {
                 val binding = (container as MediaItemsBinding.Playlist).binding
                 binding.title.text = item.playlist.title
-                item.playlist.cover?.apply {
-                    loadInto(binding.imageView, R.drawable.art_library_music)
-                    loadInto(binding.imageView1)
-                    loadInto(binding.imageView2)
+                item.playlist.cover.loadWith(
+                    binding.imageView,
+                    R.drawable.art_library_music,
+                    null
+                ) {
+                    binding.imageView1.setImageDrawable(it)
+                    binding.imageView2.setImageDrawable(it)
                 }
 
                 binding.subtitle.isVisible = item.playlist.subtitle != null

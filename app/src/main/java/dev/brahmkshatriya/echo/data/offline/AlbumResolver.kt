@@ -25,9 +25,10 @@ class AlbumResolver(
         val whereCondition =
             "${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
         val selectionArgs = arrayOf("%$query%", "%$query%")
-        return context.queryAlbums(whereCondition, selectionArgs, page, pageSize, sorting).sortedBy(query) {
-            it.title
-        }
+        return context.queryAlbums(whereCondition, selectionArgs, page, pageSize, sorting)
+            .sortedBy(query) {
+                it.title
+            }
     }
 
     fun getAll(page: Int, pageSize: Int, sorting: String): List<Album.WithCover> {
@@ -44,7 +45,11 @@ class AlbumResolver(
     }
 
     private fun Context.queryAlbums(
-        whereCondition: String, selectionArgs: Array<String>, page: Int, pageSize: Int, sorting: String
+        whereCondition: String,
+        selectionArgs: Array<String>,
+        page: Int,
+        pageSize: Int,
+        sorting: String
     ): MutableList<Album.Full> {
         val albums = mutableListOf<Album.Full>()
         createCursor(
@@ -69,7 +74,7 @@ class AlbumResolver(
             val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID)
             val albumColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM)
             val artistColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-            val artistIdColumn =  it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
+            val artistIdColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
             val tracksColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.NUMBER_OF_SONGS)
             val yearColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.FIRST_YEAR)
             while (it.moveToNext()) {
@@ -83,13 +88,14 @@ class AlbumResolver(
                         id = uri,
                         title = it.getString(albumColumn),
                         cover = coverUri.toImageHolder(),
-                        artist = Artist.Small(artistId, it.getString(artistColumn)),
+                        artists = listOf(Artist.Small(artistId, it.getString(artistColumn))),
                         numberOfTracks = it.getInt(tracksColumn),
                         releaseDate = it.getString(yearColumn),
                         tracks = emptyList(),
                         publisher = null,
                         duration = null,
-                        description = null
+                        description = null,
+                        subtitle = null
                     )
                 )
             }

@@ -45,6 +45,21 @@ fun ImageHolder?.loadInto(
     imageView.context.imageLoader.enqueue(request.build())
 }
 
+fun ImageHolder?.loadWith(
+    imageView: ImageView,
+    placeholder: Int? = null,
+    errorDrawable: Int? = null,
+    block: (Drawable?) -> Unit
+) {
+    var request = createRequest(imageView.context, placeholder, errorDrawable)
+    val target: (Drawable?) -> Unit = {
+        imageView.setImageDrawable(it)
+        block(it)
+    }
+    request = request.target(target, target, target)
+    imageView.context.imageLoader.enqueue(request.build())
+}
+
 fun ImageHolder?.loadInto(
     button: MaterialButton,
     placeholder: Int? = null,

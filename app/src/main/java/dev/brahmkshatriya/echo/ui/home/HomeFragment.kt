@@ -72,12 +72,10 @@ class HomeFragment : Fragment() {
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 
         binding.swipeRefresh.setOnRefreshListener {
-            println("refreshing...")
             homeViewModel.loadGenres()
             mediaItemsContainerAdapter.refresh()
         }
         mediaItemsContainerAdapter.addLoadStateListener {
-            println("Load state : ${it.refresh is LoadState.Loading}")
             binding.swipeRefresh.isRefreshing = it.refresh is LoadState.Loading
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(context)

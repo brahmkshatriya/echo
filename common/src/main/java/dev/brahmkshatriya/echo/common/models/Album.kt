@@ -16,8 +16,9 @@ sealed class Album {
         override val id: String,
         override val title: String,
         open val cover: ImageHolder?,
-        open val artist: Artist.Small,
-        open val numberOfTracks: Int,
+        open val artists: List<Artist.Small>,
+        open val numberOfTracks: Int?,
+        open val subtitle : String?
     ) : Small(id, title)
 
     @Parcelize
@@ -25,13 +26,14 @@ sealed class Album {
         override val id: String,
         override val title: String,
         override val cover: ImageHolder?,
-        override val artist: Artist.Small,
-        override val numberOfTracks: Int,
+        override val artists: List<Artist.Small>,
+        override val numberOfTracks: Int?,
+        override val subtitle: String?,
         val tracks: List<Track>,
         val releaseDate: String?,
         val publisher: String?,
         val duration: Long?,
         val description: String?,
-    ) : WithCover(id, title, cover, artist, numberOfTracks)
+    ) : WithCover(id, title, cover, artists, numberOfTracks, subtitle)
 
 }

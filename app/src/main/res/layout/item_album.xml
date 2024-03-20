@@ -85,6 +85,15 @@
                 tools:text="@tools:sample/lorem" />
 
             <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.66"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="@tools:sample/lorem" />
+
+            <TextView
                 android:id="@+id/duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -92,6 +101,8 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 tools:text="@tools:sample/lorem" />
+
+
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

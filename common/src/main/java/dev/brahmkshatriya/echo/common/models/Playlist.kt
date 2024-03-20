@@ -24,7 +24,7 @@ sealed class Playlist {
         override val id: String,
         override val title: String,
         override val cover: ImageHolder?,
-        val author: User.Small?,
+        val authors: List<User.Small>,
         val tracks: List<Track>,
         val creationDate: String?,
         val duration: Long?,

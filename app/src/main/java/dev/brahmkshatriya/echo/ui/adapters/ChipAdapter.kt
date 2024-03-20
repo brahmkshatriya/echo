@@ -5,20 +5,21 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.ItemChipBinding
 
 class ChipAdapter(
-    private val listener: (String) -> Unit
-) : ListAdapter<Pair<Boolean, String>, ChipAdapter.ChipViewHolder>(ChipDiffCallback()) {
-    class ChipDiffCallback : DiffUtil.ItemCallback<Pair<Boolean,String>>() {
+    private val listener: (Genre) -> Unit
+) : ListAdapter<Pair<Boolean, Genre>, ChipAdapter.ChipViewHolder>(ChipDiffCallback()) {
+    class ChipDiffCallback : DiffUtil.ItemCallback<Pair<Boolean,Genre>>() {
         override fun areItemsTheSame(
-            oldItem: Pair<Boolean, String>,
-            newItem: Pair<Boolean, String>
+            oldItem: Pair<Boolean, Genre>,
+            newItem: Pair<Boolean, Genre>
         ) = oldItem.second == newItem.second
 
         override fun areContentsTheSame(
-            oldItem: Pair<Boolean, String>,
-            newItem: Pair<Boolean, String>
+            oldItem: Pair<Boolean, Genre>,
+            newItem: Pair<Boolean, Genre>
         ) = oldItem == newItem
 
     }
@@ -39,7 +40,7 @@ class ChipAdapter(
     override fun onBindViewHolder(holder: ChipViewHolder, position: Int) {
         val item = getItem(position)
         holder.binding.apply {
-            chip.text = item.second
+            chip.text = item.second.name
             chip.isChecked = item.first
         }
     }

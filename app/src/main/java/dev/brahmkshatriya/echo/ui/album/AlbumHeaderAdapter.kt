@@ -32,17 +32,22 @@ class AlbumHeaderAdapter(
         ) :
             ViewHolder(binding.root) {
             init {
-                val artist = MediaItemsContainer.ArtistItem(Artist.WithCover(
-                    album.artist.id,
-                    album.artist.name,
-                    null
-                ))
-                binding.albumArtistContainer.setOnClickListener {
-                    mediaListener.onClick(it to artist)
-                }
-                binding.albumArtistContainer.setOnLongClickListener {
-                    mediaListener.onLongClick(it to artist)
-                    true
+                val art = album.artists.firstOrNull()
+                if (art != null) {
+                    val artist = MediaItemsContainer.ArtistItem(
+                        art as? Artist.WithCover ?: Artist.WithCover(
+                            art.id,
+                            art.name,
+                            null
+                        )
+                    )
+                    binding.albumArtistContainer.setOnClickListener {
+                        mediaListener.onClick(it to artist)
+                    }
+                    binding.albumArtistContainer.setOnLongClickListener {
+                        mediaListener.onLongClick(it to artist)
+                        true
+                    }
                 }
 
                 binding.albumPlay.setOnClickListener {
@@ -94,14 +99,17 @@ class AlbumHeaderAdapter(
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
         val album = holder.album
-        binding.albumArtist.text = album.artist.name
-        binding.albumArtistSubtitle.isVisible = false
-        binding.albumArtistContainer.transitionName = album.artist.id
-        val art = album.artist
-        (art as? Artist.WithCover)?.let {
-            it.cover.loadInto(binding.albumArtistCover, R.drawable.art_artist)
-            binding.albumArtistSubtitle.text = art.subtitle
-            binding.albumArtistSubtitle.isVisible = !art.subtitle.isNullOrBlank()
+        val artist = album.artists.firstOrNull()
+        binding.albumArtistContainer.isVisible = artist != null
+        if (artist != null) {
+            binding.albumArtist.text = artist.name
+            binding.albumArtistSubtitle.isVisible = false
+            binding.albumArtistContainer.transitionName = artist.id
+            (artist as? Artist.WithCover)?.let {
+                it.cover.loadInto(binding.albumArtistCover, R.drawable.art_artist)
+                binding.albumArtistSubtitle.text = artist.subtitle
+                binding.albumArtistSubtitle.isVisible = !artist.subtitle.isNullOrBlank()
+            }
         }
         binding.albumDescription.text = album.description
         binding.albumDescription.isVisible = !album.description.isNullOrBlank()
