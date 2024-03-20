@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"
-        android:backgroundTint="?attr/colorSecondaryContainer"
+        android:alpha="0.25"
+        app:cardBackgroundColor="?attr/colorTertiary"
         android:clickable="false"
         app:strokeWidth="0dp" />
 

@@ -36,16 +36,21 @@ class EchoApplication : Application(), ImageLoaderFactory {
     }
 
     companion object {
-        fun applyUiChanges(application: Application, preferences: SharedPreferences) {
+        fun applyUiChanges(app: Application, preferences: SharedPreferences) {
             val theme = when (preferences.getBoolean(LookFragment.AMOLED_KEY, false)) {
-                true -> R.style.Amoled_Theme_Echo
+                true -> {
+                    when (preferences.getBoolean(LookFragment.MORE_AMOLED_KEY, false)) {
+                        true -> R.style.MoreAmoled_Theme_Echo
+                        false -> R.style.Amoled_Theme_Echo
+                    }
+                }
                 false -> R.style.Default_Theme_Echo
             }
 
             val options = DynamicColorsOptions.Builder()
                 .setThemeOverlay(theme)
                 .build()
-            DynamicColors.applyToActivitiesIfAvailable(application, options)
+            DynamicColors.applyToActivitiesIfAvailable(app, options)
 
             when (preferences.getString(LookFragment.THEME_KEY, "system")) {
                 "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)

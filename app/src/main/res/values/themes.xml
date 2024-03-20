@@ -5,11 +5,18 @@
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_mono_anim</item>
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">1200</item>
         <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
-        <item name="android:colorBackground">?attr/colorSurface</item>
+        <item name="materialCardViewStyle">@style/EchoCardView</item>
+        <item name="android:colorBackground">?attr/echoBackground</item>
+        <item name="navBackground">?attr/colorSurfaceContainerLowest</item>
+        <item name="echoBackground">?attr/colorSurface</item>
     </style>
 
     <style name="Default.Theme.Echo" parent="Base.Theme.Echo"/>
     <style name="Amoled.Theme.Echo" parent="Base.Theme.Echo">
-        <item name="colorSurface">@color/amoled_bg</item>
+        <item name="cardBackgroundColor">@color/amoled_bg</item>
+        <item name="echoBackground">@color/amoled_bg</item>
+    </style>
+    <style name="MoreAmoled.Theme.Echo" parent="Amoled.Theme.Echo">
+        <item name="navBackground">@color/amoled_bg</item>
     </style>
 </resources>

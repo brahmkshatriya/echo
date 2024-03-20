@@ -8,18 +8,26 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import dev.brahmkshatriya.echo.EchoApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.R
 
 class LookFragment : PreferenceFragmentCompat() {
+
+
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
         preferenceManager.sharedPreferencesName = context.packageName
         preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
         val preferences = preferenceManager.sharedPreferences ?: return
-        val uiListener = Preference.OnPreferenceChangeListener { _, _ ->
-        Toast.makeText(context, getString(R.string.restart_app), Toast.LENGTH_SHORT).show()
+
+        fun uiListener(block: (Any) -> Unit = {}) = Preference.OnPreferenceChangeListener { _, new ->
+            applyUiChanges(requireActivity().application, preferences)
+            Toast.makeText(context, getString(R.string.restart_app), Toast.LENGTH_SHORT).show()
+            block(new)
             true
         }
+
         val screen = preferenceManager.createPreferenceScreen(context)
         preferenceScreen = screen
 
@@ -41,8 +49,19 @@ class LookFragment : PreferenceFragmentCompat() {
                 entries = arrayOf("Light", "Dark", "System default")
                 entryValues = arrayOf("light", "dark", "system")
                 value = preferences.getString(THEME_KEY, "system")
-                onPreferenceChangeListener = uiListener
+                onPreferenceChangeListener = uiListener()
                 addPreference(this)
+            }
+
+            val moreAmoled = SwitchPreferenceCompat(context).apply {
+                key = MORE_AMOLED_KEY
+                title = getString(R.string.more_amoled)
+                summary = getString(R.string.more_amoled_summary)
+                layoutResource = R.layout.preference_switch
+                isIconSpaceReserved = false
+                setDefaultValue(false)
+                onPreferenceChangeListener = uiListener()
+                isEnabled = preferences.getBoolean(AMOLED_KEY, false)
             }
 
             SwitchPreferenceCompat(context).apply {
@@ -52,10 +71,13 @@ class LookFragment : PreferenceFragmentCompat() {
                 layoutResource = R.layout.preference_switch
                 isIconSpaceReserved = false
                 setDefaultValue(false)
-                onPreferenceChangeListener = uiListener
+                onPreferenceChangeListener = uiListener {
+                    moreAmoled.isEnabled = it as Boolean
+                }
                 addPreference(this)
-
             }
+
+            addPreference(moreAmoled)
 
             SwitchPreferenceCompat(context).apply {
                 key = DYNAMIC_PLAYER
@@ -74,6 +96,7 @@ class LookFragment : PreferenceFragmentCompat() {
     companion object {
         const val THEME_KEY = "theme"
         const val AMOLED_KEY = "amoled"
+        const val MORE_AMOLED_KEY = "more_amoled"
         const val DYNAMIC_PLAYER = "dynamic_player"
     }
 }

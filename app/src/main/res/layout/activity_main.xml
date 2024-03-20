@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?attr/colorSurfaceContainerLowest"
+        app:backgroundTint="?attr/navBackground"
         app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
         app:itemIconTint="@color/bottom_item_icon"
         app:labelVisibilityMode="labeled"

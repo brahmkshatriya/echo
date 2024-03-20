@@ -35,7 +35,7 @@
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:background="?attr/colorSurfaceContainerLowest"
+        app:backgroundTint="?attr/navBackground"
         app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
         app:itemIconTint="@color/bottom_item_icon"
         app:labelVisibilityMode="labeled"
