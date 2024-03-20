@@ -2,13 +2,9 @@ package dev.brahmkshatriya.echo.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.search.SearchBar
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemSearchHeaderBinding
-import dev.brahmkshatriya.echo.ui.extension.ExtensionDialogFragmentDirections
-import dev.brahmkshatriya.echo.ui.settings.SettingsFragmentDirections
 
 
 class SearchHeaderAdapter(
@@ -31,21 +27,7 @@ class SearchHeaderAdapter(
         searchbar = binding.catSearchBar
 
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.menu_settings -> {
-                    val action = SettingsFragmentDirections.actionSettings()
-                    binding.root.findNavController().navigate(action)
-                    true
-                }
-
-                R.id.menu_extensions -> {
-                    val action = ExtensionDialogFragmentDirections.actionExtension()
-                    binding.root.findNavController().navigate(action)
-                    true
-                }
-
-                else -> false
-            }
+            HeaderAdapter.menuItemClicked(menuItem.itemId, binding.root)
         }
     }
 

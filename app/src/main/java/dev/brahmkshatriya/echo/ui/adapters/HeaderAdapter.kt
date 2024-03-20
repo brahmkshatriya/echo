@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.adapters
 import android.content.Intent
 import android.os.Parcelable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.navigation.findNavController
@@ -31,21 +32,7 @@ class HeaderAdapter(
         val binding = holder.binding
         binding.topAppBarHeader.setText(header)
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.menu_settings -> {
-                    val intent = Intent(binding.root.context, SettingsActivity::class.java)
-                    binding.root.context.startActivity(intent)
-                    true
-                }
-
-                R.id.menu_extensions -> {
-                    val action = ExtensionDialogFragmentDirections.actionExtension()
-                    binding.root.findNavController().navigate(action)
-                    true
-                }
-
-                else -> false
-            }
+            menuItemClicked(menuItem.itemId, binding.root)
         }
         binding.chipRecyclerView.apply {
             adapter = ChipAdapter {
@@ -73,5 +60,25 @@ class HeaderAdapter(
     fun submitChips(chips: List<Pair<Boolean, Genre>>) {
         this.chips = chips
         notifyItemChanged(0)
+    }
+
+    companion object {
+        fun menuItemClicked(id: Int, view: View): Boolean {
+            return when (id) {
+                R.id.menu_settings -> {
+                    val intent = Intent(view.context, SettingsActivity::class.java)
+                    view.context.startActivity(intent)
+                    true
+                }
+
+                R.id.menu_extensions -> {
+                    val action = ExtensionDialogFragmentDirections.actionExtension()
+                    view.findNavController().navigate(action)
+                    true
+                }
+
+                else -> false
+            }
+        }
     }
 }
