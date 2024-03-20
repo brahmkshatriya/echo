@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -26,4 +27,8 @@ fun <T> LifecycleOwner.emit(flow: MutableSharedFlow<T>, block: () -> T) {
 
 fun <T> CoroutineScope.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
     launch { flow.collectLatest(block) }
+}
+
+fun <T> Flow<T>.catchWith(throwable: MutableSharedFlow<Throwable>): Flow<T> = catch {
+    throwable.emit(it)
 }

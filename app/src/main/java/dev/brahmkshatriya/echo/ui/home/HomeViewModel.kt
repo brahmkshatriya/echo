@@ -8,12 +8,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.di.ExtensionFlow
+import dev.brahmkshatriya.echo.utils.catchWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,8 +43,10 @@ class HomeViewModel @Inject constructor(
                         genre.value = genres.value?.firstOrNull()
                     }
                     tryWith(throwableFlow) {
-                        homeClient?.getHomeFeed(genre.asStateFlow())?.cachedIn(viewModelScope)
-                            ?.collect { feed ->
+                        homeClient?.getHomeFeed(genre.asStateFlow())
+                            ?.catchWith(throwableFlow)
+                            ?.cachedIn(viewModelScope)
+                            ?.collectLatest { feed ->
                                 _feed.value = feed
                             }
                     }

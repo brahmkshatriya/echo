@@ -4,6 +4,7 @@
         <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/amoled_bg</item>
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_mono_anim</item>
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">1200</item>
+        <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
     </style>
 
     <style name="Default.Theme.Echo" parent="Base.Theme.Echo"/>

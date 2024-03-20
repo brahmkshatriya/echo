@@ -19,7 +19,8 @@ import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
 
@@ -76,7 +77,12 @@ class PlayerSessionCallback(
 
 
         return scope.future {
-            differ.submitData(client.search(query).first())
+            var error: ListenableFuture<MutableList<MediaItem>>? = null
+            val result = client.search(query)
+                .catch { error = default(it.message ?: "An Error Occurred") }.firstOrNull()
+            if (result != null) differ.submitData(result)
+            else return@future error!!.get()
+
             val tracks = differ.snapshot().items.mapNotNull {
                 when (it) {
                     is MediaItemsContainer.Category -> {

@@ -5,6 +5,11 @@
         <item name="android:color">?attr/colorPrimary</item>
     </style>
 
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Dialog.MinWidth">
+        <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
+        <item name="android:windowBackground">@drawable/dialog_bg</item>
+    </style>
+
     <style name="TopAppBarHeader">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

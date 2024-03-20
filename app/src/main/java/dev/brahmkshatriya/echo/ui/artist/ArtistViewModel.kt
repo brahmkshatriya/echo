@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.utils.catchWith
 import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -36,7 +37,7 @@ class ArtistViewModel : ViewModel() {
             tryWith(throwableFlow) {
                 artistClient.loadArtist(artist).let {
                     mutableArtistFlow.value = it
-                    artistClient.getMediaItems(it).collectLatest { data ->
+                    artistClient.getMediaItems(it).catchWith(throwableFlow).collectLatest { data ->
                         _result.value = data
                     }
                 }
