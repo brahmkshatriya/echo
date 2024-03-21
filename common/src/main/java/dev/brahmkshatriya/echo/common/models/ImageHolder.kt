@@ -7,21 +7,27 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 sealed class ImageHolder : Parcelable {
-    data class UrlHolder(val url: String, val headers: Map<String, String>) : ImageHolder()
-    data class UriHolder(val uri: Uri) : ImageHolder()
-    data class BitmapHolder(val bitmap: Bitmap) : ImageHolder()
+    abstract val crop: Boolean
+
+    data class UrlHolder(
+        val url: String, val headers: Map<String, String>,
+        override val crop: Boolean
+    ) : ImageHolder()
+
+    data class UriHolder(val uri: Uri, override val crop: Boolean) : ImageHolder()
+    data class BitmapHolder(val bitmap: Bitmap, override val crop: Boolean) : ImageHolder()
 
     companion object {
-        fun Uri.toImageHolder(): UriHolder {
-            return UriHolder(this)
+        fun Uri.toImageHolder(crop: Boolean = false): UriHolder {
+            return UriHolder(this, crop)
         }
 
-        fun String.toImageHolder(headers: Map<String, String> = mapOf()): UrlHolder {
-            return UrlHolder(this, headers)
+        fun String.toImageHolder(headers: Map<String, String> = mapOf(), crop: Boolean = false): UrlHolder {
+            return UrlHolder(this, headers, crop)
         }
 
-        fun Bitmap.toImageHolder(): BitmapHolder {
-            return BitmapHolder(this)
+        fun Bitmap.toImageHolder(crop: Boolean = false): BitmapHolder {
+            return BitmapHolder(this, crop)
         }
     }
 }

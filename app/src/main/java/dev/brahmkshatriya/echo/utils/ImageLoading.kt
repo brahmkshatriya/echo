@@ -29,6 +29,7 @@ fun ImageHolder?.createRequest(
             request.data(url)
             request.headers(headers.toHeaders())
         }
+
         is ImageHolder.UriHolder -> request.data(uri)
     }
     placeholder?.let { request.placeholder(it) }
@@ -43,6 +44,10 @@ fun ImageHolder?.loadInto(
 ) {
     var request = createRequest(imageView.context, placeholder, errorDrawable)
     request = request.target(imageView)
+    imageView.scaleType = when (this?.crop) {
+        true -> ImageView.ScaleType.CENTER_CROP
+        else -> ImageView.ScaleType.FIT_CENTER
+    }
     imageView.context.imageLoader.enqueue(request.build())
 }
 
@@ -53,6 +58,10 @@ fun ImageHolder?.loadWith(
     block: (Drawable?) -> Unit
 ) {
     var request = createRequest(imageView.context, placeholder, errorDrawable)
+    imageView.scaleType = when (this?.crop) {
+        true -> ImageView.ScaleType.CENTER_CROP
+        else -> ImageView.ScaleType.FIT_CENTER
+    }
     val target: (Drawable?) -> Unit = {
         imageView.load(it)
         block(it)
