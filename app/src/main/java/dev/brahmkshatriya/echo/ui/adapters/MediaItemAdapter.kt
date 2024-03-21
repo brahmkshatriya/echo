@@ -9,11 +9,11 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemMediaAlbumBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaArtistBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaPlaylistBinding
@@ -104,8 +104,8 @@ class MediaItemAdapter(
                 val binding = (container as MediaItemsBinding.Album).binding
                 binding.title.text = item.album.title
                 item.album.cover.loadWith(binding.imageView, R.drawable.art_album, null) {
-                    binding.imageView1.setImageDrawable(it)
-                    binding.imageView2.setImageDrawable(it)
+                    binding.imageView1.load(it)
+                    binding.imageView2.load(it)
                 }
 
                 albumImage(item.album.numberOfTracks, binding.imageView1, binding.imageView2)
@@ -138,14 +138,14 @@ class MediaItemAdapter(
                     R.drawable.art_library_music,
                     null
                 ) {
-                    binding.imageView1.setImageDrawable(it)
-                    binding.imageView2.setImageDrawable(it)
+                    binding.imageView1.load(it)
+                    binding.imageView2.load(it)
                 }
 
                 binding.subtitle.isVisible = item.playlist.subtitle != null
                 binding.subtitle.text = item.playlist.subtitle
 
-                val tracks = (item.playlist as? Playlist.Full)?.tracks ?: emptyList()
+                val tracks = item.playlist.tracks
                 albumImage(tracks.size, binding.imageView1, binding.imageView2)
                 container.transitionView.transitionName = item.playlist.id
             }

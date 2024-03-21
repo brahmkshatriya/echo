@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.extensions
+package dev.brahmkshatriya.echo.data.utils
 
 import android.content.pm.ApplicationInfo
 import tel.jeelpa.plugger.ManifestParser

@@ -25,15 +25,8 @@
         android:name="dev.brahmkshatriya.echo.ui.artist.ArtistFragment"
         tools:layout="@layout/fragment_artist">
         <argument
-            android:name="artistSmall"
-            android:defaultValue="@null"
-            app:argType="dev.brahmkshatriya.echo.common.models.Artist$Small"
-            app:nullable="true" />
-        <argument
-            android:name="artistWithCover"
-            android:defaultValue="@null"
-            app:argType="dev.brahmkshatriya.echo.common.models.Artist$WithCover"
-            app:nullable="true" />
+            android:name="artist"
+            app:argType="dev.brahmkshatriya.echo.common.models.Artist" />
     </fragment>
 
     <action
@@ -46,16 +39,22 @@
         android:name="dev.brahmkshatriya.echo.ui.album.AlbumFragment"
         tools:layout="@layout/fragment_album">
         <argument
-            android:name="albumSmall"
-            android:defaultValue="@null"
-            app:argType="dev.brahmkshatriya.echo.common.models.Album$Small"
-            app:nullable="true" />
-        <argument
-            android:name="albumWithCover"
-            android:defaultValue="@null"
-            app:argType="dev.brahmkshatriya.echo.common.models.Album$WithCover"
-            app:nullable="true" />
+            android:name="album"
+            app:argType="dev.brahmkshatriya.echo.common.models.Album" />
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_playlist"
+        android:name="dev.brahmkshatriya.echo.ui.playlist.PlaylistFragment"
+        tools:layout="@layout/fragment_album">
+        <argument
+            android:name="playlist"
+            app:argType="dev.brahmkshatriya.echo.common.models.Playlist" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_playlist"
+        app:destination="@id/navigation_playlist" />
 
     <action
         android:id="@+id/action_album"
@@ -73,8 +72,7 @@
     <fragment
         android:id="@+id/navigation_exception"
         android:name="dev.brahmkshatriya.echo.ui.snackbar.ExceptionFragment"
-        tools:layout="@layout/fragment_exception">
-    </fragment>
+        tools:layout="@layout/fragment_exception" />
 
     <action
         android:id="@+id/action_exception"

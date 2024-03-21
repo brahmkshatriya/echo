@@ -9,7 +9,14 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemErrorBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemContainerBinding
 
-class ContainerLoadingAdapter(val retry: () -> Unit) : LoadStateAdapter<ContainerLoadingAdapter.ShimmerViewHolder>() {
+class ContainerLoadingAdapter(val listener: ContainerListener? = null) :
+    LoadStateAdapter<ContainerLoadingAdapter.ShimmerViewHolder>() {
+
+    interface ContainerListener {
+        fun onRetry()
+        fun onError(error: Throwable)
+    }
+
     class ShimmerViewHolder(val container: Container) :
         RecyclerView.ViewHolder(container.root)
 
@@ -45,8 +52,11 @@ class ContainerLoadingAdapter(val retry: () -> Unit) : LoadStateAdapter<Containe
 
         val binding = (holder.container as Container.Error).binding
         binding.error.text = loadState.error.localizedMessage
+        binding.errorView.setOnClickListener {
+            listener?.onError(loadState.error)
+        }
         binding.retry.setOnClickListener {
-            retry()
+            listener?.onRetry()
         }
     }
 }

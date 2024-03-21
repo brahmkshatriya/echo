@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.album
+package dev.brahmkshatriya.echo.ui.playlist
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,49 +6,32 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.Album
-import dev.brahmkshatriya.echo.common.models.Artist
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.utils.loadInto
 
-class AlbumHeaderAdapter(
-    private val mediaListener: MediaItemClickListener,
-    private val listener: AlbumHeaderListener
+class PlaylistHeaderAdapter(
+    private val listener: PlaylistHeaderListener
 ) :
-    RecyclerView.Adapter<AlbumHeaderAdapter.ViewHolder>() {
+    RecyclerView.Adapter<PlaylistHeaderAdapter.ViewHolder>() {
 
     override fun getItemCount() = 1
 
     sealed class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         class Info(
             val binding: ItemAlbumInfoBinding,
-            val album: Album,
-            listener: AlbumHeaderListener,
-            mediaListener: MediaItemClickListener
+            val playlist: Playlist,
+            listener: PlaylistHeaderListener
         ) :
             ViewHolder(binding.root) {
             init {
-                val art = album.artists.firstOrNull()
-                if (art != null) {
-                    val artist = MediaItemsContainer.ArtistItem(art)
-                    binding.albumArtistContainer.setOnClickListener {
-                        mediaListener.onClick(it to artist)
-                    }
-                    binding.albumArtistContainer.setOnLongClickListener {
-                        mediaListener.onLongClick(it to artist)
-                        true
-                    }
-                }
-
                 binding.albumPlay.setOnClickListener {
-                    listener.onPlayClicked(album)
+                    listener.onPlayClicked(playlist)
                 }
                 binding.albumRadio.setOnClickListener {
-                    listener.onRadioClicked(album)
+                    listener.onRadioClicked(playlist)
                 }
             }
         }
@@ -57,12 +40,12 @@ class AlbumHeaderAdapter(
             ViewHolder(binding.root)
     }
 
-    interface AlbumHeaderListener {
-        fun onPlayClicked(album: Album)
-        fun onRadioClicked(album: Album)
+    interface PlaylistHeaderListener {
+        fun onPlayClicked(playlist: Playlist)
+        fun onRadioClicked(playlist: Playlist)
     }
 
-    override fun getItemViewType(position: Int) = if (_album == null) 0 else 1
+    override fun getItemViewType(position: Int) = if (_playlist == null) 0 else 1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return if (viewType == 0) {
@@ -74,59 +57,53 @@ class AlbumHeaderAdapter(
                 )
             )
         } else {
-            val album = _album!!
+            val playlist = _playlist!!
             ViewHolder.Info(
                 ItemAlbumInfoBinding.inflate(
                     LayoutInflater.from(parent.context), parent, false
                 ),
-                album,
-                listener,
-                mediaListener
+                playlist,
+                listener
             )
         }
     }
 
-    private var _album: Album? = null
+    private var _playlist: Playlist? = null
     private var _radio: Boolean = false
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
-        val album = holder.album
-        val artist = album.artists.firstOrNull()
+        val playlist = holder.playlist
+        val artist = playlist.authors.firstOrNull()
         binding.albumArtistContainer.isVisible = artist != null
         if (artist != null) {
             binding.albumArtist.text = artist.name
             binding.albumArtistSubtitle.isVisible = false
             binding.albumArtistContainer.transitionName = artist.id
-            (artist as? Artist)?.let {
+            artist.let {
                 it.cover.loadInto(binding.albumArtistCover, R.drawable.art_artist)
-                binding.albumArtistSubtitle.text = artist.subtitle
-                binding.albumArtistSubtitle.isVisible = !artist.subtitle.isNullOrBlank()
             }
         }
-        binding.albumDescription.text = album.description
-        binding.albumDescription.isVisible = !album.description.isNullOrBlank()
+        binding.albumDescription.text = playlist.subtitle
+        binding.albumDescription.isVisible = !playlist.subtitle.isNullOrBlank()
         var info = binding.root.context.resources.getQuantityString(
             R.plurals.number_songs,
-            album.tracks.size,
-            album.tracks.size
+            playlist.tracks.size,
+            playlist.tracks.size
         )
-        album.duration?.toTimeString()?.let {
+        playlist.duration?.toTimeString()?.let {
             info += " • $it"
         }
-        album.releaseDate?.let {
-            info += "\n$it"
-        }
-        album.publisher?.let {
+        playlist.creationDate?.let {
             info += "\n$it"
         }
         binding.albumInfo.text = info
         binding.albumRadio.isVisible = _radio
     }
 
-    fun submit(album: Album, radio: Boolean) {
-        _album = album
+    fun submit(playlist: Playlist, radio: Boolean) {
+        _playlist = playlist
         _radio = radio
         notifyItemChanged(0)
     }

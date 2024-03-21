@@ -5,15 +5,15 @@ import kotlinx.coroutines.flow.Flow
 
 sealed class EchoMediaItem {
     data class TrackItem(val track: Track) : EchoMediaItem()
-    data class AlbumItem(val album: Album.WithCover) : EchoMediaItem()
-    data class ArtistItem(val artist: Artist.WithCover) : EchoMediaItem()
-    data class PlaylistItem(val playlist: Playlist.WithCover) : EchoMediaItem()
+    data class AlbumItem(val album: Album) : EchoMediaItem()
+    data class ArtistItem(val artist: Artist) : EchoMediaItem()
+    data class PlaylistItem(val playlist: Playlist) : EchoMediaItem()
 
     companion object {
         fun Track.toMediaItem() = TrackItem(this)
-        fun Album.WithCover.toMediaItem() = AlbumItem(this)
-        fun Artist.WithCover.toMediaItem() = ArtistItem(this)
-        fun Playlist.WithCover.toMediaItem() = PlaylistItem(this)
+        fun Album.toMediaItem() = AlbumItem(this)
+        fun Artist.toMediaItem() = ArtistItem(this)
+        fun Playlist.toMediaItem() = PlaylistItem(this)
 
         fun EchoMediaItem.toMediaItemsContainer() = when (this) {
             is TrackItem -> MediaItemsContainer.TrackItem(this.track)

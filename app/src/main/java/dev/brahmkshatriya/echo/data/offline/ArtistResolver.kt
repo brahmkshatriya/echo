@@ -15,7 +15,7 @@ class ArtistResolver(val context: Context) {
         else -> true
     }
 
-    fun search(query: String, page: Int, pageSize: Int, sorting: String): List<Artist.WithCover> {
+    fun search(query: String, page: Int, pageSize: Int, sorting: String): List<Artist> {
         val whereCondition =
             "${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
         val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
@@ -25,13 +25,13 @@ class ArtistResolver(val context: Context) {
             }
     }
 
-    fun getAll(page: Int, pageSize: Int, sorting: String): List<Artist.WithCover> {
+    fun getAll(page: Int, pageSize: Int, sorting: String): List<Artist> {
         val whereCondition = ""
         val selectionArgs = arrayOf<String>()
         return context.queryArtists(whereCondition, selectionArgs, page, pageSize, sorting)
     }
 
-    fun getShuffled(pageSize: Int): List<Artist.WithCover> {
+    fun getShuffled(pageSize: Int): List<Artist> {
         return getAll(0, 100, "").shuffled().take(pageSize)
     }
 
@@ -41,8 +41,8 @@ class ArtistResolver(val context: Context) {
         page: Int,
         pageSize: Int,
         sorting: String
-    ): List<Artist.Full> {
-        val artists = mutableListOf<Artist.Full>()
+    ): List<Artist> {
+        val artists = mutableListOf<Artist>()
         createCursor(
             contentResolver = contentResolver,
             collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -68,7 +68,7 @@ class ArtistResolver(val context: Context) {
                 ids.add(id)
                 val uri = "$URI$ARTIST_AUTH$id"
                 artists.add(
-                    Artist.Full(
+                    Artist(
                         id = uri,
                         name = it.getStringOrNull(artistColumn) ?: "THIS IS THE PROBLEM",
                         cover = null,
@@ -80,7 +80,7 @@ class ArtistResolver(val context: Context) {
         return artists
     }
 
-    fun get(uri: Uri): Artist.Full {
+    fun get(uri: Uri): Artist {
         val id = uri.lastPathSegment!!.toLong()
         val whereCondition = "${MediaStore.Audio.Media.ARTIST_ID} = ?"
         val selectionArgs = arrayOf(id.toString())

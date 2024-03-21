@@ -12,7 +12,7 @@ sealed class MediaItemsContainer {
     ) : MediaItemsContainer()
 
     data class TrackItem(val track: Track) : MediaItemsContainer()
-    data class AlbumItem(val album: Album.WithCover) : MediaItemsContainer()
-    data class ArtistItem(val artist: Artist.WithCover) : MediaItemsContainer()
-    data class PlaylistItem(val playlist: Playlist.WithCover) : MediaItemsContainer()
+    data class AlbumItem(val album: Album) : MediaItemsContainer()
+    data class ArtistItem(val artist: Artist) : MediaItemsContainer()
+    data class PlaylistItem(val playlist: Playlist) : MediaItemsContainer()
 }

@@ -6,6 +6,6 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import kotlinx.coroutines.flow.Flow
 
 interface AlbumClient {
-    suspend fun loadAlbum(small: Album.Small): Album.Full
-    suspend fun getMediaItems(album: Album.Full): Flow<PagingData<MediaItemsContainer>>
+    suspend fun loadAlbum(small: Album): Album
+    suspend fun getMediaItems(album: Album): Flow<PagingData<MediaItemsContainer>>
 }

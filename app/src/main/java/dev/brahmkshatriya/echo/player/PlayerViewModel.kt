@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.utils.observe
@@ -113,26 +114,18 @@ class PlayerViewModel @Inject constructor(
         )
     )
 
-    fun radio(artist: Artist.Full) {
+    private fun playRadio(block: suspend RadioClient.() -> Playlist) {
         val client = trackClient
         if (client is RadioClient) {
             viewModelScope.launch(Dispatchers.IO) {
-                val playlist = tryWith(throwableFlow) { client.radio(artist) }
+                val playlist = tryWith(throwableFlow) { block(client) }
                     ?: return@launch
                 play(playlist.tracks, 0)
             }
         } else viewModelScope.launch { throwableFlow.emit(radioException) }
     }
-
-    fun radio(album: Album.Full) {
-        val client = trackClient
-        if (client is RadioClient) {
-            viewModelScope.launch(Dispatchers.IO) {
-                val playlist = tryWith(throwableFlow) { client.radio(album) }
-                    ?: return@launch
-                play(playlist.tracks, 0)
-            }
-        } else viewModelScope.launch { throwableFlow.emit(radioException) }
-    }
+    fun radio(artist: Artist) = playRadio { radio(artist) }
+    fun radio(album: Album) = playRadio { radio(album) }
+    fun radio(playlist: Playlist) = playRadio { radio(playlist) }
 
 }

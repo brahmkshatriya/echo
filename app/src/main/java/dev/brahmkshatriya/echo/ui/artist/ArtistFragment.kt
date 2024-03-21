@@ -50,7 +50,7 @@ class ArtistFragment : Fragment() {
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
     private val header = ArtistHeaderAdapter(object : ArtistHeaderAdapter.ArtistHeaderListener {
         override fun onSubscribeClicked(
-            artist: Artist.Full, subscribe: Boolean, adapter: ArtistHeaderAdapter
+            artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter
         ) {
             val userClient = extensionViewModel.extensionFlow.value as? UserClient ?: return
             val throwableFlow = extensionViewModel.throwableFlow
@@ -59,12 +59,13 @@ class ArtistFragment : Fragment() {
             }
         }
 
-        override fun onRadioClicked(artist: Artist.Full) {
+        override fun onRadioClicked(artist: Artist) {
             playerViewModel.radio(artist)
         }
 
     })
-    private val concatAdapter = ConcatAdapter(header, mediaItemsContainerAdapter)
+    private val concatAdapter =
+        ConcatAdapter(header, mediaItemsContainerAdapter.withLoadingFooter())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -99,18 +100,14 @@ class ArtistFragment : Fragment() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val artist: Artist.Small = args.artistWithCover ?: args.artistSmall ?: return
+        val artist = args.artist
 
         binding.root.transitionName = artist.id
         sharedElementEnterTransition = MaterialContainerTransform(requireContext(), true).apply {
             drawingViewId = R.id.nav_host_fragment
         }
         binding.toolbar.title = artist.name.trim()
-
-        (artist as? Artist.WithCover).let {
-            it?.cover.loadInto(binding.albumCover, R.drawable.art_artist)
-        }
-
+        artist.cover.loadInto(binding.albumCover, R.drawable.art_artist)
         observe(extensionViewModel.extensionFlow) {
             binding.recyclerView.adapter = getAdapterForExtension<ArtistClient>(
                 it, R.string.artist, concatAdapter, true

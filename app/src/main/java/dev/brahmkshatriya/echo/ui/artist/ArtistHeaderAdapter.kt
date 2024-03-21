@@ -18,7 +18,7 @@ class ArtistHeaderAdapter(private val listener: ArtistHeaderListener) :
     sealed class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         class Info(
             val binding: ItemArtistInfoBinding,
-            val artist: Artist.Full,
+            val artist: Artist,
             listener: ArtistHeaderListener,
             adapter: ArtistHeaderAdapter,
         ) : ViewHolder(binding.root) {
@@ -39,8 +39,8 @@ class ArtistHeaderAdapter(private val listener: ArtistHeaderListener) :
     }
 
     interface ArtistHeaderListener {
-        fun onSubscribeClicked(artist: Artist.Full, subscribe: Boolean, adapter: ArtistHeaderAdapter)
-        fun onRadioClicked(artist: Artist.Full)
+        fun onSubscribeClicked(artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter)
+        fun onRadioClicked(artist: Artist)
     }
 
     override fun getItemViewType(position: Int) = if (_artist == null) 0 else 1
@@ -64,7 +64,7 @@ class ArtistHeaderAdapter(private val listener: ArtistHeaderListener) :
         }
     }
 
-    private var _artist: Artist.Full? = null
+    private var _artist: Artist? = null
     private var isSubscribed = false
     private var _subscribe = false
     private var _radio = false
@@ -97,7 +97,7 @@ class ArtistHeaderAdapter(private val listener: ArtistHeaderListener) :
         binding.artistRadio.isVisible = _radio
     }
 
-    fun submit(artist: Artist.Full, subscribe: Boolean, radio: Boolean) {
+    fun submit(artist: Artist, subscribe: Boolean, radio: Boolean) {
         _artist = artist
         _subscribe = subscribe
         _radio = radio

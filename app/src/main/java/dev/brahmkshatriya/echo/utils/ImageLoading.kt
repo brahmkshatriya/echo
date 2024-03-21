@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import coil.imageLoader
+import coil.load
 import coil.request.ImageRequest
 import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.common.models.ImageHolder
@@ -53,7 +54,7 @@ fun ImageHolder?.loadWith(
 ) {
     var request = createRequest(imageView.context, placeholder, errorDrawable)
     val target: (Drawable?) -> Unit = {
-        imageView.setImageDrawable(it)
+        imageView.load(it)
         block(it)
     }
     request = request.target(target, target, target)

@@ -76,7 +76,7 @@ class CategoryFragment : Fragment() {
 
         binding.title.title = viewModel.title
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.adapter = adapter
+        binding.recyclerView.adapter = adapter.withLoadingFooter()
         observe(flow) { data ->
             adapter.submit(
                 data.map { it.toMediaItemsContainer() }

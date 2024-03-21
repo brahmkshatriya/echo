@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class TrackAdapter(
+    private val isAlbumVisible: Boolean = false,
     private val callback: ClickListener<Pair<List<Track>, Int>>,
 ) : RecyclerView.Adapter<TrackAdapter.ViewHolder>() {
 
@@ -52,6 +53,11 @@ class TrackAdapter(
         }
         track.artists.joinToString(", ") { it.name }.let {
             if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
+        }
+        if (isAlbumVisible) {
+            track.album?.title?.let {
+                if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
+            }
         }
         binding.itemSubtitle.isVisible = subtitle.isNotEmpty()
         binding.itemSubtitle.text = subtitle

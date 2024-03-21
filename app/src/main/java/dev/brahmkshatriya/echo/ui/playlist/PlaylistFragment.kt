@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.album
+package dev.brahmkshatriya.echo.ui.playlist
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,9 +20,9 @@ import coil.load
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.AlbumClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentAlbumBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
@@ -39,19 +39,18 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 import kotlinx.coroutines.flow.combine
 
-class AlbumFragment : Fragment() {
+class PlaylistFragment : Fragment() {
 
-    private val args: AlbumFragmentArgs by navArgs()
+    private val args: PlaylistFragmentArgs by navArgs()
 
     private var binding: FragmentAlbumBinding by autoCleared()
 
-    private val viewModel: AlbumViewModel by viewModels()
+    private val viewModel: PlaylistViewModel by viewModels()
     private val extensionViewModel: ExtensionViewModel by activityViewModels()
     private val playerViewModel: PlayerViewModel by activityViewModels()
 
     private val clickListener = MediaItemClickListener(this)
-    private val trackAdapter = TrackAdapter(false, object : ClickListener<Pair<List<Track>, Int>> {
-
+    private val trackAdapter = TrackAdapter(true, object : ClickListener<Pair<List<Track>, Int>> {
         override fun onClick(item: Pair<List<Track>, Int>) {
             playerViewModel.play(item.first, item.second)
         }
@@ -60,17 +59,16 @@ class AlbumFragment : Fragment() {
             val track = item.first[item.second]
             playerViewModel.addToQueue(track)
         }
-
     })
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
     private val header =
-        AlbumHeaderAdapter(clickListener, object : AlbumHeaderAdapter.AlbumHeaderListener {
-            override fun onPlayClicked(album: Album) {
-                playerViewModel.play(album.tracks, 0)
+        PlaylistHeaderAdapter(object : PlaylistHeaderAdapter.PlaylistHeaderListener {
+            override fun onPlayClicked(playlist: Playlist) {
+                playerViewModel.play(playlist.tracks, 0)
             }
 
-            override fun onRadioClicked(album: Album) {
-                playerViewModel.radio(album)
+            override fun onRadioClicked(playlist: Playlist) {
+                playerViewModel.radio(playlist)
             }
         })
 
@@ -110,32 +108,30 @@ class AlbumFragment : Fragment() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val album: Album = args.album
+        val playlist = args.playlist
 
-        binding.root.transitionName = album.id
+        binding.root.transitionName = playlist.id
         sharedElementEnterTransition = MaterialContainerTransform(requireContext(), true).apply {
             drawingViewId = R.id.nav_host_fragment
         }
-        binding.toolbar.title = album.title.trim()
+        binding.toolbar.title = playlist.title.trim()
 
-        album.numberOfTracks.let {
-            albumImage(it, binding.albumCover1, binding.albumCover2)
-            album.cover.loadWith(binding.albumCover, R.drawable.art_album, null) { drawable ->
-                binding.albumCover1.load(drawable)
-                binding.albumCover2.load(drawable)
-            }
+        playlist.cover.loadWith(binding.albumCover, R.drawable.art_album, null) { drawable ->
+            binding.albumCover1.load(drawable)
+            binding.albumCover2.load(drawable)
         }
+
 
         observe(extensionViewModel.extensionFlow) {
-            binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
-                it, R.string.album, concatAdapter, true
+            binding.recyclerView.adapter = getAdapterForExtension<PlaylistClient>(
+                it, R.string.playlist, concatAdapter, true
             ) { client ->
                 if (client == null) return@getAdapterForExtension
-                viewModel.loadAlbum(client, extensionViewModel.throwableFlow, album)
+                viewModel.loadAlbum(client, extensionViewModel.throwableFlow, playlist)
             }
         }
-        val headerFlow =
-            viewModel.albumFlow.combine(extensionViewModel.extensionFlow) { it, client -> it to client }
+        val headerFlow = viewModel.playlistFlow
+            .combine(extensionViewModel.extensionFlow) { it, client -> it to client }
         observe(headerFlow) { (it, client) ->
             if (it != null) {
                 trackAdapter.submitList(it.tracks)

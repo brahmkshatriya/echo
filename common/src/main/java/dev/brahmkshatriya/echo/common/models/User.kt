@@ -3,18 +3,10 @@ package dev.brahmkshatriya.echo.common.models
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-sealed class User {
-
-    @Parcelize
-    open class Small(
-        open val id: String,
-        open val name: String
-    ) : Parcelable
-
-    @Parcelize
-    data class WithCover(
-        override val id: String,
-        override val name: String,
-        val cover: ImageHolder?,
-    ) : Small(id, name)
-}
+@Parcelize
+open class User(
+    open val id: String,
+    open val name: String,
+    open val cover: ImageHolder? = null,
+    open val extras: Map<String, String> = mapOf()
+) : Parcelable

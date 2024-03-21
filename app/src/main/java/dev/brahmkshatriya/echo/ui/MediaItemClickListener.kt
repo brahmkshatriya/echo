@@ -17,19 +17,20 @@ class MediaItemClickListener(
         val view = item.first
         when (val mediaItem = item.second) {
             is MediaItemsContainer.AlbumItem -> {
-                val action = NavigationDirections.actionAlbum(albumWithCover = mediaItem.album)
+                val action = NavigationDirections.actionAlbum(mediaItem.album)
                 val extras = FragmentNavigatorExtras(view to view.transitionName)
                 fragment.findNavController().navigate(action, extras)
             }
 
             is MediaItemsContainer.ArtistItem -> {
-                val action = NavigationDirections.actionArtist(artistWithCover = mediaItem.artist)
+                val action = NavigationDirections.actionArtist(mediaItem.artist)
                 val extras = FragmentNavigatorExtras(view to view.transitionName)
                 fragment.findNavController().navigate(action, extras)
             }
             is MediaItemsContainer.TrackItem -> {
                 val playerViewModel: PlayerViewModel by fragment.activityViewModels()
 //                animatePlayerImage(fragment, view)
+
                 playerViewModel.play(mediaItem.track)
             }
             is MediaItemsContainer.Category -> {
@@ -37,6 +38,12 @@ class MediaItemClickListener(
                 categoryViewModel.title = mediaItem.title
                 categoryViewModel.flow = mediaItem.flow
                 val action = NavigationDirections.actionCategory()
+                val extras = FragmentNavigatorExtras(view to view.transitionName)
+                fragment.findNavController().navigate(action, extras)
+            }
+
+            is MediaItemsContainer.PlaylistItem -> {
+                val action = NavigationDirections.actionPlaylist(mediaItem.playlist)
                 val extras = FragmentNavigatorExtras(view to view.transitionName)
                 fragment.findNavController().navigate(action, extras)
             }

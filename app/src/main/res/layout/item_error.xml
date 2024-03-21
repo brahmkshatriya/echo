@@ -1,26 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:layout_marginTop="64dp"
     android:layout_marginBottom="64dp"
-    android:layout_height="wrap_content">
+    android:gravity="center"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:text="@string/failed_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:text="@string/failed_loading" />
 
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.Material3.Button.IconButton"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:id="@+id/retry"
-        android:text="@string/retry"
-        app:icon="@drawable/ic_refresh"
-        app:iconPadding="8dp"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/errorView"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/view"
+            app:icon="@drawable/art_problem_48dp"
+            app:iconPadding="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/retry"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/retry"
+            app:icon="@drawable/ic_refresh"
+            app:iconPadding="8dp" />
+    </LinearLayout>
 </LinearLayout>

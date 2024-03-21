@@ -38,7 +38,7 @@ class SearchFragment : Fragment() {
         binding.catSearchView.setupWithSearchBar(it)
         binding.catSearchView.isVisible = true
     }
-    private val concatAdapter = ConcatAdapter(header, adapter)
+    private val concatAdapter = ConcatAdapter(header, adapter.withLoadingFooter())
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, parent, false)

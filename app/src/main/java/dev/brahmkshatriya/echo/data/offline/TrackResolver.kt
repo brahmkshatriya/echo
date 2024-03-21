@@ -52,14 +52,14 @@ class TrackResolver(val context: Context) {
     }
 
     fun getByArtist(
-        artist: Artist.Small, page: Int, pageSize: Int, sorting: String
+        artist: Artist, page: Int, pageSize: Int, sorting: String
     ): List<Track> {
         val name = artist.name
         return search(name, page, pageSize, sorting)
     }
 
     fun getByAlbum(
-        album: Album.Small, page: Int, pageSize: Int, sorting: String
+        album: Album, page: Int, pageSize: Int, sorting: String
     ): List<Track> {
         val whereCondition = "${MediaStore.Audio.Media.ALBUM_ID} = ?"
         val selectionArgs = arrayOf(album.id.toUri().lastPathSegment!!)
@@ -120,12 +120,12 @@ class TrackResolver(val context: Context) {
                         title = it.getString(titleColumn),
                         streamable = Streamable(uri),
                         artists = listOf(
-                            Artist.Small(
+                            Artist(
                                 artistUri,
                                 it.getStringOrNull(artistColumn) ?: "PROBLEM CHILD"
                             )
                         ),
-                        album = Album.Small(
+                        album = Album(
                             albumUri,
                             it.getStringOrNull(albumColumn) ?: "PROBLEM CHILD"
                         ),

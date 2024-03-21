@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemAlbumBinding
@@ -28,12 +30,13 @@ import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.album.albumImage
+import dev.brahmkshatriya.echo.ui.snackbar.openException
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import java.lang.ref.WeakReference
 
 class MediaItemsContainerAdapter(
-    fragment: Fragment,
+    val fragment: Fragment,
     private val listener: ClickListener<Pair<View, MediaItemsContainer>> = MediaItemClickListener(
         fragment
     ),
@@ -44,9 +47,18 @@ class MediaItemsContainerAdapter(
     private val lifecycle = fragment.lifecycle
 
     fun withLoadingFooter(): ConcatAdapter {
-        val footer = ContainerLoadingAdapter {
-            retry()
-        }
+        val footer = ContainerLoadingAdapter(object : ContainerLoadingAdapter.ContainerListener {
+            override fun onRetry() {
+                retry()
+            }
+
+            override fun onError(error: Throwable) {
+                fragment.requireActivity().openException(
+                    fragment.findNavController(),
+                    error
+                )
+            }
+        })
         addLoadStateListener { loadStates ->
             footer.loadState = when (loadStates.refresh) {
                 is LoadState.NotLoading -> loadStates.append
@@ -217,8 +229,8 @@ class MediaItemsContainerAdapter(
             binding.title.text = album.title
             album.cover.apply {
                 loadWith(binding.imageView, R.drawable.art_album, null) {
-                    binding.imageView1.setImageDrawable(it)
-                    binding.imageView2.setImageDrawable(it)
+                    binding.imageView1.load(it)
+                    binding.imageView2.load(it)
                 }
             }
             albumImage(album.numberOfTracks, binding.imageView1, binding.imageView2)
@@ -264,10 +276,9 @@ class MediaItemsContainerAdapter(
             val playlist = (item as MediaItemsContainer.PlaylistItem).playlist
             binding.title.text = playlist.title
             playlist.cover.apply {
-                loadWith(binding.imageView, R.drawable.art_library_music, null) {
-                    binding.imageView1.setImageDrawable(it)
-                    binding.imageView2.setImageDrawable(it)
-                }
+                loadInto(binding.imageView, R.drawable.art_library_music)
+                loadInto(binding.imageView1, R.drawable.art_library_music)
+                loadInto(binding.imageView2, R.drawable.art_library_music)
             }
             albumImage(3, binding.imageView1, binding.imageView2)
             binding.subtitle.text = playlist.subtitle

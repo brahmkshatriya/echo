@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.Flow
 interface UserClient {
     suspend fun login(data:String)
     suspend fun logout()
-    suspend fun user() : User.WithCover?
+    suspend fun user() : User?
     suspend fun likedTracks() : Flow<PagingData<Track>>
-    suspend fun playlists() : Flow<PagingData<Playlist.WithCover>>
+    suspend fun playlists() : Flow<PagingData<Playlist>>
     suspend fun createPlaylist(name:String, description:String?, tracks: List<Track>)
     suspend fun like(track: Track): Boolean
     suspend fun unlike(track: Track): Boolean
-    suspend fun subscribe(artist: Artist.Small): Boolean
-    suspend fun unsubscribe(artist: Artist.Small): Boolean
+    suspend fun subscribe(artist: Artist): Boolean
+    suspend fun unsubscribe(artist: Artist): Boolean
 }

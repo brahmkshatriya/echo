@@ -21,7 +21,7 @@ class AlbumResolver(
 
     fun search(
         query: String, page: Int, pageSize: Int, sorting: String
-    ): List<Album.WithCover> {
+    ): List<Album> {
         val whereCondition =
             "${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
         val selectionArgs = arrayOf("%$query%", "%$query%")
@@ -31,15 +31,15 @@ class AlbumResolver(
             }
     }
 
-    fun getAll(page: Int, pageSize: Int, sorting: String): List<Album.WithCover> {
+    fun getAll(page: Int, pageSize: Int, sorting: String): List<Album> {
         val whereCondition = ""
         val selectionArgs = arrayOf<String>()
         return context.queryAlbums(whereCondition, selectionArgs, page, pageSize, sorting)
     }
 
     fun getByArtist(
-        artist: Artist.Small, page: Int, pageSize: Int, sorting: String
-    ): List<Album.WithCover> {
+        artist: Artist, page: Int, pageSize: Int, sorting: String
+    ): List<Album> {
         val name = artist.name
         return search(name, page, pageSize, sorting)
     }
@@ -50,8 +50,8 @@ class AlbumResolver(
         page: Int,
         pageSize: Int,
         sorting: String
-    ): MutableList<Album.Full> {
-        val albums = mutableListOf<Album.Full>()
+    ): MutableList<Album> {
+        val albums = mutableListOf<Album>()
         createCursor(
             contentResolver = contentResolver,
             collection = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
@@ -84,11 +84,11 @@ class AlbumResolver(
                 )
                 val artistId = "${URI}${ARTIST_AUTH}${it.getLong(artistIdColumn)}"
                 albums.add(
-                    Album.Full(
+                    Album(
                         id = uri,
                         title = it.getString(albumColumn),
                         cover = coverUri.toImageHolder(),
-                        artists = listOf(Artist.Small(artistId, it.getString(artistColumn))),
+                        artists = listOf(Artist(artistId, it.getString(artistColumn))),
                         numberOfTracks = it.getInt(tracksColumn),
                         releaseDate = it.getString(yearColumn),
                         tracks = emptyList(),
@@ -103,19 +103,22 @@ class AlbumResolver(
         return albums
     }
 
-    fun get(uri: Uri, trackResolver: TrackResolver): Album.Full {
+    fun get(uri: Uri, trackResolver: TrackResolver): Album {
         val id = uri.lastPathSegment!!.toLong()
         val whereCondition = "${MediaStore.Audio.Albums._ID} = ?"
         val selectionArgs = arrayOf(id.toString())
         val album = context.queryAlbums(whereCondition, selectionArgs, 0, 1, "").first()
+
         val tracks = trackResolver.getByAlbum(album, 0, 50, "date")
         val duration = tracks.sumOf { it.duration ?: 0 }
+
         return album.copy(
-            tracks = tracks, duration = duration
+            tracks = tracks,
+            duration = duration
         )
     }
 
-    fun getShuffled(pageSize: Int): List<Album.WithCover> {
+    fun getShuffled(pageSize: Int): List<Album> {
         return getAll(0, 100, "").shuffled().take(pageSize)
     }
 }

@@ -37,7 +37,7 @@ class LibraryFragment : Fragment() {
         }
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 
-        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ContainerLoadingAdapter { })
+        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ContainerLoadingAdapter())
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
     }

@@ -23,13 +23,13 @@ class ArtistViewModel : ViewModel() {
 
     private val _result: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
     val result = _result.asStateFlow()
-    private val mutableArtistFlow: MutableStateFlow<Artist.Full?> = MutableStateFlow(null)
+    private val mutableArtistFlow: MutableStateFlow<Artist?> = MutableStateFlow(null)
     val artistFlow = mutableArtistFlow.asStateFlow()
 
     fun loadArtist(
         artistClient: ArtistClient,
         throwableFlow: MutableSharedFlow<Throwable>,
-        artist: Artist.Small
+        artist: Artist
     ) {
         if (initialized) return
         initialized = true
@@ -47,7 +47,7 @@ class ArtistViewModel : ViewModel() {
 
     fun subscribe(
         userClient: UserClient,
-        artist: Artist.Full,
+        artist: Artist,
         throwableFlow: MutableSharedFlow<Throwable>,
         subscribe: Boolean,
         block: (Boolean) -> Unit

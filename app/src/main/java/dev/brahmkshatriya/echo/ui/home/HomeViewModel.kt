@@ -45,8 +45,10 @@ class HomeViewModel @Inject constructor(
                         genre.value = genres.value?.firstOrNull()
                     }
                     tryWith(throwableFlow) {
-                        homeClient?.getHomeFeed(genre.asStateFlow())?.catchWith(throwableFlow)
-                            ?.cachedIn(viewModelScope)?.collectLatest { feed ->
+                        homeClient?.getHomeFeed(genre.asStateFlow())
+                            ?.catchWith(throwableFlow)
+                            ?.cachedIn(viewModelScope)
+                            ?.collectLatest { feed ->
                                 _feed.value = feed
                             }
                     }
@@ -57,7 +59,10 @@ class HomeViewModel @Inject constructor(
 
     fun loadGenres() {
         viewModelScope.launch(Dispatchers.IO) {
-            genres.value = homeClient?.getHomeGenres()
+            genre.value = null
+            tryWith(throwableFlow) {
+                genres.value = homeClient?.getHomeGenres()
+            }
         }
     }
 
