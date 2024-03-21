@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.ApplicationBuildType
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -22,20 +20,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        fun ApplicationBuildType.applyProguard() {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-        release { applyProguard() }
-        debug {
-            val isCI = System.getenv("CI")?.toBooleanStrictOrNull() ?: true
-            if (isCI) applyProguard()
-        }
-    }
+//    buildTypes {
+//        fun ApplicationBuildType.applyProguard() {
+//            isMinifyEnabled = true
+//            proguardFiles(
+//                getDefaultProguardFile("proguard-android-optimize.txt"),
+//                "proguard-rules.pro"
+//            )
+//        }
+//        release { applyProguard() }
+//        debug {
+//            val isCI = System.getenv("CI")?.toBooleanStrictOrNull() ?: true
+//            if (isCI) applyProguard()
+//        }
+//    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
