@@ -1,31 +1,20 @@
 package dev.brahmkshatriya.echo
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.disk.DiskCache
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
+import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
-import dev.brahmkshatriya.echo.ui.settings.LookFragment
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.AMOLED_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.MORE_AMOLED_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.THEME_KEY
 import javax.inject.Inject
 
 @HiltAndroidApp
-class EchoApplication : Application(), ImageLoaderFactory {
-    override fun newImageLoader(): ImageLoader {
-        return ImageLoader.Builder(this)
-            .allowHardware(false)
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(1024 * 1024 * 100) // 100MB
-                    .build()
-            }
-            .crossfade(true)
-            .build()
-    }
+class EchoApplication : Application() {
 
     @Inject
     lateinit var preferences: SharedPreferences
@@ -36,23 +25,28 @@ class EchoApplication : Application(), ImageLoaderFactory {
     }
 
     companion object {
+        @SuppressLint("RestrictedApi")
         fun applyUiChanges(app: Application, preferences: SharedPreferences) {
-            val theme = when (preferences.getBoolean(LookFragment.AMOLED_KEY, false)) {
+            val theme = when (preferences.getBoolean(AMOLED_KEY, false)) {
                 true -> {
-                    when (preferences.getBoolean(LookFragment.MORE_AMOLED_KEY, false)) {
-                        true -> R.style.MoreAmoled_Theme_Echo
-                        false -> R.style.Amoled_Theme_Echo
+                    when (preferences.getBoolean(MORE_AMOLED_KEY, false)) {
+                        true -> R.style.MoreAmoled
+                        false -> R.style.Amoled
                     }
                 }
-                false -> R.style.Default_Theme_Echo
+                false -> null
             }
 
+            val blue = app.resources.getColor(R.color.blue, app.theme)
+
             val options = DynamicColorsOptions.Builder()
-                .setThemeOverlay(theme)
+                .setOnAppliedCallback { activity ->
+                    theme?.let { ThemeUtils.applyThemeOverlay(activity, it) }
+                }
                 .build()
             DynamicColors.applyToActivitiesIfAvailable(app, options)
 
-            when (preferences.getString(LookFragment.THEME_KEY, "system")) {
+            when (preferences.getString(THEME_KEY, "system")) {
                 "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                 "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                 else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)

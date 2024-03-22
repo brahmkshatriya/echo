@@ -24,8 +24,8 @@ class LibraryFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
-        enterTransition = MaterialFade()
-        exitTransition = MaterialFade()
+//        enterTransition = MaterialFade()
+//        exitTransition = MaterialFade()
         return binding.root
     }
 

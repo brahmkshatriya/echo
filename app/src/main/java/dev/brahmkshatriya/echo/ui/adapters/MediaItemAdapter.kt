@@ -9,7 +9,6 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
@@ -104,8 +103,8 @@ class MediaItemAdapter(
                 val binding = (container as MediaItemsBinding.Album).binding
                 binding.title.text = item.album.title
                 item.album.cover.loadWith(binding.imageView, R.drawable.art_album, null) {
-                    binding.imageView1.load(it)
-                    binding.imageView2.load(it)
+                    item.album.cover.loadInto(binding.imageView1, R.drawable.art_album)
+                    item.album.cover.loadInto(binding.imageView2, R.drawable.art_album)
                 }
 
                 albumImage(item.album.numberOfTracks, binding.imageView1, binding.imageView2)
@@ -138,8 +137,8 @@ class MediaItemAdapter(
                     R.drawable.art_library_music,
                     null
                 ) {
-                    binding.imageView1.load(it)
-                    binding.imageView2.load(it)
+                    item.playlist.cover.loadInto(binding.imageView1, R.drawable.art_library_music)
+                    item.playlist.cover.loadInto(binding.imageView2, R.drawable.art_library_music)
                 }
 
                 binding.subtitle.isVisible = item.playlist.subtitle != null

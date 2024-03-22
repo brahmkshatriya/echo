@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.player.ui
 import android.animation.ObjectAnimator
 import android.content.res.ColorStateList
 import android.graphics.drawable.Animatable
-import android.graphics.drawable.BitmapDrawable
 import android.util.TypedValue
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -23,8 +22,7 @@ import androidx.recyclerview.widget.ItemTouchHelper.UP
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
-import coil.imageLoader
-import coil.request.SuccessResult
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
@@ -42,12 +40,13 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
-import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.DYNAMIC_PLAYER
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.DYNAMIC_PLAYER
 import dev.brahmkshatriya.echo.utils.createRequest
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -354,9 +353,11 @@ fun createPlayerUI(
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     val dynamicPlayer = preferences.getBoolean(DYNAMIC_PLAYER, true)
-                    val req = if (dynamicPlayer) createRequest(activity).build() else null
-                    val result = req?.let { imageLoader.execute(it) } as? SuccessResult
-                    val bitmap = (result?.drawable as? BitmapDrawable)?.bitmap
+                    val req = if (dynamicPlayer) {
+                        val builder = Glide.with(activity).asBitmap()
+                        createRequest(builder).submit()
+                    } else null
+                    val bitmap = tryWith { req?.get() }
                     val palette = bitmap?.let { Palette.from(it).generate() }
 
                     val colors = palette?.run {
@@ -373,10 +374,7 @@ fun createPlayerUI(
                         }
                     } ?: defaultColors
 
-
                     launch(Dispatchers.Main) {
-
-
                         applyColors(colors)
                     }
                 }

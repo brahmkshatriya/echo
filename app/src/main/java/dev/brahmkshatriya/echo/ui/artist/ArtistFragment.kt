@@ -17,7 +17,6 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.platform.MaterialContainerTransform
-import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
@@ -71,8 +70,8 @@ class ArtistFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentArtistBinding.inflate(inflater, container, false)
-        enterTransition = MaterialFade()
-        exitTransition = MaterialFade()
+//        enterTransition = MaterialFade()
+//        exitTransition = MaterialFade()
         return binding.root
     }
 

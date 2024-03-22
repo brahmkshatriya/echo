@@ -11,9 +11,14 @@ import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.EchoApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.R
 
-class LookFragment : PreferenceFragmentCompat() {
 
+class LookFragment : BaseSettingsFragment() {
+    override val title get() = getString(R.string.look_and_feel)
+    override val transitionName = "look"
+    override val creator = { LookPreference() }
+}
 
+class LookPreference : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
@@ -21,12 +26,14 @@ class LookFragment : PreferenceFragmentCompat() {
         preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
         val preferences = preferenceManager.sharedPreferences ?: return
 
-        fun uiListener(block: (Any) -> Unit = {}) = Preference.OnPreferenceChangeListener { _, new ->
-            applyUiChanges(requireActivity().application, preferences)
-            Toast.makeText(context, getString(R.string.restart_app), Toast.LENGTH_SHORT).show()
-            block(new)
-            true
-        }
+        fun uiListener(block: (Any) -> Unit = {}) =
+            Preference.OnPreferenceChangeListener { _, new ->
+                val activity = requireActivity()
+                applyUiChanges(activity.application, preferences)
+                Toast.makeText(context, getString(R.string.restart_app), Toast.LENGTH_SHORT).show()
+                block(new)
+                true
+            }
 
         val screen = preferenceManager.createPreferenceScreen(context)
         preferenceScreen = screen

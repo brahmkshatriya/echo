@@ -47,8 +47,10 @@ class ExtensionModule {
     // So, we need to wrap it in a data class and inject that instead
     data class MutableFlow(val flow: MutableStateFlow<ExtensionClient?>)
     data class ExtensionFlow(val flow: Flow<ExtensionClient?>)
+    data class ExtensionListFlow(val flow: MutableStateFlow<List<ExtensionClient>?>)
 
     private val mutableExtensionFlow = MutableFlow(MutableStateFlow(null))
+    private val mutableExtensionListFlow = ExtensionListFlow(MutableStateFlow(null))
     private val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
 
     @Provides
@@ -59,4 +61,7 @@ class ExtensionModule {
     @Singleton
     fun providesExtensionClient() = ExtensionFlow(extensionFlow)
 
+    @Provides
+    @Singleton
+    fun provideExtensionListFlow() = mutableExtensionListFlow
 }

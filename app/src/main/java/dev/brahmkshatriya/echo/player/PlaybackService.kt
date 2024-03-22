@@ -18,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.ui.settings.AudioPreference.Companion.CLOSE_PLAYER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -78,7 +78,9 @@ class PlaybackService : MediaLibraryService() {
 
         mediaLibrarySession = MediaLibrarySession.Builder(
             this, player, PlayerSessionCallback(this, scope, global, extension.flow)
-        ).setSessionActivity(pendingIntent).build()
+        )
+            .setSessionActivity(pendingIntent)
+            .build()
 
         val notificationProvider =
             DefaultMediaNotificationProvider.Builder(this).setChannelName(R.string.app_name).build()

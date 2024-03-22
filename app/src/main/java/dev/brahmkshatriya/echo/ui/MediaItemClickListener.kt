@@ -27,16 +27,19 @@ class MediaItemClickListener(
                 val extras = FragmentNavigatorExtras(view to view.transitionName)
                 fragment.findNavController().navigate(action, extras)
             }
+
             is MediaItemsContainer.TrackItem -> {
                 val playerViewModel: PlayerViewModel by fragment.activityViewModels()
 //                animatePlayerImage(fragment, view)
 
                 playerViewModel.play(mediaItem.track)
             }
+
             is MediaItemsContainer.Category -> {
-                val categoryViewModel : CategoryViewModel by fragment.activityViewModels()
+                val flow = mediaItem.flow ?: return
+                val categoryViewModel: CategoryViewModel by fragment.activityViewModels()
                 categoryViewModel.title = mediaItem.title
-                categoryViewModel.flow = mediaItem.flow
+                categoryViewModel.flow = flow
                 val action = NavigationDirections.actionCategory()
                 val extras = FragmentNavigatorExtras(view to view.transitionName)
                 fragment.findNavController().navigate(action, extras)

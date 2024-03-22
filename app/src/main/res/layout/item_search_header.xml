@@ -13,11 +13,13 @@
             android:id="@+id/cat_search_bar"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginEnd="24dp"
             android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:hint="@string/search"
-            android:background="?attr/colorSurface"
+            app:backgroundTint="?navBackground"
             app:layout_scrollFlags="scroll|enterAlways|snap"
-            app:navigationIcon="@drawable/ic_search_outline" />
+            app:navigationIcon="@drawable/ic_search_outline"
+            app:strokeColor="?colorSurfaceContainer"
+            app:strokeWidth="1dp" />
 
 </LinearLayout>

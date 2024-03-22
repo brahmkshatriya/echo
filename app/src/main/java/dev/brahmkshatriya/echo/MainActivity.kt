@@ -68,6 +68,16 @@ class MainActivity : AppCompatActivity() {
         extensionViewModel.initialize()
         createPlayerUI(this)
         applyInsetsToPlayerUI(this)
+
+        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+        MediaBrowser.Builder(this, sessionToken).buildAsync().also {
+            controllerFuture = it
+            val listener = Runnable {
+                val browser = tryWith(false) { it.get() } ?: return@Runnable
+                connectPlayerToUI(this, browser)
+            }
+            it.addListener(listener, ContextCompat.getMainExecutor(this))
+        }
     }
 
     fun isNightMode() =
@@ -81,21 +91,8 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
     }
 
-    override fun onStart() {
-        super.onStart()
-        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-        MediaBrowser.Builder(this, sessionToken).buildAsync().also {
-            controllerFuture = it
-            val listener = Runnable {
-                val browser = tryWith(false) { it.get() } ?: return@Runnable
-                connectPlayerToUI(this, browser)
-            }
-            it.addListener(listener, ContextCompat.getMainExecutor(this))
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
         controllerFuture?.let { MediaBrowser.releaseFuture(it) }
     }
 }

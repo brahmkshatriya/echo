@@ -38,10 +38,13 @@ class ExtensionDialogFragment : DialogFragment() {
 
         var oldListener: OnButtonCheckedListener? = null
         val extensionFlow = viewModel.getExtensionList()
-        if (extensionFlow != null) observe(extensionFlow) { list ->
-            binding.buttonToggleGroup.removeAllViews()
+        observe(extensionFlow) { list ->
 
-            val map = list.mapIndexed { id, extension ->
+            binding.buttonToggleGroup.removeAllViews()
+            binding.progressIndicator.isVisible = list.isNullOrEmpty()
+            if (list.isNullOrEmpty()) return@observe
+
+            val map = list.mapIndexed { index, extension ->
                 val button = ButtonExtensionBinding.inflate(
                         layoutInflater,
                         binding.buttonToggleGroup,
@@ -51,8 +54,8 @@ class ExtensionDialogFragment : DialogFragment() {
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
                 metadata.iconUrl?.loadInto(button)
-                button.id = id
-                id to extension
+                button.id = index
+                index to extension
             }.toMap()
 
             val checked = map.filter {
@@ -71,9 +74,6 @@ class ExtensionDialogFragment : DialogFragment() {
                 addOnButtonCheckedListener(listener)
                 oldListener = listener
             }
-        }
-        else {
-            binding.progressIndicator.isVisible = true
         }
     }
 }

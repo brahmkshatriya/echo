@@ -14,7 +14,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
-import com.google.android.material.transition.platform.MaterialFade
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
@@ -42,8 +41,8 @@ class SearchFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, parent, false)
-        enterTransition = MaterialFade()
-        exitTransition = MaterialFade()
+//        enterTransition = MaterialFade()
+//        exitTransition = MaterialFade()
         return binding.root
     }
 

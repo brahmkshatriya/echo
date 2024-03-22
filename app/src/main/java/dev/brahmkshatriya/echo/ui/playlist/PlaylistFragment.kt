@@ -16,7 +16,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
-import coil.load
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
@@ -34,6 +33,7 @@ import dev.brahmkshatriya.echo.ui.adapters.TrackAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
@@ -79,8 +79,8 @@ class PlaylistFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentAlbumBinding.inflate(inflater, container, false)
-        enterTransition = MaterialFade()
-        exitTransition = MaterialFade()
+//        enterTransition = MaterialFade()
+//        exitTransition = MaterialFade()
         return binding.root
     }
 
@@ -116,11 +116,10 @@ class PlaylistFragment : Fragment() {
         }
         binding.toolbar.title = playlist.title.trim()
 
-        playlist.cover.loadWith(binding.albumCover, R.drawable.art_album, null) { drawable ->
-            binding.albumCover1.load(drawable)
-            binding.albumCover2.load(drawable)
+        playlist.cover.loadWith(binding.albumCover, R.drawable.art_album, null) {
+            playlist.cover.loadInto(binding.albumCover1, R.drawable.art_album)
+            playlist.cover.loadInto(binding.albumCover2, R.drawable.art_album)
         }
-
 
         observe(extensionViewModel.extensionFlow) {
             binding.recyclerView.adapter = getAdapterForExtension<PlaylistClient>(

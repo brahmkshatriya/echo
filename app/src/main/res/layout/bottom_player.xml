@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0"
-        android:background="?attr/colorSurfaceContainerLowest" />
+        android:background="?navBackground" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/expandedContainer"
@@ -73,6 +73,7 @@
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/coordinatorLayout"
+            android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="12dp"
@@ -264,7 +265,7 @@
         style="@style/Widget.Material3.BottomSheet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:backgroundTint="?attr/colorSurfaceContainerLowest"
+        android:backgroundTint="?navBackground"
         android:clipToPadding="false"
         android:fitsSystemWindows="true"
         android:orientation="vertical"

@@ -1,13 +1,10 @@
 package dev.brahmkshatriya.echo.ui.adapters
 
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -18,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemAlbumBinding
@@ -33,7 +29,6 @@ import dev.brahmkshatriya.echo.ui.album.albumImage
 import dev.brahmkshatriya.echo.ui.snackbar.openException
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
-import java.lang.ref.WeakReference
 
 class MediaItemsContainerAdapter(
     val fragment: Fragment,
@@ -122,49 +117,49 @@ class MediaItemsContainerAdapter(
 
     //NESTED RECYCLER VIEW THINGS
 
-    private val stateViewModel: StateViewModel by fragment.viewModels()
-
-    class StateViewModel : ViewModel() {
-        val layoutManagerStates = hashMapOf<Int, Parcelable?>()
-        val visibleScrollableViews = hashMapOf<Int, WeakReference<Category>>()
-    }
-
+//    private val stateViewModel: StateViewModel by fragment.viewModels()
+//
+//    class StateViewModel : ViewModel() {
+//        val layoutManagerStates = hashMapOf<Int, Parcelable?>()
+//        val visibleScrollableViews = hashMapOf<Int, WeakReference<Category>>()
+//    }
+//
     suspend fun submit(pagingData: PagingData<MediaItemsContainer>) {
-        saveState()
+//        saveState()
         submitData(pagingData)
     }
-
-    init {
-        addLoadStateListener {
-            if (it.refresh == LoadState.Loading) clearState()
-        }
-    }
-
-    private fun clearState() {
-        stateViewModel.layoutManagerStates.clear()
-        stateViewModel.visibleScrollableViews.clear()
-    }
-
-    private fun saveState() {
-        stateViewModel.visibleScrollableViews.values.forEach { item ->
-            item.get()?.let { saveScrollState(it) }
-        }
-        stateViewModel.visibleScrollableViews.clear()
-    }
-
-    override fun onViewRecycled(holder: MediaItemsContainerHolder) {
-        super.onViewRecycled(holder)
-        if (holder is Category) saveScrollState(holder) {
-            stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
-        }
-    }
-
-    private fun saveScrollState(holder: Category, block: ((Category) -> Unit)? = null) {
-        val layoutManagerStates = stateViewModel.layoutManagerStates
-        layoutManagerStates[holder.bindingAdapterPosition] =
-            holder.layoutManager.onSaveInstanceState()
-        block?.invoke(holder)
-    }
+//
+//    init {
+//        addLoadStateListener {
+//            if (it.refresh == LoadState.Loading) clearState()
+//        }
+//    }
+//
+//    private fun clearState() {
+//        stateViewModel.layoutManagerStates.clear()
+//        stateViewModel.visibleScrollableViews.clear()
+//    }
+//
+//    private fun saveState() {
+//        stateViewModel.visibleScrollableViews.values.forEach { item ->
+//            item.get()?.let { saveScrollState(it) }
+//        }
+//        stateViewModel.visibleScrollableViews.clear()
+//    }
+//
+//    override fun onViewRecycled(holder: MediaItemsContainerHolder) {
+//        super.onViewRecycled(holder)
+//        if (holder is Category) saveScrollState(holder) {
+//            stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
+//        }
+//    }
+//
+//    private fun saveScrollState(holder: Category, block: ((Category) -> Unit)? = null) {
+//        val layoutManagerStates = stateViewModel.layoutManagerStates
+//        layoutManagerStates[holder.bindingAdapterPosition] =
+//            holder.layoutManager.onSaveInstanceState()
+//        block?.invoke(holder)
+//    }
 
 
     // VIEW HOLDER
@@ -187,17 +182,17 @@ class MediaItemsContainerAdapter(
             binding.recyclerView.layoutManager = layoutManager
             binding.recyclerView.adapter = adapter
             adapter.submitData(lifecycle, category.list)
-            layoutManager.let {
-                val state: Parcelable? = stateViewModel.layoutManagerStates[position]
-                if (state != null) it.onRestoreInstanceState(state)
-                else it.scrollToPosition(0)
-            }
-            stateViewModel.visibleScrollableViews[position] = WeakReference(this)
+//            layoutManager.let {
+//                val state: Parcelable? = stateViewModel.layoutManagerStates[position]
+//                if (state != null) it.onRestoreInstanceState(state)
+//                else it.scrollToPosition(0)
+//            }
+//            stateViewModel.visibleScrollableViews[position] = WeakReference(this)
             binding.more.isVisible = category.flow != null
-            binding.more.transitionName = category.flow.hashCode().toString()
+            binding.cardView.transitionName = category.flow.hashCode().toString()
         }
 
-        override val clickView = binding.more
+        override val clickView = binding.cardView
     }
 
     inner class Track(val binding: ItemTrackBinding) : MediaItemsContainerHolder(binding.root) {
@@ -229,8 +224,8 @@ class MediaItemsContainerAdapter(
             binding.title.text = album.title
             album.cover.apply {
                 loadWith(binding.imageView, R.drawable.art_album, null) {
-                    binding.imageView1.load(it)
-                    binding.imageView2.load(it)
+                    loadInto(binding.imageView1, R.drawable.art_album)
+                    loadInto(binding.imageView2, R.drawable.art_album)
                 }
             }
             albumImage(album.numberOfTracks, binding.imageView1, binding.imageView2)
@@ -276,9 +271,10 @@ class MediaItemsContainerAdapter(
             val playlist = (item as MediaItemsContainer.PlaylistItem).playlist
             binding.title.text = playlist.title
             playlist.cover.apply {
-                loadInto(binding.imageView, R.drawable.art_library_music)
-                loadInto(binding.imageView1, R.drawable.art_library_music)
-                loadInto(binding.imageView2, R.drawable.art_library_music)
+                loadWith(binding.imageView, R.drawable.art_library_music, null) {
+                    loadInto(binding.imageView1, R.drawable.art_library_music)
+                    loadInto(binding.imageView2, R.drawable.art_library_music)
+                }
             }
             albumImage(3, binding.imageView1, binding.imageView2)
             binding.subtitle.text = playlist.subtitle

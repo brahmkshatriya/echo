@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.settings
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.activityViewModels
 import androidx.preference.Preference
@@ -10,7 +11,14 @@ import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 
-class PreferenceFragment : PreferenceFragmentCompat() {
+
+class SettingsFragment : BaseSettingsFragment() {
+    override val title get() = getString(R.string.settings)
+    override val transitionName = "settings"
+    override val creator = { SettingsPreference() }
+}
+
+class SettingsPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
         preferenceManager.sharedPreferencesName = context.packageName
@@ -55,28 +63,35 @@ class PreferenceFragment : PreferenceFragmentCompat() {
         }
     }
 
-
     @SuppressLint("CommitTransaction")
-    private fun startPreferenceFragment(title: CharSequence?, fragment: PreferenceFragmentCompat) {
+    private fun start(transition: String, view: View, fragment: BaseSettingsFragment): Boolean {
+        view.transitionName = transition
         requireActivity().supportFragmentManager
             .beginTransaction()
-            .add(R.id.settingsFragmentContainerView, SettingsFragment(title,fragment))
+            .addSharedElement(view, transition)
+            .add(R.id.settingsFragmentContainerView, fragment)
             .addToBackStack(null)
             .commit()
+        return true
     }
 
     private val extensionViewModel: ExtensionViewModel by activityViewModels()
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
-        when (preference.key) {
-            "about" -> startPreferenceFragment(preference.title, AboutFragment())
-            "audio" -> startPreferenceFragment(preference.title, AudioFragment())
+        val view = listView.getChildAt(preference.order)
+        fun start(fragment: BaseSettingsFragment) = start(preference.key, view, fragment)
+
+        return when (preference.key) {
+            "about" -> start(AboutFragment())
+            "audio" -> start(AudioFragment())
             "extension" -> {
-                val extension = extensionViewModel.getCurrentExtension() ?: return false
-                startPreferenceFragment(extension.metadata.name, ExtensionFragment(extension))
+                val extension = extensionViewModel.getCurrentExtension()
+                    ?: return false
+                start(ExtensionFragment.newInstance(extension.metadata))
             }
-            "look" -> startPreferenceFragment(preference.title, LookFragment())
+
+            "look" -> start(LookFragment())
+            else -> super.onPreferenceTreeClick(preference)
         }
-        return super.onPreferenceTreeClick(preference)
     }
 }

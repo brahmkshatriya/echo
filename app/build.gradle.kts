@@ -20,21 +20,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-//    buildTypes {
-//        fun ApplicationBuildType.applyProguard() {
-//            isMinifyEnabled = true
-//            proguardFiles(
-//                getDefaultProguardFile("proguard-android-optimize.txt"),
-//                "proguard-rules.pro"
-//            )
-//        }
-//        release { applyProguard() }
-//        debug {
-//            val isCI = System.getenv("CI")?.toBooleanStrictOrNull() ?: true
-//            if (isCI) applyProguard()
-//        }
-//    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -82,7 +67,8 @@ dependencies {
     //noinspection GradleDependency
     ksp("com.google.dagger:hilt-android-compiler:2.48")
 
-    implementation("io.coil-kt:coil:2.6.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    ksp("com.github.bumptech.glide:ksp:4.14.2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     testImplementation("junit:junit:4.13.2")

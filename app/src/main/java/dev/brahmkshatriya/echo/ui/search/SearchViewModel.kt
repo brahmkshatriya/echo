@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
@@ -41,9 +42,12 @@ class SearchViewModel @Inject constructor(
         this.query = query
         viewModelScope.launch(Dispatchers.IO) {
             tryWith(throwableFlow) {
-                searchClient?.search(query)?.catchWith(throwableFlow)?.collectLatest {
-                    _result.value = it
-                }
+                searchClient?.search(query)
+                    ?.cachedIn(viewModelScope)
+                    ?.catchWith(throwableFlow)
+                    ?.collectLatest {
+                        _result.value = it
+                    }
             }
         }
     }

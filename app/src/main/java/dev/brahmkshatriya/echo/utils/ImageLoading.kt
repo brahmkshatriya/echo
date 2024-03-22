@@ -1,82 +1,94 @@
 package dev.brahmkshatriya.echo.utils
 
-import android.content.Context
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
-import coil.imageLoader
-import coil.load
-import coil.request.ImageRequest
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.target.CustomViewTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.common.models.ImageHolder
-import okhttp3.Headers.Companion.toHeaders
 
-fun ImageHolder?.createRequest(
-    context: Context,
-    placeholder: Int? = null,
-    errorDrawable: Int? = null
-): ImageRequest.Builder {
-    val request = ImageRequest.Builder(context)
+fun <T> ImageHolder?.createRequest(
+    requestBuilder: RequestBuilder<T>, placeholder: Int? = null, errorDrawable: Int? = null
+): RequestBuilder<T> {
     var error = errorDrawable
     if (error == null) error = placeholder
 
-    if (this == null) {
-        if (error != null) request.data(error)
-        return request
-    }
-    when (this) {
-        is ImageHolder.BitmapHolder -> request.data(bitmap)
-        is ImageHolder.UrlHolder -> {
-            request.data(url)
-            request.headers(headers.toHeaders())
-        }
+    if (this == null) return requestBuilder.load(error)
 
-        is ImageHolder.UriHolder -> request.data(uri)
+    var request = when (this) {
+        is ImageHolder.BitmapHolder -> requestBuilder.load(bitmap)
+
+        is ImageHolder.UrlHolder -> requestBuilder.load(GlideUrl(url) { headers })
+
+        is ImageHolder.UriHolder -> requestBuilder.load(uri)
     }
-    placeholder?.let { request.placeholder(it) }
-    error?.let { request.error(it) }
-    return request
+    request = placeholder?.let { request.placeholder(it) } ?: request
+    request = error?.let { request.error(it) } ?: request
+    return if (crop) request.centerCrop() else request.centerInside()
 }
 
 fun ImageHolder?.loadInto(
-    imageView: ImageView,
-    placeholder: Int? = null,
-    errorDrawable: Int? = null
+    imageView: ImageView, placeholder: Int? = null, errorDrawable: Int? = null
 ) {
-    var request = createRequest(imageView.context, placeholder, errorDrawable)
-    request = request.target(imageView)
-    imageView.scaleType = when (this?.crop) {
-        true -> ImageView.ScaleType.CENTER_CROP
-        else -> ImageView.ScaleType.FIT_CENTER
-    }
-    imageView.context.imageLoader.enqueue(request.build())
+    val builder = Glide.with(imageView).asDrawable()
+    val request = createRequest(builder, placeholder, errorDrawable)
+    request.into(imageView)
 }
 
 fun ImageHolder?.loadWith(
     imageView: ImageView,
     placeholder: Int? = null,
     errorDrawable: Int? = null,
-    block: (Drawable?) -> Unit
+    block: () -> Unit
 ) {
-    var request = createRequest(imageView.context, placeholder, errorDrawable)
-    imageView.scaleType = when (this?.crop) {
-        true -> ImageView.ScaleType.CENTER_CROP
-        else -> ImageView.ScaleType.FIT_CENTER
-    }
-    val target: (Drawable?) -> Unit = {
-        imageView.load(it)
-        block(it)
-    }
-    request = request.target(target, target, target)
-    imageView.context.imageLoader.enqueue(request.build())
+    val builder = Glide.with(imageView).asDrawable()
+    val request = createRequest(builder, placeholder, errorDrawable)
+    request.into(ImageTarget(imageView, block))
 }
 
+class ImageTarget(private val imageView: ImageView, private val block: () -> Unit) :
+    CustomViewTarget<ImageView, Drawable>(imageView) {
+    private fun setDrawable(drawable: Drawable?) {
+        imageView.setImageDrawable(drawable)
+        tryWith(false) { block() }
+    }
+
+    override fun onLoadFailed(errorDrawable: Drawable?) {
+        setDrawable(errorDrawable)
+    }
+
+    override fun onResourceCleared(placeholder: Drawable?) {
+        setDrawable(placeholder)
+    }
+
+    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+        setDrawable(resource)
+    }
+}
+
+
 fun ImageHolder?.loadInto(
-    button: MaterialButton,
-    placeholder: Int? = null,
-    errorDrawable: Int? = null
+    button: MaterialButton, placeholder: Int? = null, errorDrawable: Int? = null
 ) {
-    var request = createRequest(button.context, placeholder, errorDrawable)
-    val icon: (Drawable?) -> Unit = { button.icon = it }
-    request = request.target(icon, icon, icon)
-    button.context.imageLoader.enqueue(request.build())
+    val builder = Glide.with(button).asDrawable()
+    val request = createRequest(builder, placeholder, errorDrawable)
+    request.into(MaterialButtonTarget(button))
+}
+
+class MaterialButtonTarget(private val button: MaterialButton) :
+    CustomViewTarget<MaterialButton, Drawable>(button) {
+    override fun onLoadFailed(errorDrawable: Drawable?) {
+        button.icon = errorDrawable
+    }
+
+    override fun onResourceCleared(placeholder: Drawable?) {
+        button.icon = placeholder
+    }
+
+    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+        button.icon = resource
+    }
 }

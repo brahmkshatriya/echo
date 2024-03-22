@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.album
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
@@ -33,7 +34,10 @@ class AlbumViewModel : ViewModel() {
             tryWith(throwableFlow) {
                 albumClient.loadAlbum(album).let {
                     mutableAlbumFlow.value = it
-                    albumClient.getMediaItems(it).catchWith(throwableFlow).collectLatest { data ->
+                    albumClient.getMediaItems(it)
+                        .catchWith(throwableFlow)
+                        .cachedIn(viewModelScope)
+                        .collectLatest { data ->
                         _result.value = data
                     }
                 }

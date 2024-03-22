@@ -7,7 +7,13 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 
-class AudioFragment : PreferenceFragmentCompat() {
+class AudioFragment: BaseSettingsFragment(){
+    override val title get() = getString(R.string.audio)
+    override val transitionName = "audio"
+    override val creator = { AudioPreference() }
+}
+
+class AudioPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
         preferenceManager.sharedPreferencesName = context.packageName

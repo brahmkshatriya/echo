@@ -5,7 +5,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment
+import dev.brahmkshatriya.echo.ui.settings.AudioPreference.Companion.AUTO_START_RADIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +19,7 @@ class RadioListener(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (!player.hasNextMediaItem()) {
-            val autoStartRadio = settings.getBoolean(AudioFragment.AUTO_START_RADIO, true)
+            val autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
             if (autoStartRadio) queue.current?.let {
                 scope.launch(Dispatchers.IO) {
                     val radioClient = queue.current?.client as? RadioClient ?: return@launch

@@ -5,7 +5,6 @@
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -18,12 +17,8 @@
             style="@style/CollapsingBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:contentScrim="?attr/colorSurfaceContainer"
-            app:expandedTitleMarginBottom="20dp"
             app:expandedTitleMarginEnd="72dp"
-            app:expandedTitleMarginStart="24dp"
-            app:maxLines="2"
-            app:titleCollapseMode="scale">
+            app:maxLines="2">
 
             <ImageView
                 android:id="@+id/endIcon"

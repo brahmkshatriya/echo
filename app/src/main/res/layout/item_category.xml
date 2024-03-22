@@ -6,71 +6,70 @@
     android:layout_height="wrap_content"
     android:clipToPadding="false"
     android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingTop="4dp"
-    android:paddingEnd="16dp"
-    android:paddingBottom="4dp">
+    android:paddingVertical="8dp">
 
-    <LinearLayout
-        android:layout_marginEnd="-8dp"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            android:layout_weight="1"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:gravity="center_vertical"
-            android:minHeight="48sp"
-            android:orientation="vertical">
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp">
 
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textSize="20sp"
-                tools:text="@string/library" />
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:minHeight="48sp"
+                android:orientation="vertical"
+                android:paddingHorizontal="8dp">
 
-            <TextView
-                android:id="@+id/subtitleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:alpha="0.66"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textSize="16sp"
-                android:visibility="gone"
-                tools:text="@string/library" />
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="20sp"
+                    tools:text="@string/library" />
 
+                <TextView
+                    android:id="@+id/subtitleTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:alpha="0.66"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="16sp"
+                    android:visibility="gone"
+                    tools:text="@string/library" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/more"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/clear_playlist"
+                android:padding="8dp"
+                android:scaleType="center"
+                app:srcCompat="@drawable/ic_more_horiz"
+                app:tint="?attr/colorOnSurface" />
         </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/more"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/clear_playlist"
-            android:padding="8dp"
-            app:icon="@drawable/ic_more_horiz"
-            app:iconSize="24dp"
-            app:iconTint="@color/button_player" />
-
-
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="-16dp"
-        android:nestedScrollingEnabled="false"
-        android:layout_marginEnd="-16dp"
         android:clipToPadding="false"
+        android:nestedScrollingEnabled="false"
         android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

@@ -6,15 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceFragmentCompat
-import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
 
-class SettingsFragment(
-    val title: CharSequence?,
-    val fragment: PreferenceFragmentCompat
-) : Fragment(){
+abstract class BaseSettingsFragment : Fragment() {
+
+    abstract val title: String?
+    abstract val transitionName: String?
+    abstract val creator: () -> PreferenceFragmentCompat
+
     private var binding: FragmentSettingsContainerBinding by autoCleared()
 
     override fun onCreateView(
@@ -22,8 +23,6 @@ class SettingsFragment(
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSettingsContainerBinding.inflate(inflater, container, false)
-        enterTransition = MaterialFade()
-        exitTransition = MaterialFade()
         return binding.root
     }
 
@@ -39,6 +38,8 @@ class SettingsFragment(
         }
 
         binding.title.title = title
-        childFragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit()
+        childFragmentManager.beginTransaction().add(R.id.fragment_container, creator())
+            .commit()
     }
+
 }

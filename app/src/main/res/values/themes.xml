@@ -4,19 +4,24 @@
         <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/amoled_bg</item>
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_mono_anim</item>
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">1200</item>
+
         <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
+        <item name="coordinatorLayoutStyle">@style/CoordinatorLayout</item>
+        <item name="appBarLayoutStyle">@style/AppBar</item>
         <item name="materialCardViewStyle">@style/EchoCardView</item>
-        <item name="android:colorBackground">?attr/echoBackground</item>
-        <item name="navBackground">?attr/colorSurfaceContainerLowest</item>
-        <item name="echoBackground">?attr/colorSurface</item>
+        <item name="collapsingToolbarLayoutStyle">@style/CollapsingBar</item>
+
+        <item name="android:colorBackground">?echoBackground</item>
+
+        <item name="echoBackground">?colorSurface</item>
+        <item name="navBackground">?colorSurfaceContainer</item>
     </style>
 
     <style name="Default.Theme.Echo" parent="Base.Theme.Echo"/>
-    <style name="Amoled.Theme.Echo" parent="Base.Theme.Echo">
-        <item name="cardBackgroundColor">@color/amoled_bg</item>
+    <style name="Amoled">
         <item name="echoBackground">@color/amoled_bg</item>
     </style>
-    <style name="MoreAmoled.Theme.Echo" parent="Amoled.Theme.Echo">
+    <style name="MoreAmoled" parent="Amoled">
         <item name="navBackground">@color/amoled_bg</item>
     </style>
 </resources>

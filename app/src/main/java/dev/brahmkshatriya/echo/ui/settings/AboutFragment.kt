@@ -6,7 +6,13 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 
-class AboutFragment : PreferenceFragmentCompat() {
+class AboutFragment: BaseSettingsFragment() {
+    override val title get() = getString(R.string.about)
+    override val transitionName = "about"
+    override val creator = { AboutPreference() }
+}
+
+class AboutPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
         preferenceManager.sharedPreferencesName = context.packageName

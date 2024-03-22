@@ -2,12 +2,16 @@
 <resources>
 
     <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">?attr/colorPrimary</item>
+        <item name="android:color">?attr/colorPrimaryInverse</item>
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat.Dialog.MinWidth">
         <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
         <item name="android:windowBackground">@drawable/dialog_bg</item>
+    </style>
+
+    <style name="AppBar">
+        <item name="background">?echoBackground</item>
     </style>
 
     <style name="TopAppBarHeader">
@@ -30,10 +34,21 @@
         <item name="menu">@menu/top_bar_menu</item>
     </style>
 
-    <style name="CollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
+    <style name="TopCollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
+        <item name="contentScrim">?navBackground</item>
+        <item name="expandedTitleMarginBottom">20dp</item>
+        <item name="expandedTitleMarginEnd">24dp</item>
+        <item name="expandedTitleMarginStart">24dp</item>
+        <item name="titleCollapseMode">scale</item>
         <item name="layout_scrollFlags">scroll|exitUntilCollapsed|snap</item>
     </style>
+
+    <style name="CollapsingBar" parent="TopCollapsingBar"/>
+
+    <style name="CoordinatorLayout">
+        <item name="android:background">?echoBackground</item>
+    </style>
     <style name="EchoCardView" parent="Widget.Material3.CardView.Filled">
-        <item name="cardBackgroundColor">@android:color/transparent</item>
+        <item name="cardBackgroundColor">?echoBackground</item>
     </style>
 </resources>

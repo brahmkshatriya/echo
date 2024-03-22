@@ -23,10 +23,7 @@ class SettingsActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager
                 .beginTransaction()
-                .replace(R.id.settingsFragmentContainerView, SettingsFragment(
-                    getString(R.string.settings),
-                    PreferenceFragment()
-                ))
+                .replace(R.id.settingsFragmentContainerView, SettingsFragment())
                 .commit()
         }
     }

@@ -59,7 +59,7 @@
                 android:layout_gravity="bottom"
                 android:layout_margin="8dp"
                 android:alpha="0.66"
-                app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                app:cardBackgroundColor="?navBackground"
                 app:strokeWidth="0dp" />
 
             <ImageView

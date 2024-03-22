@@ -7,7 +7,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.utils.catchWith
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -17,6 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
+    mutableExtensionListFlow: ExtensionModule.ExtensionListFlow,
     private val mutableExtensionFlow: ExtensionModule.MutableFlow,
     private val pluginRepo: PluginRepo<ExtensionClient>,
     private val preferences: SharedPreferences,
@@ -24,24 +24,25 @@ class ExtensionViewModel @Inject constructor(
 ) : ViewModel() {
 
     val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
+    private val extensionListFlow = mutableExtensionListFlow.flow
 
     private var initialized = false
     fun initialize() {
         if (initialized) return
         initialized = true
         viewModelScope.launch {
-            extensionListFlow = pluginRepo.getAllPlugins {
+            val flow = pluginRepo.getAllPlugins {
                 launch { throwableFlow.emit(it) }
             }.catchWith(throwableFlow)
-            val list = extensionListFlow?.firstOrNull()
+            launch { flow.collect(extensionListFlow) }
+
+            val list = flow.firstOrNull()
             val id = preferences.getString(LAST_EXTENSION_KEY, null)
-            mutableExtensionFlow.flow.value = list?.find {
-                it.metadata.id == id
-            } ?: list?.firstOrNull()
+
+            mutableExtensionFlow.flow.value = list?.find { it.metadata.id == id } ?: list?.firstOrNull()
         }
     }
 
-    private var extensionListFlow: Flow<List<ExtensionClient>>? = null
     fun getExtensionList() = extensionListFlow
 
     fun setExtension(extension: ExtensionClient) {
@@ -52,6 +53,11 @@ class ExtensionViewModel @Inject constructor(
     }
 
     fun getCurrentExtension() = mutableExtensionFlow.flow.value
+    fun getExtension(extensionId: String): ExtensionClient? {
+        return extensionListFlow.value?.find {
+            it.metadata.id == extensionId
+        }
+    }
 
     companion object {
         const val LAST_EXTENSION_KEY = "last_extension"

@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.artist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -37,7 +38,10 @@ class ArtistViewModel : ViewModel() {
             tryWith(throwableFlow) {
                 artistClient.loadArtist(artist).let {
                     mutableArtistFlow.value = it
-                    artistClient.getMediaItems(it).catchWith(throwableFlow).collectLatest { data ->
+                    artistClient.getMediaItems(it)
+                        .catchWith(throwableFlow)
+                        .cachedIn(viewModelScope)
+                        .collectLatest { data ->
                         _result.value = data
                     }
                 }

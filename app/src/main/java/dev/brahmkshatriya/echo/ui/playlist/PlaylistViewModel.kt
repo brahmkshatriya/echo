@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.playlist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -25,7 +26,9 @@ class PlaylistViewModel : ViewModel() {
     val playlistFlow = mutablePlaylistFlow.asStateFlow()
 
     fun loadAlbum(
-        playlistClient: PlaylistClient, throwableFlow: MutableSharedFlow<Throwable>, playlist: Playlist
+        playlistClient: PlaylistClient,
+        throwableFlow: MutableSharedFlow<Throwable>,
+        playlist: Playlist
     ) {
         if (initialized) return
         initialized = true
@@ -33,9 +36,12 @@ class PlaylistViewModel : ViewModel() {
             tryWith(throwableFlow) {
                 playlistClient.loadPlaylist(playlist).let {
                     mutablePlaylistFlow.value = it
-                    playlistClient.getMediaItems(it).catchWith(throwableFlow).collectLatest { data ->
-                        _result.value = data
-                    }
+                    playlistClient.getMediaItems(it)
+                        .cachedIn(viewModelScope)
+                        .catchWith(throwableFlow)
+                        .collectLatest { data ->
+                            _result.value = data
+                        }
                 }
             }
         }

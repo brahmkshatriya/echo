@@ -46,8 +46,8 @@ class HomeViewModel @Inject constructor(
                     }
                     tryWith(throwableFlow) {
                         homeClient?.getHomeFeed(genre.asStateFlow())
-                            ?.catchWith(throwableFlow)
                             ?.cachedIn(viewModelScope)
+                            ?.catchWith(throwableFlow)
                             ?.collectLatest { feed ->
                                 _feed.value = feed
                             }

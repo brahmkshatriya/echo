@@ -88,7 +88,7 @@
 
     <fragment
         android:id="@+id/navigation_settings"
-        android:name="dev.brahmkshatriya.echo.ui.settings.SettingsFragment"
+        android:name="dev.brahmkshatriya.echo.ui.settings.BaseSettingsFragment"
         tools:layout="@layout/fragment_settings_container" />
     <action
         android:id="@+id/action_settings"
