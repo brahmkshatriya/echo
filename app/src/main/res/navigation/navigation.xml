@@ -33,7 +33,6 @@
         android:id="@+id/action_artist"
         app:destination="@id/navigation_artist" />
 
-
     <fragment
         android:id="@+id/navigation_album"
         android:name="dev.brahmkshatriya.echo.ui.album.AlbumFragment"
