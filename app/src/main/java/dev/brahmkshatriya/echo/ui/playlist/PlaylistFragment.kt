@@ -17,13 +17,13 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.platform.MaterialContainerTransform
-import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentAlbumBinding
+import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.ClickListener
@@ -31,7 +31,6 @@ import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.TrackAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
-import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -123,7 +122,7 @@ class PlaylistFragment : Fragment() {
 
         observe(extensionViewModel.extensionFlow) {
             binding.recyclerView.adapter = getAdapterForExtension<PlaylistClient>(
-                it, R.string.playlist, concatAdapter, true
+                it, R.string.playlist, concatAdapter
             ) { client ->
                 if (client == null) return@getAdapterForExtension
                 viewModel.loadAlbum(client, extensionViewModel.throwableFlow, playlist)

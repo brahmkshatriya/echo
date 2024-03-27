@@ -23,6 +23,7 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentAlbumBinding
+import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.ClickListener
@@ -30,7 +31,6 @@ import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.TrackAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
-import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -127,7 +127,7 @@ class AlbumFragment : Fragment() {
 
         observe(extensionViewModel.extensionFlow) {
             binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
-                it, R.string.album, concatAdapter, true
+                it, R.string.album, concatAdapter
             ) { client ->
                 if (client == null) return@getAdapterForExtension
                 viewModel.loadAlbum(client, extensionViewModel.throwableFlow, album)

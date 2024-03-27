@@ -23,12 +23,12 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.databinding.FragmentArtistBinding
+import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
-import dev.brahmkshatriya.echo.ui.extension.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
@@ -109,7 +109,7 @@ class ArtistFragment : Fragment() {
         artist.cover.loadInto(binding.albumCover, R.drawable.art_artist)
         observe(extensionViewModel.extensionFlow) {
             binding.recyclerView.adapter = getAdapterForExtension<ArtistClient>(
-                it, R.string.artist, concatAdapter, true
+                it, R.string.artist, concatAdapter
             ) { client ->
                 if (client == null) return@getAdapterForExtension
                 viewModel.loadArtist(client, extensionViewModel.throwableFlow, artist)

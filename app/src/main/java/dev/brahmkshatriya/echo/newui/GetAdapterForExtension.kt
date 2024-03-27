@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.extension
+package dev.brahmkshatriya.echo.newui
 
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -9,7 +9,6 @@ inline fun <reified T> getAdapterForExtension(
     it: ExtensionClient?,
     name: Int,
     adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-    hideTopBar: Boolean = false,
     block: ((T?) -> Unit) = {}
 ): RecyclerView.Adapter<out RecyclerView.ViewHolder> {
     return if (it != null) {
@@ -18,7 +17,7 @@ inline fun <reified T> getAdapterForExtension(
             adapter
         } else {
             block(null)
-            ClientNotSupportedAdapter(name, hideTopBar)
+            ClientNotSupportedAdapter(name)
         }
     } else {
         block(null)

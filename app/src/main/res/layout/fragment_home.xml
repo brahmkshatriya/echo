@@ -28,6 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
+            android:clipToPadding="false"
             android:paddingHorizontal="16dp"
             app:tabGravity="start"
             app:tabIndicator="@drawable/tab_indicator"
