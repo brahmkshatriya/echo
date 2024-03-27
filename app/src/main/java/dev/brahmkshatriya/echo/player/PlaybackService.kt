@@ -33,6 +33,9 @@ class PlaybackService : MediaLibraryService() {
     lateinit var extension: ExtensionModule.ExtensionFlow
 
     @Inject
+    lateinit var extensionListFlow: ExtensionModule.ExtensionListFlow
+
+    @Inject
     lateinit var global: Queue
 
     @Inject
@@ -54,7 +57,8 @@ class PlaybackService : MediaLibraryService() {
         val audioAttributes = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA)
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
 
-        val customDataSource = CustomDataSource.Factory(this, global, throwableFlow)
+        val customDataSource =
+            CustomDataSource.Factory(this, extensionListFlow, global, throwableFlow)
 
         val cacheDataSourceFactory =
             CacheDataSource.Factory()
@@ -70,7 +74,7 @@ class PlaybackService : MediaLibraryService() {
             .setAudioAttributes(audioAttributes, true)
             .build()
 
-        player.addListener(RadioListener(player, global, scope, settings))
+        player.addListener(RadioListener(player, extensionListFlow, global, scope, settings))
 
         val intent = Intent(this, MainActivity::class.java).putExtra("fromNotification", true)
 

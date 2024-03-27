@@ -32,7 +32,6 @@ import dev.brahmkshatriya.echo.data.offline.TrackResolver
 import dev.brahmkshatriya.echo.data.offline.URI
 import dev.brahmkshatriya.echo.data.offline.sortedBy
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 
 class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, TrackClient,
@@ -113,17 +112,20 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         return listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
     }
 
-    override suspend fun getHomeFeed(genre: StateFlow<Genre?>) =
+    override suspend fun getHomeFeed(genre: Genre?): Flow<PagingData<MediaItemsContainer>> =
         pagedFlow { page: Int, pageSize: Int ->
-            when (genre.value?.id) {
+            fun testContainer(title: String, item: EchoMediaItem) =
+                listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
+
+            when (genre?.id) {
                 "Tracks" -> trackResolver.getAll(page, pageSize, sorting)
-                    .map { MediaItemsContainer.TrackItem(it) }
+                    .map { testContainer(it.title, it.toMediaItem()) }
 
                 "Albums" -> albumResolver.getAll(page, pageSize, sorting)
-                    .map { MediaItemsContainer.AlbumItem(it) }
+                    .map { testContainer(it.title, it.toMediaItem()) }
 
                 "Artists" -> artistResolver.getAll(page, pageSize, sorting)
-                    .map { MediaItemsContainer.ArtistItem(it) }
+                    .map { testContainer(it.name, it.toMediaItem()) }
 
                 else -> if (page == 0) {
                     val albums = albumResolver.getShuffled(pageSize).map { it.toMediaItem() }
@@ -155,7 +157,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
                     result
                 } else {
                     trackResolver.getAll(page - 1, pageSize, sorting)
-                        .map { MediaItemsContainer.TrackItem(it) }
+                        .map { testContainer(it.title, it.toMediaItem()) }
                 }
             }
         }

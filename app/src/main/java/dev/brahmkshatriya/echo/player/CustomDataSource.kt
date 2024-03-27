@@ -9,7 +9,9 @@ import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
+import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
@@ -18,16 +20,19 @@ import java.io.InputStream
 @UnstableApi
 class CustomDataSource(
     context: Context,
+    private val extensionListFlow: ExtensionModule.ExtensionListFlow,
     private val global: Queue,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : BaseDataSource(true) {
 
     class Factory(
         private val context: Context,
+        private val extensionListFlow: ExtensionModule.ExtensionListFlow,
         private val global: Queue,
         private val throwableFlow: MutableSharedFlow<Throwable>
     ) : DataSource.Factory {
-        override fun createDataSource() = CustomDataSource(context, global, throwableFlow)
+        override fun createDataSource() =
+            CustomDataSource(context, extensionListFlow, global, throwableFlow)
     }
 
     private val defaultDataSourceFactory = DefaultDataSource.Factory(context)
@@ -40,7 +45,10 @@ class CustomDataSource(
 
     private fun getAudio(id: String): StreamableAudio {
         val track = getTrack(id)
-        val client = track.client
+        val client = extensionListFlow
+            .getClient<TrackClient>(track.clientId)
+            ?: throw Exception("Track Client ${track.clientId} not found")
+
         return runBlocking {
             val streamable = track.track.streamable ?: throw Exception("Streamable not found")
             tryWith(throwableFlow) {

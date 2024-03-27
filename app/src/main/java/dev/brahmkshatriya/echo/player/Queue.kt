@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.player
 
 import androidx.media3.common.MediaItem
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,7 +18,7 @@ class Queue {
     val currentIndex = MutableStateFlow<Int?>(null)
     val current get() = currentIndex.value?.let { queue.getOrNull(it) }
 
-    fun getTrack(mediaId: String?) = queue.find { it.id == mediaId }
+    fun getTrack(mediaId: String?) = queue.find { it.track.id == mediaId }
 
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
@@ -45,6 +46,7 @@ class Queue {
     suspend fun addTracks(
         client: TrackClient, tracks: List<Track>, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
+        client as ExtensionClient
         var position = currentIndex.value?.let { it + 1 } ?: 0
         position += offset
         position = position.coerceIn(0, _queue.size)
@@ -53,7 +55,7 @@ class Queue {
             PlayerHelper.mediaItemBuilder(track)
         }
         val queueItems = tracks.map { track ->
-            StreamableTrack(track.id, track, client)
+            StreamableTrack(track, client.metadata.id)
         }
         _queue.addAll(position, queueItems)
         val mediaItems = position to items
@@ -71,7 +73,6 @@ class Queue {
 }
 
 data class StreamableTrack(
-    val id: String,
     val track: Track,
-    val client: TrackClient
+    val clientId: String
 )

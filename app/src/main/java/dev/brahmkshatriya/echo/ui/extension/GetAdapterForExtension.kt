@@ -10,7 +10,7 @@ inline fun <reified T> getAdapterForExtension(
     name: Int,
     adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     hideTopBar: Boolean = false,
-    block: ((T?) -> Unit)
+    block: ((T?) -> Unit) = {}
 ): RecyclerView.Adapter<out RecyclerView.ViewHolder> {
     return if (it != null) {
         if (it is T) {
@@ -22,6 +22,6 @@ inline fun <reified T> getAdapterForExtension(
         }
     } else {
         block(null)
-        ClientLoadingAdapter(hideTopBar)
+        ClientLoadingAdapter()
     }
 }

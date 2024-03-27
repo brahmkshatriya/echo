@@ -70,5 +70,7 @@
     <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
     <string name="more_amoled">More Amoled</string>
     <string name="more_amoled_summary">Make the navigation bar black too</string>
+    <string name="all">All</string>
+    <string name="refresh">Refresh</string>
 
 </resources>

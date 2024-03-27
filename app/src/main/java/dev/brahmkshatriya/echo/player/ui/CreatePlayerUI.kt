@@ -44,6 +44,7 @@ import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.DYNAMIC_PLAY
 import dev.brahmkshatriya.echo.utils.createRequest
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
+import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith

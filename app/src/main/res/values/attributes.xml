@@ -2,4 +2,5 @@
 <resources>
     <attr name="navBackground" format="reference|color" />
     <attr name="echoBackground" format="reference|color" />
+    <attr name="itemCoverSize" format="dimension" />
 </resources>

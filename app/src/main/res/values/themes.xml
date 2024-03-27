@@ -5,19 +5,26 @@
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_mono_anim</item>
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">1200</item>
 
+        <item name="android:colorBackground">?echoBackground</item>
         <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
+
         <item name="coordinatorLayoutStyle">@style/CoordinatorLayout</item>
-        <item name="appBarLayoutStyle">@style/AppBar</item>
+        <item name="appBarLayoutStyle">@style/AppBarLayout</item>
+        <item name="cardViewStyle">@style/EchoCardView</item>
+        <item name="chipStyle">@style/EchoChip</item>
+        <item name="bottomNavigationStyle">@style/NavView</item>
+        <item name="navigationRailStyle">@style/NavView</item>
+
         <item name="materialCardViewStyle">@style/EchoCardView</item>
         <item name="collapsingToolbarLayoutStyle">@style/CollapsingBar</item>
 
-        <item name="android:colorBackground">?echoBackground</item>
-
         <item name="echoBackground">?colorSurface</item>
         <item name="navBackground">?colorSurfaceContainer</item>
+        <item name="itemCoverSize">96dp</item>
     </style>
 
     <style name="Default.Theme.Echo" parent="Base.Theme.Echo"/>
+
     <style name="Amoled">
         <item name="echoBackground">@color/amoled_bg</item>
     </style>

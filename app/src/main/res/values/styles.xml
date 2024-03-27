@@ -2,7 +2,18 @@
 <resources>
 
     <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:width">56dp</item>
+        <item name="android:height">24dp</item>
         <item name="android:color">?attr/colorPrimaryInverse</item>
+    </style>
+
+    <style name="NavView" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">?attr/navBackground</item>
+        <item name="itemActiveIndicatorStyle">@style/BottomNavbarActiveIndicator</item>
+        <item name="itemIconTint">@color/bottom_item_icon</item>
+        <item name="itemPaddingTop">12dp</item>
+        <item name="itemPaddingBottom">12dp</item>
+        <item name="labelVisibilityMode">labeled</item>
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat.Dialog.MinWidth">
@@ -10,9 +21,7 @@
         <item name="android:windowBackground">@drawable/dialog_bg</item>
     </style>
 
-    <style name="AppBar">
-        <item name="background">?echoBackground</item>
-    </style>
+
 
     <style name="TopAppBarHeader">
         <item name="android:layout_width">match_parent</item>
@@ -43,12 +52,40 @@
         <item name="layout_scrollFlags">scroll|exitUntilCollapsed|snap</item>
     </style>
 
-    <style name="CollapsingBar" parent="TopCollapsingBar"/>
+    <style name="CollapsingBar" parent="TopCollapsingBar" />
 
     <style name="CoordinatorLayout">
         <item name="android:background">?echoBackground</item>
     </style>
-    <style name="EchoCardView" parent="Widget.Material3.CardView.Filled">
+
+    <style name="EchoCardView">
+        <item name="cardCornerRadius">8dp</item>
         <item name="cardBackgroundColor">?echoBackground</item>
     </style>
+
+    <style name="Selectable">
+        <item name="android:foreground">?android:selectableItemBackground</item>
+    </style>
+
+    <style name="EchoChip" parent="Widget.Material3.Chip.Suggestion">
+        <item name="android:textSize">16sp</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceDisplayMedium</item>
+        <item name="chipMinHeight">40dp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+    </style>
+
+    <style name="AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="liftOnScrollColor">?navBackground</item>
+    </style>
+
+    <style name="AppBarOutline">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">-1dp</item>
+        <item name="android:translationZ">1dp</item>
+        <item name="android:background">?colorOutlineVariant</item>
+    </style>
+
 </resources>

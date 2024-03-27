@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Configuration.UI_MODE_NIGHT_MASK
-import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -30,6 +28,7 @@ import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.ui.snackbar.initSnackBar
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.emit
+import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.tryWith
 import javax.inject.Inject
 
@@ -79,9 +78,6 @@ class MainActivity : AppCompatActivity() {
             it.addListener(listener, ContextCompat.getMainExecutor(this))
         }
     }
-
-    fun isNightMode() =
-        resources.configuration.uiMode and UI_MODE_NIGHT_MASK != UI_MODE_NIGHT_NO
 
     override fun onNewIntent(intent: Intent?) {
         intent?.hasExtra("fromNotification")?.let {

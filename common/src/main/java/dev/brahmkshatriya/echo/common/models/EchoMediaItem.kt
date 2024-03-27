@@ -15,31 +15,23 @@ sealed class EchoMediaItem {
         fun Artist.toMediaItem() = ArtistItem(this)
         fun Playlist.toMediaItem() = PlaylistItem(this)
 
-        fun EchoMediaItem.toMediaItemsContainer() = when (this) {
-            is TrackItem -> MediaItemsContainer.TrackItem(this.track)
-            is AlbumItem -> MediaItemsContainer.AlbumItem(this.album)
-            is ArtistItem -> MediaItemsContainer.ArtistItem(this.artist)
-            is PlaylistItem -> MediaItemsContainer.PlaylistItem(this.playlist)
-        }
-
         fun List<EchoMediaItem>.toMediaItemsContainer(
             title: String, subtitle: String? = null, flow: Flow<PagingData<EchoMediaItem>>? = null
         ) = MediaItemsContainer.Category(title, this, subtitle, flow)
+
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (other is EchoMediaItem) {
-            return when (this) {
-                is TrackItem -> this.track.id == (other as? TrackItem)?.track?.id
-                is AlbumItem -> this.album.id == (other as? AlbumItem)?.album?.id
-                is ArtistItem -> this.artist.id == (other as? ArtistItem)?.artist?.id
-                is PlaylistItem -> this.playlist.id == (other as? PlaylistItem)?.playlist?.id
-            }
-        }
-        return false
+    fun toMediaItemsContainer() = when (this) {
+        is TrackItem -> MediaItemsContainer.TrackItem(this.track)
+        is AlbumItem -> MediaItemsContainer.AlbumItem(this.album)
+        is ArtistItem -> MediaItemsContainer.ArtistItem(this.artist)
+        is PlaylistItem -> MediaItemsContainer.PlaylistItem(this.playlist)
     }
 
-    override fun hashCode(): Int {
-        return javaClass.hashCode()
+    fun sameAs(other: EchoMediaItem) = when (this) {
+        is TrackItem -> other is TrackItem && this.track.id == other.track.id
+        is AlbumItem -> other is AlbumItem && this.album.id == other.album.id
+        is ArtistItem -> other is ArtistItem && this.artist.id == other.artist.id
+        is PlaylistItem -> other is PlaylistItem && this.playlist.id == other.playlist.id
     }
 }

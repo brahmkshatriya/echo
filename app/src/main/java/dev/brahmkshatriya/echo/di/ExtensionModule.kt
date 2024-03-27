@@ -9,8 +9,8 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.data.utils.ApkManifestParser
 import dev.brahmkshatriya.echo.data.utils.LocalExtensionRepo
 import dev.brahmkshatriya.echo.data.utils.RepoWithPreferences
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import tel.jeelpa.plugger.PluginRepo
 import tel.jeelpa.plugger.RepoComposer
@@ -58,8 +58,14 @@ class ExtensionModule {
     // That means the Flow<Clients?> cannot be directly injected,
     // So, we need to wrap it in a data class and inject that instead
     data class MutableFlow(val flow: MutableStateFlow<ExtensionClient?>)
-    data class ExtensionFlow(val flow: Flow<ExtensionClient?>)
-    data class ExtensionListFlow(val flow: MutableStateFlow<List<ExtensionClient>?>)
+    data class ExtensionFlow(val flow: StateFlow<ExtensionClient?>)
+
+    data class ExtensionListFlow(val flow: MutableStateFlow<List<ExtensionClient>?>) {
+        @Suppress("UNCHECKED_CAST")
+        fun <T> getClient(clientId: String): T? =
+            flow.value?.find { it.metadata.id == clientId } as? T
+
+    }
 
     private val mutableExtensionFlow = MutableFlow(MutableStateFlow(null))
     private val mutableExtensionListFlow = ExtensionListFlow(MutableStateFlow(null))
