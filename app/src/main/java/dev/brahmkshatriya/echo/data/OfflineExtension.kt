@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.data
 
 import android.content.Context
 import androidx.core.net.toUri
-import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -10,7 +9,7 @@ import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.helpers.pagedFlow
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -31,9 +30,7 @@ import dev.brahmkshatriya.echo.data.offline.ArtistResolver
 import dev.brahmkshatriya.echo.data.offline.TrackResolver
 import dev.brahmkshatriya.echo.data.offline.URI
 import dev.brahmkshatriya.echo.data.offline.sortedBy
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import dev.brahmkshatriya.echo.data.utils.PagedSource.Companion.pagedFlow
 
 class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, TrackClient,
     HomeFeedClient, AlbumClient, ArtistClient, RadioClient {
@@ -68,7 +65,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 
     override suspend fun quickSearch(query: String): List<QuickSearchItem> = listOf()
 
-    override suspend fun search(query: String): Flow<PagingData<MediaItemsContainer>> = flow {
+    override fun search(query: String) = PagedData.Single {
         val trimmed = query.trim()
         val albums =
             albumResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
@@ -98,7 +95,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
             artist.name to it.toMediaItemsContainer("Artists")
         }).sortedBy(query) { it.first }.map { it.second }.toMutableList()
         exactMatch?.toMediaItemsContainer()?.let { result.add(0, it) }
-        emit(PagingData.from(result))
+        result
     }
 
     override suspend fun getTrack(id: String): Track? {
@@ -113,9 +110,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         return listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
     }
 
-    override suspend fun getHomeFeed(genre: Genre?): Flow<PagingData<MediaItemsContainer>> =
-        pagedFlow { page: Int, pageSize: Int ->
-            delay(3000)
+    override fun getHomeFeed(genre: Genre?) =
+        pagedFlow<MediaItemsContainer> { page: Int, pageSize: Int ->
             fun testContainer(title: String, item: EchoMediaItem) =
                 listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
 
@@ -168,49 +164,43 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         return albumResolver.get(small.id.toUri(), trackResolver)
     }
 
-    override suspend fun getMediaItems(album: Album): Flow<PagingData<MediaItemsContainer>> =
-        flow {
-            val result = album.artists.map { small ->
-                val artist = small.name
-                val tracks =
-                    trackResolver.search(artist, 1, 50, sorting).filter { it.album?.id != album.id }
-                        .map { it.toMediaItem() }.ifEmpty { null }
-                val albums =
-                    albumResolver.search(artist, 1, 50, sorting).filter { it.id != album.id }
-                        .map { it.toMediaItem() }.ifEmpty { null }
-                listOfNotNull(
-                    tracks?.toMediaItemsContainer("More from $artist"),
-                    albums?.toMediaItemsContainer("Albums")
-                )
-            }.flatten()
-            emit(PagingData.from(result))
-        }
+    override fun getMediaItems(album: Album) = PagedData.Single<MediaItemsContainer> {
+        album.artists.map { small ->
+            val artist = small.name
+            val tracks =
+                trackResolver.search(artist, 1, 50, sorting).filter { it.album?.id != album.id }
+                    .map { it.toMediaItem() }.ifEmpty { null }
+            val albums =
+                albumResolver.search(artist, 1, 50, sorting).filter { it.id != album.id }
+                    .map { it.toMediaItem() }.ifEmpty { null }
+            listOfNotNull(
+                tracks?.toMediaItemsContainer("More from $artist"),
+                albums?.toMediaItemsContainer("Albums")
+            )
+        }.flatten()
+    }
 
     override suspend fun loadArtist(small: Artist): Artist {
         return artistResolver.get(small.id.toUri())
     }
 
-    override suspend fun getMediaItems(artist: Artist): Flow<PagingData<MediaItemsContainer>> =
-        flow {
-
-            val albums = albumResolver.getByArtist(artist, 0, 10, sorting).map { it.toMediaItem() }
-                .ifEmpty { null }
-            val albumFlow = pagedFlow<EchoMediaItem> { page: Int, pageSize: Int ->
-                albumResolver.getByArtist(artist, page, pageSize, sorting).map { it.toMediaItem() }
-            }
-
-            val tracks = trackResolver.getByArtist(artist, 0, 10, sorting).map { it.toMediaItem() }
-                .ifEmpty { null }
-            val trackFlow = pagedFlow<EchoMediaItem> { page: Int, pageSize: Int ->
-                trackResolver.getByArtist(artist, page, pageSize, sorting).map { it.toMediaItem() }
-            }
-
-            val result = listOfNotNull(
-                tracks?.toMediaItemsContainer("Tracks", flow = trackFlow),
-                albums?.toMediaItemsContainer("Albums", flow = albumFlow)
-            )
-            emit(PagingData.from(result))
+    override fun getMediaItems(artist: Artist) = PagedData.Single<MediaItemsContainer> {
+        val albums = albumResolver.getByArtist(artist, 0, 10, sorting).map { it.toMediaItem() }
+            .ifEmpty { null }
+        val albumFlow = pagedFlow<EchoMediaItem> { page: Int, pageSize: Int ->
+            albumResolver.getByArtist(artist, page, pageSize, sorting).map { it.toMediaItem() }
         }
+
+        val tracks = trackResolver.getByArtist(artist, 0, 10, sorting).map { it.toMediaItem() }
+            .ifEmpty { null }
+        val trackFlow = pagedFlow<EchoMediaItem> { page: Int, pageSize: Int ->
+            trackResolver.getByArtist(artist, page, pageSize, sorting).map { it.toMediaItem() }
+        }
+        listOfNotNull(
+            tracks?.toMediaItemsContainer("Tracks", flow = trackFlow),
+            albums?.toMediaItemsContainer("Albums", flow = albumFlow)
+        )
+    }
 
     override suspend fun radio(track: Track): Playlist {
         val albumTracks = track.album?.let { trackResolver.getByAlbum(it, 0, 25, sorting) }

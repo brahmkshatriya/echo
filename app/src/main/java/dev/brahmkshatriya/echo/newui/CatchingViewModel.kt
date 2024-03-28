@@ -16,10 +16,10 @@ open class CatchingViewModel(
 
     private var initialized = false
 
-    open fun onInitialize(){}
+    open fun onInitialize() {}
 
     fun initialize() {
-        if(initialized) return
+        if (initialized) return
         initialized = true
         onInitialize()
     }

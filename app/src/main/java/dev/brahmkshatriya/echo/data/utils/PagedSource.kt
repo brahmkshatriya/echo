@@ -1,12 +1,17 @@
-package dev.brahmkshatriya.echo.common.helpers
+package dev.brahmkshatriya.echo.data.utils
 
-import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingState
+import dev.brahmkshatriya.echo.common.helpers.ErrorPagingSource
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 
 class PagedSource<T : Any>(
-    private val load: suspend (page: Int, pageSize: Int) -> List<T>
+    private val load: suspend (page: Int, pageSize: Int) -> List<T>,
 ) : ErrorPagingSource<Int, T>() {
+
+    override val config: PagingConfig =
+        PagingConfig(pageSize = 10, enablePlaceholders = false, initialLoadSize = 10)
+
     override fun getRefreshKey(state: PagingState<Int, T>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
@@ -26,11 +31,10 @@ class PagedSource<T : Any>(
             nextKey = nextKey
         )
     }
-}
 
-fun <T : Any> pagedFlow(
-    load: suspend (page: Int, pageSize: Int) -> List<T>
-) = Pager(
-    config = PagingConfig(pageSize = 10, enablePlaceholders = false, initialLoadSize = 10),
-    pagingSourceFactory = { PagedSource(load) }
-).flow
+    companion object{
+        fun <T : Any> pagedFlow(
+            load: suspend (page: Int, pageSize: Int) -> List<T>
+        ) = PagedData.Source(PagedSource(load))
+    }
+}
