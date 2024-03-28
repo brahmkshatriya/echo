@@ -22,7 +22,8 @@ class HomeFragment : Fragment() {
     private var binding by autoCleared<FragmentHomeBinding>()
     private val viewModel by activityViewModels<HomeViewModel>()
 
-    private val mediaContainerAdapter = MediaContainerAdapter()
+    private val mediaContainerAdapter = MediaContainerAdapter(this)
+    private val concatAdapter = mediaContainerAdapter.withLoaders()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,7 +51,7 @@ class HomeFragment : Fragment() {
         observe(viewModel.extensionFlow.flow) {
             binding.swipeRefresh.isEnabled = it != null
             binding.recyclerView.adapter =
-                getAdapterForExtension<HomeFeedClient>(it, R.string.home, mediaContainerAdapter)
+                getAdapterForExtension<HomeFeedClient>(it, R.string.home, concatAdapter)
         }
 
         val tabListener = object : TabLayout.OnTabSelectedListener {
@@ -84,8 +85,7 @@ class HomeFragment : Fragment() {
         }
 
         observe(viewModel.homeFeed) {
-            it ?: return@observe
-            mediaContainerAdapter.submitData(it)
+            mediaContainerAdapter.submit(it)
         }
     }
 

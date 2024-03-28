@@ -31,6 +31,7 @@ import dev.brahmkshatriya.echo.data.offline.ArtistResolver
 import dev.brahmkshatriya.echo.data.offline.TrackResolver
 import dev.brahmkshatriya.echo.data.offline.URI
 import dev.brahmkshatriya.echo.data.offline.sortedBy
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -114,6 +115,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 
     override suspend fun getHomeFeed(genre: Genre?): Flow<PagingData<MediaItemsContainer>> =
         pagedFlow { page: Int, pageSize: Int ->
+            delay(3000)
             fun testContainer(title: String, item: EchoMediaItem) =
                 listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
 

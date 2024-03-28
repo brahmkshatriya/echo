@@ -1,18 +1,21 @@
-package dev.brahmkshatriya.echo.ui.adapters
+package dev.brahmkshatriya.echo.newui
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemErrorBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemContainerBinding
+import dev.brahmkshatriya.echo.newui.exception.openException
 
-class ContainerLoadingAdapter(val listener: ContainerListener? = null) :
+class ContainerLoadingAdapter(val listener: Listener? = null) :
     LoadStateAdapter<ContainerLoadingAdapter.ShimmerViewHolder>() {
 
-    interface ContainerListener {
+    interface Listener {
         fun onRetry()
         fun onError(error: Throwable)
     }
@@ -59,4 +62,17 @@ class ContainerLoadingAdapter(val listener: ContainerListener? = null) :
             listener?.onRetry()
         }
     }
+
+    constructor(fragment: Fragment, retry: () -> Unit) : this(object : Listener {
+        override fun onRetry() {
+            retry()
+        }
+
+        override fun onError(error: Throwable) {
+            fragment.requireActivity().openException(
+                fragment.findNavController(),
+                error
+            )
+        }
+    })
 }

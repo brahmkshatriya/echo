@@ -7,11 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.transition.platform.MaterialFade
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
-import dev.brahmkshatriya.echo.ui.adapters.ContainerLoadingAdapter
+import dev.brahmkshatriya.echo.newui.ContainerLoadingAdapter
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx

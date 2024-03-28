@@ -69,15 +69,6 @@
         app:destination="@id/dialog_extension" />
 
     <fragment
-        android:id="@+id/navigation_exception"
-        android:name="dev.brahmkshatriya.echo.ui.snackbar.ExceptionFragment"
-        tools:layout="@layout/fragment_exception" />
-
-    <action
-        android:id="@+id/action_exception"
-        app:destination="@id/navigation_exception" />
-
-    <fragment
         android:id="@+id/navigation_category"
         android:name="dev.brahmkshatriya.echo.ui.category.CategoryFragment"
         tools:layout="@layout/fragment_category" />

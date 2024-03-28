@@ -56,12 +56,7 @@
 
     <View
         android:id="@+id/toolbarOutline"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="-1dp"
-        android:alpha="0"
-        android:background="?attr/colorOutline"
-        android:translationZ="1dp"
+        style="@style/AppBarOutline"
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
@@ -78,6 +73,7 @@
 
             <TextView
                 android:id="@+id/exceptionDetails"
+                android:typeface="monospace"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="24dp"

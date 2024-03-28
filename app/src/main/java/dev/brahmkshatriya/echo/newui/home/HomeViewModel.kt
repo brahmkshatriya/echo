@@ -49,6 +49,7 @@ class HomeViewModel @Inject constructor(
 
 
     private suspend fun loadFeed(client: HomeFeedClient) = tryWith {
+        homeFeed.value = null
         client.getHomeFeed(genre).collectTo(homeFeed)
     }
 

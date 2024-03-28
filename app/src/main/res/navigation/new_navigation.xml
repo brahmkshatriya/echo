@@ -20,4 +20,14 @@
         android:id="@+id/libraryFragment"
         android:name="dev.brahmkshatriya.echo.newui.library.LibraryFragment"
         android:label="LibraryFragment"/>
+
+    <fragment
+        android:id="@+id/exceptionFragment"
+        android:name="dev.brahmkshatriya.echo.newui.exception.ExceptionFragment"
+        tools:layout="@layout/fragment_exception" />
+
+    <action
+        android:id="@+id/action_exception"
+        app:destination="@id/exceptionFragment" />
+
 </navigation>
