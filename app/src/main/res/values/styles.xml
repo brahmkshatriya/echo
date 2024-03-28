@@ -11,8 +11,6 @@
         <item name="backgroundTint">?attr/navBackground</item>
         <item name="itemActiveIndicatorStyle">@style/BottomNavbarActiveIndicator</item>
         <item name="itemIconTint">@color/bottom_item_icon</item>
-        <item name="itemPaddingTop">12dp</item>
-        <item name="itemPaddingBottom">12dp</item>
         <item name="labelVisibilityMode">labeled</item>
     </style>
 

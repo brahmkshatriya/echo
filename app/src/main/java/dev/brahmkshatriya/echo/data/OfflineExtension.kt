@@ -64,40 +64,63 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     private val trackResolver = TrackResolver(context)
 
     override suspend fun quickSearch(query: String?): List<QuickSearchItem> = listOf()
-    override suspend fun searchGenres(): List<Genre> =
+    override suspend fun searchGenres(query: String?): List<Genre> =
         listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
-    override fun search(query: String?, genre: Genre?) = PagedData.Single {
-        val trimmed = query?.trim() ?: return@Single emptyList()
-        val albums =
-            albumResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
-                .ifEmpty { null }
-        val tracks =
-            trackResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
-                .ifEmpty { null }
-        val artists =
-            artistResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
-                .ifEmpty { null }
+    override fun search(query: String?, genre: Genre?): PagedData<MediaItemsContainer> {
+        val trimmed = query?.trim() ?: return PagedData.Single { emptyList() }
+        return when (genre?.id) {
+            "Tracks" -> pagedFlow { page, pageSize ->
+                trackResolver.search(trimmed, page, pageSize, sorting)
+                    .map { testContainer(it.title, it.toMediaItem()) }
+            }
 
-        val exactMatch = artists?.firstOrNull { it.artist.name.equals(trimmed, true) }.also {
-            artists?.remove(it)
-        } ?: albums?.firstOrNull { it.album.title.equals(trimmed, true) }.also {
-            albums?.remove(it)
-        } ?: tracks?.firstOrNull { it.track.title.equals(trimmed, true) }.also {
-            tracks?.remove(it)
+            "Albums" -> pagedFlow { page, pageSize ->
+                albumResolver.search(trimmed, page, pageSize, sorting)
+                    .map { testContainer(it.title, it.toMediaItem()) }
+            }
+
+            "Artists" -> pagedFlow { page, pageSize ->
+                artistResolver.search(trimmed, page, pageSize, sorting)
+                    .map { testContainer(it.name, it.toMediaItem()) }
+            }
+
+            else -> PagedData.Single {
+                val albums =
+                    albumResolver.search(trimmed, 0, 10, sorting).map { it.toMediaItem() }
+                        .toMutableList()
+                        .ifEmpty { null }
+                val tracks =
+                    trackResolver.search(trimmed, 0, 10, sorting).map { it.toMediaItem() }
+                        .toMutableList()
+                        .ifEmpty { null }
+                val artists =
+                    artistResolver.search(trimmed, 0, 10, sorting).map { it.toMediaItem() }
+                        .toMutableList()
+                        .ifEmpty { null }
+
+                val exactMatch =
+                    artists?.firstOrNull { it.artist.name.equals(trimmed, true) }.also {
+                        artists?.remove(it)
+                    } ?: albums?.firstOrNull { it.album.title.equals(trimmed, true) }.also {
+                        albums?.remove(it)
+                    } ?: tracks?.firstOrNull { it.track.title.equals(trimmed, true) }.also {
+                        tracks?.remove(it)
+                    }
+                val result: MutableList<MediaItemsContainer> = listOfNotNull(tracks?.let {
+                    val track = it.firstOrNull()?.track ?: return@let null
+                    track.title to it.toMediaItemsContainer("Tracks")
+                }, albums?.let {
+                    val album = it.firstOrNull()?.album ?: return@let null
+                    album.title to it.toMediaItemsContainer("Albums")
+                }, artists?.let {
+                    val artist = it.firstOrNull()?.artist ?: return@let null
+                    artist.name to it.toMediaItemsContainer("Artists")
+                }).sortedBy(query) { it.first }.map { it.second }.toMutableList()
+                exactMatch?.toMediaItemsContainer()?.let { result.add(0, it) }
+                result
+            }
         }
-        val result: MutableList<MediaItemsContainer> = listOfNotNull(tracks?.let {
-            val track = it.firstOrNull()?.track ?: return@let null
-            track.title to it.toMediaItemsContainer("Tracks")
-        }, albums?.let {
-            val album = it.firstOrNull()?.album ?: return@let null
-            album.title to it.toMediaItemsContainer("Albums")
-        }, artists?.let {
-            val artist = it.firstOrNull()?.artist ?: return@let null
-            artist.name to it.toMediaItemsContainer("Artists")
-        }).sortedBy(query) { it.first }.map { it.second }.toMutableList()
-        exactMatch?.toMediaItemsContainer()?.let { result.add(0, it) }
-        result
     }
 
     override suspend fun getTrack(id: String): Track? {
@@ -107,14 +130,14 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     override suspend fun getStreamableAudio(streamable: Streamable): StreamableAudio {
         return trackResolver.getStreamable(streamable)
     }
+    private fun testContainer(title: String, item: EchoMediaItem) =
+        listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
 
     override suspend fun getHomeGenres() =
         listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
     override fun getHomeFeed(genre: Genre?) =
         pagedFlow<MediaItemsContainer> { page: Int, pageSize: Int ->
-            fun testContainer(title: String, item: EchoMediaItem) =
-                listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
 
             when (genre?.id) {
                 "Tracks" -> trackResolver.getAll(page, pageSize, sorting)

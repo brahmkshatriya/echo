@@ -7,6 +7,6 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 
 interface SearchClient {
     suspend fun quickSearch(query: String?): List<QuickSearchItem>
-    suspend fun searchGenres(): List<Genre>
+    suspend fun searchGenres(query: String?): List<Genre>
     fun search(query: String?, genre: Genre?): PagedData<MediaItemsContainer>
 }

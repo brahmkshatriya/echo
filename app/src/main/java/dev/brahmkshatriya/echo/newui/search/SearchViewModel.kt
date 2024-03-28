@@ -28,7 +28,7 @@ class SearchViewModel @Inject constructor(
             if (value != field) refresh()
             field = value
         }
-    var query: String? = "a"
+    var query: String? = null
 
     override fun onInitialize() {
         viewModelScope.launch {
@@ -42,7 +42,7 @@ class SearchViewModel @Inject constructor(
 
     private suspend fun loadGenres(client: SearchClient) {
         loading.emit(true)
-        val list = tryWith { client.searchGenres() } ?: emptyList()
+        val list = tryWith { client.searchGenres(query) } ?: emptyList()
         loading.emit(false)
         genre = list.firstOrNull()
         genres.value = list

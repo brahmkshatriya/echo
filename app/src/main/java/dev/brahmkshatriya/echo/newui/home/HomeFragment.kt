@@ -40,6 +40,7 @@ class HomeFragment : Fragment() {
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
             binding.appBarOutline.alpha = offset
+            binding.toolBar.alpha = 1 - offset
         }
 
         binding.swipeRefresh.setOnRefreshListener {

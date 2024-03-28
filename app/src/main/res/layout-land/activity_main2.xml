@@ -6,6 +6,7 @@
     android:layout_height="match_parent">
 
     <androidx.fragment.app.FragmentContainerView
+        android:layout_marginStart="72dp"
         android:id="@+id/navHostFragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
@@ -13,19 +14,12 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/new_navigation" />
 
-    <View
-        android:id="@+id/navViewOutline"
-        style="@style/AppBarOutline"
-        app:layout_anchor="@id/navView" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <com.google.android.material.navigationrail.NavigationRailView
         android:id="@+id/navView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:minHeight="64dp"
-        app:itemPaddingBottom="12dp"
-        app:itemPaddingTop="12dp"
+        android:layout_width="72dp"
+        app:menuGravity="center"
+        app:itemMinHeight="64dp"
+        android:layout_height="match_parent"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

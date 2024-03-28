@@ -12,14 +12,15 @@ import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
-import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
+import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.newui.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 
 class SearchFragment : Fragment() {
-    private var binding by autoCleared<FragmentHomeBinding>()
+
+    private var binding by autoCleared<FragmentSearchBinding>()
     private val viewModel by activityViewModels<SearchViewModel>()
 
     private val mediaContainerAdapter = MediaContainerAdapter(this)
@@ -30,7 +31,7 @@ class SearchFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentHomeBinding.inflate(inflater, container, false)
+        binding = FragmentSearchBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -40,19 +41,20 @@ class SearchFragment : Fragment() {
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
             binding.appBarOutline.alpha = offset
+            binding.toolBarContainer.alpha = 1 - offset
         }
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)
         }
-//        binding.quickSearchView.setupWithSearchBar(binding.searchBar)
+        binding.quickSearchView.setupWithSearchBar(binding.searchBar)
         binding.quickSearchView.editText.doOnTextChanged { text, _, _, _ ->
             println("text : $text")
         }
         binding.quickSearchView.editText.setOnEditorActionListener { textView, _, _ ->
             val query = textView.text.toString()
             viewModel.query = query
-//            binding.searchBar.setText(query)
+            binding.searchBar.setText(query)
             binding.quickSearchView.hide()
             viewModel.refresh()
             false
@@ -99,5 +101,4 @@ class SearchFragment : Fragment() {
             mediaContainerAdapter.submit(it)
         }
     }
-
 }
