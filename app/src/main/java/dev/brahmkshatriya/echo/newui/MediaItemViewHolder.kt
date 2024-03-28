@@ -1,4 +1,5 @@
 package dev.brahmkshatriya.echo.newui
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,28 +8,18 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
 import dev.brahmkshatriya.echo.utils.loadInto
 
-@Suppress("LeakingThis")
-sealed class MediaItemViewHolder(itemView: View, list: List<EchoMediaItem>) :
+sealed class MediaItemViewHolder(itemView: View) :
     RecyclerView.ViewHolder(itemView) {
     abstract fun bind(item: EchoMediaItem)
     open val clickView: View = itemView
+    open val transitionView: View
+        get() = this.clickView
 
-    init {
-        if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
-            val item = list[bindingAdapterPosition]
-            clickView.setOnClickListener {
-                // Handle click
-            }
-            clickView.setOnLongClickListener {
-                // Handle long click
-                true
-            }
-        }
-    }
+    class Track(val binding: NewItemMediaTrackBinding) : MediaItemViewHolder(binding.root) {
 
-    class Track(
-        val binding: NewItemMediaTrackBinding, list: List<EchoMediaItem>
-    ) : MediaItemViewHolder(binding.root,  list) {
+        override val transitionView: View
+            get() = binding.imageContainer
+
         override fun bind(item: EchoMediaItem) {
 
             val (title, cover) = when (item) {
@@ -59,11 +50,11 @@ sealed class MediaItemViewHolder(itemView: View, list: List<EchoMediaItem>) :
 
         companion object {
             fun create(
-                parent: ViewGroup,  list: List<EchoMediaItem>
+                parent: ViewGroup
             ): MediaItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return Track(
-                    NewItemMediaTrackBinding.inflate(layoutInflater, parent, false), list
+                    NewItemMediaTrackBinding.inflate(layoutInflater, parent, false)
                 )
             }
         }

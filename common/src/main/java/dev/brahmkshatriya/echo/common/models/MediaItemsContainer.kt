@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.models
 
-import androidx.paging.PagingData
-import kotlinx.coroutines.flow.Flow
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 
 sealed class MediaItemsContainer {
 
@@ -9,7 +8,7 @@ sealed class MediaItemsContainer {
         val title: String,
         val list: List<EchoMediaItem>,
         val subtitle: String? = null,
-        val flow: Flow<PagingData<EchoMediaItem>>? = null
+        val more: PagedData<EchoMediaItem>? = null
     ) : MediaItemsContainer()
 
     data class TrackItem(val track: Track) : MediaItemsContainer()

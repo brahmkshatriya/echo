@@ -17,6 +17,14 @@ class MediaContainerAdapter(
     override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
         val item = getItem(position) ?: return
         holder.bind(item)
+        val clickView = holder.clickView
+        clickView.setOnClickListener {
+            println("Clicked")
+        }
+        clickView.setOnLongClickListener {
+            println("Long Clicked")
+            true
+        }
     }
 
     override fun getItemViewType(position: Int): Int {

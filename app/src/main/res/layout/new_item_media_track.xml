@@ -9,8 +9,10 @@
     android:padding="8dp">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/imageContainer"
         android:layout_width="?itemCoverSize"
         android:layout_height="?itemCoverSize"
+        app:cardCornerRadius="?itemCorner"
         app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
         <ImageView

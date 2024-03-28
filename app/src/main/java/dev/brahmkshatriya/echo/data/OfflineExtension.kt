@@ -148,9 +148,9 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
                     }
 
                     val result = listOfNotNull(
-                        tracks?.toMediaItemsContainer("Tracks", flow = tracksFlow),
-                        albums?.toMediaItemsContainer("Albums", flow = albumsFlow),
-                        artists?.toMediaItemsContainer("Artists", flow = artistsFlow)
+                        tracks?.toMediaItemsContainer("Tracks", more = tracksFlow),
+                        albums?.toMediaItemsContainer("Albums", more = albumsFlow),
+                        artists?.toMediaItemsContainer("Artists", more = artistsFlow)
                     )
                     result
                 } else {
@@ -197,8 +197,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
             trackResolver.getByArtist(artist, page, pageSize, sorting).map { it.toMediaItem() }
         }
         listOfNotNull(
-            tracks?.toMediaItemsContainer("Tracks", flow = trackFlow),
-            albums?.toMediaItemsContainer("Albums", flow = albumFlow)
+            tracks?.toMediaItemsContainer("Tracks", more = trackFlow),
+            albums?.toMediaItemsContainer("Albums", more = albumFlow)
         )
     }
 

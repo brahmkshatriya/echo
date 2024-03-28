@@ -189,8 +189,8 @@ class MediaItemsContainerAdapter(
 //                else it.scrollToPosition(0)
 //            }
 //            stateViewModel.visibleScrollableViews[position] = WeakReference(this)
-            binding.more.isVisible = category.flow != null
-            binding.cardView.transitionName = category.flow.hashCode().toString()
+            binding.more.isVisible = category.more != null
+            binding.cardView.transitionName = category.more.hashCode().toString()
         }
 
         override val clickView = binding.cardView

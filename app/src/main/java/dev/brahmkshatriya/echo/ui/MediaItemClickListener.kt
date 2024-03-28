@@ -36,7 +36,7 @@ class MediaItemClickListener(
             }
 
             is MediaItemsContainer.Category -> {
-                val flow = mediaItem.flow ?: return
+                val flow = mediaItem.more ?: return
                 val categoryViewModel: CategoryViewModel by fragment.activityViewModels()
                 categoryViewModel.title = mediaItem.title
                 categoryViewModel.flow = flow

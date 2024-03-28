@@ -7,22 +7,22 @@
     android:orientation="vertical">
 
     <androidx.cardview.widget.CardView
-        style="@style/Selectable"
+        android:id="@+id/titleCard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="64dp">
+        android:layout_height="wrap_content">
 
         <LinearLayout
+            android:layout_marginHorizontal="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="16dp"
-            android:gravity="center">
+            android:gravity="center"
+            android:minHeight="64dp">
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="8dp"
+                android:layout_marginHorizontal="16dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -31,28 +31,35 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     android:textSize="20sp"
-                    tools:text="@tools:sample/first_names" />
+                    tools:ignore="TextSizeCheck"
+                    tools:text="@tools:sample/full_names" />
 
                 <TextView
                     android:id="@+id/subtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:alpha="0.66"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     android:visibility="gone"
                     tools:text="@tools:sample/first_names" />
 
             </LinearLayout>
 
-            <ImageView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/more"
+                style="?attr/materialIconButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
                 android:contentDescription="@string/more"
+                android:padding="8dp"
                 android:scaleX="-1"
-                android:src="@drawable/ic_back" />
-
+                app:icon="@drawable/ic_back"
+                app:iconSize="24dp"
+                app:iconTint="?colorOnSurface" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

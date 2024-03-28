@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.models
 
-import androidx.paging.PagingData
-import kotlinx.coroutines.flow.Flow
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 
 sealed class EchoMediaItem {
     data class TrackItem(val track: Track) : EchoMediaItem()
@@ -16,8 +15,8 @@ sealed class EchoMediaItem {
         fun Playlist.toMediaItem() = PlaylistItem(this)
 
         fun List<EchoMediaItem>.toMediaItemsContainer(
-            title: String, subtitle: String? = null, flow: Flow<PagingData<EchoMediaItem>>? = null
-        ) = MediaItemsContainer.Category(title, this, subtitle, flow)
+            title: String, subtitle: String? = null, more: PagedData<EchoMediaItem>? = null
+        ) = MediaItemsContainer.Category(title, this, subtitle, more)
 
     }
 
@@ -28,10 +27,4 @@ sealed class EchoMediaItem {
         is PlaylistItem -> MediaItemsContainer.PlaylistItem(this.playlist)
     }
 
-    fun sameAs(other: EchoMediaItem) = when (this) {
-        is TrackItem -> other is TrackItem && this.track.id == other.track.id
-        is AlbumItem -> other is AlbumItem && this.album.id == other.album.id
-        is ArtistItem -> other is ArtistItem && this.artist.id == other.artist.id
-        is PlaylistItem -> other is PlaylistItem && this.playlist.id == other.playlist.id
-    }
 }

@@ -21,8 +21,6 @@
         <item name="android:windowBackground">@drawable/dialog_bg</item>
     </style>
 
-
-
     <style name="TopAppBarHeader">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -59,12 +57,13 @@
     </style>
 
     <style name="EchoCardView">
-        <item name="cardCornerRadius">8dp</item>
+        <item name="cardCornerRadius">?itemContainerCorner</item>
         <item name="cardBackgroundColor">?echoBackground</item>
     </style>
 
     <style name="Selectable">
-        <item name="android:foreground">?android:selectableItemBackground</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">@drawable/ripple_item_container</item>
     </style>
 
     <style name="EchoChip" parent="Widget.Material3.Chip.Suggestion">
