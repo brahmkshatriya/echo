@@ -63,10 +63,12 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     private val albumResolver = AlbumResolver(context)
     private val trackResolver = TrackResolver(context)
 
-    override suspend fun quickSearch(query: String): List<QuickSearchItem> = listOf()
+    override suspend fun quickSearch(query: String?): List<QuickSearchItem> = listOf()
+    override suspend fun searchGenres(): List<Genre> =
+        listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
-    override fun search(query: String) = PagedData.Single {
-        val trimmed = query.trim()
+    override fun search(query: String?, genre: Genre?) = PagedData.Single {
+        val trimmed = query?.trim() ?: return@Single emptyList()
         val albums =
             albumResolver.search(trimmed, 0, 50, sorting).map { it.toMediaItem() }.toMutableList()
                 .ifEmpty { null }
@@ -106,9 +108,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         return trackResolver.getStreamable(streamable)
     }
 
-    override suspend fun getHomeGenres(): List<Genre> {
-        return listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
-    }
+    override suspend fun getHomeGenres() =
+        listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
     override fun getHomeFeed(genre: Genre?) =
         pagedFlow<MediaItemsContainer> { page: Int, pageSize: Int ->

@@ -8,17 +8,17 @@
     <fragment
         android:id="@+id/navigation_home"
         android:name="dev.brahmkshatriya.echo.ui.home.HomeFragment"
-        tools:layout="@layout/fragment_recycler" />
+        tools:layout="@layout/old_fragment_recycler" />
 
     <fragment
         android:id="@+id/navigation_library"
         android:name="dev.brahmkshatriya.echo.ui.library.LibraryFragment"
-        tools:layout="@layout/fragment_recycler" />
+        tools:layout="@layout/old_fragment_recycler" />
 
     <fragment
         android:id="@+id/navigation_search"
         android:name="dev.brahmkshatriya.echo.ui.search.SearchFragment"
-        tools:layout="@layout/fragment_search" />
+        tools:layout="@layout/old_fragment_search" />
 
     <fragment
         android:id="@+id/navigation_artist"

@@ -2,8 +2,8 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/new_navigation"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/searchFragment"
+    android:id="@+id/new_navigation">
 
     <fragment
         android:id="@+id/homeFragment"
@@ -14,7 +14,8 @@
     <fragment
         android:id="@+id/searchFragment"
         android:name="dev.brahmkshatriya.echo.newui.search.SearchFragment"
-        android:label="SearchFragment"/>
+        android:label="SearchFragment"
+        tools:layout="@layout/fragment_search"/>
 
     <fragment
         android:id="@+id/libraryFragment"

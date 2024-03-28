@@ -78,7 +78,7 @@ class PlayerSessionCallback(
 
         return scope.future {
             var error: ListenableFuture<MutableList<MediaItem>>? = null
-            val result = client.search(query)
+            val result = client.search(query, null)
                 .catch { error = default(it.message ?: "An Error Occurred") }.firstOrNull()
             if (result != null) differ.submitData(result)
             else return@future error!!.get()

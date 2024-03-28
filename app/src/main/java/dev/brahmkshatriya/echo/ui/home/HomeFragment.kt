@@ -16,11 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.databinding.FragmentRecyclerBinding
+import dev.brahmkshatriya.echo.databinding.OldFragmentRecyclerBinding
+import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
-import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
@@ -29,7 +29,7 @@ import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
-    private var binding: FragmentRecyclerBinding by autoCleared()
+    private var binding: OldFragmentRecyclerBinding by autoCleared()
     private val homeViewModel: HomeViewModel by activityViewModels()
 
     private val headerAdapter = HeaderAdapter(R.string.home) { a, it ->
@@ -44,7 +44,7 @@ class HomeFragment : Fragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
-        binding = FragmentRecyclerBinding.inflate(inflater, parent, false)
+        binding = OldFragmentRecyclerBinding.inflate(inflater, parent, false)
 //        enterTransition = MaterialFade()
 //        exitTransition = MaterialFade()
         return binding.root

@@ -1,9 +1,9 @@
-package dev.brahmkshatriya.echo.newui.home
+package dev.brahmkshatriya.echo.newui.search
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.di.ExtensionModule
@@ -15,46 +15,47 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class SearchViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionFlow: ExtensionModule.ExtensionFlow,
 ) : CatchingViewModel(throwableFlow) {
 
     val loading = MutableSharedFlow<Boolean>()
-    val homeFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    val searchFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
     val genres = MutableStateFlow<List<Genre>>(emptyList())
     var genre: Genre? = null
         set(value) {
             if (value != field) refresh()
             field = value
         }
+    var query: String? = "a"
 
     override fun onInitialize() {
         viewModelScope.launch {
             extensionFlow.flow.collect {
-                val client = it as? HomeFeedClient ?: return@collect
+                val client = it as? SearchClient ?: return@collect
                 loadGenres(client)
                 loadFeed(client)
             }
         }
     }
 
-    private suspend fun loadGenres(client: HomeFeedClient) {
+    private suspend fun loadGenres(client: SearchClient) {
         loading.emit(true)
-        val list = tryWith { client.getHomeGenres() } ?: emptyList()
+        val list = tryWith { client.searchGenres() } ?: emptyList()
         loading.emit(false)
         genre = list.firstOrNull()
         genres.value = list
     }
 
 
-    private suspend fun loadFeed(client: HomeFeedClient) = tryWith {
-        homeFeed.value = null
-        client.getHomeFeed(genre).collectTo(homeFeed)
+    private suspend fun loadFeed(client: SearchClient) = tryWith {
+        searchFeed.value = null
+        client.search(query, genre).collectTo(searchFeed)
     }
 
     fun refresh(reset: Boolean = false) {
-        val client = extensionFlow.flow.value as? HomeFeedClient ?: return
+        val client = extensionFlow.flow.value as? SearchClient ?: return
         viewModelScope.launch(Dispatchers.IO) {
             if (reset) {
                 genre = null
@@ -63,4 +64,5 @@ class HomeViewModel @Inject constructor(
             loadFeed(client)
         }
     }
+
 }

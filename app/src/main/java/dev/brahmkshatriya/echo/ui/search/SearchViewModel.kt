@@ -42,7 +42,7 @@ class SearchViewModel @Inject constructor(
         this.query = query
         viewModelScope.launch(Dispatchers.IO) {
             tryWith(throwableFlow) {
-                searchClient?.search(query)
+                searchClient?.search(query, null)
                     ?.cachedIn(viewModelScope)
                     ?.catchWith(throwableFlow)
                     ?.collectLatest {
