@@ -17,19 +17,17 @@ class MediaItemAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
         return when (viewType) {
-            0 -> MediaItemViewHolder.Playlist.create(parent)
-            1 -> MediaItemViewHolder.Album.create(parent)
-            2 -> MediaItemViewHolder.Artist.create(parent)
-            3 -> MediaItemViewHolder.Track.create(parent)
+            0 -> MediaItemViewHolder.Lists.create(parent)
+            1 -> MediaItemViewHolder.Profile.create(parent)
+            2 -> MediaItemViewHolder.Track.create(parent)
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
 
     override fun getItemViewType(position: Int) = when (list[position]) {
-        is EchoMediaItem.PlaylistItem -> 0
-        is EchoMediaItem.AlbumItem -> 1
-        is EchoMediaItem.ArtistItem -> 2
-        is EchoMediaItem.TrackItem -> 3
+        is EchoMediaItem.Lists -> 0
+        is EchoMediaItem.Profile -> 1
+        is EchoMediaItem.TrackItem -> 2
     }
 
     override fun getItemCount() = list.size

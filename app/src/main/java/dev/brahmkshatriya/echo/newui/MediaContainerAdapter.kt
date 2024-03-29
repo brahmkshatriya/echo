@@ -115,16 +115,16 @@ class MediaContainerAdapter(
         return when (item) {
             is MediaItemsContainer.Category -> 0
             is MediaItemsContainer.Item -> when (item.media) {
-                is EchoMediaItem.AlbumItem -> 1
-                is EchoMediaItem.ArtistItem -> 2
-                is EchoMediaItem.PlaylistItem -> 3
-                is EchoMediaItem.TrackItem -> 4
+                is EchoMediaItem.TrackItem -> 1
+                is EchoMediaItem.Profile -> 2
+                is EchoMediaItem.Lists -> 3
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         0 -> Category.create(parent, stateViewModel, listener)
+
         else -> throw IllegalArgumentException("Invalid view type")
     }
 }

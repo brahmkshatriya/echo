@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Selectable"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <FrameLayout
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-8dp"
+        android:clipToPadding="false"
+        android:paddingTop="8dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/imageContainer2"
+            android:layout_width="match_parent"
+            android:layout_height="?itemCoverSize"
+            android:layout_marginHorizontal="6dp"
+            android:layout_marginTop="-5dp"
+            android:alpha="0.33"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="?itemCorner">
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="?itemCoverSize"
+                android:layout_height="?itemCoverSize"
+                android:layout_marginStart="-6dp"
+                android:importantForAccessibility="no"
+                tools:srcCompat="@tools:sample/avatars[2]" />
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/imageContainer1"
+            android:layout_width="match_parent"
+            android:layout_height="?itemCoverSize"
+            android:layout_marginHorizontal="3dp"
+            android:layout_marginTop="-3dp"
+            android:alpha="0.66"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="?itemCorner">
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="?itemCoverSize"
+                android:layout_height="?itemCoverSize"
+                android:layout_marginStart="-3dp"
+                android:importantForAccessibility="no"
+                tools:srcCompat="@tools:sample/avatars[2]" />
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/imageContainer"
+            android:layout_width="?itemCoverSize"
+            android:layout_height="?itemCoverSize"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="?itemCorner">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="?itemCoverSize"
+                android:layout_height="?itemCoverSize"
+                android:importantForAccessibility="no"
+                tools:srcCompat="@tools:sample/avatars[2]" />
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/playlist"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="bottom"
+            android:layout_margin="4dp"
+            android:alpha="0.66"
+            app:cardBackgroundColor="?navBackground">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="20dp"
+                android:layout_gravity="bottom"
+                android:contentDescription="@string/playlist"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_queue_music_20dp"
+                app:tint="?attr/colorOnSurface" />
+
+        </androidx.cardview.widget.CardView>
+
+
+    </FrameLayout>
+
+    <include layout="@layout/new_item_title" />
+</LinearLayout>

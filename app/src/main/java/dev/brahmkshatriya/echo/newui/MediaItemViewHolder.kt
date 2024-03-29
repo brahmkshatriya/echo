@@ -7,10 +7,8 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.databinding.NewItemCoversBinding
-import dev.brahmkshatriya.echo.databinding.NewItemMediaAlbumBinding
-import dev.brahmkshatriya.echo.databinding.NewItemMediaArtistBinding
-import dev.brahmkshatriya.echo.databinding.NewItemMediaPlaylistBinding
+import dev.brahmkshatriya.echo.databinding.NewItemMediaListsBinding
+import dev.brahmkshatriya.echo.databinding.NewItemMediaProfileBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
 import dev.brahmkshatriya.echo.databinding.NewItemTitleBinding
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -21,50 +19,34 @@ sealed class MediaItemViewHolder(itemView: View) :
     abstract fun bind(item: EchoMediaItem)
     abstract val transitionView: View
 
-    class Album(val binding: NewItemMediaAlbumBinding) : MediaItemViewHolder(binding.root) {
+    class Lists(val binding: NewItemMediaListsBinding) : MediaItemViewHolder(binding.root) {
+
         private val titleBinding = NewItemTitleBinding.bind(binding.root)
-        private val coversBinding = NewItemCoversBinding.bind(binding.root)
 
         override val transitionView: View
-            get() = coversBinding.imageContainer
+            get() = binding.imageContainer
 
         override fun bind(item: EchoMediaItem) {
+            item as EchoMediaItem.Lists
             titleBinding.bind(item)
-            coversBinding.bind(item)
-        }
-
-        companion object {
-            fun create(
-                parent: ViewGroup
-            ): MediaItemViewHolder {
-                val layoutInflater = LayoutInflater.from(parent.context)
-                return Album(
-                    NewItemMediaAlbumBinding.inflate(layoutInflater, parent, false)
-                )
+            binding.run {
+                playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
+                val cover = item.cover
+                cover.loadWith(imageView, item.placeHolder()) {
+                    cover.loadInto(imageView1)
+                    cover.loadInto(imageView2)
+                }
+                albumImage(item.size, imageContainer1, imageContainer2)
             }
         }
-    }
-
-    class Playlist(val binding: NewItemMediaPlaylistBinding) : MediaItemViewHolder(binding.root) {
-
-        private val titleBinding = NewItemTitleBinding.bind(binding.root)
-        private val coversBinding = NewItemCoversBinding.bind(binding.root)
-
-        override val transitionView: View
-            get() = coversBinding.imageContainer
-
-        override fun bind(item: EchoMediaItem) {
-            titleBinding.bind(item)
-            coversBinding.bind(item)
-        }
 
         companion object {
             fun create(
                 parent: ViewGroup
             ): MediaItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                return Playlist(
-                    NewItemMediaPlaylistBinding.inflate(layoutInflater, parent, false)
+                return Lists(
+                    NewItemMediaListsBinding.inflate(layoutInflater, parent, false)
                 )
             }
         }
@@ -93,7 +75,7 @@ sealed class MediaItemViewHolder(itemView: View) :
         }
     }
 
-    class Artist(val binding: NewItemMediaArtistBinding) : MediaItemViewHolder(binding.root) {
+    class Profile(val binding: NewItemMediaProfileBinding) : MediaItemViewHolder(binding.root) {
         override val transitionView: View
             get() = binding.imageContainer
 
@@ -109,8 +91,8 @@ sealed class MediaItemViewHolder(itemView: View) :
                 parent: ViewGroup
             ): MediaItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                return Artist(
-                    NewItemMediaArtistBinding.inflate(layoutInflater, parent, false)
+                return Profile(
+                    NewItemMediaProfileBinding.inflate(layoutInflater, parent, false)
                 )
             }
         }
@@ -120,9 +102,10 @@ sealed class MediaItemViewHolder(itemView: View) :
     companion object {
         fun EchoMediaItem.placeHolder() = when (this) {
             is EchoMediaItem.TrackItem -> R.drawable.art_music
-            is EchoMediaItem.AlbumItem -> R.drawable.art_album
-            is EchoMediaItem.ArtistItem -> R.drawable.art_artist
-            is EchoMediaItem.PlaylistItem -> R.drawable.art_library_music
+            is EchoMediaItem.Profile.ArtistItem -> R.drawable.art_artist
+            is EchoMediaItem.Profile.UserItem -> R.drawable.art_user
+            is EchoMediaItem.Lists.AlbumItem -> R.drawable.art_album
+            is EchoMediaItem.Lists.PlaylistItem -> R.drawable.art_library_music
         }
 
         fun NewItemTitleBinding.bind(item: EchoMediaItem) {
@@ -131,26 +114,11 @@ sealed class MediaItemViewHolder(itemView: View) :
             subtitle.text = item.subtitle
         }
 
-        fun NewItemCoversBinding.bind(item: EchoMediaItem) {
-            val cover = item.cover
-            cover.loadWith(imageView, item.placeHolder()) {
-                cover.loadInto(imageView1)
-                cover.loadInto(imageView2)
-            }
-            albumImage(item, imageView1, imageView2)
-        }
-
         @Suppress("MemberVisibilityCanBePrivate")
-        fun albumImage(item: EchoMediaItem, view1: View, view2: View) {
-            val size = when (item) {
-                is EchoMediaItem.AlbumItem -> item.album.numberOfTracks
-                    ?: item.album.tracks.ifEmpty { null }?.size
-                is EchoMediaItem.PlaylistItem ->
-                    item.playlist.tracks.ifEmpty { null }?.size
-                else -> null
-            } ?: 3
-            view1.isVisible = size > 1
-            view2.isVisible = size > 2
+        fun albumImage(size: Int?, view1: View, view2: View) {
+            val tracks = size ?: 3
+            view1.isVisible = tracks > 1
+            view2.isVisible = tracks > 2
         }
     }
 }
