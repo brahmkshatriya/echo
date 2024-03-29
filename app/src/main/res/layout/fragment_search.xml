@@ -31,33 +31,27 @@
         android:fitsSystemWindows="true"
         app:liftOnScrollTargetViewId="@id/recyclerView">
 
-        <LinearLayout
-            android:id="@+id/toolBarContainer"
+        <com.google.android.material.search.SearchBar
+            android:id="@+id/searchBar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_marginVertical="8dp"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="8dp"
-            app:layout_scrollEffect="compress"
-            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap">
+            android:layout_marginEnd="112dp"
+            android:layout_height="48dp"
+            android:hint="@string/search"
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
+            app:defaultMarginsEnabled="false"
+            app:navigationIcon="@drawable/ic_search_outline" />
 
-            <com.google.android.material.search.SearchBar
-                android:id="@+id/searchBar"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="-8dp"
-                android:layout_weight="1"
-                android:hint="@string/search"
-                app:defaultMarginsEnabled="false"
-                app:navigationIcon="@drawable/ic_search_outline" />
-
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:menu="@menu/top_bar_menu" />
-        </LinearLayout>
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_gravity="end"
+            android:id="@+id/toolbar"
+            android:layout_marginTop="-64dp"
+            android:layout_marginHorizontal="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:menu="@menu/top_bar_menu" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
@@ -109,6 +103,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:hint="@string/search"
+        app:closeIcon="@drawable/ic_close"
+        app:goIcon="@drawable/ic_back"
+        app:searchHintIcon="@drawable/ic_back"
+        app:commitIcon="@drawable/ic_back"
+        app:searchIcon="@drawable/ic_back"
+        app:animateNavigationIcon="true"
         app:backgroundTint="?navBackground">
 
         <androidx.recyclerview.widget.RecyclerView

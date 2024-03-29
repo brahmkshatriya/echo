@@ -12,7 +12,9 @@ import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
+import dev.brahmkshatriya.echo.newui.MediaClickListener
 import dev.brahmkshatriya.echo.newui.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -23,8 +25,40 @@ class SearchFragment : Fragment() {
     private var binding by autoCleared<FragmentSearchBinding>()
     private val viewModel by activityViewModels<SearchViewModel>()
 
-    private val mediaContainerAdapter = MediaContainerAdapter(this)
+    private val mediaClickListener = MediaClickListener(this)
+    private val mediaContainerAdapter = MediaContainerAdapter(this, mediaClickListener)
     private val concatAdapter = mediaContainerAdapter.withLoaders()
+
+    private val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
+        override fun onClick(item: QuickSearchItem, transitionView: View) = when (item) {
+            is QuickSearchItem.SearchQueryItem -> {
+                binding.quickSearchView.editText.run {
+                    setText(item.query)
+                    onEditorAction(imeOptions)
+                }
+            }
+
+            is QuickSearchItem.SearchMediaItem -> {
+                mediaClickListener.onClick(item.mediaItem, transitionView)
+            }
+        }
+
+        override fun onLongClick(item: QuickSearchItem, transitionView: View) = when (item) {
+            is QuickSearchItem.SearchQueryItem -> {
+                onClick(item, transitionView)
+                true
+            }
+
+            is QuickSearchItem.SearchMediaItem -> {
+                mediaClickListener.onLongClick(item.mediaItem, transitionView)
+                true
+            }
+        }
+
+        override fun onInsert(item: QuickSearchItem) {
+            binding.quickSearchView.editText.setText(item.title)
+        }
+    })
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +75,8 @@ class SearchFragment : Fragment() {
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
             binding.appBarOutline.alpha = offset
-            binding.toolBarContainer.alpha = 1 - offset
+            binding.searchBar.alpha = 1 - offset
+            binding.toolbar.alpha = 1 - offset
         }
 
         binding.swipeRefresh.setOnRefreshListener {
@@ -49,7 +84,7 @@ class SearchFragment : Fragment() {
         }
         binding.quickSearchView.setupWithSearchBar(binding.searchBar)
         binding.quickSearchView.editText.doOnTextChanged { text, _, _, _ ->
-            println("text : $text")
+            viewModel.quickSearch(text.toString())
         }
         binding.quickSearchView.editText.setOnEditorActionListener { textView, _, _ ->
             val query = textView.text.toString()
@@ -59,6 +94,9 @@ class SearchFragment : Fragment() {
             viewModel.refresh()
             false
         }
+
+        binding.quickSearchRecyclerView.adapter = quickSearchAdapter
+
         viewModel.initialize()
 
         observe(viewModel.extensionFlow.flow) {
@@ -99,6 +137,10 @@ class SearchFragment : Fragment() {
 
         observe(viewModel.searchFeed) {
             mediaContainerAdapter.submit(it)
+        }
+
+        observe(viewModel.quickFeed) {
+            quickSearchAdapter.submitList(it)
         }
     }
 }

@@ -57,6 +57,11 @@ class MainActivity2 : AppCompatActivity() {
         val navView = binding.navView as NavigationBarView
         val navHostFragment = binding.navHostFragment.getFragment<NavHostFragment>()
         navView.setupWithNavController(navHostFragment.navController)
+
+        navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
+            println(navView.selectedItemId)
+            println(destination.id)
+        }
     }
 
     override fun onDestroy() {

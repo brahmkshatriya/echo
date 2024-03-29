@@ -9,13 +9,14 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.paging.AsyncPagingDataDiffer
+import androidx.recyclerview.widget.ListUpdateCallback
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
+import dev.brahmkshatriya.echo.newui.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -42,8 +43,13 @@ class PlayerSessionCallback(
 
 
     private val differ = AsyncPagingDataDiffer(
-        MediaItemsContainerAdapter,
-        MediaItemsContainerAdapter.ListCallback(),
+        MediaContainerAdapter.DiffCallback,
+        object : ListUpdateCallback {
+            override fun onChanged(position: Int, count: Int, payload: Any?) = Unit
+            override fun onMoved(fromPosition: Int, toPosition: Int) = Unit
+            override fun onInserted(position: Int, count: Int) = Unit
+            override fun onRemoved(position: Int, count: Int) = Unit
+        }
     )
 
     private val handler = Handler(Looper.getMainLooper())
@@ -93,9 +99,10 @@ class PlayerSessionCallback(
                         items
                     }
 
-                    is MediaItemsContainer.TrackItem -> {
-                        val track = it.track
-                        listOf(track)
+                    is MediaItemsContainer.Item -> {
+                        val item = it.media as? EchoMediaItem.TrackItem
+                            ?: return@mapNotNull null
+                        listOf(item.track)
                     }
 
                     else -> null

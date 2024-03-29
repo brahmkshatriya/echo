@@ -13,9 +13,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
-import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemAlbumBinding
 import dev.brahmkshatriya.echo.databinding.ItemArtistBinding
@@ -24,12 +22,8 @@ import dev.brahmkshatriya.echo.databinding.ItemPlaylistBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.newui.ContainerLoadingAdapter
 import dev.brahmkshatriya.echo.newui.exception.openException
-import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
-import dev.brahmkshatriya.echo.ui.album.albumImage
-import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.loadWith
 
 class MediaItemsContainerAdapter(
     val fragment: Fragment,
@@ -68,10 +62,7 @@ class MediaItemsContainerAdapter(
         return getItem(position)?.let {
             when (it) {
                 is MediaItemsContainer.Category -> 0
-                is MediaItemsContainer.TrackItem -> 1
-                is MediaItemsContainer.AlbumItem -> 2
-                is MediaItemsContainer.ArtistItem -> 3
-                is MediaItemsContainer.PlaylistItem -> 4
+                else -> null
             }
         } ?: -1
     }
@@ -115,7 +106,10 @@ class MediaItemsContainerAdapter(
             }
         }
     }
-
+    suspend fun submit(pagingData: PagingData<MediaItemsContainer>) {
+//        saveState()
+        submitData(pagingData)
+    }
     //NESTED RECYCLER VIEW THINGS
 
 //    private val stateViewModel: StateViewModel by fragment.viewModels()
@@ -125,42 +119,7 @@ class MediaItemsContainerAdapter(
 //        val visibleScrollableViews = hashMapOf<Int, WeakReference<Category>>()
 //    }
 //
-    suspend fun submit(pagingData: PagingData<MediaItemsContainer>) {
-//        saveState()
-        submitData(pagingData)
-    }
-//
-//    init {
-//        addLoadStateListener {
-//            if (it.refresh == LoadState.Loading) clearState()
-//        }
-//    }
-//
-//    private fun clearState() {
-//        stateViewModel.layoutManagerStates.clear()
-//        stateViewModel.visibleScrollableViews.clear()
-//    }
-//
-//    private fun saveState() {
-//        stateViewModel.visibleScrollableViews.values.forEach { item ->
-//            item.get()?.let { saveScrollState(it) }
-//        }
-//        stateViewModel.visibleScrollableViews.clear()
-//    }
-//
-//    override fun onViewRecycled(holder: MediaItemsContainerHolder) {
-//        super.onViewRecycled(holder)
-//        if (holder is Category) saveScrollState(holder) {
-//            stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
-//        }
-//    }
-//
-//    private fun saveScrollState(holder: Category, block: ((Category) -> Unit)? = null) {
-//        val layoutManagerStates = stateViewModel.layoutManagerStates
-//        layoutManagerStates[holder.bindingAdapterPosition] =
-//            holder.layoutManager.onSaveInstanceState()
-//        block?.invoke(holder)
-//    }
+
 
 
     // VIEW HOLDER
@@ -177,7 +136,6 @@ class MediaItemsContainerAdapter(
         val layoutManager = LinearLayoutManager(binding.root.context, HORIZONTAL, false)
         override fun bind() {
             val item = getItem(bindingAdapterPosition) ?: return
-            val position = bindingAdapterPosition
             val category = item as MediaItemsContainer.Category
             binding.textView.text = category.title
             binding.recyclerView.layoutManager = layoutManager
@@ -198,21 +156,21 @@ class MediaItemsContainerAdapter(
 
     inner class Track(val binding: ItemTrackBinding) : MediaItemsContainerHolder(binding.root) {
         override fun bind() {
-            val item = getItem(bindingAdapterPosition) ?: return
-            val track = (item as MediaItemsContainer.TrackItem).track
-            binding.title.text = track.title
-            track.cover.loadInto(binding.imageView, R.drawable.art_music)
-
-            binding.album.isVisible = track.album != null
-            binding.album.text = track.album?.title
-
-            binding.artist.isVisible = track.artists.isNotEmpty()
-            binding.artist.text = track.artists.joinToString(" ") { it.name }
-
-            binding.duration.isVisible = track.duration != null
-            binding.duration.text = track.duration?.toTimeString()
-
-            binding.root.transitionName = track.id
+//            val item = getItem(bindingAdapterPosition) ?: return
+//            val track = (item as MediaItemsContainer.TrackItem).track
+//            binding.title.text = track.title
+//            track.cover.loadInto(binding.imageView, R.drawable.art_music)
+//
+//            binding.album.isVisible = track.album != null
+//            binding.album.text = track.album?.title
+//
+//            binding.artist.isVisible = track.artists.isNotEmpty()
+//            binding.artist.text = track.artists.joinToString(" ") { it.name }
+//
+//            binding.duration.isVisible = track.duration != null
+//            binding.duration.text = track.duration?.toTimeString()
+//
+//            binding.root.transitionName = track.id
         }
 
         override val clickView = binding.root
@@ -220,30 +178,30 @@ class MediaItemsContainerAdapter(
 
     inner class Album(val binding: ItemAlbumBinding) : MediaItemsContainerHolder(binding.root) {
         override fun bind() {
-            val item = getItem(bindingAdapterPosition) ?: return
-            val album = (item as MediaItemsContainer.AlbumItem).album
-            binding.title.text = album.title
-            album.cover.apply {
-                loadWith(binding.imageView, R.drawable.art_album, null) {
-                    loadInto(binding.imageView1, R.drawable.art_album)
-                    loadInto(binding.imageView2, R.drawable.art_album)
-                }
-            }
-            albumImage(album.numberOfTracks, binding.imageView1, binding.imageView2)
-            binding.artist.isVisible = album.artists.isNotEmpty()
-            binding.artist.text = album.artists.joinToString(" ") { it.name }
-
-            binding.duration.isVisible = album.numberOfTracks != null
-            binding.duration.text = album.numberOfTracks?.let {
-                binding.root.context.resources.getQuantityString(
-                    R.plurals.number_songs, it, album.numberOfTracks
-                )
-            }
-
-            binding.subtitle.isVisible = !album.subtitle.isNullOrBlank()
-            binding.subtitle.text = album.subtitle
-
-            binding.root.transitionName = album.id
+//            val item = getItem(bindingAdapterPosition) ?: return
+//            val album = (item as MediaItemsContainer.AlbumItem).album
+//            binding.title.text = album.title
+//            album.cover.apply {
+//                loadWith(binding.imageView, R.drawable.art_album, null) {
+//                    loadInto(binding.imageView1, R.drawable.art_album)
+//                    loadInto(binding.imageView2, R.drawable.art_album)
+//                }
+//            }
+//            albumImage(album.numberOfTracks, binding.imageView1, binding.imageView2)
+//            binding.artist.isVisible = album.artists.isNotEmpty()
+//            binding.artist.text = album.artists.joinToString(" ") { it.name }
+//
+//            binding.duration.isVisible = album.numberOfTracks != null
+//            binding.duration.text = album.numberOfTracks?.let {
+//                binding.root.context.resources.getQuantityString(
+//                    R.plurals.number_songs, it, album.numberOfTracks
+//                )
+//            }
+//
+//            binding.subtitle.isVisible = !album.subtitle.isNullOrBlank()
+//            binding.subtitle.text = album.subtitle
+//
+//            binding.root.transitionName = album.id
         }
 
         override val clickView = binding.root
@@ -251,15 +209,15 @@ class MediaItemsContainerAdapter(
 
     inner class Artist(val binding: ItemArtistBinding) : MediaItemsContainerHolder(binding.root) {
         override fun bind() {
-            val item = getItem(bindingAdapterPosition) ?: return
-            val artist = (item as MediaItemsContainer.ArtistItem).artist
-            binding.title.text = artist.name
-
-            binding.subtitle.isVisible = !artist.subtitle.isNullOrBlank()
-            binding.subtitle.text = artist.subtitle
-
-            artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
-            binding.root.transitionName = artist.id
+//            val item = getItem(bindingAdapterPosition) ?: return
+//            val artist = (item as MediaItemsContainer.ArtistItem).artist
+//            binding.title.text = artist.name
+//
+//            binding.subtitle.isVisible = !artist.subtitle.isNullOrBlank()
+//            binding.subtitle.text = artist.subtitle
+//
+//            artist.cover.loadInto(binding.imageView, R.drawable.art_artist)
+//            binding.root.transitionName = artist.id
         }
 
         override val clickView = binding.root
@@ -268,19 +226,19 @@ class MediaItemsContainerAdapter(
     inner class Playlist(val binding: ItemPlaylistBinding) :
         MediaItemsContainerHolder(binding.root) {
         override fun bind() {
-            val item = getItem(bindingAdapterPosition) ?: return
-            val playlist = (item as MediaItemsContainer.PlaylistItem).playlist
-            binding.title.text = playlist.title
-            playlist.cover.apply {
-                loadWith(binding.imageView, R.drawable.art_library_music, null) {
-                    loadInto(binding.imageView1, R.drawable.art_library_music)
-                    loadInto(binding.imageView2, R.drawable.art_library_music)
-                }
-            }
-            albumImage(3, binding.imageView1, binding.imageView2)
-            binding.subtitle.text = playlist.subtitle
-            binding.subtitle.isVisible = !playlist.subtitle.isNullOrBlank()
-            binding.root.transitionName = playlist.id
+//            val item = getItem(bindingAdapterPosition) ?: return
+//            val playlist = (item as MediaItemsContainer.PlaylistItem).playlist
+//            binding.title.text = playlist.title
+//            playlist.cover.apply {
+//                loadWith(binding.imageView, R.drawable.art_library_music, null) {
+//                    loadInto(binding.imageView1, R.drawable.art_library_music)
+//                    loadInto(binding.imageView2, R.drawable.art_library_music)
+//                }
+//            }
+//            albumImage(3, binding.imageView1, binding.imageView2)
+//            binding.subtitle.text = playlist.subtitle
+//            binding.subtitle.isVisible = !playlist.subtitle.isNullOrBlank()
+//            binding.root.transitionName = playlist.id
         }
 
         override val clickView = binding.root
@@ -291,74 +249,13 @@ class MediaItemsContainerAdapter(
         override fun areItemsTheSame(
             oldItem: MediaItemsContainer, newItem: MediaItemsContainer
         ): Boolean {
-            return when (oldItem) {
-                is MediaItemsContainer.Category -> {
-                    val newCategory = newItem as? MediaItemsContainer.Category
-                    oldItem.title == newCategory?.title
-                }
-
-                is MediaItemsContainer.TrackItem -> {
-                    val newTrack = newItem as? MediaItemsContainer.TrackItem
-                    oldItem.track.id == newTrack?.track?.id
-                }
-
-                is MediaItemsContainer.AlbumItem -> {
-                    val newAlbum = newItem as? MediaItemsContainer.AlbumItem
-                    oldItem.album.id == newAlbum?.album?.id
-                }
-
-                is MediaItemsContainer.ArtistItem -> {
-                    val newArtist = newItem as? MediaItemsContainer.ArtistItem
-                    oldItem.artist.id == newArtist?.artist?.id
-                }
-
-                is MediaItemsContainer.PlaylistItem -> {
-                    val newPlaylist = newItem as? MediaItemsContainer.PlaylistItem
-                    oldItem.playlist.id == newPlaylist?.playlist?.id
-                }
-            }
+            return false
         }
 
         override fun areContentsTheSame(
             oldItem: MediaItemsContainer, newItem: MediaItemsContainer
         ): Boolean {
-            when (oldItem) {
-                is MediaItemsContainer.Category -> {
-                    val newCategory = newItem as? MediaItemsContainer.Category
-                    newCategory ?: return true
-                    oldItem.list.forEachIndexed { index, mediaItem ->
-                        if (newCategory.list.getOrNull(index) != mediaItem) return false
-                    }
-                }
-
-                is MediaItemsContainer.TrackItem -> {
-                    val newTrack = newItem as? MediaItemsContainer.TrackItem
-                    return oldItem.track.id == newTrack?.track?.id
-                }
-
-                is MediaItemsContainer.AlbumItem -> {
-                    val newAlbum = newItem as? MediaItemsContainer.AlbumItem
-                    return oldItem.album.id == newAlbum?.album?.id
-                }
-
-                is MediaItemsContainer.ArtistItem -> {
-                    val newArtist = newItem as? MediaItemsContainer.ArtistItem
-                    return oldItem.artist.id == newArtist?.artist?.id
-                }
-
-                is MediaItemsContainer.PlaylistItem -> {
-                    val newPlaylist = newItem as? MediaItemsContainer.PlaylistItem
-                    return oldItem.playlist.id == newPlaylist?.playlist?.id
-                }
-            }
             return true
         }
-    }
-
-    class ListCallback : ListUpdateCallback {
-        override fun onChanged(position: Int, count: Int, payload: Any?) {}
-        override fun onMoved(fromPosition: Int, toPosition: Int) {}
-        override fun onInserted(position: Int, count: Int) {}
-        override fun onRemoved(position: Int, count: Int) {}
     }
 }

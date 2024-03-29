@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.newui.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,7 @@ class SearchViewModel @Inject constructor(
 
     val loading = MutableSharedFlow<Boolean>()
     val searchFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
     val genres = MutableStateFlow<List<Genre>>(emptyList())
     var genre: Genre? = null
         set(value) {
@@ -62,6 +64,14 @@ class SearchViewModel @Inject constructor(
                 loadGenres(client)
             }
             loadFeed(client)
+        }
+    }
+
+    fun quickSearch(query: String) {
+        val client = extensionFlow.flow.value as? SearchClient ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            val list = tryWith { client.quickSearch(query) } ?: emptyList()
+            quickFeed.value = list
         }
     }
 

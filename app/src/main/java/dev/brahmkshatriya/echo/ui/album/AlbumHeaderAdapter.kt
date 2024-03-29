@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.ItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
@@ -34,14 +33,14 @@ class AlbumHeaderAdapter(
             init {
                 val art = album.artists.firstOrNull()
                 if (art != null) {
-                    val artist = MediaItemsContainer.ArtistItem(art)
-                    binding.albumArtistContainer.setOnClickListener {
-                        mediaListener.onClick(it to artist)
-                    }
-                    binding.albumArtistContainer.setOnLongClickListener {
-                        mediaListener.onLongClick(it to artist)
-                        true
-                    }
+//                    val artist = MediaItemsContainer.ArtistItem(art)
+//                    binding.albumArtistContainer.setOnClickListener {
+//                        mediaListener.onClick(it to artist)
+//                    }
+//                    binding.albumArtistContainer.setOnLongClickListener {
+//                        mediaListener.onLongClick(it to artist)
+//                        true
+//                    }
                 }
 
                 binding.albumPlay.setOnClickListener {

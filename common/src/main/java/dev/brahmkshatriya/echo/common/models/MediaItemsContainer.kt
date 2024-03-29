@@ -11,16 +11,12 @@ sealed class MediaItemsContainer {
         val more: PagedData<EchoMediaItem>? = null
     ) : MediaItemsContainer()
 
-    data class TrackItem(val track: Track) : MediaItemsContainer()
-    data class AlbumItem(val album: Album) : MediaItemsContainer()
-    data class ArtistItem(val artist: Artist) : MediaItemsContainer()
-    data class PlaylistItem(val playlist: Playlist) : MediaItemsContainer()
+    data class Item(
+        val media: EchoMediaItem
+    ) : MediaItemsContainer()
 
-    fun sameAs(newItem: MediaItemsContainer) = when (this) {
-        is Category -> newItem is Category && this == newItem
-        is TrackItem -> newItem is TrackItem && this.track.id == newItem.track.id
-        is AlbumItem -> newItem is AlbumItem && this.album.id == newItem.album.id
-        is ArtistItem -> newItem is ArtistItem && this.artist.id == newItem.artist.id
-        is PlaylistItem -> newItem is PlaylistItem && this.playlist.id == newItem.playlist.id
+    fun sameAs(other: MediaItemsContainer) = when (this) {
+        is Category -> other is Category && this == other
+        is Item -> other is Item && media.sameAs(other.media)
     }
 }
