@@ -1,11 +1,13 @@
-package dev.brahmkshatriya.echo.newui
+package dev.brahmkshatriya.echo.viewmodels
 
 import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
+import dev.brahmkshatriya.echo.ui.adapters.ClientLoadingAdapter
+import dev.brahmkshatriya.echo.ui.adapters.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -31,10 +33,35 @@ class ExtensionViewModel @Inject constructor(
             }
             extensionListFlow.flow.collectLatest { list ->
                 list ?: return@collectLatest
-                val id = preferences.getString(ExtensionViewModel.LAST_EXTENSION_KEY, null)
+                val id = preferences.getString(LAST_EXTENSION_KEY, null)
                 mutableExtensionFlow.flow.value =
                     list.find { it.metadata.id == id } ?: list.firstOrNull()
             }
         }
+    }
+
+    companion object {
+        const val LAST_EXTENSION_KEY = "last_extension"
+
+        inline fun <reified T> getAdapterForExtension(
+            it: ExtensionClient?,
+            name: Int,
+            adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
+            block: ((T?) -> Unit) = {}
+        ): RecyclerView.Adapter<out RecyclerView.ViewHolder> {
+            return if (it != null) {
+                if (it is T) {
+                    block(it)
+                    adapter
+                } else {
+                    block(null)
+                    ClientNotSupportedAdapter(name)
+                }
+            } else {
+                block(null)
+                ClientLoadingAdapter()
+            }
+        }
+
     }
 }

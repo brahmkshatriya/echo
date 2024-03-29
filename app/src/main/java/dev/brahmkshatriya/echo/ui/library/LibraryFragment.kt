@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.OldFragmentRecyclerBinding
-import dev.brahmkshatriya.echo.newui.ContainerLoadingAdapter
+import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -36,7 +36,7 @@ class LibraryFragment : Fragment() {
         }
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 
-        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, ContainerLoadingAdapter())
+        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, MediaContainerLoadingAdapter())
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
     }

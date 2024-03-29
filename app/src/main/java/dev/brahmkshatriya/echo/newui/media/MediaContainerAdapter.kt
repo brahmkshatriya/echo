@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.newui
+package dev.brahmkshatriya.echo.newui.media
 
 import android.os.Parcelable
 import android.view.ViewGroup
@@ -8,29 +8,16 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.newui.MediaContainerViewHolder.Category
-import dev.brahmkshatriya.echo.newui.MediaContainerViewHolder.Media
+import dev.brahmkshatriya.echo.newui.media.MediaContainerViewHolder.Category
+import dev.brahmkshatriya.echo.newui.media.MediaContainerViewHolder.Media
 import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
-    private val fragment: Fragment,
+    val fragment: Fragment,
     val listener: MediaClickListener = MediaClickListener(fragment)
-) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(
-    DiffCallback
-) {
-
-    fun withLoaders(): ConcatAdapter {
-        val footer = ContainerLoadingAdapter(fragment) { retry() }
-        val header = ContainerLoadingAdapter(fragment) { retry() }
-        addLoadStateListener { loadStates ->
-            header.loadState = loadStates.refresh
-            footer.loadState = loadStates.append
-        }
-        return ConcatAdapter(header, this, footer)
-    }
+) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<MediaItemsContainer>() {
         override fun areItemsTheSame(

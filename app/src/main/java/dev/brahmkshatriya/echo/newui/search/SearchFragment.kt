@@ -15,12 +15,13 @@ import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.newui.InsetsViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.newui.MediaClickListener
-import dev.brahmkshatriya.echo.newui.MediaContainerAdapter
-import dev.brahmkshatriya.echo.newui.getAdapterForExtension
+import dev.brahmkshatriya.echo.newui.media.MediaClickListener
+import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
+import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel.Companion.applyInsets
 
 class SearchFragment : Fragment() {
 

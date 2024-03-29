@@ -16,7 +16,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
-import dev.brahmkshatriya.echo.newui.InsetsViewModel
+import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 

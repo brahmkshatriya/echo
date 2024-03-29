@@ -17,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.databinding.OldFragmentRecyclerBinding
-import dev.brahmkshatriya.echo.newui.getAdapterForExtension
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter

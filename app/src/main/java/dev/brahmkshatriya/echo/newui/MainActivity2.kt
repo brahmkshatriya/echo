@@ -19,6 +19,8 @@ import com.google.android.material.navigationrail.NavigationRailView
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMain2Binding
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
 import dev.brahmkshatriya.echo.player.PlaybackService
 import dev.brahmkshatriya.echo.player.ui.connectPlayerToUI
 import dev.brahmkshatriya.echo.utils.checkPermissions

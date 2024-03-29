@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.newui
+package dev.brahmkshatriya.echo.viewmodels
 
 import android.content.Context
 import android.view.View

@@ -8,7 +8,7 @@ import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.newui.CatchingViewModel
+import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

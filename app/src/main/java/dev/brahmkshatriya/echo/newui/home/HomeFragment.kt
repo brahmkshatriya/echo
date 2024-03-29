@@ -12,11 +12,12 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
-import dev.brahmkshatriya.echo.newui.InsetsViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.newui.MediaContainerAdapter
-import dev.brahmkshatriya.echo.newui.getAdapterForExtension
+import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
+import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel.Companion.applyInsets
 
 class HomeFragment : Fragment() {
 

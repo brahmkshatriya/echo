@@ -20,7 +20,7 @@ import dev.brahmkshatriya.echo.databinding.ItemArtistBinding
 import dev.brahmkshatriya.echo.databinding.ItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
-import dev.brahmkshatriya.echo.newui.ContainerLoadingAdapter
+import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter
 import dev.brahmkshatriya.echo.newui.exception.openException
 import dev.brahmkshatriya.echo.ui.ClickListener
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
@@ -37,7 +37,7 @@ class MediaItemsContainerAdapter(
     private val lifecycle = fragment.lifecycle
 
     fun withLoadingFooter(): ConcatAdapter {
-        val footer = ContainerLoadingAdapter(object : ContainerLoadingAdapter.Listener {
+        val footer = MediaContainerLoadingAdapter(object : MediaContainerLoadingAdapter.Listener {
             override fun onRetry() {
                 retry()
             }

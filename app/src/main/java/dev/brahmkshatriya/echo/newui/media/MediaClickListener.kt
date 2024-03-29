@@ -1,11 +1,13 @@
-package dev.brahmkshatriya.echo.newui
+package dev.brahmkshatriya.echo.newui.media
 
 import android.view.View
 import androidx.fragment.app.Fragment
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 
-class MediaClickListener(val fragment: Fragment) : MediaItemAdapter.Listener {
+class MediaClickListener(
+    private val fragment: Fragment
+) : MediaItemAdapter.Listener {
 
     override fun onClick(item: EchoMediaItem, transitionView: View) {
         println("Clicked : ${item.title}")
@@ -21,6 +23,7 @@ class MediaClickListener(val fragment: Fragment) : MediaItemAdapter.Listener {
             is MediaItemsContainer.Category -> {
                 println("Category : ${item.title}")
             }
+
             is MediaItemsContainer.Item -> {
                 onClick(item.media, transitionView)
             }
@@ -33,6 +36,7 @@ class MediaClickListener(val fragment: Fragment) : MediaItemAdapter.Listener {
                 onClick(item, transitionView)
                 true
             }
+
             is MediaItemsContainer.Item -> {
                 onLongClick(item.media, transitionView)
             }

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.newui
+package dev.brahmkshatriya.echo.newui.media
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,13 +7,14 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemErrorBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemContainerBinding
 import dev.brahmkshatriya.echo.newui.exception.openException
 
-class ContainerLoadingAdapter(val listener: Listener? = null) :
-    LoadStateAdapter<ContainerLoadingAdapter.ShimmerViewHolder>() {
+class MediaContainerLoadingAdapter(val listener: Listener? = null) :
+    LoadStateAdapter<MediaContainerLoadingAdapter.ShimmerViewHolder>() {
 
     interface Listener {
         fun onRetry()
@@ -75,4 +76,16 @@ class ContainerLoadingAdapter(val listener: Listener? = null) :
             )
         }
     })
+
+    companion object{
+        fun MediaContainerAdapter.withLoaders(): ConcatAdapter {
+            val footer = MediaContainerLoadingAdapter(fragment) { retry() }
+            val header = MediaContainerLoadingAdapter(fragment) { retry() }
+            addLoadStateListener { loadStates ->
+                header.loadState = loadStates.refresh
+                footer.loadState = loadStates.append
+            }
+            return ConcatAdapter(header, this, footer)
+        }
+    }
 }

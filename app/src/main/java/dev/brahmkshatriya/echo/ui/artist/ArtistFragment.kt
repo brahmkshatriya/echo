@@ -23,7 +23,7 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.databinding.FragmentArtistBinding
-import dev.brahmkshatriya.echo.newui.getAdapterForExtension
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener

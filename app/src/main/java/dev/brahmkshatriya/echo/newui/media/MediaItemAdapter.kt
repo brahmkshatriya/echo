@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.newui
+package dev.brahmkshatriya.echo.newui.media
 
 import android.view.View
 import android.view.ViewGroup
