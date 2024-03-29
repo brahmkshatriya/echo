@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.newui.media.MediaClickListener
 import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
+import dev.brahmkshatriya.echo.newui.onMenuClicked
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
@@ -86,8 +87,9 @@ class SearchFragment : Fragment() {
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
             binding.appBarOutline.alpha = offset
             binding.searchBar.alpha = 1 - offset
-            binding.toolbar.alpha = 1 - offset
+            binding.toolBar.alpha = 1 - offset
         }
+        binding.toolBar.onMenuClicked()
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)

@@ -19,13 +19,13 @@ import com.google.android.material.navigationrail.NavigationRailView
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMain2Binding
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
-import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
 import dev.brahmkshatriya.echo.player.PlaybackService
 import dev.brahmkshatriya.echo.player.ui.connectPlayerToUI
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
 
 @AndroidEntryPoint
 class MainActivity2 : AppCompatActivity() {
@@ -66,13 +66,13 @@ class MainActivity2 : AppCompatActivity() {
         navView.setupWithNavController(navHostFragment.navController)
 
         val insetsViewModel by viewModels<InsetsViewModel>()
-        val rail = binding.navView is NavigationRailView
+        val isRail = binding.navView is NavigationRailView
 
         navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
             val isNavFragment = destination.id == navView.selectedItemId
             binding.navView.isVisible = isNavFragment
             binding.navViewOutline?.isVisible = isNavFragment
-            insetsViewModel.setNavInsets(this, isNavFragment, rail)
+            insetsViewModel.setNavInsets(this, isNavFragment, isRail)
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             insetsViewModel.setSystemInsets(this, insets)

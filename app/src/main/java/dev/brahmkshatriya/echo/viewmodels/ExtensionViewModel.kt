@@ -18,11 +18,14 @@ import javax.inject.Inject
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
-    private val extensionListFlow: ExtensionModule.ExtensionListFlow,
+    val extensionListFlow: ExtensionModule.ExtensionListFlow,
     private val mutableExtensionFlow: ExtensionModule.MutableFlow,
     private val pluginRepo: PluginRepo<ExtensionClient>,
     private val preferences: SharedPreferences
 ) : CatchingViewModel(throwableFlow) {
+
+    val currentExtension
+        get() = mutableExtensionFlow.flow.value
 
     override fun onInitialize() {
         viewModelScope.launch {
@@ -38,6 +41,11 @@ class ExtensionViewModel @Inject constructor(
                     list.find { it.metadata.id == id } ?: list.firstOrNull()
             }
         }
+    }
+
+    fun setExtension(client: ExtensionClient) {
+        preferences.edit().putString(LAST_EXTENSION_KEY, client.metadata.id).apply()
+        mutableExtensionFlow.flow.value = client
     }
 
     companion object {

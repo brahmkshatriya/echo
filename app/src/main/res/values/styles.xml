@@ -33,10 +33,6 @@
 
     <style name="CollapsingBar" parent="TopCollapsingBar" />
 
-    <style name="CoordinatorLayout">
-        <item name="android:background">?echoBackground</item>
-    </style>
-
     <style name="EchoCardView">
         <item name="cardCornerRadius">?itemContainerCorner</item>
         <item name="cardBackgroundColor">?echoBackground</item>

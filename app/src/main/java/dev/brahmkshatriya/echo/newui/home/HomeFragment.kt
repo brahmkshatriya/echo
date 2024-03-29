@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
+import dev.brahmkshatriya.echo.newui.onMenuClicked
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
@@ -46,6 +47,7 @@ class HomeFragment : Fragment() {
             binding.appBarOutline.alpha = offset
             binding.toolBar.alpha = 1 - offset
         }
+        binding.toolBar.onMenuClicked()
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)

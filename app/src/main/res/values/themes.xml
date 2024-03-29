@@ -12,12 +12,10 @@
         <item name="android:colorBackground">?echoBackground</item>
         <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
 
-        <item name="coordinatorLayoutStyle">@style/CoordinatorLayout</item>
         <item name="appBarLayoutStyle">@style/AppBarLayout</item>
         <item name="collapsingToolbarLayoutStyle">@style/CollapsingBar</item>
 
         <item name="cardViewStyle">@style/EchoCardView</item>
-        <item name="materialCardViewStyle">@style/EchoCardView</item>
 
         <item name="echoBackground">?colorSurface</item>
         <item name="navBackground">?colorSurfaceContainer</item>

@@ -2,25 +2,24 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/homeFragment"
-    android:id="@+id/new_navigation">
+    android:id="@+id/new_navigation"
+    app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/homeFragment"
         android:name="dev.brahmkshatriya.echo.newui.home.HomeFragment"
-        android:label="HomeFragment"
+
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/searchFragment"
         android:name="dev.brahmkshatriya.echo.newui.search.SearchFragment"
-        android:label="SearchFragment"
-        tools:layout="@layout/fragment_search"/>
+        tools:layout="@layout/fragment_search" />
 
     <fragment
         android:id="@+id/libraryFragment"
         android:name="dev.brahmkshatriya.echo.newui.library.LibraryFragment"
-        android:label="LibraryFragment"/>
+        android:label="LibraryFragment" />
 
     <fragment
         android:id="@+id/exceptionFragment"
@@ -30,5 +29,14 @@
     <action
         android:id="@+id/action_exception"
         app:destination="@id/exceptionFragment" />
+
+    <dialog
+        android:id="@+id/extensionsFragment"
+        android:name="dev.brahmkshatriya.echo.newui.extension.ExtensionsFragment"
+        tools:layout="@layout/dialog_extension" />
+
+    <action
+        android:id="@+id/action_extensions"
+        app:destination="@id/extensionsFragment" />
 
 </navigation>
