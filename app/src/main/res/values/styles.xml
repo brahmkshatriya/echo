@@ -12,6 +12,9 @@
         <item name="itemActiveIndicatorStyle">@style/BottomNavbarActiveIndicator</item>
         <item name="itemIconTint">@color/bottom_item_icon</item>
         <item name="labelVisibilityMode">labeled</item>
+        <item name="itemPaddingBottom">12dp</item>
+        <item name="itemPaddingTop">12dp</item>
+        <item name="itemMinHeight">64dp</item>
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat.Dialog.MinWidth">

@@ -37,7 +37,6 @@ class SearchViewModel @Inject constructor(
             extensionFlow.flow.collect {
                 val client = it as? SearchClient ?: return@collect
                 loadGenres(client)
-                loadFeed(client)
             }
         }
     }

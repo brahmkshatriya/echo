@@ -14,12 +14,10 @@
 
         <item name="coordinatorLayoutStyle">@style/CoordinatorLayout</item>
         <item name="appBarLayoutStyle">@style/AppBarLayout</item>
-        <item name="cardViewStyle">@style/EchoCardView</item>
-        <item name="bottomNavigationStyle">@style/NavView</item>
-        <item name="navigationRailStyle">@style/NavView</item>
-
-        <item name="materialCardViewStyle">@style/EchoCardView</item>
         <item name="collapsingToolbarLayoutStyle">@style/CollapsingBar</item>
+
+        <item name="cardViewStyle">@style/EchoCardView</item>
+        <item name="materialCardViewStyle">@style/EchoCardView</item>
 
         <item name="echoBackground">?colorSurface</item>
         <item name="navBackground">?colorSurfaceContainer</item>

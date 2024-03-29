@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
@@ -15,7 +16,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
+import dev.brahmkshatriya.echo.newui.InsetsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.observe
 
 class ExceptionFragment : Fragment() {
     private var binding: FragmentExceptionBinding by autoCleared()
@@ -37,6 +40,12 @@ class ExceptionFragment : Fragment() {
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
             binding.toolbarOutline.alpha = offset
+        }
+
+        val insetsViewModel by activityViewModels<InsetsViewModel>()
+        observe(insetsViewModel.combined){
+            binding.exceptionIconContainer.updatePadding(top = it.top)
+            binding.nestedScrollView.updatePadding(bottom = it.bottom)
         }
 
         binding.exceptionMessage.setupWithNavController(findNavController())

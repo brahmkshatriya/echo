@@ -34,7 +34,6 @@ class HomeViewModel @Inject constructor(
             extensionFlow.flow.collect {
                 val client = it as? HomeFeedClient ?: return@collect
                 loadGenres(client)
-                loadFeed(client)
             }
         }
     }

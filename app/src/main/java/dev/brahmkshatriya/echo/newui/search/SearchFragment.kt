@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -14,6 +15,7 @@ import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
+import dev.brahmkshatriya.echo.newui.InsetsViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.newui.MediaClickListener
 import dev.brahmkshatriya.echo.newui.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.getAdapterForExtension
@@ -71,6 +73,13 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        applyInsets(binding.appBarLayout, binding.recyclerView){
+            binding.quickSearchView.updatePaddingRelative(
+                start = it.start,
+                end = it.end
+            )
+        }
 
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()

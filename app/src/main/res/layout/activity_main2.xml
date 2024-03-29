@@ -20,12 +20,11 @@
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navView"
+        style="@style/NavView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:minHeight="64dp"
-        app:itemPaddingBottom="12dp"
-        app:itemPaddingTop="12dp"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

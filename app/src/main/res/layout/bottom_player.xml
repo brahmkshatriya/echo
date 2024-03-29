@@ -293,7 +293,6 @@
             android:id="@+id/collapsedTrackCover"
             android:layout_width="@dimen/collapsed_cover_size"
             android:layout_height="@dimen/collapsed_cover_size"
-            android:layout_marginStart="@dimen/sideRailViewWidth"
             android:background="?attr/colorSurfaceContainerHigh"
             android:importantForAccessibility="no"
             tools:ignore="ImageContrastCheck"

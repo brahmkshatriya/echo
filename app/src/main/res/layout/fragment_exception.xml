@@ -21,14 +21,12 @@
             app:maxLines="5">
 
             <FrameLayout
-                android:id="@+id/albumCoverContainer"
+                android:id="@+id/exceptionIconContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="72dp"
-                android:layout_marginEnd="24dp"
-                android:layout_marginBottom="72dp"
-                android:fitsSystemWindows="true">
+                android:layout_marginTop="64dp"
+                android:layout_marginBottom="32dp"
+                android:layout_marginHorizontal="24dp">
 
                 <ImageView
                     android:id="@+id/exceptionIcon"
@@ -62,6 +60,7 @@
 
 
     <androidx.core.widget.NestedScrollView
+        android:clipToPadding="false"
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -76,7 +75,8 @@
                 android:typeface="monospace"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="24dp"
+                android:paddingVertical="16dp"
+                android:paddingHorizontal="24dp"
                 android:textIsSelectable="true" />
 
         </HorizontalScrollView>

@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
+import dev.brahmkshatriya.echo.newui.InsetsViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.newui.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.getAdapterForExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -36,6 +37,8 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        applyInsets(binding.appBarLayout, binding.recyclerView)
 
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
             val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
@@ -88,6 +91,6 @@ class HomeFragment : Fragment() {
         observe(viewModel.homeFeed) {
             mediaContainerAdapter.submit(it)
         }
-    }
 
+    }
 }

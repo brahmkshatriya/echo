@@ -47,7 +47,7 @@ class ExceptionFragment : Fragment() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.albumCoverContainer.updatePadding(top = insets.top)
+            binding.exceptionIconContainer.updatePadding(top = insets.top)
             windowInsets
         }
 
