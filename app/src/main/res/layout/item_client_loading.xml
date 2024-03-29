@@ -12,10 +12,10 @@
         android:indeterminate="true" />
 
     <TextView
-        style="@style/TopAppBarHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"
+        android:layout_marginHorizontal="24dp"
         android:maxWidth="240dp"
         android:text="@string/loading"
         android:textAlignment="center"

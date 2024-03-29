@@ -12,7 +12,7 @@
         android:id="@+id/imageContainer"
         android:layout_width="?itemCoverSize"
         android:layout_height="?itemCoverSize"
-        app:cardCornerRadius="?itemCorner"
+        app:cardCornerRadius="?itemCoverSize"
         app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
         <ImageView
@@ -24,6 +24,26 @@
 
     </androidx.cardview.widget.CardView>
 
-    <include layout="@layout/new_item_title" />
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="2"
+        tools:text="@tools:sample/lorem" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:alpha="0.66"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="2"
+        android:textSize="12sp"
+        android:visibility="gone"
+        tools:text="@tools:sample/full_names" />
 
 </LinearLayout>

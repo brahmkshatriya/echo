@@ -7,7 +7,9 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
-            style="@style/TopAppBar" />
+            app:menu="@menu/top_bar_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
         <com.google.android.material.search.SearchBar
             android:id="@+id/cat_search_bar"

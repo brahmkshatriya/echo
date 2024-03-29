@@ -8,10 +8,9 @@
 
     <TextView
         android:id="@+id/notSupportedTextView"
-        style="@style/TopAppBarHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/collapsed_cover_size"
+        android:layout_marginHorizontal="24dp"
         android:maxWidth="240dp"
         android:text="@string/is_not_supported"
         android:textAlignment="center"

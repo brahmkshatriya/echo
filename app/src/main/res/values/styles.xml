@@ -19,26 +19,6 @@
         <item name="android:windowBackground">@drawable/dialog_bg</item>
     </style>
 
-    <style name="TopAppBarHeader">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:minHeight">48dp</item>
-        <item name="android:layout_marginTop">16dp</item>
-        <item name="android:layout_marginBottom">16dp</item>
-        <item name="android:layout_marginEnd">24dp</item>
-        <item name="android:layout_marginStart">24dp</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:textSize">28sp</item>
-    </style>
-
-    <style name="TopAppBar">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingEnd">8dp</item>
-        <item name="menu">@menu/top_bar_menu</item>
-    </style>
-
     <style name="TopCollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
         <item name="contentScrim">?navBackground</item>
         <item name="expandedTitleMarginBottom">20dp</item>
@@ -62,15 +42,6 @@
     <style name="Selectable">
         <item name="android:focusable">true</item>
         <item name="android:foreground">@drawable/ripple_item_container</item>
-    </style>
-
-    <style name="EchoChip" parent="Widget.Material3.Chip.Suggestion">
-        <item name="android:textSize">16sp</item>
-        <item name="android:minWidth">64dp</item>
-        <item name="android:textAppearance">?attr/textAppearanceDisplayMedium</item>
-        <item name="chipMinHeight">40dp</item>
-        <item name="android:textAlignment">center</item>
-        <item name="ensureMinTouchTargetSize">false</item>
     </style>
 
     <style name="AppBarLayout" parent="Widget.Material3.AppBarLayout">

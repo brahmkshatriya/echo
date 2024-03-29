@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
-import dev.brahmkshatriya.echo.newui.MediaItemViewHolder.Track.Companion.placeHolder
+import dev.brahmkshatriya.echo.newui.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.loadInto
 
 sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
