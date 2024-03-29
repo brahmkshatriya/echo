@@ -1,29 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     style="@style/Selectable"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/imageContainer"
-        android:layout_width="?itemCoverSize"
-        android:layout_height="?itemCoverSize"
-        app:cardCornerRadius="?itemCorner"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer">
+    <include
+        android:id="@+id/cover"
+        layout="@layout/item_track_cover" />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:importantForAccessibility="no"
-            tools:srcCompat="@tools:sample/avatars" />
-
-    </androidx.cardview.widget.CardView>
-
-    <include layout="@layout/new_item_title" />
+    <include layout="@layout/new_item_media_title" />
 
 </LinearLayout>

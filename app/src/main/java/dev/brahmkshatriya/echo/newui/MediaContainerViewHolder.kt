@@ -6,8 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.databinding.NewItemMediaCategoryBinding
+import dev.brahmkshatriya.echo.databinding.NewItemCategoryBinding
+import dev.brahmkshatriya.echo.databinding.NewItemMediaBinding
+import dev.brahmkshatriya.echo.newui.MediaItemViewHolder.Companion.bind
 import java.lang.ref.WeakReference
 
 sealed class MediaContainerViewHolder(
@@ -19,7 +22,7 @@ sealed class MediaContainerViewHolder(
 
 
     class Category(
-        val binding: NewItemMediaCategoryBinding,
+        val binding: NewItemCategoryBinding,
         val viewModel: MediaContainerAdapter.StateViewModel,
         val listener: MediaItemAdapter.Listener,
     ) :
@@ -52,8 +55,47 @@ sealed class MediaContainerViewHolder(
             ): MediaContainerViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return Category(
-                    NewItemMediaCategoryBinding.inflate(layoutInflater, parent, false),
+                    NewItemCategoryBinding.inflate(layoutInflater, parent, false),
                     viewModel,
+                    listener
+                )
+            }
+        }
+    }
+
+    class Media(
+        val binding: NewItemMediaBinding,
+        val listener: MediaItemAdapter.Listener
+    ) : MediaContainerViewHolder(binding.root) {
+        override fun bind(item: MediaItemsContainer) {
+            val media = (item as MediaItemsContainer.Item).media
+            binding.title.text = media.title
+            binding.subtitle.text = media.subtitle
+            binding.subtitle.isVisible = media.subtitle.isNullOrBlank().not()
+
+            binding.trackImageContainer.root.isVisible = media is EchoMediaItem.TrackItem
+            binding.listsImageContainer.root.isVisible = media is EchoMediaItem.Lists
+            binding.profileImageContainer.root.isVisible = media is EchoMediaItem.Profile
+
+            when (media) {
+                is EchoMediaItem.TrackItem -> binding.trackImageContainer.bind(media)
+                is EchoMediaItem.Lists -> binding.listsImageContainer.bind(media)
+                is EchoMediaItem.Profile -> binding.profileImageContainer.bind(media)
+            }
+
+            binding.more.setOnClickListener { listener.onLongClick(media, it) }
+        }
+
+        override val transitionView: View = binding.root
+
+        companion object {
+            fun create(
+                parent: ViewGroup,
+                listener: MediaItemAdapter.Listener
+            ): MediaContainerViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                return Media(
+                    NewItemMediaBinding.inflate(layoutInflater, parent, false),
                     listener
                 )
             }

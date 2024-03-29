@@ -9,10 +9,10 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/titleCard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp">
 
         <LinearLayout
-            android:layout_marginHorizontal="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -51,15 +51,10 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/more"
-                style="?attr/materialIconButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/IconButton"
                 android:contentDescription="@string/more"
-                android:padding="8dp"
                 android:scaleX="-1"
-                app:icon="@drawable/ic_back"
-                app:iconSize="24dp"
-                app:iconTint="?colorOnSurface" />
+                app:icon="@drawable/ic_back" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

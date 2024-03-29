@@ -10,9 +10,9 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.newui.MediaContainerViewHolder.Category
+import dev.brahmkshatriya.echo.newui.MediaContainerViewHolder.Media
 import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
@@ -114,17 +114,13 @@ class MediaContainerAdapter(
         val item = getItem(position) ?: return 0
         return when (item) {
             is MediaItemsContainer.Category -> 0
-            is MediaItemsContainer.Item -> when (item.media) {
-                is EchoMediaItem.TrackItem -> 1
-                is EchoMediaItem.Profile -> 2
-                is EchoMediaItem.Lists -> 3
-            }
+            is MediaItemsContainer.Item -> 1
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         0 -> Category.create(parent, stateViewModel, listener)
-
+        1 -> Media.create(parent, listener)
         else -> throw IllegalArgumentException("Invalid view type")
     }
 }

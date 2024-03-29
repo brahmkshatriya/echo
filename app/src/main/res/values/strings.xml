@@ -72,5 +72,6 @@
     <string name="more_amoled_summary">Make the navigation bar black too</string>
     <string name="all">All</string>
     <string name="refresh">Refresh</string>
+    <string name="currently_playing">Currently Playing</string>
 
 </resources>

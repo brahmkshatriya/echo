@@ -56,4 +56,11 @@
         <item name="android:background">?colorOutlineVariant</item>
     </style>
 
+    <style name="IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="iconTint">?colorOnSurface</item>
+        <item name="iconSize">24dp</item>
+        <item name="android:padding">8dp</item>
+    </style>
 </resources>

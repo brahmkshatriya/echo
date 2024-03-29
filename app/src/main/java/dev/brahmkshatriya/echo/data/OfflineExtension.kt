@@ -130,59 +130,60 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     override suspend fun getStreamableAudio(streamable: Streamable): StreamableAudio {
         return trackResolver.getStreamable(streamable)
     }
+
+    @Suppress("UNUSED_PARAMETER")
     private fun testContainer(title: String, item: EchoMediaItem) =
-        listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
+        item.toMediaItemsContainer()
+//        listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
 
     override suspend fun getHomeGenres() =
         listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
-    override fun getHomeFeed(genre: Genre?) =
-        pagedFlow<MediaItemsContainer> { page: Int, pageSize: Int ->
+    override fun getHomeFeed(genre: Genre?) = pagedFlow { page: Int, pageSize: Int ->
+        when (genre?.id) {
+            "Tracks" -> trackResolver.getAll(page, pageSize, sorting)
+                .map { testContainer(it.title, it.toMediaItem()) }
 
-            when (genre?.id) {
-                "Tracks" -> trackResolver.getAll(page, pageSize, sorting)
-                    .map { testContainer(it.title, it.toMediaItem()) }
+            "Albums" -> albumResolver.getAll(page, pageSize, sorting)
+                .map { testContainer(it.title, it.toMediaItem()) }
 
-                "Albums" -> albumResolver.getAll(page, pageSize, sorting)
-                    .map { testContainer(it.title, it.toMediaItem()) }
+            "Artists" -> artistResolver.getAll(page, pageSize, sorting)
+                .map { testContainer(it.name, it.toMediaItem()) }
 
-                "Artists" -> artistResolver.getAll(page, pageSize, sorting)
-                    .map { testContainer(it.name, it.toMediaItem()) }
+            else -> if (page == 0) {
+                val albums = albumResolver.getShuffled(pageSize).map { it.toMediaItem() }
+                    .ifEmpty { null }
 
-                else -> if (page == 0) {
-                    val albums = albumResolver.getShuffled(pageSize).map { it.toMediaItem() }
-                        .ifEmpty { null }
-
-                    val albumsFlow = pagedFlow<EchoMediaItem> { inPage: Int, inPageSize: Int ->
-                        albumResolver.getAll(inPage, inPageSize, sorting).map { it.toMediaItem() }
-                    }
-
-                    val tracks = trackResolver.getShuffled(pageSize).map { it.toMediaItem() }
-                        .ifEmpty { null }
-
-                    val tracksFlow = pagedFlow<EchoMediaItem> { inPage: Int, inPageSize: Int ->
-                        trackResolver.getAll(inPage, inPageSize, sorting).map { it.toMediaItem() }
-                    }
-
-                    val artists = artistResolver.getShuffled(pageSize).map { it.toMediaItem() }
-                        .ifEmpty { null }
-
-                    val artistsFlow = pagedFlow<EchoMediaItem> { inPage: Int, inPageSize: Int ->
-                        artistResolver.getAll(inPage, inPageSize, sorting).map { it.toMediaItem() }
-                    }
-
-                    val result = listOfNotNull(
-                        tracks?.toMediaItemsContainer("Tracks", more = tracksFlow),
-                        albums?.toMediaItemsContainer("Albums", more = albumsFlow),
-                        artists?.toMediaItemsContainer("Artists", more = artistsFlow)
-                    )
-                    result
-                } else {
-                    trackResolver.getAll(page - 1, pageSize, sorting)
-                        .map { testContainer(it.title, it.toMediaItem()) }
+                val albumsFlow = pagedFlow<EchoMediaItem> { inPage: Int, inPageSize: Int ->
+                    albumResolver.getAll(inPage, inPageSize, sorting).map { it.toMediaItem() }
                 }
+
+                val tracks = trackResolver.getShuffled(pageSize).map { it.toMediaItem() }
+                    .ifEmpty { null }
+
+                val tracksFlow = pagedFlow<EchoMediaItem> { inPage: Int, inPageSize: Int ->
+                    trackResolver.getAll(inPage, inPageSize, sorting).map { it.toMediaItem() }
+                }
+
+                val artists = artistResolver.getShuffled(pageSize).map { it.toMediaItem() }
+                    .ifEmpty { null }
+
+                val artistsFlow = pagedFlow<EchoMediaItem> { inPage: Int, inPageSize: Int ->
+                    artistResolver.getAll(inPage, inPageSize, sorting).map { it.toMediaItem() }
+                }
+
+                val result = listOfNotNull(
+                    tracks?.toMediaItemsContainer("Tracks", more = tracksFlow),
+                    albums?.toMediaItemsContainer("Albums", more = albumsFlow),
+                    artists?.toMediaItemsContainer("Artists", more = artistsFlow)
+                )
+                result
+            } else {
+                trackResolver.getAll(page - 1, pageSize, sorting)
+                    .map { testContainer(it.title, it.toMediaItem()) }
             }
         }
+    }
 
     override suspend fun loadAlbum(small: Album): Album {
         return albumResolver.get(small.id.toUri(), trackResolver)

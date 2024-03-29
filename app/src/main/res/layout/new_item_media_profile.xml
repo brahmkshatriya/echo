@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Selectable"
     android:layout_width="wrap_content"
@@ -8,21 +7,9 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/imageContainer"
-        android:layout_width="?itemCoverSize"
-        android:layout_height="?itemCoverSize"
-        app:cardCornerRadius="?itemCoverSize"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer">
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:importantForAccessibility="no"
-            tools:srcCompat="@tools:sample/avatars" />
-
-    </androidx.cardview.widget.CardView>
+    <include
+        android:id="@+id/cover"
+        layout="@layout/item_profile_cover" />
 
     <TextView
         android:id="@+id/title"

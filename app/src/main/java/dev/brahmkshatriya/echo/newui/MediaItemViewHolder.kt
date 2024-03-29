@@ -7,10 +7,13 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.databinding.ItemListsCoverBinding
+import dev.brahmkshatriya.echo.databinding.ItemProfileCoverBinding
+import dev.brahmkshatriya.echo.databinding.ItemTrackCoverBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaListsBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaProfileBinding
+import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
-import dev.brahmkshatriya.echo.databinding.NewItemTitleBinding
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 
@@ -21,23 +24,14 @@ sealed class MediaItemViewHolder(itemView: View) :
 
     class Lists(val binding: NewItemMediaListsBinding) : MediaItemViewHolder(binding.root) {
 
-        private val titleBinding = NewItemTitleBinding.bind(binding.root)
-
+        private val titleBinding = NewItemMediaTitleBinding.bind(binding.root)
         override val transitionView: View
-            get() = binding.imageContainer
+            get() = binding.cover.listImageContainer
 
         override fun bind(item: EchoMediaItem) {
             item as EchoMediaItem.Lists
             titleBinding.bind(item)
-            binding.run {
-                playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
-                val cover = item.cover
-                cover.loadWith(imageView, item.placeHolder()) {
-                    cover.loadInto(imageView1)
-                    cover.loadInto(imageView2)
-                }
-                albumImage(item.size, imageContainer1, imageContainer2)
-            }
+            binding.cover.bind(item)
         }
 
         companion object {
@@ -53,14 +47,15 @@ sealed class MediaItemViewHolder(itemView: View) :
     }
 
     class Track(val binding: NewItemMediaTrackBinding) : MediaItemViewHolder(binding.root) {
-        private val titleBinding = NewItemTitleBinding.bind(binding.root)
+        private val titleBinding = NewItemMediaTitleBinding.bind(binding.root)
 
         override val transitionView: View
-            get() = binding.imageContainer
+            get() = binding.cover.root
 
         override fun bind(item: EchoMediaItem) {
-            item.cover.loadInto(binding.imageView, item.placeHolder())
+            item as EchoMediaItem.TrackItem
             titleBinding.bind(item)
+            binding.cover.bind(item)
         }
 
         companion object {
@@ -77,13 +72,14 @@ sealed class MediaItemViewHolder(itemView: View) :
 
     class Profile(val binding: NewItemMediaProfileBinding) : MediaItemViewHolder(binding.root) {
         override val transitionView: View
-            get() = binding.imageContainer
+            get() = binding.cover.root
 
         override fun bind(item: EchoMediaItem) {
+            item as EchoMediaItem.Profile
             binding.title.text = item.title
             binding.subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
             binding.subtitle.text = item.subtitle
-            item.cover.loadInto(binding.imageView, item.placeHolder())
+            binding.cover.bind(item)
         }
 
         companion object {
@@ -108,10 +104,28 @@ sealed class MediaItemViewHolder(itemView: View) :
             is EchoMediaItem.Lists.PlaylistItem -> R.drawable.art_library_music
         }
 
-        fun NewItemTitleBinding.bind(item: EchoMediaItem) {
+        fun NewItemMediaTitleBinding.bind(item: EchoMediaItem) {
             title.text = item.title
             subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
             subtitle.text = item.subtitle
+        }
+
+        fun ItemTrackCoverBinding.bind(item: EchoMediaItem.TrackItem) {
+            item.cover.loadInto(trackImageView, item.placeHolder())
+        }
+
+        fun ItemProfileCoverBinding.bind(item: EchoMediaItem.Profile) {
+            item.cover.loadInto(profileImageView, item.placeHolder())
+        }
+
+        fun ItemListsCoverBinding.bind(item: EchoMediaItem.Lists) {
+            playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
+            val cover = item.cover
+            cover.loadWith(listImageView, item.placeHolder()) {
+                cover.loadInto(listImageView1)
+                cover.loadInto(listImageView2)
+            }
+            albumImage(item.size, listImageContainer1, listImageContainer2)
         }
 
         @Suppress("MemberVisibilityCanBePrivate")
