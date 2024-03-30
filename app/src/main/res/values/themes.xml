@@ -10,9 +10,10 @@
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">1200</item>
 
         <item name="android:colorBackground">?echoBackground</item>
-        <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
-
+        <item name="android:dialogTheme">@style/EchoDialog</item>
+        <item name="bottomSheetDialogTheme">@style/EchoBottomSheetDialog</item>
         <item name="appBarLayoutStyle">@style/AppBarLayout</item>
+        <item name="actionButtonStyle">@style/Widget.Material.ActionButton</item>
         <item name="collapsingToolbarLayoutStyle">@style/CollapsingBar</item>
 
         <item name="cardViewStyle">@style/EchoCardView</item>
@@ -34,4 +35,5 @@
     <style name="MoreAmoled" parent="Amoled">
         <item name="navBackground">@color/amoled_bg</item>
     </style>
+
 </resources>

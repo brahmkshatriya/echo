@@ -8,7 +8,9 @@
     android:insetTop="0dp"
     android:insetBottom="0dp"
     android:minHeight="64dp"
+    android:paddingHorizontal="16dp"
     android:textSize="16sp"
     app:icon="@drawable/ic_extension"
     app:iconPadding="16dp"
-    app:iconSize="24dp" />
+    app:iconSize="32dp"
+    app:iconTint="@null" />

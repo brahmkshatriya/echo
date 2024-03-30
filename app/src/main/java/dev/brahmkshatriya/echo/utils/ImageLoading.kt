@@ -1,13 +1,13 @@
 package dev.brahmkshatriya.echo.utils
 
 import android.graphics.drawable.Drawable
+import android.view.View
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
-import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 
 fun <T> ImageHolder?.createRequest(
@@ -42,53 +42,35 @@ fun ImageHolder?.loadWith(
     imageView: ImageView,
     placeholder: Int? = null,
     errorDrawable: Int? = null,
-    block: () -> Unit
+    onDrawable: (Drawable?) -> Unit
 ) {
     val builder = Glide.with(imageView).asDrawable()
     val request = createRequest(builder, placeholder, errorDrawable)
-    request.into(ImageTarget(imageView, block))
+    request.into(ViewTarget(imageView) {
+        imageView.setImageDrawable(it)
+        tryWith(false) { onDrawable(it) }
+    })
 }
 
-class ImageTarget(private val imageView: ImageView, private val block: () -> Unit) :
-    CustomViewTarget<ImageView, Drawable>(imageView) {
-    private fun setDrawable(drawable: Drawable?) {
-        imageView.setImageDrawable(drawable)
-        tryWith(false) { block() }
-    }
-
-    override fun onLoadFailed(errorDrawable: Drawable?) {
-        setDrawable(errorDrawable)
-    }
-
-    override fun onResourceCleared(placeholder: Drawable?) {
-        setDrawable(placeholder)
-    }
-
-    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-        setDrawable(resource)
-    }
-}
-
-
-fun ImageHolder?.loadInto(
-    button: MaterialButton, placeholder: Int? = null, errorDrawable: Int? = null
+fun <T : View> ImageHolder?.load(
+    view: T, placeholder: Int? = null, errorDrawable: Int? = null, onDrawable: (Drawable?) -> Unit
 ) {
-    val builder = Glide.with(button).asDrawable()
+    val builder = Glide.with(view).asDrawable()
     val request = createRequest(builder, placeholder, errorDrawable)
-    request.into(MaterialButtonTarget(button))
+    request.circleCrop().into(ViewTarget(view, onDrawable))
 }
 
-class MaterialButtonTarget(private val button: MaterialButton) :
-    CustomViewTarget<MaterialButton, Drawable>(button) {
+class ViewTarget<T : View>(val target: T, private val onDrawable: (Drawable?) -> Unit) :
+    CustomViewTarget<View, Drawable>(target) {
     override fun onLoadFailed(errorDrawable: Drawable?) {
-        button.icon = errorDrawable
+        onDrawable(errorDrawable)
     }
 
     override fun onResourceCleared(placeholder: Drawable?) {
-        button.icon = placeholder
+        onDrawable(placeholder)
     }
 
     override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-        button.icon = resource
+        onDrawable(resource)
     }
 }

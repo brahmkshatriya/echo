@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.ui.adapters.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.adapters.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.PluginRepo
@@ -26,6 +27,7 @@ class ExtensionViewModel @Inject constructor(
 
     val currentExtension
         get() = mutableExtensionFlow.flow.value
+    val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
 
     override fun onInitialize() {
         viewModelScope.launch {

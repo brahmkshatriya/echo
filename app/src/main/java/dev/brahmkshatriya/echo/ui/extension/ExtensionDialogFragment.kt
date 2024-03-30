@@ -13,7 +13,7 @@ import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionBinding
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.observe
 
 
@@ -46,14 +46,14 @@ class ExtensionDialogFragment : DialogFragment() {
 
             val map = list.mapIndexed { index, extension ->
                 val button = ButtonExtensionBinding.inflate(
-                        layoutInflater,
-                        binding.buttonToggleGroup,
-                        false
-                    ).root
+                    layoutInflater,
+                    binding.buttonToggleGroup,
+                    false
+                ).root
                 val metadata = extension.metadata
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
-                metadata.iconUrl?.loadInto(button)
+                metadata.iconUrl?.load(button) { button.icon = it }
                 button.id = index
                 index to extension
             }.toMap()

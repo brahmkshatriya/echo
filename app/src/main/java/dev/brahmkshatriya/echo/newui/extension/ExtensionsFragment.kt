@@ -9,10 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
+import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionBinding
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
@@ -34,13 +37,24 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
 
         binding.addExtension.isEnabled = false
 
-        var oldListener: OnButtonCheckedListener? = null
+        val listener = object : OnButtonCheckedListener {
+            var map: Map<Int, ExtensionClient> = mapOf()
+            override fun onButtonChecked(
+                group: MaterialButtonToggleGroup?,
+                checkedId: Int,
+                isChecked: Boolean
+            ) {
+                if (isChecked) map[checkedId]?.let {
+                    viewModel.setExtension(it)
+                }
+            }
+        }
+        binding.buttonToggleGroup.addOnButtonCheckedListener(listener)
         val extensionFlow = viewModel.extensionListFlow.flow
-        observe(extensionFlow) { list ->
-
+        observe(extensionFlow) { clientList ->
             binding.buttonToggleGroup.removeAllViews()
-            binding.progressIndicator.isVisible = list.isNullOrEmpty()
-            if (list.isNullOrEmpty()) return@observe
+            binding.progressIndicator.isVisible = clientList == null
+            val list = clientList ?: emptyList()
 
             val map = list.mapIndexed { index, extension ->
                 val button = ButtonExtensionBinding.inflate(
@@ -51,27 +65,22 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
                 val metadata = extension.metadata
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
-                metadata.iconUrl?.loadInto(button)
+                button.isChecked = extension == viewModel.currentExtension
+                metadata.iconUrl.load(button, R.drawable.ic_extension) { button.icon = it }
                 button.id = index
                 index to extension
             }.toMap()
 
-            val checked = map.filter {
-                it.value == viewModel.currentExtension
-            }.keys.firstOrNull()
+            val checked = map.filter { it.value == viewModel.currentExtension }.keys
+                .firstOrNull()
 
+            listener.map = map
             if (checked != null) binding.buttonToggleGroup.check(checked)
-
-            val listener = OnButtonCheckedListener { _, checkedId, isChecked ->
-                if (isChecked) map[checkedId]?.let {
-                    viewModel.setExtension(it)
-                }
-            }
-            binding.buttonToggleGroup.run {
-                oldListener?.let { removeOnButtonCheckedListener(it) }
-                addOnButtonCheckedListener(listener)
-                oldListener = listener
-            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        println(binding.buttonToggleGroup.checkedButtonId)
     }
 }

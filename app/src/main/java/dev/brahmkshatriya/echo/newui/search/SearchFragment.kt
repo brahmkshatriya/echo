@@ -15,10 +15,10 @@ import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
+import dev.brahmkshatriya.echo.newui.configureMenu
 import dev.brahmkshatriya.echo.newui.media.MediaClickListener
 import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
-import dev.brahmkshatriya.echo.newui.onMenuClicked
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
@@ -89,7 +89,8 @@ class SearchFragment : Fragment() {
             binding.searchBar.alpha = 1 - offset
             binding.toolBar.alpha = 1 - offset
         }
-        binding.toolBar.onMenuClicked()
+
+        binding.toolBar.configureMenu(this)
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)
