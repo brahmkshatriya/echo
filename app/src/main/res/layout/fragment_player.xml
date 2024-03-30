@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/collapsedViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        tools:listitem="@layout/item_player_track" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/collapsePlayer"
+        style="?attr/materialIconButtonStyle"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="@string/collapse_player"
+        android:padding="8dp"
+        app:icon="@drawable/ic_expand_more"
+        app:iconSize="24dp"
+        app:iconTint="@color/button_player" />
+
+    <include
+        android:id="@+id/playerControls"
+        layout="@layout/item_player_controls"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="88dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom" />
+
+    <View
+        android:id="@+id/playerOutline"
+        style="@style/AppBarOutline"
+        android:layout_marginTop="0dp" />
+
+    <FrameLayout
+        android:id="@+id/playerInfoContainer"
+        style="@style/Widget.Material3.BottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:backgroundTint="?navBackground"
+        app:behavior_peekHeight="64dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <include
+            android:id="@+id/playerInfo"
+            layout="@layout/fragment_player_info" />
+
+    </FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

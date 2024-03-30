@@ -15,14 +15,15 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionBinding
+import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionsFragment : BottomSheetDialogFragment() {
 
-    private lateinit var binding: DialogExtensionBinding
-    private val viewModel: ExtensionViewModel by activityViewModels()
+    private var binding by autoCleared<DialogExtensionBinding>()
+    private val viewModel by activityViewModels<ExtensionViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = DialogExtensionBinding.inflate(inflater, parent, false)
@@ -79,8 +80,4 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        println(binding.buttonToggleGroup.checkedButtonId)
-    }
 }

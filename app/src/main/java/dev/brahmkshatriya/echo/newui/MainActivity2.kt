@@ -9,7 +9,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.isVisible
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import androidx.navigation.fragment.NavHostFragment
@@ -21,11 +20,15 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMain2Binding
 import dev.brahmkshatriya.echo.player.PlaybackService
 import dev.brahmkshatriya.echo.player.ui.connectPlayerToUI
+import dev.brahmkshatriya.echo.utils.animateTranslation
+import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.isNightMode
+import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
+import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 
 @AndroidEntryPoint
 class MainActivity2 : AppCompatActivity() {
@@ -66,17 +69,21 @@ class MainActivity2 : AppCompatActivity() {
         navView.setupWithNavController(navHostFragment.navController)
 
         val insetsViewModel by viewModels<InsetsViewModel>()
-        val isRail = binding.navView is NavigationRailView
-
-        navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
-            val isNavFragment = destination.id == navView.selectedItemId
-            binding.navView.isVisible = isNavFragment
-            binding.navViewOutline?.isVisible = isNavFragment
-            insetsViewModel.setNavInsets(this, isNavFragment, isRail)
-        }
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             insetsViewModel.setSystemInsets(this, insets)
             insets
+        }
+
+        val isRail = binding.navView is NavigationRailView
+        val playerViewModel by viewModels<PlayerViewModel>()
+        observe(playerViewModel.playerSheetSlide){
+            binding.navView.translationY = binding.navView.height * it
+        }
+        navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
+            val isNavFragment = destination.id == navView.selectedItemId
+            binding.navView.animateTranslation(isRail, isNavFragment)
+            binding.navViewOutline?.animateVisibility(isNavFragment)
+            insetsViewModel.setNavInsets(this, isNavFragment, isRail)
         }
     }
 
@@ -84,4 +91,6 @@ class MainActivity2 : AppCompatActivity() {
         super.onDestroy()
         controllerFuture?.let { MediaBrowser.releaseFuture(it) }
     }
+
+
 }

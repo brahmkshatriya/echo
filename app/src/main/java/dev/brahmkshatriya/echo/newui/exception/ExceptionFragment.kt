@@ -16,13 +16,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
-import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
 
 class ExceptionFragment : Fragment() {
-    private var binding: FragmentExceptionBinding by autoCleared()
-    private val viewmodel: ThrowableViewModel by activityViewModels()
+    private var binding by autoCleared<FragmentExceptionBinding>()
+    private val viewmodel by activityViewModels<ThrowableViewModel>()
 
     class ThrowableViewModel : ViewModel() {
         var throwable: Throwable? = null

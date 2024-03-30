@@ -140,6 +140,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
     override fun getHomeFeed(genre: Genre?) = pagedFlow { page: Int, pageSize: Int ->
+        TODO()
         when (genre?.id) {
             "Tracks" -> trackResolver.getAll(page, pageSize, sorting)
                 .map { testContainer(it.title, it.toMediaItem()) }

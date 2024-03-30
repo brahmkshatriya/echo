@@ -57,6 +57,7 @@
     </style>
 
     <style name="AppBarOutline">
+        <item name="android:outlineProvider">none</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_marginTop">-1dp</item>
@@ -70,5 +71,19 @@
         <item name="iconTint">?colorOnSurface</item>
         <item name="iconSize">24dp</item>
         <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="TabLayout">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="tabIndicator">@drawable/tab_indicator</item>
+        <item name="tabGravity">start</item>
+        <item name="tabIndicatorFullWidth">true</item>
+        <item name="tabMinWidth">0dp</item>
+        <item name="tabMode">scrollable</item>
+        <item name="tabPaddingEnd">16dp</item>
+        <item name="tabPaddingStart">16dp</item>
     </style>
 </resources>

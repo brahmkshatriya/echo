@@ -4,6 +4,6 @@
     <dimen name="max_cover_size">384dp</dimen>
     <dimen name="bottom_player_peek_height">128dp</dimen>
     <dimen name="playlist_peek_height">64dp</dimen>
-    <dimen name="nav_width">72dp</dimen>
+    <dimen name="nav_width">64dp</dimen>
     <dimen name="nav_height">64dp</dimen>
 </resources>

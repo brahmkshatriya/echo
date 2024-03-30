@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -18,10 +19,20 @@
         style="@style/NavView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:minWidth="72dp"
+        android:minWidth="@dimen/nav_width"
         app:itemMinHeight="64dp"
         app:layout_insetEdge="none"
         app:menu="@menu/bottom_nav_menu"
         app:menuGravity="center" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/playerFragmentContainer"
+        android:name="dev.brahmkshatriya.echo.newui.player.PlayerFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="@dimen/bottom_player_peek_height"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        tools:layout="@layout/fragment_player" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

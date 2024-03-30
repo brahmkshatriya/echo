@@ -73,5 +73,8 @@
     <string name="all">All</string>
     <string name="refresh">Refresh</string>
     <string name="currently_playing">Currently Playing</string>
+    <string name="like">Like</string>
+    <string name="lyrics">Lyrics</string>
+    <string name="info">Info</string>
 
 </resources>
