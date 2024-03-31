@@ -19,6 +19,8 @@ class MediaContainerAdapter(
     val listener: MediaClickListener = MediaClickListener(fragment)
 ) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
 
+    var clientId: String? = null
+
     object DiffCallback : DiffUtil.ItemCallback<MediaItemsContainer>() {
         override fun areItemsTheSame(
             oldItem: MediaItemsContainer,
@@ -82,17 +84,19 @@ class MediaContainerAdapter(
         submitData(pagingData ?: PagingData.empty())
     }
 
+
     // Binding
 
     override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
         val item = getItem(position) ?: return
+        holder.transitionView.transitionName = item.id
         holder.bind(item)
         val clickView = holder.clickView
         clickView.setOnClickListener {
-            listener.onClick(item, holder.transitionView)
+            listener.onClick(clientId, item, holder.transitionView)
         }
         clickView.setOnLongClickListener {
-            listener.onLongClick(item, holder.transitionView)
+            listener.onLongClick(clientId, item, holder.transitionView)
             true
         }
     }
@@ -106,8 +110,8 @@ class MediaContainerAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        0 -> Category.create(parent, stateViewModel, listener)
-        1 -> Media.create(parent, listener)
+        0 -> Category.create(parent, stateViewModel, clientId, listener)
+        1 -> Media.create(parent, clientId, listener)
         else -> throw IllegalArgumentException("Invalid view type")
     }
 }

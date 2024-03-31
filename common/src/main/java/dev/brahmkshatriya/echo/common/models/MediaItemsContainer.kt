@@ -19,4 +19,9 @@ sealed class MediaItemsContainer {
         is Category -> other is Category && this == other
         is Item -> other is Item && media.sameAs(other.media)
     }
+
+    val id get() = when (this) {
+        is Category -> this.hashCode().toString()
+        is Item -> media.id
+    }
 }

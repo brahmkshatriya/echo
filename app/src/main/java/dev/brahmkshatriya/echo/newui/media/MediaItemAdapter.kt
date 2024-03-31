@@ -7,12 +7,13 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 
 class MediaItemAdapter(
     val listener: Listener,
+    private val clientId: String?,
     val list: List<EchoMediaItem>
 ) : RecyclerView.Adapter<MediaItemViewHolder>() {
 
     interface Listener {
-        fun onClick(item: EchoMediaItem, transitionView: View)
-        fun onLongClick(item: EchoMediaItem, transitionView: View): Boolean
+        fun onClick(clientId: String?, item: EchoMediaItem, transitionView: View)
+        fun onLongClick(clientId: String?, item: EchoMediaItem, transitionView: View): Boolean
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
@@ -34,12 +35,13 @@ class MediaItemAdapter(
 
     override fun onBindViewHolder(holder: MediaItemViewHolder, position: Int) {
         val item = list[position]
+        holder.transitionView.transitionName = item.id
         holder.bind(item)
         holder.itemView.setOnClickListener {
-            listener.onClick(item, holder.transitionView)
+            listener.onClick(clientId, item, holder.transitionView)
         }
         holder.itemView.setOnLongClickListener {
-            listener.onLongClick(item, holder.transitionView)
+            listener.onLongClick(clientId, item, holder.transitionView)
         }
     }
 }

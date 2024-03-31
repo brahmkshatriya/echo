@@ -39,4 +39,22 @@
         android:id="@+id/action_extensions"
         app:destination="@id/extensionsFragment" />
 
+    <fragment
+        android:id="@+id/itemFragment"
+        android:name="dev.brahmkshatriya.echo.newui.item.ItemFragment"
+        android:label="ItemFragment"
+        tools:layout="@layout/fragment_item">
+
+        <argument
+            android:name="item"
+            app:argType="dev.brahmkshatriya.echo.common.models.EchoMediaItem" />
+        <argument
+            android:name="clientId"
+            app:argType="string" />
+
+    </fragment>
+
+    <action
+        android:id="@+id/action_item"
+        app:destination="@+id/itemFragment" />
 </navigation>

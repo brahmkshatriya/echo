@@ -7,18 +7,13 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
-import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.databinding.ItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.ui.MediaItemClickListener
-import dev.brahmkshatriya.echo.utils.loadInto
 
 class AlbumHeaderAdapter(
-    private val mediaListener: MediaItemClickListener,
-    private val listener: AlbumHeaderListener
-) :
-    RecyclerView.Adapter<AlbumHeaderAdapter.ViewHolder>() {
+    private val listener: Listener
+) : RecyclerView.Adapter<AlbumHeaderAdapter.ViewHolder>() {
 
     override fun getItemCount() = 1
 
@@ -26,23 +21,10 @@ class AlbumHeaderAdapter(
         class Info(
             val binding: ItemAlbumInfoBinding,
             val album: Album,
-            listener: AlbumHeaderListener,
-            mediaListener: MediaItemClickListener
+            listener: Listener
         ) :
             ViewHolder(binding.root) {
             init {
-                val art = album.artists.firstOrNull()
-                if (art != null) {
-//                    val artist = MediaItemsContainer.ArtistItem(art)
-//                    binding.albumArtistContainer.setOnClickListener {
-//                        mediaListener.onClick(it to artist)
-//                    }
-//                    binding.albumArtistContainer.setOnLongClickListener {
-//                        mediaListener.onLongClick(it to artist)
-//                        true
-//                    }
-                }
-
                 binding.albumPlay.setOnClickListener {
                     listener.onPlayClicked(album)
                 }
@@ -56,7 +38,7 @@ class AlbumHeaderAdapter(
             ViewHolder(binding.root)
     }
 
-    interface AlbumHeaderListener {
+    interface Listener {
         fun onPlayClicked(album: Album)
         fun onRadioClicked(album: Album)
     }
@@ -79,8 +61,7 @@ class AlbumHeaderAdapter(
                     LayoutInflater.from(parent.context), parent, false
                 ),
                 album,
-                listener,
-                mediaListener
+                listener
             )
         }
     }
@@ -92,18 +73,6 @@ class AlbumHeaderAdapter(
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
         val album = holder.album
-        val artist = album.artists.firstOrNull()
-        binding.albumArtistContainer.isVisible = artist != null
-        if (artist != null) {
-            binding.albumArtist.text = artist.name
-            binding.albumArtistSubtitle.isVisible = false
-            binding.albumArtistContainer.transitionName = artist.id
-            (artist as? Artist)?.let {
-                it.cover.loadInto(binding.albumArtistCover, R.drawable.art_artist)
-                binding.albumArtistSubtitle.text = artist.subtitle
-                binding.albumArtistSubtitle.isVisible = !artist.subtitle.isNullOrBlank()
-            }
-        }
         binding.albumDescription.text = album.description
         binding.albumDescription.isVisible = !album.description.isNullOrBlank()
         var info = binding.root.context.resources.getQuantityString(

@@ -123,12 +123,27 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         }
     }
 
-    override suspend fun getTrack(id: String): Track? {
-        return trackResolver.get(id.toUri())
+    override suspend fun loadTrack(track: Track): Track {
+        return trackResolver.get(track.id.toUri())!!
     }
 
     override suspend fun getStreamableAudio(streamable: Streamable): StreamableAudio {
         return trackResolver.getStreamable(streamable)
+    }
+
+    override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> {
+        val trackAlbum = track.album ?: return PagedData.Single { emptyList() }
+        return PagedData.Single {
+            val album = loadAlbum(trackAlbum)
+            val artists = track.artists.map {
+                loadArtist(it).toMediaItem().toMediaItemsContainer()
+            }
+            listOf(
+                listOf(album.toMediaItem().toMediaItemsContainer()),
+                artists,
+                getMediaItems(album).data()
+            ).flatten()
+        }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -140,7 +155,6 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
     override fun getHomeFeed(genre: Genre?) = pagedFlow { page: Int, pageSize: Int ->
-        TODO()
         when (genre?.id) {
             "Tracks" -> trackResolver.getAll(page, pageSize, sorting)
                 .map { testContainer(it.title, it.toMediaItem()) }

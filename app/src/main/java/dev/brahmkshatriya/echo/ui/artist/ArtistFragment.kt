@@ -46,7 +46,7 @@ class ArtistFragment : Fragment() {
 
     private val clickListener = MediaItemClickListener(this)
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
-    private val header = ArtistHeaderAdapter(object : ArtistHeaderAdapter.ArtistHeaderListener {
+    private val header = ArtistHeaderAdapter(object : ArtistHeaderAdapter.Listener {
         override fun onSubscribeClicked(
             artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter
         ) {

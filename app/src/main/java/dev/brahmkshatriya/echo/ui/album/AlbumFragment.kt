@@ -14,28 +14,20 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.AlbumClient
-import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentAlbumBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.ClickListener
-import dev.brahmkshatriya.echo.ui.MediaItemClickListener
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.TrackAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
-import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
-import kotlinx.coroutines.flow.combine
 
 class AlbumFragment : Fragment() {
 
@@ -47,7 +39,7 @@ class AlbumFragment : Fragment() {
     private val extensionViewModel: ExtensionViewModel by activityViewModels()
     private val playerViewModel: PlayerViewModel by activityViewModels()
 
-    private val clickListener = MediaItemClickListener(this)
+//    private val clickListener = MediaItemClickListener(this)
     private val trackAdapter = TrackAdapter(false, object : ClickListener<Pair<List<Track>, Int>> {
 
         override fun onClick(item: Pair<List<Track>, Int>) {
@@ -60,20 +52,10 @@ class AlbumFragment : Fragment() {
         }
 
     })
-    private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
-    private val header =
-        AlbumHeaderAdapter(clickListener, object : AlbumHeaderAdapter.AlbumHeaderListener {
-            override fun onPlayClicked(album: Album) {
-                playerViewModel.play(album.tracks, 0)
-            }
+//    private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
 
-            override fun onRadioClicked(album: Album) {
-                playerViewModel.radio(album)
-            }
-        })
-
-    private val concatAdapter =
-        ConcatAdapter(header, trackAdapter, mediaItemsContainerAdapter.withLoadingFooter())
+//    private val concatAdapter =
+//        ConcatAdapter(trackAdapter, mediaItemsContainerAdapter.withLoadingFooter())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -124,24 +106,24 @@ class AlbumFragment : Fragment() {
             }
         }
 
-        observe(extensionViewModel.extensionFlow) {
-            binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
-                it, R.string.album, concatAdapter
-            ) { client ->
-                if (client == null) return@getAdapterForExtension
-                viewModel.loadAlbum(client, extensionViewModel.throwableFlow, album)
-            }
-        }
-        val headerFlow =
-            viewModel.albumFlow.combine(extensionViewModel.extensionFlow) { it, client -> it to client }
-        observe(headerFlow) { (it, client) ->
-            if (it != null) {
-                trackAdapter.submitList(it.tracks)
-                header.submit(it, client is RadioClient)
-            }
-        }
-        observe(viewModel.result) {
-            if (it != null) mediaItemsContainerAdapter.submit(it)
-        }
+//        observe(extensionViewModel.extensionFlow) {
+//            binding.recyclerView.adapter = getAdapterForExtension<AlbumClient>(
+//                it, R.string.album, concatAdapter
+//            ) { client ->
+//                if (client == null) return@getAdapterForExtension
+//                viewModel.loadAlbum(client, extensionViewModel.throwableFlow, album)
+//            }
+//        }
+//        val headerFlow =
+//            viewModel.albumFlow.combine(extensionViewModel.extensionFlow) { it, client -> it to client }
+//        observe(headerFlow) { (it, client) ->
+//            if (it != null) {
+//                trackAdapter.submitList(it.tracks)
+////                header.submit(it, client is RadioClient)
+//            }
+//        }
+//        observe(viewModel.result) {
+//            if (it != null) mediaItemsContainerAdapter.submit(it)
+//        }
     }
 }

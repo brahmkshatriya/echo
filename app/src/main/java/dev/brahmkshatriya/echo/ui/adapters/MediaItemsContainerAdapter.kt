@@ -42,7 +42,7 @@ class MediaItemsContainerAdapter(
                 retry()
             }
 
-            override fun onError(error: Throwable) {
+            override fun onError(view: View, error: Throwable) {
                 fragment.requireActivity().openException(
                     fragment.findNavController(),
                     error
@@ -106,6 +106,7 @@ class MediaItemsContainerAdapter(
             }
         }
     }
+
     suspend fun submit(pagingData: PagingData<MediaItemsContainer>) {
 //        saveState()
         submitData(pagingData)
@@ -119,7 +120,6 @@ class MediaItemsContainerAdapter(
 //        val visibleScrollableViews = hashMapOf<Int, WeakReference<Category>>()
 //    }
 //
-
 
 
     // VIEW HOLDER

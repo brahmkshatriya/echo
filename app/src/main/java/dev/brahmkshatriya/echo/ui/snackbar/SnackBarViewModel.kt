@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SnackBarViewModel @Inject constructor(
-    mutableThrowableFlow : MutableSharedFlow<Throwable>
+    mutableThrowableFlow: MutableSharedFlow<Throwable>
 ) : ViewModel() {
 
     val throwableFlow = mutableThrowableFlow.asSharedFlow()
@@ -35,9 +35,11 @@ class SnackBarViewModel @Inject constructor(
     }
 
     fun remove(message: Message, dismissed: Boolean) {
-        if(dismissed) messages.remove(message)
+        if (dismissed) messages.remove(message)
         if (messages.isNotEmpty()) viewModelScope.launch {
             _messageFlow.emit(messages.first())
         }
     }
+
+
 }

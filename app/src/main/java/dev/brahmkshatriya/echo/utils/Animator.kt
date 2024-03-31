@@ -1,11 +1,16 @@
 package dev.brahmkshatriya.echo.utils
 
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewPropertyAnimator
+import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.R
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.motion.MotionUtils
+import com.google.android.material.transition.MaterialArcMotion
+import com.google.android.material.transition.MaterialContainerTransform
 
 object Animator {
 
@@ -40,5 +45,18 @@ object Animator {
         view.translationY = newHeight.toFloat() - peekHeight
         peekHeight = newHeight
         startAnimation(animate().translationY(0f))
+    }
+
+    fun Fragment.setupTransition(view: View) {
+        val value = TypedValue()
+        val theme = requireContext().theme
+        theme.resolveAttribute(dev.brahmkshatriya.echo.R.attr.echoBackground, value, true)
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            drawingViewId = dev.brahmkshatriya.echo.R.id.navHostFragment
+            setAllContainerColors(resources.getColor(value.resourceId, theme))
+            setPathMotion(MaterialArcMotion())
+        }
+        postponeEnterTransition()
+        view.doOnPreDraw { startPostponedEnterTransition() }
     }
 }

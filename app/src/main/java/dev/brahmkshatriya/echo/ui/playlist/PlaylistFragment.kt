@@ -60,7 +60,7 @@ class PlaylistFragment : Fragment() {
     })
     private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
     private val header =
-        PlaylistHeaderAdapter(object : PlaylistHeaderAdapter.PlaylistHeaderListener {
+        PlaylistHeaderAdapter(object : PlaylistHeaderAdapter.Listener {
             override fun onPlayClicked(playlist: Playlist) {
                 playerViewModel.play(playlist.tracks, 0)
             }

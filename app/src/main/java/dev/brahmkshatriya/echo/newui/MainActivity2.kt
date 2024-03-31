@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 @AndroidEntryPoint
@@ -42,17 +43,6 @@ class MainActivity2 : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
-        val sessionToken =
-            SessionToken(application, ComponentName(application, PlaybackService::class.java))
-        val future = MediaBrowser.Builder(application, sessionToken).buildAsync()
-        future.addListener({
-//            val browser = tryWith(false) { future.get() } ?: return@addListener
-//            connectPlayerToUI(this, browser)
-        }, ContextCompat.getMainExecutor(this))
-        controllerFuture = future
-
-        extensionViewModel.initialize()
 
         enableEdgeToEdge(
             SystemBarStyle.auto(TRANSPARENT, TRANSPARENT),
@@ -92,6 +82,19 @@ class MainActivity2 : AppCompatActivity() {
             binding.navViewOutline?.alpha = 1 - offset
         }
         uiViewModel.setupPlayerBehavior(binding.playerFragmentContainer)
+
+        configureSnackBar(navHostFragment.navController, binding.navView)
+
+        val sessionToken =
+            SessionToken(application, ComponentName(application, PlaybackService::class.java))
+        val future = MediaBrowser.Builder(application, sessionToken).buildAsync()
+        future.addListener({
+//            val browser = tryWith(false) { future.get() } ?: return@addListener
+//            connectPlayerToUI(this, browser)
+        }, ContextCompat.getMainExecutor(this))
+        controllerFuture = future
+
+        extensionViewModel.initialize()
     }
 
     override fun onDestroy() {

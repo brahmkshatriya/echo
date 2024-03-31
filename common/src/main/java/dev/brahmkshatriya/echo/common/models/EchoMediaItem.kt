@@ -1,15 +1,20 @@
 package dev.brahmkshatriya.echo.common.models
 
+import android.os.Parcelable
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import kotlinx.parcelize.Parcelize
 
-sealed class EchoMediaItem {
+@Parcelize
+sealed class EchoMediaItem : Parcelable {
     data class TrackItem(val track: Track) : EchoMediaItem()
 
+    @Parcelize
     sealed class Profile : EchoMediaItem() {
         data class ArtistItem(val artist: Artist) : Profile()
         data class UserItem(val user: User) : Profile()
     }
 
+    @Parcelize
     sealed class Lists : EchoMediaItem() {
         data class AlbumItem(val album: Album) : Lists()
         data class PlaylistItem(val playlist: Playlist) : Lists()

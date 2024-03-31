@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -16,7 +15,9 @@ import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.newui.configureMainMenu
 import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
+import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
@@ -41,6 +42,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupTransition(view)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView)
         applyBackPressCallback()
         binding.toolBar.configureMainMenu(this)
@@ -49,9 +51,7 @@ class HomeFragment : Fragment() {
             binding.toolBar.alpha = 1 - offset
         }
 
-        postponeEnterTransition()
-        binding.recyclerView.doOnPreDraw { startPostponedEnterTransition() }
-
+        binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)
         }
@@ -60,6 +60,7 @@ class HomeFragment : Fragment() {
 
         observe(viewModel.extensionFlow.flow) {
             binding.swipeRefresh.isEnabled = it != null
+            mediaContainerAdapter.clientId = it?.metadata?.id
             binding.recyclerView.adapter =
                 getAdapterForExtension<HomeFeedClient>(it, R.string.home, concatAdapter)
         }
@@ -97,6 +98,5 @@ class HomeFragment : Fragment() {
         observe(viewModel.homeFeed) {
             mediaContainerAdapter.submit(it)
         }
-
     }
 }

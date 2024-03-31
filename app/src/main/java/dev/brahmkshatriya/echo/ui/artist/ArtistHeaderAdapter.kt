@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.databinding.ItemArtistInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemArtistInfoBinding
 
-class ArtistHeaderAdapter(private val listener: ArtistHeaderListener) :
+class ArtistHeaderAdapter(private val listener: Listener) :
     RecyclerView.Adapter<ArtistHeaderAdapter.ViewHolder>() {
 
     override fun getItemCount() = 1
@@ -19,7 +19,7 @@ class ArtistHeaderAdapter(private val listener: ArtistHeaderListener) :
         class Info(
             val binding: ItemArtistInfoBinding,
             val artist: Artist,
-            listener: ArtistHeaderListener,
+            listener: Listener,
             adapter: ArtistHeaderAdapter,
         ) : ViewHolder(binding.root) {
             init {
@@ -38,7 +38,7 @@ class ArtistHeaderAdapter(private val listener: ArtistHeaderListener) :
         class ShimmerViewHolder(binding: SkeletonItemArtistInfoBinding) : ViewHolder(binding.root)
     }
 
-    interface ArtistHeaderListener {
+    interface Listener {
         fun onSubscribeClicked(artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter)
         fun onRadioClicked(artist: Artist)
     }

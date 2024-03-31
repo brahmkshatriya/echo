@@ -24,6 +24,7 @@ sealed class MediaContainerViewHolder(
     class Category(
         val binding: NewItemCategoryBinding,
         val viewModel: MediaContainerAdapter.StateViewModel,
+        private val clientId: String?,
         val listener: MediaItemAdapter.Listener,
     ) :
         MediaContainerViewHolder(binding.root) {
@@ -32,7 +33,7 @@ sealed class MediaContainerViewHolder(
             binding.title.text = category.title
             binding.subtitle.text = category.subtitle
             binding.subtitle.isVisible = category.subtitle.isNullOrBlank().not()
-            binding.recyclerView.adapter = MediaItemAdapter(listener, category.list)
+            binding.recyclerView.adapter = MediaItemAdapter(listener, clientId, category.list)
             val position = bindingAdapterPosition
             binding.recyclerView.layoutManager?.apply {
                 val state: Parcelable? = viewModel.layoutManagerStates[position]
@@ -51,12 +52,14 @@ sealed class MediaContainerViewHolder(
             fun create(
                 parent: ViewGroup,
                 viewModel: MediaContainerAdapter.StateViewModel,
+                clientId: String?,
                 listener: MediaItemAdapter.Listener,
             ): MediaContainerViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return Category(
                     NewItemCategoryBinding.inflate(layoutInflater, parent, false),
                     viewModel,
+                    clientId,
                     listener
                 )
             }
@@ -65,7 +68,8 @@ sealed class MediaContainerViewHolder(
 
     class Media(
         val binding: NewItemMediaBinding,
-        val listener: MediaItemAdapter.Listener
+        private val clientId: String?,
+        val listener: MediaItemAdapter.Listener,
     ) : MediaContainerViewHolder(binding.root) {
         override fun bind(item: MediaItemsContainer) {
             val media = (item as MediaItemsContainer.Item).media
@@ -83,7 +87,7 @@ sealed class MediaContainerViewHolder(
                 is EchoMediaItem.Profile -> binding.profileImageContainer.bind(media)
             }
 
-            binding.more.setOnClickListener { listener.onLongClick(media, it) }
+            binding.more.setOnClickListener { listener.onLongClick(clientId, media, it) }
         }
 
         override val transitionView: View = binding.root
@@ -91,12 +95,14 @@ sealed class MediaContainerViewHolder(
         companion object {
             fun create(
                 parent: ViewGroup,
+                clientId: String?,
                 listener: MediaItemAdapter.Listener
             ): MediaContainerViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return Media(
                     NewItemMediaBinding.inflate(layoutInflater, parent, false),
-                    listener
+                    clientId,
+                    listener,
                 )
             }
         }

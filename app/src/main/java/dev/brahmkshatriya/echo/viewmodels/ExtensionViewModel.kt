@@ -22,7 +22,7 @@ class ExtensionViewModel @Inject constructor(
     val extensionListFlow: ExtensionModule.ExtensionListFlow,
     private val mutableExtensionFlow: ExtensionModule.MutableFlow,
     private val pluginRepo: PluginRepo<ExtensionClient>,
-    private val preferences: SharedPreferences
+    private val preferences: SharedPreferences,
 ) : CatchingViewModel(throwableFlow) {
 
     val currentExtension

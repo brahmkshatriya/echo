@@ -55,8 +55,9 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
 
         val binding = (holder.container as Container.Error).binding
         binding.error.text = loadState.error.localizedMessage
+        binding.error.transitionName = loadState.error.hashCode().toString()
         binding.errorView.setOnClickListener {
-            listener?.onError(binding.root, loadState.error)
+            listener?.onError(binding.error, loadState.error)
         }
         binding.retry.setOnClickListener {
             listener?.onRetry()

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-open class CatchingViewModel(
+abstract class CatchingViewModel(
     val throwableFlow: MutableSharedFlow<Throwable>
 ) : ViewModel() {
 

@@ -7,18 +7,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.transition.platform.MaterialArcMotion
-import com.google.android.material.transition.platform.MaterialContainerTransform
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
+import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
@@ -42,6 +39,7 @@ class ExceptionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+        setupTransition(binding.root)
         applyInsets {
             binding.exceptionIconContainer.updatePadding(top = it.top)
             binding.nestedScrollView.updatePadding(bottom = it.bottom)
@@ -50,21 +48,12 @@ class ExceptionFragment : Fragment() {
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-
         binding.exceptionMessage.setupWithNavController(findNavController())
-        val theme = requireContext().theme
-        binding.exceptionMessage.navigationIcon =
-            ResourcesCompat.getDrawable(resources, R.drawable.ic_back, theme)
 
         val throwable = viewmodel.throwable ?: return
 
         val transitionName = throwable.hashCode().toString()
-        postponeEnterTransition()
-        sharedElementEnterTransition = MaterialContainerTransform().apply {
-            pathMotion = MaterialArcMotion()
-        }
         binding.root.transitionName = transitionName
-        view.doOnPreDraw { startPostponedEnterTransition() }
 
         binding.exceptionMessage.title = throwable.message
         binding.exceptionDetails.text = throwable.stackTraceToString()

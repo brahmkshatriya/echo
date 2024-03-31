@@ -10,10 +10,9 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.utils.loadInto
 
 class PlaylistHeaderAdapter(
-    private val listener: PlaylistHeaderListener
+    private val listener: Listener
 ) :
     RecyclerView.Adapter<PlaylistHeaderAdapter.ViewHolder>() {
 
@@ -23,7 +22,7 @@ class PlaylistHeaderAdapter(
         class Info(
             val binding: ItemAlbumInfoBinding,
             val playlist: Playlist,
-            listener: PlaylistHeaderListener
+            listener: Listener
         ) :
             ViewHolder(binding.root) {
             init {
@@ -40,7 +39,7 @@ class PlaylistHeaderAdapter(
             ViewHolder(binding.root)
     }
 
-    interface PlaylistHeaderListener {
+    interface Listener {
         fun onPlayClicked(playlist: Playlist)
         fun onRadioClicked(playlist: Playlist)
     }
@@ -76,15 +75,6 @@ class PlaylistHeaderAdapter(
         val binding = holder.binding
         val playlist = holder.playlist
         val artist = playlist.authors.firstOrNull()
-        binding.albumArtistContainer.isVisible = artist != null
-        if (artist != null) {
-            binding.albumArtist.text = artist.name
-            binding.albumArtistSubtitle.isVisible = false
-            binding.albumArtistContainer.transitionName = artist.id
-            artist.let {
-                it.cover.loadInto(binding.albumArtistCover, R.drawable.art_artist)
-            }
-        }
         binding.albumDescription.text = playlist.subtitle
         binding.albumDescription.isVisible = !playlist.subtitle.isNullOrBlank()
         var info = binding.root.context.resources.getQuantityString(

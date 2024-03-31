@@ -21,7 +21,7 @@ sealed class PagedData<Value : Any>(
     ) : PagedData<Value>(pager.flow)
 
     class Single<Value : Any>(
-        data: suspend () -> List<Value>
+        val data: suspend () -> List<Value>
     ) : PagedData<Value>(
         SinglePagingSource(data).let {
             Pager(

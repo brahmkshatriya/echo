@@ -76,5 +76,7 @@
     <string name="like">Like</string>
     <string name="lyrics">Lyrics</string>
     <string name="info">Info</string>
+    <string name="user">User</string>
+    <string name="error_no_client">Error, no client was selected</string>
 
 </resources>
