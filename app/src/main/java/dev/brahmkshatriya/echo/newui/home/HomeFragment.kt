@@ -12,13 +12,15 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
-import dev.brahmkshatriya.echo.newui.configureMenu
+import dev.brahmkshatriya.echo.newui.configureMainMenu
 import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
-import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
 class HomeFragment : Fragment() {
 
@@ -29,9 +31,7 @@ class HomeFragment : Fragment() {
     private val concatAdapter = mediaContainerAdapter.withLoaders()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
@@ -40,14 +40,13 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        applyInsets(binding.appBarLayout, binding.recyclerView)
-
-        binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
-            val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
+        applyInsetsMain(binding.appBarLayout, binding.recyclerView)
+        applyBackPressCallback()
+        binding.toolBar.configureMainMenu(this)
+        binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.appBarOutline.alpha = offset
             binding.toolBar.alpha = 1 - offset
         }
-        binding.toolBar.configureMenu(this)
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)

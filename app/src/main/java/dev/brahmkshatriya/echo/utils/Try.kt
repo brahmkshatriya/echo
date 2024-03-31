@@ -2,7 +2,7 @@ package dev.brahmkshatriya.echo.utils
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-fun <T> tryWith(print: Boolean, block: () -> T): T? {
+fun <T> tryWith(print: Boolean = false, block: () -> T): T? {
     return try {
         block()
     } catch (e: Throwable) {
@@ -11,7 +11,7 @@ fun <T> tryWith(print: Boolean, block: () -> T): T? {
     }
 }
 
-suspend fun <T> tryWith(block: suspend () -> T): T? {
+suspend fun <T> tryWithSuspend(block: suspend () -> T): T? {
     return try {
         block()
     } catch (e: Throwable) {
@@ -20,7 +20,7 @@ suspend fun <T> tryWith(block: suspend () -> T): T? {
     }
 }
 
-suspend fun <T> tryWith(throwableFlow:MutableSharedFlow<Throwable>, block: suspend () -> T): T? {
+suspend fun <T> tryWith(throwableFlow: MutableSharedFlow<Throwable>, block: suspend () -> T): T? {
     return try {
         block()
     } catch (e: Throwable) {

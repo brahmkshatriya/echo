@@ -16,7 +16,6 @@ import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.FragmentCategoryBinding
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
@@ -24,7 +23,6 @@ import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.catchWith
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 
 class CategoryFragment : Fragment() {
     private val extensionViewModel : ExtensionViewModel by activityViewModels()
@@ -48,7 +46,7 @@ class CategoryFragment : Fragment() {
     @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         PlayerBackButtonHelper.addCallback(this) {
-            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it, false)
+//            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it, false)
         }
 
         binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->

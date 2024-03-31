@@ -14,7 +14,6 @@ import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
-import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 
 class LibraryFragment : Fragment() {
 
@@ -32,7 +31,7 @@ class LibraryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         PlayerBackButtonHelper.addCallback(this) {
-            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it)
+//            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it)
         }
         binding.swipeRefresh.setProgressViewOffset(true, 0, 72.dpToPx())
 

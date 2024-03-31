@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
-fun MaterialToolbar.configureMenu(fragment: Fragment) {
+fun MaterialToolbar.configureMainMenu(fragment: Fragment) {
     val extensionViewModel by fragment.activityViewModels<ExtensionViewModel>()
 
     fragment.observe(extensionViewModel.extensionFlow) { client ->
@@ -35,3 +35,5 @@ fun MaterialToolbar.configureMenu(fragment: Fragment) {
         }
     }
 }
+
+

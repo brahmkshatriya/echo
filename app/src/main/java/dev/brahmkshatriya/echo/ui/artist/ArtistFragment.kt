@@ -23,7 +23,6 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.databinding.FragmentArtistBinding
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.MediaItemClickListener
@@ -32,7 +31,7 @@ import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import kotlinx.coroutines.flow.combine
 
 class ArtistFragment : Fragment() {
@@ -77,7 +76,7 @@ class ArtistFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         PlayerBackButtonHelper.addCallback(this) {
-            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it, false)
+//            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it, false)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->

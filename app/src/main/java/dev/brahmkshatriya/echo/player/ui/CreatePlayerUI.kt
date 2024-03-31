@@ -47,7 +47,7 @@ import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.utils.tryWithSuspend
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -358,7 +358,7 @@ fun createPlayerUI(
                         val builder = Glide.with(activity).asBitmap()
                         createRequest(builder).submit()
                     } else null
-                    val bitmap = tryWith { req?.get() }
+                    val bitmap = tryWithSuspend { req?.get() }
                     val palette = bitmap?.let { Palette.from(it).generate() }
 
                     val colors = palette?.run {

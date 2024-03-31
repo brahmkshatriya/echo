@@ -26,6 +26,8 @@
         <item name="itemCorner">8dp</item>
     </style>
 
+    <style name="Material" parent="Theme.Material3.DayNight.NoActionBar"/>
+
     <style name="Default.Theme.Echo" parent="Base.Theme.Echo" />
 
     <style name="Amoled">

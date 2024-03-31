@@ -1,28 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/amoled_bg">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/collapsedViewPager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        tools:listitem="@layout/item_player_track" />
+    <!--    <androidx.viewpager2.widget.ViewPager2-->
+    <!--        android:id="@+id/collapsedViewPager"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent" />-->
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/collapsePlayer"
         style="?attr/materialIconButtonStyle"
-        android:layout_margin="8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_margin="8dp"
         android:contentDescription="@string/collapse_player"
         android:padding="8dp"
         app:icon="@drawable/ic_expand_more"
@@ -33,9 +27,9 @@
         android:id="@+id/playerControls"
         layout="@layout/item_player_controls"
         android:layout_width="match_parent"
-        android:layout_marginBottom="88dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="88dp" />
 
     <View
         android:id="@+id/playerOutline"
@@ -48,7 +42,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:backgroundTint="?navBackground"
-        app:behavior_peekHeight="64dp"
+        android:clipToPadding="false"
+        app:behavior_hideable="false"
+        app:behavior_peekHeight="@dimen/player_info_peek_height"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <include

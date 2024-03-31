@@ -34,7 +34,6 @@ import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import kotlinx.coroutines.flow.combine
 
@@ -87,7 +86,7 @@ class AlbumFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         PlayerBackButtonHelper.addCallback(this) {
-            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it, false)
+//            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it, false)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->

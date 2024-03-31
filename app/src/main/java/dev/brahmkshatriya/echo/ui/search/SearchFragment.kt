@@ -18,13 +18,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.databinding.OldFragmentSearchBinding
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.adapters.SearchHeaderAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -51,7 +50,7 @@ class SearchFragment : Fragment() {
 
         PlayerBackButtonHelper.addCallback(this) {
             if (it == STATE_EXPANDED) binding.catSearchView.hide()
-            binding.catRecyclerView.updatePaddingWithPlayerAndSystemInsets(it)
+//            binding.catRecyclerView.updatePaddingWithPlayerAndSystemInsets(it)
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarScrim) { _, insets ->
             val i = insets.getInsets(WindowInsetsCompat.Type.systemBars())

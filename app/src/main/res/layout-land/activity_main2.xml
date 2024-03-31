@@ -21,7 +21,7 @@
         android:layout_height="match_parent"
         android:minWidth="@dimen/nav_width"
         app:itemMinHeight="64dp"
-        app:layout_insetEdge="none"
+        app:elevation="0dp"
         app:menu="@menu/bottom_nav_menu"
         app:menuGravity="center" />
 
@@ -31,6 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:behavior_hideable="true"
+        android:outlineProvider="none"
         app:behavior_peekHeight="@dimen/bottom_player_peek_height"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         tools:layout="@layout/fragment_player" />

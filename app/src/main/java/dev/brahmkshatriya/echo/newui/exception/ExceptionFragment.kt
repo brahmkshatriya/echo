@@ -17,8 +17,9 @@ import androidx.navigation.ui.setupWithNavController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel
+import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 class ExceptionFragment : Fragment() {
     private var binding by autoCleared<FragmentExceptionBinding>()
@@ -32,20 +33,19 @@ class ExceptionFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentExceptionBinding.inflate(inflater, container, false)
+        val binding = FragmentExceptionBinding.inflate(inflater, container, false)
+        this.binding = binding
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
-            val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
-            binding.toolbarOutline.alpha = offset
-        }
-
-        val insetsViewModel by activityViewModels<InsetsViewModel>()
-        observe(insetsViewModel.combined){
+        applyInsets {
             binding.exceptionIconContainer.updatePadding(top = it.top)
             binding.nestedScrollView.updatePadding(bottom = it.bottom)
+        }
+        applyBackPressCallback()
+        binding.appBarLayout.onAppBarChangeListener { offset ->
+            binding.toolbarOutline.alpha = offset
         }
 
         binding.exceptionMessage.setupWithNavController(findNavController())
@@ -63,6 +63,7 @@ class ExceptionFragment : Fragment() {
                     copyToClipboard(throwable.message, throwable.stackTraceToString())
                     true
                 }
+
                 else -> false
             }
         }

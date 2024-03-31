@@ -9,20 +9,23 @@ import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.newui.configureMenu
+import dev.brahmkshatriya.echo.newui.configureMainMenu
 import dev.brahmkshatriya.echo.newui.media.MediaClickListener
 import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.newui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
-import dev.brahmkshatriya.echo.viewmodels.InsetsViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
 class SearchFragment : Fragment() {
 
@@ -65,9 +68,7 @@ class SearchFragment : Fragment() {
     })
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
         return binding.root
@@ -76,21 +77,19 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        applyInsets(binding.appBarLayout, binding.recyclerView){
-            binding.quickSearchView.updatePaddingRelative(
-                start = it.start,
-                end = it.end
-            )
+        applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
+            binding.quickSearchView.updatePaddingRelative(start = it.start, end = it.end)
         }
-
-        binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
-            val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
+        applyBackPressCallback {
+            if (it == STATE_EXPANDED) binding.quickSearchView.hide()
+        }
+        binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.appBarOutline.alpha = offset
             binding.searchBar.alpha = 1 - offset
             binding.toolBar.alpha = 1 - offset
         }
 
-        binding.toolBar.configureMenu(this)
+        binding.toolBar.configureMainMenu(this)
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)
@@ -156,4 +155,5 @@ class SearchFragment : Fragment() {
             quickSearchAdapter.submitList(it)
         }
     }
+
 }

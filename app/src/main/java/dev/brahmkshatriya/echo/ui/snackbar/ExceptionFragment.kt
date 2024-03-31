@@ -20,7 +20,6 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
 
 class ExceptionFragment : Fragment() {
     private var binding: FragmentExceptionBinding by autoCleared()
@@ -42,7 +41,7 @@ class ExceptionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         PlayerBackButtonHelper.addCallback(this) {
-            binding.nestedScrollView.updatePaddingWithPlayerAndSystemInsets(it, false)
+//            binding.nestedScrollView.updatePaddingWithPlayerAndSystemInsets(it, false)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->

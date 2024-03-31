@@ -17,14 +17,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.databinding.OldFragmentRecyclerBinding
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
 import dev.brahmkshatriya.echo.ui.adapters.HeaderAdapter
 import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.updatePaddingWithPlayerAndSystemInsets
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -54,7 +53,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         PlayerBackButtonHelper.addCallback(this) {
-            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it)
+//            binding.recyclerView.updatePaddingWithPlayerAndSystemInsets(it)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.statusBarScrim) { _, insets ->
