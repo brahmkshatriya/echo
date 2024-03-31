@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -47,6 +48,9 @@ class HomeFragment : Fragment() {
             binding.appBarOutline.alpha = offset
             binding.toolBar.alpha = 1 - offset
         }
+
+        postponeEnterTransition()
+        binding.recyclerView.doOnPreDraw { startPostponedEnterTransition() }
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)

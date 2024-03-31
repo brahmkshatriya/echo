@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.ConcatAdapter
@@ -18,7 +17,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
 
     interface Listener {
         fun onRetry()
-        fun onError(error: Throwable)
+        fun onError(view: View, error: Throwable)
     }
 
     class ShimmerViewHolder(val container: Container) :
@@ -57,7 +56,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
         val binding = (holder.container as Container.Error).binding
         binding.error.text = loadState.error.localizedMessage
         binding.errorView.setOnClickListener {
-            listener?.onError(loadState.error)
+            listener?.onError(binding.root, loadState.error)
         }
         binding.retry.setOnClickListener {
             listener?.onRetry()
@@ -69,15 +68,12 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
             retry()
         }
 
-        override fun onError(error: Throwable) {
-            fragment.requireActivity().openException(
-                fragment.findNavController(),
-                error
-            )
+        override fun onError(view: View, error: Throwable) {
+            fragment.requireActivity().openException(view, error)
         }
     })
 
-    companion object{
+    companion object {
         fun MediaContainerAdapter.withLoaders(): ConcatAdapter {
             val footer = MediaContainerLoadingAdapter(fragment) { retry() }
             val header = MediaContainerLoadingAdapter(fragment) { retry() }
