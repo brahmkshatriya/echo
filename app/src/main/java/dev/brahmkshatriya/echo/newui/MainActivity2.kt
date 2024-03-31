@@ -57,13 +57,15 @@ class MainActivity2 : AppCompatActivity() {
         navView.setupWithNavController(navHostFragment.navController)
 
         val isRail = binding.navView is NavigationRailView
-        var isNavFragment = true
+        var isNavFragment =
+            navHostFragment.navController.currentDestination?.id == navView.selectedItemId
 
         val uiViewModel by viewModels<UiViewModel>()
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             uiViewModel.setSystemInsets(this, insets)
             insets
         }
+
         navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
             isNavFragment = destination.id == navView.selectedItemId
             binding.navView.animateTranslation(isRail, isNavFragment)
@@ -81,6 +83,7 @@ class MainActivity2 : AppCompatActivity() {
             else binding.navView.translationY = binding.navView.height * offset
             binding.navViewOutline?.alpha = 1 - offset
         }
+
         uiViewModel.setupPlayerBehavior(binding.playerFragmentContainer)
 
         configureSnackBar(navHostFragment.navController, binding.navView)

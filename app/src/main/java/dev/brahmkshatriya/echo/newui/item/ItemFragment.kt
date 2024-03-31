@@ -48,6 +48,7 @@ import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.flow.MutableSharedFlow
 import javax.inject.Inject
@@ -120,7 +121,7 @@ class ItemFragment : Fragment() {
         setupTransition(view)
         applyInsets {
             binding.coverContainer.updatePadding(top = it.top)
-            binding.recyclerView.updatePadding(bottom = it.bottom)
+            binding.recyclerView.applyContentInsets(it)
         }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->

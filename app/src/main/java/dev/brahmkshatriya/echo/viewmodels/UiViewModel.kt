@@ -46,7 +46,7 @@ class UiViewModel : ViewModel() {
         }
     }
 
-    private val navViewInsets = MutableStateFlow(Insets())
+    val navViewInsets = MutableStateFlow(Insets())
     private val playerInsets = MutableStateFlow(Insets())
     private val systemInsets = MutableStateFlow(Insets())
 
@@ -194,18 +194,23 @@ class UiViewModel : ViewModel() {
             val uiViewModel by activityViewModels<UiViewModel>()
             observe(uiViewModel.combined) { insets ->
                 val verticalPadding = 8.dpToPx(requireContext())
-                child.updatePaddingRelative(
-                    top = verticalPadding,
-                    bottom = insets.bottom + verticalPadding,
-                    start = insets.start,
-                    end = insets.end
-                )
+                child.applyContentInsets(insets)
                 appBar.updatePaddingRelative(
                     start = insets.start,
                     end = insets.end
                 )
                 uiViewModel.block(insets)
             }
+        }
+
+        fun View.applyContentInsets(insets: Insets){
+            val verticalPadding = 8.dpToPx(context)
+            updatePaddingRelative(
+                top = verticalPadding,
+                bottom = insets.bottom + verticalPadding,
+                start = insets.start,
+                end = insets.end
+            )
         }
 
         fun Fragment.applyBackPressCallback(callback: ((Int) -> Unit)? = null) {

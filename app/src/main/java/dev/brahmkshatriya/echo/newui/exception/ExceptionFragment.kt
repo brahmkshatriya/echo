@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 class ExceptionFragment : Fragment() {
@@ -42,7 +43,7 @@ class ExceptionFragment : Fragment() {
         setupTransition(binding.root)
         applyInsets {
             binding.exceptionIconContainer.updatePadding(top = it.top)
-            binding.nestedScrollView.updatePadding(bottom = it.bottom)
+            binding.nestedScrollView.applyContentInsets(it)
         }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->

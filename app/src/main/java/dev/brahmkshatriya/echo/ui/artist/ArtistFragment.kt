@@ -14,24 +14,19 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.databinding.FragmentArtistBinding
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.PlayerBackButtonHelper
-import dev.brahmkshatriya.echo.ui.MediaItemClickListener
-import dev.brahmkshatriya.echo.ui.adapters.MediaItemsContainerAdapter
 import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
 import kotlinx.coroutines.flow.combine
 
 class ArtistFragment : Fragment() {
@@ -44,8 +39,7 @@ class ArtistFragment : Fragment() {
     private val extensionViewModel: ExtensionViewModel by activityViewModels()
     private val playerViewModel: PlayerViewModel by activityViewModels()
 
-    private val clickListener = MediaItemClickListener(this)
-    private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
+//    private val mediaItemsContainerAdapter = MediaItemsContainerAdapter(this, clickListener)
     private val header = ArtistHeaderAdapter(object : ArtistHeaderAdapter.Listener {
         override fun onSubscribeClicked(
             artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter
@@ -62,8 +56,8 @@ class ArtistFragment : Fragment() {
         }
 
     })
-    private val concatAdapter =
-        ConcatAdapter(header, mediaItemsContainerAdapter.withLoadingFooter())
+//    private val concatAdapter =
+//        ConcatAdapter(header, mediaItemsContainerAdapter.withLoadingFooter())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -106,14 +100,14 @@ class ArtistFragment : Fragment() {
         }
         binding.toolbar.title = artist.name.trim()
         artist.cover.loadInto(binding.albumCover, R.drawable.art_artist)
-        observe(extensionViewModel.extensionFlow) {
-            binding.recyclerView.adapter = getAdapterForExtension<ArtistClient>(
-                it, R.string.artist, concatAdapter
-            ) { client ->
-                if (client == null) return@getAdapterForExtension
-                viewModel.loadArtist(client, extensionViewModel.throwableFlow, artist)
-            }
-        }
+//        observe(extensionViewModel.extensionFlow) {
+//            binding.recyclerView.adapter = getAdapterForExtension<ArtistClient>(
+//                it, R.string.artist, concatAdapter
+//            ) { client ->
+//                if (client == null) return@getAdapterForExtension
+//                viewModel.loadArtist(client, extensionViewModel.throwableFlow, artist)
+//            }
+//        }
         val headerFlow =
             viewModel.artistFlow.combine(extensionViewModel.extensionFlow) { it, client -> it to client }
         observe(headerFlow) { (artist, client) ->
@@ -122,7 +116,7 @@ class ArtistFragment : Fragment() {
             }
         }
         observe(viewModel.result) {
-            if (it != null) mediaItemsContainerAdapter.submit(it)
+//            if (it != null) mediaItemsContainerAdapter.submit(it)
         }
     }
 }

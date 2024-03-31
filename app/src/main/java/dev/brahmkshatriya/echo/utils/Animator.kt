@@ -32,12 +32,17 @@ object Animator {
     fun View.animateTranslation(isRail: Boolean, isVisible: Boolean) {
         val animation =
             if (isRail) animate().translationX(if (isVisible) 0f else -width.toFloat())
+                .withEndAction { translationX = if (isVisible) 0f else -width.toFloat() }
             else animate().translationY(if (isVisible) 0f else height.toFloat())
+                .withEndAction { translationY = if (isVisible) 0f else height.toFloat() }
         startAnimation(animation)
     }
 
     fun View.animateVisibility(isVisible: Boolean) {
-        startAnimation(animate().alpha(if (isVisible) 1f else 0f))
+        startAnimation(
+            animate().alpha(if (isVisible) 1f else 0f)
+                .withEndAction { alpha = if (isVisible) 1f else 0f }
+        )
     }
 
     fun BottomSheetBehavior<View>.animatePeekHeight(view: View, newHeight: Int) = view.run {
