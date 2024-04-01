@@ -46,7 +46,8 @@ class UiViewModel : ViewModel() {
         }
     }
 
-    val navViewInsets = MutableStateFlow(Insets())
+    private val navViewInsets = MutableStateFlow(Insets())
+    private val playerNavViewInsets = MutableStateFlow(Insets())
     private val playerInsets = MutableStateFlow(Insets())
     private val systemInsets = MutableStateFlow(Insets())
 
@@ -56,17 +57,22 @@ class UiViewModel : ViewModel() {
         system.add(player)
     }
 
-    fun setNavInsets(context: Context, isNavVisible: Boolean, isRail: Boolean) {
-        context.resources.run {
-            val insets = if (isNavVisible) {
+    fun setPlayerNavViewInsets(context: Context, isNavVisible: Boolean, isRail: Boolean): Insets {
+        val insets = context.resources.run {
+            if (isNavVisible) {
                 if (isRail) {
                     val width = getDimensionPixelSize(R.dimen.nav_width)
                     if (context.isRTL()) Insets(end = width)
                     else Insets(start = width)
                 } else Insets(bottom = getDimensionPixelSize(R.dimen.nav_height))
             } else Insets()
-            navViewInsets.value = insets
         }
+        playerNavViewInsets.value = insets
+        return insets
+    }
+
+    fun setNavInsets(insets: Insets) {
+        navViewInsets.value = insets
     }
 
     fun setSystemInsets(context: Context, insets: WindowInsetsCompat) {
@@ -83,13 +89,13 @@ class UiViewModel : ViewModel() {
             val height = context.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
             Insets(bottom = height)
         } else Insets()
-        println("setPlayerInsets: $insets")
         playerInsets.value = insets
     }
 
 
-    val playerSheetState = MutableStateFlow(STATE_HIDDEN)
+    val playerSheetState = MutableStateFlow(STATE_COLLAPSED)
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
+
     val playerSheetOffset = MutableStateFlow(0f)
     val infoSheetOffset = MutableStateFlow(0f)
 
@@ -131,7 +137,8 @@ class UiViewModel : ViewModel() {
         }
         observeBack(behavior) { infoSheetState.value != STATE_EXPANDED }
         viewModelScope.launch {
-            navViewInsets.combine(systemInsets) { nav, _ -> nav }.collect {
+            playerNavViewInsets.combine(systemInsets) { nav, _ -> nav }.collect {
+                if (behavior.state == STATE_HIDDEN) return@collect
                 val collapsedCoverSize =
                     view.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
                 val peekHeight =
@@ -193,7 +200,6 @@ class UiViewModel : ViewModel() {
         ) {
             val uiViewModel by activityViewModels<UiViewModel>()
             observe(uiViewModel.combined) { insets ->
-                val verticalPadding = 8.dpToPx(requireContext())
                 child.applyContentInsets(insets)
                 appBar.updatePaddingRelative(
                     start = insets.start,
@@ -203,7 +209,7 @@ class UiViewModel : ViewModel() {
             }
         }
 
-        fun View.applyContentInsets(insets: Insets){
+        fun View.applyContentInsets(insets: Insets) {
             val verticalPadding = 8.dpToPx(context)
             updatePaddingRelative(
                 top = verticalPadding,

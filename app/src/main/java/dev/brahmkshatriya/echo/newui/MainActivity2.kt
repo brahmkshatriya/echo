@@ -68,9 +68,12 @@ class MainActivity2 : AppCompatActivity() {
 
         navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
             isNavFragment = destination.id == navView.selectedItemId
-            binding.navView.animateTranslation(isRail, isNavFragment)
+            val insets =
+                uiViewModel.setPlayerNavViewInsets(this, isNavFragment, isRail)
+            binding.navView.animateTranslation(isRail, isNavFragment) {
+                uiViewModel.setNavInsets(insets)
+            }
             binding.navViewOutline?.animateVisibility(isNavFragment)
-            uiViewModel.setNavInsets(this, isNavFragment, isRail)
         }
 
         observe(uiViewModel.playerSheetState) {

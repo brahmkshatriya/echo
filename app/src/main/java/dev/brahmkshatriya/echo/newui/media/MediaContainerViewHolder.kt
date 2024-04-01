@@ -87,7 +87,7 @@ sealed class MediaContainerViewHolder(
                 is EchoMediaItem.Profile -> binding.profileImageContainer.bind(media)
             }
 
-            binding.more.setOnClickListener { listener.onLongClick(clientId, media, it) }
+            binding.more.setOnClickListener { listener.onLongClick(clientId, media, transitionView) }
         }
 
         override val transitionView: View = binding.root

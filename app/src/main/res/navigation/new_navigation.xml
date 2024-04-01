@@ -57,4 +57,18 @@
     <action
         android:id="@+id/action_item"
         app:destination="@+id/itemFragment" />
+
+    <fragment
+        android:id="@+id/categoryFragment"
+        android:name="dev.brahmkshatriya.echo.newui.category.CategoryFragment"
+        tools:layout="@layout/fragment_category">
+        <argument
+            android:name="clientId"
+            app:argType="string" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_category"
+        app:destination="@id/categoryFragment" />
+
 </navigation>

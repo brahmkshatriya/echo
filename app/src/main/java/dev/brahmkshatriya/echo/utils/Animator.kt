@@ -29,13 +29,15 @@ object Animator {
         animation.setInterpolator(interpolator).setDuration(duration).start()
     }
 
-    fun View.animateTranslation(isRail: Boolean, isVisible: Boolean) {
+    fun View.animateTranslation(isRail: Boolean, isVisible: Boolean, action: () -> Unit) {
+        val value = if (isVisible) 0f else if (isRail) -width.toFloat() else height.toFloat()
         val animation =
-            if (isRail) animate().translationX(if (isVisible) 0f else -width.toFloat())
-                .withEndAction { translationX = if (isVisible) 0f else -width.toFloat() }
-            else animate().translationY(if (isVisible) 0f else height.toFloat())
-                .withEndAction { translationY = if (isVisible) 0f else height.toFloat() }
-        startAnimation(animation)
+            if (isRail) animate().translationX(value).withEndAction { translationX = value }
+            else animate().translationY(value).withEndAction { translationY = value }
+        startAnimation(
+            if(isVisible) animation.withStartAction(action)
+            else animation.withEndAction(action)
+        )
     }
 
     fun View.animateVisibility(isVisible: Boolean) {
