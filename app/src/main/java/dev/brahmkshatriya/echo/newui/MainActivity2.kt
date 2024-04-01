@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.newui
 
 import android.content.ComponentName
+import android.content.Intent
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -23,19 +24,20 @@ import dev.brahmkshatriya.echo.player.PlaybackService
 import dev.brahmkshatriya.echo.utils.Animator.animateTranslation
 import dev.brahmkshatriya.echo.utils.Animator.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
+import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
+import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 @AndroidEntryPoint
 class MainActivity2 : AppCompatActivity() {
 
-    val binding by lazy {
-        ActivityMain2Binding.inflate(layoutInflater)
-    }
-
+    private val binding by lazy { ActivityMain2Binding.inflate(layoutInflater) }
     private val extensionViewModel by viewModels<ExtensionViewModel>()
 
     private var controllerFuture: ListenableFuture<MediaBrowser>? = null
@@ -95,8 +97,8 @@ class MainActivity2 : AppCompatActivity() {
             SessionToken(application, ComponentName(application, PlaybackService::class.java))
         val future = MediaBrowser.Builder(application, sessionToken).buildAsync()
         future.addListener({
-//            val browser = tryWith(false) { future.get() } ?: return@addListener
-//            connectPlayerToUI(this, browser)
+            val browser = tryWith(false) { future.get() } ?: return@addListener
+            connectPlayerToUI(browser)
         }, ContextCompat.getMainExecutor(this))
         controllerFuture = future
 
@@ -106,5 +108,13 @@ class MainActivity2 : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         controllerFuture?.let { MediaBrowser.releaseFuture(it) }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        intent?.hasExtra("fromNotification")?.let {
+            val playerViewModel by viewModels<PlayerViewModel>()
+            emit(playerViewModel.fromNotification) { it }
+        }
+        super.onNewIntent(intent)
     }
 }

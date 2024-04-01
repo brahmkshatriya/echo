@@ -11,9 +11,9 @@ fun connectPlayerToUI(activity: AppCompatActivity, player: MediaBrowser) {
     val uiViewModel: PlayerUIViewModel by activity.viewModels()
     val playerViewModel: PlayerViewModel by activity.viewModels()
 
-    val listener = PlayerListener(player, uiViewModel)
-    player.addListener(listener)
-    listener.update()
+//    val listener = PlayerListener(player, uiViewModel)
+//    player.addListener(listener)
+//    listener.update()
 
     activity.apply {
 

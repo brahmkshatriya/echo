@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Album
@@ -53,9 +52,9 @@ class PlayerViewModel @Inject constructor(
     fun play(track: Track) {
         viewModelScope.launch {
             tryWith(throwableFlow) {
-                val client = trackClient ?: throw trackException
-                val pos = global.addTrack(client, track).first
-                audioIndexFlow.emit(pos)
+//                val client = trackClient ?: throw trackException
+//                val pos = global.addTrack(client, track).first
+//                audioIndexFlow.emit(pos)
             }
         }
     }
@@ -63,9 +62,9 @@ class PlayerViewModel @Inject constructor(
     fun play(tracks: List<Track>, playIndex: Int? = null) {
         viewModelScope.launch {
             tryWith(throwableFlow) {
-                val client = trackClient ?: throw trackException
-                val pos = global.addTracks(client, tracks).first
-                playIndex?.let { audioIndexFlow.emit(pos + it) }
+//                val client = trackClient ?: throw trackException
+//                val pos = global.addTracks(client, tracks).first
+//                playIndex?.let { audioIndexFlow.emit(pos + it) }
             }
         }
     }
@@ -78,8 +77,8 @@ class PlayerViewModel @Inject constructor(
 
     fun addToQueue(track: Track) {
         viewModelScope.launch {
-            val client = trackClient ?: throw trackException
-            tryWith(throwableFlow) { global.addTrack(client, track) }
+//            val client = trackClient ?: throw trackException
+//            tryWith(throwableFlow) { global.addTrack(client, track) }
         }
     }
 
@@ -100,19 +99,19 @@ class PlayerViewModel @Inject constructor(
             global.removeTrack(index)
         }
     }
-
-    private val trackException = Exception(
-        application.getString(
-            R.string.is_not_supported,
-            application.getString(R.string.track)
-        )
-    )
-    private val radioException = Exception(
-        application.getString(
-            R.string.is_not_supported,
-            application.getString(R.string.radio)
-        )
-    )
+//
+//    private val trackException = Exception(
+//        application.getString(
+//            R.string.is_not_supported,
+//            application.getString(R.string.track)
+//        )
+//    )
+//    private val radioException = Exception(
+//        application.getString(
+//            R.string.is_not_supported,
+//            application.getString(R.string.radio)
+//        )
+//    )
 
     private fun playRadio(block: suspend RadioClient.() -> Playlist) {
         val client = trackClient
@@ -122,8 +121,9 @@ class PlayerViewModel @Inject constructor(
                     ?: return@launch
                 play(playlist.tracks, 0)
             }
-        } else viewModelScope.launch { throwableFlow.emit(radioException) }
+        }
     }
+
     fun radio(artist: Artist) = playRadio { radio(artist) }
     fun radio(album: Album) = playRadio { radio(album) }
     fun radio(playlist: Playlist) = playRadio { radio(playlist) }

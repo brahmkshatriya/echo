@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--suppress NavigationFile -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -34,6 +35,15 @@
         android:id="@+id/extensionsFragment"
         android:name="dev.brahmkshatriya.echo.newui.extension.ExtensionsFragment"
         tools:layout="@layout/dialog_extension" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="dev.brahmkshatriya.echo.newui.settings.SettingsFragment"
+        tools:layout="@layout/fragment_settings_container" />
+
+    <action
+        android:id="@+id/action_settings"
+        app:destination="@id/settingsFragment" />
 
     <action
         android:id="@+id/action_extensions"

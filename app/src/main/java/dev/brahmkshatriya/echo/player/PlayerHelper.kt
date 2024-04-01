@@ -1,11 +1,9 @@
 package dev.brahmkshatriya.echo.player
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
 import java.nio.ByteBuffer
@@ -28,8 +26,7 @@ interface PlayerHelper {
             return item.build()
         }
 
-        @SuppressLint("UnsafeOptInUsageError")
-        fun Track.toMetaData() = MediaMetadata.Builder()
+        private fun Track.toMetaData() = MediaMetadata.Builder()
             .setTitle(title)
             .setArtist(artists.firstOrNull()?.name)
             .setArtwork(cover)
@@ -37,7 +34,6 @@ interface PlayerHelper {
             .setIsBrowsable(false)
             .build()
 
-        @UnstableApi
         private fun MediaMetadata.Builder.setArtwork(cover: ImageHolder?): MediaMetadata.Builder {
             cover?.let {
                 return when (it) {

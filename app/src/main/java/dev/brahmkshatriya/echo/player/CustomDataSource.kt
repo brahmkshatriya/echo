@@ -9,30 +9,29 @@ import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.utils.tryWith
-import kotlinx.coroutines.flow.MutableSharedFlow
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 
 @UnstableApi
 class CustomDataSource(
-    context: Context,
+    private val context: Context,
     private val extensionListFlow: ExtensionModule.ExtensionListFlow,
-    private val global: Queue,
-    private val throwableFlow: MutableSharedFlow<Throwable>
+    private val global: Queue
 ) : BaseDataSource(true) {
 
     class Factory(
         private val context: Context,
         private val extensionListFlow: ExtensionModule.ExtensionListFlow,
-        private val global: Queue,
-        private val throwableFlow: MutableSharedFlow<Throwable>
+        private val global: Queue
     ) : DataSource.Factory {
         override fun createDataSource() =
-            CustomDataSource(context, extensionListFlow, global, throwableFlow)
+            CustomDataSource(context, extensionListFlow, global)
     }
 
     private val defaultDataSourceFactory = DefaultDataSource.Factory(context)
@@ -45,16 +44,14 @@ class CustomDataSource(
 
     private fun getAudio(id: String): StreamableAudio {
         val track = getTrack(id)
-        val client = extensionListFlow
-            .getClient<TrackClient>(track.clientId)
-            ?: throw Exception("Track Client ${track.clientId} not found")
+        val client = extensionListFlow.getClient(track.clientId)
+            ?: throw Exception(context.noClient().message)
+        client as? TrackClient
+            ?: throw Exception(context.trackNotSupported(client.metadata.name).message)
+        val streamable = track.track.streamable
+            ?: throw Exception(context.getString(R.string.streamable_not_found))
 
-        return runBlocking {
-            val streamable = track.track.streamable ?: throw Exception("Streamable not found")
-            tryWith(throwableFlow) {
-                client.getStreamableAudio(streamable)
-            } ?: throw Exception("Stream couldn't be loaded.")
-        }
+        return runBlocking { client.getStreamableAudio(streamable) }
     }
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {

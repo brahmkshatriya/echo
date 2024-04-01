@@ -11,6 +11,7 @@ import androidx.media3.session.MediaSession
 import androidx.paging.AsyncPagingDataDiffer
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.google.common.util.concurrent.ListenableFuture
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -18,6 +19,9 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.newui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -69,23 +73,23 @@ class PlayerSessionCallback(
         val query = mediaItems.firstOrNull()?.requestMetadata?.searchQuery
             ?: return super.onAddMediaItems(mediaSession, controller, mediaItems)
 
-        fun default(reason: String): ListenableFuture<MutableList<MediaItem>> {
-            toast(reason)
+        fun default(reason: Context.() -> String): ListenableFuture<MutableList<MediaItem>> {
+            toast(reason.invoke(context))
             return super.onAddMediaItems(mediaSession, controller, mediaItems)
         }
 
         val client = extension
-            ?: return default("Extension isn't loaded.")
+            ?: return default { noClient().message }
         if (client !is SearchClient)
-            return default("Extension does not support Searching")
+            return default { searchNotSupported(client.metadata.id).message }
         if (client !is TrackClient)
-            return default("Extension does not support Streaming Tracks")
+            return default { trackNotSupported(client.metadata.id).message }
 
 
         return scope.future {
             var error: ListenableFuture<MutableList<MediaItem>>? = null
             val result = client.search(query, null)
-                .catch { error = default(it.message ?: "An Error Occurred") }.firstOrNull()
+                .catch { error = default { it.message ?: "An Error Occurred" } }.firstOrNull()
             if (result != null) differ.submitData(result)
             else return@future error!!.get()
 
@@ -109,8 +113,8 @@ class PlayerSessionCallback(
                 }
             }.flatten()
             if (tracks.isEmpty())
-                return@future default("Couldn't find anything related to $query").get()
-            val items = global.addTracks(client, tracks).second
+                return@future default { getString(R.string.could_not_find_anything, query) }.get()
+            val items = global.addTracks(client.metadata.id, tracks).second
             items.toMutableList()
         }
     }

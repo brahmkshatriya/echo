@@ -33,9 +33,6 @@
         android:theme="@style/Default.Theme.Echo"
         tools:targetApi="33">
         <activity
-            android:name=".ui.settings.SettingsActivity"
-            android:exported="false" />
-        <activity
             android:name=".newui.MainActivity2"
             android:exported="true"
             android:launchMode="singleTop"

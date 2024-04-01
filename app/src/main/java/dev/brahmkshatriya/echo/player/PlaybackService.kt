@@ -15,10 +15,11 @@ import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
-import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.ui.settings.AudioPreference.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.newui.MainActivity2
+import dev.brahmkshatriya.echo.newui.settings.AudioPreference.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -33,13 +34,16 @@ class PlaybackService : MediaLibraryService() {
     lateinit var extension: ExtensionModule.ExtensionFlow
 
     @Inject
-    lateinit var extensionListFlow: ExtensionModule.ExtensionListFlow
+    lateinit var extensionList: ExtensionModule.ExtensionListFlow
 
     @Inject
     lateinit var global: Queue
 
     @Inject
     lateinit var throwableFlow: MutableSharedFlow<Throwable>
+
+    @Inject
+    lateinit var messageFlow: MutableSharedFlow<SnackBarViewModel.Message>
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -54,19 +58,18 @@ class PlaybackService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
 
-        val audioAttributes = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA)
-            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .build()
 
-        val customDataSource =
-            CustomDataSource.Factory(this, extensionListFlow, global, throwableFlow)
+        val customDataSource = CustomDataSource.Factory(this, extensionList, global)
 
         val cacheDataSourceFactory =
-            CacheDataSource.Factory()
-                .setCache(cache)
-                .setUpstreamDataSourceFactory(customDataSource)
+            CacheDataSource.Factory().setCache(cache).setUpstreamDataSourceFactory(customDataSource)
 
-        val factory = DefaultMediaSourceFactory(this)
-            .setDataSourceFactory(cacheDataSourceFactory)
+        val factory =
+            DefaultMediaSourceFactory(this).setDataSourceFactory(cacheDataSourceFactory)
 
         val player = ExoPlayer.Builder(this, factory)
             .setHandleAudioBecomingNoisy(true)
@@ -74,22 +77,28 @@ class PlaybackService : MediaLibraryService() {
             .setAudioAttributes(audioAttributes, true)
             .build()
 
-        player.addListener(RadioListener(player, extensionListFlow, global, scope, settings))
-
-        val intent = Intent(this, MainActivity::class.java).putExtra("fromNotification", true)
-
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        mediaLibrarySession = MediaLibrarySession.Builder(
-            this, player, PlayerSessionCallback(this, scope, global, extension.flow)
+        val listener = RadioListener(
+            this, player, extensionList, global, scope, settings, throwableFlow, messageFlow
         )
-            .setSessionActivity(pendingIntent)
-            .build()
+        player.addListener(listener)
+
+        val intent = Intent(this, MainActivity2::class.java)
+            .putExtra("fromNotification", true)
+
+        val pendingIntent = PendingIntent
+            .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val callback = PlayerSessionCallback(this, scope, global, extension.flow)
+
+        mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
+                .setSessionActivity(pendingIntent)
+                .build()
 
         val notificationProvider =
-            DefaultMediaNotificationProvider.Builder(this).setChannelName(R.string.app_name).build()
+            DefaultMediaNotificationProvider.Builder(this)
+                .setChannelName(R.string.app_name)
+                .build()
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
-
         setMediaNotificationProvider(notificationProvider)
     }
 

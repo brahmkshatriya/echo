@@ -24,8 +24,6 @@ import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.applyInsetsToPlayerUI
 import dev.brahmkshatriya.echo.player.ui.connectPlayerToUI
 import dev.brahmkshatriya.echo.player.ui.createPlayerUI
-import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
-import dev.brahmkshatriya.echo.ui.snackbar.initSnackBar
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.isNightMode
@@ -43,7 +41,6 @@ class MainActivity : AppCompatActivity() {
 
     private var controllerFuture: ListenableFuture<MediaBrowser>? = null
     private val playerViewModel: PlayerViewModel by viewModels()
-    private val extensionViewModel: ExtensionViewModel by viewModels()
 
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,9 +59,6 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = binding.navHostFragment.getFragment<NavHostFragment>()
         navView.setupWithNavController(navHostFragment.navController)
 
-        initSnackBar(this)
-
-        extensionViewModel.initialize()
         createPlayerUI(this)
         applyInsetsToPlayerUI(this)
 

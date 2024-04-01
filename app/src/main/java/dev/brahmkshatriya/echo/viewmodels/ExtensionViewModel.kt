@@ -1,13 +1,15 @@
 package dev.brahmkshatriya.echo.viewmodels
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.ui.adapters.ClientLoadingAdapter
-import dev.brahmkshatriya.echo.ui.adapters.ClientNotSupportedAdapter
+import dev.brahmkshatriya.echo.newui.common.ClientLoadingAdapter
+import dev.brahmkshatriya.echo.newui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,6 +55,22 @@ class ExtensionViewModel @Inject constructor(
     companion object {
         const val LAST_EXTENSION_KEY = "last_extension"
 
+        fun Context.noClient() = SnackBarViewModel.Message(
+            getString(R.string.error_no_client)
+        )
+
+        fun Context.searchNotSupported(client: String) = SnackBarViewModel.Message(
+            getString(R.string.is_not_supported, getString(R.string.search), client)
+        )
+
+        fun Context.trackNotSupported(client: String) = SnackBarViewModel.Message(
+            getString(R.string.is_not_supported, getString(R.string.track), client)
+        )
+
+        fun Context.radioNotSupported(client: String) = SnackBarViewModel.Message(
+            getString(R.string.is_not_supported, getString(R.string.radio), client)
+        )
+
         inline fun <reified T> getAdapterForExtension(
             it: ExtensionClient?,
             name: Int,
@@ -65,7 +83,7 @@ class ExtensionViewModel @Inject constructor(
                     adapter
                 } else {
                     block(null)
-                    ClientNotSupportedAdapter(name)
+                    ClientNotSupportedAdapter(name, it.metadata.name)
                 }
             } else {
                 block(null)

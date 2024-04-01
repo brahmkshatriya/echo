@@ -23,25 +23,23 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SnackBarViewModel @Inject constructor(
-    mutableThrowableFlow: MutableSharedFlow<Throwable>
+    mutableThrowableFlow: MutableSharedFlow<Throwable>,
+    val mutableMessageFlow: MutableSharedFlow<Message>
 ) : ViewModel() {
 
     val throwableFlow = mutableThrowableFlow.asSharedFlow()
 
     data class Message(
         val message: String,
-        val action: String,
+        val action: String = "",
         val actionHandler: ((NavController) -> Unit)? = null
     )
-
-    private val _messageFlow = MutableSharedFlow<Message>()
-    val messageFlow = _messageFlow.asSharedFlow()
 
     private val messages = mutableListOf<Message>()
 
     fun create(message: Message) {
         if (messages.isEmpty()) viewModelScope.launch {
-            _messageFlow.emit(message)
+            mutableMessageFlow.emit(message)
         }
         messages.add(message)
     }
@@ -49,7 +47,7 @@ class SnackBarViewModel @Inject constructor(
     fun remove(message: Message, dismissed: Boolean) {
         if (dismissed) messages.remove(message)
         if (messages.isNotEmpty()) viewModelScope.launch {
-            _messageFlow.emit(messages.first())
+            mutableMessageFlow.emit(messages.first())
         }
     }
 
@@ -78,7 +76,7 @@ class SnackBarViewModel @Inject constructor(
                 snackBar.show()
             }
 
-            observe(viewModel.messageFlow) { message ->
+            observe(viewModel.mutableMessageFlow) { message ->
                 println("SnackBarViewModel: $message")
                 createSnackBar(message)
             }
@@ -96,24 +94,10 @@ class SnackBarViewModel @Inject constructor(
             }
         }
 
-        fun Fragment.createSnack(
-            message: String,
-            action: String = "",
-            actionHandler: ((NavController) -> Unit)? = null
-        ) {
-            val snack = Message(message, action, actionHandler)
+        fun Fragment.createSnack(message: Message) {
             val viewModel by activityViewModels<SnackBarViewModel>()
-            viewModel.create(snack)
+            viewModel.create(message)
         }
 
-        fun Fragment.createSnack(
-            messageRes: Int,
-            actionRes: Int = 0,
-            actionHandler: ((NavController) -> Unit)? = null
-        ) {
-            val message = getString(messageRes)
-            val action = if (actionRes == 0) "" else getString(actionRes)
-            createSnack(message, action, actionHandler)
-        }
     }
 }

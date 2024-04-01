@@ -128,7 +128,6 @@ sealed class MediaItemViewHolder(itemView: View) :
             albumImage(item.size, listImageContainer1, listImageContainer2)
         }
 
-        @Suppress("MemberVisibilityCanBePrivate")
         fun albumImage(size: Int?, view1: View, view2: View) {
             val tracks = size ?: 3
             view1.isVisible = tracks > 1

@@ -61,9 +61,8 @@ class ExtensionModule {
     data class ExtensionFlow(val flow: StateFlow<ExtensionClient?>)
 
     data class ExtensionListFlow(val flow: MutableStateFlow<List<ExtensionClient>?>) {
-        @Suppress("UNCHECKED_CAST")
-        fun <T> getClient(clientId: String): T? =
-            flow.value?.find { it.metadata.id == clientId } as? T
+        fun getClient(clientId: String): ExtensionClient? =
+            flow.value?.find { it.metadata.id == clientId }
 
     }
 

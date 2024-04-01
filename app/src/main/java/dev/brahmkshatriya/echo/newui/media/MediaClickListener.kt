@@ -5,14 +5,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Category
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Item
-import dev.brahmkshatriya.echo.newui.category.CategoryFragment
 import dev.brahmkshatriya.echo.newui.category.CategoryFragmentDirections
+import dev.brahmkshatriya.echo.newui.category.CategoryViewModel
 import dev.brahmkshatriya.echo.newui.item.ItemFragmentDirections
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.createSnack
 
@@ -20,7 +20,7 @@ class MediaClickListener(
     private val fragment: Fragment
 ) : MediaItemAdapter.Listener {
 
-    private fun noClient() = fragment.createSnack(R.string.error_no_client)
+    private fun noClient() = fragment.createSnack(fragment.requireContext().noClient())
 
     private fun openItem(clientId: String?, item: EchoMediaItem, transitionView: View) {
         clientId ?: return noClient()
@@ -32,7 +32,7 @@ class MediaClickListener(
 
     private fun openCategory(clientId: String?, category: Category, transitionView: View): Boolean {
         clientId ?: return noClient().let { true }
-        val viewModel by fragment.activityViewModels<CategoryFragment.VModel>()
+        val viewModel by fragment.activityViewModels<CategoryViewModel>()
         viewModel.category = category
         val action = CategoryFragmentDirections.actionCategory(clientId)
         val extras =
