@@ -27,7 +27,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/playerFragmentContainer"
-        android:name="dev.brahmkshatriya.echo.newui.player.PlayerFragment"
+        android:name="dev.brahmkshatriya.echo.ui.player.PlayerFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:behavior_hideable="true"

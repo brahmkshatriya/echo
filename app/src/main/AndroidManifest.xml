@@ -33,7 +33,7 @@
         android:theme="@style/Default.Theme.Echo"
         tools:targetApi="33">
         <activity
-            android:name=".newui.MainActivity2"
+            android:name=".ui.MainActivity2"
             android:exported="true"
             android:launchMode="singleTop"
             android:windowSoftInputMode="adjustPan">

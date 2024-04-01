@@ -33,8 +33,6 @@ class PlayerViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 
-    val fromNotification: MutableSharedFlow<Boolean> = MutableSharedFlow()
-
     val audioIndexFlow = MutableSharedFlow<Int>()
     val playPause: MutableSharedFlow<Boolean> = MutableSharedFlow()
     val seekTo: MutableSharedFlow<Long> = MutableSharedFlow()

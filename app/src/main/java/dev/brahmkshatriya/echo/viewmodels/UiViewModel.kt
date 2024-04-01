@@ -92,6 +92,7 @@ class UiViewModel : ViewModel() {
         playerInsets.value = insets
     }
 
+    val fromNotification: MutableSharedFlow<Boolean> = MutableSharedFlow()
 
     val playerSheetState = MutableStateFlow(STATE_COLLAPSED)
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
@@ -149,6 +150,11 @@ class UiViewModel : ViewModel() {
             }
         }
         behavior.state = playerSheetState.value
+        viewModelScope.launch {
+            fromNotification.collect {
+                if(it) behavior.state = STATE_EXPANDED
+            }
+        }
     }
 
     fun setupPlayerInfoBehavior(view: View) {

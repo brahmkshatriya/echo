@@ -36,8 +36,8 @@ import com.google.android.material.slider.Slider
 import com.google.android.material.slider.Slider.OnSliderTouchListener
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.newui.player.PlaylistAdapter
-import dev.brahmkshatriya.echo.newui.settings.LookPreference.Companion.DYNAMIC_PLAYER
+import dev.brahmkshatriya.echo.ui.player.PlaylistAdapter
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.DYNAMIC_PLAYER
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.createRequest

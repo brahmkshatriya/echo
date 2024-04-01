@@ -8,9 +8,9 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
-import dev.brahmkshatriya.echo.newui.settings.LookPreference.Companion.AMOLED_KEY
-import dev.brahmkshatriya.echo.newui.settings.LookPreference.Companion.MORE_AMOLED_KEY
-import dev.brahmkshatriya.echo.newui.settings.LookPreference.Companion.THEME_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.AMOLED_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.MORE_AMOLED_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.THEME_KEY
 import javax.inject.Inject
 
 @HiltAndroidApp

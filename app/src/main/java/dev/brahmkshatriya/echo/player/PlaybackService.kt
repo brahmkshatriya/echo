@@ -17,8 +17,8 @@ import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.newui.MainActivity2
-import dev.brahmkshatriya.echo.newui.settings.AudioPreference.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.ui.MainActivity2
+import dev.brahmkshatriya.echo.ui.settings.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
