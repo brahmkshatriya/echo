@@ -28,7 +28,7 @@ fun applyInsetsToPlayerUI(
     val playlistBehavior = BottomSheetBehavior.from(playlistContainer)
 
     val peekHeight = activity.resources.getDimension(R.dimen.bottom_player_peek_height).toInt()
-    val playlistPeekHeight = activity.resources.getDimension(R.dimen.playlist_peek_height).toInt()
+    val playlistPeekHeight = activity.resources.getDimension(R.dimen.player_info_peek_height).toInt()
 
     val navView = activity.binding.navView
 

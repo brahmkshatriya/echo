@@ -16,7 +16,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingItem
 import dev.brahmkshatriya.echo.common.settings.SettingList
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
-import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionFragment : BaseSettingsFragment() {
     override val title get() = extensionName
@@ -62,7 +62,7 @@ class ExtensionPreference : PreferenceFragmentCompat() {
 
 
         val viewModel by activityViewModels<ExtensionViewModel>()
-        val extension = viewModel.getExtension(extensionId)
+        val extension = viewModel.extensionListFlow.getClient(extensionId)
 
         extension ?: return
         extension.settings.forEach { setting ->

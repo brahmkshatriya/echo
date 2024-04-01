@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Configuration.UI_MODE_NIGHT_MASK
-import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -26,10 +24,9 @@ import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.player.ui.applyInsetsToPlayerUI
 import dev.brahmkshatriya.echo.player.ui.connectPlayerToUI
 import dev.brahmkshatriya.echo.player.ui.createPlayerUI
-import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
-import dev.brahmkshatriya.echo.ui.snackbar.initSnackBar
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.emit
+import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.tryWith
 import javax.inject.Inject
 
@@ -44,7 +41,6 @@ class MainActivity : AppCompatActivity() {
 
     private var controllerFuture: ListenableFuture<MediaBrowser>? = null
     private val playerViewModel: PlayerViewModel by viewModels()
-    private val extensionViewModel: ExtensionViewModel by viewModels()
 
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,9 +59,6 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = binding.navHostFragment.getFragment<NavHostFragment>()
         navView.setupWithNavController(navHostFragment.navController)
 
-        initSnackBar(this)
-
-        extensionViewModel.initialize()
         createPlayerUI(this)
         applyInsetsToPlayerUI(this)
 
@@ -79,9 +72,6 @@ class MainActivity : AppCompatActivity() {
             it.addListener(listener, ContextCompat.getMainExecutor(this))
         }
     }
-
-    fun isNightMode() =
-        resources.configuration.uiMode and UI_MODE_NIGHT_MASK != UI_MODE_NIGHT_NO
 
     override fun onNewIntent(intent: Intent?) {
         intent?.hasExtra("fromNotification")?.let {

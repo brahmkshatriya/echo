@@ -37,7 +37,7 @@ class EchoApplication : Application() {
                 false -> null
             }
 
-            val blue = app.resources.getColor(R.color.blue, app.theme)
+//            val blue = app.resources.getColor(R.color.blue, app.theme)
 
             val options = DynamicColorsOptions.Builder()
                 .setOnAppliedCallback { activity ->

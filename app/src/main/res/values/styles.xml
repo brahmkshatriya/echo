@@ -2,36 +2,35 @@
 <resources>
 
     <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:width">56dp</item>
+        <item name="android:height">24dp</item>
         <item name="android:color">?attr/colorPrimaryInverse</item>
     </style>
 
-    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Dialog.MinWidth">
-        <item name="android:dialogTheme">@style/AppTheme.Dialog</item>
+    <style name="NavView" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">?attr/navBackground</item>
+        <item name="itemActiveIndicatorStyle">@style/BottomNavbarActiveIndicator</item>
+        <item name="itemIconTint">@color/bottom_item_icon</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemPaddingBottom">12dp</item>
+        <item name="itemPaddingTop">12dp</item>
+        <item name="itemMinHeight">64dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+    </style>
+
+    <style name="Widget.Material.ActionButton" parent="Widget.AppCompat.ActionButton">
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+    </style>
+
+    <style name="EchoDialog" parent="Theme.MaterialComponents.Dialog.MinWidth">
+        <item name="android:dialogTheme">@style/EchoDialog</item>
         <item name="android:windowBackground">@drawable/dialog_bg</item>
     </style>
 
-    <style name="AppBar">
-        <item name="background">?echoBackground</item>
-    </style>
-
-    <style name="TopAppBarHeader">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:minHeight">48dp</item>
-        <item name="android:layout_marginTop">16dp</item>
-        <item name="android:layout_marginBottom">16dp</item>
-        <item name="android:layout_marginEnd">24dp</item>
-        <item name="android:layout_marginStart">24dp</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:textSize">28sp</item>
-    </style>
-
-    <style name="TopAppBar">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingEnd">8dp</item>
-        <item name="menu">@menu/top_bar_menu</item>
+    <style name="EchoBottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <style name="TopCollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
@@ -43,12 +42,65 @@
         <item name="layout_scrollFlags">scroll|exitUntilCollapsed|snap</item>
     </style>
 
-    <style name="CollapsingBar" parent="TopCollapsingBar"/>
+    <style name="CollapsingBar" parent="TopCollapsingBar" />
 
-    <style name="CoordinatorLayout">
-        <item name="android:background">?echoBackground</item>
-    </style>
-    <style name="EchoCardView" parent="Widget.Material3.CardView.Filled">
+    <style name="EchoCardView">
+        <item name="cardCornerRadius">?itemContainerCorner</item>
         <item name="cardBackgroundColor">?echoBackground</item>
+    </style>
+
+    <style name="Selectable">
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">@drawable/ripple_item_container</item>
+    </style>
+
+    <style name="AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="liftOnScrollColor">?navBackground</item>
+    </style>
+
+    <style name="AppBarOutline">
+        <item name="android:outlineProvider">none</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">-1dp</item>
+        <item name="android:translationZ">1dp</item>
+        <item name="android:background">?colorOutlineVariant</item>
+    </style>
+
+    <style name="IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="iconTint">?colorOnSurface</item>
+        <item name="iconSize">24dp</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="TabLayout">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="tabIndicator">@drawable/tab_indicator</item>
+        <item name="tabGravity">start</item>
+        <item name="tabIndicatorFullWidth">true</item>
+        <item name="tabMinWidth">0dp</item>
+        <item name="tabMode">scrollable</item>
+        <item name="tabPaddingEnd">16dp</item>
+        <item name="tabPaddingStart">16dp</item>
+    </style>
+
+    <style name="ItemCover">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:background">?attr/colorSurfaceContainerHigh</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+        <item name="layout_constraintDimensionRatio">1,1</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+        <item name="layout_constraintHeight_max">@dimen/max_cover_size</item>
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+        <item name="layout_constraintWidth_max">@dimen/max_cover_size</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Small</item>
     </style>
 </resources>

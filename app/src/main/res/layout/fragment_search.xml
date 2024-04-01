@@ -1,43 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.search.SearchFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/cat_recycler_view"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <View
-        android:id="@+id/status_bar_scrim"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:alpha="0.5"
-        android:background="?echoBackground" />
-
-    <com.google.android.material.search.SearchView
-        android:id="@+id/cat_search_view"
-        android:visibility="gone"
-        app:backgroundTint="?navBackground"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:hint="@string/search">
-
-        <ScrollView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbars="none">
+            android:clipToPadding="false"
+            android:contentDescription="@string/home"
+            android:orientation="vertical"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/skeleton_item_container" />
 
-            <LinearLayout
-                android:id="@+id/cat_search_view_suggestion_container"
-                android:layout_width="match_parent"
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        app:liftOnScrollTargetViewId="@id/recyclerView">
+
+        <com.google.android.material.search.SearchBar
+            android:id="@+id/searchBar"
+            android:layout_width="match_parent"
+            android:layout_marginVertical="8dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="112dp"
+            android:layout_height="48dp"
+            android:hint="@string/search"
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
+            app:defaultMarginsEnabled="false"
+            app:navigationIcon="@drawable/ic_search_outline" />
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_gravity="end"
+            android:id="@+id/toolBar"
+            android:layout_marginTop="-64dp"
+            android:layout_marginHorizontal="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:menu="@menu/top_bar_menu" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TabLayout">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
-        </ScrollView>
+                tools:text="All" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Tracks" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Albums" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Artists" />
+
+        </com.google.android.material.tabs.TabLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <View
+        android:id="@+id/appBarOutline"
+        style="@style/AppBarOutline"
+        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchorGravity="bottom" />
+
+    <com.google.android.material.search.SearchView
+        android:id="@+id/quickSearchView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:hint="@string/search"
+        app:closeIcon="@drawable/ic_close"
+        app:goIcon="@drawable/ic_back"
+        app:searchHintIcon="@drawable/ic_back"
+        app:commitIcon="@drawable/ic_back"
+        app:searchIcon="@drawable/ic_back"
+        app:animateNavigationIcon="true"
+        app:backgroundTint="?navBackground">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/quickSearchRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:contentDescription="@string/search"
+            android:orientation="vertical"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </com.google.android.material.search.SearchView>
-</FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

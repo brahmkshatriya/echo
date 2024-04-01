@@ -1,19 +1,19 @@
 package dev.brahmkshatriya.echo.player.ui
 
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.session.MediaBrowser
-import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.observe
 
-fun connectPlayerToUI(activity: MainActivity, player: MediaBrowser) {
+fun connectPlayerToUI(activity: AppCompatActivity, player: MediaBrowser) {
 
     val uiViewModel: PlayerUIViewModel by activity.viewModels()
     val playerViewModel: PlayerViewModel by activity.viewModels()
 
-    val listener = PlayerListener(player, uiViewModel)
-    player.addListener(listener)
-    listener.update()
+//    val listener = PlayerListener(player, uiViewModel)
+//    player.addListener(listener)
+//    listener.update()
 
     activity.apply {
 

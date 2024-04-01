@@ -18,7 +18,7 @@
     <string name="retry">Retry</string>
     <string name="failed_loading">Failed Loading</string>
     <string name="repeat">Repeat</string>
-    <string name="is_not_supported">%1$s is not supported in this Extension!</string>
+    <string name="is_not_supported">%1$s is not supported in %2$s Extension!</string>
     <string name="drag_to_change_playlist_position">Drag to change playlist position</string>
     <string name="up_next">Up Next</string>
     <string name="close">Close</string>
@@ -70,5 +70,15 @@
     <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
     <string name="more_amoled">More Amoled</string>
     <string name="more_amoled_summary">Make the navigation bar black too</string>
+    <string name="all">All</string>
+    <string name="refresh">Refresh</string>
+    <string name="currently_playing">Currently Playing</string>
+    <string name="like">Like</string>
+    <string name="lyrics">Lyrics</string>
+    <string name="info">Info</string>
+    <string name="user">User</string>
+    <string name="error_no_client">Error, no client was selected</string>
+    <string name="could_not_find_anything">Couldn\'t find anything related to %1$s</string>
+    <string name="streamable_not_found">Streamable not found</string>
 
 </resources>

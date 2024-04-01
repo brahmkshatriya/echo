@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--suppress NavigationFile -->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/new_navigation"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="dev.brahmkshatriya.echo.ui.home.HomeFragment"
+
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="dev.brahmkshatriya.echo.ui.search.SearchFragment"
+        tools:layout="@layout/fragment_search" />
+
+    <fragment
+        android:id="@+id/libraryFragment"
+        android:name="dev.brahmkshatriya.echo.ui.library.LibraryFragment"
+        android:label="LibraryFragment" />
+
+    <fragment
+        android:id="@+id/exceptionFragment"
+        android:name="dev.brahmkshatriya.echo.ui.exception.ExceptionFragment"
+        tools:layout="@layout/fragment_exception" />
+
+    <action
+        android:id="@+id/action_exception"
+        app:destination="@id/exceptionFragment" />
+
+    <dialog
+        android:id="@+id/extensionsFragment"
+        android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionsFragment"
+        tools:layout="@layout/dialog_extension" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="dev.brahmkshatriya.echo.ui.settings.SettingsFragment"
+        tools:layout="@layout/fragment_settings_container" />
+
+    <action
+        android:id="@+id/action_settings"
+        app:destination="@id/settingsFragment" />
+
+    <action
+        android:id="@+id/action_extensions"
+        app:destination="@id/extensionsFragment" />
+
+    <fragment
+        android:id="@+id/itemFragment"
+        android:name="dev.brahmkshatriya.echo.ui.item.ItemFragment"
+        android:label="ItemFragment"
+        tools:layout="@layout/fragment_item">
+
+        <argument
+            android:name="item"
+            app:argType="dev.brahmkshatriya.echo.common.models.EchoMediaItem" />
+        <argument
+            android:name="clientId"
+            app:argType="string" />
+
+    </fragment>
+
+    <action
+        android:id="@+id/action_item"
+        app:destination="@+id/itemFragment" />
+
+    <fragment
+        android:id="@+id/categoryFragment"
+        android:name="dev.brahmkshatriya.echo.ui.category.CategoryFragment"
+        tools:layout="@layout/fragment_category">
+        <argument
+            android:name="clientId"
+            app:argType="string" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_category"
+        app:destination="@id/categoryFragment" />
+
+</navigation>

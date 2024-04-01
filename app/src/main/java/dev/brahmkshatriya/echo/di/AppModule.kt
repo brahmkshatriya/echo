@@ -12,6 +12,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.player.Queue
+import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.io.File
 import javax.inject.Singleton
@@ -28,6 +29,10 @@ class AppModule {
     @Provides
     @Singleton
     fun provideThrowableFlow() = MutableSharedFlow<Throwable>()
+
+    @Provides
+    @Singleton
+    fun provideMessageFlow() = MutableSharedFlow<SnackBarViewModel.Message>()
 
     @Provides
     @Singleton

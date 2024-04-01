@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:transitionName="exception">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            style="@style/CollapsingBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:expandedTitleMarginEnd="72dp"
+            app:maxLines="2">
+
+            <ImageView
+                android:id="@+id/endIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="12dp"
+                android:contentDescription="@string/album"
+                app:srcCompat="@drawable/art_album"
+                app:tint="?colorOnSurface" />
+
+            <FrameLayout
+                android:id="@+id/coverContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="64dp"
+                android:layout_marginBottom="80dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/listsCoverContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/cover2"
+                        style="@style/ItemCover"
+                        android:layout_marginHorizontal="18dp"
+                        android:layout_marginBottom="52dp"
+                        android:alpha="0.33"
+                        android:visibility="gone"
+                        tools:ignore="ImageContrastCheck,MissingConstraints" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/cover1"
+                        style="@style/ItemCover"
+                        android:layout_marginHorizontal="8dp"
+                        android:layout_marginBottom="24dp"
+                        android:alpha="0.66"
+                        android:visibility="gone"
+                        tools:ignore="ImageContrastCheck,MissingConstraints" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/mainCover"
+                        style="@style/ItemCover"
+                        android:visibility="gone"
+                        tools:ignore="ImageContrastCheck,MissingConstraints" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/profileCover"
+                        style="@style/ItemCover"
+                        app:layout_constraintWidth_max="240dp"
+                        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
+                        tools:ignore="ImageContrastCheck,MissingConstraints" />
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </FrameLayout>
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolBar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@android:color/transparent"
+                app:layout_collapseMode="pin"
+                app:menu="@menu/exception_menu"
+                app:navigationContentDescription="@string/close"
+                app:navigationIcon="@drawable/ic_back"
+                tools:title="@tools:sample/lorem/random" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <View
+        android:id="@+id/appbarOutline"
+        style="@style/AppBarOutline"
+        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchorGravity="bottom" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:contentDescription="@string/more"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/skeleton_item_album_info" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

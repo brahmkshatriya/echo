@@ -12,8 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="80dp"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/navigation" />
+        app:defaultNavHost="true" />
 
     <FrameLayout
         android:id="@+id/snackbar_container"

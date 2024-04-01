@@ -35,18 +35,17 @@ import com.google.android.material.checkbox.MaterialCheckBox.STATE_CHECKED
 import com.google.android.material.slider.Slider
 import com.google.android.material.slider.Slider.OnSliderTouchListener
 import dev.brahmkshatriya.echo.MainActivity
-import dev.brahmkshatriya.echo.NavigationDirections
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.ui.player.PlaylistAdapter
+import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.DYNAMIC_PLAYER
 import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
 import dev.brahmkshatriya.echo.player.PlayerViewModel
-import dev.brahmkshatriya.echo.ui.adapters.PlaylistAdapter
-import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.DYNAMIC_PLAYER
 import dev.brahmkshatriya.echo.utils.createRequest
-import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
+import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.utils.tryWithSuspend
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -269,7 +268,7 @@ fun createPlayerUI(
     }
 
     playlistBinding.playlistShuffle.apply {
-        val stroke = 1.dpToPx()
+        val stroke = 1
         strokeWidth = if (uiViewModel.shuffled.value) stroke else 0
         setOnClickListener {
             playerViewModel.shuffle(!uiViewModel.shuffled.value)
@@ -341,10 +340,10 @@ fun createPlayerUI(
 
 
             playerBinding.expandedTrackAuthor.setOnClickListener {
-                val artist = track.artists.firstOrNull() ?: return@setOnClickListener
-                val action = NavigationDirections.actionArtist(artist)
-                bottomPlayerBehavior.state = STATE_COLLAPSED
-                navController.navigate(action)
+//                val artist = track.artists.firstOrNull() ?: return@setOnClickListener
+//                val action = NavigationDirections.actionArtist(artist)
+//                bottomPlayerBehavior.state = STATE_COLLAPSED
+//                navController.navigate(action)
             }
 
             track.cover.run {
@@ -357,7 +356,7 @@ fun createPlayerUI(
                         val builder = Glide.with(activity).asBitmap()
                         createRequest(builder).submit()
                     } else null
-                    val bitmap = tryWith { req?.get() }
+                    val bitmap = tryWithSuspend { req?.get() }
                     val palette = bitmap?.let { Palette.from(it).generate() }
 
                     val colors = palette?.run {
@@ -466,7 +465,7 @@ fun createPlayerUI(
             }
         }
         observe(uiViewModel.shuffled) {
-            val stroke = 1.dpToPx()
+            val stroke = 1
             playlistBinding.playlistShuffle.strokeWidth = if (it) stroke else 0
         }
 

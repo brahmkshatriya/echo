@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         android:baselineAligned="false"
         android:clipToPadding="false"
-        android:translationY="@dimen/collapsed_cover_size"
         tools:translationY="0dp">
 
         <View
@@ -287,7 +286,6 @@
             android:id="@+id/collapsedTrackCover"
             android:layout_width="@dimen/collapsed_cover_size"
             android:layout_height="@dimen/collapsed_cover_size"
-            android:layout_marginStart="@dimen/sideRailViewWidth"
             android:background="?attr/colorSurfaceContainerHigh"
             android:importantForAccessibility="no"
             tools:ignore="ImageContrastCheck"

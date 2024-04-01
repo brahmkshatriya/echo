@@ -9,7 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.ui.extension.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 
 class SettingsFragment : BaseSettingsFragment() {
@@ -85,7 +85,7 @@ class SettingsPreference : PreferenceFragmentCompat() {
             "about" -> start(AboutFragment())
             "audio" -> start(AudioFragment())
             "extension" -> {
-                val extension = extensionViewModel.getCurrentExtension()
+                val extension = extensionViewModel.currentExtension
                     ?: return false
                 start(ExtensionFragment.newInstance(extension.metadata))
             }

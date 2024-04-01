@@ -18,8 +18,9 @@
             android:layout_height="128dp"
             android:background="?attr/colorSurfaceContainer"
             android:scaleType="fitCenter"
+            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
             app:srcCompat="@drawable/art_music"
-            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small" />
+            tools:srcCompat="@tools:sample/avatars" />
 
         <TextView
             android:id="@+id/title"

@@ -1,76 +1,65 @@
 package dev.brahmkshatriya.echo.ui.home
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.utils.catchWith
-import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    val homeFeedFlow: ExtensionModule.ExtensionFlow,
-    private val throwableFlow: MutableSharedFlow<Throwable>
-) : ViewModel() {
+    throwableFlow: MutableSharedFlow<Throwable>,
+    val extensionFlow: ExtensionModule.ExtensionFlow,
+) : CatchingViewModel(throwableFlow) {
 
-    private val _feed: MutableStateFlow<PagingData<MediaItemsContainer>?> = MutableStateFlow(null)
-    val feed = _feed.asStateFlow()
+    val loading = MutableSharedFlow<Boolean>()
+    val homeFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    val genres = MutableStateFlow<List<Genre>>(emptyList())
+    var genre: Genre? = null
+        set(value) {
+            if (value != field) refresh()
+            field = value
+        }
 
-    private var genre: MutableStateFlow<Genre?> = MutableStateFlow(null)
-    var genres: MutableStateFlow<List<Genre>?> = MutableStateFlow(null)
-    private var homeClient: HomeFeedClient? = null
-
-
-    init {
+    override fun onInitialize() {
         viewModelScope.launch {
-            observe(homeFeedFlow.flow) {
-                homeClient = it as? HomeFeedClient
-                genre.value = null
-                launch(Dispatchers.IO) {
-                    tryWith(throwableFlow) {
-                        genres.value = homeClient?.getHomeGenres()
-                        genre.value = genres.value?.firstOrNull()
-                    }
-                    tryWith(throwableFlow) {
-                        homeClient?.getHomeFeed(genre.asStateFlow())
-                            ?.cachedIn(viewModelScope)
-                            ?.catchWith(throwableFlow)
-                            ?.collectLatest { feed ->
-                                _feed.value = feed
-                            }
-                    }
-                }
+            extensionFlow.flow.collect {
+                val client = it as? HomeFeedClient ?: return@collect
+                loadGenres(client)
             }
         }
     }
 
-    fun loadGenres() {
+    private suspend fun loadGenres(client: HomeFeedClient) {
+        loading.emit(true)
+        val list = tryWith { client.getHomeGenres() } ?: emptyList()
+        loading.emit(false)
+        genre = list.firstOrNull()
+        genres.value = list
+    }
+
+
+    private suspend fun loadFeed(client: HomeFeedClient) = tryWith {
+        homeFeed.value = null
+        client.getHomeFeed(genre).collectTo(homeFeed)
+    }
+
+    fun refresh(reset: Boolean = false) {
+        val client = extensionFlow.flow.value as? HomeFeedClient ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            genre.value = null
-            tryWith(throwableFlow) {
-                genres.value = homeClient?.getHomeGenres()
+            if (reset) {
+                genre = null
+                loadGenres(client)
             }
+            loadFeed(client)
         }
-    }
-
-    fun setGenre(it: Genre) {
-        genre.value = it
-    }
-
-    fun getGenres(): List<Pair<Boolean, Genre>> {
-        return genres.value?.map { Pair(it == genre.value, it) } ?: emptyList()
     }
 }

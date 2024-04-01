@@ -2,17 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="24dp"
-    android:layout_marginTop="12dp"
-    android:layout_marginEnd="24dp"
-    android:layout_marginBottom="12dp"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="12dp"
     android:clipToPadding="false"
     android:orientation="horizontal">
 
 
     <View
-        android:layout_width="128dp"
-        android:layout_height="128dp"
+        android:layout_width="?itemCoverSize"
+        android:layout_height="?itemCoverSize"
         android:background="@drawable/rounded_rectangle" />
 
     <LinearLayout

@@ -10,4 +10,5 @@
         android:icon="@drawable/ic_settings_outline"
         android:title="@string/settings"
         app:showAsAction="ifRoom" />
+
 </menu>

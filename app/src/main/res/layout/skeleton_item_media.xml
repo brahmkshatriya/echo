@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:clipToPadding="false"
+    android:orientation="vertical"
     android:padding="8dp">
 
     <View
-        android:layout_width="128dp"
-        android:layout_height="128dp"
+        android:layout_width="?itemCoverSize"
+        android:layout_height="?itemCoverSize"
         android:background="@drawable/rounded_rectangle" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="24sp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/rounded_rectangle" />
+    <FrameLayout
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:paddingEnd="24dp"
+        tools:ignore="RtlSymmetry">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="24sp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_rectangle" />
+
+    </FrameLayout>
 
 </LinearLayout>
