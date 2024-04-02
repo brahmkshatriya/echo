@@ -26,6 +26,7 @@ fun MaterialToolbar.configureMainMenu(fragment: Fragment) {
             menu.findItem(R.id.menu_extensions).icon = it
         }
     }
+
     setOnMenuItemClickListener {
         val view = findViewById<View>(it.itemId)
         val extras = FragmentNavigatorExtras(view to view.transitionName)

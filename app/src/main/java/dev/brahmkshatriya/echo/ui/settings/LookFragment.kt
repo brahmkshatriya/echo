@@ -81,7 +81,24 @@ class LookFragment : BaseSettingsFragment() {
                 }
             }
 
+            PreferenceCategory(context).apply {
+                title = getString(R.string.animation)
+                key = "animation"
+                isIconSpaceReserved = false
+                layoutResource = R.layout.preference_category
+                screen.addPreference(this)
 
+                SwitchPreferenceCompat(context).apply {
+                    key = ANIMATIONS_KEY
+                    title = getString(R.string.animations)
+                    summary = getString(R.string.animations_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    onPreferenceChangeListener = uiListener()
+                    addPreference(this)
+                }
+            }
         }
     }
 
@@ -90,5 +107,6 @@ class LookFragment : BaseSettingsFragment() {
         const val THEME_KEY = "theme"
         const val AMOLED_KEY = "amoled"
         const val DYNAMIC_PLAYER = "dynamic_player"
+        const val ANIMATIONS_KEY = "animations"
     }
 }

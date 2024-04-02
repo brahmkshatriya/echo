@@ -61,9 +61,9 @@
     <string name="theme">Theme</string>
     <string name="theme_summary">Select between light and night</string>
     <string name="amoled">Amoled</string>
-    <string name="amoled_summary">Picth Black, Pure Black</string>
+    <string name="amoled_summary">Pitch Black, Pure Black</string>
     <string name="ui">UI</string>
-    <string name="restart_app">Restart the app to apply changes</string>
+    <string name="restart_app">Restart the app to apply changes fully.</string>
     <string name="dynamic_player">Dynamic Player Color</string>
     <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
     <string name="more_amoled">More Amoled</string>
@@ -76,5 +76,8 @@
     <string name="error_no_client">Error, no client was selected</string>
     <string name="could_not_find_anything">Couldn\'t find anything related to %1$s</string>
     <string name="streamable_not_found">Streamable not found</string>
+    <string name="animation">Animation</string>
+    <string name="animations">Animations</string>
+    <string name="animations_summary">Feeling too much stutter? turning this off, might help</string>
 
 </resources>

@@ -54,7 +54,7 @@ class SettingsFragment : BaseSettingsFragment() {
                 title = getString(R.string.extension_settings)
                 key = "extension"
                 summary = getString(R.string.extension_settings_summary)
-                icon = AppCompatResources.getDrawable(context, R.drawable.ic_extension)
+                icon = AppCompatResources.getDrawable(context, R.drawable.ic_stream)
             }
 
             TransitionPreference(context).add {
