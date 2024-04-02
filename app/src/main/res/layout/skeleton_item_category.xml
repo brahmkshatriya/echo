@@ -22,8 +22,6 @@
 
     </FrameLayout>
 
-    <include
-        android:id="@+id/item_media"
-        layout="@layout/skeleton_item_media_recycler" />
+    <include layout="@layout/skeleton_item_media_recycler" />
 
 </LinearLayout>

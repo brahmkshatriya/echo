@@ -40,7 +40,6 @@
                 android:layout_marginBottom="80dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/listsCoverContainer"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 

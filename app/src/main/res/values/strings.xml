@@ -11,7 +11,6 @@
     <string name="play_pause">Play/Pause</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
-    <string name="extension">Extension</string>
     <string name="add_extension">Add Extension</string>
     <string name="extension_settings">Extension Settings</string>
     <string name="more">More</string>
@@ -47,7 +46,6 @@
     <string name="follow">Follow</string>
     <string name="version">Version</string>
     <string name="about">About</string>
-    <string name="general">General</string>
     <string name="stop_player">Stop player</string>
     <string name="stop_player_summary">Stop the player, when the app is removed from recents</string>
     <string name="auto_start_radio">Auto Start Radio</string>
@@ -70,8 +68,6 @@
     <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
     <string name="more_amoled">More Amoled</string>
     <string name="more_amoled_summary">Make the navigation bar black too</string>
-    <string name="all">All</string>
-    <string name="refresh">Refresh</string>
     <string name="currently_playing">Currently Playing</string>
     <string name="like">Like</string>
     <string name="lyrics">Lyrics</string>

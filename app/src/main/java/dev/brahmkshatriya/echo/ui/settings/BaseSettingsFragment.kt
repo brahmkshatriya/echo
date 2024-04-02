@@ -5,10 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
+import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 abstract class BaseSettingsFragment : Fragment() {
 
@@ -27,18 +34,19 @@ abstract class BaseSettingsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        binding.appBarLayout.addOnOffsetChangedListener { appbar, verticalOffset ->
-            val offset = (-verticalOffset) / appbar.totalScrollRange.toFloat()
+        setupTransition(binding.root)
+        applyInsets {
+            binding.fragmentContainer.applyContentInsets(it)
+        }
+        applyBackPressCallback()
+        binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-
-        binding.title.setNavigationOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
+        binding.title.setupWithNavController(findNavController())
+        binding.root.transitionName = transitionName
 
         binding.title.title = title
-        childFragmentManager.beginTransaction().add(R.id.fragment_container, creator())
+        childFragmentManager.beginTransaction().replace(R.id.fragment_container, creator())
             .commit()
     }
 

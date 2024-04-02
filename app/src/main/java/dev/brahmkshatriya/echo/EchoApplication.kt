@@ -8,9 +8,8 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
-import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.AMOLED_KEY
-import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.MORE_AMOLED_KEY
-import dev.brahmkshatriya.echo.ui.settings.LookPreference.Companion.THEME_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.THEME_KEY
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -28,12 +27,7 @@ class EchoApplication : Application() {
         @SuppressLint("RestrictedApi")
         fun applyUiChanges(app: Application, preferences: SharedPreferences) {
             val theme = when (preferences.getBoolean(AMOLED_KEY, false)) {
-                true -> {
-                    when (preferences.getBoolean(MORE_AMOLED_KEY, false)) {
-                        true -> R.style.MoreAmoled
-                        false -> R.style.Amoled
-                    }
-                }
+                true -> R.style.Amoled
                 false -> null
             }
 

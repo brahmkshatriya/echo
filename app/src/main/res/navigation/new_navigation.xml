@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--suppress NavigationFile -->
+<?xml version="1.0" encoding="utf-8"?><!--suppress NavigationFile -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -36,6 +35,10 @@
         android:name="dev.brahmkshatriya.echo.ui.extension.ExtensionsFragment"
         tools:layout="@layout/dialog_extension" />
 
+    <action
+        android:id="@+id/action_extensions"
+        app:destination="@id/extensionsFragment" />
+
     <fragment
         android:id="@+id/settingsFragment"
         android:name="dev.brahmkshatriya.echo.ui.settings.SettingsFragment"
@@ -45,9 +48,52 @@
         android:id="@+id/action_settings"
         app:destination="@id/settingsFragment" />
 
+    <fragment
+        android:id="@+id/settingsLookFragment"
+        android:name="dev.brahmkshatriya.echo.ui.settings.LookFragment"
+        tools:layout="@layout/fragment_settings_container" />
+
     <action
-        android:id="@+id/action_extensions"
-        app:destination="@id/extensionsFragment" />
+        android:id="@+id/action_settings_look"
+        app:destination="@id/settingsLookFragment" />
+
+
+    <fragment
+        android:id="@+id/settingsAboutFragment"
+        android:name="dev.brahmkshatriya.echo.ui.settings.AboutFragment"
+        tools:layout="@layout/fragment_settings_container" />
+
+    <action
+        android:id="@+id/action_settings_about"
+        app:destination="@id/settingsAboutFragment" />
+
+    <fragment
+        android:id="@+id/settingsExtensionsFragment"
+        android:name="dev.brahmkshatriya.echo.ui.settings.ExtensionFragment"
+        tools:layout="@layout/fragment_settings_container">
+
+        <argument
+            android:name="clientId"
+            app:argType="string" />
+
+        <argument
+            android:name="clientName"
+            app:argType="string" />
+
+    </fragment>
+
+    <action
+        android:id="@+id/action_settings_extensions"
+        app:destination="@id/settingsExtensionsFragment" />
+
+    <fragment
+        android:id="@+id/settingsAudioFragment"
+        android:name="dev.brahmkshatriya.echo.ui.settings.AudioFragment"
+        tools:layout="@layout/fragment_settings_container" />
+
+    <action
+        android:id="@+id/action_settings_audio"
+        app:destination="@id/settingsAudioFragment" />
 
     <fragment
         android:id="@+id/itemFragment"

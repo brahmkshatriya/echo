@@ -11,7 +11,6 @@
 <!--        android:layout_height="match_parent" />-->
 
     <View
-        android:id="@+id/playerOutline"
         style="@style/AppBarOutline"
         android:layout_marginTop="0dp" />
 
@@ -44,7 +43,6 @@
                 app:iconTint="@color/button_player" />
 
             <include
-                android:id="@+id/playerControls"
                 layout="@layout/item_player_controls"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -62,9 +60,7 @@
                 app:behavior_peekHeight="64dp"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-                <include
-                    android:id="@+id/playerInfo"
-                    layout="@layout/fragment_player_info" />
+                <include layout="@layout/fragment_player_info" />
 
             </FrameLayout>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>

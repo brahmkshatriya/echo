@@ -57,7 +57,6 @@
             app:iconSize="20dp" />
 
         <Button
-            android:id="@+id/extensionSettings"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

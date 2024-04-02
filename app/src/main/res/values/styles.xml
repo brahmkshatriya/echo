@@ -55,6 +55,7 @@
     </style>
 
     <style name="AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="android:background">?echoBackground</item>
         <item name="liftOnScrollColor">?navBackground</item>
     </style>
 

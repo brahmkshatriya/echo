@@ -99,5 +99,12 @@ class SnackBarViewModel @Inject constructor(
             viewModel.create(message)
         }
 
+        fun Fragment.createSnack(message: String) {
+            createSnack(Message(message))
+        }
+
+        fun Fragment.createSnack(message: Int) {
+            createSnack(getString(message))
+        }
     }
 }

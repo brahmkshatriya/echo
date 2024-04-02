@@ -24,7 +24,6 @@
         app:iconTint="@color/button_player" />
 
     <include
-        android:id="@+id/playerControls"
         layout="@layout/item_player_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,7 +31,6 @@
         android:layout_marginBottom="88dp" />
 
     <View
-        android:id="@+id/playerOutline"
         style="@style/AppBarOutline"
         android:layout_marginTop="0dp" />
 
@@ -47,9 +45,7 @@
         app:behavior_peekHeight="@dimen/player_info_peek_height"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-        <include
-            android:id="@+id/playerInfo"
-            layout="@layout/fragment_player_info" />
+        <include layout="@layout/fragment_player_info" />
 
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
