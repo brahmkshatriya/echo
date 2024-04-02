@@ -10,8 +10,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
@@ -21,12 +21,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLIN
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.Animator.animatePeekHeight
 import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import kotlin.math.max
 
 class UiViewModel : ViewModel() {
@@ -105,91 +105,6 @@ class UiViewModel : ViewModel() {
     val handleBackInvoked = MutableSharedFlow<Unit>()
     val cancelBackProgress = MutableSharedFlow<Unit>()
 
-    private fun observeBack(
-        behavior: BottomSheetBehavior<View>,
-        block: () -> Boolean,
-    ) {
-        fun <T : Any> observe(flow: Flow<T>, function: (T) -> Unit) = viewModelScope.launch {
-            flow.collect { if (block()) function(it) }
-        }
-        observe(startBackProgress) { behavior.startBackProgress(it) }
-        observe(updateBackProgress) { behavior.updateBackProgress(it) }
-        observe(handleBackInvoked) { behavior.handleBackInvoked() }
-        observe(cancelBackProgress) { behavior.cancelBackProgress() }
-    }
-
-    fun setupPlayerBehavior(view: View) {
-        val behavior = BottomSheetBehavior.from(view)
-        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                val expanded = newState == STATE_EXPANDED
-                behavior.isHideable = !expanded
-                if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
-                playerSheetState.value = newState
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                val offset = max(0f, slideOffset)
-                playerSheetOffset.value = offset
-            }
-        })
-        viewModelScope.launch {
-            infoSheetState.collect { behavior.isDraggable = it == STATE_COLLAPSED }
-        }
-        observeBack(behavior) { infoSheetState.value != STATE_EXPANDED }
-        viewModelScope.launch {
-            playerNavViewInsets.combine(systemInsets) { nav, _ -> nav }.collect {
-                if (behavior.state == STATE_HIDDEN) return@collect
-                val collapsedCoverSize =
-                    view.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
-                val peekHeight =
-                    view.resources.getDimensionPixelSize(R.dimen.bottom_player_peek_height)
-                val newHeight =
-                    systemInsets.value.bottom + if (it.bottom == 0) collapsedCoverSize else peekHeight
-                behavior.animatePeekHeight(view, newHeight)
-            }
-        }
-        behavior.state = playerSheetState.value
-        viewModelScope.launch {
-            fromNotification.collect {
-                if(it) behavior.state = STATE_EXPANDED
-            }
-        }
-    }
-
-    fun setupPlayerInfoBehavior(view: View) {
-        val behavior = BottomSheetBehavior.from(view)
-        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                infoSheetState.value = newState
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                val offset = max(0f, slideOffset)
-                infoSheetOffset.value = offset
-            }
-        })
-        observeBack(behavior) { behavior.state == STATE_EXPANDED }
-    }
-
-    fun backPress() = object : OnBackPressedCallback(false) {
-        private fun <T> emit(flow: MutableSharedFlow<T>, value: T) {
-            viewModelScope.launch { flow.emit(value) }
-        }
-
-        override fun handleOnBackStarted(backEvent: BackEventCompat) =
-            emit(startBackProgress, backEvent)
-
-        override fun handleOnBackProgressed(backEvent: BackEventCompat) =
-            emit(updateBackProgress, backEvent)
-
-        override fun handleOnBackPressed() =
-            emit(handleBackInvoked, Unit)
-
-        override fun handleOnBackCancelled() =
-            emit(cancelBackProgress, Unit)
-    }
-
     companion object {
         fun Context.isRTL() =
             resources.configuration.layoutDirection == ViewCompat.LAYOUT_DIRECTION_RTL
@@ -225,15 +140,96 @@ class UiViewModel : ViewModel() {
             )
         }
 
+        private fun LifecycleOwner.backPress(viewModel: UiViewModel) =
+            object : OnBackPressedCallback(false) {
+                override fun handleOnBackStarted(backEvent: BackEventCompat) =
+                    emit(viewModel.startBackProgress) { backEvent }
+
+                override fun handleOnBackProgressed(backEvent: BackEventCompat) =
+                    emit(viewModel.updateBackProgress) { backEvent }
+
+                override fun handleOnBackPressed() =
+                    emit(viewModel.handleBackInvoked) {}
+
+                override fun handleOnBackCancelled() =
+                    emit(viewModel.cancelBackProgress) {}
+            }
+
         fun Fragment.applyBackPressCallback(callback: ((Int) -> Unit)? = null) {
             val activity = requireActivity()
             val viewModel by activity.viewModels<UiViewModel>()
-            val backPress = viewModel.backPress()
+            val backPress = backPress(viewModel)
             observe(viewModel.playerSheetState) {
                 backPress.isEnabled = it == STATE_EXPANDED
                 callback?.invoke(it)
             }
             activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPress)
+        }
+
+        private fun LifecycleOwner.observeBack(
+            behavior: BottomSheetBehavior<View>,
+            viewModel: UiViewModel,
+            block: () -> Boolean,
+        ) {
+            fun <T : Any> observeIf(flow: Flow<T>, function: (T) -> Unit) =
+                observe(flow) { if (block()) function(it) }
+            viewModel.run {
+                observeIf(startBackProgress) { behavior.startBackProgress(it) }
+                observeIf(updateBackProgress) { behavior.updateBackProgress(it) }
+                observeIf(handleBackInvoked) { behavior.handleBackInvoked() }
+                observeIf(cancelBackProgress) { behavior.cancelBackProgress() }
+            }
+        }
+
+        fun LifecycleOwner.setupPlayerBehavior(viewModel: UiViewModel, view: View) {
+            val behavior = BottomSheetBehavior.from(view)
+            behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    val expanded = newState == STATE_EXPANDED
+                    behavior.isHideable = !expanded
+                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
+                    viewModel.playerSheetState.value = newState
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    val offset = max(0f, slideOffset)
+                    viewModel.playerSheetOffset.value = offset
+                }
+            })
+            observe(viewModel.infoSheetState) { behavior.isDraggable = it == STATE_COLLAPSED }
+            observeBack(behavior, viewModel) { viewModel.infoSheetState.value != STATE_EXPANDED }
+            val combined = viewModel.run {
+                playerNavViewInsets.combine(systemInsets) { nav, _ -> nav }
+            }
+            observe(combined) {
+                if (behavior.state == STATE_HIDDEN) return@observe
+                val collapsedCoverSize =
+                    view.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
+                val peekHeight =
+                    view.resources.getDimensionPixelSize(R.dimen.bottom_player_peek_height)
+                val height = if (it.bottom == 0) collapsedCoverSize else peekHeight
+                val newHeight = viewModel.systemInsets.value.bottom + height
+                behavior.animatePeekHeight(view, newHeight)
+            }
+            behavior.state = viewModel.playerSheetState.value
+            observe(viewModel.fromNotification) {
+                if (it) behavior.state = STATE_EXPANDED
+            }
+        }
+
+        fun LifecycleOwner.setupPlayerInfoBehavior(viewModel: UiViewModel, view: View) {
+            val behavior = BottomSheetBehavior.from(view)
+            behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    viewModel.infoSheetState.value = newState
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    val offset = max(0f, slideOffset)
+                    viewModel.infoSheetOffset.value = offset
+                }
+            })
+            observeBack(behavior, viewModel) { behavior.state == STATE_EXPANDED }
         }
     }
 }

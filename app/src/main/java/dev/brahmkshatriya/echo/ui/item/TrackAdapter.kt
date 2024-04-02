@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.item
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,8 +21,7 @@ class TrackAdapter(
         fun onLongClick(list: List<Track>, position: Int, view: View): Boolean
     }
 
-    private var isAlbumVisible: Boolean = false
-    var list: List<Track>? = null
+    private var list: List<Track>? = null
 
     inner class ViewHolder(val binding: ItemTrackSmallBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -30,7 +30,7 @@ class TrackAdapter(
         ItemTrackSmallBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
-    override fun getItemCount() = list?.count() ?: 0
+    override fun getItemCount() = list?.size ?: 0
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
@@ -45,11 +45,6 @@ class TrackAdapter(
         }
         track.artists.joinToString(", ") { it.name }.let {
             if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
-        }
-        if (isAlbumVisible) {
-            track.album?.title?.let {
-                if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
-            }
         }
         binding.itemSubtitle.isVisible = subtitle.isNotEmpty()
         binding.itemSubtitle.text = subtitle
@@ -66,9 +61,9 @@ class TrackAdapter(
         }
     }
 
-    fun submitList(tracks: List<Track>, isAlbumVisible: Boolean = false) {
+    @SuppressLint("NotifyDataSetChanged")
+    fun submitList(tracks: List<Track>) {
         list = tracks
-        this.isAlbumVisible = isAlbumVisible
-        notifyItemRangeInserted(0, tracks.count())
+        notifyDataSetChanged()
     }
 }

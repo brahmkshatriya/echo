@@ -195,7 +195,7 @@ class ItemFragment : Fragment() {
             when (item) {
                 is Lists.AlbumItem -> {
                     albumHeaderAdapter.submit(item.album, isRadioClient)
-                    trackAdapter.submitList(item.album.tracks, true)
+                    trackAdapter.submitList(item.album.tracks)
                 }
 
                 is Lists.PlaylistItem -> {

@@ -32,6 +32,7 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
 
 @AndroidEntryPoint
 class MainActivity2 : AppCompatActivity() {
@@ -88,7 +89,7 @@ class MainActivity2 : AppCompatActivity() {
             binding.navViewOutline?.alpha = 1 - offset
         }
 
-        uiViewModel.setupPlayerBehavior(binding.playerFragmentContainer)
+        setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
         configureSnackBar(navHostFragment.navController, binding.navView)
 
         val sessionToken =
