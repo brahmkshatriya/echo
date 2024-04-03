@@ -1,8 +1,7 @@
 package dev.brahmkshatriya.echo.viewmodels
 
 import android.app.Application
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaBrowser
@@ -16,10 +15,12 @@ import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.player.PlayerListener
 import dev.brahmkshatriya.echo.player.Queue
 import dev.brahmkshatriya.echo.player.RadioListener.Companion.radio
+import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,24 +34,25 @@ class PlayerViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 
+    val list = global.queue
+    val currentIndex = global.currentIndex
+    val listChangeFlow = merge(
+        global.addTrackFlow,
+        global.removeTrackFlow,
+        global.moveTrackFlow,
+        global.clearQueueFlow
+    ).map { global.queue }
+
     val audioIndexFlow = MutableSharedFlow<Int>()
     val playPause: MutableSharedFlow<Boolean> = MutableSharedFlow()
     val seekTo: MutableSharedFlow<Long> = MutableSharedFlow()
     val seekToPrevious: MutableSharedFlow<Unit> = MutableSharedFlow()
     val seekToNext: MutableSharedFlow<Unit> = MutableSharedFlow()
-    val repeat: MutableSharedFlow<Int> = MutableSharedFlow()
-    val shuffle: MutableSharedFlow<Boolean> = MutableSharedFlow()
 
     val clearQueueFlow = global.clearQueueFlow
     val addTrackFlow = global.addTrackFlow
     val moveTrackFlow = global.moveTrackFlow
     val removeTrackFlow = global.removeTrackFlow
-
-    fun shuffle(shuffled: Boolean) {
-        viewModelScope.launch {
-            shuffle.emit(shuffled)
-        }
-    }
 
     fun clearQueue() {
         viewModelScope.launch {
@@ -80,6 +82,7 @@ class PlayerViewModel @Inject constructor(
             playIndex?.let { audioIndexFlow.emit(pos + it) }
         }
     }
+
     fun addToQueue(clientId: String, track: Track) {
         viewModelScope.launch { global.addTrack(clientId, track) }
     }
@@ -98,9 +101,6 @@ class PlayerViewModel @Inject constructor(
 
 
 
-    val list
-        get() = global.queue.mapIndexed { index, it -> (currentIndex.value == index) to it.track }
-
     fun getTrack(mediaId: String?) = global.getTrack(mediaId)?.track
 
     fun createException(exception: PlaybackException) {
@@ -113,9 +113,11 @@ class PlayerViewModel @Inject constructor(
         global.currentIndex.value = index
     }
 
+    val playPauseListener = CheckBoxListener {
+        viewModelScope.launch { playPause.emit(it) }
+    }
+
     val track = MutableStateFlow(global.queue.firstOrNull()?.track)
-    val currentIndex = global.currentIndex
-    var repeatMode: Int = 0
 
     val progress = MutableStateFlow(0 to 0)
     val totalDuration = MutableStateFlow(0)
@@ -124,19 +126,12 @@ class PlayerViewModel @Inject constructor(
     val isPlaying = MutableStateFlow(false)
     val nextEnabled = MutableStateFlow(false)
     val previousEnabled = MutableStateFlow(false)
-    val shuffled = MutableStateFlow(false)
 
-    val listChangeFlow = merge(
-        global.addTrackFlow,
-        global.removeTrackFlow,
-        global.moveTrackFlow,
-        global.clearQueueFlow,
-        global.currentIndex,
-    )
+    val repeat = MutableStateFlow(0)
+    val shuffle = MutableStateFlow(false)
 
     companion object {
-        fun AppCompatActivity.connectPlayerToUI(player: MediaBrowser) {
-            val viewModel by viewModels<PlayerViewModel>()
+        fun LifecycleOwner.connectPlayerToUI(player: MediaBrowser, viewModel: PlayerViewModel) {
             val listener = PlayerListener(player, viewModel)
             player.addListener(listener)
 

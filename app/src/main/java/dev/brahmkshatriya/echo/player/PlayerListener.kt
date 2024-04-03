@@ -26,7 +26,8 @@ class PlayerListener(
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
         viewModel.changeCurrent(player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it })
-        viewModel.shuffled.value = player.shuffleModeEnabled
+        viewModel.shuffle.value = player.shuffleModeEnabled
+        viewModel.repeat.value = player.repeatMode
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -70,7 +71,7 @@ class PlayerListener(
     }
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-        viewModel.shuffled.value = shuffleModeEnabled
+        viewModel.shuffle.value = shuffleModeEnabled
     }
 
     private fun updateProgress() {
@@ -96,7 +97,7 @@ class PlayerListener(
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateNavigation()
-        viewModel.repeatMode = repeatMode
+        viewModel.repeat.value = repeatMode
     }
 
     private fun updateNavigation() {

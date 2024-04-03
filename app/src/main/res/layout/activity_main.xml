@@ -2,51 +2,42 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:background="?echoBackground"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/nav_host_fragment"
+        android:id="@+id/navHostFragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="80dp"
-        app:defaultNavHost="true" />
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/new_navigation" />
 
-    <FrameLayout
-        android:id="@+id/snackbar_container"
-        android:transitionName="exception"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="88dp"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/playerFragmentContainer"
+        android:name="dev.brahmkshatriya.echo.ui.player.PlayerFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="@dimen/bottom_player_peek_height"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        tools:layout="@layout/fragment_player" />
+
+    <View
+        android:id="@+id/navViewOutline"
+        style="@style/AppBarOutline"
+        android:elevation="5dp"
+        app:layout_anchor="@id/navView" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/nav_view"
+        android:id="@+id/navView"
+        style="@style/NavView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:backgroundTint="?attr/navBackground"
-        app:itemActiveIndicatorStyle="@style/BottomNavbarActiveIndicator"
-        app:itemIconTint="@color/bottom_item_icon"
-        app:labelVisibilityMode="labeled"
+        android:minHeight="@dimen/nav_height"
         app:menu="@menu/bottom_nav_menu" />
-
-    <FrameLayout
-        android:id="@+id/bottom_player_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurfaceContainerLow"
-        android:translationY="152dp"
-        app:behavior_hideable="true"
-        app:behavior_peekHeight="@dimen/bottom_player_peek_height"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
-        <include
-            android:id="@+id/bottom_player"
-            layout="@layout/bottom_player" />
-
-    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

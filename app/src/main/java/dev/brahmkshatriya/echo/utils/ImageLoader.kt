@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.utils
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
@@ -58,6 +60,11 @@ fun ImageView.load(placeHolder: Int) {
 
 fun ImageView.load(drawable: Drawable?) {
     Glide.with(this).load(drawable).into(this)
+}
+
+suspend fun ImageHolder.getBitmap(context: Context): Bitmap? = when (this) {
+    is ImageHolder.BitmapHolder -> bitmap
+    else -> tryWithSuspend { createRequest(Glide.with(context).asBitmap()).submit().get() }
 }
 
 fun <T : View> ImageHolder?.load(

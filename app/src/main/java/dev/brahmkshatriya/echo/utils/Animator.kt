@@ -33,12 +33,16 @@ object Animator {
     fun View.animateTranslation(isRail: Boolean, isVisible: Boolean, action: () -> Unit) {
         val value = if (isVisible) 0f else if (isRail) -width.toFloat() else height.toFloat()
         if (animations) {
+            fun ViewPropertyAnimator.withEnd(block: () -> Unit) = withEndAction {
+                block()
+                if(!isVisible) action()
+            }
             val animation =
-                if (isRail) animate().translationX(value).withEndAction { translationX = value }
-                else animate().translationY(value).withEndAction { translationY = value }
+                if (isRail) animate().translationX(value).withEnd { translationX = value }
+                else animate().translationY(value).withEnd { translationY = value }
             startAnimation(
                 if (isVisible) animation.withStartAction(action)
-                else animation.withEndAction(action)
+                else animation
             )
         }
         else {
@@ -60,9 +64,8 @@ object Animator {
         if (view.animations) {
             clearAnimation()
             view.translationY = newHeight.toFloat() - peekHeight
-            peekHeight = newHeight
             startAnimation(animate().translationY(0f))
-        } else peekHeight = newHeight
+        }
     }
 
     private val View.animations

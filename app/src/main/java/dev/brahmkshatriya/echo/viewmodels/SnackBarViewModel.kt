@@ -77,7 +77,6 @@ class SnackBarViewModel @Inject constructor(
             }
 
             observe(viewModel.mutableMessageFlow) { message ->
-                println("SnackBarViewModel: $message")
                 createSnackBar(message)
             }
 

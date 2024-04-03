@@ -5,10 +5,10 @@
     android:layout_height="match_parent"
     android:background="@color/amoled_bg">
 
-<!--    <androidx.viewpager2.widget.ViewPager2-->
-<!--        android:id="@+id/collapsedViewPager"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <View
         style="@style/AppBarOutline"
@@ -43,6 +43,7 @@
                 app:iconTint="@color/button_player" />
 
             <include
+                android:id="@+id/playerControls"
                 layout="@layout/item_player_controls"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -55,10 +56,10 @@
                 android:layout_height="match_parent"
                 android:backgroundTint="?navBackground"
                 android:clipToPadding="false"
-                app:marginLeftSystemWindowInsets="false"
-                app:marginRightSystemWindowInsets="false"
                 app:behavior_peekHeight="64dp"
-                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+                app:marginLeftSystemWindowInsets="false"
+                app:marginRightSystemWindowInsets="false">
 
                 <include layout="@layout/fragment_player_info" />
 

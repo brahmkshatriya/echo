@@ -46,7 +46,7 @@ class MediaClickListener(
             is EchoMediaItem.TrackItem -> {
                 clientId ?: return noClient()
                 val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
-                playerViewModel.play(clientId, item.track)
+                playerViewModel.play(clientId, item.track, 0)
             }
 
             else -> openItem(clientId, item, transitionView)

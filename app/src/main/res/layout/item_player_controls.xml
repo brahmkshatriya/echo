@@ -37,8 +37,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
+                android:textColor="@color/button_player"
                 android:minHeight="32dp"
-                android:textColor="?attr/colorTertiary"
                 android:textSize="16sp"
                 tools:text="Artist" />
         </LinearLayout>
@@ -85,11 +85,9 @@
             android:layout_marginEnd="-2dp"
             android:layout_marginBottom="22dp"
             android:value="0.2"
-            android:stateListAnimator="@animator/track_seekbar_state_list_animator"
             app:labelBehavior="gone"
             app:thumbColor="?attr/colorTertiary"
             app:thumbHeight="16dp"
-            app:thumbTrackGapSize="0dp"
             app:thumbWidth="16dp"
             app:trackColorActive="?attr/colorTertiary"
             app:trackColorInactive="@android:color/transparent"

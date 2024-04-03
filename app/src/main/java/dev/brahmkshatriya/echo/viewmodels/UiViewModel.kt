@@ -14,10 +14,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.Animator.animatePeekHeight
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -59,13 +57,11 @@ class UiViewModel : ViewModel() {
 
     fun setPlayerNavViewInsets(context: Context, isNavVisible: Boolean, isRail: Boolean): Insets {
         val insets = context.resources.run {
-            if (isNavVisible) {
-                if (isRail) {
-                    val width = getDimensionPixelSize(R.dimen.nav_width)
-                    if (context.isRTL()) Insets(end = width)
-                    else Insets(start = width)
-                } else Insets(bottom = getDimensionPixelSize(R.dimen.nav_height))
-            } else Insets()
+            if (!isNavVisible) return@run Insets()
+            val height = getDimensionPixelSize(R.dimen.nav_height)
+            if (!isRail) return@run Insets(bottom = height)
+            val width = getDimensionPixelSize(R.dimen.nav_width)
+            if (context.isRTL()) Insets(end = width) else Insets(start = width)
         }
         playerNavViewInsets.value = insets
         return insets
@@ -92,10 +88,10 @@ class UiViewModel : ViewModel() {
         playerInsets.value = insets
     }
 
-    val fromNotification: MutableSharedFlow<Boolean> = MutableSharedFlow()
-
-    val playerSheetState = MutableStateFlow(STATE_COLLAPSED)
+    val playerSheetState = MutableStateFlow(STATE_HIDDEN)
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
+    val changePlayerState = MutableSharedFlow<Int>()
+    val changeInfoState = MutableSharedFlow<Int>()
 
     val playerSheetOffset = MutableStateFlow(0f)
     val infoSheetOffset = MutableStateFlow(0f)
@@ -183,11 +179,33 @@ class UiViewModel : ViewModel() {
 
         fun LifecycleOwner.setupPlayerBehavior(viewModel: UiViewModel, view: View) {
             val behavior = BottomSheetBehavior.from(view)
+            observe(viewModel.infoSheetState) { behavior.isDraggable = it == STATE_COLLAPSED }
+            observe(viewModel.changePlayerState) {
+                if (it == STATE_HIDDEN) behavior.isHideable = true
+                viewModel.playerSheetState.value = it
+                behavior.state = it
+            }
+            observeBack(behavior, viewModel) { viewModel.infoSheetState.value != STATE_EXPANDED }
+
+            val combined =
+                viewModel.run { playerNavViewInsets.combine(systemInsets) { nav, _ -> nav } }
+            observe(combined) {
+                val collapsedCoverSize =
+                    view.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
+                val peekHeight =
+                    view.resources.getDimensionPixelSize(R.dimen.bottom_player_peek_height)
+                val height = if (it.bottom == 0) collapsedCoverSize else peekHeight
+                val newHeight = viewModel.systemInsets.value.bottom + height
+                behavior.peekHeight = newHeight
+                behavior.animatePeekHeight(view, newHeight)
+            }
+
+            behavior.state = viewModel.playerSheetState.value
             behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     val expanded = newState == STATE_EXPANDED
                     behavior.isHideable = !expanded
-                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
+                    if (newState == BottomSheetBehavior.STATE_SETTLING || newState == BottomSheetBehavior.STATE_DRAGGING) return
                     viewModel.playerSheetState.value = newState
                 }
 
@@ -196,29 +214,18 @@ class UiViewModel : ViewModel() {
                     viewModel.playerSheetOffset.value = offset
                 }
             })
-            observe(viewModel.infoSheetState) { behavior.isDraggable = it == STATE_COLLAPSED }
-            observeBack(behavior, viewModel) { viewModel.infoSheetState.value != STATE_EXPANDED }
-            val combined = viewModel.run {
-                playerNavViewInsets.combine(systemInsets) { nav, _ -> nav }
-            }
-            observe(combined) {
-                if (behavior.state == STATE_HIDDEN) return@observe
-                val collapsedCoverSize =
-                    view.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
-                val peekHeight =
-                    view.resources.getDimensionPixelSize(R.dimen.bottom_player_peek_height)
-                val height = if (it.bottom == 0) collapsedCoverSize else peekHeight
-                val newHeight = viewModel.systemInsets.value.bottom + height
-                behavior.animatePeekHeight(view, newHeight)
-            }
-            behavior.state = viewModel.playerSheetState.value
-            observe(viewModel.fromNotification) {
-                if (it) behavior.state = STATE_EXPANDED
-            }
         }
 
         fun LifecycleOwner.setupPlayerInfoBehavior(viewModel: UiViewModel, view: View) {
             val behavior = BottomSheetBehavior.from(view)
+
+            observe(viewModel.changeInfoState) {
+                viewModel.infoSheetState.value = it
+                behavior.state = it
+            }
+            observeBack(behavior, viewModel) { behavior.state == STATE_EXPANDED }
+
+            behavior.state = viewModel.infoSheetState.value
             behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     viewModel.infoSheetState.value = newState
@@ -229,7 +236,6 @@ class UiViewModel : ViewModel() {
                     viewModel.infoSheetOffset.value = offset
                 }
             })
-            observeBack(behavior, viewModel) { behavior.state == STATE_EXPANDED }
         }
     }
 }
