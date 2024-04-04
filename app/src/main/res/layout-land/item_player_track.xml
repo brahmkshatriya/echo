@@ -14,18 +14,18 @@
         android:background="@color/amoled_bg" />
 
     <LinearLayout
+        android:id="@+id/expandedTrackCoverContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="24dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/expandedTrackCoverContainer"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginEnd="-12dp"
+            android:layout_marginEnd="24dp"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:padding="24dp"
             app:layout_constraintHeight_max="@dimen/max_cover_size"
             app:layout_constraintWidth_max="@dimen/max_cover_size">
 

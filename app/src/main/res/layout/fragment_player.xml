@@ -10,27 +10,33 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/collapsePlayer"
-        style="?attr/materialIconButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="8dp"
-        android:contentDescription="@string/collapse_player"
-        android:padding="8dp"
-        app:icon="@drawable/ic_expand_more"
-        app:iconSize="24dp"
-        app:iconTint="@color/button_player" />
-
-    <include
-        android:id="@+id/playerControls"
-        layout="@layout/item_player_controls"
+    <FrameLayout
+        android:id="@+id/playerControlContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="88dp" />
+        android:layout_height="match_parent">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/collapsePlayer"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp"
+            android:contentDescription="@string/collapse_player"
+            android:padding="8dp"
+            app:icon="@drawable/ic_expand_more"
+            app:iconSize="24dp"
+            app:iconTint="@color/button_player" />
+
+        <include
+            android:id="@+id/playerControls"
+            layout="@layout/item_player_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="88dp" />
+
+    </FrameLayout>
 
     <View
         style="@style/AppBarOutline"

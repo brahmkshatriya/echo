@@ -14,11 +14,12 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.player.Queue
 import dev.brahmkshatriya.echo.utils.Animator.animatePeekHeight
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
@@ -32,8 +33,9 @@ import kotlin.math.max
 
 @HiltViewModel
 class UiViewModel @Inject constructor(
-    val global: Queue
+    initialPlayerState: Int
 ) : ViewModel() {
+
     data class Insets(
         val top: Int = 0,
         val bottom: Int = 0,
@@ -53,7 +55,7 @@ class UiViewModel @Inject constructor(
     private val navViewInsets = MutableStateFlow(Insets())
     private val playerNavViewInsets = MutableStateFlow(Insets())
     private val playerInsets = MutableStateFlow(Insets())
-    private val systemInsets = MutableStateFlow(Insets())
+    val systemInsets = MutableStateFlow(Insets())
 
     val combined = systemInsets.combine(navViewInsets) { system, nav ->
         system.add(nav)
@@ -94,9 +96,7 @@ class UiViewModel @Inject constructor(
         playerInsets.value = insets
     }
 
-    val playerSheetState = MutableStateFlow(
-        if(global.queue.isEmpty()) STATE_HIDDEN else STATE_COLLAPSED
-    )
+    val playerSheetState = MutableStateFlow(initialPlayerState)
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
     val changePlayerState = MutableSharedFlow<Int>()
     val changeInfoState = MutableSharedFlow<Int>()
@@ -141,6 +141,16 @@ class UiViewModel @Inject constructor(
                 bottom = insets.bottom + verticalPadding,
                 start = insets.start,
                 end = insets.end
+            )
+        }
+
+        fun View.applyInsets(it: Insets, paddingDp: Int = 0) {
+            val padding = paddingDp.dpToPx(context)
+            updatePaddingRelative(
+                top = it.top + padding,
+                bottom = it.bottom + padding,
+                start = it.start + padding,
+                end = it.end + padding,
             )
         }
 
@@ -193,7 +203,10 @@ class UiViewModel @Inject constructor(
                 viewModel.playerSheetState.value = it
                 behavior.state = it
             }
-            observeBack(behavior, viewModel) { viewModel.infoSheetState.value != STATE_EXPANDED }
+            observeBack(behavior, viewModel) {
+                println("infoSheetState: ${viewModel.infoSheetState.value}")
+                viewModel.infoSheetState.value != STATE_EXPANDED
+            }
 
             val combined =
                 viewModel.run { playerNavViewInsets.combine(systemInsets) { nav, _ -> nav } }
@@ -213,7 +226,7 @@ class UiViewModel @Inject constructor(
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     val expanded = newState == STATE_EXPANDED
                     behavior.isHideable = !expanded
-                    if (newState == BottomSheetBehavior.STATE_SETTLING || newState == BottomSheetBehavior.STATE_DRAGGING) return
+                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
                     viewModel.playerSheetState.value = newState
                 }
 
@@ -236,6 +249,8 @@ class UiViewModel @Inject constructor(
             behavior.state = viewModel.infoSheetState.value
             behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
+                    println("newState : $newState")
                     viewModel.infoSheetState.value = newState
                 }
 

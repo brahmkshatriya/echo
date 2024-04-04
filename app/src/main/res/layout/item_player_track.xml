@@ -1,55 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/amoled_bg"
-    android:fillViewport="true">
+    android:background="@color/amoled_bg">
 
-    <FrameLayout
+    <View
+        android:id="@+id/background"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="@color/amoled_bg" />
 
-        <View
-            android:id="@+id/background"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0"
-            android:background="@color/amoled_bg" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/expandedTrackCoverContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="220dp"
+        android:clipToPadding="false"
+        android:padding="24dp"
+        app:layout_constraintHeight_max="@dimen/max_cover_size"
+        app:layout_constraintWidth_max="@dimen/max_cover_size">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/expandedTrackCoverContainer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="220dp"
-            android:clipToPadding="false"
-            android:padding="24dp"
-            app:layout_constraintHeight_max="@dimen/max_cover_size"
-            app:layout_constraintWidth_max="@dimen/max_cover_size">
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/expandedTrackCover"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/colorSurfaceContainerHigh"
+            android:elevation="2dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1,1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
+            tools:ignore="ImageContrastCheck" />
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/expandedTrackCover"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:background="?attr/colorSurfaceContainerHigh"
-                android:elevation="2dp"
-                android:importantForAccessibility="no"
-                android:scaleType="fitCenter"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1,1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
-                tools:ignore="ImageContrastCheck" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+    <include
+        android:id="@+id/collapsedContainer"
+        layout="@layout/item_player_collapsed" />
 
-        <include
-            android:id="@+id/collapsedContainer"
-            layout="@layout/item_player_collapsed" />
-
-    </FrameLayout>
-
-</ScrollView>
+</FrameLayout>

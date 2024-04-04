@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +32,7 @@ import dev.brahmkshatriya.echo.utils.getBitmap
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -81,13 +83,19 @@ class PlayerFragment : Fragment() {
             }
         }
 
-        observe(uiViewModel.playerSheetState){
+        observe(uiViewModel.playerSheetState) {
             if (it == STATE_HIDDEN) viewModel.clearQueue()
         }
 
         observe(viewModel.currentIndex) {
             it ?: return@observe
             binding.viewPager.currentItem = it
+        }
+
+        observe(uiViewModel.systemInsets) {
+            binding.playerControlInfoContainer
+                ?.updatePaddingRelative(top = it.top, end = it.end)
+                ?: binding.playerControlContainer?.applyInsets(it)
         }
 
         observe(uiViewModel.playerSheetOffset) {

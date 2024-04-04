@@ -53,7 +53,6 @@ sealed class MediaItemViewHolder(itemView: View) :
             get() = binding.cover.root
 
         override fun bind(item: EchoMediaItem) {
-            item as EchoMediaItem.TrackItem
             titleBinding.bind(item)
             binding.cover.bind(item)
         }
@@ -110,11 +109,11 @@ sealed class MediaItemViewHolder(itemView: View) :
             subtitle.text = item.subtitle
         }
 
-        fun ItemTrackCoverBinding.bind(item: EchoMediaItem.TrackItem) {
+        fun ItemTrackCoverBinding.bind(item: EchoMediaItem) {
             item.cover.loadInto(trackImageView, item.placeHolder())
         }
 
-        fun ItemProfileCoverBinding.bind(item: EchoMediaItem.Profile) {
+        fun ItemProfileCoverBinding.bind(item: EchoMediaItem) {
             item.cover.loadInto(profileImageView, item.placeHolder())
         }
 

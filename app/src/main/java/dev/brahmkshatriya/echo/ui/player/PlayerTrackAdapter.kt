@@ -8,7 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DiffUtil
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.player.StreamableTrack
@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.flow.Flow
 
 class PlayerTrackAdapter(
@@ -43,26 +44,6 @@ class PlayerTrackAdapter(
 
     override fun Holder<StreamableTrack, ItemPlayerTrackBinding>.onBind(position: Int) {
         val track = getItem(position)?.track
-        observe(uiViewModel.playerSheetOffset) {
-            val height = binding.collapsedContainer.root.height
-            binding.collapsedContainer.root.run {
-                translationY = -height * it
-                alpha = 1 - it
-                isVisible = it < 1
-            }
-            binding.expandedTrackCoverContainer.run {
-                translationY = height * (1 - it)
-                alpha = it
-            }
-        }
-        binding.collapsedContainer.root.setOnClickListener {
-            emit(uiViewModel.changePlayerState) { STATE_EXPANDED }
-        }
-
-        observe(uiViewModel.infoSheetOffset) {
-            binding.background.alpha = it
-        }
-
 
         track?.cover.loadWith(binding.expandedTrackCover) {
             binding.collapsedContainer.collapsedTrackCover.load(it)
@@ -86,6 +67,30 @@ class PlayerTrackAdapter(
             }
         }
 
+
+        binding.collapsedContainer.root.setOnClickListener {
+            emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_EXPANDED }
+        }
+
+        observe(uiViewModel.playerSheetOffset) {
+            val offset = it
+            val height = binding.collapsedContainer.root.height
+            binding.collapsedContainer.root.run {
+                translationY = -height * offset
+                alpha = 1 - offset
+                isVisible = offset < 1
+            }
+            binding.expandedTrackCoverContainer.alpha = offset
+        }
+
+        observe(uiViewModel.infoSheetOffset) {
+            binding.background.alpha = it
+        }
+
+        observe(uiViewModel.systemInsets) {
+            binding.expandedTrackCoverContainer.applyInsets(it, 24)
+        }
+
         val playPauseListener = viewModel.playPauseListener
         binding.collapsedContainer.collapsedTrackPlayPause
             .addOnCheckedStateChangedListener(playPauseListener)
@@ -100,6 +105,7 @@ class PlayerTrackAdapter(
         }
         observeCollapsed(viewModel.progress) {
             val (current, buffered) = it ?: (0 to 0)
+            println("${track?.title} : $current")
             collapsedBuffer.progress = buffered
             collapsedSeekBar.progress = current
         }

@@ -18,7 +18,8 @@ class MediaItemAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
         return when (viewType) {
-            0 -> MediaItemViewHolder.Lists.create(parent)
+            0 -> MediaItemViewHolder.Track.create(parent)
+//            0 -> MediaItemViewHolder.Lists.create(parent)
             1 -> MediaItemViewHolder.Profile.create(parent)
             2 -> MediaItemViewHolder.Track.create(parent)
             else -> throw IllegalArgumentException("Invalid view type")

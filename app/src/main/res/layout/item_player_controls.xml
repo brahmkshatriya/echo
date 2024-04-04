@@ -68,27 +68,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="12dp"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="20dp"
             android:alpha="0.5"
             android:progress="40"
             app:indicatorColor="?attr/colorTertiary"
             app:indicatorTrackGapSize="0dp"
             app:trackColor="?attr/colorOnSurface"
             app:trackCornerRadius="4dp"
-            app:trackThickness="4dp" />
+            app:trackThickness="8dp" />
 
         <com.google.android.material.slider.Slider
             android:id="@+id/seekBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="-2dp"
-            android:layout_marginEnd="-2dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
             android:layout_marginBottom="22dp"
             android:value="0.2"
             app:labelBehavior="gone"
             app:thumbColor="?attr/colorTertiary"
-            app:thumbHeight="16dp"
-            app:thumbWidth="16dp"
+            app:thumbHeight="20dp"
+            app:thumbWidth="20dp"
             app:trackColorActive="?attr/colorTertiary"
             app:trackColorInactive="@android:color/transparent"
             app:trackHeight="4dp" />
