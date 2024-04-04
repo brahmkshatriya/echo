@@ -22,11 +22,15 @@ fun <T> LifecycleOwner.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
 }
 
 fun <T> LifecycleOwner.emit(flow: MutableSharedFlow<T>, block: () -> T) {
-    lifecycleScope.launch { flow.emit(block()) }
+    val it = block()
+    if (!flow.tryEmit(it)) lifecycleScope.launch {
+        println("launching emit")
+        flow.emit(it)
+    }
 }
 
 fun LifecycleOwner.emit(flow: MutableSharedFlow<Unit>) {
-    lifecycleScope.launch { flow.emit(Unit) }
+    emit(flow) {}
 }
 
 

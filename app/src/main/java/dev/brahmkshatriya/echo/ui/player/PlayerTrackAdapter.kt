@@ -8,12 +8,14 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DiffUtil
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.player.StreamableTrack
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
+import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
@@ -46,15 +48,22 @@ class PlayerTrackAdapter(
             binding.collapsedContainer.root.run {
                 translationY = -height * it
                 alpha = 1 - it
+                isVisible = it < 1
             }
             binding.expandedTrackCoverContainer.run {
                 translationY = height * (1 - it)
                 alpha = it
             }
         }
+        binding.collapsedContainer.root.setOnClickListener {
+            emit(uiViewModel.changePlayerState) { STATE_EXPANDED }
+        }
+
         observe(uiViewModel.infoSheetOffset) {
             binding.background.alpha = it
         }
+
+
         track?.cover.loadWith(binding.expandedTrackCover) {
             binding.collapsedContainer.collapsedTrackCover.load(it)
             val colors = binding.root.context.getPlayerColors(it as? BitmapDrawable)
@@ -65,6 +74,7 @@ class PlayerTrackAdapter(
             collapsedTrackArtist.text = track?.artists?.joinToString(", ") { it.name }
             collapsedTrackTitle.text = track?.title
         }
+
         fun <T> observeCollapsed(
             flow: Flow<T>,
             block: ItemPlayerCollapsedBinding.(T?) -> Unit

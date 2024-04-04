@@ -26,16 +26,29 @@ abstract class LifeCycleListAdapter<TData : Any, TBindingType : ViewBinding>(
         viewType: Int
     ): Holder<TData, TBindingType> {
         val binding = inflateCallback(LayoutInflater.from(parent.context), parent)
-        return Holder(binding) { onBind(it) }
+        val holder = Holder(binding) { onBind(it) }
+        holder.lifecycleRegistry = LifecycleRegistry(holder)
+        return holder
     }
 
     override fun onBindViewHolder(
         holder: Holder<TData, TBindingType>,
         position: Int
     ) {
-        holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        destroyLifeCycle(holder)
         holder.lifecycleRegistry = LifecycleRegistry(holder)
+        holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         holder.bind(position)
+    }
+
+    private fun destroyLifeCycle(holder: Holder<TData, TBindingType>) {
+        if(holder.lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED))
+            holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    }
+
+    override fun onViewRecycled(holder: Holder<TData, TBindingType>) {
+        super.onViewRecycled(holder)
+        destroyLifeCycle(holder)
     }
 
 
@@ -44,10 +57,9 @@ abstract class LifeCycleListAdapter<TData : Any, TBindingType : ViewBinding>(
         private val onBind: Holder<TData, TBindingType>.(position: Int) -> Unit
     ) : RecyclerView.ViewHolder(binding.root), LifecycleOwner {
 
-        var lifecycleRegistry = LifecycleRegistry(this)
+        lateinit var lifecycleRegistry : LifecycleRegistry
 
         fun bind(position: Int) {
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
             onBind(position)
         }
 

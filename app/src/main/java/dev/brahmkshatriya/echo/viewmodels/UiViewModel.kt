@@ -16,7 +16,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.player.Queue
 import dev.brahmkshatriya.echo.utils.Animator.animatePeekHeight
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
@@ -25,9 +27,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import javax.inject.Inject
 import kotlin.math.max
 
-class UiViewModel : ViewModel() {
+@HiltViewModel
+class UiViewModel @Inject constructor(
+    val global: Queue
+) : ViewModel() {
     data class Insets(
         val top: Int = 0,
         val bottom: Int = 0,
@@ -88,7 +94,9 @@ class UiViewModel : ViewModel() {
         playerInsets.value = insets
     }
 
-    val playerSheetState = MutableStateFlow(STATE_HIDDEN)
+    val playerSheetState = MutableStateFlow(
+        if(global.queue.isEmpty()) STATE_HIDDEN else STATE_COLLAPSED
+    )
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
     val changePlayerState = MutableSharedFlow<Int>()
     val changeInfoState = MutableSharedFlow<Int>()

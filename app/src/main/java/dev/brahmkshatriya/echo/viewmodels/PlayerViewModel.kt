@@ -37,6 +37,7 @@ class PlayerViewModel @Inject constructor(
     val list = global.queue
     val currentIndex = global.currentIndex
     val listChangeFlow = merge(
+        MutableStateFlow(null),
         global.addTrackFlow,
         global.removeTrackFlow,
         global.moveTrackFlow,

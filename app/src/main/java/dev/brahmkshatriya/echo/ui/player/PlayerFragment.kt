@@ -67,22 +67,22 @@ class PlayerFragment : Fragment() {
             isNestedScrollingEnabled = false
             overScrollMode = View.OVER_SCROLL_NEVER
         }
-        view.post {
-            observe(viewModel.listChangeFlow) {
-                adapter.submitList(it)
-                if (it.isEmpty()) {
+
+        observe(viewModel.listChangeFlow) {
+            adapter.submitList(it)
+            if (it.isEmpty()) {
+                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
+                emit(uiViewModel.changePlayerState) { STATE_HIDDEN }
+            } else {
+                if (uiViewModel.playerSheetState.value == STATE_HIDDEN) {
+                    emit(uiViewModel.changePlayerState) { STATE_COLLAPSED }
                     emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
-                    emit(uiViewModel.changePlayerState) { STATE_HIDDEN }
-                } else {
-                    if (uiViewModel.playerSheetState.value == STATE_HIDDEN) {
-                        emit(uiViewModel.changePlayerState) { STATE_COLLAPSED }
-                        emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
-                    }
                 }
             }
-            observe(uiViewModel.playerSheetState){
-                if (it == STATE_HIDDEN) viewModel.clearQueue()
-            }
+        }
+
+        observe(uiViewModel.playerSheetState){
+            if (it == STATE_HIDDEN) viewModel.clearQueue()
         }
 
         observe(viewModel.currentIndex) {
