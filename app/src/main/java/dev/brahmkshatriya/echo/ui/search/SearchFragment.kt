@@ -22,10 +22,11 @@ import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
@@ -48,7 +49,7 @@ class SearchFragment : Fragment() {
             }
 
             is QuickSearchItem.SearchMediaItem -> {
-                val client = viewModel.extensionFlow.flow.value?.metadata?.id
+                val client = viewModel.extensionFlow.value?.metadata?.id
                 mediaClickListener.onClick(client, item.mediaItem, transitionView)
             }
         }
@@ -60,7 +61,7 @@ class SearchFragment : Fragment() {
             }
 
             is QuickSearchItem.SearchMediaItem -> {
-                val client = viewModel.extensionFlow.flow.value?.metadata?.id
+                val client = viewModel.extensionFlow.value?.metadata?.id
                 mediaClickListener.onLongClick(client, item.mediaItem, transitionView)
                 true
             }
@@ -79,8 +80,6 @@ class SearchFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         setupTransition(view)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
             binding.quickSearchView.updatePaddingRelative(start = it.start, end = it.end)
@@ -117,11 +116,10 @@ class SearchFragment : Fragment() {
 
         viewModel.initialize()
 
-        observe(viewModel.extensionFlow.flow) {
+        collect(viewModel.extensionFlow) {
             binding.swipeRefresh.isEnabled = it != null
             mediaContainerAdapter.clientId = it?.metadata?.id
-            binding.recyclerView.adapter =
-                getAdapterForExtension<SearchClient>(it, R.string.search, concatAdapter)
+            binding.recyclerView.applyAdapter<SearchClient>(it, R.string.search, concatAdapter)
         }
 
         val tabListener = object : TabLayout.OnTabSelectedListener {

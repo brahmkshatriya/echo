@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         intent?.hasExtra("fromNotification")?.let {
-            intent.removeExtra("fromNotification")
+            if (!it) return
             emit(uiViewModel.changePlayerState) { STATE_EXPANDED }
         }
         super.onNewIntent(intent)

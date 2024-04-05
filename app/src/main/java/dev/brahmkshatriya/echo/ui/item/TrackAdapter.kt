@@ -59,6 +59,10 @@ class TrackAdapter(
             val list = list ?: return@setOnLongClickListener false
             listener.onLongClick(list, position, binding.root)
         }
+        binding.itemMore.setOnClickListener {
+            val list = list ?: return@setOnClickListener
+            listener.onLongClick(list, position, binding.root)
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

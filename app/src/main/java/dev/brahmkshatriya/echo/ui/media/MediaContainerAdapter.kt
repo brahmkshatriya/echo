@@ -88,15 +88,15 @@ class MediaContainerAdapter(
     // Binding
 
     override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
-        val item = getItem(position) ?: return
-        holder.transitionView.transitionName = item.id
-        holder.bind(item)
+        val items = getItem(position) ?: return
+        holder.transitionView.transitionName = items.id
+        holder.bind(items)
         val clickView = holder.clickView
         clickView.setOnClickListener {
-            listener.onClick(clientId, item, holder.transitionView)
+            listener.onClick(clientId, items, holder.transitionView)
         }
         clickView.setOnLongClickListener {
-            listener.onLongClick(clientId, item, holder.transitionView)
+            listener.onLongClick(clientId, items, holder.transitionView)
             true
         }
     }
@@ -105,14 +105,13 @@ class MediaContainerAdapter(
         val item = getItem(position) ?: return 0
         return when (item) {
             is MediaItemsContainer.Category -> 0
-            is MediaItemsContainer.Item -> 1
+            else -> 1
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         0 -> Category.create(parent, stateViewModel, clientId, listener)
-        1 -> Media.create(parent, clientId, listener)
-        else -> throw IllegalArgumentException("Invalid view type")
+        else -> Media.create(parent, clientId, listener)
     }
 }
 

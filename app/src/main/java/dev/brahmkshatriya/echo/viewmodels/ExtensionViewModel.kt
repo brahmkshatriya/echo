@@ -12,7 +12,6 @@ import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.PluginRepo
@@ -22,14 +21,13 @@ import javax.inject.Inject
 class ExtensionViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: ExtensionModule.ExtensionListFlow,
-    private val mutableExtensionFlow: ExtensionModule.MutableFlow,
+    val extensionFlow: ExtensionModule.ExtensionFlow,
     private val pluginRepo: PluginRepo<ExtensionClient>,
     private val preferences: SharedPreferences,
 ) : CatchingViewModel(throwableFlow) {
 
     val currentExtension
-        get() = mutableExtensionFlow.flow.value
-    val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
+        get() = extensionFlow.value
 
     override fun onInitialize() {
         viewModelScope.launch {
@@ -41,7 +39,7 @@ class ExtensionViewModel @Inject constructor(
             extensionListFlow.flow.collectLatest { list ->
                 list ?: return@collectLatest
                 val id = preferences.getString(LAST_EXTENSION_KEY, null)
-                mutableExtensionFlow.flow.value =
+                extensionFlow.value =
                     list.find { it.metadata.id == id } ?: list.firstOrNull()
             }
         }
@@ -49,7 +47,7 @@ class ExtensionViewModel @Inject constructor(
 
     fun setExtension(client: ExtensionClient) {
         preferences.edit().putString(LAST_EXTENSION_KEY, client.metadata.id).apply()
-        mutableExtensionFlow.flow.value = client
+        extensionFlow.value = client
     }
 
     companion object {
@@ -71,13 +69,13 @@ class ExtensionViewModel @Inject constructor(
             getString(R.string.is_not_supported, getString(R.string.radio), client)
         )
 
-        inline fun <reified T> getAdapterForExtension(
+        inline fun <reified T> RecyclerView.applyAdapter(
             it: ExtensionClient?,
             name: Int,
             adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
             block: ((T?) -> Unit) = {}
-        ): RecyclerView.Adapter<out RecyclerView.ViewHolder> {
-            return if (it != null) {
+        ) {
+            val newAdapter = if (it != null) {
                 if (it is T) {
                     block(it)
                     adapter
@@ -89,6 +87,7 @@ class ExtensionViewModel @Inject constructor(
                 block(null)
                 ClientLoadingAdapter()
             }
+            setAdapter(newAdapter)
         }
 
     }

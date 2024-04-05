@@ -24,14 +24,15 @@ class HomeViewModel @Inject constructor(
     val homeFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
     val genres = MutableStateFlow<List<Genre>>(emptyList())
     var genre: Genre? = null
-        set(value) {
-            if (value != field) refresh()
-            field = value
+        set(newValue) {
+            val oldValue = field
+            field = newValue
+            if (oldValue != newValue) refresh()
         }
 
     override fun onInitialize() {
         viewModelScope.launch {
-            extensionFlow.flow.collect {
+            extensionFlow.collect {
                 val client = it as? HomeFeedClient ?: return@collect
                 loadGenres(client)
             }
@@ -46,14 +47,13 @@ class HomeViewModel @Inject constructor(
         genres.value = list
     }
 
-
     private suspend fun loadFeed(client: HomeFeedClient) = tryWith {
         homeFeed.value = null
         client.getHomeFeed(genre).collectTo(homeFeed)
     }
 
     fun refresh(reset: Boolean = false) {
-        val client = extensionFlow.flow.value as? HomeFeedClient ?: return
+        val client = extensionFlow.value as? HomeFeedClient ?: return
         viewModelScope.launch(Dispatchers.IO) {
             if (reset) {
                 genre = null

@@ -22,9 +22,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.Animator.animatePeekHeight
 import dev.brahmkshatriya.echo.utils.dpToPx
-import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -104,10 +102,28 @@ class UiViewModel @Inject constructor(
     val playerSheetOffset = MutableStateFlow(0f)
     val infoSheetOffset = MutableStateFlow(0f)
 
-    val startBackProgress = MutableSharedFlow<BackEventCompat>()
-    val updateBackProgress = MutableSharedFlow<BackEventCompat>()
-    val handleBackInvoked = MutableSharedFlow<Unit>()
-    val cancelBackProgress = MutableSharedFlow<Unit>()
+    private var playerBackPressCallback: OnBackPressedCallback? = null
+    private var infoBackPressCallback: OnBackPressedCallback? = null
+    fun backPressCallback() = object : OnBackPressedCallback(false) {
+        val backPress
+            get() = infoBackPressCallback ?: playerBackPressCallback
+
+        override fun handleOnBackStarted(backEvent: BackEventCompat) {
+            backPress?.handleOnBackStarted(backEvent)
+        }
+
+        override fun handleOnBackProgressed(backEvent: BackEventCompat) {
+            backPress?.handleOnBackProgressed(backEvent)
+        }
+
+        override fun handleOnBackPressed() {
+            backPress?.handleOnBackPressed()
+        }
+
+        override fun handleOnBackCancelled() {
+            backPress?.handleOnBackCancelled()
+        }
+    }
 
     companion object {
         fun Context.isRTL() =
@@ -154,25 +170,10 @@ class UiViewModel @Inject constructor(
             )
         }
 
-        private fun LifecycleOwner.backPress(viewModel: UiViewModel) =
-            object : OnBackPressedCallback(false) {
-                override fun handleOnBackStarted(backEvent: BackEventCompat) =
-                    emit(viewModel.startBackProgress) { backEvent }
-
-                override fun handleOnBackProgressed(backEvent: BackEventCompat) =
-                    emit(viewModel.updateBackProgress) { backEvent }
-
-                override fun handleOnBackPressed() =
-                    emit(viewModel.handleBackInvoked) {}
-
-                override fun handleOnBackCancelled() =
-                    emit(viewModel.cancelBackProgress) {}
-            }
-
         fun Fragment.applyBackPressCallback(callback: ((Int) -> Unit)? = null) {
             val activity = requireActivity()
             val viewModel by activity.viewModels<UiViewModel>()
-            val backPress = backPress(viewModel)
+            val backPress = viewModel.backPressCallback()
             observe(viewModel.playerSheetState) {
                 backPress.isEnabled = it == STATE_EXPANDED
                 callback?.invoke(it)
@@ -180,20 +181,20 @@ class UiViewModel @Inject constructor(
             activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPress)
         }
 
-        private fun LifecycleOwner.observeBack(
-            behavior: BottomSheetBehavior<View>,
-            viewModel: UiViewModel,
-            block: () -> Boolean,
-        ) {
-            fun <T : Any> observeIf(flow: Flow<T>, function: (T) -> Unit) =
-                observe(flow) { if (block()) function(it) }
-            viewModel.run {
-                observeIf(startBackProgress) { behavior.startBackProgress(it) }
-                observeIf(updateBackProgress) { behavior.updateBackProgress(it) }
-                observeIf(handleBackInvoked) { behavior.handleBackInvoked() }
-                observeIf(cancelBackProgress) { behavior.cancelBackProgress() }
+        private fun BottomSheetBehavior<View>.backPressCallback() =
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackStarted(backEvent: BackEventCompat) =
+                    startBackProgress(backEvent)
+
+                override fun handleOnBackProgressed(backEvent: BackEventCompat) =
+                    updateBackProgress(backEvent)
+
+                override fun handleOnBackPressed() =
+                    handleBackInvoked()
+
+                override fun handleOnBackCancelled() =
+                    cancelBackProgress()
             }
-        }
 
         fun LifecycleOwner.setupPlayerBehavior(viewModel: UiViewModel, view: View) {
             val behavior = BottomSheetBehavior.from(view)
@@ -203,10 +204,7 @@ class UiViewModel @Inject constructor(
                 viewModel.playerSheetState.value = it
                 behavior.state = it
             }
-            observeBack(behavior, viewModel) {
-                println("infoSheetState: ${viewModel.infoSheetState.value}")
-                viewModel.infoSheetState.value != STATE_EXPANDED
-            }
+            viewModel.playerBackPressCallback = behavior.backPressCallback()
 
             val combined =
                 viewModel.run { playerNavViewInsets.combine(systemInsets) { nav, _ -> nav } }
@@ -244,14 +242,14 @@ class UiViewModel @Inject constructor(
                 viewModel.infoSheetState.value = it
                 behavior.state = it
             }
-            observeBack(behavior, viewModel) { behavior.state == STATE_EXPANDED }
 
             behavior.state = viewModel.infoSheetState.value
+            val backPress = behavior.backPressCallback()
             behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
-                    println("newState : $newState")
                     viewModel.infoSheetState.value = newState
+                    viewModel.infoBackPressCallback =
+                        backPress.takeIf { newState == STATE_EXPANDED }
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {

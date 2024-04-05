@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
@@ -27,7 +28,11 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
@@ -38,12 +43,13 @@ import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.albumImage
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.getAdapterForExtension
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
@@ -98,32 +104,32 @@ class ItemFragment : Fragment() {
 
     private fun concatAdapter(item: EchoMediaItem): ConcatAdapter {
         return when (item) {
-            is Lists.AlbumItem ->
+            is AlbumItem ->
                 ConcatAdapter(albumHeaderAdapter, trackAdapter, mediaContainerAdapter)
 
-            is Lists.PlaylistItem ->
+            is PlaylistItem ->
                 ConcatAdapter(playlistHeaderAdapter, trackAdapter, mediaContainerAdapter)
 
-            is Profile.ArtistItem -> ConcatAdapter(artistHeaderAdapter, mediaContainerAdapter)
+            is ArtistItem -> ConcatAdapter(artistHeaderAdapter, mediaContainerAdapter)
             else -> mediaContainerAdapter.withLoaders()
         }
     }
 
-    private inline fun <reified T> getAdapter(
+    private inline fun <reified T> RecyclerView.adapter(
         client: ExtensionClient?,
         item: EchoMediaItem,
         string: Int
-    ) = getAdapterForExtension<T>(client, string, concatAdapter(item))
+    ) = applyAdapter<T>(client, string, concatAdapter(item))
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
         binding = FragmentItemBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
         setupTransition(view)
         applyInsets {
@@ -170,7 +176,7 @@ class ItemFragment : Fragment() {
 
         var isRadioClient = false
         var isUserClient = false
-        observe(viewModel.extensionListFlow.flow) { list ->
+        collect(viewModel.extensionListFlow.flow) { list ->
             val client = list?.find { it.metadata.id == args.clientId }
 
             mediaContainerAdapter.clientId = args.clientId
@@ -182,28 +188,30 @@ class ItemFragment : Fragment() {
             viewModel.client = client
             viewModel.initialize()
 
-            binding.recyclerView.adapter = when (args.item) {
-                is Lists.AlbumItem -> getAdapter<AlbumClient>(client, item, R.string.album)
-                is Lists.PlaylistItem -> getAdapter<PlaylistClient>(client, item, R.string.playlist)
-                is Profile.ArtistItem -> getAdapter<ArtistClient>(client, item, R.string.artist)
-                is Profile.UserItem -> getAdapter<UserClient>(client, item, R.string.user)
-                is TrackItem -> getAdapter<TrackClient>(client, item, R.string.track)
+            binding.recyclerView.run {
+                when (args.item) {
+                    is AlbumItem -> adapter<AlbumClient>(client, item, R.string.album)
+                    is PlaylistItem -> adapter<PlaylistClient>(client, item, R.string.playlist)
+                    is ArtistItem -> adapter<ArtistClient>(client, item, R.string.artist)
+                    is UserItem -> adapter<UserClient>(client, item, R.string.user)
+                    is TrackItem -> adapter<TrackClient>(client, item, R.string.track)
+                }
             }
         }
 
         observe(viewModel.itemFlow) { item ->
             when (item) {
-                is Lists.AlbumItem -> {
+                is AlbumItem -> {
                     albumHeaderAdapter.submit(item.album, isRadioClient)
                     trackAdapter.submitList(item.album.tracks)
                 }
 
-                is Lists.PlaylistItem -> {
+                is PlaylistItem -> {
                     playlistHeaderAdapter.submit(item.playlist, isRadioClient)
                     trackAdapter.submitList(item.playlist.tracks)
                 }
 
-                is Profile.ArtistItem ->
+                is ArtistItem ->
                     artistHeaderAdapter.submit(item.artist, isUserClient, isRadioClient)
 
                 else -> Unit

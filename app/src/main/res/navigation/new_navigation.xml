@@ -8,7 +8,6 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="dev.brahmkshatriya.echo.ui.home.HomeFragment"
-
         tools:layout="@layout/fragment_home" />
 
     <fragment

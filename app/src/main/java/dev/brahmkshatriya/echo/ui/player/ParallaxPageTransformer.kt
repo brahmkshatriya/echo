@@ -8,7 +8,7 @@ class ParallaxPageTransformer(private val id: Int) : ViewPager2.PageTransformer 
     private fun parallax(view: View, position: Float) {
         if (position > -1 && position < 1) {
             val width = view.width.toFloat()
-            view.translationX = -(position * width * 0.8f)
+            view.translationX = -(position * width)
         }
     }
 

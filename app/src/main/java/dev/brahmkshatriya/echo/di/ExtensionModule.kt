@@ -9,9 +9,9 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.data.utils.ApkManifestParser
 import dev.brahmkshatriya.echo.data.utils.LocalExtensionRepo
 import dev.brahmkshatriya.echo.data.utils.RepoWithPreferences
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import tel.jeelpa.plugger.PluginRepo
 import tel.jeelpa.plugger.RepoComposer
 import tel.jeelpa.plugger.models.PluginConfiguration
@@ -44,29 +44,31 @@ class ExtensionModule {
 
     @Provides
     @Singleton
-    fun provideMutableExtensionFlow() = mutableExtensionFlow
-
-    @Provides
-    @Singleton
-    fun providesExtensionClient() = ExtensionFlow(extensionFlow)
+    fun providesExtensionClient() = mutableExtensionFlow
 
     @Provides
     @Singleton
     fun provideExtensionListFlow() = mutableExtensionListFlow
 
     // Dagger cannot directly infer Foo<Bar>, if Bar is an interface
-    // That means the Flow<Clients?> cannot be directly injected,
+    // That means the Flow<ExtensionClient?> cannot be directly injected,
     // So, we need to wrap it in a data class and inject that instead
-    data class MutableFlow(val flow: MutableStateFlow<ExtensionClient?>)
-    data class ExtensionFlow(val flow: StateFlow<ExtensionClient?>)
+    data class ExtensionFlow(private val flow: MutableStateFlow<ExtensionClient?>) :
+        Flow<ExtensionClient?> {
+        var value get() = flow.value
+            set(value) { flow.value = value }
 
-    data class ExtensionListFlow(val flow: MutableStateFlow<List<ExtensionClient>?>) {
-        fun getClient(clientId: String): ExtensionClient? =
-            flow.value?.find { it.metadata.id == clientId }
+        override suspend fun collect(collector: FlowCollector<ExtensionClient?>) =
+            flow.collect(collector)
 
     }
 
-    private val mutableExtensionFlow = MutableFlow(MutableStateFlow(null))
+    data class ExtensionListFlow(val flow: MutableStateFlow<List<ExtensionClient>?>) {
+        fun getClient(clientId: String): ExtensionClient? =
+            flow.replayCache.firstOrNull()?.find { it.metadata.id == clientId }
+
+    }
+
+    private val mutableExtensionFlow = ExtensionFlow(MutableStateFlow(null))
     private val mutableExtensionListFlow = ExtensionListFlow(MutableStateFlow(null))
-    private val extensionFlow = mutableExtensionFlow.flow.asStateFlow()
 }

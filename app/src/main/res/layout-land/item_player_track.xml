@@ -18,16 +18,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:padding="24dp">
+        android:clipToPadding="false"
+        android:padding="24dp"
+        android:baselineAligned="false">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginEnd="24dp"
             android:layout_weight="1"
+            android:layout_marginRight="24dp"
             android:clipToPadding="false"
-            app:layout_constraintHeight_max="@dimen/max_cover_size"
-            app:layout_constraintWidth_max="@dimen/max_cover_size">
+            tools:ignore="RtlHardcoded">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/expandedTrackCover"
@@ -35,6 +36,8 @@
                 android:layout_height="0dp"
                 android:background="?attr/colorSurfaceContainerHigh"
                 android:elevation="2dp"
+                app:layout_constraintHeight_max="@dimen/max_cover_size"
+                app:layout_constraintWidth_max="@dimen/max_cover_size"
                 android:importantForAccessibility="no"
                 android:scaleType="fitCenter"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -47,10 +50,39 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <View
+        <FrameLayout
             android:layout_width="0dp"
+            android:layout_marginTop="-24dp"
+            android:layout_marginLeft="-36dp"
+            android:layout_marginBottom="-24dp"
+            android:layout_marginRight="-24dp"
+            android:padding="24dp"
+            android:clipToPadding="false"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:ignore="RtlHardcoded">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/collapsePlayer"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/collapse_player"
+                android:padding="8dp"
+                app:icon="@drawable/ic_expand_more"
+                app:iconSize="24dp"
+                app:iconTint="@color/button_player" />
+
+            <include
+                android:layout_marginStart="-24dp"
+                android:layout_marginEnd="-24dp"
+                android:id="@+id/playerControls"
+                layout="@layout/item_player_controls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </FrameLayout>
     </LinearLayout>
 
     <include

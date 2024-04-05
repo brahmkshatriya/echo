@@ -15,9 +15,9 @@ import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -31,7 +31,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
     @Inject
-    lateinit var extension: ExtensionModule.ExtensionFlow
+    lateinit var extensionFlow: ExtensionModule.ExtensionFlow
 
     @Inject
     lateinit var extensionList: ExtensionModule.ExtensionListFlow
@@ -88,7 +88,7 @@ class PlaybackService : MediaLibraryService() {
         val pendingIntent = PendingIntent
             .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val callback = PlayerSessionCallback(this, scope, global, extension.flow)
+        val callback = PlayerSessionCallback(this, scope, global, extensionFlow)
 
         mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
                 .setSessionActivity(pendingIntent)

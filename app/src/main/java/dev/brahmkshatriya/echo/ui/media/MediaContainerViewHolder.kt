@@ -16,7 +16,7 @@ import java.lang.ref.WeakReference
 sealed class MediaContainerViewHolder(
     itemView: View,
 ) : RecyclerView.ViewHolder(itemView) {
-    abstract fun bind(item: MediaItemsContainer)
+    abstract fun bind(items: MediaItemsContainer)
     open val clickView = itemView
     abstract val transitionView: View
 
@@ -28,8 +28,8 @@ sealed class MediaContainerViewHolder(
         val listener: MediaItemAdapter.Listener,
     ) :
         MediaContainerViewHolder(binding.root) {
-        override fun bind(item: MediaItemsContainer) {
-            val category = item as MediaItemsContainer.Category
+        override fun bind(items: MediaItemsContainer) {
+            val category = items as MediaItemsContainer.Category
             binding.title.text = category.title
             binding.subtitle.text = category.subtitle
             binding.subtitle.isVisible = category.subtitle.isNullOrBlank().not()
@@ -71,23 +71,23 @@ sealed class MediaContainerViewHolder(
         private val clientId: String?,
         val listener: MediaItemAdapter.Listener,
     ) : MediaContainerViewHolder(binding.root) {
-        override fun bind(item: MediaItemsContainer) {
-            val media = (item as MediaItemsContainer.Item).media
-            binding.title.text = media.title
-            binding.subtitle.text = media.subtitle
-            binding.subtitle.isVisible = media.subtitle.isNullOrBlank().not()
+        override fun bind(items: MediaItemsContainer) {
+            val item = (items as? MediaItemsContainer.Item)?.media ?: return
+            binding.title.text = item.title
+            binding.subtitle.text = item.subtitle
+            binding.subtitle.isVisible = item.subtitle.isNullOrBlank().not()
 
-            binding.trackImageContainer.root.isVisible = media is EchoMediaItem.TrackItem
-            binding.listsImageContainer.root.isVisible = media is EchoMediaItem.Lists
-            binding.profileImageContainer.root.isVisible = media is EchoMediaItem.Profile
+            binding.trackImageContainer.root.isVisible = item is EchoMediaItem.TrackItem
+            binding.listsImageContainer.root.isVisible = item is EchoMediaItem.Lists
+            binding.profileImageContainer.root.isVisible = item is EchoMediaItem.Profile
 
-            when (media) {
-                is EchoMediaItem.TrackItem -> binding.trackImageContainer.bind(media)
-                is EchoMediaItem.Lists -> binding.listsImageContainer.bind(media)
-                is EchoMediaItem.Profile -> binding.profileImageContainer.bind(media)
+            when (item) {
+                is EchoMediaItem.TrackItem -> binding.trackImageContainer.bind(item)
+                is EchoMediaItem.Lists -> binding.listsImageContainer.bind(item)
+                is EchoMediaItem.Profile -> binding.profileImageContainer.bind(item)
             }
 
-            binding.more.setOnClickListener { listener.onLongClick(clientId, media, transitionView) }
+            binding.more.setOnClickListener { listener.onLongClick(clientId, item, transitionView) }
         }
 
         override val transitionView: View = binding.root

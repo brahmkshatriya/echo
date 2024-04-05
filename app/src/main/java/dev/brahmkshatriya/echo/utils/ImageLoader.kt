@@ -35,9 +35,9 @@ fun <T> ImageHolder?.createRequest(
 fun ImageHolder?.loadInto(
     imageView: ImageView, placeholder: Int? = null, errorDrawable: Int? = null
 ) {
-//    val builder = Glide.with(imageView).asDrawable()
-//    val request = createRequest(builder, placeholder, errorDrawable)
-//    request.into(imageView)
+    val builder = Glide.with(imageView).asDrawable()
+    val request = createRequest(builder, placeholder, errorDrawable)
+    request.into(imageView)
 }
 
 fun ImageHolder?.loadWith(
@@ -46,20 +46,20 @@ fun ImageHolder?.loadWith(
     errorDrawable: Int? = null,
     onDrawable: (Drawable?) -> Unit
 ) {
-//    val builder = Glide.with(imageView).asDrawable()
-//    val request = createRequest(builder, placeholder, errorDrawable)
-//    request.into(ViewTarget(imageView) {
-//        imageView.setImageDrawable(it)
-//        tryWith(false) { onDrawable(it) }
-//    })
+    val builder = Glide.with(imageView).asDrawable()
+    val request = createRequest(builder, placeholder, errorDrawable)
+    request.into(ViewTarget(imageView) {
+        imageView.setImageDrawable(it)
+        tryWith(false) { onDrawable(it) }
+    })
 }
 
 fun ImageView.load(placeHolder: Int) {
-//    Glide.with(this).load(placeHolder).into(this)
+    Glide.with(this).load(placeHolder).into(this)
 }
 
 fun ImageView.load(drawable: Drawable?) {
-//    Glide.with(this).load(drawable).into(this)
+    Glide.with(this).load(drawable).into(this)
 }
 
 suspend fun ImageHolder.getBitmap(context: Context): Bitmap? = when (this) {
@@ -70,9 +70,9 @@ suspend fun ImageHolder.getBitmap(context: Context): Bitmap? = when (this) {
 fun <T : View> ImageHolder?.load(
     view: T, placeholder: Int? = null, errorDrawable: Int? = null, onDrawable: (Drawable?) -> Unit
 ) {
-//    val builder = Glide.with(view).asDrawable()
-//    val request = createRequest(builder, placeholder, errorDrawable)
-//    request.circleCrop().into(ViewTarget(view, onDrawable))
+    val builder = Glide.with(view).asDrawable()
+    val request = createRequest(builder, placeholder, errorDrawable)
+    request.circleCrop().into(ViewTarget(view, onDrawable))
 }
 
 class ViewTarget<T : View>(val target: T, private val onDrawable: (Drawable?) -> Unit) :

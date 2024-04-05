@@ -26,15 +26,16 @@ class SearchViewModel @Inject constructor(
     val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
     val genres = MutableStateFlow<List<Genre>>(emptyList())
     var genre: Genre? = null
-        set(value) {
-            if (value != field) refresh()
-            field = value
+        set(newValue) {
+            val oldValue = field
+            field = newValue
+            if (oldValue != newValue) refresh()
         }
     var query: String? = null
 
     override fun onInitialize() {
         viewModelScope.launch {
-            extensionFlow.flow.collect {
+            extensionFlow.collect {
                 val client = it as? SearchClient ?: return@collect
                 loadGenres(client)
             }
@@ -56,7 +57,7 @@ class SearchViewModel @Inject constructor(
     }
 
     fun refresh(reset: Boolean = false) {
-        val client = extensionFlow.flow.value as? SearchClient ?: return
+        val client = extensionFlow.value as? SearchClient ?: return
         viewModelScope.launch(Dispatchers.IO) {
             if (reset) {
                 genre = null
@@ -67,7 +68,7 @@ class SearchViewModel @Inject constructor(
     }
 
     fun quickSearch(query: String) {
-        val client = extensionFlow.flow.value as? SearchClient ?: return
+        val client = extensionFlow.value as? SearchClient ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val list = tryWith { client.quickSearch(query) } ?: emptyList()
             quickFeed.value = list

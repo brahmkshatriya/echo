@@ -67,12 +67,12 @@
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/itemClose"
+                android:id="@+id/itemMore"
                 style="?attr/materialIconButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                android:contentDescription="@string/next"
+                android:contentDescription="@string/more"
                 android:padding="8dp"
                 app:icon="@drawable/ic_more_horiz"
                 app:iconSize="24dp"

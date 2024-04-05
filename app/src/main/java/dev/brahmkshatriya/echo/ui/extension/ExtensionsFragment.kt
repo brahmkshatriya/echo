@@ -16,8 +16,8 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.load
-import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionsFragment : BottomSheetDialogFragment() {
@@ -31,7 +31,6 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
         val navController = findNavController()
         NavigationUI.setupWithNavController(binding.topAppBar, navController)
@@ -52,7 +51,7 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
         }
         binding.buttonToggleGroup.addOnButtonCheckedListener(listener)
         val extensionFlow = viewModel.extensionListFlow.flow
-        observe(extensionFlow) { clientList ->
+        collect(extensionFlow) { clientList ->
             binding.buttonToggleGroup.removeAllViews()
             binding.progressIndicator.isVisible = clientList == null
             val list = clientList ?: emptyList()
