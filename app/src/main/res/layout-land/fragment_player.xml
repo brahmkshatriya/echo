@@ -27,7 +27,7 @@
             android:id="@+id/playerControlInfoContainer"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="-12dp"
+            android:paddingHorizontal="24dp"
             android:layout_weight="1">
 
             <FrameLayout
@@ -37,6 +37,7 @@
                 android:layout_height="match_parent"
                 android:backgroundTint="?navBackground"
                 android:clipToPadding="false"
+                app:behavior_hideable="false"
                 app:behavior_peekHeight="64dp"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
                 app:marginLeftSystemWindowInsets="false"

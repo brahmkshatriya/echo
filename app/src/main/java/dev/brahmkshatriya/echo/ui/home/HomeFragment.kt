@@ -5,13 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
+import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
@@ -25,7 +25,7 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdap
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
-class HomeFragment : Fragment() {
+class HomeFragment : MainFragment() {
 
     private var binding by autoCleared<FragmentHomeBinding>()
     private val viewModel by activityViewModels<HomeViewModel>()

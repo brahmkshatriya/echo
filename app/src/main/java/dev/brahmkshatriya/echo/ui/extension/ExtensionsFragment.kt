@@ -6,8 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
@@ -32,20 +30,21 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        val navController = findNavController()
-        NavigationUI.setupWithNavController(binding.topAppBar, navController)
+        binding.topAppBar.setNavigationOnClickListener { dismiss() }
 
         binding.addExtension.isEnabled = false
 
         val listener = object : OnButtonCheckedListener {
             var map: Map<Int, ExtensionClient> = mapOf()
+            var enabled = false
             override fun onButtonChecked(
                 group: MaterialButtonToggleGroup?,
                 checkedId: Int,
                 isChecked: Boolean
             ) {
-                if (isChecked) map[checkedId]?.let {
+                if (isChecked && enabled) map[checkedId]?.let {
                     viewModel.setExtension(it)
+                    dismiss()
                 }
             }
         }
@@ -54,6 +53,7 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
         collect(extensionFlow) { clientList ->
             binding.buttonToggleGroup.removeAllViews()
             binding.progressIndicator.isVisible = clientList == null
+            listener.enabled = false
             val list = clientList ?: emptyList()
 
             val map = list.mapIndexed { index, extension ->
@@ -76,6 +76,8 @@ class ExtensionsFragment : BottomSheetDialogFragment() {
 
             listener.map = map
             if (checked != null) binding.buttonToggleGroup.check(checked)
+            listener.enabled = true
+
         }
     }
 

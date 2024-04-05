@@ -5,8 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
@@ -42,7 +40,9 @@ abstract class BaseSettingsFragment : Fragment() {
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-        binding.title.setupWithNavController(findNavController())
+        binding.title.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
         binding.root.transitionName = transitionName
 
         binding.title.title = title

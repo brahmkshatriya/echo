@@ -7,10 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
@@ -32,7 +32,7 @@ class SnackBarViewModel @Inject constructor(
     data class Message(
         val message: String,
         val action: String = "",
-        val actionHandler: ((NavController) -> Unit)? = null
+        val actionHandler: ((FragmentManager) -> Unit)? = null
     )
 
     private val messages = mutableListOf<Message>()
@@ -52,7 +52,7 @@ class SnackBarViewModel @Inject constructor(
     }
 
     companion object {
-        fun AppCompatActivity.configureSnackBar(navController: NavController, root: View) {
+        fun AppCompatActivity.configureSnackBar(fragmentManager: FragmentManager, root: View) {
             val viewModel by viewModels<SnackBarViewModel>()
             fun createSnackBar(message: Message) {
                 val snackBar = Snackbar.make(
@@ -66,7 +66,7 @@ class SnackBarViewModel @Inject constructor(
 
                 snackBar.setAction(message.action) {
                     val actionHandler = message.actionHandler
-                    if (actionHandler != null) actionHandler(navController)
+                    if (actionHandler != null) actionHandler(fragmentManager)
                 }
                 snackBar.addCallback(object : Snackbar.Callback() {
                     override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
@@ -85,8 +85,8 @@ class SnackBarViewModel @Inject constructor(
                 val message = Message(
                     message = throwable.message ?: "An error occurred",
                     action = getString(R.string.view),
-                    actionHandler = { navController ->
-                        openException(navController, throwable)
+                    actionHandler = {
+                        openException(throwable)
                     }
                 )
                 viewModel.create(message)

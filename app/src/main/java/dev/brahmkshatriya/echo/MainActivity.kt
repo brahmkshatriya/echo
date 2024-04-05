@@ -10,10 +10,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.navigation.NavigationBarView
@@ -22,9 +21,14 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.player.PlaybackService
+import dev.brahmkshatriya.echo.ui.common.MainFragment
+import dev.brahmkshatriya.echo.ui.home.HomeFragment
+import dev.brahmkshatriya.echo.ui.library.LibraryFragment
+import dev.brahmkshatriya.echo.ui.search.SearchFragment
 import dev.brahmkshatriya.echo.utils.Animator.animateTranslation
 import dev.brahmkshatriya.echo.utils.Animator.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
+import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.observe
@@ -35,6 +39,7 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlaye
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -44,6 +49,24 @@ class MainActivity : AppCompatActivity() {
     private val extensionViewModel by viewModels<ExtensionViewModel>()
     private val uiViewModel by viewModels<UiViewModel>()
     private val playerViewModel by viewModels<PlayerViewModel>()
+
+    private val homeFragment by lazy { HomeFragment() }
+    private val searchFragment by lazy { SearchFragment() }
+    private val libraryFragment by lazy { LibraryFragment() }
+    private fun openFragment(fragment: MainFragment): Boolean {
+        lifecycleScope.launch {
+            supportFragmentManager.beginTransaction().replace(R.id.navHostFragment, fragment).commit()
+        }
+        return true
+    }
+
+    private fun openFragment(id: Int): Boolean = when (id) {
+        R.id.homeFragment -> openFragment(homeFragment)
+        R.id.searchFragment -> openFragment(searchFragment)
+        R.id.libraryFragment -> openFragment(libraryFragment)
+        else -> false
+    }
+
 
     private var controllerFuture: ListenableFuture<MediaBrowser>? = null
 
@@ -60,22 +83,24 @@ class MainActivity : AppCompatActivity() {
         checkPermissions(this)
 
         val navView = binding.navView as NavigationBarView
-        val navHostFragment = binding.navHostFragment.getFragment<NavHostFragment>()
-        navView.setupWithNavController(navHostFragment.navController)
-
-        val isRail = binding.navView is NavigationRailView
-        var isNavFragment =
-            navHostFragment.navController.currentDestination?.id == navView.selectedItemId
+        openFragment(navView.selectedItemId)
+        navView.setOnItemSelectedListener { openFragment(it.itemId) }
+        uiViewModel.isRail = binding.navView is NavigationRailView
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             uiViewModel.setSystemInsets(this, insets)
             insets
         }
 
-        navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
-            isNavFragment = destination.id == navView.selectedItemId
+        supportFragmentManager.addOnBackStackChangedListener {
+            uiViewModel.isMainFragment.value = supportFragmentManager.backStackEntryCount == 0
+        }
+
+        collect(uiViewModel.isMainFragment) {
+            val isRail = uiViewModel.isRail
+            val isNavFragment = it
             val insets =
-                uiViewModel.setPlayerNavViewInsets(this, isNavFragment, isRail)
+                uiViewModel.setPlayerNavViewInsets(this, isNavFragment)
             binding.navView.animateTranslation(isRail, isNavFragment) {
                 uiViewModel.setNavInsets(insets)
             }
@@ -87,8 +112,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         observe(uiViewModel.playerSheetOffset) { offset ->
-            if (!isNavFragment) return@observe
-            if (isRail) binding.navView.translationX = -binding.navView.width * offset
+            if (!uiViewModel.isMainFragment.value) return@observe
+            if (uiViewModel.isRail) binding.navView.translationX = -binding.navView.width * offset
             else binding.navView.translationY = binding.navView.height * offset
             binding.navViewOutline?.alpha = 1 - offset
         }
@@ -96,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         extensionViewModel.initialize()
 
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
-        configureSnackBar(navHostFragment.navController, binding.navView)
+        configureSnackBar(supportFragmentManager, binding.navView)
 
         val sessionToken =
             SessionToken(application, ComponentName(application, PlaybackService::class.java))

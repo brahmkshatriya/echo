@@ -20,7 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.utils.Animator.animatePeekHeight
+import dev.brahmkshatriya.echo.utils.Animator.animateTranslation
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -54,6 +54,8 @@ class UiViewModel @Inject constructor(
     private val playerNavViewInsets = MutableStateFlow(Insets())
     private val playerInsets = MutableStateFlow(Insets())
     val systemInsets = MutableStateFlow(Insets())
+    var isMainFragment = MutableStateFlow(true)
+    var isRail = false
 
     val combined = systemInsets.combine(navViewInsets) { system, nav ->
         system.add(nav)
@@ -61,7 +63,7 @@ class UiViewModel @Inject constructor(
         system.add(player)
     }
 
-    fun setPlayerNavViewInsets(context: Context, isNavVisible: Boolean, isRail: Boolean): Insets {
+    fun setPlayerNavViewInsets(context: Context, isNavVisible: Boolean): Insets {
         val insets = context.resources.run {
             if (!isNavVisible) return@run Insets()
             val height = getDimensionPixelSize(R.dimen.nav_height)
@@ -215,8 +217,8 @@ class UiViewModel @Inject constructor(
                     view.resources.getDimensionPixelSize(R.dimen.bottom_player_peek_height)
                 val height = if (it.bottom == 0) collapsedCoverSize else peekHeight
                 val newHeight = viewModel.systemInsets.value.bottom + height
+                animateTranslation(view, behavior.peekHeight, newHeight)
                 behavior.peekHeight = newHeight
-                behavior.animatePeekHeight(view, newHeight)
             }
 
             behavior.state = viewModel.playerSheetState.value

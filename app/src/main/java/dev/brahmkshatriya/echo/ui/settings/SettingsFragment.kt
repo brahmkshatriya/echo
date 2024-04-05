@@ -4,12 +4,11 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.FragmentNavigatorExtras
-import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 
@@ -76,24 +75,20 @@ class SettingsFragment : BaseSettingsFragment() {
         }
 
         override fun onPreferenceTreeClick(preference: Preference): Boolean {
-            val action = when (preference.key) {
-                "about" -> SettingsFragmentDirections.actionSettingsAbout()
-
-
-                "audio" -> SettingsFragmentDirections.actionSettingsAudio()
-
+            val fragment = when (preference.key) {
+                "about" -> AboutFragment()
+                "audio" -> AudioFragment()
                 "extension" -> {
                     val extension = extension ?: return false
-                    SettingsFragmentDirections
-                        .actionSettingsExtensions(extension.id, extension.name)
+                    ExtensionFragment.newInstance(extension.id, extension.name)
                 }
 
-                "look" -> SettingsFragmentDirections.actionSettingsLook()
-                else -> null
-            } ?: return false
+                "look" -> LookFragment()
+                else -> return false
+            }
+
             val view = listView.getChildAt(preference.order)!!
-            val extras = FragmentNavigatorExtras(view to view.transitionName)
-            findNavController().navigate(action, extras)
+            parentFragment?.openFragment(fragment, view)
             return true
         }
     }

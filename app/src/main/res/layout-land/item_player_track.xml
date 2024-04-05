@@ -6,6 +6,29 @@
     android:layout_height="match_parent"
     android:background="@color/amoled_bg">
 
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/bgImage"
+            android:scaleType="centerCrop"
+            tools:srcCompat="@tools:sample/avatars"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no" />
+
+        <ImageView
+            android:id="@+id/bgGradient"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/gradient_track"
+            app:tint="@color/amoled_bg"
+            android:importantForAccessibility="no" />
+
+    </FrameLayout>
+
     <View
         android:id="@+id/background"
         android:layout_width="match_parent"
@@ -26,9 +49,11 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_marginRight="24dp"
-            android:clipToPadding="false"
-            tools:ignore="RtlHardcoded">
+            android:layout_marginTop="-24dp"
+            android:layout_marginBottom="-24dp"
+            android:paddingVertical="24dp"
+            android:layout_marginStart="-24dp"
+            android:clipToPadding="false">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/expandedTrackCover"
@@ -53,14 +78,13 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_marginTop="-24dp"
-            android:layout_marginLeft="-36dp"
+            android:layout_marginStart="-36dp"
             android:layout_marginBottom="-24dp"
-            android:layout_marginRight="-24dp"
+            android:layout_marginEnd="-24dp"
             android:padding="24dp"
             android:clipToPadding="false"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            tools:ignore="RtlHardcoded">
+            android:layout_weight="1">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/collapsePlayer"

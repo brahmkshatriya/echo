@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.doOnTextChanged
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.tabs.TabLayout
@@ -16,6 +15,7 @@ import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
+import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
@@ -30,7 +30,7 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdap
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
-class SearchFragment : Fragment() {
+class SearchFragment : MainFragment() {
 
     private var binding by autoCleared<FragmentSearchBinding>()
     private val viewModel by activityViewModels<SearchViewModel>()

@@ -8,7 +8,6 @@ import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.R
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.transition.MaterialArcMotion
 import com.google.android.material.transition.MaterialContainerTransform
@@ -60,10 +59,10 @@ object Animator {
         else alpha = if (isVisible) 1f else 0f
     }
 
-    fun BottomSheetBehavior<View>.animatePeekHeight(view: View, newHeight: Int) = view.run {
+    fun animateTranslation(view: View, old: Int, newHeight: Int) = view.run {
         if (view.animations) {
             clearAnimation()
-            view.translationY = newHeight.toFloat() - peekHeight
+            view.translationY = newHeight.toFloat() - old
             startAnimation(animate().translationY(0f))
         }
     }

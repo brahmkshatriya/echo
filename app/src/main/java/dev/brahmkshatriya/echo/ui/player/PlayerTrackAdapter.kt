@@ -2,9 +2,12 @@ package dev.brahmkshatriya.echo.ui.player
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.BitmapDrawable
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
@@ -58,8 +61,17 @@ class PlayerTrackAdapter(
 
         track?.cover.loadWith(binding.expandedTrackCover) {
             binding.collapsedContainer.collapsedTrackCover.load(it)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                binding.bgImage.load(it)
+                binding.bgImage.setRenderEffect(
+                    RenderEffect.createBlurEffect(400f, 400.0f, Shader.TileMode.MIRROR)
+                )
+            } else binding.bgImage.load(it, 16)
+
             val colors = binding.root.context.getPlayerColors(it as? BitmapDrawable)
             binding.root.setBackgroundColor(colors.background)
+            binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.collapsedContainer.applyColors(colors)
             binding.playerControls.applyColors(colors)
         }
@@ -91,6 +103,7 @@ class PlayerTrackAdapter(
                 alpha = 1 - offset
                 isVisible = offset < 1
             }
+            binding.bgImage.alpha = offset
             binding.expandedTrackCoverContainer.alpha = offset
             binding.collapsePlayer.isVisible = offset != 0f
         }

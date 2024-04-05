@@ -3,15 +3,14 @@ package dev.brahmkshatriya.echo.ui.media
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.FragmentNavigatorExtras
-import androidx.navigation.fragment.findNavController
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Category
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Item
-import dev.brahmkshatriya.echo.ui.category.CategoryFragmentDirections
+import dev.brahmkshatriya.echo.ui.category.CategoryFragment
 import dev.brahmkshatriya.echo.ui.category.CategoryViewModel
-import dev.brahmkshatriya.echo.ui.item.ItemFragmentDirections
+import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.createSnack
@@ -24,20 +23,14 @@ class MediaClickListener(
 
     private fun openItem(clientId: String?, item: EchoMediaItem, transitionView: View) {
         clientId ?: return noClient()
-        val action = ItemFragmentDirections.actionItem(item, clientId)
-        val extras =
-            FragmentNavigatorExtras(transitionView to transitionView.transitionName)
-        fragment.findNavController().navigate(action, extras)
+        fragment.openFragment(ItemFragment.newInstance(clientId, item), transitionView)
     }
 
     private fun openCategory(clientId: String?, category: Category, transitionView: View): Boolean {
         clientId ?: return noClient().let { true }
         val viewModel by fragment.activityViewModels<CategoryViewModel>()
         viewModel.category = category
-        val action = CategoryFragmentDirections.actionCategory(clientId)
-        val extras =
-            FragmentNavigatorExtras(transitionView to transitionView.transitionName)
-        fragment.findNavController().navigate(action, extras)
+        fragment.openFragment(CategoryFragment.newInstance(clientId), transitionView)
         return true
     }
 

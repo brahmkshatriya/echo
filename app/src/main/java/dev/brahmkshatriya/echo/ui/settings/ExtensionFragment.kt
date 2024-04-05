@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.ui.settings
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.navArgs
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -19,11 +18,23 @@ import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionFragment : BaseSettingsFragment() {
-    override val title get() = navArgs.clientName
-    private val navArgs by navArgs<ExtensionFragmentArgs>()
-    override val transitionName get() = navArgs.clientId
-    override val creator = { ExtensionPreference.newInstance(navArgs.clientId) }
+    private val name by lazy { requireArguments().getString("name")!! }
+    private val id by lazy { requireArguments().getString("id")!! }
+    override val title get() = name
+    override val transitionName get() = id
+    override val creator = { ExtensionPreference.newInstance(id) }
 
+    companion object {
+        fun newInstance(name: String, id: String): ExtensionFragment {
+            val bundle = Bundle().apply {
+                putString("name", name)
+                putString("id", id)
+            }
+            return ExtensionFragment().apply {
+                arguments = bundle
+            }
+        }
+    }
 
     class ExtensionPreference : PreferenceFragmentCompat() {
 

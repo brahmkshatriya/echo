@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.item
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,9 +10,6 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
-import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,10 +55,29 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 @AndroidEntryPoint
 class ItemFragment : Fragment() {
-    private var binding by autoCleared<FragmentItemBinding>()
-    private val args by navArgs<ItemFragmentArgs>()
-    private val clientId get() = args.clientId
 
+    companion object {
+        fun newInstance(clientId: String, item: EchoMediaItem) = ItemFragment().apply {
+            arguments = Bundle().apply {
+                putString("clientId", clientId)
+                putParcelable("item", item)
+            }
+        }
+    }
+
+    private val args by lazy { requireArguments() }
+    private val clientId by lazy {
+        args.getString("clientId")!!
+    }
+
+    @Suppress("DEPRECATION")
+    private val item by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            args.getParcelable("item", EchoMediaItem::class.java)!!
+        else args.getParcelable("item")!!
+    }
+
+    private var binding by autoCleared<FragmentItemBinding>()
     private val viewModel by viewModels<ItemViewModel>()
     private val playerVM by activityViewModels<PlayerViewModel>()
 
@@ -141,26 +158,28 @@ class ItemFragment : Fragment() {
             binding.appbarOutline.alpha = offset
         }
 
-        binding.toolBar.setupWithNavController(findNavController())
+        binding.toolBar.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
 
-        val transitionName = args.item.id
+        val transitionName = item.id
         binding.root.transitionName = transitionName
 
 
-        binding.toolBar.title = args.item.title
-        binding.endIcon.load(args.item.placeHolder())
-        when (args.item) {
+        binding.toolBar.title = item.title
+        binding.endIcon.load(item.placeHolder())
+        when (item) {
             is Profile -> {
                 binding.mainCover.isVisible = false
                 binding.profileCover.isVisible = true
-                args.item.cover.loadInto(binding.profileCover, args.item.placeHolder())
+                item.cover.loadInto(binding.profileCover, item.placeHolder())
             }
 
             is Lists -> {
-                albumImage((args.item as Lists).size, binding.cover1, binding.cover2)
+                albumImage((item as Lists).size, binding.cover1, binding.cover2)
                 binding.mainCover.isVisible = true
                 binding.profileCover.isVisible = false
-                args.item.cover.loadWith(binding.mainCover, args.item.placeHolder()) {
+                item.cover.loadWith(binding.mainCover, item.placeHolder()) {
                     binding.cover1.load(it)
                     binding.cover2.load(it)
                 }
@@ -170,26 +189,26 @@ class ItemFragment : Fragment() {
                 albumImage(1, binding.cover1, binding.cover2)
                 binding.mainCover.isVisible = true
                 binding.profileCover.isVisible = false
-                args.item.cover.loadInto(binding.mainCover, args.item.placeHolder())
+                item.cover.loadInto(binding.mainCover, item.placeHolder())
             }
         }
 
         var isRadioClient = false
         var isUserClient = false
         collect(viewModel.extensionListFlow.flow) { list ->
-            val client = list?.find { it.metadata.id == args.clientId }
+            val client = list?.find { it.metadata.id == clientId }
 
-            mediaContainerAdapter.clientId = args.clientId
+            mediaContainerAdapter.clientId = clientId
             isRadioClient = client is RadioClient
             isUserClient = client is UserClient
 
-            val item = args.item
+            val item = item
             viewModel.item = item
             viewModel.client = client
             viewModel.initialize()
 
             binding.recyclerView.run {
-                when (args.item) {
+                when (item) {
                     is AlbumItem -> adapter<AlbumClient>(client, item, R.string.album)
                     is PlaylistItem -> adapter<PlaylistClient>(client, item, R.string.playlist)
                     is ArtistItem -> adapter<ArtistClient>(client, item, R.string.artist)
