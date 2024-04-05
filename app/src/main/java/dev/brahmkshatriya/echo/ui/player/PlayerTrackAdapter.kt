@@ -20,8 +20,8 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
-import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
-import dev.brahmkshatriya.echo.player.StreamableTrack
+import dev.brahmkshatriya.echo.player.Queue.StreamableTrack
+import dev.brahmkshatriya.echo.player.toTimeString
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
@@ -92,7 +92,6 @@ class PlayerTrackAdapter(
                 isVisible = offset < 1
             }
             binding.expandedTrackCoverContainer.alpha = offset
-            binding.collapsePlayer.alpha = offset
             binding.collapsePlayer.isVisible = offset != 0f
         }
 
@@ -155,7 +154,7 @@ class PlayerTrackAdapter(
         }
 
         observeCurrent(viewModel.totalDuration) {
-            val duration = it ?: 100
+            val duration = it ?: track?.duration?.toInt() ?: 100
             binding.collapsedContainer.run {
                 collapsedSeekBar.max = duration
                 collapsedBuffer.max = duration

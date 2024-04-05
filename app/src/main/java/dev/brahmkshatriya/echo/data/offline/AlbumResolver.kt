@@ -13,7 +13,7 @@ class AlbumResolver(
 ) {
 
     private fun order() = MediaStore.Audio.Albums.ALBUM
-    private fun ascending(sorting: String) = when (sorting) {
+    private fun isAscending(sorting: String) = when (sorting) {
         "a_to_z" -> true
         "z_to_a" -> false
         else -> true
@@ -66,7 +66,7 @@ class AlbumResolver(
             whereCondition = whereCondition,
             selectionArgs = selectionArgs,
             orderBy = order(),
-            orderAscending = ascending(sorting),
+            orderAscending = isAscending(sorting),
             limit = pageSize,
             offset = (page) * pageSize
         )?.use {

@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemTrackSmallBinding
-import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.player.toTimeString
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class TrackAdapter(

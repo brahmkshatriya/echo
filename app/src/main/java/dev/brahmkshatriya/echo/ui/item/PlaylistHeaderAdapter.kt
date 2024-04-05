@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemAlbumInfoBinding
-import dev.brahmkshatriya.echo.player.PlayerHelper.Companion.toTimeString
+import dev.brahmkshatriya.echo.player.toTimeString
 
 class PlaylistHeaderAdapter(
     private val listener: Listener
@@ -74,7 +74,6 @@ class PlaylistHeaderAdapter(
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
         val playlist = holder.playlist
-        val artist = playlist.authors.firstOrNull()
         binding.albumDescription.text = playlist.subtitle
         binding.albumDescription.isVisible = !playlist.subtitle.isNullOrBlank()
         var info = binding.root.context.resources.getQuantityString(

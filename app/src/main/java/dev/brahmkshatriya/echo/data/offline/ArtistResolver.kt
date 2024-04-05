@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.common.models.Artist
 class ArtistResolver(val context: Context) {
 
     private fun order() = MediaStore.Audio.Media.ARTIST
-    private fun ascending(sorting: String) = when (sorting) {
+    private fun isAscending(sorting: String) = when (sorting) {
         "a_to_z" -> true
         "z_to_a" -> false
         else -> true
@@ -53,7 +53,7 @@ class ArtistResolver(val context: Context) {
             whereCondition = whereCondition,
             selectionArgs = selectionArgs,
             orderBy = order(),
-            orderAscending = ascending(sorting),
+            orderAscending = isAscending(sorting),
             limit = pageSize,
             offset = (page) * pageSize,
         )?.use {

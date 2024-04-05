@@ -46,7 +46,7 @@ abstract class BaseSettingsFragment : Fragment() {
         binding.root.transitionName = transitionName
 
         binding.title.title = title
-        childFragmentManager.beginTransaction().replace(R.id.fragment_container, creator())
+        childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
             .commit()
     }
 

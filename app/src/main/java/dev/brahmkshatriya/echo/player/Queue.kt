@@ -49,7 +49,7 @@ class Queue {
         position = position.coerceIn(0, _queue.size)
 
         val items = tracks.map { track ->
-            PlayerHelper.mediaItemBuilder(track)
+            mediaItemBuilder(track)
         }
         val queueItems = tracks.map { track ->
             StreamableTrack(track, client)
@@ -67,9 +67,11 @@ class Queue {
         Collections.swap(_queue, fromIndex, toIndex)
         _moveTrack.emit(fromIndex to toIndex)
     }
+
+    data class StreamableTrack(
+        val track: Track,
+        val clientId: String
+    )
 }
 
-data class StreamableTrack(
-    val track: Track,
-    val clientId: String
-)
+

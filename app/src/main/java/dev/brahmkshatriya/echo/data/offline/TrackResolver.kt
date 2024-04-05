@@ -25,7 +25,7 @@ class TrackResolver(val context: Context) {
         else -> MediaStore.Audio.Media.TITLE
     }
 
-    private fun ascending(sorting: String) = when (sorting) {
+    private fun isAscending(sorting: String) = when (sorting) {
         "a_to_z" -> true
         "z_to_a" -> false
         else -> true
@@ -90,7 +90,7 @@ class TrackResolver(val context: Context) {
             whereCondition = whereCondition,
             selectionArgs = selectionArgs,
             orderBy = order(sorting),
-            orderAscending = ascending(sorting),
+            orderAscending = isAscending(sorting),
             limit = pageSize,
             offset = (page) * pageSize
         )?.use {
