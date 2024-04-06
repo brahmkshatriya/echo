@@ -33,15 +33,6 @@ class SearchViewModel @Inject constructor(
         }
     var query: String? = null
 
-    override fun onInitialize() {
-        viewModelScope.launch {
-            extensionFlow.collect {
-                val client = it as? SearchClient ?: return@collect
-                loadGenres(client)
-            }
-        }
-    }
-
     private suspend fun loadGenres(client: SearchClient) {
         loading.emit(true)
         val list = tryWith { client.searchGenres(query) } ?: emptyList()
@@ -53,6 +44,7 @@ class SearchViewModel @Inject constructor(
 
     private suspend fun loadFeed(client: SearchClient) = tryWith {
         searchFeed.value = null
+        println("SearchViewModel.loadFeed() called with: query = $query, genre = $genre")
         client.search(query, genre).collectTo(searchFeed)
     }
 

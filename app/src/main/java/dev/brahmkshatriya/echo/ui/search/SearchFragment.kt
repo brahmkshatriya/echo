@@ -68,7 +68,10 @@ class SearchFragment : MainFragment() {
         }
 
         override fun onInsert(item: QuickSearchItem) {
-            binding.quickSearchView.editText.setText(item.title)
+            binding.quickSearchView.editText.run {
+                setText(item.title)
+                setSelection(length())
+            }
         }
     })
 
@@ -108,7 +111,7 @@ class SearchFragment : MainFragment() {
             viewModel.query = query
             binding.searchBar.setText(query)
             binding.quickSearchView.hide()
-            viewModel.refresh()
+            viewModel.refresh(true)
             false
         }
 

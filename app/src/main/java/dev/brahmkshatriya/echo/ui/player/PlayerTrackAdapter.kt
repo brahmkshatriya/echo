@@ -79,10 +79,14 @@ class PlayerTrackAdapter(
         binding.collapsedContainer.run {
             collapsedTrackArtist.text = track?.artists?.joinToString(", ") { it.name }
             collapsedTrackTitle.text = track?.title
+            collapsedTrackTitle.isSelected = true
+            collapsedTrackTitle.setHorizontallyScrolling(true)
         }
 
         binding.playerControls.run {
             trackTitle.text = track?.title
+            trackTitle.isSelected = true
+            trackTitle.setHorizontallyScrolling(true)
             trackArtist.text = track?.artists?.joinToString(", ") { it.name }
         }
 
@@ -110,6 +114,7 @@ class PlayerTrackAdapter(
 
         observe(uiViewModel.infoSheetOffset) {
             binding.background.alpha = it
+            binding.playerControls.root.isVisible = it != 1f
         }
 
         observe(uiViewModel.systemInsets) {
@@ -153,8 +158,7 @@ class PlayerTrackAdapter(
                 }
             }
         }
-        observeCurrent(viewModel.buffering) {
-            val buffering = it ?: false
+        observe(viewModel.buffering) { buffering ->
             binding.collapsedContainer.run {
                 collapsedProgressBar.isVisible = buffering
                 collapsedTrackPlayPause.isEnabled = !buffering

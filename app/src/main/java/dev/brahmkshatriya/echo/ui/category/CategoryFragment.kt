@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.setupWithNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentCategoryBinding
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
@@ -52,7 +50,9 @@ class CategoryFragment : Fragment() {
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-        binding.toolBar.setupWithNavController(findNavController())
+        binding.toolBar.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
 
         adapter.clientId = clientId
         binding.recyclerView.adapter = concatAdapter

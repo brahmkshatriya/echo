@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
+import kotlin.math.abs
 
 class PlayerFragment : Fragment() {
     private var binding by autoCleared<FragmentPlayerBinding>()
@@ -43,9 +44,14 @@ class PlayerFragment : Fragment() {
             ParallaxPageTransformer(R.id.expandedTrackCoverContainer)
         )
         val changeCallback = object : OnPageChangeCallback() {
+            var enabled = false
             override fun onPageSelected(position: Int) {
-                if (viewModel.currentIndex.value != position)
-                    emit(viewModel.audioIndexFlow) { position }
+                if (viewModel.currentIndex.value != position && enabled)
+                    emit(viewModel.audioIndexFlow) {
+                        println("changeCallback")
+                        position
+                    }
+
             }
         }
 
@@ -58,6 +64,7 @@ class PlayerFragment : Fragment() {
         }
 
         observe(viewModel.listChangeFlow) {
+            changeCallback.enabled = false
             adapter.submitList(it)
             if (it.isEmpty()) {
                 emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
@@ -76,9 +83,12 @@ class PlayerFragment : Fragment() {
 
         observe(viewModel.currentIndex) {
             it ?: return@observe
-            binding.viewPager.currentItem = it
+            binding.viewPager.post {
+                val smooth = abs(it - binding.viewPager.currentItem) <= 1
+                binding.viewPager.setCurrentItem(it, smooth)
+                changeCallback.enabled = true
+            }
         }
     }
-
 }
 

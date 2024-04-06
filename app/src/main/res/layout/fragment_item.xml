@@ -31,54 +31,29 @@
                 app:srcCompat="@drawable/art_album"
                 app:tint="?colorOnSurface" />
 
-            <FrameLayout
-                android:id="@+id/coverContainer"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="64dp"
                 android:layout_marginBottom="80dp">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/coverContainer"
+                    style="@style/ItemCover"
+                    tools:ignore="MissingConstraints">
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/cover2"
-                        style="@style/ItemCover"
-                        android:layout_marginHorizontal="18dp"
-                        android:layout_marginBottom="52dp"
-                        android:alpha="0.33"
-                        android:visibility="gone"
-                        tools:ignore="ImageContrastCheck,MissingConstraints" />
+                    <ImageView
+                        android:id="@+id/cover"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:importantForAccessibility="no"
+                        tools:ignore="ImageContrastCheck" />
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/cover1"
-                        style="@style/ItemCover"
-                        android:layout_marginHorizontal="8dp"
-                        android:layout_marginBottom="24dp"
-                        android:alpha="0.66"
-                        android:visibility="gone"
-                        tools:ignore="ImageContrastCheck,MissingConstraints" />
+                </androidx.cardview.widget.CardView>
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/mainCover"
-                        style="@style/ItemCover"
-                        android:visibility="gone"
-                        tools:ignore="ImageContrastCheck,MissingConstraints" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/profileCover"
-                        style="@style/ItemCover"
-                        app:layout_constraintWidth_max="240dp"
-                        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                        tools:ignore="ImageContrastCheck,MissingConstraints" />
-
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-            </FrameLayout>
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolBar"

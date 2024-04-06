@@ -80,6 +80,7 @@ class PlayerViewModel @Inject constructor(
     fun play(clientId: String, tracks: List<Track>, playIndex: Int? = null) {
         viewModelScope.launch {
             val pos = global.addTracks(clientId, tracks).first
+            println("play: $pos $playIndex")
             playIndex?.let { audioIndexFlow.emit(pos + it) }
         }
     }
@@ -91,8 +92,11 @@ class PlayerViewModel @Inject constructor(
     private fun playRadio(clientId: String, block: suspend RadioClient.() -> Playlist) {
         val client = extensionListFlow.getClient(clientId)
         viewModelScope.launch(Dispatchers.IO) {
-            radio(app, client, messageFlow, global) { tryWith { block(this) } }
-            audioIndexFlow.emit(0)
+            val pos = radio(app, client, messageFlow, global) { tryWith { block(this) } }
+            pos?.let {
+                println("viewmodel radio")
+                audioIndexFlow.emit(it)
+            }
         }
     }
 
@@ -148,6 +152,7 @@ class PlayerViewModel @Inject constructor(
                 player.playWhenReady = true
             }
             observe(viewModel.audioIndexFlow) {
+                println("audioIndexFlow: $it : ${player.mediaItemCount}")
                 if (it >= 0) player.seekToDefaultPosition(it)
             }
             observe(viewModel.seekTo) {

@@ -11,10 +11,10 @@
         android:id="@+id/history"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="8dp"
+        android:layout_marginHorizontal="6dp"
         app:cardBackgroundColor="?colorSurfaceContainer"
         app:cardCornerRadius="24dp"
-        app:contentPadding="8dp">
+        app:contentPadding="6dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -38,6 +38,7 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/more"
         android:padding="8dp"
+        android:layout_marginHorizontal="4dp"
         app:icon="@drawable/ic_arrow_insert"
         app:iconSize="24dp"
         app:iconTint="?colorOnSurface" />

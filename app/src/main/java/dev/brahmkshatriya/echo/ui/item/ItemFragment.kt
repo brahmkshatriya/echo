@@ -5,8 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
+import android.view.ViewGroup.MarginLayoutParams
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -25,7 +26,6 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
@@ -37,14 +37,13 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
-import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.albumImage
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
+import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
@@ -150,7 +149,7 @@ class ItemFragment : Fragment() {
 
         setupTransition(view)
         applyInsets {
-            binding.coverContainer.updatePadding(top = it.top)
+            binding.coverContainer.updateLayoutParams<MarginLayoutParams> { topMargin = it.top }
             binding.recyclerView.applyContentInsets(it)
         }
         applyBackPressCallback()
@@ -168,28 +167,12 @@ class ItemFragment : Fragment() {
 
         binding.toolBar.title = item.title
         binding.endIcon.load(item.placeHolder())
-        when (item) {
-            is Profile -> {
-                binding.mainCover.isVisible = false
-                binding.profileCover.isVisible = true
-                item.cover.loadInto(binding.profileCover, item.placeHolder())
-            }
-
-            is Lists -> {
-                albumImage((item as Lists).size, binding.cover1, binding.cover2)
-                binding.mainCover.isVisible = true
-                binding.profileCover.isVisible = false
-                item.cover.loadWith(binding.mainCover, item.placeHolder()) {
-                    binding.cover1.load(it)
-                    binding.cover2.load(it)
-                }
-            }
-
-            is TrackItem -> {
-                albumImage(1, binding.cover1, binding.cover2)
-                binding.mainCover.isVisible = true
-                binding.profileCover.isVisible = false
-                item.cover.loadInto(binding.mainCover, item.placeHolder())
+        item.cover.loadInto(binding.cover, item.placeHolder())
+        if (item is Profile) binding.coverContainer.run {
+            val maxWidth = 240.dpToPx(context)
+            radius = maxWidth.toFloat()
+            updateLayoutParams<ConstraintLayout.LayoutParams> {
+                matchConstraintMaxWidth = maxWidth
             }
         }
 

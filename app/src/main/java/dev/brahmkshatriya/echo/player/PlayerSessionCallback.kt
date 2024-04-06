@@ -9,6 +9,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.paging.AsyncPagingDataDiffer
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.R
@@ -23,9 +25,10 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
 
@@ -45,16 +48,24 @@ class PlayerSessionCallback(
 
     private var extension: ExtensionClient? = null
 
+    private val updateCallback = object : ListUpdateCallback {
+        override fun onChanged(position: Int, count: Int, payload: Any?) = Unit
+        override fun onMoved(fromPosition: Int, toPosition: Int) = Unit
+        override fun onInserted(position: Int, count: Int) = Unit
+        override fun onRemoved(position: Int, count: Int) = Unit
+    }
 
-    private val differ = AsyncPagingDataDiffer(
-        MediaContainerAdapter.DiffCallback,
-        object : ListUpdateCallback {
-            override fun onChanged(position: Int, count: Int, payload: Any?) = Unit
-            override fun onMoved(fromPosition: Int, toPosition: Int) = Unit
-            override fun onInserted(position: Int, count: Int) = Unit
-            override fun onRemoved(position: Int, count: Int) = Unit
-        }
-    )
+    private suspend fun <T : Any> Flow<PagingData<T>>.getItems(
+        differ: AsyncPagingDataDiffer<T>
+    ) = coroutineScope {
+        val job = launch { collect { differ.submitData(it) } }
+        val refresh = differ.loadStateFlow
+            .first { it.refresh is LoadState.NotLoading }
+            .refresh
+        job.cancel()
+        if (refresh is LoadState.Error) throw refresh.error
+        differ.snapshot().items
+    }
 
     private val handler = Handler(Looper.getMainLooper())
     private fun toast(message: String) {
@@ -84,16 +95,17 @@ class PlayerSessionCallback(
             return default { searchNotSupported(client.metadata.id).message }
         if (client !is TrackClient)
             return default { trackNotSupported(client.metadata.id).message }
-
-
+        val flow = client.search(query, null)
+            .catch { default { it.message ?: "Unknown Error" } }
+        val differ = AsyncPagingDataDiffer(MediaContainerAdapter.DiffCallback, updateCallback)
         return scope.future {
-            var error: ListenableFuture<MutableList<MediaItem>>? = null
-            val result = client.search(query, null)
-                .catch { error = default { it.message ?: "An Error Occurred" } }.firstOrNull()
-            if (result != null) differ.submitData(result)
-            else return@future error!!.get()
-
-            val tracks = differ.snapshot().items.mapNotNull {
+            val itemsContainers = try {
+                flow.getItems(differ)
+            } catch (e: Throwable) {
+                default { e.message ?: "Unknown Error" }
+                listOf()
+            }
+            val tracks = itemsContainers.mapNotNull {
                 when (it) {
                     is MediaItemsContainer.Category -> {
                         val items = it.list.mapNotNull { item ->
@@ -112,11 +124,11 @@ class PlayerSessionCallback(
                     else -> null
                 }
             }.flatten()
-            if (tracks.isEmpty())
-                return@future default { getString(R.string.could_not_find_anything, query) }.get()
+            if (tracks.isEmpty()) default { getString(R.string.could_not_find_anything, query) }
             val items = global.addTracks(client.metadata.id, tracks).second
             items.toMutableList()
         }
+
     }
 
     @UnstableApi

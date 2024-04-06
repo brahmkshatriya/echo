@@ -2,10 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     style="@style/Selectable"
-    android:background="@color/amoled_bg"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/amoled_bg"
     android:orientation="horizontal">
 
     <ImageView
@@ -63,19 +63,20 @@
                     android:id="@+id/collapsedTrackTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="end"
+                    android:ellipsize="marquee"
                     android:maxLines="1"
                     android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold"
-                    tools:text="Nice Track Title" />
+                    tools:text="@tools:sample/lorem/random" />
 
                 <TextView
                     android:id="@+id/collapsedTrackArtist"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="?attr/colorOnSurface"
-                    tools:text="Author" />
+                    tools:text="@tools:sample/lorem/random" />
             </LinearLayout>
 
             <LinearLayout

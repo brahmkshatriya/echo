@@ -27,20 +27,22 @@
                 android:layout_height="wrap_content"
                 android:gravity="bottom"
                 android:maxLines="1"
+                android:ellipsize="marquee"
                 android:minHeight="32dp"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                tools:text="Track Title" />
+                tools:text="@tools:sample/lorem/random" />
 
             <TextView
                 android:id="@+id/trackArtist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
+                android:ellipsize="end"
                 android:textColor="@color/button_player"
                 android:minHeight="32dp"
                 android:textSize="16sp"
-                tools:text="Artist" />
+                tools:text="@tools:sample/lorem/random" />
         </LinearLayout>
 
         <com.google.android.material.checkbox.MaterialCheckBox
@@ -88,6 +90,7 @@
             app:labelBehavior="gone"
             app:thumbColor="?attr/colorTertiary"
             app:thumbHeight="20dp"
+            android:contentDescription="@string/seekbar"
             app:thumbWidth="20dp"
             app:trackColorActive="?attr/colorTertiary"
             app:trackColorInactive="@android:color/transparent"

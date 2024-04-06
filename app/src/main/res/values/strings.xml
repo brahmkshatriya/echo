@@ -79,5 +79,6 @@
     <string name="animation">Animation</string>
     <string name="animations">Animations</string>
     <string name="animations_summary">Feeling too much stutter? turning this off, might help</string>
+    <string name="seekbar">Seekbar</string>
 
 </resources>

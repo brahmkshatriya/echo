@@ -93,8 +93,7 @@
     <style name="ItemCover">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
-        <item name="android:background">?attr/colorSurfaceContainerHigh</item>
-        <item name="android:scaleType">fitCenter</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerHigh</item>
         <item name="layout_constraintBottom_toBottomOf">parent</item>
         <item name="layout_constraintDimensionRatio">1,1</item>
         <item name="layout_constraintEnd_toEndOf">parent</item>
@@ -102,6 +101,5 @@
         <item name="layout_constraintStart_toStartOf">parent</item>
         <item name="layout_constraintTop_toTopOf">parent</item>
         <item name="layout_constraintWidth_max">@dimen/max_cover_size</item>
-        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Small</item>
     </style>
 </resources>

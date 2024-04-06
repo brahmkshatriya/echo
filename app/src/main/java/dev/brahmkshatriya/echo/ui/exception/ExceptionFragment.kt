@@ -11,8 +11,6 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.setupWithNavController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
@@ -49,7 +47,9 @@ class ExceptionFragment : Fragment() {
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-        binding.exceptionMessage.setupWithNavController(findNavController())
+        binding.exceptionMessage.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
 
         val throwable = viewmodel.throwable ?: return
 

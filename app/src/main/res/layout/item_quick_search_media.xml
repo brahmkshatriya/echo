@@ -11,7 +11,7 @@
         android:id="@+id/coverContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
+        android:layout_margin="6dp"
         app:cardCornerRadius="?itemCorner"
         app:cardBackgroundColor="?colorSurfaceContainer">
 
@@ -37,6 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/more"
+        android:layout_marginHorizontal="4dp"
         android:padding="8dp"
         app:icon="@drawable/ic_arrow_insert"
         app:iconSize="24dp"

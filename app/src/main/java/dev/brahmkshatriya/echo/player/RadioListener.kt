@@ -50,15 +50,20 @@ class RadioListener(
             messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
             queue: Queue,
             block: suspend RadioClient.() -> Playlist?
-        ) {
-            when (client) {
-                null -> messageFlow.emit(context.noClient())
-                is RadioClient -> {
-                    val playlist = block(client) ?: return
-                    queue.addTracks(client.metadata.id, playlist.tracks)
-                }
+        ) = when (client) {
+            null -> {
+                messageFlow.emit(context.noClient())
+                null
+            }
 
-                else -> messageFlow.emit(context.radioNotSupported(client.metadata.name))
+            is RadioClient -> {
+                val tracks = block(client)?.tracks
+                tracks?.let { queue.addTracks(client.metadata.id, it).first }
+            }
+
+            else -> {
+                messageFlow.emit(context.radioNotSupported(client.metadata.name))
+                null
             }
         }
     }
