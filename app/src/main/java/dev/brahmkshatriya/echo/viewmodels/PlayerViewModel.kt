@@ -34,7 +34,8 @@ class PlayerViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 
-    val list = global.queue
+
+        val list = global.queue
     val currentIndex = global.currentIndex
     val listChangeFlow = merge(
         MutableStateFlow(null),
@@ -120,6 +121,13 @@ class PlayerViewModel @Inject constructor(
 
     val playPauseListener = CheckBoxListener {
         viewModelScope.launch { playPause.emit(it) }
+    }
+    val shuffleListener = CheckBoxListener {
+        viewModelScope.launch { shuffle.emit(it) }
+    }
+    var repeatEnabled = false
+    fun onRepeat(it: Int){
+        if (repeatEnabled) viewModelScope.launch { repeat.emit(it) }
     }
 
     val track = MutableStateFlow(global.queue.firstOrNull()?.track)

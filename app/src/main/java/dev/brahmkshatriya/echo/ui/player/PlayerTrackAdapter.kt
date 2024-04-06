@@ -14,7 +14,9 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.media3.common.Player
+import androidx.media3.common.Player.REPEAT_MODE_ALL
+import androidx.media3.common.Player.REPEAT_MODE_OFF
+import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
@@ -145,7 +147,6 @@ class PlayerTrackAdapter(
         }
         observeCurrent(viewModel.progress) {
             val (current, buffered) = it ?: (0 to 0)
-            println("${track?.title} : $current")
             binding.collapsedContainer.run {
                 collapsedBuffer.progress = buffered
                 collapsedSeekBar.progress = current
@@ -218,37 +219,46 @@ class PlayerTrackAdapter(
             (it.icon as Animatable).start()
         }
 
-        val shuffleListener = CheckBoxListener { emit(viewModel.shuffle) { it } }
+        val shuffleListener = viewModel.shuffleListener
+        binding.playerControls.trackShuffle.addOnCheckedStateChangedListener(shuffleListener)
         observe(viewModel.shuffle) {
+            println("shuffle: $it")
             shuffleListener.enabled = false
             binding.playerControls.trackShuffle.isChecked = it
             shuffleListener.enabled = true
         }
 
-        val drawables = getRepeatDrawables(binding.root.context)
-        var repeatEnabled = true
+        val drawables = binding.root.context.run {
+            fun asAnimated(id: Int) =
+                AppCompatResources.getDrawable(this, id) as AnimatedVectorDrawable
+            listOf(
+                asAnimated(R.drawable.ic_repeat_one_to_no_repeat_40dp),
+                asAnimated(R.drawable.ic_no_repeat_to_repeat_40dp),
+                asAnimated(R.drawable.ic_repeat_to_repeat_one_40dp)
+            )
+        }
+        val repeatModes = listOf(REPEAT_MODE_OFF, REPEAT_MODE_ALL, REPEAT_MODE_ONE)
+        fun changeDrawable(repeatMode: Int) = binding.playerControls.trackRepeat.run {
+            val index = repeatModes.indexOf(repeatMode)
+            icon = drawables[index]
+            (icon as Animatable).start()
+        }
+        changeDrawable(viewModel.repeat.value)
         binding.playerControls.trackRepeat.setOnClickListener {
-            val button = binding.playerControls.trackRepeat
-            val drawable = when (button.icon) {
-                drawables[0] -> drawables[1]
-                drawables[1] -> drawables[2]
-                else -> drawables[0]
+            val mode = when (viewModel.repeat.value) {
+                REPEAT_MODE_OFF -> REPEAT_MODE_ALL
+                REPEAT_MODE_ALL -> REPEAT_MODE_ONE
+                else -> REPEAT_MODE_OFF
             }
-            button.icon = drawable
-            drawable.start()
-            if (repeatEnabled)
-                emit(viewModel.repeat) { repeatModes[drawables.indexOf(drawable)] }
+            changeDrawable(mode)
+            viewModel.onRepeat(mode)
         }
 
         observe(viewModel.repeat) {
-            repeatEnabled = false
-            binding.playerControls.trackRepeat.performClick()
-            repeatEnabled = true
+            viewModel.repeatEnabled = false
+            changeDrawable(it)
+            viewModel.repeatEnabled = true
         }
-
-        val repeatMode = viewModel.repeat.value
-        binding.playerControls.trackRepeat.icon =
-            drawables[repeatModes.indexOf(repeatMode)].apply { start() }
     }
 
     private fun Context.getPlayerColors(bitmapDrawable: BitmapDrawable?): PlayerColors {
@@ -283,17 +293,4 @@ class PlayerTrackAdapter(
         trackTitle.setTextColor(colors.body)
     }
 
-
-    private fun getRepeatDrawables(context: Context) = context.run {
-        fun asAnimated(id: Int) =
-            AppCompatResources.getDrawable(this, id) as AnimatedVectorDrawable
-        listOf(
-            asAnimated(R.drawable.ic_repeat_to_repeat_one_40dp),
-            asAnimated(R.drawable.ic_repeat_one_to_no_repeat_40dp),
-            asAnimated(R.drawable.ic_no_repeat_to_repeat_40dp)
-        )
-    }
-
-    private val repeatModes =
-        listOf(Player.REPEAT_MODE_ONE, Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL)
 }
