@@ -34,6 +34,7 @@ sealed class MediaContainerViewHolder(
             binding.subtitle.text = category.subtitle
             binding.subtitle.isVisible = category.subtitle.isNullOrBlank().not()
             binding.recyclerView.adapter = MediaItemAdapter(listener, clientId, category.list)
+            binding.recyclerView.setHasFixedSize(true)
             val position = bindingAdapterPosition
             binding.recyclerView.layoutManager?.apply {
                 val state: Parcelable? = viewModel.layoutManagerStates[position]

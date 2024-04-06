@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.ui.library
 
-import dev.brahmkshatriya.echo.ui.common.MainFragment
+import androidx.fragment.app.Fragment
 
-class LibraryFragment : MainFragment() {
+class LibraryFragment : Fragment() {
 }

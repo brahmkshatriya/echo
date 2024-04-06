@@ -64,11 +64,10 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
         android:clipToPadding="false"
-        android:nestedScrollingEnabled="false"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp"
+        android:paddingBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/new_item_media_track" />
 

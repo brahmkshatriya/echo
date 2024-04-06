@@ -10,7 +10,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
@@ -21,10 +20,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.player.PlaybackService
-import dev.brahmkshatriya.echo.ui.common.MainFragment
-import dev.brahmkshatriya.echo.ui.home.HomeFragment
-import dev.brahmkshatriya.echo.ui.library.LibraryFragment
-import dev.brahmkshatriya.echo.ui.search.SearchFragment
 import dev.brahmkshatriya.echo.utils.Animator.animateTranslation
 import dev.brahmkshatriya.echo.utils.Animator.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
@@ -39,7 +34,6 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlaye
 import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -49,24 +43,6 @@ class MainActivity : AppCompatActivity() {
     private val extensionViewModel by viewModels<ExtensionViewModel>()
     private val uiViewModel by viewModels<UiViewModel>()
     private val playerViewModel by viewModels<PlayerViewModel>()
-
-    private val homeFragment by lazy { HomeFragment() }
-    private val searchFragment by lazy { SearchFragment() }
-    private val libraryFragment by lazy { LibraryFragment() }
-    private fun openFragment(fragment: MainFragment): Boolean {
-        lifecycleScope.launch {
-            supportFragmentManager.beginTransaction().replace(R.id.navHostFragment, fragment).commit()
-        }
-        return true
-    }
-
-    private fun openFragment(id: Int): Boolean = when (id) {
-        R.id.homeFragment -> openFragment(homeFragment)
-        R.id.searchFragment -> openFragment(searchFragment)
-        R.id.libraryFragment -> openFragment(libraryFragment)
-        else -> false
-    }
-
 
     private var controllerFuture: ListenableFuture<MediaBrowser>? = null
 
@@ -83,8 +59,13 @@ class MainActivity : AppCompatActivity() {
         checkPermissions(this)
 
         val navView = binding.navView as NavigationBarView
-        openFragment(navView.selectedItemId)
-        navView.setOnItemSelectedListener { openFragment(it.itemId) }
+        navView.setOnItemSelectedListener {
+            uiViewModel.navigation.value = uiViewModel.navIds.indexOf(it.itemId)
+            true
+        }
+        navView.setOnItemReselectedListener {
+            uiViewModel.navigationReselected.value = uiViewModel.navIds.indexOf(it.itemId)
+        }
         uiViewModel.isRail = binding.navView is NavigationRailView
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->

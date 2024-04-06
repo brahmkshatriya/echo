@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.tabs.TabLayout
@@ -30,50 +31,12 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdap
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
-class SearchFragment : MainFragment() {
+class SearchFragment : Fragment() {
 
     private var binding by autoCleared<FragmentSearchBinding>()
     private val viewModel by activityViewModels<SearchViewModel>()
 
-    private val mediaClickListener = MediaClickListener(this)
-    private val mediaContainerAdapter = MediaContainerAdapter(this, mediaClickListener)
-    private val concatAdapter = mediaContainerAdapter.withLoaders()
-
-    private val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
-        override fun onClick(item: QuickSearchItem, transitionView: View) = when (item) {
-            is QuickSearchItem.SearchQueryItem -> {
-                binding.quickSearchView.editText.run {
-                    setText(item.query)
-                    onEditorAction(imeOptions)
-                }
-            }
-
-            is QuickSearchItem.SearchMediaItem -> {
-                val client = viewModel.extensionFlow.value?.metadata?.id
-                mediaClickListener.onClick(client, item.mediaItem, transitionView)
-            }
-        }
-
-        override fun onLongClick(item: QuickSearchItem, transitionView: View) = when (item) {
-            is QuickSearchItem.SearchQueryItem -> {
-                onClick(item, transitionView)
-                true
-            }
-
-            is QuickSearchItem.SearchMediaItem -> {
-                val client = viewModel.extensionFlow.value?.metadata?.id
-                mediaClickListener.onLongClick(client, item.mediaItem, transitionView)
-                true
-            }
-        }
-
-        override fun onInsert(item: QuickSearchItem) {
-            binding.quickSearchView.editText.run {
-                setText(item.title)
-                setSelection(length())
-            }
-        }
-    })
+    private val parent get() = parentFragment as MainFragment
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -96,7 +59,7 @@ class SearchFragment : MainFragment() {
             binding.toolBar.alpha = 1 - offset
         }
 
-        binding.toolBar.configureMainMenu(this)
+        binding.toolBar.configureMainMenu(parent)
 
         binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
         binding.swipeRefresh.setOnRefreshListener {
@@ -115,9 +78,49 @@ class SearchFragment : MainFragment() {
             false
         }
 
+        viewModel.initialize()
+
+        val mediaClickListener = MediaClickListener(parent)
+        val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
+            override fun onClick(item: QuickSearchItem, transitionView: View) = when (item) {
+                is QuickSearchItem.SearchQueryItem -> {
+                    binding.quickSearchView.editText.run {
+                        setText(item.query)
+                        onEditorAction(imeOptions)
+                    }
+                }
+
+                is QuickSearchItem.SearchMediaItem -> {
+                    val client = viewModel.extensionFlow.value?.metadata?.id
+                    mediaClickListener.onClick(client, item.mediaItem, transitionView)
+                }
+            }
+
+            override fun onLongClick(item: QuickSearchItem, transitionView: View) = when (item) {
+                is QuickSearchItem.SearchQueryItem -> {
+                    onClick(item, transitionView)
+                    true
+                }
+
+                is QuickSearchItem.SearchMediaItem -> {
+                    val client = viewModel.extensionFlow.value?.metadata?.id
+                    mediaClickListener.onLongClick(client, item.mediaItem, transitionView)
+                    true
+                }
+            }
+
+            override fun onInsert(item: QuickSearchItem) {
+                binding.quickSearchView.editText.run {
+                    setText(item.title)
+                    setSelection(length())
+                }
+            }
+        })
+
         binding.quickSearchRecyclerView.adapter = quickSearchAdapter
 
-        viewModel.initialize()
+        val mediaContainerAdapter = MediaContainerAdapter(parent, mediaClickListener)
+        val concatAdapter = mediaContainerAdapter.withLoaders()
 
         collect(viewModel.extensionFlow) {
             binding.swipeRefresh.isEnabled = it != null

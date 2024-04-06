@@ -5,7 +5,6 @@ import android.view.View
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
@@ -50,6 +49,13 @@ class UiViewModel @Inject constructor(
         }
     }
 
+    val navigation = MutableStateFlow(0)
+    val navigationReselected = MutableStateFlow(0)
+    val navIds = listOf(
+        R.id.homeFragment,
+        R.id.searchFragment,
+        R.id.libraryFragment
+    )
     private val navViewInsets = MutableStateFlow(Insets())
     private val playerNavViewInsets = MutableStateFlow(Insets())
     private val playerInsets = MutableStateFlow(Insets())
@@ -129,7 +135,7 @@ class UiViewModel @Inject constructor(
 
     companion object {
         fun Context.isRTL() =
-            resources.configuration.layoutDirection == ViewCompat.LAYOUT_DIRECTION_RTL
+            resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
 
         fun Fragment.applyInsets(block: UiViewModel.(Insets) -> Unit) {
             val uiViewModel by activityViewModels<UiViewModel>()

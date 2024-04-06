@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.R
@@ -25,13 +26,11 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdap
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
-class HomeFragment : MainFragment() {
+class HomeFragment : Fragment() {
 
     private var binding by autoCleared<FragmentHomeBinding>()
     private val viewModel by activityViewModels<HomeViewModel>()
-
-    private val mediaContainerAdapter = MediaContainerAdapter(this)
-    private val concatAdapter = mediaContainerAdapter.withLoaders()
+    private val parent get() = parentFragment as MainFragment
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -45,7 +44,7 @@ class HomeFragment : MainFragment() {
         setupTransition(view)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView)
         applyBackPressCallback()
-        binding.toolBar.configureMainMenu(this)
+        binding.toolBar.configureMainMenu(parent)
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.appBarOutline.alpha = offset
             binding.toolBar.alpha = 1 - offset
@@ -57,6 +56,8 @@ class HomeFragment : MainFragment() {
         }
 
         viewModel.initialize()
+        val mediaContainerAdapter = MediaContainerAdapter(parent)
+        val concatAdapter = mediaContainerAdapter.withLoaders()
 
         collect(viewModel.extensionFlow) {
             binding.swipeRefresh.isEnabled = it != null
