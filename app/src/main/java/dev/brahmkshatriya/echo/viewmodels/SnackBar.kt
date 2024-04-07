@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,7 +21,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SnackBarViewModel @Inject constructor(
+class SnackBar @Inject constructor(
     mutableThrowableFlow: MutableSharedFlow<Throwable>,
     val mutableMessageFlow: MutableSharedFlow<Message>
 ) : ViewModel() {
@@ -31,8 +30,12 @@ class SnackBarViewModel @Inject constructor(
 
     data class Message(
         val message: String,
-        val action: String = "",
-        val actionHandler: ((FragmentManager) -> Unit)? = null
+        val action: Action? = null
+    )
+
+    data class Action(
+        val name: String,
+        val handler: (() -> Unit)
     )
 
     private val messages = mutableListOf<Message>()
@@ -41,7 +44,7 @@ class SnackBarViewModel @Inject constructor(
         if (messages.isEmpty()) viewModelScope.launch {
             mutableMessageFlow.emit(message)
         }
-        messages.add(message)
+        if (!messages.contains(message)) messages.add(message)
     }
 
     fun remove(message: Message, dismissed: Boolean) {
@@ -52,8 +55,8 @@ class SnackBarViewModel @Inject constructor(
     }
 
     companion object {
-        fun AppCompatActivity.configureSnackBar(fragmentManager: FragmentManager, root: View) {
-            val viewModel by viewModels<SnackBarViewModel>()
+        fun AppCompatActivity.configureSnackBar(root: View) {
+            val viewModel by viewModels<SnackBar>()
             fun createSnackBar(message: Message) {
                 val snackBar = Snackbar.make(
                     root,
@@ -63,11 +66,7 @@ class SnackBarViewModel @Inject constructor(
                 snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
                 snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> { setMargins(0) }
                 snackBar.anchorView = root
-
-                snackBar.setAction(message.action) {
-                    val actionHandler = message.actionHandler
-                    if (actionHandler != null) actionHandler(fragmentManager)
-                }
+                message.action?.run { snackBar.setAction(name) { handler() } }
                 snackBar.addCallback(object : Snackbar.Callback() {
                     override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                         viewModel.remove(message, event != DISMISS_EVENT_MANUAL)
@@ -84,8 +83,7 @@ class SnackBarViewModel @Inject constructor(
                 throwable.printStackTrace()
                 val message = Message(
                     message = throwable.message ?: "An error occurred",
-                    action = getString(R.string.view),
-                    actionHandler = {
+                    action = Action(getString(R.string.view)) {
                         openException(throwable)
                     }
                 )
@@ -94,7 +92,7 @@ class SnackBarViewModel @Inject constructor(
         }
 
         fun Fragment.createSnack(message: Message) {
-            val viewModel by activityViewModels<SnackBarViewModel>()
+            val viewModel by activityViewModels<SnackBar>()
             viewModel.create(message)
         }
 

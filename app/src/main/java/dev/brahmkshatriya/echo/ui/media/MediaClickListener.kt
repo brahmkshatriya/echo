@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.createSnack
+import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 
 class MediaClickListener(
     private val fragment: Fragment

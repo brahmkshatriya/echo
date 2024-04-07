@@ -29,7 +29,7 @@ import javax.inject.Inject
 class PlayerViewModel @Inject constructor(
     private val global: Queue,
     private val extensionListFlow: ExtensionModule.ExtensionListFlow,
-    private val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
+    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val app: Application,
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {

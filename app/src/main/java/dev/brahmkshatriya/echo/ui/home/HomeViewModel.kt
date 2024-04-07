@@ -20,6 +20,8 @@ class HomeViewModel @Inject constructor(
     val extensionFlow: ExtensionModule.ExtensionFlow,
 ) : CatchingViewModel(throwableFlow) {
 
+    var recyclerPosition = 0
+
     val loading = MutableSharedFlow<Boolean>()
     val homeFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
     val genres = MutableStateFlow<List<Genre>>(emptyList())

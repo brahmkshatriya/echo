@@ -16,6 +16,7 @@ import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
     val fragment: Fragment,
+    val transition: String,
     val listener: MediaClickListener = MediaClickListener(fragment)
 ) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
 
@@ -89,7 +90,7 @@ class MediaContainerAdapter(
 
     override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
         val items = getItem(position) ?: return
-        holder.transitionView.transitionName = items.id
+        holder.transitionView.transitionName = (transition + items.id).hashCode().toString()
         holder.bind(items)
         val clickView = holder.clickView
         clickView.setOnClickListener {

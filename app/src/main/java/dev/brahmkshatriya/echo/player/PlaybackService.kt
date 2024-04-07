@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
-import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,7 +43,7 @@ class PlaybackService : MediaLibraryService() {
     lateinit var throwableFlow: MutableSharedFlow<Throwable>
 
     @Inject
-    lateinit var messageFlow: MutableSharedFlow<SnackBarViewModel.Message>
+    lateinit var messageFlow: MutableSharedFlow<SnackBar.Message>
 
     @Inject
     lateinit var settings: SharedPreferences

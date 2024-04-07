@@ -21,6 +21,8 @@ class SearchViewModel @Inject constructor(
     val extensionFlow: ExtensionModule.ExtensionFlow,
 ) : CatchingViewModel(throwableFlow) {
 
+    var recyclerPosition = 0
+
     val loading = MutableSharedFlow<Boolean>()
     val searchFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
     val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())

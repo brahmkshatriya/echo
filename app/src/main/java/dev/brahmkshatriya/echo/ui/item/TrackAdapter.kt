@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.player.toTimeString
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class TrackAdapter(
+    private val transition: String,
     private val listener: Listener,
 ) : RecyclerView.Adapter<TrackAdapter.ViewHolder>() {
 
@@ -49,7 +50,7 @@ class TrackAdapter(
         binding.itemSubtitle.isVisible = subtitle.isNotEmpty()
         binding.itemSubtitle.text = subtitle
 
-        binding.root.transitionName = track.id
+        binding.root.transitionName = (transition + track.id).hashCode().toString()
 
         binding.root.setOnClickListener {
             val list = list ?: return@setOnClickListener

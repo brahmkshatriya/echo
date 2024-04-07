@@ -80,7 +80,7 @@ class SettingsFragment : BaseSettingsFragment() {
                 "audio" -> AudioFragment()
                 "extension" -> {
                     val extension = extension ?: return false
-                    ExtensionFragment.newInstance(extension.id, extension.name)
+                    ExtensionFragment.newInstance(extension.name, extension.id)
                 }
 
                 "look" -> LookFragment()

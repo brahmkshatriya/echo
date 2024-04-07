@@ -32,7 +32,7 @@ abstract class BaseSettingsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupTransition(binding.root)
+        setupTransition(view)
         applyInsets {
             binding.fragmentContainer.applyContentInsets(it)
         }
@@ -43,7 +43,6 @@ abstract class BaseSettingsFragment : Fragment() {
         binding.title.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        binding.root.transitionName = transitionName
 
         binding.title.title = title
         childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())

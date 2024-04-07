@@ -38,7 +38,7 @@ class ExceptionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        setupTransition(binding.root)
+        setupTransition(view)
         applyInsets {
             binding.exceptionIconContainer.updatePadding(top = it.top)
             binding.nestedScrollView.applyContentInsets(it)
@@ -52,9 +52,6 @@ class ExceptionFragment : Fragment() {
         }
 
         val throwable = viewmodel.throwable ?: return
-
-        val transitionName = throwable.hashCode().toString()
-        binding.root.transitionName = transitionName
 
         binding.exceptionMessage.title = throwable.message
         binding.exceptionDetails.text = throwable.stackTraceToString()

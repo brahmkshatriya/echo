@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
+import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
@@ -119,7 +120,7 @@ class SearchFragment : Fragment() {
 
         binding.quickSearchRecyclerView.adapter = quickSearchAdapter
 
-        val mediaContainerAdapter = MediaContainerAdapter(parent, mediaClickListener)
+        val mediaContainerAdapter = MediaContainerAdapter(parent, "search", mediaClickListener)
         val concatAdapter = mediaContainerAdapter.withLoaders()
 
         collect(viewModel.extensionFlow) {
@@ -165,6 +166,15 @@ class SearchFragment : Fragment() {
         observe(viewModel.quickFeed) {
             quickSearchAdapter.submitList(it)
         }
+//
+//        binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
+//            binding.appBarLayout.setExpanded(it < 1, false)
+//        }
+    }
+
+    override fun onStop() {
+        viewModel.recyclerPosition = binding.recyclerView.first()
+        super.onStop()
     }
 
 }

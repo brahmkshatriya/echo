@@ -30,9 +30,6 @@ class CategoryFragment : Fragment() {
     private val activityViewModel by activityViewModels<CategoryViewModel>()
     private val viewModel by viewModels<CategoryViewModel>()
 
-    private val adapter = MediaContainerAdapter(this)
-    private val concatAdapter = adapter.withLoaders()
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -41,8 +38,7 @@ class CategoryFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        setupTransition(binding.root)
+        setupTransition(view)
         applyInsets {
             binding.recyclerView.applyContentInsets(it)
         }
@@ -54,9 +50,6 @@ class CategoryFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
 
-        adapter.clientId = clientId
-        binding.recyclerView.adapter = concatAdapter
-
         val category = if (viewModel.category == null) {
             val category = activityViewModel.category ?: return
             activityViewModel.category = null
@@ -65,10 +58,13 @@ class CategoryFragment : Fragment() {
             category
         } else viewModel.category ?: return
 
-        val transitionName = category.hashCode().toString()
-        binding.root.transitionName = transitionName
-
         binding.toolBar.title = category.title
+
+        val adapter = MediaContainerAdapter(this, view.transitionName)
+        val concatAdapter = adapter.withLoaders()
+
+        adapter.clientId = clientId
+        binding.recyclerView.adapter = concatAdapter
 
         observe(viewModel.flow) { data ->
             adapter.submit(data)

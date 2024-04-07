@@ -13,6 +13,8 @@ import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
+import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
+import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollToAnd
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
@@ -40,7 +42,6 @@ class HomeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         setupTransition(view)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView)
         applyBackPressCallback()
@@ -56,7 +57,7 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.initialize()
-        val mediaContainerAdapter = MediaContainerAdapter(parent)
+        val mediaContainerAdapter = MediaContainerAdapter(parent, "home")
         val concatAdapter = mediaContainerAdapter.withLoaders()
 
         collect(viewModel.extensionFlow) {
@@ -98,5 +99,14 @@ class HomeFragment : Fragment() {
         observe(viewModel.homeFeed) {
             mediaContainerAdapter.submit(it)
         }
+
+        binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
+            binding.appBarLayout.setExpanded(it < 1, false)
+        }
+    }
+
+    override fun onStop() {
+        viewModel.recyclerPosition = binding.recyclerView.first()
+        super.onStop()
     }
 }

@@ -31,7 +31,7 @@ import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
-import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel.Companion.configureSnackBar
+import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
 
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         extensionViewModel.initialize()
 
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
-        configureSnackBar(supportFragmentManager, binding.navView)
+        configureSnackBar(binding.navView)
 
         val sessionToken =
             SessionToken(application, ComponentName(application, PlaybackService::class.java))

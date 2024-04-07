@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Compani
 import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
-import dev.brahmkshatriya.echo.viewmodels.SnackBarViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,7 +26,7 @@ class RadioListener(
     private val scope: CoroutineScope,
     private val settings: SharedPreferences,
     private val throwableFlow: MutableSharedFlow<Throwable>,
-    private val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>
+    private val messageFlow: MutableSharedFlow<SnackBar.Message>
 ) : Player.Listener {
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -47,7 +47,7 @@ class RadioListener(
         suspend fun radio(
             context: Context,
             client: ExtensionClient?,
-            messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
+            messageFlow: MutableSharedFlow<SnackBar.Message>,
             queue: Queue,
             block: suspend RadioClient.() -> Playlist?
         ) = when (client) {

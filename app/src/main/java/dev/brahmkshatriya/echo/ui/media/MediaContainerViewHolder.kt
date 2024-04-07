@@ -33,7 +33,13 @@ sealed class MediaContainerViewHolder(
             binding.title.text = category.title
             binding.subtitle.text = category.subtitle
             binding.subtitle.isVisible = category.subtitle.isNullOrBlank().not()
-            binding.recyclerView.adapter = MediaItemAdapter(listener, clientId, category.list)
+            binding.recyclerView.adapter =
+                MediaItemAdapter(
+                    listener,
+                    transitionView.transitionName + category.id,
+                    clientId,
+                    category.list
+                )
             binding.recyclerView.setHasFixedSize(true)
             val position = bindingAdapterPosition
             binding.recyclerView.layoutManager?.apply {

@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.utils
 
-import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewPropertyAnimator
@@ -11,6 +11,9 @@ import com.google.android.material.R
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.transition.MaterialArcMotion
 import com.google.android.material.transition.MaterialContainerTransform
+import com.google.android.material.transition.MaterialSharedAxis
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.ANIMATIONS_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.SHARED_ELEMENT_KEY
 
 object Animator {
 
@@ -34,8 +37,9 @@ object Animator {
         if (animations) {
             fun ViewPropertyAnimator.withEnd(block: () -> Unit) = withEndAction {
                 block()
-                if(!isVisible) action()
+                if (!isVisible) action()
             }
+
             val animation =
                 if (isRail) animate().translationX(value).withEnd { translationX = value }
                 else animate().translationY(value).withEnd { translationY = value }
@@ -43,8 +47,7 @@ object Animator {
                 if (isVisible) animation.withStartAction(action)
                 else animation
             )
-        }
-        else {
+        } else {
             if (isRail) translationX = value
             else translationY = value
             action()
@@ -69,19 +72,35 @@ object Animator {
 
     private val View.animations
         get() = context.applicationContext.run {
-            getSharedPreferences(packageName, Context.MODE_PRIVATE).getBoolean("animations", true)
+            getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
+        }
+
+    private val View.sharedElementTransitions
+        get() = context.applicationContext.run {
+            getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(SHARED_ELEMENT_KEY, true)
         }
 
     fun Fragment.setupTransition(view: View) {
         if (view.animations) {
-            val value = TypedValue()
-            val theme = requireContext().theme
-            theme.resolveAttribute(dev.brahmkshatriya.echo.R.attr.echoBackground, value, true)
-            sharedElementEnterTransition = MaterialContainerTransform().apply {
-                drawingViewId = dev.brahmkshatriya.echo.R.id.navHostFragment
-                setAllContainerColors(resources.getColor(value.resourceId, theme))
-                setPathMotion(MaterialArcMotion())
+            val transitionName = arguments?.getString("transitionName")
+            if (transitionName != null && view.sharedElementTransitions) {
+                view.transitionName = transitionName
+                val value = TypedValue()
+                val theme = requireContext().theme
+                theme.resolveAttribute(dev.brahmkshatriya.echo.R.attr.echoBackground, value, true)
+                val transition = MaterialContainerTransform().apply {
+                    drawingViewId = dev.brahmkshatriya.echo.R.id.navHostFragment
+                    setAllContainerColors(resources.getColor(value.resourceId, theme))
+                    setPathMotion(MaterialArcMotion())
+                }
+                sharedElementEnterTransition = transition
             }
+
+            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
+            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
+            enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
+            returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
+
             postponeEnterTransition()
             view.doOnPreDraw { startPostponedEnterTransition() }
         }

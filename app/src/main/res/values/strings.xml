@@ -80,5 +80,8 @@
     <string name="animations">Animations</string>
     <string name="animations_summary">Feeling too much stutter? turning this off, might help</string>
     <string name="seekbar">Seekbar</string>
+    <string name="shared_element_transitions">Cover Art Transitions</string>
+    <string name="shared_element_transitions_summary">Cool element transitions, why\'d you turn this off?</string>
+    <string name="restart">Restart</string>
 
 </resources>

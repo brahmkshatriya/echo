@@ -53,19 +53,19 @@ class ExtensionViewModel @Inject constructor(
     companion object {
         const val LAST_EXTENSION_KEY = "last_extension"
 
-        fun Context.noClient() = SnackBarViewModel.Message(
+        fun Context.noClient() = SnackBar.Message(
             getString(R.string.error_no_client)
         )
 
-        fun Context.searchNotSupported(client: String) = SnackBarViewModel.Message(
+        fun Context.searchNotSupported(client: String) = SnackBar.Message(
             getString(R.string.is_not_supported, getString(R.string.search), client)
         )
 
-        fun Context.trackNotSupported(client: String) = SnackBarViewModel.Message(
+        fun Context.trackNotSupported(client: String) = SnackBar.Message(
             getString(R.string.is_not_supported, getString(R.string.track), client)
         )
 
-        fun Context.radioNotSupported(client: String) = SnackBarViewModel.Message(
+        fun Context.radioNotSupported(client: String) = SnackBar.Message(
             getString(R.string.is_not_supported, getString(R.string.radio), client)
         )
 

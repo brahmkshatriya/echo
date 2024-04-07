@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 
 class MediaItemAdapter(
     val listener: Listener,
+    private val transition: String,
     private val clientId: String?,
     val list: List<EchoMediaItem>
 ) : RecyclerView.Adapter<MediaItemViewHolder>() {
@@ -36,7 +37,7 @@ class MediaItemAdapter(
 
     override fun onBindViewHolder(holder: MediaItemViewHolder, position: Int) {
         val item = list[position]
-        holder.transitionView.transitionName = item.id
+        holder.transitionView.transitionName = (transition + item.id).hashCode().toString()
         holder.bind(item)
         holder.itemView.setOnClickListener {
             listener.onClick(clientId, item, holder.transitionView)
