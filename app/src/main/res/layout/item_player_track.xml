@@ -6,34 +6,34 @@
     android:layout_height="match_parent"
     android:background="@color/amoled_bg">
 
-    <View
-        android:id="@+id/background"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"
-        android:background="@color/amoled_bg" />
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/bgImage"
-            android:scaleType="centerCrop"
-            tools:srcCompat="@tools:sample/avatars"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:importantForAccessibility="no" />
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            tools:srcCompat="@tools:sample/avatars" />
 
         <ImageView
             android:id="@+id/bgGradient"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:importantForAccessibility="no"
             app:srcCompat="@drawable/gradient_track"
-            app:tint="@color/amoled_bg"
-            android:importantForAccessibility="no" />
+            app:tintMode="src_in" />
 
     </FrameLayout>
+
+    <View
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="?navBackground" />
 
     <FrameLayout
         android:id="@+id/expandedTrackCoverContainer"

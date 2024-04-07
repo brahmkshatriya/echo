@@ -26,11 +26,13 @@
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/playerControlInfoContainer"
             android:layout_width="0dp"
+            android:layout_marginStart="-24dp"
             android:layout_height="match_parent"
-            android:paddingHorizontal="24dp"
+            android:paddingHorizontal="12dp"
             android:layout_weight="1">
 
-            <FrameLayout
+            <androidx.fragment.app.FragmentContainerView
+                android:name="dev.brahmkshatriya.echo.ui.player.PlayerInfoFragment"
                 android:id="@+id/playerInfoContainer"
                 style="@style/Widget.Material3.BottomSheet"
                 android:layout_width="match_parent"
@@ -41,11 +43,7 @@
                 app:behavior_peekHeight="64dp"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
                 app:marginLeftSystemWindowInsets="false"
-                app:marginRightSystemWindowInsets="false">
-
-                <include layout="@layout/fragment_player_info" />
-
-            </FrameLayout>
+                app:marginRightSystemWindowInsets="false"/>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     </LinearLayout>

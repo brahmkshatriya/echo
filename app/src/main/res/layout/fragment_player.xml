@@ -14,8 +14,9 @@
         style="@style/AppBarOutline"
         android:layout_marginTop="0dp" />
 
-    <FrameLayout
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/playerInfoContainer"
+        android:name="dev.brahmkshatriya.echo.ui.player.PlayerInfoFragment"
         style="@style/Widget.Material3.BottomSheet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,9 +24,6 @@
         android:clipToPadding="false"
         app:behavior_hideable="false"
         app:behavior_peekHeight="@dimen/player_info_peek_height"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"/>
 
-        <include layout="@layout/fragment_player_info" />
-
-    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

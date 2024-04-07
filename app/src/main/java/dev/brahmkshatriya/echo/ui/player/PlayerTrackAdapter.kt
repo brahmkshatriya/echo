@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.player
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.PorterDuff
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.Animatable
@@ -74,6 +75,7 @@ class PlayerTrackAdapter(
             val colors = binding.root.context.getPlayerColors(it as? BitmapDrawable)
             binding.root.setBackgroundColor(colors.background)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
+            binding.bgGradient.imageTintMode = PorterDuff.Mode.SRC_IN
             binding.collapsedContainer.applyColors(colors)
             binding.playerControls.applyColors(colors)
         }
@@ -107,11 +109,9 @@ class PlayerTrackAdapter(
             binding.collapsedContainer.root.run {
                 translationY = -height * offset
                 alpha = 1 - offset
-                isVisible = offset < 1
             }
             binding.bgImage.alpha = offset
             binding.expandedTrackCoverContainer.alpha = offset
-            binding.collapsePlayer.isVisible = offset != 0f
         }
 
         observe(uiViewModel.infoSheetOffset) {
