@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -48,6 +49,7 @@ class HomeFragment : Fragment() {
         binding.toolBar.configureMainMenu(parent)
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.appBarOutline.alpha = offset
+            binding.appBarOutline.isVisible = offset > 0
             binding.toolBar.alpha = 1 - offset
         }
 
@@ -102,6 +104,10 @@ class HomeFragment : Fragment() {
 
         binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
             binding.appBarLayout.setExpanded(it < 1, false)
+        }
+        view.doOnLayout {
+            println("do on layout")
+            binding.appBarOutline.alpha = 0f
         }
     }
 

@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.search
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +19,7 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
+import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollToAnd
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
@@ -56,6 +58,7 @@ class SearchFragment : Fragment() {
         }
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.appBarOutline.alpha = offset
+            binding.appBarOutline.isVisible = offset > 0
             binding.searchBar.alpha = 1 - offset
             binding.toolBar.alpha = 1 - offset
         }
@@ -166,10 +169,16 @@ class SearchFragment : Fragment() {
         observe(viewModel.quickFeed) {
             quickSearchAdapter.submitList(it)
         }
-//
-//        binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
-//            binding.appBarLayout.setExpanded(it < 1, false)
-//        }
+
+        binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
+            binding.appBarLayout.setExpanded(it < 1, false)
+        }
+
+        // Need to hide scrim because something weird happens when we use Material Transition
+        binding.quickSearchView
+            .findViewById<View>(com.google.android.material.R.id.open_search_view_scrim).run {
+                setBackgroundColor(Color.TRANSPARENT)
+            }
     }
 
     override fun onStop() {

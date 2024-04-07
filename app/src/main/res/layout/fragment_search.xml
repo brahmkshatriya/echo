@@ -98,12 +98,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:hint="@string/search"
+        android:elevation="0dp"
         app:closeIcon="@drawable/ic_close"
-        app:goIcon="@drawable/ic_back"
-        app:searchHintIcon="@drawable/ic_back"
-        app:commitIcon="@drawable/ic_back"
-        app:searchIcon="@drawable/ic_back"
-        app:animateNavigationIcon="true"
         app:backgroundTint="?navBackground">
 
         <androidx.recyclerview.widget.RecyclerView
