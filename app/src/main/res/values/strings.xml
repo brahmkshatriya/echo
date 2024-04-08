@@ -83,5 +83,7 @@
     <string name="shared_element_transitions">Cover Art Transitions</string>
     <string name="shared_element_transitions_summary">Cool element transitions, why\'d you turn this off?</string>
     <string name="restart">Restart</string>
-
+    <string name="playing_from">Playing From</string>
+    <string name="equalizer">Equalizer</string>
+    <string name="sleep_timer">Sleep Timer</string>
 </resources>

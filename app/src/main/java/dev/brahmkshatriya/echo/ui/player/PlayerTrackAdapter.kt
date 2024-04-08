@@ -53,14 +53,15 @@ class PlayerTrackAdapter(
             oldItem.track.id == newItem.track.id
 
         override fun areContentsTheSame(oldItem: StreamableTrack, newItem: StreamableTrack) =
-            oldItem == newItem
+            true
     }
 
     override fun inflateCallback(inflater: LayoutInflater, container: ViewGroup?) =
         ItemPlayerTrackBinding.inflate(inflater, container, false)
 
     override fun Holder<StreamableTrack, ItemPlayerTrackBinding>.onBind(position: Int) {
-        val track = getItem(position)?.track
+        val item = getItem(position)
+        val track = item?.track
 
         track?.cover.loadWith(binding.expandedTrackCover) {
             binding.collapsedContainer.collapsedTrackCover.load(it)
@@ -94,10 +95,17 @@ class PlayerTrackAdapter(
             trackArtist.text = track?.artists?.joinToString(", ") { it.name }
         }
 
+        binding.expandedToolbar.run {
+            val client = viewModel.extensionListFlow.getClient(item.clientId)
+                ?.metadata?.name
+            title = if (client != null) context.getString(R.string.playing_from) else null
+            subtitle = client
+        }
+
         binding.collapsedContainer.root.setOnClickListener {
             emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_EXPANDED }
         }
-        binding.collapsePlayer.setOnClickListener {
+        binding.expandedToolbar.setNavigationOnClickListener {
             emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_COLLAPSED }
         }
         binding.collapsedContainer.playerClose.setOnClickListener {
@@ -128,7 +136,7 @@ class PlayerTrackAdapter(
             block: (T?) -> Unit
         ) {
             observe(flow) {
-                if (viewModel.track.value?.id == track?.id)
+                if (viewModel.current?.id == track?.id)
                     block(it)
                 else block(null)
             }
@@ -222,7 +230,6 @@ class PlayerTrackAdapter(
         val shuffleListener = viewModel.shuffleListener
         binding.playerControls.trackShuffle.addOnCheckedStateChangedListener(shuffleListener)
         observe(viewModel.shuffle) {
-            println("shuffle: $it")
             shuffleListener.enabled = false
             binding.playerControls.trackShuffle.isChecked = it
             shuffleListener.enabled = true
@@ -238,25 +245,24 @@ class PlayerTrackAdapter(
             )
         }
         val repeatModes = listOf(REPEAT_MODE_OFF, REPEAT_MODE_ALL, REPEAT_MODE_ONE)
-        fun changeDrawable(repeatMode: Int) = binding.playerControls.trackRepeat.run {
+        fun changeRepeatDrawable(repeatMode: Int) = binding.playerControls.trackRepeat.run {
             val index = repeatModes.indexOf(repeatMode)
             icon = drawables[index]
             (icon as Animatable).start()
         }
-        changeDrawable(viewModel.repeat.value)
         binding.playerControls.trackRepeat.setOnClickListener {
             val mode = when (viewModel.repeat.value) {
                 REPEAT_MODE_OFF -> REPEAT_MODE_ALL
                 REPEAT_MODE_ALL -> REPEAT_MODE_ONE
                 else -> REPEAT_MODE_OFF
             }
-            changeDrawable(mode)
+            changeRepeatDrawable(mode)
             viewModel.onRepeat(mode)
         }
 
         observe(viewModel.repeat) {
             viewModel.repeatEnabled = false
-            changeDrawable(it)
+            changeRepeatDrawable(it)
             viewModel.repeatEnabled = true
         }
     }

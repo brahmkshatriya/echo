@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.player
 
 import android.os.Handler
 import android.os.Looper
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -21,25 +20,24 @@ class PlayerListener(
     }
 
     init {
-        viewModel.track.value = viewModel.getTrack(player.currentMediaItem?.mediaId)
         viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
-        viewModel.changeCurrent(player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it })
         viewModel.shuffle.value = player.shuffleModeEnabled
         viewModel.repeat.value = player.repeatMode
+        updateCurrent()
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
         when (playbackState) {
-            Player.STATE_BUFFERING -> {
+            Player.STATE_BUFFERING ->
                 viewModel.buffering.value = true
-            }
 
             Player.STATE_READY -> {
                 viewModel.buffering.value = false
                 viewModel.totalDuration.value = player.duration.toInt()
             }
+
             else -> Unit
         }
         updateProgress()
@@ -49,9 +47,11 @@ class PlayerListener(
         viewModel.isPlaying.value = isPlaying
     }
 
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        viewModel.track.value = viewModel.getTrack(mediaItem?.mediaId)
-        viewModel.changeCurrent(player.currentMediaItemIndex.let { if (it == C.INDEX_UNSET) null else it })
+    private fun updateCurrent() {
+        val mediaItems = (0 until player.mediaItemCount).map {
+            player.getMediaItemAt(it).mediaId
+        }
+        viewModel.updateList(mediaItems, player.currentMediaItemIndex)
     }
 
     override fun onPositionDiscontinuity(
@@ -61,11 +61,12 @@ class PlayerListener(
         updateProgress()
     }
 
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        updateCurrent()
+    }
+
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        if (player.currentMediaItem == null) {
-            viewModel.track.value = null
-            viewModel.changeCurrent(null)
-        }
+        updateCurrent()
         updateNavigation()
         updateProgress()
     }

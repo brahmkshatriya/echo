@@ -28,33 +28,36 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val global: Queue,
-    private val extensionListFlow: ExtensionModule.ExtensionListFlow,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val app: Application,
+    val extensionListFlow: ExtensionModule.ExtensionListFlow,
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 
 
-        val list = global.queue
-    val currentIndex = global.currentIndex
-    val listChangeFlow = merge(
-        MutableStateFlow(null),
-        global.addTrackFlow,
-        global.removeTrackFlow,
-        global.moveTrackFlow,
-        global.clearQueueFlow
-    ).map { global.queue }
-
-    val audioIndexFlow = MutableSharedFlow<Int>()
     val playPause: MutableSharedFlow<Boolean> = MutableSharedFlow()
+    val playPauseListener = CheckBoxListener {
+        viewModelScope.launch { playPause.emit(it) }
+    }
+
+    val shuffle = MutableStateFlow(false)
+    val shuffleListener = CheckBoxListener {
+        viewModelScope.launch { shuffle.emit(it) }
+    }
+
+
+    val repeat = MutableStateFlow(0)
+    var repeatEnabled = false
+    fun onRepeat(it: Int) {
+        if (repeatEnabled) viewModelScope.launch { repeat.emit(it) }
+    }
+
     val seekTo: MutableSharedFlow<Long> = MutableSharedFlow()
+
     val seekToPrevious: MutableSharedFlow<Unit> = MutableSharedFlow()
     val seekToNext: MutableSharedFlow<Unit> = MutableSharedFlow()
 
     val clearQueueFlow = global.clearQueueFlow
-    val addTrackFlow = global.addTrackFlow
-    val moveTrackFlow = global.moveTrackFlow
-    val removeTrackFlow = global.removeTrackFlow
 
     fun clearQueue() {
         viewModelScope.launch {
@@ -62,18 +65,22 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    val moveTrackFlow = global.moveTrackFlow
     fun moveQueueItems(new: Int, old: Int) {
         viewModelScope.launch {
             global.moveTrack(old, new)
         }
     }
 
+    val removeTrackFlow = global.removeTrackFlow
     fun removeQueueItem(index: Int) {
         viewModelScope.launch {
             global.removeTrack(index)
         }
     }
 
+    val addTrackFlow = global.addTrackFlow
+    val audioIndexFlow = MutableSharedFlow<Int>()
     fun play(clientId: String, track: Track, playIndex: Int? = null) =
         play(clientId, listOf(track), playIndex)
 
@@ -81,23 +88,15 @@ class PlayerViewModel @Inject constructor(
     fun play(clientId: String, tracks: List<Track>, playIndex: Int? = null) {
         viewModelScope.launch {
             val pos = global.addTracks(clientId, tracks).first
-            println("play: $pos $playIndex")
             playIndex?.let { audioIndexFlow.emit(pos + it) }
         }
-    }
-
-    fun addToQueue(clientId: String, track: Track) {
-        viewModelScope.launch { global.addTrack(clientId, track) }
     }
 
     private fun playRadio(clientId: String, block: suspend RadioClient.() -> Playlist) {
         val client = extensionListFlow.getClient(clientId)
         viewModelScope.launch(Dispatchers.IO) {
-            val pos = radio(app, client, messageFlow, global) { tryWith { block(this) } }
-            pos?.let {
-                println("viewmodel radio")
-                audioIndexFlow.emit(it)
-            }
+            val position = radio(app, client, messageFlow, global) { tryWith { block(this) } }
+            position?.let { audioIndexFlow.emit(it) }
         }
     }
 
@@ -105,43 +104,6 @@ class PlayerViewModel @Inject constructor(
     fun radio(clientId: String, artist: Artist) = playRadio(clientId) { radio(artist) }
     fun radio(clientId: String, playlist: Playlist) = playRadio(clientId) { radio(playlist) }
 
-
-
-    fun getTrack(mediaId: String?) = global.getTrack(mediaId)?.track
-
-    fun createException(exception: PlaybackException) {
-        viewModelScope.launch {
-            throwableFlow.emit(exception)
-        }
-    }
-
-    fun changeCurrent(index: Int?) {
-        global.currentIndex.value = index
-    }
-
-    val playPauseListener = CheckBoxListener {
-        viewModelScope.launch { playPause.emit(it) }
-    }
-    val shuffleListener = CheckBoxListener {
-        viewModelScope.launch { shuffle.emit(it) }
-    }
-    var repeatEnabled = false
-    fun onRepeat(it: Int){
-        if (repeatEnabled) viewModelScope.launch { repeat.emit(it) }
-    }
-
-    val track = MutableStateFlow(global.queue.firstOrNull()?.track)
-
-    val progress = MutableStateFlow(0 to 0)
-    val totalDuration = MutableStateFlow(0)
-
-    val buffering = MutableStateFlow(false)
-    val isPlaying = MutableStateFlow(false)
-    val nextEnabled = MutableStateFlow(false)
-    val previousEnabled = MutableStateFlow(false)
-
-    val repeat = MutableStateFlow(0)
-    val shuffle = MutableStateFlow(false)
 
     companion object {
         fun LifecycleOwner.connectPlayerToUI(player: MediaBrowser, viewModel: PlayerViewModel) {
@@ -191,4 +153,35 @@ class PlayerViewModel @Inject constructor(
             }
         }
     }
+
+    fun createException(exception: PlaybackException) {
+        viewModelScope.launch {
+            throwableFlow.emit(exception)
+        }
+    }
+
+
+    fun updateList(mediaItems: List<String>, index: Int) {
+        global.updateQueue(mediaItems)
+        viewModelScope.launch {
+            println("index : $index")
+            global.currentIndexFlow.value = index
+            _updatedFlow.emit(Unit)
+        }
+    }
+
+    val current get() = global.current?.track
+    val currentIndex get() = global.currentIndexFlow.value
+
+    val currentFlow = global.currentIndexFlow.map { current }
+    private val _updatedFlow = MutableSharedFlow<Unit>()
+    val listChangeFlow = merge(MutableStateFlow(Unit), _updatedFlow).map { global.queue }
+
+    val progress = MutableStateFlow(0 to 0)
+    val totalDuration = MutableStateFlow(0)
+
+    val buffering = MutableStateFlow(false)
+    val isPlaying = MutableStateFlow(false)
+    val nextEnabled = MutableStateFlow(false)
+    val previousEnabled = MutableStateFlow(false)
 }

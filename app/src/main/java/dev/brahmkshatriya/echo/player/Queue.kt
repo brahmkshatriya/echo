@@ -5,48 +5,43 @@ import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import java.util.Collections
 import java.util.Collections.synchronizedList
 
 class Queue {
 
-    private val _queue = synchronizedList(mutableListOf<StreamableTrack>())
-    val queue get() = synchronized(_queue) { _queue.toList() }
+    private val trackQueue = synchronizedList(mutableListOf<StreamableTrack>())
+    private val playerQueue = synchronizedList(mutableListOf<StreamableTrack>())
+    val queue get() = playerQueue.toList()
 
-    val currentIndex = MutableStateFlow<Int?>(null)
-    val current get() = currentIndex.value?.let { queue.getOrNull(it) }
+    val currentIndexFlow = MutableStateFlow(-1)
+    val current get() = queue.getOrNull(currentIndexFlow.value)
 
-    fun getTrack(mediaId: String?) = queue.find { it.track.id == mediaId }
+    fun getTrack(mediaId: String?) = trackQueue.find { it.track.id == mediaId }
 
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
     suspend fun clearQueue() {
-        _queue.clear()
+        trackQueue.clear()
         _clearQueue.emit(Unit)
     }
 
     private val _removeTrack = MutableSharedFlow<Int>()
     val removeTrackFlow = _removeTrack.asSharedFlow()
     suspend fun removeTrack(index: Int) {
-        _queue.removeAt(index)
+        val track = playerQueue[index]
+        trackQueue.remove(track)
         _removeTrack.emit(index)
-        if (_queue.isEmpty()) _clearQueue.emit(Unit)
+        if (trackQueue.isEmpty()) _clearQueue.emit(Unit)
     }
 
     private val _addTrack = MutableSharedFlow<Pair<Int, List<MediaItem>>>()
     val addTrackFlow = _addTrack.asSharedFlow()
-    suspend fun addTrack(
-        client: String, track: Track, offset: Int = 0
-    ): Pair<Int, List<MediaItem>> {
-        return addTracks(client, listOf(track), offset)
-    }
-
     suspend fun addTracks(
         client: String, tracks: List<Track>, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
-        var position = currentIndex.value?.let { it + 1 } ?: 0
+        var position = currentIndexFlow.value + 1
         position += offset
-        position = position.coerceIn(0, _queue.size)
+        position = position.coerceIn(0, playerQueue.size)
 
         val items = tracks.map { track ->
             mediaItemBuilder(track)
@@ -54,18 +49,22 @@ class Queue {
         val queueItems = tracks.map { track ->
             StreamableTrack(track, client)
         }
-        _queue.addAll(position, queueItems)
+        trackQueue.addAll(queueItems)
         val mediaItems = position to items
         _addTrack.emit(mediaItems)
         return mediaItems
     }
 
-
     private val _moveTrack = MutableSharedFlow<Pair<Int, Int>>()
     val moveTrackFlow = _moveTrack.asSharedFlow()
     suspend fun moveTrack(fromIndex: Int, toIndex: Int) {
-        Collections.swap(_queue, fromIndex, toIndex)
         _moveTrack.emit(fromIndex to toIndex)
+    }
+
+    fun updateQueue(mediaItems: List<String>) {
+        val queue = mediaItems.mapNotNull { getTrack(it) }
+        playerQueue.clear()
+        playerQueue.addAll(queue)
     }
 
     data class StreamableTrack(

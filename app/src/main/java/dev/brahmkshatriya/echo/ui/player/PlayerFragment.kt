@@ -6,7 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -18,6 +21,8 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class PlayerFragment : Fragment() {
@@ -43,19 +48,14 @@ class PlayerFragment : Fragment() {
         binding.viewPager.setPageTransformer(
             ParallaxPageTransformer(R.id.expandedTrackCoverContainer)
         )
-        val changeCallback = object : OnPageChangeCallback() {
-            var enabled = false
-            override fun onPageSelected(position: Int) {
-                if (viewModel.currentIndex.value != position && enabled)
-                    emit(viewModel.audioIndexFlow) {
-                        println("changeCallback")
-                        position
-                    }
 
-            }
+        binding.viewPager.registerOnUserPageChangeCallback { position, userInitiated ->
+            if (viewModel.currentIndex != position && userInitiated)
+                lifecycleScope.launch {
+                    delay(300)
+                    viewModel.audioIndexFlow.emit(position)
+                }
         }
-
-        binding.viewPager.registerOnPageChangeCallback(changeCallback)
 
         binding.viewPager.getChildAt(0).run {
             this as RecyclerView
@@ -64,8 +64,6 @@ class PlayerFragment : Fragment() {
         }
 
         observe(viewModel.listChangeFlow) {
-            changeCallback.enabled = false
-            adapter.submitList(it)
             if (it.isEmpty()) {
                 emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
                 emit(uiViewModel.changePlayerState) { STATE_HIDDEN }
@@ -75,20 +73,42 @@ class PlayerFragment : Fragment() {
                     emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
                 }
             }
+
+            adapter.submitList(it)
+            val index = viewModel.currentIndex
+            val smooth = abs(index - binding.viewPager.currentItem) <= 1
+            binding.viewPager.setCurrentItem(index, smooth)
         }
 
         observe(uiViewModel.playerSheetState) {
             if (it == STATE_HIDDEN) viewModel.clearQueue()
         }
+    }
 
-        observe(viewModel.currentIndex) {
-            it ?: return@observe
-            binding.viewPager.post {
-                val smooth = abs(it - binding.viewPager.currentItem) <= 1
-                binding.viewPager.setCurrentItem(it, smooth)
-                changeCallback.enabled = true
+    private fun ViewPager2.registerOnUserPageChangeCallback(
+        listener: (position: Int, userInitiated: Boolean) -> Unit
+    ) {
+        var previousState: Int = -1
+        var userScrollChange = false
+        registerOnPageChangeCallback(object : OnPageChangeCallback() {
+
+            override fun onPageSelected(position: Int) {
+                listener(position, userScrollChange)
             }
-        }
+
+            override fun onPageScrollStateChanged(state: Int) {
+                if (previousState == ViewPager.SCROLL_STATE_DRAGGING &&
+                    state == ViewPager.SCROLL_STATE_SETTLING
+                ) {
+                    userScrollChange = true
+                } else if (previousState == ViewPager.SCROLL_STATE_SETTLING &&
+                    state == ViewPager.SCROLL_STATE_IDLE
+                ) {
+                    userScrollChange = false
+                }
+                previousState = state
+            }
+        })
     }
 }
 

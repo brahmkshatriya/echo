@@ -8,9 +8,9 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:layout_marginTop="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:clipToPadding="false"
         android:gravity="center"
         android:paddingHorizontal="24dp">
@@ -25,9 +25,9 @@
                 android:id="@+id/trackTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:ellipsize="marquee"
                 android:gravity="bottom"
                 android:maxLines="1"
-                android:ellipsize="marquee"
                 android:minHeight="32dp"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -37,10 +37,10 @@
                 android:id="@+id/trackArtist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
                 android:ellipsize="end"
-                android:textColor="@color/button_player"
+                android:maxLines="1"
                 android:minHeight="32dp"
+                android:textColor="@color/button_player"
                 android:textSize="16sp"
                 tools:text="@tools:sample/lorem/random" />
         </LinearLayout>
@@ -53,8 +53,6 @@
             android:background="@drawable/ripple_60dp"
             android:button="@drawable/anim_heart_40dp"
             android:contentDescription="@string/like"
-            android:enabled="false"
-            android:visibility="gone"
             app:buttonTint="@color/button_player" />
 
     </LinearLayout>
@@ -86,11 +84,11 @@
             android:layout_marginStart="0dp"
             android:layout_marginEnd="0dp"
             android:layout_marginBottom="22dp"
+            android:contentDescription="@string/seekbar"
             android:value="0.2"
             app:labelBehavior="gone"
             app:thumbColor="?attr/colorTertiary"
             app:thumbHeight="20dp"
-            android:contentDescription="@string/seekbar"
             app:thumbWidth="20dp"
             app:trackColorActive="?attr/colorTertiary"
             app:trackColorInactive="@android:color/transparent"
@@ -128,7 +126,6 @@
             android:id="@+id/trackShuffle"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            app:checkedState="checked"
             android:background="@drawable/ripple_60dp"
             android:button="@drawable/anim_shuffle"
             android:contentDescription="@string/shuffle"
@@ -216,7 +213,7 @@
             android:padding="12dp"
             app:icon="@drawable/ic_repeat_to_repeat_one_40dp"
             app:iconSize="32dp"
-            app:iconTint="?attr/colorOnSurface"
+            app:iconTint="@color/amoled_fg"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"

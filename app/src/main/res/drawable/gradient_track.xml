@@ -4,5 +4,5 @@
         android:type="linear"
         android:angle="@integer/player_gradient_angle"
         android:startColor="#FFFFFF"
-        android:endColor="#44FFFFFF" />
+        android:endColor="#88FFFFFF" />
 </shape>

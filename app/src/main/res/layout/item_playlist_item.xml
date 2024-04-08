@@ -3,24 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="80dp">
+    android:background="?colorSurfaceContainerLowest"
+    android:layout_height="wrap_content">
 
-    <com.google.android.material.card.MaterialCardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/playlistCurrentItem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"
+        app:cardCornerRadius="0dp"
         android:alpha="0.25"
-        app:cardBackgroundColor="?attr/colorTertiary"
-        android:clickable="false"
-        app:strokeWidth="0dp" />
+        app:cardBackgroundColor="?colorTertiary" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:paddingVertical="12dp">
 
         <FrameLayout
             android:id="@+id/playlistItemDragHandle"
@@ -29,7 +28,7 @@
 
             <ImageView
                 android:layout_width="24dp"
-                android:layout_height="64dp"
+                android:layout_height="@dimen/collapsed_cover_size"
                 android:contentDescription="@string/drag_to_change_playlist_position"
                 android:scaleType="center"
                 app:srcCompat="@drawable/ic_drag_20dp"
@@ -37,8 +36,8 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/playlistItemImageView"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="@dimen/collapsed_cover_size"
+                android:layout_height="@dimen/collapsed_cover_size"
                 android:layout_marginStart="24dp"
                 android:background="?attr/colorSurfaceContainerHigh"
                 android:scaleType="fitCenter"
@@ -48,7 +47,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="@dimen/collapsed_cover_size"
             android:baselineAligned="false"
             android:gravity="center"
             android:orientation="horizontal">
