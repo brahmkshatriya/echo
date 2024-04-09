@@ -50,9 +50,15 @@ jobs:
           version=$( echo ${{ env.VERSION }} | cut -c1-7 )
           mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/${version}.apk
           curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${version}**\n${content:1:-1}\"}" -F "echo_beta=@app/build/outputs/apk/debug/${version}.apk" ${{ env.WEBHOOK }}
-
-          #telegram
-          curl -F "chat_id=${{secrets.TELEGRAM_CHANNEL_ID}}" \
-            -F "document=@app/build/outputs/apk/debug/app-debug.apk" \
-            -F "caption=Nightly-Build: ${version}: ${content:1:-1}" \
-            https://api.telegram.org/bot${{secrets.TELEGRAM_BOT_ID}}/sendDocument
+     
+      - name: Upload APK to Telegram
+        shell: bash
+        env:
+          VERSION: ${{ github.event.head_commit.id }}
+          CONTENT: ${{ github.event.head_commit.message }}
+          BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
+          CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+        run: |
+          content=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
+          version=$( echo ${{ env.VERSION }} | cut -c1-7 )
+          curl -F "chat_id=${{ env.CHANNEL_ID }}" -F "document=@app/build/outputs/apk/debug/${version}.apk" -F "caption=\"Nightly-Build : ${version}: ${content:1:-1}\"" https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
