@@ -30,11 +30,11 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew assembleDebug
-           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks 
-           -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} 
-           -Pandroid.injected.signing.key.alias=key0
-           -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
+          ./gradlew assembleDebug \
+          -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
+          -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=key0 \
+          -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
           version=$( echo ${{ env.VERSION }} | cut -c1-7 )
           cp app/build/outputs/apk/debug/app-debug.apk app/build/${version}.apk
 
