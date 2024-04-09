@@ -48,7 +48,8 @@ jobs:
           ROLE: ${{ secrets.DISCORD_PING_ROLE_ID }}
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          message=$(echo "<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n${{ env.COMMIT }:1:-1}")
+          commit=${{ env.COMMIT }}
+          message=$(echo "<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n${commit:1:-1}")
           curl -F "payload_json={\"content\":\"${message}\"}" \
           -F "echo_beta=@app/build/${{ env.VERSION }}.apk" \
           ${{ env.WEBHOOK }}
