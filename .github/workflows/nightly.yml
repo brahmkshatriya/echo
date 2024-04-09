@@ -8,7 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      VERSION: ${{ github.event.head_commit.id }}
+      CONTENT: ${{ github.event.head_commit.message }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -27,11 +29,14 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew assembleDebug
-         -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks 
-         -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} 
-         -Pandroid.injected.signing.key.alias=key0
-         -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
+        run: |
+          ./gradlew assembleDebug
+           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks 
+           -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} 
+           -Pandroid.injected.signing.key.alias=key0
+           -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
+          version=$( echo ${{ env.VERSION }} | cut -c1-7 )
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/${version}.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -41,24 +46,20 @@ jobs:
       - name: Upload APK to Discord
         shell: bash
         env:
-          VERSION: ${{ github.event.head_commit.id }}
-          CONTENT: ${{ github.event.head_commit.message }}
           ROLE: ${{ secrets.DISCORD_PING_ROLE_ID }}
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           content=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
           version=$( echo ${{ env.VERSION }} | cut -c1-7 )
-          mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/${version}.apk
-          curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${version}**\n${content:1:-1}\"}" -F "echo_beta=@app/build/outputs/apk/debug/${version}.apk" ${{ env.WEBHOOK }}
+          curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${version}**\n${content:1:-1}\"}" -F "echo_beta=@app/build/${version}.apk" ${{ env.WEBHOOK }}
      
       - name: Upload APK to Telegram
         shell: bash
         env:
-          VERSION: ${{ github.event.head_commit.id }}
-          CONTENT: ${{ github.event.head_commit.message }}
           BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
           CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
         run: |
           content=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
+          commit=$(echo ${content} | sed 's/\\n/\\\\n/g')
           version=$( echo ${{ env.VERSION }} | cut -c1-7 )
-          curl -F "chat_id=${{ env.CHANNEL_ID }}" -F "document=@app/build/outputs/apk/debug/${version}.apk" -F "caption=\"Nightly-Build : ${version}: ${content:1:-1}\"" https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
+          curl -F "chat_id=${{ env.CHANNEL_ID }}" -F "document=@app/build/${version}.apk" -F "caption=\"Nightly Build\\n${commit:1:-1}\"" https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
