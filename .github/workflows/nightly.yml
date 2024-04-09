@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: $( echo ${{ github.event.head_commit.id }} | cut -c1-7 )
-      COMMIT: $( jq -Rsa . <<< ${{ github.event.head_commit.message }})
+      COMMIT: $( jq -Rsa . <<< "${{ github.event.head_commit.message }}"  | tail -c +2 | head -c -2 )
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -59,8 +59,9 @@ jobs:
           BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
           CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
         run: |
-          message=$(printf "**Nightly Release**\n${{ env.COMMIT }}")
+          message=$(printf "*Nightly Release*\n${{ env.COMMIT }}")
           curl -F "chat_id=${{ env.CHANNEL_ID }}" \
           -F "document=@app/build/${{ env.VERSION }}.apk" \
           -F "caption=${message}" \
+          -F "parse_mode=MarkdownV2"
           https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
