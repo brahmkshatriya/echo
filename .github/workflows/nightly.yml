@@ -9,8 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ github.event.head_commit.id }}
-      CONTENT: ${{ github.event.head_commit.message }}
+      VERSION: $( echo ${{ github.event.head_commit.id }} | cut -c1-7 )
+      COMMIT: $( jq -Rsa . <<< "${{ github.event.head_commit.message }}" )
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -35,8 +35,7 @@ jobs:
           -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} \
           -Pandroid.injected.signing.key.alias=key0 \
           -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
-          version=$( echo ${{ env.VERSION }} | cut -c1-7 )
-          cp app/build/outputs/apk/debug/app-debug.apk app/build/${version}.apk
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/${{ env.VERSION }}.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -49,9 +48,10 @@ jobs:
           ROLE: ${{ secrets.DISCORD_PING_ROLE_ID }}
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          content=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
-          version=$( echo ${{ env.VERSION }} | cut -c1-7 )
-          curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${version}**\n${content:1:-1}\"}" -F "echo_beta=@app/build/${version}.apk" ${{ env.WEBHOOK }}
+          message=$(echo "<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n${{ env.COMMIT:1:-1 }}")
+          curl -F "payload_json={\"content\":\"${message}\"}" \
+          -F "echo_beta=@app/build/${{ env.VERSION }}.apk" \
+          ${{ env.WEBHOOK }}
      
       - name: Upload APK to Telegram
         shell: bash
@@ -59,7 +59,8 @@ jobs:
           BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
           CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
         run: |
-          content=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
-          commit=$(echo ${content} | sed 's/\\n/%0A/g')
-          version=$( echo ${{ env.VERSION }} | cut -c1-7 )
-          curl -F "chat_id=${{ env.CHANNEL_ID }}" -F "document=@app/build/${version}.apk" -F "caption=\"Nightly Build\\n${commit:1:-1}\"" https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
+          message=$(printf "Nightly Release\n${{ env.COMMIT }}")
+          curl -F "chat_id=${{ env.CHANNEL_ID }}" \
+          -F "document=@app/build/${{ env.VERSION }}.apk" \
+          -F "caption=${message}" \
+          https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
