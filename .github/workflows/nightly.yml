@@ -60,6 +60,6 @@ jobs:
           CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
         run: |
           content=$( jq -Rsa . <<< "${{ env.CONTENT }}" )
-          commit=$(echo ${content} | sed 's/\\n/\\\\n/g')
+          commit=$(echo ${content} | sed 's/\\n/%0A/g')
           version=$( echo ${{ env.VERSION }} | cut -c1-7 )
           curl -F "chat_id=${{ env.CHANNEL_ID }}" -F "document=@app/build/${version}.apk" -F "caption=\"Nightly Build\\n${commit:1:-1}\"" https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
