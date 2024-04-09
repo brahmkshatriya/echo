@@ -106,6 +106,5 @@
 
     <include
         android:id="@+id/collapsedContainer"
-        layout="@layout/item_player_collapsed"
-        android:visibility="gone" />
+        layout="@layout/item_player_collapsed" />
 </FrameLayout>

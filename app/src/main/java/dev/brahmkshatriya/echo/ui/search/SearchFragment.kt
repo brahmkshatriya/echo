@@ -31,6 +31,7 @@ import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
@@ -38,6 +39,7 @@ class SearchFragment : Fragment() {
 
     private var binding by autoCleared<FragmentSearchBinding>()
     private val viewModel by activityViewModels<SearchViewModel>()
+    private val uiViewModel by activityViewModels<UiViewModel>()
 
     private val parent get() = parentFragment as MainFragment
 
@@ -80,6 +82,10 @@ class SearchFragment : Fragment() {
             binding.quickSearchView.hide()
             viewModel.refresh(true)
             false
+        }
+
+        observe(uiViewModel.navigationReselected) {
+            if (it == 1) binding.quickSearchView.show()
         }
 
         viewModel.initialize()

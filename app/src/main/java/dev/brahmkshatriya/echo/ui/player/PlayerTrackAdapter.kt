@@ -39,6 +39,7 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.max
 import kotlin.math.min
 
 class PlayerTrackAdapter(
@@ -112,7 +113,8 @@ class PlayerTrackAdapter(
             emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_HIDDEN }
         }
 
-        observe(uiViewModel.playerSheetOffset) { offset ->
+        observe(uiViewModel.playerSheetOffset) {
+            val offset = max(0f, it)
             val height = binding.collapsedContainer.root.height
             binding.collapsedContainer.root.run {
                 translationY = -height * offset

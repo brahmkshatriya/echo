@@ -5,10 +5,12 @@ import android.util.TypedValue
 import android.view.View
 import android.view.ViewPropertyAnimator
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.forEachIndexed
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.R
 import com.google.android.material.motion.MotionUtils
+import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.MaterialArcMotion
 import com.google.android.material.transition.MaterialContainerTransform
 import com.google.android.material.transition.MaterialSharedAxis
@@ -17,36 +19,41 @@ import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.SHARED_ELEMENT
 
 object Animator {
 
-    private fun View.startAnimation(animation: ViewPropertyAnimator) {
-        clearAnimation()
-        val interpolator = MotionUtils.resolveThemeInterpolator(
-            context,
-            R.attr.motionEasingStandardInterpolator,
-            FastOutSlowInInterpolator()
-        )
-        val duration = MotionUtils.resolveThemeDuration(
-            context,
-            R.attr.motionDurationLong1,
-            500
-        ).toLong()
-        animation.setInterpolator(interpolator).setDuration(duration).start()
-    }
-
-    fun View.animateTranslation(isRail: Boolean, isVisible: Boolean, action: () -> Unit) {
-        val value = if (isVisible) 0f else if (isRail) -width.toFloat() else height.toFloat()
-        if (animations) {
-            fun ViewPropertyAnimator.withEnd(block: () -> Unit) = withEndAction {
-                block()
-                if (!isVisible) action()
-            }
-
-            val animation =
-                if (isRail) animate().translationX(value).withEnd { translationX = value }
-                else animate().translationY(value).withEnd { translationY = value }
-            startAnimation(
-                if (isVisible) animation.withStartAction(action)
-                else animation
+    fun startAnimation(
+        view: View,
+        animation: ViewPropertyAnimator,
+        durationMultiplier: Float = 1f
+    ) =
+        view.run {
+            clearAnimation()
+            val interpolator = MotionUtils.resolveThemeInterpolator(
+                context,
+                R.attr.motionEasingStandardInterpolator,
+                FastOutSlowInInterpolator()
             )
+            val duration = animationDuration * durationMultiplier
+            animation.setInterpolator(interpolator).setDuration(duration.toLong()).start()
+        }
+
+    fun NavigationBarView.animateTranslation(
+        isRail: Boolean, isMainFragment: Boolean, action: () -> Unit
+    ) {
+        val value = if (isMainFragment) 0f else if (isRail) -width.toFloat() else height.toFloat()
+        if (animations) {
+            var animation = if (isRail) animate().translationX(value)
+            else animate().translationY(value)
+
+            animation = if (isMainFragment) animation.withStartAction(action)
+            else animation.withEndAction(action)
+
+            startAnimation(this, animation)
+
+            menu.forEachIndexed { index, it ->
+                val view = findViewById<View>(it.itemId)
+                val dis = value * (index + 1)
+                if (isRail) startAnimation(view, view.animate().translationX(dis))
+                else startAnimation(view, view.animate().translationY(dis))
+            }
         } else {
             if (isRail) translationX = value
             else translationY = value
@@ -56,6 +63,7 @@ object Animator {
 
     fun View.animateVisibility(isVisible: Boolean) {
         if (animations) startAnimation(
+            this,
             animate().alpha(if (isVisible) 1f else 0f)
                 .withEndAction { alpha = if (isVisible) 1f else 0f }
         )
@@ -66,10 +74,18 @@ object Animator {
         if (view.animations) {
             clearAnimation()
             view.translationY = newHeight.toFloat() - old
-            startAnimation(animate().translationY(0f))
+            startAnimation(this, animate().translationY(0f))
         }
     }
 
+    private val View.animationDuration: Long
+        get() = context.applicationContext.run {
+            MotionUtils.resolveThemeDuration(
+                this,
+                R.attr.motionDurationMedium1,
+                350
+            ).toLong()
+        }
     private val View.animations
         get() = context.applicationContext.run {
             getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
@@ -90,8 +106,10 @@ object Animator {
                 theme.resolveAttribute(dev.brahmkshatriya.echo.R.attr.echoBackground, value, true)
                 val transition = MaterialContainerTransform().apply {
                     drawingViewId = dev.brahmkshatriya.echo.R.id.navHostFragment
+
                     setAllContainerColors(resources.getColor(value.resourceId, theme))
                     setPathMotion(MaterialArcMotion())
+                    duration = view.animationDuration
                 }
                 sharedElementEnterTransition = transition
             }

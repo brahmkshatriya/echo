@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoB
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.max
 
 class PlayerFragment : Fragment() {
     private var binding by autoCleared<FragmentPlayerBinding>()
@@ -82,6 +83,11 @@ class PlayerFragment : Fragment() {
 
         observe(uiViewModel.playerSheetState) {
             if (it == STATE_HIDDEN) viewModel.clearQueue()
+        }
+
+        observe(uiViewModel.playerSheetOffset) {
+            val offset = max(0f, it)
+            binding.playerOutline.alpha = 1 - offset
         }
     }
 

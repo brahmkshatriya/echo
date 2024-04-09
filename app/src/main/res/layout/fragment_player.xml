@@ -11,6 +11,7 @@
         android:layout_height="match_parent" />
 
     <View
+        android:id="@+id/playerOutline"
         style="@style/AppBarOutline"
         android:layout_marginTop="0dp" />
 

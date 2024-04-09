@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.activityViewModels
 import androidx.preference.Preference
@@ -70,6 +71,7 @@ class SettingsFragment : BaseSettingsFragment() {
         ) : Preference(context) {
             override fun onBindViewHolder(holder: PreferenceViewHolder) {
                 super.onBindViewHolder(holder)
+                holder.itemView.id = key.hashCode()
                 holder.itemView.transitionName = transition ?: key
             }
         }
@@ -87,7 +89,7 @@ class SettingsFragment : BaseSettingsFragment() {
                 else -> return false
             }
 
-            val view = listView.getChildAt(preference.order)!!
+            val view = listView.findViewById<View>(preference.key.hashCode())
             parentFragment?.openFragment(fragment, view)
             return true
         }

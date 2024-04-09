@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
@@ -25,6 +26,7 @@ import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -61,15 +63,14 @@ class UiViewModel @Inject constructor(
     private val playerInsets = MutableStateFlow(Insets())
     val systemInsets = MutableStateFlow(Insets())
     var isMainFragment = MutableStateFlow(true)
-    var isRail = false
 
     val combined = systemInsets.combine(navViewInsets) { system, nav ->
-        system.add(nav)
+        if(isMainFragment.value) system.add(nav) else system
     }.combine(playerInsets) { system, player ->
         system.add(player)
     }
 
-    fun setPlayerNavViewInsets(context: Context, isNavVisible: Boolean): Insets {
+    fun setPlayerNavViewInsets(context: Context, isNavVisible: Boolean, isRail: Boolean): Insets {
         val insets = context.resources.run {
             if (!isNavVisible) return@run Insets()
             val height = getDimensionPixelSize(R.dimen.nav_height)
@@ -133,6 +134,15 @@ class UiViewModel @Inject constructor(
         }
     }
 
+    fun collapsePlayer() {
+        if (playerSheetState.value == STATE_EXPANDED)
+            viewModelScope.launch {
+                changePlayerState.emit(STATE_COLLAPSED)
+                changeInfoState.emit(STATE_COLLAPSED)
+            }
+
+    }
+
     companion object {
         fun Context.isRTL() =
             resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
@@ -151,9 +161,11 @@ class UiViewModel @Inject constructor(
             observe(uiViewModel.combined) { insets ->
                 child.applyContentInsets(insets)
                 appBar.updatePaddingRelative(
+                    top = insets.top,
                     start = insets.start,
                     end = insets.end
                 )
+
                 uiViewModel.block(insets)
             }
         }
@@ -237,8 +249,7 @@ class UiViewModel @Inject constructor(
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    val offset = max(0f, slideOffset)
-                    viewModel.playerSheetOffset.value = offset
+                    viewModel.playerSheetOffset.value = slideOffset
                 }
             })
         }

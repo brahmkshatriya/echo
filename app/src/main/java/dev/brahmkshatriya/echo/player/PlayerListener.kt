@@ -20,7 +20,6 @@ class PlayerListener(
     }
 
     init {
-        viewModel.totalDuration.value = player.duration.toInt()
         viewModel.isPlaying.value = player.isPlaying
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
         viewModel.shuffle.value = player.shuffleModeEnabled
@@ -35,7 +34,6 @@ class PlayerListener(
 
             Player.STATE_READY -> {
                 viewModel.buffering.value = false
-                viewModel.totalDuration.value = player.duration.toInt()
             }
 
             else -> Unit
@@ -79,6 +77,7 @@ class PlayerListener(
         if (player.isConnected) {
             viewModel.progress.value =
                 player.currentPosition.toInt() to player.bufferedPosition.toInt()
+            viewModel.totalDuration.value = player.duration.toInt()
         }
         handler.removeCallbacks(updateProgressRunnable)
         val playbackState = player.playbackState

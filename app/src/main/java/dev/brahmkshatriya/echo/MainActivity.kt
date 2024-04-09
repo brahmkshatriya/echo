@@ -34,6 +34,8 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlaye
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
+import kotlin.math.max
+import kotlin.math.min
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -66,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         navView.setOnItemReselectedListener {
             uiViewModel.navigationReselected.value = uiViewModel.navIds.indexOf(it.itemId)
         }
-        uiViewModel.isRail = binding.navView is NavigationRailView
+        val isRail = binding.navView is NavigationRailView
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             uiViewModel.setSystemInsets(this, insets)
@@ -77,25 +79,29 @@ class MainActivity : AppCompatActivity() {
             uiViewModel.isMainFragment.value = supportFragmentManager.backStackEntryCount == 0
         }
 
-        collect(uiViewModel.isMainFragment) {
-            val isRail = uiViewModel.isRail
-            val isNavFragment = it
-            val insets =
-                uiViewModel.setPlayerNavViewInsets(this, isNavFragment)
-            binding.navView.animateTranslation(isRail, isNavFragment) {
-                uiViewModel.setNavInsets(insets)
+        binding.navView.post {
+            collect(uiViewModel.isMainFragment) { isMainFragment ->
+                val insets =
+                    uiViewModel.setPlayerNavViewInsets(this, isMainFragment, isRail)
+                navView.animateTranslation(isRail, isMainFragment) {
+                    uiViewModel.setNavInsets(insets)
+                }
+                binding.navViewOutline?.animateVisibility(isMainFragment)
             }
-            binding.navViewOutline?.animateVisibility(isNavFragment)
         }
 
         observe(uiViewModel.playerSheetState) {
             uiViewModel.setPlayerInsets(this, it != STATE_HIDDEN)
         }
 
-        observe(uiViewModel.playerSheetOffset) { offset ->
+        val collapsedPlayerHeight = resources.getDimension(R.dimen.bottom_player_peek_height)
+        observe(uiViewModel.playerSheetOffset) {
+            if (it != 0f && isRail)
+                navView.translationY = -(1 + min(it, 0f)) * collapsedPlayerHeight
             if (!uiViewModel.isMainFragment.value) return@observe
-            if (uiViewModel.isRail) binding.navView.translationX = -binding.navView.width * offset
-            else binding.navView.translationY = binding.navView.height * offset
+            val offset = max(0f, it)
+            if (isRail) navView.translationX = -navView.width * offset
+            else navView.translationY = navView.height * offset
             binding.navViewOutline?.alpha = 1 - offset
         }
 

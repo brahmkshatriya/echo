@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
@@ -44,6 +45,17 @@ class PlayerInfoFragment : Fragment() {
             binding.viewCard.alpha = it
         }
 
+        observe(uiViewModel.infoSheetState) {
+            binding.buttonToggleGroup.run {
+                if (it == STATE_COLLAPSED) {
+                    clearChecked()
+                } else if (it == STATE_EXPANDED) {
+                    check(ids[binding.viewPager.currentItem])
+                }
+            }
+
+        }
+
         binding.viewPager.getChildAt(0).run {
             this as RecyclerView
             isNestedScrollingEnabled = false
@@ -52,21 +64,21 @@ class PlayerInfoFragment : Fragment() {
         binding.viewPager.isUserInputEnabled = false
         binding.viewPager.adapter = PlayerInfoAdapter(this)
 
-        binding.buttonToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (!isChecked) {
-                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
-                return@addOnButtonCheckedListener
+        binding.buttonToggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
+            emit(uiViewModel.changeInfoState) {
+                if (group.checkedButtonId == -1) STATE_COLLAPSED else STATE_EXPANDED
             }
-            emit(uiViewModel.changeInfoState) { STATE_EXPANDED }
-            val index = when (checkedId) {
-                binding.upNext.id -> 0
-                binding.lyrics.id -> 1
-                binding.info.id -> 2
-                else -> throw IllegalArgumentException("Invalid checkedId")
-            }
+            if (!isChecked) return@addOnButtonCheckedListener
+            val index = ids.indexOf(checkedId)
             binding.viewPager.setCurrentItem(index, false)
         }
     }
+
+    private val ids = listOf(
+        R.id.upNext,
+        R.id.lyrics,
+        R.id.info
+    )
 
     class PlayerInfoAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
         override fun getItemCount() = 3

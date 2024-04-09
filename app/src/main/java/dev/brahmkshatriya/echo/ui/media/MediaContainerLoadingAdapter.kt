@@ -70,7 +70,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
         }
 
         override fun onError(view: View, error: Throwable) {
-            fragment.requireActivity().openException(view, error)
+            fragment.requireActivity().openException(error, view)
         }
     })
 
