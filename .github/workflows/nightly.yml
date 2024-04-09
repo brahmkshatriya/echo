@@ -50,3 +50,9 @@ jobs:
           version=$( echo ${{ env.VERSION }} | cut -c1-7 )
           mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/${version}.apk
           curl -F "payload_json={\"content\":\"<@&${{ env.ROLE }}> **${version}**\n${content:1:-1}\"}" -F "echo_beta=@app/build/outputs/apk/debug/${version}.apk" ${{ env.WEBHOOK }}
+
+          #telegram
+          curl -F "chat_id=${{secrets.TELEGRAM_CHANNEL_ID}}" \
+            -F "document=@app/build/outputs/apk/debug/app-debug.apk" \
+            -F "caption=Nightly-Build: ${version}: ${content:1:-1}" \
+            https://api.telegram.org/bot${{secrets.TELEGRAM_BOT_ID}}/sendDocument
