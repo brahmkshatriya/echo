@@ -63,5 +63,5 @@ jobs:
           curl -F "chat_id=${{ env.CHANNEL_ID }}" \
           -F "document=@app/build/${{ env.VERSION }}.apk" \
           -F "caption=${message}" \
-          -F "parse_mode=MarkdownV2"
+          -F "parse_mode=MarkdownV2" \
           https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
