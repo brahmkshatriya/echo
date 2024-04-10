@@ -34,7 +34,7 @@ class PlaylistAdapter(
     @SuppressLint("ClickableViewAccessibility")
     override fun Holder<StreamableTrack, ItemPlaylistItemBinding>.onBind(position: Int) {
         val item = getItem(position)
-        val track = item.track
+        val track = item.unloaded
         binding.playlistItemTitle.text = track.title
         track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
         var subtitle = ""
@@ -62,7 +62,7 @@ class PlaylistAdapter(
         }
 
         observe(current) {
-            binding.playlistCurrentItem.isVisible = it?.id == item.track.id
+            binding.playlistCurrentItem.isVisible = it?.id == item.unloaded.id
         }
     }
 

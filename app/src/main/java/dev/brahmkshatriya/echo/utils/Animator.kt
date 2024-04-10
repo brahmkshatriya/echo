@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewPropertyAnimator
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.forEachIndexed
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.R
@@ -40,11 +41,13 @@ object Animator {
     ) {
         val value = if (isMainFragment) 0f else if (isRail) -width.toFloat() else height.toFloat()
         if (animations) {
+            isVisible = true
             var animation = if (isRail) animate().translationX(value)
             else animate().translationY(value)
 
             animation = if (isMainFragment) animation.withStartAction(action)
-            else animation.withEndAction(action)
+                .withEndAction { isVisible = true }
+            else animation.withEndAction { action(); isVisible = false }
 
             startAnimation(this, animation)
 
@@ -55,8 +58,7 @@ object Animator {
                 else startAnimation(view, view.animate().translationY(dis))
             }
         } else {
-            if (isRail) translationX = value
-            else translationY = value
+            isVisible = isMainFragment
             action()
         }
     }
@@ -97,17 +99,19 @@ object Animator {
         }
 
     fun Fragment.setupTransition(view: View) {
+        val background = TypedValue()
+        val theme = requireContext().theme
+        theme.resolveAttribute(dev.brahmkshatriya.echo.R.attr.echoBackground, background, true)
+        val color = resources.getColor(background.resourceId, theme)
+        view.setBackgroundColor(color)
+
         if (view.animations) {
             val transitionName = arguments?.getString("transitionName")
             if (transitionName != null && view.sharedElementTransitions) {
                 view.transitionName = transitionName
-                val value = TypedValue()
-                val theme = requireContext().theme
-                theme.resolveAttribute(dev.brahmkshatriya.echo.R.attr.echoBackground, value, true)
                 val transition = MaterialContainerTransform().apply {
                     drawingViewId = dev.brahmkshatriya.echo.R.id.navHostFragment
-
-                    setAllContainerColors(resources.getColor(value.resourceId, theme))
+                    setAllContainerColors(color)
                     setPathMotion(MaterialArcMotion())
                     duration = view.animationDuration
                 }

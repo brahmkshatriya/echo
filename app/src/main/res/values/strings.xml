@@ -86,4 +86,5 @@
     <string name="playing_from">Playing From</string>
     <string name="equalizer">Equalizer</string>
     <string name="sleep_timer">Sleep Timer</string>
+    <string name="track_not_found">Track not found</string>
 </resources>

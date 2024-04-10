@@ -63,13 +63,18 @@ class PlaybackService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val customDataSource = CustomDataSource.Factory(this, extensionList, global)
+        val streamableFactory = StreamableDataSource
+            .Factory(this, extensionList, global)
 
-        val cacheDataSourceFactory =
-            CacheDataSource.Factory().setCache(cache).setUpstreamDataSourceFactory(customDataSource)
+        val cacheFactory = CacheDataSource
+            .Factory().setCache(cache)
+            .setUpstreamDataSourceFactory(streamableFactory)
 
-        val factory =
-            DefaultMediaSourceFactory(this).setDataSourceFactory(cacheDataSourceFactory)
+        val trackFactory = TrackDataSource
+            .Factory(this, extensionList, global, cacheFactory)
+
+        val factory = DefaultMediaSourceFactory(this)
+            .setDataSourceFactory(trackFactory)
 
         val player = ExoPlayer.Builder(this, factory)
             .setHandleAudioBecomingNoisy(true)
@@ -91,8 +96,8 @@ class PlaybackService : MediaLibraryService() {
         val callback = PlayerSessionCallback(this, scope, global, extensionFlow)
 
         mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
-                .setSessionActivity(pendingIntent)
-                .build()
+            .setSessionActivity(pendingIntent)
+            .build()
 
         val notificationProvider =
             DefaultMediaNotificationProvider.Builder(this)

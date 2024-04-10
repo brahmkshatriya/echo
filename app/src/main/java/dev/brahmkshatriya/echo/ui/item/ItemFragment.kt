@@ -26,7 +26,6 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
@@ -102,10 +101,10 @@ class ItemFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
 
-        binding.toolBar.title = item.title
+        binding.toolBar.title = item.title.trim()
         binding.endIcon.load(item.placeHolder())
         item.cover.loadInto(binding.cover, item.placeHolder())
-        if (item is Profile) binding.coverContainer.run {
+        if (item is EchoMediaItem.Profile) binding.coverContainer.run {
             val maxWidth = 240.dpToPx(context)
             radius = maxWidth.toFloat()
             updateLayoutParams<ConstraintLayout.LayoutParams> {
@@ -135,14 +134,14 @@ class ItemFragment : Fragment() {
 
         val albumHeaderAdapter = AlbumHeaderAdapter(
             object : AlbumHeaderAdapter.Listener {
-                override fun onPlayClicked(album: Album) = playerVM.play(clientId, album.tracks)
+                override fun onPlayClicked(album: Album) = playerVM.play(clientId, album.tracks, 0)
                 override fun onRadioClicked(album: Album) = playerVM.radio(clientId, album)
             }
         )
 
         val playlistHeaderAdapter = PlaylistHeaderAdapter(
             object : PlaylistHeaderAdapter.Listener {
-                override fun onPlayClicked(list: Playlist) = playerVM.play(clientId, list.tracks)
+                override fun onPlayClicked(list: Playlist) = playerVM.play(clientId, list.tracks, 0)
                 override fun onRadioClicked(list: Playlist) = playerVM.radio(clientId, list)
             }
         )
@@ -194,6 +193,8 @@ class ItemFragment : Fragment() {
         }
 
         observe(viewModel.itemFlow) { item ->
+            item ?: return@observe
+            item.cover.loadInto(binding.cover, item.placeHolder())
             when (item) {
                 is AlbumItem -> {
                     albumHeaderAdapter.submit(item.album, isRadioClient)

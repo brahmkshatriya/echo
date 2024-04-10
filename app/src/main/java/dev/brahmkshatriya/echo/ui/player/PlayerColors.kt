@@ -13,8 +13,7 @@ data class PlayerColors(
     val body: Int,
 ) {
     companion object {
-        fun Context.getColorsFrom(bitmap: Bitmap?): PlayerColors? {
-            bitmap ?: return null
+        fun Context.getColorsFrom(bitmap: Bitmap): PlayerColors? {
             val palette = Palette.from(bitmap).generate()
             val lightMode = !isNightMode()
             val lightSwatch = palette.run {

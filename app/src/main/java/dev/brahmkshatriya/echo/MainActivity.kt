@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.navigation.NavigationBarView
@@ -131,6 +132,7 @@ class MainActivity : AppCompatActivity() {
         intent?.hasExtra("fromNotification")?.let {
             if (!it) return
             emit(uiViewModel.changePlayerState) { STATE_EXPANDED }
+            emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
         }
         super.onNewIntent(intent)
     }

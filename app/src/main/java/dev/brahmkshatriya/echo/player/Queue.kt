@@ -16,7 +16,7 @@ class Queue {
     val currentIndexFlow = MutableStateFlow(-1)
     val current get() = queue.getOrNull(currentIndexFlow.value)
 
-    fun getTrack(mediaId: String?) = trackQueue.find { it.track.id == mediaId }
+    fun getTrack(mediaId: String?) = trackQueue.find { it.unloaded.id == mediaId }
 
     private val _clearQueue = MutableSharedFlow<Unit>()
     val clearQueueFlow = _clearQueue.asSharedFlow()
@@ -68,8 +68,10 @@ class Queue {
     }
 
     data class StreamableTrack(
-        val track: Track,
-        val clientId: String
+        val unloaded: Track,
+        val clientId: String,
+        var loaded: Track? = null,
+        val onLoad : MutableSharedFlow<Track> = MutableSharedFlow()
     )
 }
 

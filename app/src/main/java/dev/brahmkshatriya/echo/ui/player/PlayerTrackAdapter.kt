@@ -2,12 +2,12 @@ package dev.brahmkshatriya.echo.ui.player
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.PorterDuff
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimatedVectorDrawable
-import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -15,6 +15,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
@@ -23,6 +24,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
@@ -33,12 +35,14 @@ import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
+import dev.brahmkshatriya.echo.utils.loadBitmap
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
 
@@ -51,7 +55,7 @@ class PlayerTrackAdapter(
 
     object DiffCallback : DiffUtil.ItemCallback<StreamableTrack>() {
         override fun areItemsTheSame(oldItem: StreamableTrack, newItem: StreamableTrack) =
-            oldItem.track.id == newItem.track.id
+            oldItem.unloaded.id == newItem.unloaded.id
 
         override fun areContentsTheSame(oldItem: StreamableTrack, newItem: StreamableTrack) =
             true
@@ -62,45 +66,20 @@ class PlayerTrackAdapter(
 
     override fun Holder<StreamableTrack, ItemPlayerTrackBinding>.onBind(position: Int) {
         val item = getItem(position)
-        val track = item?.track
+        val track = item?.loaded ?: item?.unloaded
+        binding.applyTrackDetails(track)
+        observe(item.onLoad) {
+            binding.applyTrackDetails(it)
+        }
 
-        track?.cover.loadWith(binding.expandedTrackCover) {
-            binding.collapsedContainer.collapsedTrackCover.load(it)
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                binding.bgImage.load(it)
-                binding.bgImage.setRenderEffect(
-                    RenderEffect.createBlurEffect(400f, 400.0f, Shader.TileMode.MIRROR)
-                )
-            } else binding.bgImage.load(it, 16)
-
-            val colors = binding.root.context.getPlayerColors(it as? BitmapDrawable)
+        lifecycleScope.launch {
+            val bitmap = track?.cover?.loadBitmap(binding.root.context)
+            val colors = binding.root.context.getPlayerColors(bitmap)
             binding.root.setBackgroundColor(colors.background)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.bgGradient.imageTintMode = PorterDuff.Mode.SRC_IN
             binding.collapsedContainer.applyColors(colors)
             binding.playerControls.applyColors(colors)
-        }
-
-        binding.collapsedContainer.run {
-            collapsedTrackArtist.text = track?.artists?.joinToString(", ") { it.name }
-            collapsedTrackTitle.text = track?.title
-            collapsedTrackTitle.isSelected = true
-            collapsedTrackTitle.setHorizontallyScrolling(true)
-        }
-
-        binding.playerControls.run {
-            trackTitle.text = track?.title
-            trackTitle.isSelected = true
-            trackTitle.setHorizontallyScrolling(true)
-            trackArtist.text = track?.artists?.joinToString(", ") { it.name }
-        }
-
-        binding.expandedToolbar.run {
-            val client = viewModel.extensionListFlow.getClient(item.clientId)
-                ?.metadata?.name
-            title = if (client != null) context.getString(R.string.playing_from) else null
-            subtitle = client
         }
 
         binding.collapsedContainer.root.setOnClickListener {
@@ -269,13 +248,48 @@ class PlayerTrackAdapter(
         }
     }
 
-    private fun Context.getPlayerColors(bitmapDrawable: BitmapDrawable?): PlayerColors {
+    private fun ItemPlayerTrackBinding.applyTrackDetails(
+        track: Track? = null
+    ) {
+        track?.cover.loadWith(expandedTrackCover) {
+            collapsedContainer.collapsedTrackCover.load(it)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                bgImage.setImageDrawable(it)
+                bgImage.setRenderEffect(
+                    RenderEffect.createBlurEffect(400f, 400.0f, Shader.TileMode.MIRROR)
+                )
+            } else bgImage.load(it, 16)
+        }
+
+        collapsedContainer.run {
+            collapsedTrackArtist.text = track?.artists?.joinToString(", ") { it.name }
+            collapsedTrackTitle.text = track?.title
+            collapsedTrackTitle.isSelected = true
+            collapsedTrackTitle.setHorizontallyScrolling(true)
+        }
+
+        playerControls.run {
+            trackTitle.text = track?.title
+            trackTitle.isSelected = true
+            trackTitle.setHorizontallyScrolling(true)
+            trackArtist.text = track?.artists?.joinToString(", ") { it.name }
+        }
+
+        expandedToolbar.run {
+            val album = track?.album?.title
+            title = if (album != null) context.getString(R.string.playing_from) else null
+            subtitle = album
+        }
+    }
+
+    private fun Context.getPlayerColors(bitmap: Bitmap?): PlayerColors {
         val defaultColors = defaultPlayerColors()
+        bitmap ?: return defaultColors
         val preferences =
             applicationContext.getSharedPreferences(packageName, Context.MODE_PRIVATE)
         val dynamicPlayer = preferences.getBoolean(LookFragment.DYNAMIC_PLAYER, true)
         val imageColors =
-            if (dynamicPlayer) getColorsFrom(bitmapDrawable?.bitmap) else defaultColors
+            if (dynamicPlayer) getColorsFrom(bitmap) else defaultColors
         return imageColors ?: defaultColors
     }
 

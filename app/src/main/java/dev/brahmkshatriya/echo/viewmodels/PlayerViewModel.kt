@@ -96,6 +96,7 @@ class PlayerViewModel @Inject constructor(
         val client = extensionListFlow.getClient(clientId)
         viewModelScope.launch(Dispatchers.IO) {
             val position = radio(app, client, messageFlow, global) { tryWith { block(this) } }
+            println("radio position : $position")
             position?.let { audioIndexFlow.emit(it) }
         }
     }
@@ -170,7 +171,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    val current get() = global.current?.track
+    val current get() = global.current?.unloaded
     val currentIndex get() = global.currentIndexFlow.value
 
     val currentFlow = global.currentIndexFlow.map { current }

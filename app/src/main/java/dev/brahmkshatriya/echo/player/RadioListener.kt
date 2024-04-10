@@ -36,7 +36,7 @@ class RadioListener(
                 scope.launch(Dispatchers.IO) {
                     val client = extensionListFlow.getClient(it.clientId)
                     radio(context, client, messageFlow, queue) {
-                        tryWith(throwableFlow) { radio(it.track) }
+                        tryWith(throwableFlow) { radio(it.unloaded) }
                     }
                 }
             }

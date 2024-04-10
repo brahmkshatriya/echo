@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 
 @UnstableApi
-class CustomDataSource(
+class StreamableDataSource(
     private val context: Context,
     private val extensionListFlow: ExtensionModule.ExtensionListFlow,
     private val global: Queue
@@ -31,7 +31,7 @@ class CustomDataSource(
         private val global: Queue
     ) : DataSource.Factory {
         override fun createDataSource() =
-            CustomDataSource(context, extensionListFlow, global)
+            StreamableDataSource(context, extensionListFlow, global)
     }
 
     private val defaultDataSourceFactory = DefaultDataSource.Factory(context)
@@ -42,16 +42,15 @@ class CustomDataSource(
     private fun getTrack(id: String) = global.getTrack(id)
         ?: throw Exception("Track not found")
 
-    private fun getAudio(id: String): StreamableAudio {
-        val track = getTrack(id)
-        val client = extensionListFlow.getClient(track.clientId)
+    private suspend fun getAudio(id: String): StreamableAudio {
+        val streamableTrack = getTrack(id)
+        val client = extensionListFlow.getClient(streamableTrack.clientId)
             ?: throw Exception(context.noClient().message)
-        client as? TrackClient
-            ?: throw Exception(context.trackNotSupported(client.metadata.name).message)
-        val streamable = track.track.streamable
+        if (client !is TrackClient)
+            throw Exception(context.trackNotSupported(client.metadata.name).message)
+        val streamable = streamableTrack.loaded!!.streamable
             ?: throw Exception(context.getString(R.string.streamable_not_found))
-
-        return runBlocking { client.getStreamableAudio(streamable) }
+        return client.getStreamableAudio(streamable)
     }
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
@@ -61,7 +60,10 @@ class CustomDataSource(
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        return when (val audio = getAudio(dataSpec.uri.toString())) {
+        val audio = runBlocking {
+            runCatching { getAudio(dataSpec.uri.toString()) }
+        }.getOrThrow()
+        return when (audio) {
             is StreamableAudio.ByteStreamAudio -> {
                 inputStream = audio.stream
                 trackUri = dataSpec.uri

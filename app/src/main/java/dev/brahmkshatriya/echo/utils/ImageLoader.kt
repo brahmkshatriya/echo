@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.utils
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
@@ -9,6 +11,9 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import dev.brahmkshatriya.echo.common.models.ImageHolder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 fun <T> ImageHolder?.createRequest(
     requestBuilder: RequestBuilder<T>, placeholder: Int? = null, errorDrawable: Int? = null
@@ -32,7 +37,7 @@ fun <T> ImageHolder?.createRequest(
 
 fun ImageHolder?.loadInto(
     imageView: ImageView, placeholder: Int? = null, errorDrawable: Int? = null
-) {
+) = tryWith {
     val builder = Glide.with(imageView).asDrawable()
     val request = createRequest(builder, placeholder, errorDrawable)
     request.into(imageView)
@@ -43,7 +48,7 @@ fun ImageHolder?.loadWith(
     placeholder: Int? = null,
     errorDrawable: Int? = null,
     onDrawable: (Drawable?) -> Unit
-) {
+) = tryWith {
     val builder = Glide.with(imageView).asDrawable()
     val request = createRequest(builder, placeholder, errorDrawable)
     request.into(ViewTarget(imageView) {
@@ -52,24 +57,34 @@ fun ImageHolder?.loadWith(
     })
 }
 
-fun ImageView.load(placeHolder: Int) {
+fun ImageView.load(placeHolder: Int) = tryWith {
     Glide.with(this).load(placeHolder).into(this)
 }
 
-fun ImageView.load(drawable: Drawable?) {
+fun ImageView.load(drawable: Drawable?) = tryWith {
     Glide.with(this).load(drawable).into(this)
 }
 
-fun ImageView.load(drawable: Drawable?, size:Int) {
+fun ImageView.load(drawable: Drawable?, size: Int) = tryWith {
     Glide.with(this).load(drawable).override(size).into(this)
 }
 
 fun <T : View> ImageHolder?.load(
     view: T, placeholder: Int? = null, errorDrawable: Int? = null, onDrawable: (Drawable?) -> Unit
-) {
+) = tryWith {
     val builder = Glide.with(view).asDrawable()
     val request = createRequest(builder, placeholder, errorDrawable)
     request.circleCrop().into(ViewTarget(view, onDrawable))
+}
+
+suspend fun ImageHolder?.loadBitmap(context: Context): Bitmap? = tryWithSuspend {
+    val builder = Glide.with(context).asBitmap()
+    val request = createRequest(builder)
+    coroutineScope {
+        async(Dispatchers.IO) {
+            tryWithSuspend { request.submit().get() }
+        }.await()
+    }
 }
 
 class ViewTarget<T : View>(val target: T, private val onDrawable: (Drawable?) -> Unit) :

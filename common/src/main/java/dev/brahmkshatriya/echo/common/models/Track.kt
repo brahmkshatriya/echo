@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.common.models
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.parcelableCreator
 
 @Parcelize
 data class Track(
@@ -16,4 +17,8 @@ data class Track(
     val releaseDate: String? = null,
     val liked: Boolean = false,
     val extras: Map<String, String> = mapOf()
-) : Parcelable
+) : Parcelable {
+    companion object {
+        val creator = parcelableCreator<Track>()
+    }
+}
