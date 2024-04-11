@@ -52,6 +52,7 @@ class TrackDetailsFragment : Fragment() {
         observe(playerViewModel.currentFlow) {
             it?.clientId ?: return@observe
             adapter.clientId = it.clientId
+            viewModel.itemsFlow.value = null
             val track = it.loaded
             if (track == null) observe(it.onLoad) { loaded ->
                 viewModel.load(it.clientId, loaded)

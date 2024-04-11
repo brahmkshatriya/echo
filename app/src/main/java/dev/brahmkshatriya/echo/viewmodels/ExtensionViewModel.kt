@@ -69,6 +69,10 @@ class ExtensionViewModel @Inject constructor(
             getString(R.string.is_not_supported, getString(R.string.radio), client)
         )
 
+        fun Context.loginNotSupported(client: String) = SnackBar.Message(
+            getString(R.string.is_not_supported, getString(R.string.login), client)
+        )
+
         inline fun <reified T> RecyclerView.applyAdapter(
             it: ExtensionClient?,
             name: Int,

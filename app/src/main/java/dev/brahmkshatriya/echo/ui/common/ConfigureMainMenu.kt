@@ -5,6 +5,7 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.appbar.MaterialToolbar
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsFragment
+import dev.brahmkshatriya.echo.ui.login.LoginFragment
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.observe
@@ -23,8 +24,19 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
             menu.findItem(R.id.menu_extensions).icon = it
         }
     }
+
     settings.setOnClickListener {
         fragment.openFragment(SettingsFragment(), settings)
+    }
+
+    settings.setOnLongClickListener {
+        extensionViewModel.currentExtension?.let {
+            fragment.openFragment(
+                LoginFragment.newInstance(it.metadata.id, it.metadata.name),
+                settings
+            )
+        }
+        true
     }
     extensions.setOnClickListener {
         ExtensionsFragment().show(fragment.parentFragmentManager, null)

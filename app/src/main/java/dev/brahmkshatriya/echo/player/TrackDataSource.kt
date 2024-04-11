@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.runBlocking
@@ -43,7 +44,7 @@ class TrackDataSource(
 
     private suspend fun getAudio(id: String) {
         val streamableTrack = getTrack(id)
-        if(streamableTrack.loaded != null) return
+        if (streamableTrack.loaded != null) return
 
         val client = extensionListFlow.getClient(streamableTrack.clientId)
             ?: throw Exception(context.noClient().message)
@@ -63,13 +64,15 @@ class TrackDataSource(
         val fileName = id.hashCode().toString()
         val file = File(context.cacheDir, fileName)
         return if (file.exists()) {
-            val bytes = FileInputStream(file).use { it.readBytes() }
-            val parcel = Parcel.obtain()
-            parcel.unmarshall(bytes, 0, bytes.size)
-            parcel.setDataPosition(0)
-            val track = Track.creator.createFromParcel(parcel)
-            parcel.recycle()
-            track
+            tryWith {
+                val bytes = FileInputStream(file).use { it.readBytes() }
+                val parcel = Parcel.obtain()
+                parcel.unmarshall(bytes, 0, bytes.size)
+                parcel.setDataPosition(0)
+                val track = Track.creator.createFromParcel(parcel)
+                parcel.recycle()
+                track
+            }
         } else {
             null
         }

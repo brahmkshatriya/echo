@@ -20,9 +20,10 @@ private fun <T> createRequest(
     requestBuilder: RequestBuilder<T>,
 ) = imageHolder.run {
     when (this) {
-        is ImageHolder.BitmapHolder -> requestBuilder.load(bitmap)
-        is ImageHolder.UrlHolder -> requestBuilder.load(GlideUrl(url) { headers })
-        is ImageHolder.UriHolder -> requestBuilder.load(uri)
+        is ImageHolder.BitmapImageHolder -> requestBuilder.load(bitmap)
+        is ImageHolder.UriImageHolder -> requestBuilder.load(uri)
+        is ImageHolder.UrlImageHolder ->
+            requestBuilder.load(GlideUrl(urlHolder.url) { urlHolder.headers })
     }
 }
 
@@ -83,7 +84,9 @@ fun <T : View> ImageHolder?.load(
 ) = tryWith {
     val builder = Glide.with(view).asDrawable()
     val request = createRequest(builder, placeholder, errorDrawable)
-    request.circleCrop().into(ViewTarget(view, onDrawable))
+    request.circleCrop().into(ViewTarget(view){
+        tryWith(false) { onDrawable(it) }
+    })
 }
 
 suspend fun ImageHolder?.loadBitmap(context: Context): Bitmap? = tryWithSuspend {

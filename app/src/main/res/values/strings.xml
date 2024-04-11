@@ -87,4 +87,8 @@
     <string name="equalizer">Equalizer</string>
     <string name="sleep_timer">Sleep Timer</string>
     <string name="track_not_found">Track not found</string>
+    <string name="extension_login">%1$s Login</string>
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
 </resources>

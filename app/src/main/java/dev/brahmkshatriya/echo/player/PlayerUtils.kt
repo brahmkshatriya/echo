@@ -33,9 +33,9 @@ private fun Track.toMetaData() = MediaMetadata.Builder()
 private fun MediaMetadata.Builder.setArtwork(cover: ImageHolder?): MediaMetadata.Builder {
     cover?.let {
         return when (it) {
-            is ImageHolder.UrlHolder -> setArtworkUri(it.url.toUri())
-            is ImageHolder.UriHolder -> setArtworkUri(it.uri)
-            is ImageHolder.BitmapHolder -> setArtworkData(
+            is ImageHolder.UrlImageHolder -> setArtworkUri(it.urlHolder.url.toUri())
+            is ImageHolder.UriImageHolder -> setArtworkUri(it.uri)
+            is ImageHolder.BitmapImageHolder -> setArtworkData(
                 it.bitmap.toByteArray(),
                 MediaMetadata.PICTURE_TYPE_FILE_ICON
             )
