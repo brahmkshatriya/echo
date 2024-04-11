@@ -59,7 +59,7 @@ jobs:
           BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
           CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
         run: |
-          message=$(printf "*Nightly Release*\n${{ env.COMMIT }}" | sed 's/[~>|.!+-=#]/\\&/g')
+          message=$(printf "*Nightly Release*\n${{ env.COMMIT }}" | sed 's/[~>|.!+-=#]/\\&/g' | iconv -t utf-8)
           curl -F "chat_id=${{ env.CHANNEL_ID }}" \
           -F "document=@app/build/${{ env.VERSION }}.apk" \
           -F "caption=${message}" \
