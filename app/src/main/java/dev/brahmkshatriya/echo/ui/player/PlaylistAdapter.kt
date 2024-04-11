@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.player.Queue.StreamableTrack
 import dev.brahmkshatriya.echo.player.toTimeString
@@ -16,7 +15,7 @@ import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.Flow
 
 class PlaylistAdapter(
-    private val current: Flow<Track?>,
+    private val current: Flow<StreamableTrack?>,
     private val callback: Callback
 ) : LifeCycleListAdapter<StreamableTrack, ItemPlaylistItemBinding>(PlayerTrackAdapter.DiffCallback) {
 
@@ -62,7 +61,7 @@ class PlaylistAdapter(
         }
 
         observe(current) {
-            binding.playlistCurrentItem.isVisible = it?.id == item.unloaded.id
+            binding.playlistCurrentItem.isVisible = it?.unloaded?.id == item.unloaded.id
         }
     }
 

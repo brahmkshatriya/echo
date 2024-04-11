@@ -15,6 +15,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
+private fun <T> createRequest(
+    imageHolder: ImageHolder,
+    requestBuilder: RequestBuilder<T>,
+) = imageHolder.run {
+    when (this) {
+        is ImageHolder.BitmapHolder -> requestBuilder.load(bitmap)
+        is ImageHolder.UrlHolder -> requestBuilder.load(GlideUrl(url) { headers })
+        is ImageHolder.UriHolder -> requestBuilder.load(uri)
+    }
+}
+
 fun <T> ImageHolder?.createRequest(
     requestBuilder: RequestBuilder<T>, placeholder: Int? = null, errorDrawable: Int? = null
 ): RequestBuilder<T> {
@@ -23,13 +34,7 @@ fun <T> ImageHolder?.createRequest(
 
     if (this == null) return requestBuilder.load(error)
 
-    var request = when (this) {
-        is ImageHolder.BitmapHolder -> requestBuilder.load(bitmap)
-
-        is ImageHolder.UrlHolder -> requestBuilder.load(GlideUrl(url) { headers })
-
-        is ImageHolder.UriHolder -> requestBuilder.load(uri)
-    }
+    var request = createRequest(this, requestBuilder)
     request = placeholder?.let { request.placeholder(it) } ?: request
     request = error?.let { request.error(it) } ?: request
     return if (crop) request.centerCrop() else request.centerInside()
@@ -45,12 +50,16 @@ fun ImageHolder?.loadInto(
 
 fun ImageHolder?.loadWith(
     imageView: ImageView,
-    placeholder: Int? = null,
-    errorDrawable: Int? = null,
-    onDrawable: (Drawable?) -> Unit
+    thumbnail: ImageHolder? = null,
+    error: Int? = null,
+    onDrawable: (Drawable?) -> Unit = {}
 ) = tryWith {
     val builder = Glide.with(imageView).asDrawable()
-    val request = createRequest(builder, placeholder, errorDrawable)
+    if (this == null) {
+        thumbnail.loadInto(imageView, error)
+        return@tryWith
+    }
+    val request = createRequest(builder, error)
     request.into(ViewTarget(imageView) {
         imageView.setImageDrawable(it)
         tryWith(false) { onDrawable(it) }

@@ -165,13 +165,12 @@ class PlayerViewModel @Inject constructor(
     fun updateList(mediaItems: List<String>, index: Int) {
         global.updateQueue(mediaItems)
         viewModelScope.launch {
-            println("index : $index")
             global.currentIndexFlow.value = index
             _updatedFlow.emit(Unit)
         }
     }
 
-    val current get() = global.current?.unloaded
+    val current get() = global.current
     val currentIndex get() = global.currentIndexFlow.value
 
     val currentFlow = global.currentIndexFlow.map { current }

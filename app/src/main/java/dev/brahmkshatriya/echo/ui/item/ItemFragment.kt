@@ -41,6 +41,7 @@ import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
@@ -192,22 +193,22 @@ class ItemFragment : Fragment() {
             }
         }
 
-        observe(viewModel.itemFlow) { item ->
-            item ?: return@observe
-            item.cover.loadInto(binding.cover, item.placeHolder())
-            when (item) {
+        observe(viewModel.itemFlow) {
+            it ?: return@observe
+            it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
+            when (it) {
                 is AlbumItem -> {
-                    albumHeaderAdapter.submit(item.album, isRadioClient)
-                    trackAdapter.submitList(item.album.tracks)
+                    albumHeaderAdapter.submit(it.album, isRadioClient)
+                    trackAdapter.submitList(it.album.tracks)
                 }
 
                 is PlaylistItem -> {
-                    playlistHeaderAdapter.submit(item.playlist, isRadioClient)
-                    trackAdapter.submitList(item.playlist.tracks)
+                    playlistHeaderAdapter.submit(it.playlist, isRadioClient)
+                    trackAdapter.submitList(it.playlist.tracks)
                 }
 
                 is ArtistItem ->
-                    artistHeaderAdapter.submit(item.artist, isUserClient, isRadioClient)
+                    artistHeaderAdapter.submit(it.artist, isUserClient, isRadioClient)
 
                 else -> Unit
             }

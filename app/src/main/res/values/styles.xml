@@ -46,11 +46,11 @@
         <item name="subtitle">@string/extensions</item>
         <item name="subtitleCentered">true</item>
         <item name="subtitleTextAppearance">@style/TextAppearance.Material3.TitleMedium</item>
-        <item name="subtitleTextColor">@color/amoled_fg</item>
+        <item name="subtitleTextColor">@color/button_player</item>
         <item name="title">@string/playing_from</item>
         <item name="titleCentered">true</item>
         <item name="titleTextAppearance">@style/TextAppearance.AppCompat.Small</item>
-        <item name="titleTextColor">@color/amoled_fg</item>
+        <item name="titleTextColor">?colorOnSurface</item>
     </style>
 
     <style name="EchoDialog" parent="Theme.MaterialComponents.Dialog.MinWidth">

@@ -65,7 +65,7 @@ class UiViewModel @Inject constructor(
     var isMainFragment = MutableStateFlow(true)
 
     val combined = systemInsets.combine(navViewInsets) { system, nav ->
-        if(isMainFragment.value) system.add(nav) else system
+        if (isMainFragment.value) system.add(nav) else system
     }.combine(playerInsets) { system, player ->
         system.add(player)
     }
@@ -135,12 +135,10 @@ class UiViewModel @Inject constructor(
     }
 
     fun collapsePlayer() {
-        if (playerSheetState.value == STATE_EXPANDED)
-            viewModelScope.launch {
-                changePlayerState.emit(STATE_COLLAPSED)
-                changeInfoState.emit(STATE_COLLAPSED)
-            }
-
+        if (playerSheetState.value == STATE_EXPANDED) viewModelScope.launch {
+            changePlayerState.emit(STATE_COLLAPSED)
+            changeInfoState.emit(STATE_COLLAPSED)
+        }
     }
 
     companion object {

@@ -11,7 +11,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -58,8 +60,11 @@ class PlayerInfoFragment : Fragment() {
 
         binding.viewPager.getChildAt(0).run {
             this as RecyclerView
-            isNestedScrollingEnabled = false
             overScrollMode = View.OVER_SCROLL_NEVER
+            observe(uiViewModel.infoSheetState) {
+                if (it == STATE_DRAGGING || it == STATE_SETTLING) return@observe
+                isNestedScrollingEnabled = it != STATE_COLLAPSED
+            }
         }
         binding.viewPager.isUserInputEnabled = false
         binding.viewPager.adapter = PlayerInfoAdapter(this)

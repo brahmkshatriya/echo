@@ -15,10 +15,14 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPS
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
+import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
 import kotlinx.coroutines.delay
@@ -44,7 +48,14 @@ class PlayerFragment : Fragment() {
 
         setupPlayerInfoBehavior(uiViewModel, binding.playerInfoContainer)
 
-        val adapter = PlayerTrackAdapter(this)
+        val adapter = PlayerTrackAdapter(this) { client, item ->
+            if (client == null) {
+                createSnack(requireContext().noClient())
+                return@PlayerTrackAdapter
+            }
+            requireActivity().openFragment(ItemFragment.newInstance(client, item))
+            uiViewModel.collapsePlayer()
+        }
         binding.viewPager.adapter = adapter
         binding.viewPager.setPageTransformer(
             ParallaxPageTransformer(R.id.expandedTrackCoverContainer)

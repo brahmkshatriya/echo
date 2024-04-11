@@ -11,5 +11,5 @@ fun FragmentActivity.openException(throwable: Throwable, view: View? = null) {
     viewModel.throwable = throwable
     val uiViewModel: UiViewModel by viewModels()
     uiViewModel.collapsePlayer()
-    supportFragmentManager.fragments.last().openFragment(ExceptionFragment(), view)
+    openFragment(ExceptionFragment(), view)
 }

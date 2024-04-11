@@ -38,9 +38,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
+                android:textColorLink="@color/button_player"
                 android:maxLines="1"
                 android:minHeight="32dp"
-                android:textColor="@color/button_player"
                 android:textSize="16sp"
                 tools:text="@tools:sample/lorem/random" />
         </LinearLayout>

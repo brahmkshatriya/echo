@@ -90,7 +90,7 @@ class SearchFragment : Fragment() {
 
         viewModel.initialize()
 
-        val mediaClickListener = MediaClickListener(parent)
+        val mediaClickListener = MediaClickListener(parent.parentFragmentManager)
         val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
             override fun onClick(item: QuickSearchItem, transitionView: View) = when (item) {
                 is QuickSearchItem.SearchQueryItem -> {

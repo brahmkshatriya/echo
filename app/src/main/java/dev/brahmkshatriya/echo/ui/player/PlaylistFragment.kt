@@ -7,12 +7,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
@@ -76,10 +76,12 @@ class PlaylistFragment : Fragment() {
         observe(viewModel.listChangeFlow) {
             adapter.submitList(it)
         }
-
-        observe(uiViewModel.infoSheetState) {
-            if (it == STATE_DRAGGING || it == STATE_SETTLING) return@observe
-            binding.root.isNestedScrollingEnabled = it != STATE_COLLAPSED
+        val manager = binding.root.layoutManager as LinearLayoutManager
+        val offset = 24.dpToPx(requireContext())
+        observe(uiViewModel.changeInfoState) {
+            val index = viewModel.currentIndex
+            if (it == STATE_EXPANDED && index != -1)
+                manager.scrollToPositionWithOffset(index, offset)
         }
     }
 }

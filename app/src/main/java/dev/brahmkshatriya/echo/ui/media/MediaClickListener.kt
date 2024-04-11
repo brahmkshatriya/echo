@@ -1,8 +1,9 @@
 package dev.brahmkshatriya.echo.ui.media
 
 import android.view.View
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Category
@@ -16,14 +17,18 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 
 class MediaClickListener(
-    private val fragment: Fragment
+    private val fragmentManager: FragmentManager,
+    private val afterOpening : (()->Unit)? = null
 ) : MediaItemAdapter.Listener {
+
+    val fragment get() = fragmentManager.findFragmentById(R.id.navHostFragment)!!
 
     private fun noClient() = fragment.createSnack(fragment.requireContext().noClient())
 
     private fun openItem(clientId: String?, item: EchoMediaItem, transitionView: View) {
         clientId ?: return noClient()
         fragment.openFragment(ItemFragment.newInstance(clientId, item), transitionView)
+        afterOpening?.invoke()
     }
 
     private fun openCategory(clientId: String?, category: Category, transitionView: View): Boolean {
@@ -31,6 +36,7 @@ class MediaClickListener(
         val viewModel by fragment.activityViewModels<CategoryViewModel>()
         viewModel.category = category
         fragment.openFragment(CategoryFragment.newInstance(clientId), transitionView)
+        afterOpening?.invoke()
         return true
     }
 

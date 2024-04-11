@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference
 class MediaContainerAdapter(
     val fragment: Fragment,
     val transition: String,
-    val listener: MediaClickListener = MediaClickListener(fragment)
+    val listener: MediaClickListener = MediaClickListener(fragment.parentFragmentManager)
 ) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
 
     var clientId: String? = null

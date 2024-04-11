@@ -9,6 +9,9 @@ import android.graphics.Shader
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Build
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
@@ -24,6 +27,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
@@ -47,7 +52,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 class PlayerTrackAdapter(
-    fragment: Fragment
+    fragment: Fragment,
+    private val onItemClicked: (String?, EchoMediaItem) -> Unit
 ) : LifeCycleListAdapter<StreamableTrack, ItemPlayerTrackBinding>(DiffCallback) {
 
     private val viewModel by fragment.activityViewModels<PlayerViewModel>()
@@ -66,10 +72,11 @@ class PlayerTrackAdapter(
 
     override fun Holder<StreamableTrack, ItemPlayerTrackBinding>.onBind(position: Int) {
         val item = getItem(position)
+        val client = item?.clientId
         val track = item?.loaded ?: item?.unloaded
-        binding.applyTrackDetails(track)
+        binding.applyTrackDetails(client, track)
         observe(item.onLoad) {
-            binding.applyTrackDetails(it)
+            binding.applyTrackDetails(client, it, item.unloaded)
         }
 
         lifecycleScope.launch {
@@ -78,6 +85,10 @@ class PlayerTrackAdapter(
             binding.root.setBackgroundColor(colors.background)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.bgGradient.imageTintMode = PorterDuff.Mode.SRC_IN
+            binding.expandedToolbar.run {
+                setTitleTextColor(colors.body)
+                setSubtitleTextColor(colors.body)
+            }
             binding.collapsedContainer.applyColors(colors)
             binding.playerControls.applyColors(colors)
         }
@@ -117,7 +128,7 @@ class PlayerTrackAdapter(
             block: (T?) -> Unit
         ) {
             observe(flow) {
-                if (viewModel.current?.id == track?.id)
+                if (viewModel.current?.unloaded?.id == track?.id)
                     block(it)
                 else block(null)
             }
@@ -249,9 +260,11 @@ class PlayerTrackAdapter(
     }
 
     private fun ItemPlayerTrackBinding.applyTrackDetails(
-        track: Track? = null
+        client: String?,
+        track: Track?,
+        oldTrack: Track? = null
     ) {
-        track?.cover.loadWith(expandedTrackCover) {
+        track?.cover.loadWith(expandedTrackCover, oldTrack?.cover) {
             collapsedContainer.collapsedTrackCover.load(it)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 bgImage.setImageDrawable(it)
@@ -272,7 +285,21 @@ class PlayerTrackAdapter(
             trackTitle.text = track?.title
             trackTitle.isSelected = true
             trackTitle.setHorizontallyScrolling(true)
-            trackArtist.text = track?.artists?.joinToString(", ") { it.name }
+            val artists = track?.artists
+            val artistNames = artists?.joinToString(", ") { it.name } ?: ""
+            val spannableString = SpannableString(artistNames)
+
+            artists?.forEach { artist ->
+                val start = artistNames.indexOf(artist.name)
+                val end = start + artist.name.length
+                val clickableSpan = PlayerItemSpan(
+                    root.context, client, artist.toMediaItem(), onItemClicked
+                )
+                spannableString.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+
+            trackArtist.text = spannableString
+            trackArtist.movementMethod = LinkMovementMethod.getInstance()
         }
 
         expandedToolbar.run {
@@ -313,6 +340,7 @@ class PlayerTrackAdapter(
         trackCurrentTime.setTextColor(colors.body)
         trackTotalTime.setTextColor(colors.body)
         trackTitle.setTextColor(colors.body)
+        trackArtist.setTextColor(colors.body)
     }
 
 }
