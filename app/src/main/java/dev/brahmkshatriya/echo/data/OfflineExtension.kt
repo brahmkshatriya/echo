@@ -35,8 +35,12 @@ import dev.brahmkshatriya.echo.data.utils.PagedSource.Companion.pagedFlow
 class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, TrackClient,
     HomeFeedClient, AlbumClient, ArtistClient, RadioClient {
 
+    companion object {
+        const val ID = "echo_offline"
+    }
+
     override val metadata = ExtensionMetadata(
-        id = "echo_offline",
+        id = ID,
         name = "Offline",
         version = "1.0.0",
         description = "Local media library",

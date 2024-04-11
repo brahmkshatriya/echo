@@ -1,10 +1,12 @@
 package dev.brahmkshatriya.echo.data.offline
 
+import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.core.database.getStringOrNull
 import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 
 class ArtistResolver(val context: Context) {
 
@@ -49,21 +51,26 @@ class ArtistResolver(val context: Context) {
             projection = arrayOf(
                 MediaStore.Audio.Media.ARTIST_ID,
                 MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM_ID,
             ),
             whereCondition = whereCondition,
             selectionArgs = selectionArgs,
             orderBy = order(),
             orderAscending = isAscending(sorting),
             limit = pageSize,
-            offset = (page) * pageSize,
+            offset = (page) * pageSize
         )?.use {
-            //Cache column indices.
-            val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
+            val artistIdColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
             val artistColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val albumIdColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
 
             val ids = mutableListOf<Long>()
             while (it.moveToNext()) {
-                val id = it.getLong(idColumn)
+                val id = it.getLong(artistIdColumn)
+                val albumId = it.getLong(albumIdColumn)
+                val coverUri = ContentUris.withAppendedId(
+                    ARTWORK_URI, albumId
+                )
                 if (ids.contains(id)) continue
                 ids.add(id)
                 val uri = "$URI$ARTIST_AUTH$id"
@@ -71,7 +78,7 @@ class ArtistResolver(val context: Context) {
                     Artist(
                         id = uri,
                         name = it.getStringOrNull(artistColumn) ?: "THIS IS THE PROBLEM",
-                        cover = null,
+                        cover = coverUri.toImageHolder(),
                         description = null,
                     )
                 )

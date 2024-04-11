@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 fun FragmentActivity.openException(throwable: Throwable, view: View? = null) {
     val viewModel: ExceptionFragment.ThrowableViewModel by viewModels()
     viewModel.throwable = throwable
+    openFragment(ExceptionFragment(), view)
     val uiViewModel: UiViewModel by viewModels()
     uiViewModel.collapsePlayer()
-    openFragment(ExceptionFragment(), view)
 }

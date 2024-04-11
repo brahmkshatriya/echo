@@ -23,19 +23,19 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
             menu.findItem(R.id.menu_extensions).icon = it
         }
     }
-
-    setOnMenuItemClickListener {
-        val view = findViewById<View>(it.itemId)
-        when (it.itemId) {
-            R.id.menu_settings -> {
-                fragment.openFragment(SettingsFragment(), view)
-                true
-            }
-            R.id.menu_extensions -> {
-                ExtensionsFragment().show(fragment.parentFragmentManager, null)
-                true
-            }
-            else -> false
+    settings.setOnClickListener {
+        fragment.openFragment(SettingsFragment(), settings)
+    }
+    extensions.setOnClickListener {
+        ExtensionsFragment().show(fragment.parentFragmentManager, null)
+    }
+    extensions.setOnLongClickListener {
+        extensionViewModel.run {
+            val list = extensionListFlow.flow.value ?: return@run false
+            val index = list.indexOf(currentExtension)
+            val next = list[(index + 1) % list.size]
+            setExtension(next)
+            true
         }
     }
 }
