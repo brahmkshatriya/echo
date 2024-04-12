@@ -6,6 +6,7 @@ import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -19,11 +20,22 @@ class LoginViewModel @Inject constructor(
 
     val loginUsers: MutableStateFlow<List<User>?> = MutableStateFlow(null)
 
-    fun onWebViewStop(webViewClient: LoginClient.WebView, cookies: Map<String, String>) {
-        viewModelScope.launch {
-            val list = tryWith { webViewClient.onLoginWebviewStop(cookies) }
+    fun onWebViewStop(
+        webViewClient: LoginClient.WebView,
+        url: String,
+        cookies: Map<String, String>
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val list = tryWith {
+                webViewClient.onLoginWebviewStop(url, cookies)
+            }
             loginUsers.value = list ?: emptyList()
         }
     }
 
+    fun onUserSelected(client: LoginClient, user: User) {
+        viewModelScope.launch(Dispatchers.IO) {
+            tryWith { client.onSetLoginUser(user) }
+        }
+    }
 }

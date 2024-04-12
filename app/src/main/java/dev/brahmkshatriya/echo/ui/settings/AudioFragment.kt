@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
 import android.os.Bundle
+import androidx.preference.ListPreference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
@@ -47,6 +48,18 @@ class AudioFragment : BaseSettingsFragment() {
                     setDefaultValue(true)
                     addPreference(this)
                 }
+
+                ListPreference(context).also {
+                    it.key = STREAM_QUALITY
+                    it.title = getString(R.string.stream_quality)
+                    it.summary = getString(R.string.stream_quality_summary)
+                    it.entries = context.resources.getStringArray(R.array.stream_qualities)
+                    it.entryValues = streamQualities
+                    layoutResource = R.layout.preference
+                    it.isIconSpaceReserved = false
+                    setDefaultValue(streamQualities[0])
+                    addPreference(it)
+                }
             }
 
         }
@@ -54,6 +67,8 @@ class AudioFragment : BaseSettingsFragment() {
         companion object {
             const val CLOSE_PLAYER = "close_player_when_app_closes"
             const val AUTO_START_RADIO = "auto_start_radio"
+            const val STREAM_QUALITY = "stream_quality"
+            val streamQualities = arrayOf("highest", "medium", "lowest")
         }
     }
 }

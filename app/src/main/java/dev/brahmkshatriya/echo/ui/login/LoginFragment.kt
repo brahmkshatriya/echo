@@ -17,9 +17,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.google.android.material.button.MaterialButtonToggleGroup
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -55,8 +57,8 @@ class LoginFragment : Fragment() {
         setupTransition(view)
         applyInsets {
             binding.iconContainer.updatePadding(top = it.top)
-            binding.loading.root.applyContentInsets(it)
             binding.accountList.applyContentInsets(it)
+            binding.accountListConfirmContainer.applyInsets(it)
             binding.loginContainer.applyContentInsets(it)
         }
         applyBackPressCallback()
@@ -73,24 +75,49 @@ class LoginFragment : Fragment() {
             parentFragmentManager.popBackStack()
             return
         }
+        if (client as? LoginClient == null) {
+            createSnack(requireContext().loginNotSupported(clientName))
+            parentFragmentManager.popBackStack()
+            return
+        }
+
         client.metadata.iconUrl.load(binding.extensionIcon, R.drawable.ic_extension) {
             binding.extensionIcon.setImageDrawable(it)
         }
+
+        binding.loginContainer.isVisible = true
         when (client) {
-            is LoginClient.WebView -> {
-                binding.configureWebView(client)
-            }
-
-            else -> {
-                createSnack(requireContext().loginNotSupported(clientName))
-                parentFragmentManager.popBackStack()
-            }
+            is LoginClient.WebView -> binding.configureWebView(client)
+            else -> createSnack(R.string.todo)
         }
-        observe(loginViewModel.loginUsers) {
-            it ?: return@observe
 
-            binding.loading.root.isVisible = false
-            binding.accountList.isVisible = true
+        observe(loginViewModel.loginUsers) { list ->
+            list ?: return@observe
+            binding.accountListLoading.root.isVisible = false
+            binding.accountListConfirmContainer.isVisible = true
+            binding.accountListConfirm.isEnabled = false
+
+            val listener =
+                MaterialButtonToggleGroup.OnButtonCheckedListener { _, checkedId, isChecked ->
+                    if (isChecked) {
+                        val user = list[checkedId]
+                        binding.accountListConfirm.isEnabled = true
+                        binding.accountListConfirm.setOnClickListener {
+                            loginViewModel.onUserSelected(client, user)
+                            parentFragmentManager.popBackStack()
+                        }
+                    }
+                }
+            binding.accountListToggleGroup.addOnButtonCheckedListener(listener)
+            list.forEachIndexed { index, user ->
+                val button = ButtonExtensionBinding.inflate(
+                    layoutInflater, binding.accountListToggleGroup, false
+                ).root
+                button.text = user.name
+                binding.accountListToggleGroup.addView(button)
+                user.cover.load(button, R.drawable.ic_account_circle) { button.icon = it }
+                button.id = index
+            }
         }
     }
 
@@ -107,7 +134,7 @@ class LoginFragment : Fragment() {
     private fun FragmentLoginBinding.configureWebView(
         client: LoginClient.WebView
     ) = with(client) {
-        webView.isVisible = true
+        webViewContainer.isVisible = true
         webView.applyDarkMode()
         val callback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
@@ -122,13 +149,13 @@ class LoginFragment : Fragment() {
                 if (url.contains(loginWebViewStopUrlRegex)) {
                     CookieManager.getInstance().run {
                         val cookies = getCookie(url)?.parseCookies() ?: emptyMap()
-                        loginViewModel.onWebViewStop(client, cookies)
+                        loginViewModel.onWebViewStop(client, url, cookies)
                         removeAllCookies(null)
                         flush()
                     }
                     webView.stopLoading()
-                    webView.isVisible = false
-                    loading.root.isVisible = true
+                    loginContainer.isVisible = false
+                    accountList.isVisible = true
                 }
             }
         }
@@ -144,7 +171,7 @@ class LoginFragment : Fragment() {
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
             WebSettingsCompat.setForceDark(
                 settings,
-                if(context.isNightMode()) WebSettingsCompat.FORCE_DARK_ON
+                if (context.isNightMode()) WebSettingsCompat.FORCE_DARK_ON
                 else WebSettingsCompat.FORCE_DARK_OFF
             )
         }
@@ -155,5 +182,3 @@ class LoginFragment : Fragment() {
         key to value
     }
 }
-
-

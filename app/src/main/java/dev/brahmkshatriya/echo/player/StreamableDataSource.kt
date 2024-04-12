@@ -48,7 +48,7 @@ class StreamableDataSource(
             ?: throw Exception(context.noClient().message)
         if (client !is TrackClient)
             throw Exception(context.trackNotSupported(client.metadata.name).message)
-        val streamable = streamableTrack.loaded!!.streamable
+        val streamable = streamableTrack.streamable
             ?: throw Exception(context.getString(R.string.streamable_not_found))
         return client.getStreamableAudio(streamable)
     }

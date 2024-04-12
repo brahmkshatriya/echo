@@ -3,9 +3,11 @@ package dev.brahmkshatriya.echo.data
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.UrlHolder.Companion.toUrlHolder
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
+import kotlinx.coroutines.delay
 
 class TestExtension : ExtensionClient(), LoginClient.WebView {
     override val metadata = ExtensionMetadata(
@@ -23,15 +25,16 @@ class TestExtension : ExtensionClient(), LoginClient.WebView {
             .toUrlHolder()
 
     override val loginWebViewStopUrlRegex = "https://music\\.youtube\\.com/.*".toRegex()
-    override suspend fun onLoginWebviewStop(cookies: Map<String, String>): List<User> {
+    override suspend fun onLoginWebviewStop(url: String, cookies: Map<String, String>): List<User> {
         println("Cookies")
         cookies.forEach { (key, value) ->
             println("$key: $value")
         }
-        return emptyList()
+        delay(3000)
+        return listOf(User("Test", "Test", "https://picsum.photos/200".toImageHolder()))
     }
 
-    override suspend fun onLoginUserSelected(user: User) {
+    override suspend fun onSetLoginUser(user: User) {
         TODO("Not yet implemented")
     }
 

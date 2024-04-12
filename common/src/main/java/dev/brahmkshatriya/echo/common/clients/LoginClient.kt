@@ -11,8 +11,8 @@ sealed interface LoginClient {
 
     interface WebView : LoginClient {
         val loginWebViewInitialUrl: UrlHolder
-        val loginWebViewStopUrlRegex : Regex
-        suspend fun onLoginWebviewStop(cookies: Map<String, String>): List<User>
+        val loginWebViewStopUrlRegex: Regex
+        suspend fun onLoginWebviewStop(url: String, cookies: Map<String, String>): List<User>
     }
 
     interface CustomTextInput : LoginClient {
@@ -20,5 +20,5 @@ sealed interface LoginClient {
         suspend fun onLogin(data: Map<String, String>): List<User>
     }
 
-    suspend fun onLoginUserSelected(user: User)
+    suspend fun onSetLoginUser(user: User)
 }

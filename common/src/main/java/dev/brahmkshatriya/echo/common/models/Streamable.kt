@@ -4,6 +4,8 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-open class Streamable(
-    val id: String
+data class Streamable(
+    val id: String,
+    val quality: Int,
+    val extra: Map<String, String> = mapOf()
 ) : Parcelable

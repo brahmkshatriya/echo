@@ -59,15 +59,18 @@
     <string name="extension_settings_summary">Settings of the selected extension</string>
     <string name="behavior">Behavior</string>
     <string name="theme">Theme</string>
-    <string name="theme_summary">Select between light and night</string>
+    <string name="theme_summary">Want to be blind?</string>
+    <string-array name="themes">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>System</item>
+    </string-array>
     <string name="amoled">Amoled</string>
     <string name="amoled_summary">Pitch Black, Pure Black</string>
     <string name="ui">UI</string>
-    <string name="restart_app">Restart the app to apply changes fully.</string>
+    <string name="restart_app">Restart the app to apply changes fully</string>
     <string name="dynamic_player">Dynamic Player Color</string>
     <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
-    <string name="more_amoled">More Amoled</string>
-    <string name="more_amoled_summary">Make the navigation bar black too</string>
     <string name="currently_playing">Currently Playing</string>
     <string name="like">Like</string>
     <string name="lyrics">Lyrics</string>
@@ -91,4 +94,14 @@
     <string name="login">Login</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="select_an_account">Select an account</string>
+    <string name="confirm">Confirm</string>
+    <string name="todo">Todo, not made yet.</string>
+    <string name="stream_quality">Stream Quality</string>
+    <string name="stream_quality_summary">Select the quality of the stream</string>
+    <string-array name="stream_qualities">
+        <item>Highest</item>
+        <item>Medium</item>
+        <item>Lowest</item>
+    </string-array>
 </resources>

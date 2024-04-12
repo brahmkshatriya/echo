@@ -36,9 +36,10 @@ class TrackResolver(val context: Context) {
             "${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
         val selectionArgs = arrayOf("%$query%", "%$query%", "%$query%")
 
-        return context.queryTracks(whereCondition, selectionArgs, page, pageSize, sorting).sortedBy(query) {
-            it.title
-        }
+        return context.queryTracks(whereCondition, selectionArgs, page, pageSize, sorting)
+            .sortedBy(query) {
+                it.title
+            }
     }
 
     fun getAll(page: Int, pageSize: Int, sorting: String): List<Track> {
@@ -118,7 +119,7 @@ class TrackResolver(val context: Context) {
                     Track(
                         id = uri,
                         title = it.getString(titleColumn),
-                        streamable = Streamable(uri),
+                        streamables = listOf(Streamable(uri, 0)),
                         artists = listOf(
                             Artist(
                                 artistUri,
@@ -148,7 +149,7 @@ class TrackResolver(val context: Context) {
         return context.queryTracks(whereCondition, selectionArgs, 0, 1, "").firstOrNull()
     }
 
-    fun getStreamable(stream:Streamable): StreamableAudio{
+    fun getStreamable(stream: Streamable): StreamableAudio {
         val id = stream.id.toUri().lastPathSegment!!
         return ContentUris.withAppendedId(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,

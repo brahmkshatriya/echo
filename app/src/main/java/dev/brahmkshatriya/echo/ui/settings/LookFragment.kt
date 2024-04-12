@@ -67,7 +67,7 @@ class LookFragment : BaseSettingsFragment() {
                     layoutResource = R.layout.preference
                     isIconSpaceReserved = false
 
-                    entries = arrayOf("Light", "Dark", "System default")
+                    entries = context.resources.getStringArray(R.array.themes)
                     entryValues = arrayOf("light", "dark", "system")
                     value = preferences.getString(THEME_KEY, "system")
                     onPreferenceChangeListener = uiListener()

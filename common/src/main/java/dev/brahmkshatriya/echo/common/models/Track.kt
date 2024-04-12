@@ -8,7 +8,7 @@ import kotlinx.parcelize.parcelableCreator
 data class Track(
     val id: String,
     val title: String,
-    val streamable: Streamable? = null,
+    val streamables: List<Streamable> = listOf(),
     val artists: List<Artist> = listOf(),
     val album: Album? = null,
     val cover: ImageHolder? = null,
@@ -16,7 +16,8 @@ data class Track(
     val plays: Int? = null,
     val releaseDate: String? = null,
     val liked: Boolean = false,
-    val extras: Map<String, String> = mapOf()
+    val extras: Map<String, String> = mapOf(),
+    val allowCaching: Boolean = true,
 ) : Parcelable {
     companion object {
         val creator = parcelableCreator<Track>()

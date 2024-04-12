@@ -71,7 +71,7 @@ class PlaybackService : MediaLibraryService() {
             .setUpstreamDataSourceFactory(streamableFactory)
 
         val trackFactory = TrackDataSource
-            .Factory(this, extensionList, global, cacheFactory)
+            .Factory(this, extensionList, global, settings, cacheFactory)
 
         val factory = DefaultMediaSourceFactory(this)
             .setDataSourceFactory(trackFactory)

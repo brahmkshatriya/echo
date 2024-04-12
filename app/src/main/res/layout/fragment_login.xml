@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -56,14 +55,14 @@
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
-
     <androidx.core.widget.NestedScrollView
         android:id="@+id/loginContainer"
         android:layout_width="match_parent"
-        android:paddingVertical="8dp"
-        android:clipToPadding="false"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:fillViewport="true"
+        android:paddingVertical="8dp"
+        android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <FrameLayout
@@ -71,6 +70,7 @@
             android:layout_height="wrap_content">
 
             <LinearLayout
+                android:id="@+id/usernamePasswordContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="24dp"
@@ -121,9 +121,11 @@
             </LinearLayout>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/webViewContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="8dp"
+                android:visibility="gone"
                 app:cardCornerRadius="16dp">
 
                 <WebView
@@ -136,23 +138,67 @@
 
     </androidx.core.widget.NestedScrollView>
 
-
-    <include
-        android:id="@+id/loading"
-        layout="@layout/item_client_loading"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
-    <androidx.recyclerview.widget.RecyclerView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/accountList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
+        android:fillViewport="true"
         android:paddingVertical="8dp"
         android:visibility="gone"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-        tools:listitem="@layout/new_item_media" />
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/select_an_account"
+                android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall" />
+
+            <include
+                android:id="@+id/accountListLoading"
+                layout="@layout/item_client_loading"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/accountListToggleGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="16dp"
+                android:orientation="vertical"
+                app:selectionRequired="true"
+                app:singleSelection="true" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <FrameLayout
+        android:id="@+id/accountListConfirmContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginVertical="8dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/accountListConfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:text="@string/confirm"
+            app:icon="@drawable/ic_login"
+            app:iconGravity="end" />
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
