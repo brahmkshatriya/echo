@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.login
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.models.Request
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
@@ -22,12 +23,12 @@ class LoginViewModel @Inject constructor(
 
     fun onWebViewStop(
         webViewClient: LoginClient.WebView,
-        url: String,
-        cookies: Map<String, String>
+        url: Request,
+        cookie: String
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val list = tryWith {
-                webViewClient.onLoginWebviewStop(url, cookies)
+                webViewClient.onLoginWebviewStop(url, cookie)
             }
             loginUsers.value = list ?: emptyList()
         }

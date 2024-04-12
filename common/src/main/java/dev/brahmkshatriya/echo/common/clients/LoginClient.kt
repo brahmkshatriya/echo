@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.common.clients
 
-import dev.brahmkshatriya.echo.common.models.UrlHolder
+import dev.brahmkshatriya.echo.common.models.Request
 import dev.brahmkshatriya.echo.common.models.User
 
 sealed interface LoginClient {
@@ -10,9 +10,9 @@ sealed interface LoginClient {
     }
 
     interface WebView : LoginClient {
-        val loginWebViewInitialUrl: UrlHolder
-        val loginWebViewStopUrlRegex: Regex
-        suspend fun onLoginWebviewStop(url: String, cookies: Map<String, String>): List<User>
+        val loginWebViewInitialUrl: Request
+        val loginWebViewStopUrlRegex: Regex?
+        suspend fun onLoginWebviewStop(request: Request, cookie: String): List<User>
     }
 
     interface CustomTextInput : LoginClient {

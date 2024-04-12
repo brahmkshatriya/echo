@@ -78,8 +78,8 @@ class StreamableDataSource(
                 source.open(spec)
             }
 
-            is StreamableAudio.StreamableUrl -> {
-                val urlHolder = audio.urlHolder
+            is StreamableAudio.StreamableRequest -> {
+                val urlHolder = audio.request
                 val uri = dataSpec.withUri(urlHolder.url.toUri())
                 val spec = uri.withAdditionalHeaders(urlHolder.headers)
                 val source = defaultDataSourceFactory.createDataSource()

@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
@@ -21,6 +23,7 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.models.Request
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
@@ -97,17 +100,17 @@ class LoginFragment : Fragment() {
             binding.accountListConfirmContainer.isVisible = true
             binding.accountListConfirm.isEnabled = false
 
-            val listener =
-                MaterialButtonToggleGroup.OnButtonCheckedListener { _, checkedId, isChecked ->
-                    if (isChecked) {
-                        val user = list[checkedId]
-                        binding.accountListConfirm.isEnabled = true
-                        binding.accountListConfirm.setOnClickListener {
-                            loginViewModel.onUserSelected(client, user)
-                            parentFragmentManager.popBackStack()
-                        }
+            binding.accountListToggleGroup.removeAllViews()
+            val listener = MaterialButtonToggleGroup.OnButtonCheckedListener { _, id, isChecked ->
+                if (isChecked) {
+                    val user = list[id]
+                    binding.accountListConfirm.isEnabled = true
+                    binding.accountListConfirm.setOnClickListener {
+                        loginViewModel.onUserSelected(client, user)
+                        parentFragmentManager.popBackStack()
                     }
                 }
+            }
             binding.accountListToggleGroup.addOnButtonCheckedListener(listener)
             list.forEachIndexed { index, user ->
                 val button = ButtonExtensionBinding.inflate(
@@ -146,17 +149,22 @@ class LoginFragment : Fragment() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 callback.isEnabled = webView.canGoBack()
                 url ?: return
-                if (url.contains(loginWebViewStopUrlRegex)) {
-                    CookieManager.getInstance().run {
-                        val cookies = getCookie(url)?.parseCookies() ?: emptyMap()
-                        loginViewModel.onWebViewStop(client, url, cookies)
-                        removeAllCookies(null)
-                        flush()
-                    }
-                    webView.stopLoading()
-                    loginContainer.isVisible = false
-                    accountList.isVisible = true
+                val urlMatched = loginWebViewStopUrlRegex?.matches(url)
+                if (urlMatched == true) {
+                    val cookie = CookieManager.getInstance().getCookie(url)
+                    loginViewModel.onWebViewStop(client, Request(url), cookie)
+                    afterWebViewStop()
                 }
+            }
+
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val url = request?.url?.toString() ?: return null
+                val headers = request.requestHeaders
+                println("intercept: $url\n$headers")
+                return null
             }
         }
         webView.settings.javaScriptEnabled = true
@@ -177,8 +185,14 @@ class LoginFragment : Fragment() {
         }
     }
 
-    fun String.parseCookies() = split(";").associate { cookie ->
-        val (key, value) = cookie.split("=")
-        key to value
+    private fun FragmentLoginBinding.afterWebViewStop() {
+        webView.stopLoading()
+        CookieManager.getInstance().run {
+            removeAllCookies(null)
+            flush()
+        }
+        loginContainer.isVisible = false
+        accountList.isVisible = true
     }
+
 }
