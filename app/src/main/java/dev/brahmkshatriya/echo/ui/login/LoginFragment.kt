@@ -17,8 +17,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.webkit.WebSettingsCompat
-import androidx.webkit.WebViewFeature
 import com.google.android.material.button.MaterialButtonToggleGroup
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
@@ -28,7 +26,6 @@ import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -171,17 +168,9 @@ class LoginFragment : Fragment() {
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
     }
 
-    @Suppress("DEPRECATION")
     private fun WebView.applyDarkMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             settings.isAlgorithmicDarkeningAllowed = true
-        }
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-            WebSettingsCompat.setForceDark(
-                settings,
-                if (context.isNightMode()) WebSettingsCompat.FORCE_DARK_ON
-                else WebSettingsCompat.FORCE_DARK_OFF
-            )
         }
     }
 

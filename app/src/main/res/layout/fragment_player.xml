@@ -19,6 +19,7 @@
         android:id="@+id/playerInfoContainer"
         android:name="dev.brahmkshatriya.echo.ui.player.PlayerInfoFragment"
         style="@style/Widget.Material3.BottomSheet"
+        android:outlineProvider="none"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:backgroundTint="?navBackground"

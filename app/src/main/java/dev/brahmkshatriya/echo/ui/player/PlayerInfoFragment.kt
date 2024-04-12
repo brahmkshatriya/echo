@@ -43,8 +43,9 @@ class PlayerInfoFragment : Fragment() {
         }
 
         observe(uiViewModel.infoSheetOffset) {
+            binding.buttonToggleGroup.alpha = 0.5f + (0.5f * it)
             binding.buttonToggleGroup.translationY = it * uiViewModel.systemInsets.value.top
-            binding.viewCard.alpha = it
+            binding.viewCard.translationY = (1 - it) * binding.buttonToggleGroup.height
         }
 
         observe(uiViewModel.infoSheetState) {

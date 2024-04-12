@@ -100,6 +100,11 @@ class PlayerFragment : Fragment() {
             val offset = max(0f, it)
             binding.playerOutline.alpha = 1 - offset
         }
+
+        val tint = binding.playerInfoContainer.backgroundTintList
+        observe(uiViewModel.infoSheetOffset) {
+            binding.playerInfoContainer.backgroundTintList = tint?.withAlpha((255 * it).toInt())
+        }
     }
 
     private fun ViewPager2.registerOnUserPageChangeCallback(

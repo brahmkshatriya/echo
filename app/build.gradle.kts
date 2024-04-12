@@ -38,9 +38,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-
     implementation("androidx.fragment:fragment-ktx:1.6.2")
-    implementation("androidx.webkit:webkit:1.10.0")
+    
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
