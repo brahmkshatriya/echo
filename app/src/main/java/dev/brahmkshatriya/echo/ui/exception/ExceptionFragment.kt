@@ -59,7 +59,8 @@ class ExceptionFragment : Fragment() {
         binding.exceptionMessage.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.exception_copy -> {
-                    copyToClipboard(throwable.message, throwable.stackTraceToString())
+                    requireContext()
+                        .copyToClipboard(throwable.message, throwable.stackTraceToString())
                     true
                 }
 
@@ -68,10 +69,11 @@ class ExceptionFragment : Fragment() {
         }
     }
 
-    private fun copyToClipboard(label: String?, string: String) {
-        val clipboard =
-            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText(label, string)
-        clipboard.setPrimaryClip(clip)
+    companion object{
+        fun Context.copyToClipboard(label: String?, string: String) {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText(label, string)
+            clipboard.setPrimaryClip(clip)
+        }
     }
 }

@@ -8,8 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
@@ -21,7 +19,6 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.models.Request
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.utils.Animator.setupTransition
@@ -144,24 +141,17 @@ class LoginFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                callback.isEnabled = webView.canGoBack()
                 url ?: return
-                val urlMatched = loginWebViewStopUrlRegex?.matches(url)
-                if (urlMatched == true) {
+                if (loginWebViewStopUrlRegex.matches(url)) {
                     val cookie = CookieManager.getInstance().getCookie(url)
-                    loginViewModel.onWebViewStop(client, Request(url), cookie)
+                    loginViewModel.onWebViewStop(client, url, cookie)
                     afterWebViewStop()
+                    callback.isEnabled = false
                 }
             }
 
-            override fun shouldInterceptRequest(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): WebResourceResponse? {
-                val url = request?.url?.toString() ?: return null
-                val headers = request.requestHeaders
-                println("intercept: $url\n$headers")
-                return null
+            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                callback.isEnabled = webView.canGoBack()
             }
         }
         webView.settings.javaScriptEnabled = true
