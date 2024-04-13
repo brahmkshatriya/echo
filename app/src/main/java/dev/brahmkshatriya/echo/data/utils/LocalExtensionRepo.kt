@@ -11,7 +11,6 @@ class LocalExtensionRepo(val context: Context) : PluginRepo<ExtensionClient> {
         flowOf(
             listOf(
                 OfflineExtension(context),
-//                TestExtension()
             )
         )
 }
