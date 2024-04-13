@@ -5,21 +5,28 @@ import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.utils.catchWith
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import tel.jeelpa.plugger.PluginRepo
 import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
+    database: EchoDatabase,
     val extensionListFlow: ExtensionModule.ExtensionListFlow,
     val extensionFlow: ExtensionModule.ExtensionFlow,
     private val pluginRepo: PluginRepo<ExtensionClient>,
@@ -39,14 +46,25 @@ class ExtensionViewModel @Inject constructor(
             extensionListFlow.flow.collectLatest { list ->
                 list ?: return@collectLatest
                 val id = preferences.getString(LAST_EXTENSION_KEY, null)
-                extensionFlow.value =
-                    list.find { it.metadata.id == id } ?: list.firstOrNull()
+                val client = list.find { it.metadata.id == id } ?: list.firstOrNull()
+                setLoginUser(client)
             }
         }
     }
 
     fun setExtension(client: ExtensionClient) {
         preferences.edit().putString(LAST_EXTENSION_KEY, client.metadata.id).apply()
+        viewModelScope.launch(Dispatchers.IO) { setLoginUser(client) }
+    }
+
+    private val userDao = database.userDao()
+    private suspend fun setLoginUser(client: ExtensionClient?) {
+        if (client is LoginClient) {
+            val user = coroutineScope {
+                withContext(Dispatchers.IO) { userDao.getCurrentUser(client.metadata.id) }
+            } ?: return
+            tryWith { client.onSetLoginUser(user.toUser()) }
+        }
         extensionFlow.value = client
     }
 

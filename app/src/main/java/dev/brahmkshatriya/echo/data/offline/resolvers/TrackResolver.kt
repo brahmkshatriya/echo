@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.offline
+package dev.brahmkshatriya.echo.data.offline.resolvers
 
 import android.content.ContentUris
 import android.content.Context

@@ -6,9 +6,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.data.utils.ApkManifestParser
-import dev.brahmkshatriya.echo.data.utils.LocalExtensionRepo
-import dev.brahmkshatriya.echo.data.utils.RepoWithPreferences
+import dev.brahmkshatriya.echo.data.plugger.ApkManifestParser
+import dev.brahmkshatriya.echo.data.plugger.LocalExtensionRepo
+import dev.brahmkshatriya.echo.data.plugger.RepoWithPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow

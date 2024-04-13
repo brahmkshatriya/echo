@@ -35,7 +35,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.utils.Animator.setupTransition
+import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx

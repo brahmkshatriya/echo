@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.utils
+package dev.brahmkshatriya.echo.data.offline
 
 import androidx.paging.PagingConfig
 import androidx.paging.PagingState

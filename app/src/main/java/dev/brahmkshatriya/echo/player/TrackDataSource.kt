@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.player
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Parcel
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
@@ -13,13 +12,11 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.STREAM_QUALITY
-import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.utils.getFromCache
+import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.runBlocking
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 
 @UnstableApi
 class TrackDataSource(
@@ -77,31 +74,12 @@ class TrackDataSource(
     private var current: Track? = null
     private fun getTrackFromCache(id: String): Track? {
         current?.let { if (it.id == id) return it }
-        val fileName = id.hashCode().toString()
-        val file = File(context.cacheDir, fileName)
-        return if (file.exists()) {
-            tryWith {
-                val bytes = FileInputStream(file).use { it.readBytes() }
-                val parcel = Parcel.obtain()
-                parcel.unmarshall(bytes, 0, bytes.size)
-                parcel.setDataPosition(0)
-                val track = Track.creator.createFromParcel(parcel)
-                parcel.recycle()
-                track
-            }
-        } else {
-            null
-        }
+        return context.getFromCache(id) { Track.creator.createFromParcel(it) }
     }
 
     private fun saveTrackToCache(id: String, track: Track) {
         if (!track.allowCaching) return
-        val fileName = id.hashCode().toString()
-        val parcel = Parcel.obtain()
-        track.writeToParcel(parcel, 0)
-        val bytes = parcel.marshall()
-        parcel.recycle()
-        FileOutputStream(File(context.cacheDir, fileName)).use { it.write(bytes) }
+        context.saveToCache(id, track)
     }
 
     override fun open(dataSpec: DataSpec): Long {

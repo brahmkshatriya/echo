@@ -7,12 +7,14 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.room.Room
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.player.Queue
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,4 +58,11 @@ class AppModule {
     @Provides
     fun provideInitialPlayerState(global: Queue) =
         if (global.queue.isEmpty()) STATE_HIDDEN else STATE_COLLAPSED
+
+    @Provides
+    fun provideDatabase(application: Application) = Room.databaseBuilder(
+        application,
+        EchoDatabase::class.java, "echo-database"
+    ).build()
+
 }

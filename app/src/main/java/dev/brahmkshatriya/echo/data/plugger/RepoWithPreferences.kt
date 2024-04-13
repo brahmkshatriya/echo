@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.utils
+package dev.brahmkshatriya.echo.data.plugger
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient

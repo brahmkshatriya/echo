@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data.offline
+package dev.brahmkshatriya.echo.data.offline.resolvers
 
 import android.content.ContentUris
 import android.content.Context
@@ -78,11 +78,11 @@ class AlbumResolver(
             val tracksColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.NUMBER_OF_SONGS)
             val yearColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.FIRST_YEAR)
             while (it.moveToNext()) {
-                val uri = "${URI}${ALBUM_AUTH}${it.getLong(idColumn)}"
+                val uri = "$URI$ALBUM_AUTH${it.getLong(idColumn)}"
                 val coverUri = ContentUris.withAppendedId(
                     ARTWORK_URI, it.getLong(idColumn)
                 )
-                val artistId = "${URI}${ARTIST_AUTH}${it.getLong(artistIdColumn)}"
+                val artistId = "$URI$ARTIST_AUTH${it.getLong(artistIdColumn)}"
                 albums.add(
                     Album(
                         id = uri,

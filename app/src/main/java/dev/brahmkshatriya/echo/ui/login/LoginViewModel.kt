@@ -1,42 +1,55 @@
 package dev.brahmkshatriya.echo.ui.login
 
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.models.UserEntity.Companion.toCurrentUser
+import dev.brahmkshatriya.echo.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     val extensionList: ExtensionModule.ExtensionListFlow,
+    private val context: Application,
+    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    database: EchoDatabase,
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 
-    val loginUsers: MutableStateFlow<List<User>?> = MutableStateFlow(null)
+    private val userDao = database.userDao()
+    val loadingOver = MutableSharedFlow<Unit>()
 
     fun onWebViewStop(
         webViewClient: LoginClient.WebView,
         url: String,
         cookie: String
     ) {
-        println("Cookie : $cookie")
         viewModelScope.launch(Dispatchers.IO) {
-            val list = tryWith {
-                webViewClient.onLoginWebviewStop(url, cookie)
-            }
-            loginUsers.value = list ?: emptyList()
-        }
-    }
+            webViewClient as ExtensionClient
 
-    fun onUserSelected(client: LoginClient, user: User) {
-        viewModelScope.launch(Dispatchers.IO) {
-            tryWith { client.onSetLoginUser(user) }
+            val users = tryWith {
+                webViewClient.onLoginWebviewStop(url, cookie)
+            }?.map {
+                it.toEntity(webViewClient.metadata.id)
+            } ?: return@launch
+
+            loadingOver.emit(Unit)
+            users.ifEmpty {
+                messageFlow.emit(SnackBar.Message(context.getString(R.string.no_user_found)))
+                return@launch
+            }
+            userDao.setUsers(users)
+            userDao.setCurrentUser(users.first().toCurrentUser())
         }
     }
 }

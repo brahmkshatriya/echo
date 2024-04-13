@@ -1,8 +1,8 @@
-package dev.brahmkshatriya.echo.data.utils
+package dev.brahmkshatriya.echo.data.plugger
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.data.OfflineExtension
+import dev.brahmkshatriya.echo.data.offline.OfflineExtension
 import kotlinx.coroutines.flow.flowOf
 import tel.jeelpa.plugger.PluginRepo
 

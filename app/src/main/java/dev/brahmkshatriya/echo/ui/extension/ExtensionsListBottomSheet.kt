@@ -12,19 +12,19 @@ import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonChec
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
-import dev.brahmkshatriya.echo.databinding.DialogExtensionBinding
+import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
-class ExtensionsFragment : BottomSheetDialogFragment() {
+class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
 
-    private var binding by autoCleared<DialogExtensionBinding>()
+    private var binding by autoCleared<DialogExtensionsListBinding>()
     private val viewModel by activityViewModels<ExtensionViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
-        binding = DialogExtensionBinding.inflate(inflater, parent, false)
+        binding = DialogExtensionsListBinding.inflate(inflater, parent, false)
         return binding.root
     }
 

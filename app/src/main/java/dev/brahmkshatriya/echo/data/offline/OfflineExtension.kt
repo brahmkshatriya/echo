@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.data
+package dev.brahmkshatriya.echo.data.offline
 
 import android.content.Context
 import androidx.core.net.toUri
@@ -25,12 +25,12 @@ import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingList
-import dev.brahmkshatriya.echo.data.offline.AlbumResolver
-import dev.brahmkshatriya.echo.data.offline.ArtistResolver
-import dev.brahmkshatriya.echo.data.offline.TrackResolver
-import dev.brahmkshatriya.echo.data.offline.URI
-import dev.brahmkshatriya.echo.data.offline.sortedBy
-import dev.brahmkshatriya.echo.data.utils.PagedSource.Companion.pagedFlow
+import dev.brahmkshatriya.echo.data.offline.PagedSource.Companion.pagedFlow
+import dev.brahmkshatriya.echo.data.offline.resolvers.AlbumResolver
+import dev.brahmkshatriya.echo.data.offline.resolvers.ArtistResolver
+import dev.brahmkshatriya.echo.data.offline.resolvers.TrackResolver
+import dev.brahmkshatriya.echo.data.offline.resolvers.URI
+import dev.brahmkshatriya.echo.data.offline.resolvers.sortedBy
 
 class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, TrackClient,
     HomeFeedClient, AlbumClient, ArtistClient, RadioClient {

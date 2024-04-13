@@ -15,17 +15,15 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.google.android.material.button.MaterialButtonToggleGroup
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
-import dev.brahmkshatriya.echo.utils.Animator.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.loginNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
@@ -54,9 +52,8 @@ class LoginFragment : Fragment() {
         setupTransition(view)
         applyInsets {
             binding.iconContainer.updatePadding(top = it.top)
-            binding.accountList.applyContentInsets(it)
-            binding.accountListConfirmContainer.applyInsets(it)
             binding.loginContainer.applyContentInsets(it)
+            binding.loadingContainer.root.applyContentInsets(it)
         }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
@@ -88,33 +85,8 @@ class LoginFragment : Fragment() {
             else -> createSnack(R.string.todo)
         }
 
-        observe(loginViewModel.loginUsers) { list ->
-            list ?: return@observe
-            binding.accountListLoading.root.isVisible = false
-            binding.accountListConfirmContainer.isVisible = true
-            binding.accountListConfirm.isEnabled = false
-
-            binding.accountListToggleGroup.removeAllViews()
-            val listener = MaterialButtonToggleGroup.OnButtonCheckedListener { _, id, isChecked ->
-                if (isChecked) {
-                    val user = list[id]
-                    binding.accountListConfirm.isEnabled = true
-                    binding.accountListConfirm.setOnClickListener {
-                        loginViewModel.onUserSelected(client, user)
-                        parentFragmentManager.popBackStack()
-                    }
-                }
-            }
-            binding.accountListToggleGroup.addOnButtonCheckedListener(listener)
-            list.forEachIndexed { index, user ->
-                val button = ButtonExtensionBinding.inflate(
-                    layoutInflater, binding.accountListToggleGroup, false
-                ).root
-                button.text = user.name
-                binding.accountListToggleGroup.addView(button)
-                user.cover.load(button, R.drawable.ic_account_circle) { button.icon = it }
-                button.id = index
-            }
+        observe(loginViewModel.loadingOver) {
+            parentFragmentManager.popBackStack()
         }
     }
 
@@ -170,8 +142,7 @@ class LoginFragment : Fragment() {
             removeAllCookies(null)
             flush()
         }
-        loginContainer.isVisible = false
-        accountList.isVisible = true
+        loadingContainer.root.isVisible = true
     }
 
 }

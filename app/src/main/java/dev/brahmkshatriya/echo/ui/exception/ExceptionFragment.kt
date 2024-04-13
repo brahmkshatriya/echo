@@ -13,7 +13,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
-import dev.brahmkshatriya.echo.utils.Animator.setupTransition
+import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback

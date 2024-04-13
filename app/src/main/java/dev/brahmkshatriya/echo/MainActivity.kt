@@ -21,8 +21,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.player.PlaybackService
-import dev.brahmkshatriya.echo.utils.Animator.animateTranslation
-import dev.brahmkshatriya.echo.utils.Animator.animateVisibility
+import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
+import dev.brahmkshatriya.echo.utils.animateTranslation
+import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.emit
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     private val extensionViewModel by viewModels<ExtensionViewModel>()
+    private val loginViewModel by viewModels<LoginUserViewModel>()
     private val uiViewModel by viewModels<UiViewModel>()
     private val playerViewModel by viewModels<PlayerViewModel>()
 
@@ -106,10 +108,11 @@ class MainActivity : AppCompatActivity() {
             binding.navViewOutline?.alpha = 1 - offset
         }
 
-        extensionViewModel.initialize()
-
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
         configureSnackBar(binding.navView)
+
+        extensionViewModel.initialize()
+        loginViewModel.initialize()
 
         val sessionToken =
             SessionToken(application, ComponentName(application, PlaybackService::class.java))

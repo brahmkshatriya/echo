@@ -20,7 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.utils.Animator.animateTranslation
+import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
