@@ -1,12 +1,9 @@
 package dev.brahmkshatriya.echo.player
 
-import android.graphics.Bitmap
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
-import java.nio.ByteBuffer
 import kotlin.math.roundToLong
 
 fun mediaItemBuilder(
@@ -25,31 +22,10 @@ fun mediaItemBuilder(
 private fun Track.toMetaData() = MediaMetadata.Builder()
     .setTitle(title)
     .setArtist(artists.firstOrNull()?.name)
-    .setArtwork(cover)
+    .setArtworkUri(id.toUri())
     .setIsPlayable(true)
     .setIsBrowsable(false)
     .build()
-
-private fun MediaMetadata.Builder.setArtwork(cover: ImageHolder?): MediaMetadata.Builder {
-    cover?.let {
-        return when (it) {
-            is ImageHolder.UrlRequestImageHolder -> setArtworkUri(it.request.url.toUri())
-            is ImageHolder.UriImageHolder -> setArtworkUri(it.uri)
-            is ImageHolder.BitmapImageHolder -> setArtworkData(
-                it.bitmap.toByteArray(),
-                MediaMetadata.PICTURE_TYPE_FILE_ICON
-            )
-        }
-    }
-    return this
-}
-
-private fun Bitmap.toByteArray(): ByteArray {
-    val size: Int = rowBytes * height
-    val byteBuffer = ByteBuffer.allocate(size)
-    copyPixelsToBuffer(byteBuffer)
-    return byteBuffer.array()
-}
 
 
 fun Long.toTimeString(): String {

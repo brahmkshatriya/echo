@@ -41,9 +41,10 @@ class LoginViewModel @Inject constructor(
                 webViewClient.onLoginWebviewStop(url, cookie)
             }?.map {
                 it.toEntity(webViewClient.metadata.id)
-            } ?: return@launch
-
+            }
             loadingOver.emit(Unit)
+
+            users ?: return@launch
             users.ifEmpty {
                 messageFlow.emit(SnackBar.Message(context.getString(R.string.no_user_found)))
                 return@launch

@@ -15,6 +15,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.player.Queue
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -60,9 +61,13 @@ class AppModule {
         if (global.queue.isEmpty()) STATE_HIDDEN else STATE_COLLAPSED
 
     @Provides
+    @Singleton
     fun provideDatabase(application: Application) = Room.databaseBuilder(
         application,
         EchoDatabase::class.java, "echo-database"
     ).build()
 
+    @Provides
+    @Singleton
+    fun provideLoginUserFlow() = MutableSharedFlow<UserEntity?>()
 }

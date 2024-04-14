@@ -97,6 +97,7 @@ class PlaybackService : MediaLibraryService() {
 
         mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
             .setSessionActivity(pendingIntent)
+            .setBitmapLoader(PlayerBitmapLoader(this, global, scope))
             .build()
 
         val notificationProvider =
@@ -130,5 +131,3 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaLibrarySession
 }
-
-

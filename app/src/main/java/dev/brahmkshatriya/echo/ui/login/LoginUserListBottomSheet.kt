@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
 import dev.brahmkshatriya.echo.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.load
+import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 
@@ -63,7 +63,7 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
                 ).root
                 button.text = user.name
                 binding.accountListToggleGroup.addView(button)
-                user.cover.load(button, R.drawable.ic_account_circle) { button.icon = it }
+                user.cover.loadWith(button, R.drawable.ic_account_circle) { button.icon = it }
                 button.id = index
             }
         }

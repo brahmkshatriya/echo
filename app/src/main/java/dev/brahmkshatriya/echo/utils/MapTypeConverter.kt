@@ -4,8 +4,7 @@ import androidx.room.TypeConverter
 
 class MapTypeConverter {
     @TypeConverter
-    fun fromString(value: String): Map<String, String> = value.also { println(it) }
-        .split(",,").mapNotNull {
+    fun fromString(value: String): Map<String, String> = value.split(",,").mapNotNull {
             if (it.isEmpty()) return@mapNotNull null
             val (k, v) = it.split("::")
             k.unEscape() to v.unEscape()

@@ -26,7 +26,6 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
-import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
@@ -34,7 +33,6 @@ class HomeFragment : Fragment() {
 
     private var binding by autoCleared<FragmentHomeBinding>()
     private val viewModel by activityViewModels<HomeViewModel>()
-    private val loginViewModel by activityViewModels<LoginUserViewModel>()
     private val parent get() = parentFragment as MainFragment
 
     override fun onCreateView(
@@ -60,7 +58,7 @@ class HomeFragment : Fragment() {
             viewModel.refresh(true)
         }
 
-        collect(loginViewModel.currentUser) {
+        observe(viewModel.userFlow) {
             viewModel.refresh(true)
         }
 

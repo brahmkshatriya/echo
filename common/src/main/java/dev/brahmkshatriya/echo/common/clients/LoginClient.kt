@@ -20,5 +20,5 @@ sealed interface LoginClient {
         suspend fun onLogin(data: Map<String, String>): List<User>
     }
 
-    suspend fun onSetLoginUser(user: User)
+    suspend fun onSetLoginUser(user: User?)
 }

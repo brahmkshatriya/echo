@@ -8,18 +8,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.utils.catchWith
+import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel.Companion.setLoginUser
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import tel.jeelpa.plugger.PluginRepo
 import javax.inject.Inject
 
@@ -29,6 +27,7 @@ class ExtensionViewModel @Inject constructor(
     database: EchoDatabase,
     val extensionListFlow: ExtensionModule.ExtensionListFlow,
     val extensionFlow: ExtensionModule.ExtensionFlow,
+    private val userFlow: MutableSharedFlow<UserEntity?>,
     private val pluginRepo: PluginRepo<ExtensionClient>,
     private val preferences: SharedPreferences,
 ) : CatchingViewModel(throwableFlow) {
@@ -59,12 +58,7 @@ class ExtensionViewModel @Inject constructor(
 
     private val userDao = database.userDao()
     private suspend fun setLoginUser(client: ExtensionClient?) {
-        if (client is LoginClient) {
-            val user = coroutineScope {
-                withContext(Dispatchers.IO) { userDao.getCurrentUser(client.metadata.id) }
-            } ?: return
-            tryWith { client.onSetLoginUser(user.toUser()) }
-        }
+        setLoginUser(client, userDao, userFlow)
         extensionFlow.value = client
     }
 

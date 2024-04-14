@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.dao.UserDao
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.models.CurrentUser
 import dev.brahmkshatriya.echo.models.UserEntity
@@ -22,8 +23,9 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginUserViewModel @Inject constructor(
     database: EchoDatabase,
+    throwableFlow: MutableSharedFlow<Throwable>,
     val extensionFlow: ExtensionModule.ExtensionFlow,
-    throwableFlow: MutableSharedFlow<Throwable>
+    private val userFlow: MutableSharedFlow<UserEntity?>,
 ) : CatchingViewModel(throwableFlow) {
 
     private val userDao = database.userDao()
@@ -39,36 +41,49 @@ class LoginUserViewModel @Inject constructor(
     }
 
     private suspend fun setLoginUser(client: ExtensionClient?) {
-        if (client !is LoginClient) return
-        val user = userDao.getCurrentUser(client.metadata.id) ?: return
-        tryWith { client.onSetLoginUser(user.toUser()) }
+        setLoginUser(client, userDao, userFlow)
     }
 
-    val currentUser
-        get() = userDao.observeCurrentUser().combine(extensionFlow) { user, client ->
-            coroutineScope {
-                withContext(Dispatchers.IO) {
-                    client to userDao.getUser(client?.metadata?.id, user?.id)?.toUser()
-                }
+    val currentUser = extensionFlow.combine(userDao.observeCurrentUser()) { client, user ->
+        coroutineScope {
+            withContext(Dispatchers.IO) {
+                client to userDao.getUser(client?.metadata?.id, user?.id)?.toUser()
             }
         }
+    }
 
-    val allUsers
-        get() = extensionFlow.map { client ->
-            coroutineScope {
-                withContext(Dispatchers.IO) {
-                    client to client?.metadata?.id?.let { id ->
-                        userDao.getAllUsers(id).map { it.toUser() }
-                    }
+    val allUsers = extensionFlow.map { client ->
+        coroutineScope {
+            withContext(Dispatchers.IO) {
+                client to client?.metadata?.id?.let { id ->
+                    userDao.getAllUsers(id).map { it.toUser() }
                 }
             }
         }
+    }
 
     fun setLoginUser(user: UserEntity?) {
         val currentUser = user?.toCurrentUser()
             ?: CurrentUser(extensionFlow.value?.metadata?.id ?: return, null)
         viewModelScope.launch(Dispatchers.IO) {
             userDao.setCurrentUser(currentUser)
+        }
+    }
+
+    companion object {
+        suspend fun CatchingViewModel.setLoginUser(
+            client: ExtensionClient?,
+            userDao: UserDao,
+            flow: MutableSharedFlow<UserEntity?>
+        ) {
+            if (client is LoginClient) {
+                val user = coroutineScope {
+                    withContext(Dispatchers.IO) { userDao.getCurrentUser(client.metadata.id) }
+                }
+                val success =
+                    tryWith { client.onSetLoginUser(user?.toUser())}
+                if (success != null) flow.emit(user)
+            }
         }
     }
 }

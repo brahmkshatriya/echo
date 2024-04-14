@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
-import dev.brahmkshatriya.echo.utils.load
+import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
@@ -66,7 +66,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
                 button.isChecked = extension == viewModel.currentExtension
-                metadata.iconUrl.load(button, R.drawable.ic_extension) { button.icon = it }
+                metadata.iconUrl.loadWith(button, R.drawable.ic_extension) { button.icon = it }
                 button.id = index
                 index to extension
             }.toMap()

@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionFlow: ExtensionModule.ExtensionFlow,
+    val userFlow: MutableSharedFlow<UserEntity?>
 ) : CatchingViewModel(throwableFlow) {
 
     var recyclerPosition = 0

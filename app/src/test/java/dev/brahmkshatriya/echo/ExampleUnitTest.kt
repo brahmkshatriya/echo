@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo
 
-import dev.brahmkshatriya.echo.data.offline.resolvers.sortedBy
+import dev.brahmkshatriya.echo.offline.resolvers.sortedBy
 import org.junit.Test
 
 class ExampleUnitTest {

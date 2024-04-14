@@ -15,12 +15,13 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.load
+import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
@@ -30,6 +31,8 @@ import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -75,7 +78,7 @@ class LoginFragment : Fragment() {
             return
         }
 
-        client.metadata.iconUrl.load(binding.extensionIcon, R.drawable.ic_extension) {
+        client.metadata.iconUrl.loadWith(binding.extensionIcon, R.drawable.ic_extension) {
             binding.extensionIcon.setImageDrawable(it)
         }
 
@@ -128,6 +131,11 @@ class LoginFragment : Fragment() {
         }
         webView.settings.javaScriptEnabled = true
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
+
+        lifecycleScope.launch {
+            delay(1000)
+            appBarLayout.setExpanded(false, true)
+        }
     }
 
     private fun WebView.applyDarkMode() {
