@@ -119,7 +119,7 @@ class TrackResolver(val context: Context) {
                     Track(
                         id = uri,
                         title = it.getString(titleColumn),
-                        streamables = listOf(Streamable(uri, 0)),
+                        audioStreamables = listOf(Streamable(uri, 0)),
                         artists = listOf(
                             Artist(
                                 artistUri,

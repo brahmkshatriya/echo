@@ -20,3 +20,5 @@ sealed class StreamableAudio : Parcelable {
         fun Uri.toAudio() = StreamableFile(this)
     }
 }
+
+data class StreamableVideo(val request: Request, val looping: Boolean, val crop: Boolean)

@@ -52,9 +52,8 @@ class StreamableDataSource(
         val track = streamableTrack.loaded
             ?: throw Exception("Track not loaded")
 
-        val streamable = selectStream(track.streamables)
+        val streamable = selectStream(track.audioStreamables)
             ?: throw Exception(context.getString(R.string.no_streams_found))
-
         return runBlocking {
             runCatching { client.getStreamableAudio(streamable) }
         }.getOrThrow()
@@ -71,6 +70,7 @@ class StreamableDataSource(
 
     override fun open(dataSpec: DataSpec): Long {
         trackUri = dataSpec.uri
+        println("Opening StreamableDataSource for $trackUri")
         return when (val audio = getAudio(dataSpec)) {
             is StreamableAudio.ByteStreamAudio -> {
                 inputStream = audio.stream
