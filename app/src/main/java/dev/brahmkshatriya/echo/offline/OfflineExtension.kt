@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.StreamableVideo
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingList
@@ -133,6 +134,10 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 
     override suspend fun getStreamableAudio(streamable: Streamable): StreamableAudio {
         return trackResolver.getStreamable(streamable)
+    }
+
+    override suspend fun getStreamableVideo(streamable: Streamable): StreamableVideo {
+        throw IllegalStateException("Videos are not supported")
     }
 
     override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> {
