@@ -109,7 +109,6 @@ class HomeFragment : Fragment() {
             binding.appBarLayout.setExpanded(it < 1, false)
         }
         view.doOnLayout {
-            println("do on layout")
             binding.appBarOutline.alpha = 0f
         }
     }

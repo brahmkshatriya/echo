@@ -104,6 +104,7 @@
     <string name="switch_account">Switch Account</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="add_account">Add Account</string>
+    <string name="no_streams_found">No stream found</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

@@ -63,15 +63,13 @@ class PlaybackService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val streamableFactory = StreamableDataSource
-            .Factory(this, extensionList, global)
-
+        val streamableFactory = StreamableDataSource.Factory(this, extensionList, settings)
         val cacheFactory = CacheDataSource
             .Factory().setCache(cache)
             .setUpstreamDataSourceFactory(streamableFactory)
 
         val trackFactory = TrackDataSource
-            .Factory(this, extensionList, global, settings, cacheFactory)
+            .Factory(this, extensionList, global, cacheFactory)
 
         val factory = DefaultMediaSourceFactory(this)
             .setDataSourceFactory(trackFactory)

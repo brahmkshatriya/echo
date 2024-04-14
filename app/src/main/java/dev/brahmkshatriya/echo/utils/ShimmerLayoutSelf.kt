@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.FrameLayout
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.R
 import com.google.android.material.motion.MotionUtils
 
@@ -13,11 +12,6 @@ class ShimmerLayoutSelf @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
-    private val timeInterpolator = MotionUtils.resolveThemeInterpolator(
-        context,
-        R.attr.motionEasingStandardInterpolator,
-        FastOutSlowInInterpolator()
-    )
     private val timeDuration = MotionUtils.resolveThemeDuration(
         context,
         R.attr.motionDurationMedium1,
@@ -29,7 +23,6 @@ class ShimmerLayoutSelf @JvmOverloads constructor(
         fillAfter = true
         repeatMode = AlphaAnimation.REVERSE
         repeatCount = Animation.INFINITE
-        setInterpolator { timeInterpolator.getInterpolation(it) }
     }
 
     init {

@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.player
 
 import androidx.media3.common.MediaItem
-import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,8 +71,7 @@ class Queue {
         val unloaded: Track,
         val clientId: String,
         var loaded: Track? = null,
-        val onLoad : MutableSharedFlow<Track> = MutableSharedFlow(),
-        var streamable: Streamable? = null
+        val onLoad : MutableSharedFlow<Track> = MutableSharedFlow()
     )
 }
 

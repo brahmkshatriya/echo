@@ -17,8 +17,9 @@ data class Track(
     val releaseDate: String? = null,
     val liked: Boolean = false,
     val extras: Map<String, String> = mapOf(),
-    val allowCaching: Boolean = true,
+    val expiresAt: Long = 0,
 ) : Parcelable {
+
     companion object {
         val creator = parcelableCreator<Track>()
     }

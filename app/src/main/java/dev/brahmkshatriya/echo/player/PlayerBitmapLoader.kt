@@ -26,10 +26,12 @@ class PlayerBitmapLoader(
         BitmapFactory.decodeByteArray(data, 0, data.size) ?: error("Could not decode image data")
     }
 
+    private val emptyBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.art_music)
+
     override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> = scope.future(Dispatchers.IO) {
         val track = global.getTrack(uri.toString())?.run {
             loaded?: unloaded
-        } ?: error("Track not found")
-        track.cover.loadBitmap(context, R.drawable.art_music)!!
+        }
+        track?.cover?.loadBitmap(context) ?: emptyBitmap
     }
 }
