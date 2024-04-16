@@ -35,11 +35,11 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/info"
             style="?attr/materialButtonOutlinedStyle"
-            app:strokeColor="?colorOutlineVariant"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/info" />
+            android:text="@string/info"
+            app:strokeColor="?colorOutlineVariant" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <androidx.cardview.widget.CardView

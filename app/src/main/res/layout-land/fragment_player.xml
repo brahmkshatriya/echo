@@ -29,13 +29,13 @@
             android:layout_width="0dp"
             android:layout_marginStart="-24dp"
             android:layout_height="match_parent"
-            android:paddingHorizontal="12dp"
             android:layout_weight="1">
 
             <androidx.fragment.app.FragmentContainerView
                 android:name="dev.brahmkshatriya.echo.ui.player.PlayerInfoFragment"
                 android:id="@+id/playerInfoContainer"
                 style="@style/Widget.Material3.BottomSheet"
+                android:outlineProvider="none"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="?navBackground"

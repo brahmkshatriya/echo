@@ -61,6 +61,7 @@ class PlayerListener(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         updateCurrent()
+        viewModel.startedPlaying(player.currentMediaItem?.mediaId)
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -73,11 +74,20 @@ class PlayerListener(
         viewModel.shuffle.value = shuffleModeEnabled
     }
 
+    private val markAsPlayedTime = 10000L // 10 seconds
+    private var previousMediaId: String? = null
     private fun updateProgress() {
         if (player.isConnected) {
             viewModel.progress.value =
                 player.currentPosition.toInt() to player.bufferedPosition.toInt()
             viewModel.totalDuration.value = player.duration.toInt()
+            if (player.currentPosition > markAsPlayedTime) {
+                val mediaId = player.currentMediaItem?.mediaId
+                if (mediaId != previousMediaId) {
+                    previousMediaId = mediaId
+                    viewModel.markedAsPlayed(mediaId)
+                }
+            }
         }
         handler.removeCallbacks(updateProgressRunnable)
         val playbackState = player.playbackState

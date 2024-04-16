@@ -7,6 +7,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -167,6 +168,37 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             global.currentIndexFlow.value = index
             _updatedFlow.emit(Unit)
+        }
+    }
+
+    private fun trackMedia(
+        mediaId: String?,
+        block: suspend TrackerClient.(clientId: String, track: Track) -> Unit
+    ) {
+        val track = global.getTrack(mediaId) ?: return
+        val client = extensionListFlow.getClient(track.clientId) ?: return
+        val loaded = track.loaded ?: track.unloaded
+        val clientId = client.metadata.id
+        val trackers = mutableListOf<TrackerClient>()
+        if (client is TrackerClient) trackers += client
+        viewModelScope.launch(Dispatchers.IO) {
+            trackers.map {
+                launch {
+                    tryWith { it.block(clientId, loaded)}
+                }
+            }
+        }
+    }
+
+    fun markedAsPlayed(mediaId: String?) {
+        trackMedia(mediaId) { clientId, loaded ->
+            onMarkAsPlayed(clientId, loaded)
+        }
+    }
+
+    fun startedPlaying(mediaId: String?) {
+        trackMedia(mediaId) { clientId, loaded ->
+            onStartedPlaying(clientId, loaded)
         }
     }
 

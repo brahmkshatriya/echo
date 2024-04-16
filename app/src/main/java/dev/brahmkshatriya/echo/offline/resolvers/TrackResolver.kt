@@ -93,7 +93,7 @@ class TrackResolver(val context: Context) {
             orderBy = order(sorting),
             orderAscending = isAscending(sorting),
             limit = pageSize,
-            offset = (page) * pageSize
+            offset = page * pageSize
         )?.use {
             //Cache column indices.
             val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)

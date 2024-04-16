@@ -68,7 +68,7 @@ class AlbumResolver(
             orderBy = order(),
             orderAscending = isAscending(sorting),
             limit = pageSize,
-            offset = (page) * pageSize
+            offset = page * pageSize
         )?.use {
             //Cache column indices.
             val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID)

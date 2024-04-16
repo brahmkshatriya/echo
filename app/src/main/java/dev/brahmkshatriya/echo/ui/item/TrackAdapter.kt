@@ -37,7 +37,7 @@ class TrackAdapter(
         val binding = holder.binding
         val track = list?.get(position) ?: return
         binding.itemNumber.text =
-            binding.root.context.getString(R.string.number_dot, (position + 1))
+            binding.root.context.getString(R.string.number_dot, position + 1)
         binding.itemTitle.text = track.title
         track.cover.loadInto(binding.imageView, R.drawable.art_music)
         var subtitle = ""

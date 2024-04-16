@@ -42,10 +42,18 @@ class PlayerInfoFragment : Fragment() {
             }
         }
 
+        val buttons = listOf(
+            binding.upNext,
+            binding.lyrics,
+            binding.info
+        )
+        val initialWidth = buttons[0].strokeWidth
         observe(uiViewModel.infoSheetOffset) {
-            binding.buttonToggleGroup.alpha = 0.5f + (0.5f * it)
             binding.buttonToggleGroup.translationY = it * uiViewModel.systemInsets.value.top
             binding.viewCard.translationY = (1 - it) * binding.buttonToggleGroup.height
+            buttons.forEach { button ->
+                button.strokeWidth = (it * initialWidth).toInt()
+            }
         }
 
         observe(uiViewModel.infoSheetState) {

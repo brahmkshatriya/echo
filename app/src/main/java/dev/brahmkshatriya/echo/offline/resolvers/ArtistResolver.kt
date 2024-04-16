@@ -58,7 +58,7 @@ class ArtistResolver(val context: Context) {
             orderBy = order(),
             orderAscending = isAscending(sorting),
             limit = pageSize,
-            offset = (page) * pageSize
+            offset = page * pageSize
         )?.use {
             val artistIdColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID)
             val artistColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
