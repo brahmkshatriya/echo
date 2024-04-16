@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 data class Playlist(
     val id: String,
     val title: String,
+    val isEditable: Boolean,
     val cover: ImageHolder? = null,
     val authors: List<User> = listOf(),
     val tracks: List<Track> = listOf(),

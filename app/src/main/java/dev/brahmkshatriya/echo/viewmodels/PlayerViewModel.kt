@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.di.TrackerModule
 import dev.brahmkshatriya.echo.player.PlayerListener
 import dev.brahmkshatriya.echo.player.Queue
 import dev.brahmkshatriya.echo.player.RadioListener.Companion.radio
@@ -31,6 +32,7 @@ class PlayerViewModel @Inject constructor(
     private val global: Queue,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val app: Application,
+    private val trackerListFlow: TrackerModule.TrackerListFlow,
     val extensionListFlow: ExtensionModule.ExtensionListFlow,
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
@@ -175,16 +177,18 @@ class PlayerViewModel @Inject constructor(
         mediaId: String?,
         block: suspend TrackerClient.(clientId: String, track: Track) -> Unit
     ) {
-        val track = global.getTrack(mediaId) ?: return
-        val client = extensionListFlow.getClient(track.clientId) ?: return
-        val loaded = track.loaded ?: track.unloaded
+        val streamableTrack = global.getTrack(mediaId) ?: return
+        val client = extensionListFlow.getClient(streamableTrack.clientId) ?: return
+        val track = streamableTrack.loaded ?: streamableTrack.unloaded
         val clientId = client.metadata.id
-        val trackers = mutableListOf<TrackerClient>()
-        if (client is TrackerClient) trackers += client
+        val trackers = trackerListFlow.list ?: emptyList()
         viewModelScope.launch(Dispatchers.IO) {
+            if (client is TrackerClient) tryWith {
+                client.block(clientId, track)
+            }
             trackers.map {
                 launch {
-                    tryWith { it.block(clientId, loaded)}
+                    tryWith { it.block(clientId, track) }
                 }
             }
         }

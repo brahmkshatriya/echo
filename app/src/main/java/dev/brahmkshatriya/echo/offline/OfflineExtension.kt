@@ -9,7 +9,6 @@ import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -35,7 +34,7 @@ import dev.brahmkshatriya.echo.offline.resolvers.URI
 import dev.brahmkshatriya.echo.offline.resolvers.sortedBy
 
 class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, TrackClient,
-    HomeFeedClient, AlbumClient, ArtistClient, RadioClient, TrackerClient {
+    HomeFeedClient, AlbumClient, ArtistClient, RadioClient {
 
     companion object {
         const val ID = "echo_offline"
@@ -269,6 +268,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
             id = "$URI${track.id}",
             title = "${track.title} Radio",
             cover = null,
+            isEditable = false,
             authors = listOf(),
             tracks = tracks,
             creationDate = null,
@@ -285,6 +285,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         return Playlist(
             id = "$URI${album.id}",
             title = "${album.title} Radio",
+            isEditable = false,
             cover = null,
             authors = listOf(),
             tracks = tracks,
@@ -303,6 +304,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
         return Playlist(
             id = "$URI${artist.id}",
             title = "${artist.name} Radio",
+            isEditable = false,
             cover = null,
             authors = listOf(),
             tracks = tracks,
@@ -313,14 +315,6 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     }
 
     override suspend fun radio(playlist: Playlist): Playlist {
-        TODO("Not yet implemented")
-    }
-
-    override fun onStartedPlaying(clientId: String, track: Track) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onMarkAsPlayed(clientId: String, track: Track) {
         TODO("Not yet implemented")
     }
 }

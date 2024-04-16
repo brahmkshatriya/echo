@@ -8,7 +8,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.di.TrackerModule
 import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
@@ -27,8 +29,10 @@ class ExtensionViewModel @Inject constructor(
     database: EchoDatabase,
     val extensionListFlow: ExtensionModule.ExtensionListFlow,
     val extensionFlow: ExtensionModule.ExtensionFlow,
+    private val extensionPluginRepo: PluginRepo<ExtensionClient>,
+    private val trackerPluginRepo: PluginRepo<TrackerClient>,
+    private val trackerListFlow: TrackerModule.TrackerListFlow,
     private val userFlow: MutableSharedFlow<UserEntity?>,
-    private val pluginRepo: PluginRepo<ExtensionClient>,
     private val preferences: SharedPreferences,
 ) : CatchingViewModel(throwableFlow) {
 
@@ -37,17 +41,22 @@ class ExtensionViewModel @Inject constructor(
 
     override fun onInitialize() {
         viewModelScope.launch {
-            tryWith {
-                pluginRepo.getAllPlugins {
-                    viewModelScope.launch { throwableFlow.emit(it) }
-                }.catchWith(throwableFlow).collect(extensionListFlow.flow)
+            launch {
+                tryWith {
+                    extensionPluginRepo.getAllPlugins {
+                        viewModelScope.launch { throwableFlow.emit(it) }
+                    }.catchWith(throwableFlow).collect(extensionListFlow.flow)
+                }
+                extensionListFlow.flow.collectLatest { list ->
+                    list ?: return@collectLatest
+                    val id = preferences.getString(LAST_EXTENSION_KEY, null)
+                    val client = list.find { it.metadata.id == id } ?: list.firstOrNull()
+                    setLoginUser(client)
+                }
             }
-            extensionListFlow.flow.collectLatest { list ->
-                list ?: return@collectLatest
-                val id = preferences.getString(LAST_EXTENSION_KEY, null)
-                val client = list.find { it.metadata.id == id } ?: list.firstOrNull()
-                setLoginUser(client)
-            }
+            trackerPluginRepo.getAllPlugins {
+                viewModelScope.launch { throwableFlow.emit(it) }
+            }.catchWith(throwableFlow).collect(trackerListFlow.flow)
         }
     }
 
