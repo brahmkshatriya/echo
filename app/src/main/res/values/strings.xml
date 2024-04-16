@@ -109,6 +109,8 @@
     <string name="create_playlist">Create Playlist</string>
     <string name="not_loading">Not Loading</string>
     <string name="login_required">Login Required</string>
+    <string name="error">Error</string>
+    <string name="extension_out_of_date">Extension is out of date</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

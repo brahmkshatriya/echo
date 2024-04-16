@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -82,10 +83,8 @@ class SnackBar @Inject constructor(
             observe(viewModel.throwableFlow) { throwable ->
                 throwable.printStackTrace()
                 val message = Message(
-                    message = throwable.message ?: "An error occurred",
-                    action = Action(getString(R.string.view)) {
-                        openException(throwable)
-                    }
+                    message = getTitle(throwable),
+                    action = Action(getString(R.string.view)) { openException(throwable) }
                 )
                 viewModel.create(message)
             }

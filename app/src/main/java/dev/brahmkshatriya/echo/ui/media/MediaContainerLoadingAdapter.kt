@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.databinding.ItemLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemNotLoadingBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemContainerBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
 import dev.brahmkshatriya.echo.ui.login.LoginFragment
 
@@ -46,8 +47,10 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
             Container(binding.root) {
             override fun bind(loadState: LoadState) {
                 loadState as LoadState.Error
-                binding.error.text = loadState.error.localizedMessage
-                binding.error.transitionName = loadState.error.hashCode().toString()
+                binding.error.run {
+                    transitionName = loadState.error.hashCode().toString()
+                    text = context.getTitle(loadState.error)
+                }
                 binding.errorView.setOnClickListener {
                     listener?.onError(binding.error, loadState.error)
                 }
