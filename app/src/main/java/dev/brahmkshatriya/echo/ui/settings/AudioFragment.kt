@@ -1,8 +1,12 @@
 package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
+import android.content.Intent
+import android.media.audiofx.AudioEffect
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
@@ -13,8 +17,12 @@ class AudioFragment : BaseSettingsFragment() {
     override val transitionName = "audio"
     override val creator = { AudioPreference() }
 
-
     class AudioPreference : PreferenceFragmentCompat() {
+        private val equalizerActivityLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+
+            }
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
             preferenceManager.sharedPreferencesName = context.packageName
@@ -49,16 +57,37 @@ class AudioFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-                ListPreference(context).also {
-                    it.key = STREAM_QUALITY
-                    it.title = getString(R.string.stream_quality)
-                    it.summary = getString(R.string.stream_quality_summary)
-                    it.entries = context.resources.getStringArray(R.array.stream_qualities)
-                    it.entryValues = streamQualities
+                ListPreference(context).apply {
+                    key = STREAM_QUALITY
+                    title = getString(R.string.stream_quality)
+                    summary = getString(R.string.stream_quality_summary)
+                    entries = context.resources.getStringArray(R.array.stream_qualities)
+                    entryValues = streamQualities
                     layoutResource = R.layout.preference
-                    it.isIconSpaceReserved = false
+                    isIconSpaceReserved = false
                     setDefaultValue(streamQualities[0])
-                    addPreference(it)
+                    addPreference(this)
+                }
+
+                Preference(context).apply {
+                    key = EQUALIZER
+                    title = getString(R.string.equalizer)
+                    summary = getString(R.string.equalizer_summary)
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+
+                    // Intent for the hidden device equalizer, might not be available on all devices
+                    val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
+                    val isAvailable = intent.resolveActivity(context.packageManager) != null
+
+                    setOnPreferenceClickListener {
+                        equalizerActivityLauncher.launch(intent)
+                        true
+                    }
+
+                    if (isAvailable) {
+                        addPreference(this)
+                    }
                 }
             }
 
@@ -68,6 +97,7 @@ class AudioFragment : BaseSettingsFragment() {
             const val CLOSE_PLAYER = "close_player_when_app_closes"
             const val AUTO_START_RADIO = "auto_start_radio"
             const val STREAM_QUALITY = "stream_quality"
+            const val EQUALIZER = "equalizer"
             val streamQualities = arrayOf("highest", "medium", "lowest")
         }
     }

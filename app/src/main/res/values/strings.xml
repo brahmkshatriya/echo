@@ -88,6 +88,7 @@
     <string name="restart">Restart</string>
     <string name="playing_from">Playing From</string>
     <string name="equalizer">Equalizer</string>
+    <string name="equalizer_summary">Open the device equalizer settings</string>
     <string name="sleep_timer">Sleep Timer</string>
     <string name="track_not_found">Track not found</string>
     <string name="extension_login">%1$s Login</string>
