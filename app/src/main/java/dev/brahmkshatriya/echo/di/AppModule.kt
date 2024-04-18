@@ -16,7 +16,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.models.UserEntity
-import dev.brahmkshatriya.echo.player.Queue
+import dev.brahmkshatriya.echo.playback.Queue
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.io.File

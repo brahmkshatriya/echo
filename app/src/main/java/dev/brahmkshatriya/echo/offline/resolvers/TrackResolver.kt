@@ -155,7 +155,7 @@ class TrackResolver(val context: Context) {
         return ContentUris.withAppendedId(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             id.toLong(),
-        ).toAudio()
+        ).toString().toAudio()
     }
 
     fun fromFile(file: File): Track? {

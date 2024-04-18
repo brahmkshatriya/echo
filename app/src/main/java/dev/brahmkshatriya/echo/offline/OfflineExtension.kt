@@ -33,6 +33,7 @@ import dev.brahmkshatriya.echo.offline.resolvers.FolderResolver
 import dev.brahmkshatriya.echo.offline.resolvers.TrackResolver
 import dev.brahmkshatriya.echo.offline.resolvers.URI
 import dev.brahmkshatriya.echo.offline.resolvers.sortedBy
+import kotlinx.coroutines.delay
 
 class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, TrackClient,
     HomeFeedClient, AlbumClient, ArtistClient, RadioClient {
@@ -150,6 +151,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> {
         val trackAlbum = track.album ?: return PagedData.Single { emptyList() }
         return PagedData.Single {
+            delay(2500)
             val album = loadAlbum(trackAlbum)
             val artists = track.artists.map {
                 loadArtist(it).toMediaItem().toMediaItemsContainer()

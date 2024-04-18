@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.playback
 
 import androidx.media3.common.MediaItem
 import dev.brahmkshatriya.echo.common.models.Track
@@ -73,7 +73,8 @@ class Queue {
         var loaded: Track? = null,
         var liked: Boolean = unloaded.liked,
         val onLoad : MutableSharedFlow<Track> = MutableSharedFlow(),
-        val onLiked: MutableSharedFlow<Boolean> = MutableSharedFlow()
+        val onLiked: MutableSharedFlow<Boolean> = MutableSharedFlow(),
+
     )
 }
 

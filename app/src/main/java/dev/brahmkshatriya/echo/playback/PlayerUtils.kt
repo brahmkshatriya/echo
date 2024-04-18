@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.playback
 
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem

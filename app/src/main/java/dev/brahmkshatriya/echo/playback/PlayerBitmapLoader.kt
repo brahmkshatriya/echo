@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.playback
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -15,22 +15,21 @@ import kotlinx.coroutines.guava.future
 
 @UnstableApi
 class PlayerBitmapLoader(
-    val context: Context,
-    private val global: Queue,
-    private val scope: CoroutineScope
+    val context: Context, private val global: Queue, private val scope: CoroutineScope
 ) : BitmapLoader {
 
     override fun supportsMimeType(mimeType: String) = true
 
     override fun decodeBitmap(data: ByteArray) = scope.future(Dispatchers.IO) {
-        BitmapFactory.decodeByteArray(data, 0, data.size) ?: error("Could not decode image data")
+        BitmapFactory.decodeByteArray(data, 0, data.size) ?: error("Failed to decode bitmap")
     }
 
-    private val emptyBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.art_music)
+    private val emptyBitmap
+        get() = context.loadBitmap(R.drawable.art_music) ?: error("Empty bitmap")
 
     override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> = scope.future(Dispatchers.IO) {
         val track = global.getTrack(uri.toString())?.run {
-            loaded?: unloaded
+            loaded ?: unloaded
         }
         track?.cover?.loadBitmap(context) ?: emptyBitmap
     }

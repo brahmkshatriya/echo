@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 interface LibraryClient {
     suspend fun getLibraryGenres(): List<Genre>
     fun getLibraryFeed(genre: Genre?): PagedData<MediaItemsContainer>
-    suspend fun likeTrack(track: Track, liked: Boolean)
+    suspend fun likeTrack(track: Track, liked: Boolean) : Boolean
     suspend fun createPlaylist(name: String, description: String?): Playlist
     suspend fun deletePlaylist(playlist: Playlist)
     suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>)

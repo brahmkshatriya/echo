@@ -72,6 +72,10 @@ fun ImageView.load(drawable: Drawable?, size: Int) = tryWith {
     Glide.with(this).load(drawable).override(size).into(this)
 }
 
+fun Context.loadBitmap(placeHolder: Int) = tryWith {
+    Glide.with(this).asBitmap().load(placeHolder).submit().get()
+}
+
 private fun <T> createRequest(
     imageHolder: ImageHolder,
     requestBuilder: RequestBuilder<T>,

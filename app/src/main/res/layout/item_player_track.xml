@@ -16,7 +16,7 @@
             android:layout_height="match_parent"
             android:importantForAccessibility="no"
             android:scaleType="centerCrop"
-            tools:srcCompat="@tools:sample/avatars" />
+            tools:srcCompat="@tools:sample/avatars[3]" />
 
         <ImageView
             android:id="@+id/bgGradient"

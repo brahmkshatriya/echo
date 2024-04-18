@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.playback
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -7,6 +7,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
@@ -29,6 +30,7 @@ import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @AndroidEntryPoint
+@OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
     @Inject
     lateinit var extensionFlow: ExtensionModule.ExtensionFlow
@@ -54,7 +56,7 @@ class PlaybackService : MediaLibraryService() {
     private var mediaLibrarySession: MediaLibrarySession? = null
     private val scope = CoroutineScope(Dispatchers.IO) + Job()
 
-    @OptIn(UnstableApi::class)
+
     override fun onCreate() {
         super.onCreate()
 
@@ -63,16 +65,18 @@ class PlaybackService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val streamableFactory = StreamableDataSource.Factory(this, extensionList, settings)
+        val streamableFactory = StreamableDataSource.Factory(this)
         val cacheFactory = CacheDataSource
             .Factory().setCache(cache)
             .setUpstreamDataSourceFactory(streamableFactory)
-
-        val trackFactory = TrackDataSource
-            .Factory(this, extensionList, global, cacheFactory)
+        val dataSourceFactory =
+            ResolvingDataSource.Factory(
+                cacheFactory,
+                TrackResolver(this, global, extensionList, settings)
+            )
 
         val factory = DefaultMediaSourceFactory(this)
-            .setDataSourceFactory(trackFactory)
+            .setDataSourceFactory(dataSourceFactory)
 
         val player = ExoPlayer.Builder(this, factory)
             .setHandleAudioBecomingNoisy(true)

@@ -35,7 +35,6 @@ import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -44,6 +43,7 @@ import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
@@ -195,6 +195,7 @@ class ItemFragment : Fragment() {
 
         observe(viewModel.itemFlow) {
             it ?: return@observe
+            binding.toolBar.title = it.title.trim()
             it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
             when (it) {
                 is AlbumItem -> {

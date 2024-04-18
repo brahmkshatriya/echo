@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.player
+package dev.brahmkshatriya.echo.playback
 
 import android.content.Context
 import android.os.Handler

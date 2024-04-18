@@ -20,7 +20,7 @@ import com.google.android.material.navigationrail.NavigationRailView
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
-import dev.brahmkshatriya.echo.player.PlaybackService
+import dev.brahmkshatriya.echo.playback.PlaybackService
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.animateVisibility

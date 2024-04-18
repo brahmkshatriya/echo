@@ -15,9 +15,9 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.di.TrackerModule
-import dev.brahmkshatriya.echo.player.PlayerListener
-import dev.brahmkshatriya.echo.player.Queue
-import dev.brahmkshatriya.echo.player.RadioListener.Companion.radio
+import dev.brahmkshatriya.echo.playback.PlayerListener
+import dev.brahmkshatriya.echo.playback.Queue
+import dev.brahmkshatriya.echo.playback.RadioListener.Companion.radio
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.Dispatchers
@@ -103,14 +103,15 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun likeTrack(streamableTrack: Queue.StreamableTrack, liked: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val client = extensionListFlow.getClient(streamableTrack.clientId)
-            if (client is LibraryClient) {
-                val track = streamableTrack.loaded ?: streamableTrack.unloaded
-                if (track.liked != liked) {
-                    tryWith { client.likeTrack(track, liked) }
-                }
+    fun likeTrack(streamableTrack: Queue.StreamableTrack, isLiked: Boolean) {
+        if (streamableTrack.liked != isLiked) viewModelScope.launch(Dispatchers.IO) {
+            streamableTrack.run {
+                val client = extensionListFlow.getClient(clientId)
+                if (client !is LibraryClient) return@run
+                val track = loaded ?: unloaded
+                val response = tryWith { client.likeTrack(track, isLiked) }
+                liked = response ?: liked
+                onLiked.emit(liked)
             }
         }
     }

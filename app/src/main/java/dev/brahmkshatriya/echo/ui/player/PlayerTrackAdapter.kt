@@ -33,11 +33,12 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
-import dev.brahmkshatriya.echo.player.Queue.StreamableTrack
-import dev.brahmkshatriya.echo.player.toTimeString
+import dev.brahmkshatriya.echo.playback.Queue.StreamableTrack
+import dev.brahmkshatriya.echo.playback.toTimeString
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
+import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
@@ -258,23 +259,25 @@ class PlayerTrackAdapter(
             viewModel.repeatEnabled = true
         }
 
+        item ?: return
         val extensionClient = viewModel.extensionListFlow.getClient(item.clientId)
-        binding.playerControls.trackHeart.run{
-            isVisible = if (extensionClient is LibraryClient) {
+        binding.playerControls.trackHeart.run {
+            if (extensionClient is LibraryClient) {
+                isChecked = item.liked
                 val likeListener = CheckBoxListener {
                     lifecycleScope.launch { item.onLiked.emit(it) }
                 }
                 addOnCheckedStateChangedListener(likeListener)
-                item?.onLiked?.let { flow ->
-                    observe(flow) {
-                        likeListener.enabled = false
-                        isChecked = it
-                        likeListener.enabled = true
-                    }
+                observe(item.onLiked) {
+                    likeListener.enabled = false
+                    isChecked = it
+                    likeListener.enabled = true
                 }
-                isChecked = item?.liked ?: false
-                true
-            } else false
+                isVisible = true
+            } else isVisible = false
+        }
+        collect(item.onLiked) { liked ->
+            viewModel.likeTrack(item, liked)
         }
     }
 
