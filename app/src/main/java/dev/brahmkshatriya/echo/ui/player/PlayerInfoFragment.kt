@@ -64,7 +64,6 @@ class PlayerInfoFragment : Fragment() {
                     check(ids[binding.viewPager.currentItem])
                 }
             }
-
         }
 
         binding.viewPager.getChildAt(0).run {

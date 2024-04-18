@@ -15,13 +15,22 @@ sealed class MediaItemsContainer {
         val media: EchoMediaItem
     ) : MediaItemsContainer()
 
+    data class Container(
+        val title: String,
+        val subtitle: String? = null,
+        val more: PagedData<MediaItemsContainer>? = null,
+        val extra: Map<String, String> = mapOf()
+    ) : MediaItemsContainer()
+
     fun sameAs(other: MediaItemsContainer) = when (this) {
-        is Category -> other is Category && this == other
+        is Category -> other is Category && this.id == other.id
         is Item -> other is Item && media.sameAs(other.media)
+        is Container -> other is Container && this.id == other.id
     }
 
-    val id get() = when (this) {
-        is Category -> this.hashCode().toString()
-        is Item -> media.id
-    }
+    val id
+        get() = when (this) {
+            is Item -> media.id
+            else -> this.hashCode().toString()
+        }
 }

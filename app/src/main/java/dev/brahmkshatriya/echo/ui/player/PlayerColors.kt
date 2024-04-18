@@ -9,8 +9,8 @@ import dev.brahmkshatriya.echo.utils.isNightMode
 
 data class PlayerColors(
     val background: Int,
-    val clickable: Int,
-    val body: Int,
+    val accent: Int,
+    val text: Int,
 ) {
     companion object {
         fun Context.getColorsFrom(bitmap: Bitmap): PlayerColors? {

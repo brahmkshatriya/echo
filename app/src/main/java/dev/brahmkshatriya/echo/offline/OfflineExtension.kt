@@ -29,6 +29,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingList
 import dev.brahmkshatriya.echo.offline.PagedSource.Companion.pagedFlow
 import dev.brahmkshatriya.echo.offline.resolvers.AlbumResolver
 import dev.brahmkshatriya.echo.offline.resolvers.ArtistResolver
+import dev.brahmkshatriya.echo.offline.resolvers.FolderResolver
 import dev.brahmkshatriya.echo.offline.resolvers.TrackResolver
 import dev.brahmkshatriya.echo.offline.resolvers.URI
 import dev.brahmkshatriya.echo.offline.resolvers.sortedBy
@@ -67,6 +68,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
     private val artistResolver = ArtistResolver(context)
     private val albumResolver = AlbumResolver(context)
     private val trackResolver = TrackResolver(context)
+    private val folderResolver = FolderResolver(context, trackResolver)
 
     override suspend fun quickSearch(query: String?): List<QuickSearchItem> = listOf()
     override suspend fun searchGenres(query: String?): List<Genre> =
@@ -85,9 +87,13 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
                     .map { testContainer(it.title, it.toMediaItem()) }
             }
 
-            "Artists" -> pagedFlow { page, pageSize ->
-                artistResolver.search(trimmed, page, pageSize, sorting)
-                    .map { testContainer(it.name, it.toMediaItem()) }
+            "Artists" -> {
+                val list = mutableListOf<Artist>()
+                pagedFlow { page, pageSize ->
+                    val new = artistResolver.search(list, trimmed, page, pageSize, sorting)
+                    list += new
+                    new.map { testContainer(it.name, it.toMediaItem()) }
+                }
             }
 
             else -> PagedData.Single {
@@ -100,7 +106,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
                         .toMutableList()
                         .ifEmpty { null }
                 val artists =
-                    artistResolver.search(trimmed, 0, 10, sorting).map { it.toMediaItem() }
+                    artistResolver.search(listOf(), trimmed, 0, 10, sorting)
+                        .map { it.toMediaItem() }
                         .toMutableList()
                         .ifEmpty { null }
 
@@ -161,20 +168,39 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
 //        listOf(item, item, item, item, item, item, item).toMediaItemsContainer(title)
 
     override suspend fun getHomeGenres() =
-        listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
+        listOf("All", "Tracks", "Albums", "Artists", "Folders").map { Genre(it, it) }
 
-    override fun getHomeFeed(genre: Genre?) = pagedFlow { page: Int, pageSize: Int ->
-        when (genre?.id) {
-            "Tracks" -> trackResolver.getAll(page, pageSize, sorting)
+    override fun getHomeFeed(genre: Genre?): PagedData<MediaItemsContainer> = when (genre?.id) {
+        "Tracks" -> pagedFlow { page: Int, pageSize: Int ->
+            trackResolver.getAll(page, pageSize, sorting)
                 .map { testContainer(it.title, it.toMediaItem()) }
+        }
 
-            "Albums" -> albumResolver.getAll(page, pageSize, sorting)
+        "Albums" -> pagedFlow { page: Int, pageSize: Int ->
+            albumResolver.getAll(page, pageSize, sorting)
                 .map { testContainer(it.title, it.toMediaItem()) }
+        }
 
-            "Artists" -> artistResolver.getAll(page, pageSize, sorting)
-                .map { testContainer(it.name, it.toMediaItem()) }
+        "Artists" -> {
+            val list = mutableListOf<Artist>()
+            pagedFlow { page: Int, pageSize: Int ->
+                val newList = artistResolver.getAll(list, page, pageSize, sorting)
+                list += newList
+                newList.map { testContainer(it.name, it.toMediaItem()) }
+            }
+        }
 
-            else -> if (page == 0) {
+        "Folders" -> {
+            val list = mutableListOf<MediaItemsContainer>()
+            pagedFlow { page: Int, pageSize: Int ->
+                val newList = folderResolver.getRootFolders(list, page, pageSize)
+                list += newList
+                newList
+            }
+        }
+
+        else -> pagedFlow { page: Int, pageSize: Int ->
+            if (page == 0) {
                 val albums = albumResolver.getShuffled(pageSize).map { it.toMediaItem() }
                     .ifEmpty { null }
 
@@ -192,8 +218,11 @@ class OfflineExtension(val context: Context) : ExtensionClient(), SearchClient, 
                 val artists = artistResolver.getShuffled(pageSize).map { it.toMediaItem() }
                     .ifEmpty { null }
 
+                val list = mutableListOf<Artist>()
                 val artistsFlow = pagedFlow<EchoMediaItem> { inPage: Int, inPageSize: Int ->
-                    artistResolver.getAll(inPage, inPageSize, sorting).map { it.toMediaItem() }
+                    val newList = artistResolver.getAll(list, inPage, inPageSize, sorting)
+                    list += newList
+                    newList.map { it.toMediaItem() }
                 }
 
                 val result = listOfNotNull(

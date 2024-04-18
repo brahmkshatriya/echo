@@ -71,7 +71,9 @@ class Queue {
         val unloaded: Track,
         val clientId: String,
         var loaded: Track? = null,
-        val onLoad : MutableSharedFlow<Track> = MutableSharedFlow()
+        var liked: Boolean = unloaded.liked,
+        val onLoad : MutableSharedFlow<Track> = MutableSharedFlow(),
+        val onLiked: MutableSharedFlow<Boolean> = MutableSharedFlow()
     )
 }
 

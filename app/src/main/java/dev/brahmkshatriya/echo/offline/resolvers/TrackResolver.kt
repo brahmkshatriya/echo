@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Track
+import java.io.File
 
 class TrackResolver(val context: Context) {
 
@@ -155,5 +156,15 @@ class TrackResolver(val context: Context) {
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             id.toLong(),
         ).toAudio()
+    }
+
+    fun fromFile(file: File): Track? {
+        return context.queryTracks(
+            whereCondition = "${MediaStore.Audio.Media.DATA} = ?",
+            selectionArgs = arrayOf(file.path),
+            page = 0,
+            pageSize = 1,
+            sorting = ""
+        ).firstOrNull()
     }
 }

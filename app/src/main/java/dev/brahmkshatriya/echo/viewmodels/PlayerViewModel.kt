@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.Album
@@ -47,7 +48,6 @@ class PlayerViewModel @Inject constructor(
     val shuffleListener = CheckBoxListener {
         viewModelScope.launch { shuffle.emit(it) }
     }
-
 
     val repeat = MutableStateFlow(0)
     var repeatEnabled = false
@@ -99,8 +99,19 @@ class PlayerViewModel @Inject constructor(
         val client = extensionListFlow.getClient(clientId)
         viewModelScope.launch(Dispatchers.IO) {
             val position = radio(app, client, messageFlow, global) { tryWith { block(this) } }
-            println("radio position : $position")
             position?.let { audioIndexFlow.emit(it) }
+        }
+    }
+
+    fun likeTrack(streamableTrack: Queue.StreamableTrack, liked: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val client = extensionListFlow.getClient(streamableTrack.clientId)
+            if (client is LibraryClient) {
+                val track = streamableTrack.loaded ?: streamableTrack.unloaded
+                if (track.liked != liked) {
+                    tryWith { client.likeTrack(track, liked) }
+                }
+            }
         }
     }
 
@@ -126,7 +137,6 @@ class PlayerViewModel @Inject constructor(
                 player.playWhenReady = true
             }
             observe(viewModel.audioIndexFlow) {
-                println("audioIndexFlow: $it : ${player.mediaItemCount}")
                 if (it >= 0) player.seekToDefaultPosition(it)
             }
             observe(viewModel.seekTo) {

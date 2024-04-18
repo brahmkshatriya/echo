@@ -11,6 +11,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Category
+import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Container
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media
 import java.lang.ref.WeakReference
 
@@ -106,12 +107,14 @@ class MediaContainerAdapter(
         val item = getItem(position) ?: return 0
         return when (item) {
             is MediaItemsContainer.Category -> 0
-            else -> 1
+            is MediaItemsContainer.Container -> 1
+            is MediaItemsContainer.Item -> 2
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         0 -> Category.create(parent, stateViewModel, clientId, listener)
+        1 -> Container.create(parent)
         else -> Media.create(parent, clientId, listener)
     }
 }

@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.ui.player
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
-import android.graphics.PorterDuff
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.Animatable
@@ -27,6 +26,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
@@ -84,10 +84,9 @@ class PlayerTrackAdapter(
             val colors = binding.root.context.getPlayerColors(bitmap)
             binding.root.setBackgroundColor(colors.background)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
-            binding.bgGradient.imageTintMode = PorterDuff.Mode.SRC_IN
             binding.expandedToolbar.run {
-                setTitleTextColor(colors.body)
-                setSubtitleTextColor(colors.body)
+                setTitleTextColor(colors.text)
+                setSubtitleTextColor(colors.text)
             }
             binding.collapsedContainer.applyColors(colors)
             binding.playerControls.applyColors(colors)
@@ -159,6 +158,7 @@ class PlayerTrackAdapter(
                 }
             }
         }
+
         observe(viewModel.buffering) { buffering ->
             binding.collapsedContainer.run {
                 collapsedProgressBar.isVisible = buffering
@@ -257,6 +257,25 @@ class PlayerTrackAdapter(
             changeRepeatDrawable(it)
             viewModel.repeatEnabled = true
         }
+
+        val extensionClient = viewModel.extensionListFlow.getClient(item.clientId)
+        binding.playerControls.trackHeart.run{
+            isVisible = if (extensionClient is LibraryClient) {
+                val likeListener = CheckBoxListener {
+                    lifecycleScope.launch { item.onLiked.emit(it) }
+                }
+                addOnCheckedStateChangedListener(likeListener)
+                item?.onLiked?.let { flow ->
+                    observe(flow) {
+                        likeListener.enabled = false
+                        isChecked = it
+                        likeListener.enabled = true
+                    }
+                }
+                isChecked = item?.liked ?: false
+                true
+            } else false
+        }
     }
 
     private fun ItemPlayerTrackBinding.applyTrackDetails(
@@ -322,25 +341,25 @@ class PlayerTrackAdapter(
 
     private fun ItemPlayerCollapsedBinding.applyColors(colors: PlayerColors) {
         root.setBackgroundColor(colors.background)
-        collapsedProgressBar.setIndicatorColor(colors.clickable)
-        collapsedSeekBar.setIndicatorColor(colors.clickable)
-        collapsedBuffer.setIndicatorColor(colors.clickable)
-        collapsedBuffer.trackColor = colors.body
-        collapsedTrackArtist.setTextColor(colors.body)
-        collapsedTrackTitle.setTextColor(colors.body)
+        collapsedProgressBar.setIndicatorColor(colors.accent)
+        collapsedSeekBar.setIndicatorColor(colors.accent)
+        collapsedBuffer.setIndicatorColor(colors.accent)
+        collapsedBuffer.trackColor = colors.text
+        collapsedTrackArtist.setTextColor(colors.text)
+        collapsedTrackTitle.setTextColor(colors.text)
     }
 
     private fun ItemPlayerControlsBinding.applyColors(colors: PlayerColors) {
-        val clickableState = ColorStateList.valueOf(colors.clickable)
+        val clickableState = ColorStateList.valueOf(colors.accent)
         seekBar.trackActiveTintList = clickableState
         seekBar.thumbTintList = clickableState
-        progressBar.setIndicatorColor(colors.clickable)
-        bufferBar.setIndicatorColor(colors.clickable)
-        bufferBar.trackColor = colors.body
-        trackCurrentTime.setTextColor(colors.body)
-        trackTotalTime.setTextColor(colors.body)
-        trackTitle.setTextColor(colors.body)
-        trackArtist.setTextColor(colors.body)
+        progressBar.setIndicatorColor(colors.accent)
+        bufferBar.setIndicatorColor(colors.accent)
+        bufferBar.trackColor = colors.text
+        trackCurrentTime.setTextColor(colors.text)
+        trackTotalTime.setTextColor(colors.text)
+        trackTitle.setTextColor(colors.text)
+        trackArtist.setTextColor(colors.text)
     }
 
 }

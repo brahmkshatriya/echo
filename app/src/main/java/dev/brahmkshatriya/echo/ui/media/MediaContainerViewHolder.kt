@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.NewItemCategoryBinding
+import dev.brahmkshatriya.echo.databinding.NewItemContainerBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaBinding
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.bind
 import java.lang.ref.WeakReference
@@ -16,10 +17,9 @@ import java.lang.ref.WeakReference
 sealed class MediaContainerViewHolder(
     itemView: View,
 ) : RecyclerView.ViewHolder(itemView) {
-    abstract fun bind(items: MediaItemsContainer)
+    abstract fun bind(container: MediaItemsContainer)
     open val clickView = itemView
     abstract val transitionView: View
-
 
     class Category(
         val binding: NewItemCategoryBinding,
@@ -28,8 +28,8 @@ sealed class MediaContainerViewHolder(
         val listener: MediaItemAdapter.Listener,
     ) :
         MediaContainerViewHolder(binding.root) {
-        override fun bind(items: MediaItemsContainer) {
-            val category = items as MediaItemsContainer.Category
+        override fun bind(container: MediaItemsContainer) {
+            val category = container as MediaItemsContainer.Category
             binding.title.text = category.title
             binding.subtitle.text = category.subtitle
             binding.subtitle.isVisible = category.subtitle.isNullOrBlank().not()
@@ -73,13 +73,36 @@ sealed class MediaContainerViewHolder(
         }
     }
 
+    class Container(
+        val binding: NewItemContainerBinding
+    ) : MediaContainerViewHolder(binding.root) {
+        override fun bind(container: MediaItemsContainer) {
+            container as MediaItemsContainer.Container
+            binding.title.text = container.title
+            binding.subtitle.text = container.subtitle
+            binding.subtitle.isVisible = container.subtitle.isNullOrBlank().not()
+        }
+
+        override val transitionView = binding.root
+
+        companion object {
+            fun create(parent: ViewGroup): MediaContainerViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                return Container(
+                    NewItemContainerBinding.inflate(layoutInflater, parent, false)
+                )
+            }
+        }
+
+    }
+
     class Media(
         val binding: NewItemMediaBinding,
         private val clientId: String?,
         val listener: MediaItemAdapter.Listener,
     ) : MediaContainerViewHolder(binding.root) {
-        override fun bind(items: MediaItemsContainer) {
-            val item = (items as? MediaItemsContainer.Item)?.media ?: return
+        override fun bind(container: MediaItemsContainer) {
+            val item = (container as? MediaItemsContainer.Item)?.media ?: return
             binding.title.text = item.title
             binding.subtitle.text = item.subtitle
             binding.subtitle.isVisible = item.subtitle.isNullOrBlank().not()

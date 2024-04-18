@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
@@ -104,6 +105,14 @@ class PlayerFragment : Fragment() {
         val tint = binding.playerInfoContainer.backgroundTintList
         observe(uiViewModel.infoSheetOffset) {
             binding.playerInfoContainer.backgroundTintList = tint?.withAlpha((255 * it).toInt())
+        }
+
+        collect(viewModel.currentFlow) { track ->
+            track?.onLiked?.let { flow ->
+                collect(flow) { liked ->
+                    viewModel.likeTrack(track, liked)
+                }
+            }
         }
     }
 
