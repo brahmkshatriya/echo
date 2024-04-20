@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="more">Więcej</string>
+    <string name="add_extension">Dodaj rozszerzenie</string>
+    <string name="extension_settings">Ustawienia rozszerzenia</string>
+</resources>
