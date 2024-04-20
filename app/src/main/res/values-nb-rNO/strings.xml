@@ -1,2 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="extension_settings">Utvidelsesinnstillinger</string>
+    <string name="more">Mer</string>
+    <string name="retry">Prøv igjen</string>
+    <string name="repeat">Gjenta</string>
+    <string name="is_not_supported">" "</string>
+    <string name="str_copy">Kopier</string>
+    <string name="library">Bibliotek</string>
+    <string name="search">Søk</string>
+    <string name="settings">Innstillinger</string>
+    <string name="next">Neste</string>
+    <string name="home">Hjem</string>
+    <string name="extensions">Utvidelser</string>
+    <string name="play_pause">Spill av/pause</string>
+    <string name="previous">Forrige</string>
+    <string name="add_extension">Legg til utvidelse</string>
+    <string name="theme">Drakt</string>
+    <string name="equalizer">Tonekontroll</string>
+    <string name="switch_account">Bytt konto</string>
+    <string name="close">Lukk</string>
+    <string name="artist">Artist</string>
+    <string name="about">Om</string>
+</resources>
