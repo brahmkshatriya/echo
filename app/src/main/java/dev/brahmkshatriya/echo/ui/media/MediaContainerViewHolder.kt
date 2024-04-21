@@ -103,20 +103,7 @@ sealed class MediaContainerViewHolder(
     ) : MediaContainerViewHolder(binding.root) {
         override fun bind(container: MediaItemsContainer) {
             val item = (container as? MediaItemsContainer.Item)?.media ?: return
-            binding.title.text = item.title
-            binding.subtitle.text = item.subtitle
-            binding.subtitle.isVisible = item.subtitle.isNullOrBlank().not()
-
-            binding.trackImageContainer.root.isVisible = item is EchoMediaItem.TrackItem
-            binding.listsImageContainer.root.isVisible = item is EchoMediaItem.Lists
-            binding.profileImageContainer.root.isVisible = item is EchoMediaItem.Profile
-
-            when (item) {
-                is EchoMediaItem.TrackItem -> binding.trackImageContainer.bind(item)
-                is EchoMediaItem.Lists -> binding.listsImageContainer.bind(item)
-                is EchoMediaItem.Profile -> binding.profileImageContainer.bind(item)
-            }
-
+            binding.bind(item)
             binding.more.setOnClickListener { listener.onLongClick(clientId, item, transitionView) }
         }
 
@@ -134,6 +121,22 @@ sealed class MediaContainerViewHolder(
                     clientId,
                     listener,
                 )
+            }
+            
+            fun NewItemMediaBinding.bind(item:EchoMediaItem){
+                title.text = item.title
+                subtitle.text = item.subtitle
+                subtitle.isVisible = item.subtitle.isNullOrBlank().not()
+
+                trackImageContainer.root.isVisible = item is EchoMediaItem.TrackItem
+                listsImageContainer.root.isVisible = item is EchoMediaItem.Lists
+                profileImageContainer.root.isVisible = item is EchoMediaItem.Profile
+
+                when (item) {
+                    is EchoMediaItem.TrackItem -> trackImageContainer.bind(item)
+                    is EchoMediaItem.Lists -> listsImageContainer.bind(item)
+                    is EchoMediaItem.Profile -> profileImageContainer.bind(item)
+                }
             }
         }
     }

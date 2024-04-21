@@ -95,6 +95,16 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun addToQueue(clientId: String, track: Track, end: Boolean) =
+        addToQueue(clientId, listOf(track), end)
+
+    fun addToQueue(clientId: String, tracks: List<Track>, end:Boolean) {
+        viewModelScope.launch {
+            val index = if (end) global.queue.size else 0
+            global.addTracks(clientId, tracks, index)
+        }
+    }
+
     private fun playRadio(clientId: String, block: suspend RadioClient.() -> Playlist) {
         val client = extensionListFlow.getClient(clientId)
         viewModelScope.launch(Dispatchers.IO) {
@@ -116,6 +126,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun radio(clientId: String, track: Track) = playRadio(clientId) { radio(track) }
     fun radio(clientId: String, album: Album) = playRadio(clientId) { radio(album) }
     fun radio(clientId: String, artist: Artist) = playRadio(clientId) { radio(artist) }
     fun radio(clientId: String, playlist: Playlist) = playRadio(clientId) { radio(playlist) }
@@ -216,6 +227,7 @@ class PlayerViewModel @Inject constructor(
             onStartedPlaying(clientId, loaded)
         }
     }
+
 
     val current get() = global.current
     val currentIndex get() = global.currentIndexFlow.value

@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
@@ -15,6 +16,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -77,6 +79,20 @@ class ItemViewModel @Inject constructor(
                 }?.collectTo(relatedFeed)
             }
             loaded
+        }
+    }
+
+    val shareLink = MutableSharedFlow<String>()
+    fun onShare(client: ShareClient, item: EchoMediaItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val link = when (item) {
+                is EchoMediaItem.Lists.AlbumItem -> client.onShare(item.album)
+                is EchoMediaItem.Lists.PlaylistItem -> client.onShare(item.playlist)
+                is EchoMediaItem.Profile.ArtistItem -> client.onShare(item.artist)
+                is EchoMediaItem.Profile.UserItem -> client.onShare(item.user)
+                is EchoMediaItem.TrackItem -> client.onShare(item.track)
+            }
+            shareLink.emit(link)
         }
     }
 }

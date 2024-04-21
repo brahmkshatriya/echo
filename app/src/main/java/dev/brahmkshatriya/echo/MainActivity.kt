@@ -21,7 +21,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.playback.PlaybackService
-import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
@@ -31,6 +30,7 @@ import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
         navView.setOnItemReselectedListener {
-            uiViewModel.navigationReselected.value = uiViewModel.navIds.indexOf(it.itemId)
+            emit(uiViewModel.navigationReselected) { uiViewModel.navIds.indexOf(it.itemId) }
         }
         val isRail = binding.navView is NavigationRailView
 

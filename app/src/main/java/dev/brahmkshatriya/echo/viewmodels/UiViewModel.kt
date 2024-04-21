@@ -52,7 +52,7 @@ class UiViewModel @Inject constructor(
     }
 
     val navigation = MutableStateFlow(0)
-    val navigationReselected = MutableStateFlow(0)
+    val navigationReselected = MutableSharedFlow<Int>()
     val navIds = listOf(
         R.id.homeFragment,
         R.id.searchFragment,

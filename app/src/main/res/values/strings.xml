@@ -113,6 +113,10 @@
     <string name="extension_out_of_date">Extension is out of date</string>
     <string name="playlist_favourite">Liked Songs</string>
     <string name="playlist_favourite_desc">All your liked songs in one place.</string>
+    <string name="add_to_queue">Add to Queue</string>
+    <string name="play_next">Play Next</string>
+    <string name="save_to_playlist">Save to playlist</string>
+    <string name="share">Share</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

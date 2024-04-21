@@ -12,4 +12,5 @@ data class Artist(
     val subtitle: String? = null,
     val description: String? = null,
     val followers: Int? = null,
+    val isFollowing : Boolean = false,
 ) : User(id, name, cover), Parcelable

@@ -7,11 +7,11 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
-import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 
 fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
     val extensionViewModel by fragment.activityViewModels<ExtensionViewModel>()
@@ -41,7 +41,7 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
 
     fragment.observe(loginUserViewModel.currentUser) { (client, user) ->
         if (client is LoginClient) {
-            user?.cover.loadWith(settings, R.drawable.ic_account_circle) {
+            user?.cover.loadWith(settings, R.drawable.ic_account_circle_48dp) {
                 menu.findItem(R.id.menu_settings).icon = it
             }
         }

@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Item
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
+import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -60,7 +61,7 @@ class MediaClickListener(
                 val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
                 val client = playerViewModel.extensionListFlow.getClient(clientId)
                 client ?: return noClient()
-                if(client !is TrackClient) return trackNotSupported(client.metadata.name)
+                if (client !is TrackClient) return trackNotSupported(client.metadata.name)
                 playerViewModel.play(clientId, item.track, 0)
             }
 
@@ -71,7 +72,8 @@ class MediaClickListener(
     override fun onLongClick(
         clientId: String?, item: EchoMediaItem, transitionView: View
     ): Boolean {
-        openItem(clientId, item, transitionView)
+        clientId ?: return run { noClient();false }
+        ItemBottomSheet.newInstance(clientId, item, false).show(fragmentManager, null)
         return true
     }
 
