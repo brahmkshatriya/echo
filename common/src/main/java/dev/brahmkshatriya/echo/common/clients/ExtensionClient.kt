@@ -14,4 +14,5 @@ abstract class ExtensionClient {
     fun setPreferences(preferences: SharedPreferences) {
         _preferences = preferences
     }
+    open suspend fun onExtensionSelected() {}
 }

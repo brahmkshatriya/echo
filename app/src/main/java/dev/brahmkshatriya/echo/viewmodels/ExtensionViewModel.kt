@@ -51,7 +51,7 @@ class ExtensionViewModel @Inject constructor(
                     list ?: return@collectLatest
                     val id = preferences.getString(LAST_EXTENSION_KEY, null)
                     val client = list.find { it.metadata.id == id } ?: list.firstOrNull()
-                    setLoginUser(client)
+                    setupClient(client)
                 }
             }
             trackerPluginRepo.getAllPlugins {
@@ -62,11 +62,14 @@ class ExtensionViewModel @Inject constructor(
 
     fun setExtension(client: ExtensionClient) {
         preferences.edit().putString(LAST_EXTENSION_KEY, client.metadata.id).apply()
-        viewModelScope.launch(Dispatchers.IO) { setLoginUser(client) }
+        viewModelScope.launch(Dispatchers.IO) {
+            setupClient(client)
+        }
     }
 
     private val userDao = database.userDao()
-    private suspend fun setLoginUser(client: ExtensionClient?) {
+    private suspend fun setupClient(client: ExtensionClient?) {
+        client?.onExtensionSelected()
         setLoginUser(client, userDao, userFlow)
         extensionFlow.value = client
     }

@@ -111,6 +111,8 @@
     <string name="login_required">Login Required</string>
     <string name="error">Error</string>
     <string name="extension_out_of_date">Extension is out of date</string>
+    <string name="playlist_favourite">Liked Songs</string>
+    <string name="playlist_favourite_desc">All your liked songs in one place.</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
