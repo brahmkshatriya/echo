@@ -55,4 +55,5 @@
     <string name="select_an_account">Velg en konto</string>
     <string name="not_logged_in">Ikke innlogget</string>
     <string name="error">Feil</string>
+    <string name="logout"></string>
 </resources>
