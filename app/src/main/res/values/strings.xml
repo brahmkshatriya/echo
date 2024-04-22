@@ -1,11 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Echo</string>
-
     <string name="home">Home</string>
     <string name="library">Library</string>
     <string name="search">Search</string>
-
     <string name="extensions">Extensions</string>
     <string name="settings">Settings</string>
     <string name="play_pause">Play/Pause</string>
@@ -103,7 +101,7 @@
     <string name="stream_quality">Stream Quality</string>
     <string name="stream_quality_summary">Select the quality of the stream</string>
     <string name="no_user_found">No user found</string>
-    <string name="logout">Logout</string>
+    <string name="logout">Log out</string>
     <string name="switch_account">Switch Account</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="add_account">Add Account</string>
