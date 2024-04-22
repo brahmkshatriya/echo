@@ -181,4 +181,5 @@
     <string name="no_streams_found"></string>
     <string name="not_loading"></string>
     <string name="create_playlist"></string>
+    <string name="logout"></string>
 </resources>
