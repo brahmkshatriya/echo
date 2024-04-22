@@ -185,4 +185,5 @@
     <string name="playlist_name_empty"></string>
     <string name="animations_summary"></string>
     <string name="is_not_supported"></string>
+    <string name="logout"></string>
 </resources>
