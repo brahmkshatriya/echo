@@ -156,15 +156,16 @@ class ItemFragment : Fragment() {
         })
 
         fun concatAdapter(item: EchoMediaItem): ConcatAdapter {
+            val itemsAdapter = mediaContainerAdapter.withLoaders()
             return when (item) {
                 is AlbumItem ->
-                    ConcatAdapter(albumHeaderAdapter, trackAdapter, mediaContainerAdapter)
+                    ConcatAdapter(albumHeaderAdapter, trackAdapter, itemsAdapter)
 
                 is PlaylistItem ->
-                    ConcatAdapter(playlistHeaderAdapter, trackAdapter, mediaContainerAdapter)
+                    ConcatAdapter(playlistHeaderAdapter, trackAdapter, itemsAdapter)
 
-                is ArtistItem -> ConcatAdapter(artistHeaderAdapter, mediaContainerAdapter)
-                else -> mediaContainerAdapter.withLoaders()
+                is ArtistItem -> ConcatAdapter(artistHeaderAdapter, itemsAdapter)
+                else -> itemsAdapter
             }
         }
 

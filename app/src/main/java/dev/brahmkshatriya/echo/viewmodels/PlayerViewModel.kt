@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.di.TrackerModule
@@ -182,10 +183,19 @@ class PlayerViewModel @Inject constructor(
 
     fun createException(exception: PlaybackException) {
         viewModelScope.launch {
-            throwableFlow.emit(exception)
+            val streamableTrack = global.current
+            val currentAudio = global.currentAudioFlow.value
+            throwableFlow.emit(
+                PlayerException(exception.cause ?: exception, streamableTrack, currentAudio)
+            )
         }
     }
 
+    data class PlayerException(
+        override val cause: Throwable,
+        val streamableTrack: Queue.StreamableTrack?,
+        val currentAudio: StreamableAudio?
+    ) : Throwable(cause.message)
 
     fun updateList(mediaItems: List<String>, index: Int) {
         global.updateQueue(mediaItems)

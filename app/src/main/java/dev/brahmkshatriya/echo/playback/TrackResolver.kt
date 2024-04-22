@@ -41,12 +41,9 @@ class TrackResolver(
             val loadedTrack = getTrack(track, client)
             loadAudio(loadedTrack, client)
         }
-        return DataSpec.Builder()
-            .setUri(dataSpec.uri.toString())
-            .setCustomData(streamable)
-            .build()
+        global.currentAudioFlow.value = streamable
+        return dataSpec.copy(customData = streamable)
     }
-
 
     private fun getTrack(
         streamableTrack: Queue.StreamableTrack, client: TrackClient

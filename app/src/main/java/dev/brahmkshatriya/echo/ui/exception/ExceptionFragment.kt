@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
@@ -54,7 +55,7 @@ class ExceptionFragment : Fragment() {
         val throwable = viewmodel.throwable ?: return
 
         binding.exceptionMessage.title = requireContext().getTitle(throwable)
-        binding.exceptionDetails.text = throwable.stackTraceToString()
+        binding.exceptionDetails.text = requireContext().getDetails(throwable)
 
         binding.exceptionMessage.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -79,6 +80,18 @@ class ExceptionFragment : Fragment() {
         fun Context.getTitle(throwable: Throwable) = when (throwable) {
             is NoSuchMethodError -> getString(R.string.extension_out_of_date)
             else -> throwable.message ?: getString(R.string.error)
+        }
+
+        @Suppress("UnusedReceiverParameter")
+        fun Context.getDetails(throwable: Throwable) = when (throwable) {
+            is PlayerViewModel.PlayerException -> """
+Current : ${throwable.currentAudio.toString()}
+Stream : ${throwable.streamableTrack.toString()}
+
+${throwable.cause.stackTraceToString()}
+""".trimIndent()
+
+            else -> throwable.stackTraceToString()
         }
     }
 }

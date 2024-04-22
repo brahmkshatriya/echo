@@ -69,8 +69,10 @@ class ExtensionViewModel @Inject constructor(
 
     private val userDao = database.userDao()
     private suspend fun setupClient(client: ExtensionClient?) {
-        client?.onExtensionSelected()
-        setLoginUser(client, userDao, userFlow)
+        tryWith {
+            client?.onExtensionSelected()
+            setLoginUser(client, userDao, userFlow)
+        }
         extensionFlow.value = client
     }
 

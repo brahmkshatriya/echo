@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.playback
 
 import androidx.media3.common.MediaItem
+import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ class Queue {
 
     val currentIndexFlow = MutableStateFlow(-1)
     val current get() = queue.getOrNull(currentIndexFlow.value)
+    val currentAudioFlow = MutableStateFlow<StreamableAudio?>(null)
 
     fun getTrack(mediaId: String?) = trackQueue.find { it.unloaded.id == mediaId }
 

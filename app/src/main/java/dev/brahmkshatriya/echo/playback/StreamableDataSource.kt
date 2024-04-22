@@ -42,13 +42,13 @@ class StreamableDataSource(
             ?: throw Exception("No audio found")
         val (source, spec) = when (audio) {
             is StreamableAudio.ByteStreamAudio -> {
-                val spec = DataSpec.Builder().setCustomData(audio).build()
+                val spec = dataSpec.copy(customData = audio)
                 byteStreamDataSourceFactory.createDataSource() to spec
             }
 
             is StreamableAudio.StreamableRequest -> {
                 val spec = audio.request.run {
-                    dataSpec.withUri(url.toUri()).withRequestHeaders(headers)
+                    dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
                 }
                 defaultDataSourceFactory.createDataSource() to spec
             }

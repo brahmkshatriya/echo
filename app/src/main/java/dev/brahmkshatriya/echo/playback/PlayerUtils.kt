@@ -1,8 +1,12 @@
 package dev.brahmkshatriya.echo.playback
 
+import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSpec
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlin.math.roundToLong
 
@@ -39,3 +43,29 @@ fun Long.toTimeString(): String {
     }
 }
 
+@OptIn(UnstableApi::class)
+fun DataSpec.copy(
+    uri: Uri? = null,
+    uriPositionOffset : Long? = null,
+    httpMethod : Int? = null,
+    httpBody : ByteArray? = null,
+    httpRequestHeaders : Map<String, String>? = null,
+    position : Long? = null,
+    length : Long? = null,
+    key : String? = null,
+    flags : Int? = null,
+    customData : Any? = null
+): DataSpec {
+    return DataSpec.Builder()
+        .setUri(uri ?: this.uri)
+        .setUriPositionOffset(uriPositionOffset ?: this.uriPositionOffset)
+        .setHttpMethod(httpMethod ?: this.httpMethod)
+        .setHttpBody(httpBody ?: this.httpBody)
+        .setHttpRequestHeaders(httpRequestHeaders ?: this.httpRequestHeaders)
+        .setPosition(position ?: this.position)
+        .setLength(length ?: this.length)
+        .setKey(key ?: this.key)
+        .setFlags(flags ?: this.flags)
+        .setCustomData(customData ?: this.customData)
+        .build()
+}
