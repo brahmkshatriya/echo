@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -101,7 +102,7 @@ class ItemFragment : Fragment() {
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
+        FastScrollerHelper.applyTo(binding.recyclerView)
         binding.toolBar.title = item.title.trim()
         binding.endIcon.load(item.placeHolder())
         item.cover.loadInto(binding.cover, item.placeHolder())

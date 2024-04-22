@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollToAnd
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
+import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -52,7 +53,7 @@ class HomeFragment : Fragment() {
             binding.appBarOutline.isVisible = offset > 0
             binding.toolBar.alpha = 1 - offset
         }
-
+        FastScrollerHelper.applyTo(binding.recyclerView)
         binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.refresh(true)

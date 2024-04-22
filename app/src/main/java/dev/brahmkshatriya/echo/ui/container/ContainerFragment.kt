@@ -11,6 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentCategoryBinding
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
+import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -52,6 +53,7 @@ class ContainerFragment : Fragment() {
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
+        FastScrollerHelper.applyTo(binding.recyclerView)
 
         if (viewModel.moreFlow == null) {
             val category = activityViewModel.moreFlow ?: return

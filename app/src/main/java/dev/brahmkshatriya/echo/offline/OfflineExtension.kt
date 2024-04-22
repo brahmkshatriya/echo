@@ -54,7 +54,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
     private fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }
 
     override fun getHomeFeed(genre: Genre?): PagedData<MediaItemsContainer> {
-        fun List<EchoMediaItem>.sorted() = sortedBy { it.title }
+        fun List<EchoMediaItem>.sorted() = sortedBy { it.title.lowercase() }
             .map { it.toMediaItemsContainer() }.toPaged()
         return when (genre?.id) {
             "Songs" -> library.songList.map { it.toTrack().toMediaItem() }.sorted()

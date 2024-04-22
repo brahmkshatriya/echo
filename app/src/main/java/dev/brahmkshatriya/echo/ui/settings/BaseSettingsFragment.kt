@@ -8,9 +8,9 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
-import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets

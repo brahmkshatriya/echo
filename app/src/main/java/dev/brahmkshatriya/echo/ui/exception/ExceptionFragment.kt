@@ -51,7 +51,6 @@ class ExceptionFragment : Fragment() {
         binding.exceptionMessage.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
         val throwable = viewmodel.throwable ?: return
 
         binding.exceptionMessage.title = requireContext().getTitle(throwable)

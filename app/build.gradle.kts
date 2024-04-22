@@ -65,9 +65,9 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:ksp:4.14.2")
-
     //noinspection GradleDependency WHY DOES UPDATING THIS CHANGE RECYCLER'S ANIMATION???
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
+    implementation("me.zhanghai.android.fastscroll:library:1.3.0")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     testImplementation("junit:junit:4.13.2")

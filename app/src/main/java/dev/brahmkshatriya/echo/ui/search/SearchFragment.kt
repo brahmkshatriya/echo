@@ -24,12 +24,13 @@ import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
@@ -66,6 +67,7 @@ class SearchFragment : Fragment() {
         }
 
         binding.toolBar.configureMainMenu(parent)
+        FastScrollerHelper.applyTo(binding.recyclerView)
 
         binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
         binding.swipeRefresh.setOnRefreshListener {
