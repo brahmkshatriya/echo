@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -96,7 +97,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             binding.recyclerView.adapter = ActionAdapter(getActions(item, true))
         }
         observe(viewModel.shareLink) {
-            createSnack(it)
+            requireContext().copyToClipboard(it, it)
         }
     }
 
@@ -121,11 +122,9 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     listOfNotNull(
                         if (client is LibraryClient)
                             ItemAction.Resource(
-                                R.drawable.ic_bookmark_outline,
-                                R.string.save_to_playlist
+                                R.drawable.ic_bookmark_outline, R.string.save_to_playlist
                             ) {
                                 createSnack("Not implemented")
-
                             }
                         else null,
                         if (client is RadioClient)
@@ -146,6 +145,11 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         if (client is RadioClient)
                             ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
                                 playerViewModel.radio(clientId, item.playlist)
+                            }
+                        else null,
+                        if (client is LibraryClient && item.playlist.isEditable)
+                            ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
+                                viewModel.deletePlaylist(clientId, item.playlist)
                             }
                         else null,
                     ) + item.playlist.authors.map {

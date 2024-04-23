@@ -13,8 +13,8 @@ class MediaItemAdapter(
 ) : RecyclerView.Adapter<MediaItemViewHolder>() {
 
     interface Listener {
-        fun onClick(clientId: String?, item: EchoMediaItem, transitionView: View)
-        fun onLongClick(clientId: String?, item: EchoMediaItem, transitionView: View): Boolean
+        fun onClick(clientId: String?, item: EchoMediaItem, transitionView: View?)
+        fun onLongClick(clientId: String?, item: EchoMediaItem, transitionView: View?): Boolean
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {

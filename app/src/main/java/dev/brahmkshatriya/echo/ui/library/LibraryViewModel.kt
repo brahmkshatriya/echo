@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
@@ -19,9 +20,10 @@ import javax.inject.Inject
 class LibraryViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionFlow: ExtensionModule.ExtensionFlow,
-    val userFlow: MutableSharedFlow<UserEntity?>
+    val userFlow: MutableSharedFlow<UserEntity?>,
 ) : CatchingViewModel(throwableFlow) {
 
+    val playlistCreatedFlow = MutableSharedFlow<Pair<String, Playlist>>()
     var recyclerPosition = 0
 
     val loading = MutableSharedFlow<Boolean>()
@@ -64,6 +66,16 @@ class LibraryViewModel @Inject constructor(
                 loadGenres(client)
             }
             loadFeed(client)
+        }
+    }
+
+    fun createPlaylist(title: String) {
+        val client = extensionFlow.value
+        if (client !is LibraryClient) return
+        viewModelScope.launch(Dispatchers.IO) {
+            val playlist = tryWith { client.createPlaylist(title, null) }
+                ?: return@launch
+            playlistCreatedFlow.emit(client.metadata.id to playlist)
         }
     }
 }

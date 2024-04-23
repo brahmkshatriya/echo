@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollToAnd
+import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
@@ -106,7 +106,7 @@ class HomeFragment : Fragment() {
             mediaContainerAdapter.submit(it)
         }
 
-        binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
+        binding.recyclerView.scrollTo(viewModel.recyclerPosition) {
             binding.appBarLayout.setExpanded(it < 1, false)
         }
         view.doOnLayout {

@@ -34,17 +34,15 @@ class MediaClickListener(
     private fun trackNotSupported(client: String) =
         fragment.createSnack(fragment.requireContext().trackNotSupported(client))
 
-    private fun openItem(clientId: String?, item: EchoMediaItem, transitionView: View) {
+    private fun openItem(clientId: String?, item: EchoMediaItem, transitionView: View?) {
         clientId ?: return noClient()
         fragment.openFragment(ItemFragment.newInstance(clientId, item), transitionView)
         afterOpening?.invoke()
     }
 
     private fun openContainer(
-        clientId: String?,
-        title: String,
-        flow: Flow<PagingData<MediaItemsContainer>>?,
-        transitionView: View
+        clientId: String?, title: String,
+        flow: Flow<PagingData<MediaItemsContainer>>?, transitionView: View?
     ) {
         clientId ?: return noClient()
         flow ?: return
@@ -54,7 +52,9 @@ class MediaClickListener(
         afterOpening?.invoke()
     }
 
-    override fun onClick(clientId: String?, item: EchoMediaItem, transitionView: View) {
+    override fun onClick(
+        clientId: String?, item: EchoMediaItem, transitionView: View?
+    ) {
         when (item) {
             is EchoMediaItem.TrackItem -> {
                 clientId ?: return noClient()
@@ -70,7 +70,7 @@ class MediaClickListener(
     }
 
     override fun onLongClick(
-        clientId: String?, item: EchoMediaItem, transitionView: View
+        clientId: String?, item: EchoMediaItem, transitionView: View?
     ): Boolean {
         clientId ?: return run { noClient();false }
         ItemBottomSheet.newInstance(clientId, item, false).show(fragmentManager, null)

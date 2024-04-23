@@ -90,6 +90,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="24dp"
             android:contentDescription="@string/create_playlist"
+            android:transitionName="createPlaylist"
             app:srcCompat="@drawable/ic_playlist_add" />
 
     </FrameLayout>

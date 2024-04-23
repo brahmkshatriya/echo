@@ -11,12 +11,14 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollToAnd
+import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
+import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
@@ -27,6 +29,8 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
+import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
@@ -110,11 +114,25 @@ class LibraryFragment : Fragment() {
             mediaContainerAdapter.submit(it)
         }
 
-        binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
+        binding.recyclerView.scrollTo(viewModel.recyclerPosition) {
             binding.appBarLayout.setExpanded(it < 1, false)
         }
         view.doOnLayout {
             binding.appBarOutline.alpha = 0f
+        }
+
+        binding.fabCreatePlaylist.setOnClickListener {
+            parent.openFragment(CreatePlaylistFragment(), it)
+        }
+
+        observe(viewModel.playlistCreatedFlow) { (clientId, playlist) ->
+            createSnack(SnackBar.Message(
+                getString(R.string.playlist_created, playlist.title),
+                SnackBar.Action(getString(R.string.view)) {
+                    mediaContainerAdapter.listener
+                        .onClick(clientId, playlist.toMediaItem(), null)
+                }
+            ))
         }
     }
 

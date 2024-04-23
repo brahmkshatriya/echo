@@ -1,11 +1,14 @@
 package dev.brahmkshatriya.echo.ui.item
 
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -14,8 +17,10 @@ import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +31,9 @@ import javax.inject.Inject
 @HiltViewModel
 class ItemViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionListFlow: ExtensionModule.ExtensionListFlow
+    val extensionListFlow: ExtensionModule.ExtensionListFlow,
+    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val context: Application
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
@@ -93,6 +100,14 @@ class ItemViewModel @Inject constructor(
                 is EchoMediaItem.TrackItem -> client.onShare(item.track)
             }
             shareLink.emit(link)
+        }
+    }
+
+    fun deletePlaylist(clientId: String, playlist: Playlist) {
+        val client = extensionListFlow.getClient(clientId) as? LibraryClient ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            tryWith { client.deletePlaylist(playlist) } ?: return@launch
+            mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
         }
     }
 }

@@ -15,10 +15,10 @@ import dev.brahmkshatriya.echo.databinding.FragmentMainBinding
 import dev.brahmkshatriya.echo.ui.home.HomeFragment
 import dev.brahmkshatriya.echo.ui.library.LibraryFragment
 import dev.brahmkshatriya.echo.ui.search.SearchFragment
-import dev.brahmkshatriya.echo.utils.setupTransition
-import dev.brahmkshatriya.echo.utils.startAnimation
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.startAnimation
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 class MainFragment : Fragment() {
@@ -27,9 +27,7 @@ class MainFragment : Fragment() {
     val viewModel by activityViewModels<UiViewModel>()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
@@ -64,9 +62,7 @@ class MainFragment : Fragment() {
                 view.translationY = view.height / 4f
                 view.alpha = 0f
                 startAnimation(
-                    view,
-                    view.animate().translationY(0f).alpha(1f),
-                    0.5f
+                    view, view.animate().translationY(0f).alpha(1f), 0.5f
                 )
             }
         }
@@ -77,7 +73,7 @@ class MainFragment : Fragment() {
         fun RecyclerView.first() =
             (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
 
-        fun RecyclerView.scrollToAnd(position: Int, block: (Int) -> Unit) = doOnLayout {
+        fun RecyclerView.scrollTo(position: Int, block: (Int) -> Unit) = doOnLayout {
             if (position < 1) return@doOnLayout
             (layoutManager as LinearLayoutManager).run {
                 scrollToPositionWithOffset(position, 0)

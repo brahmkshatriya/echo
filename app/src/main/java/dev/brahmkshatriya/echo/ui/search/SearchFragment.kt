@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollToAnd
+import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
@@ -178,7 +178,7 @@ class SearchFragment : Fragment() {
             quickSearchAdapter.submitList(it)
         }
 
-        binding.recyclerView.scrollToAnd(viewModel.recyclerPosition) {
+        binding.recyclerView.scrollTo(viewModel.recyclerPosition) {
             binding.appBarLayout.setExpanded(it < 1, false)
         }
 
