@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.ui.playlist
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -10,12 +10,14 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.playback.Queue.StreamableTrack
 import dev.brahmkshatriya.echo.playback.toTimeString
+import dev.brahmkshatriya.echo.ui.player.LifeCycleListAdapter
+import dev.brahmkshatriya.echo.ui.player.PlayerTrackAdapter
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.Flow
 
 class PlaylistAdapter(
-    private val current: Flow<StreamableTrack?>,
+    private val current: Flow<StreamableTrack?>?,
     private val callback: Callback
 ) : LifeCycleListAdapter<StreamableTrack, ItemPlaylistItemBinding>(PlayerTrackAdapter.DiffCallback) {
 
@@ -60,8 +62,10 @@ class PlaylistAdapter(
             callback.onItemClicked(bindingAdapterPosition)
         }
 
-        observe(current) {
-            binding.playlistCurrentItem.isVisible = it?.unloaded?.id == item.unloaded.id
+        current?.let {
+            observe(it) {
+                binding.playlistCurrentItem.isVisible = it?.unloaded?.id == item.unloaded.id
+            }
         }
     }
 

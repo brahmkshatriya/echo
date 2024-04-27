@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistBinding
+import dev.brahmkshatriya.echo.ui.playlist.PlaylistAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
@@ -18,7 +19,7 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
-class PlaylistFragment : Fragment() {
+class PlayerQueueFragment : Fragment() {
 
     private var binding by autoCleared<FragmentPlaylistBinding>()
     private val viewModel by activityViewModels<PlayerViewModel>()

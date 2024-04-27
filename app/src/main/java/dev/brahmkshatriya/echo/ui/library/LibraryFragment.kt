@@ -133,6 +133,7 @@ class LibraryFragment : Fragment() {
                         .onClick(clientId, playlist.toMediaItem(), null)
                 }
             ))
+            viewModel.refresh(true)
         }
     }
 

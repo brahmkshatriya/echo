@@ -97,7 +97,7 @@ class PlayerInfoFragment : Fragment() {
         override fun getItemCount() = 3
 
         override fun createFragment(position: Int) = when (position) {
-            0 -> PlaylistFragment()
+            0 -> PlayerQueueFragment()
             1 -> LyricsFragment()
             2 -> TrackDetailsFragment()
             else -> throw IllegalArgumentException("Invalid position")

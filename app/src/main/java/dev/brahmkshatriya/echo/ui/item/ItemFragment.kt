@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -32,9 +33,11 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
+import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
@@ -64,9 +67,7 @@ class ItemFragment : Fragment() {
     }
 
     private val args by lazy { requireArguments() }
-    private val clientId by lazy {
-        args.getString("clientId")!!
-    }
+    private val clientId by lazy { args.getString("clientId")!! }
 
     @Suppress("DEPRECATION")
     private val item by lazy {
@@ -215,6 +216,22 @@ class ItemFragment : Fragment() {
 
                 else -> Unit
             }
+
+            if (it is PlaylistItem && it.playlist.isEditable) {
+                binding.fabEditPlaylist.isVisible = true
+                binding.fabEditPlaylist.transitionName = "edit${it.playlist.id}"
+                binding.fabEditPlaylist.setOnClickListener { view1 ->
+                    openFragment(EditPlaylistFragment.newInstance(clientId, it.playlist), view1)
+                }
+            } else binding.fabEditPlaylist.isVisible = false
+        }
+
+        parentFragmentManager.setFragmentResultListener("reload", this) { _, bundle ->
+            if (bundle.getString("id") == item.id) viewModel.load()
+        }
+
+        parentFragmentManager.setFragmentResultListener("deleted", this) { _, bundle ->
+            if (bundle.getString("id") == item.id) parentFragmentManager.popBackStack()
         }
 
         observe(viewModel.relatedFeed) {

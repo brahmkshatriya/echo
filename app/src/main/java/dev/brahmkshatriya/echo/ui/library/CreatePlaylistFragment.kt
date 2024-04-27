@@ -50,4 +50,9 @@ class CreatePlaylistFragment : Fragment() {
         viewModel.createPlaylist(title)
         parentFragmentManager.popBackStack()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //TODO Shift to Fragment Result
+    }
 }

@@ -124,6 +124,8 @@
     <string name="playlist_created">Playlist Created : %1$s</string>
     <string name="delete_playlist">Delete Playlist</string>
     <string name="playlist_deleted">Playlist deleted</string>
+    <string name="edit_playlist">Edit Playlist</string>
+    <string name="playlist_description">Playlist Description</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

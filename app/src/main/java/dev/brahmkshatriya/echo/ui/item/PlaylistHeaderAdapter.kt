@@ -74,8 +74,8 @@ class PlaylistHeaderAdapter(
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
         val playlist = holder.playlist
-        binding.albumDescription.text = playlist.subtitle
-        binding.albumDescription.isVisible = !playlist.subtitle.isNullOrBlank()
+        binding.albumDescription.text = playlist.description
+        binding.albumDescription.isVisible = !playlist.description.isNullOrBlank()
         var info = binding.root.context.resources.getQuantityString(
             R.plurals.number_songs,
             playlist.tracks.size,

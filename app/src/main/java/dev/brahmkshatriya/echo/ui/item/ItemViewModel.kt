@@ -4,11 +4,9 @@ import android.app.Application
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -19,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +40,7 @@ class ItemViewModel @Inject constructor(
     val itemFlow = MutableStateFlow<EchoMediaItem?>(null)
     val relatedFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
 
-    override fun onInitialize() {
+    fun load() {
         viewModelScope.launch {
             tryWith {
                 val item = item ?: throw IllegalArgumentException("Item is null")
@@ -70,6 +69,8 @@ class ItemViewModel @Inject constructor(
             }
         }
     }
+
+    override fun onInitialize() { load() }
 
     private inline fun <reified T> getClient(
         client: ExtensionClient?, block: T.() -> EchoMediaItem?
@@ -104,10 +105,6 @@ class ItemViewModel @Inject constructor(
     }
 
     fun deletePlaylist(clientId: String, playlist: Playlist) {
-        val client = extensionListFlow.getClient(clientId) as? LibraryClient ?: return
-        viewModelScope.launch(Dispatchers.IO) {
-            tryWith { client.deletePlaylist(playlist) } ?: return@launch
-            mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
-        }
+        deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
     }
 }

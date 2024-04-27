@@ -245,7 +245,6 @@ object MediaStoreUtils {
             MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, arrayOf(
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists._ID,
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists.NAME,
-                @Suppress("DEPRECATION") MediaStore.Audio.Playlists.AUTHOR,
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists.DATE_MODIFIED
             ), null, null, null
         )?.use {
@@ -255,17 +254,12 @@ object MediaStoreUtils {
             val playlistNameColumn = it.getColumnIndexOrThrow(
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists.NAME
             )
-            //Had to use author as description :sob:
-            val playlistAuthorColumn = it.getColumnIndexOrThrow(
-                @Suppress("DEPRECATION") MediaStore.Audio.Playlists.AUTHOR
-            )
             val playlistModifiedDateColumn = it.getColumnIndexOrThrow(
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists.DATE_MODIFIED
             )
             while (it.moveToNext()) {
                 val playlistId = it.getLong(playlistIdColumn)
                 val playlistName = it.getString(playlistNameColumn)?.ifEmpty { null }
-                val description = it.getString(playlistAuthorColumn)?.ifEmpty { null }
                 val modifiedDate = it.getLong(playlistModifiedDateColumn)
                 val content = mutableListOf<Long>()
                 context.contentResolver.query(
@@ -285,7 +279,7 @@ object MediaStoreUtils {
                 }
 
                 val playlist =
-                    MPlaylist(playlistId, playlistName, mutableSetOf(), description, modifiedDate)
+                    MPlaylist(playlistId, playlistName, mutableSetOf(), null, modifiedDate)
                 playlists.add(Pair(playlist, content))
             }
         }
@@ -613,21 +607,32 @@ object MediaStoreUtils {
     private fun Cursor.getColumnIndexOrNull(columnName: String): Int? =
         getColumnIndex(columnName).let { if (it == -1) null else it }
 
-    fun Context.createPlaylist(title: String, description: String? = null): Long {
+    fun Context.createPlaylist(title: String): Long {
         val values = ContentValues()
         values.put(
             @Suppress("DEPRECATION") MediaStore.Audio.Playlists.NAME,
             title
         )
-        values.put(
-            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.AUTHOR,
-            description
-        )
-
         return contentResolver.insert(
             @Suppress("DEPRECATION") MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
             values
         )?.lastPathSegment!!.toLong()
+    }
+
+    fun Context.editPlaylist(id: Long, title: String) {
+        val values = ContentValues()
+        values.put(
+            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.NAME,
+            title
+        )
+        contentResolver.update(
+            @Suppress("DEPRECATION")
+            MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+            values,
+            @Suppress("DEPRECATION")
+            MediaStore.Audio.Playlists._ID + "=?",
+            arrayOf(id.toString())
+        )
     }
 
     fun Context.deletePlaylist(id: Long) {
@@ -650,10 +655,9 @@ object MediaStoreUtils {
             songId
         )
         contentResolver.insert(
-            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.getContentUri(
-                "external",
-                playlistId
-            ), values
+            @Suppress("DEPRECATION")
+            MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId),
+            values
         )
     }
 

@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.offline
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
+import dev.brahmkshatriya.echo.common.clients.EditPlayerListenerClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
@@ -27,12 +28,14 @@ import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.deletePlaylist
+import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
 
 class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient, TrackClient,
-    AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient {
+    AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
+    EditPlayerListenerClient {
     override val metadata = ExtensionMetadata(
         id = "echo_offline",
         name = "Offline",
@@ -43,6 +46,9 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
     )
     override val settings: List<Setting> = listOf()
     lateinit var library: MediaStoreUtils.LibraryStoreClass
+    private fun find(artist: Artist) =
+        library.artistMap[artist.id.toLongOrNull()]
+
     override suspend fun onExtensionSelected() {
         library = MediaStoreUtils.getAllSongs(context)
     }
@@ -296,8 +302,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         return liked
     }
 
-    override suspend fun createPlaylist(name: String, description: String?): Playlist {
-        val id = context.createPlaylist(name, description)
+    override suspend fun createPlaylist(title: String, description: String?): Playlist {
+        val id = context.createPlaylist(title)
         library = MediaStoreUtils.getAllSongs(context)
         return library.playlistList.find { it.id == id }!!.toPlaylist()
     }
@@ -307,27 +313,44 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         library = MediaStoreUtils.getAllSongs(context)
     }
 
-    override suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>) {
+    override suspend fun editPlaylistMetadata(
+        playlist: Playlist, title: String, description: String?
+    ) {
+        context.editPlaylist(playlist.id.toLong(), title)
+    }
+
+    override suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>): List<Track> {
         tracks.forEach {
             context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong())
         }
-        library = MediaStoreUtils.getAllSongs(context)
+        return playlist.tracks.toMutableList().apply {
+            addAll(tracks)
+        }
     }
 
-    override suspend fun removeTracksFromPlaylist(playlist: Playlist, trackIndexes: List<Int>) {
+    override suspend fun removeTracksFromPlaylist(
+        playlist: Playlist, trackIndexes: List<Int>
+    ): List<Track> {
         trackIndexes.forEach {
             context.removeSongFromPlaylist(playlist.id.toLong(), playlist.tracks[it].id.toLong())
         }
-        library = MediaStoreUtils.getAllSongs(context)
+        return playlist.tracks.toMutableList().apply {
+            trackIndexes.forEach { removeAt(it) }
+        }
     }
 
-    override suspend fun moveTrackInPlaylist(playlist: Playlist, fromIndex: Int, toIndex: Int) {
+    override suspend fun moveTrackInPlaylist(
+        playlist: Playlist, fromIndex: Int, toIndex: Int
+    ): List<Track> {
         context.moveSongInPlaylist(playlist.id.toLong(), fromIndex, toIndex)
-        library = MediaStoreUtils.getAllSongs(context)
+        return playlist.tracks.toMutableList().apply {
+            val item = removeAt(fromIndex)
+            add(toIndex, item)
+        }
     }
 
-    private fun find(artist: Artist) =
-        library.artistMap[artist.id.toLongOrNull()]
+    override suspend fun onEnterPlaylistEditor(playlist: Playlist) {}
+    override suspend fun onExitPlaylistEditor(playlist: Playlist) {
+        library = MediaStoreUtils.getAllSongs(context)
+    }
 }
-
-

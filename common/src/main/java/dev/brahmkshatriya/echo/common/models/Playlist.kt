@@ -13,6 +13,7 @@ data class Playlist(
     val tracks: List<Track> = listOf(),
     val creationDate: String? = null,
     val duration: Long? = null,
+    val description: String? = null,
     val subtitle: String? = null,
     val extras: Map<String, String> = mapOf()
 ) : Parcelable
