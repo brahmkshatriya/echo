@@ -56,7 +56,7 @@ fun MediaStoreUtils.MArtist?.toArtist() = Artist(
 fun MediaStoreUtils.MPlaylist.toPlaylist() = Playlist(
     id.toString(),
     title ?: "Unknown",
-    description == null,
+    true,
     songList.firstOrNull()?.toTrack()?.cover,
     listOf(),
     songList.map { it.toTrack() },

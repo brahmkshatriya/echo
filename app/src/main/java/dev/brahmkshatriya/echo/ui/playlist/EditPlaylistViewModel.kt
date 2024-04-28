@@ -46,28 +46,37 @@ class EditPlaylistViewModel @Inject constructor(
     }
 
     fun changeCover(clientId: String, playlist: Playlist, file: File?) {
-        client<EditPlaylistCoverClient>(clientId){
+        client<EditPlaylistCoverClient>(clientId) {
             it.editPlaylistCover(playlist, file)
         }
     }
 
 
     val currentTracks = MutableStateFlow<List<Track>?>(null)
+    private fun edit(block: MutableList<Track>.() -> Unit) {
+        currentTracks.value = currentTracks.value?.toMutableList()?.apply {
+            block()
+        }
+    }
+
     fun removeTracks(clientId: String, playlist: Playlist, indexes: List<Int>) {
-        libraryClient(clientId) {
-            currentTracks.value = it.removeTracksFromPlaylist(playlist, indexes)
+        libraryClient(clientId) { client ->
+            client.removeTracksFromPlaylist(playlist, indexes)
+            edit { indexes.forEach { removeAt(it) } }
         }
     }
 
     fun moveTracks(clientId: String, playlist: Playlist, from: Int, to: Int) {
-        libraryClient(clientId) {
-            currentTracks.value = it.moveTrackInPlaylist(playlist, from, to)
+        libraryClient(clientId) { client ->
+            client.moveTrackInPlaylist(playlist, from, to)
+            edit { add(to, removeAt(from)) }
         }
     }
 
     fun addTracks(clientId: String, playlist: Playlist, tracks: List<Track>) {
-        libraryClient(clientId) {
-            currentTracks.value = it.addTracksToPlaylist(playlist, tracks)
+        libraryClient(clientId) { client ->
+            client.addTracksToPlaylist(playlist, tracks)
+            edit { addAll(tracks) }
         }
     }
 
@@ -76,13 +85,13 @@ class EditPlaylistViewModel @Inject constructor(
     }
 
     fun onEditorEnter(clientId: String, playlist: Playlist) {
-        client<EditPlayerListenerClient>(clientId){
+        client<EditPlayerListenerClient>(clientId) {
             it.onEnterPlaylistEditor(playlist)
         }
     }
 
     fun onEditorExit(clientId: String, playlist: Playlist) {
-        client<EditPlayerListenerClient>(clientId){
+        client<EditPlayerListenerClient>(clientId) {
             it.onExitPlaylistEditor(playlist)
         }
     }

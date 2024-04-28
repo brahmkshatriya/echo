@@ -294,6 +294,8 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         }
     }
 
+    override suspend fun listEditablePlaylists() = library.playlistList.map { it.toPlaylist() }
+
     override suspend fun likeTrack(track: Track, liked: Boolean): Boolean {
         val playlist = library.likedPlaylist.toPlaylist()
         if (liked) context.addSongToPlaylist(playlist.id.toLong(), track.id.toLong(), 0)
@@ -319,34 +321,24 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         context.editPlaylist(playlist.id.toLong(), title)
     }
 
-    override suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>): List<Track> {
+    override suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>) {
         tracks.forEach {
             context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong())
-        }
-        return playlist.tracks.toMutableList().apply {
-            addAll(tracks)
         }
     }
 
     override suspend fun removeTracksFromPlaylist(
         playlist: Playlist, trackIndexes: List<Int>
-    ): List<Track> {
+    ) {
         trackIndexes.forEach {
             context.removeSongFromPlaylist(playlist.id.toLong(), playlist.tracks[it].id.toLong())
-        }
-        return playlist.tracks.toMutableList().apply {
-            trackIndexes.forEach { removeAt(it) }
         }
     }
 
     override suspend fun moveTrackInPlaylist(
         playlist: Playlist, fromIndex: Int, toIndex: Int
-    ): List<Track> {
+    ) {
         context.moveSongInPlaylist(playlist.id.toLong(), fromIndex, toIndex)
-        return playlist.tracks.toMutableList().apply {
-            val item = removeAt(fromIndex)
-            add(toIndex, item)
-        }
     }
 
     override suspend fun onEnterPlaylistEditor(playlist: Playlist) {}

@@ -9,11 +9,12 @@ import dev.brahmkshatriya.echo.common.models.Track
 interface LibraryClient {
     suspend fun getLibraryGenres(): List<Genre>
     fun getLibraryFeed(genre: Genre?): PagedData<MediaItemsContainer>
+    suspend fun listEditablePlaylists() : List<Playlist>
     suspend fun likeTrack(track: Track, liked: Boolean): Boolean
     suspend fun createPlaylist(title: String, description: String?): Playlist
     suspend fun deletePlaylist(playlist: Playlist)
     suspend fun editPlaylistMetadata(playlist: Playlist, title: String, description: String?)
-    suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>): List<Track>
-    suspend fun removeTracksFromPlaylist(playlist: Playlist, trackIndexes: List<Int>): List<Track>
-    suspend fun moveTrackInPlaylist(playlist: Playlist, fromIndex: Int, toIndex: Int): List<Track>
+    suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>)
+    suspend fun removeTracksFromPlaylist(playlist: Playlist, trackIndexes: List<Int>)
+    suspend fun moveTrackInPlaylist(playlist: Playlist, fromIndex: Int, toIndex: Int)
 }
