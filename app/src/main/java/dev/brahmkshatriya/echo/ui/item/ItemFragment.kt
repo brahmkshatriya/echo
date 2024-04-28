@@ -35,7 +35,6 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
-import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter.Companion.withLoaders
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper

@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Category
@@ -22,6 +23,19 @@ class MediaContainerAdapter(
 ) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
 
     var clientId: String? = null
+    fun withLoaders(): ConcatAdapter {
+        val footer = MediaContainerLoadingAdapter(fragment) { retry() }
+        val header = MediaContainerLoadingAdapter(fragment) { retry() }
+        val empty = MediaContainerEmptyAdapter()
+        addLoadStateListener { loadStates ->
+            empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
+                LoadState.Loading
+            else LoadState.NotLoading(false)
+            header.loadState = loadStates.refresh
+            footer.loadState = loadStates.append
+        }
+        return ConcatAdapter(empty, header, this, footer)
+    }
 
     object DiffCallback : DiffUtil.ItemCallback<MediaItemsContainer>() {
         override fun areItemsTheSame(

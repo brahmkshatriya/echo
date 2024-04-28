@@ -126,6 +126,8 @@
     <string name="playlist_deleted">Playlist deleted</string>
     <string name="edit_playlist">Edit Playlist</string>
     <string name="playlist_description">Playlist Description</string>
+    <string name="nothing_to_show">Nothing to show</string>
+    <string name="crying_af" translatable="false">(;-;)</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

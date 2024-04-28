@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
-import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
 import dev.brahmkshatriya.echo.databinding.ItemErrorBinding
@@ -78,31 +77,44 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return LoadViewHolder(
-            when (loadState) {
-                is LoadState.Error -> {
-                    when (loadState.error) {
-                        is LoginRequiredException -> Container.LoginRequired(
-                            ItemLoginRequiredBinding.inflate(inflater, parent, false),
-                            listener
-                        )
+            when (getStateViewType(loadState)) {
 
-                        else -> Container.Error(
-                            ItemErrorBinding.inflate(inflater, parent, false),
-                            listener
-                        )
-                    }
-                }
-
-                is LoadState.Loading -> Container.Loading(
+                0 -> Container.Loading(
                     SkeletonItemContainerBinding.inflate(inflater, parent, false)
                 )
 
-                is LoadState.NotLoading -> Container.NotLoading(
+                1 -> Container.NotLoading(
                     ItemNotLoadingBinding.inflate(inflater, parent, false), listener
                 )
+
+                2 -> Container.Error(
+                    ItemErrorBinding.inflate(inflater, parent, false),
+                    listener
+                )
+
+                3 -> Container.LoginRequired(
+                    ItemLoginRequiredBinding.inflate(inflater, parent, false),
+                    listener
+                )
+
+                else -> throw IllegalStateException()
             }
 
         )
+    }
+
+    override fun getStateViewType(loadState: LoadState): Int {
+        return when (loadState) {
+            is LoadState.Loading -> 0
+            is LoadState.NotLoading -> 1
+            is LoadState.Error -> {
+                when (loadState.error) {
+                    is LoginRequiredException -> 3
+                    else -> 2
+                }
+            }
+
+        }
     }
 
     override fun onBindViewHolder(holder: LoadViewHolder, loadState: LoadState) {
@@ -125,16 +137,4 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
             )
         }
     })
-
-    companion object {
-        fun MediaContainerAdapter.withLoaders(): ConcatAdapter {
-            val footer = MediaContainerLoadingAdapter(fragment) { retry() }
-            val header = MediaContainerLoadingAdapter(fragment) { retry() }
-            addLoadStateListener { loadStates ->
-                header.loadState = loadStates.refresh
-                footer.loadState = loadStates.append
-            }
-            return ConcatAdapter(header, this, footer)
-        }
-    }
 }
