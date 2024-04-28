@@ -10,6 +10,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.EchoApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.utils.ColorListPreference
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 
@@ -75,6 +76,26 @@ class LookFragment : BaseSettingsFragment() {
                 }
 
                 SwitchPreferenceCompat(context).apply {
+                    key = CUSTOM_THEME_KEY
+                    title = getString(R.string.custom_theme_color)
+                    summary = getString(R.string.custom_theme_color_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
+                    onPreferenceChangeListener = uiListener {
+                        screen.findPreference<Preference>(COLOR_KEY)?.isEnabled = it as Boolean
+                    }
+                    addPreference(this)
+                }
+
+                ColorListPreference(this@LookPreference).apply {
+                    key = COLOR_KEY
+                    isEnabled = preferences.getBoolean(CUSTOM_THEME_KEY, false)
+                    listener = ColorListPreference.Listener { createSnack(message) }
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
                     key = AMOLED_KEY
                     title = getString(R.string.amoled)
                     summary = getString(R.string.amoled_summary)
@@ -131,6 +152,8 @@ class LookFragment : BaseSettingsFragment() {
 
     companion object {
         const val THEME_KEY = "theme"
+        const val CUSTOM_THEME_KEY = "custom_theme"
+        const val COLOR_KEY = "theme_color"
         const val AMOLED_KEY = "amoled"
         const val DYNAMIC_PLAYER = "dynamic_player"
         const val ANIMATIONS_KEY = "animations"

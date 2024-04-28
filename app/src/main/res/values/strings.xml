@@ -128,6 +128,13 @@
     <string name="playlist_description">Playlist Description</string>
     <string name="nothing_to_show">Nothing to show</string>
     <string name="crying_af" translatable="false">(;-;)</string>
+    <string name="add_color">Add Color</string>
+    <string name="custom_theme_color">Custom Theme Color</string>
+    <string name="custom_theme_color_summary">Use a custom theme color, instead of system theme.</string>
+    <string name="choose_a_color">Choose a color</string>
+    <string name="add">Add</string>
+    <string name="custom_colors">Custom Colors</string>
+    <string name="random">Random</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

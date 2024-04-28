@@ -9,6 +9,8 @@ import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.COLOR_KEY
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.CUSTOM_THEME_KEY
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.THEME_KEY
 import javax.inject.Inject
 
@@ -31,14 +33,20 @@ class EchoApplication : Application() {
                 false -> null
             }
 
-//            val blue = app.resources.getColor(R.color.blue, app.theme)
+            val customColor = if (!preferences.getBoolean(CUSTOM_THEME_KEY, false)) null
+            else preferences.getInt(COLOR_KEY, -1).takeIf { it != -1 }
 
-            val options = DynamicColorsOptions.Builder()
-                .setOnAppliedCallback { activity ->
-                    theme?.let { ThemeUtils.applyThemeOverlay(activity, it) }
+            val builder = if (customColor != null)
+                DynamicColorsOptions.Builder().setContentBasedSource(customColor)
+            else DynamicColorsOptions.Builder()
+
+            theme?.let {
+                builder.setOnAppliedCallback {
+                    ThemeUtils.applyThemeOverlay(it, theme)
                 }
-                .build()
-            DynamicColors.applyToActivitiesIfAvailable(app, options)
+            }
+
+            DynamicColors.applyToActivitiesIfAvailable(app, builder.build())
 
             when (preferences.getString(THEME_KEY, "system")) {
                 "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
