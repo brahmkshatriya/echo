@@ -31,9 +31,11 @@ class EditPlaylistViewModel @Inject constructor(
         client(clientId, block)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> client(clientId: String, block: suspend (client: T) -> Unit) {
-        val client = extensionListFlow.getClient(clientId) as? T ?: return
+    private inline fun <reified T> client(
+        clientId: String, crossinline block: suspend (client: T) -> Unit
+    ) {
+        val client = extensionListFlow.getClient(clientId)
+        if(client !is T) return
         viewModelScope.launch(Dispatchers.IO) {
             tryWith { block.invoke(client) }
         }

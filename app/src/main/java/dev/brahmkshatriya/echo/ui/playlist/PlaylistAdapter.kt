@@ -62,11 +62,11 @@ class PlaylistAdapter(
             callback.onItemClicked(bindingAdapterPosition)
         }
 
-        current?.let {
-            observe(it) {
+        current?.let { currentFlow ->
+            observe(currentFlow) {
                 binding.playlistCurrentItem.isVisible = it?.unloaded?.id == item.unloaded.id
             }
-        }
+        } ?: { binding.playlistCurrentItem.isVisible = false }
     }
 
 

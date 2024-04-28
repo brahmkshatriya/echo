@@ -10,10 +10,10 @@
         android:id="@+id/playlistCurrentItem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
-        app:cardCornerRadius="0dp"
         android:alpha="0.25"
-        app:cardBackgroundColor="?colorTertiary" />
+        android:visibility="gone"
+        app:cardBackgroundColor="?colorTertiary"
+        app:cardCornerRadius="0dp" />
 
     <LinearLayout
         android:layout_width="match_parent"

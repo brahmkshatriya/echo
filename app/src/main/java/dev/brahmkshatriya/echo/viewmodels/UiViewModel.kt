@@ -188,6 +188,15 @@ class UiViewModel @Inject constructor(
             )
         }
 
+        fun View.applyFabInsets(it: Insets, system: Insets, paddingDp: Int = 0) {
+            val padding = paddingDp.dpToPx(context)
+            updatePaddingRelative(
+                bottom = it.bottom - system.bottom + padding,
+                start = it.start + padding,
+                end = it.end + padding,
+            )
+        }
+
         fun Fragment.applyBackPressCallback(callback: ((Int) -> Unit)? = null) {
             val activity = requireActivity()
             val viewModel by activity.viewModels<UiViewModel>()

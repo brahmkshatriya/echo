@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 class EditPlaylistFragment : Fragment() {
@@ -69,7 +70,7 @@ class EditPlaylistFragment : Fragment() {
         applyInsets {
             binding.toolbarIconContainer.updatePadding(top = it.top)
             binding.nestedScrollView.applyInsets(it)
-            binding.fabContainer.applyInsets(it)
+            binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
@@ -92,6 +93,7 @@ class EditPlaylistFragment : Fragment() {
                     })
                     true
                 }
+
                 else -> false
             }
         }
@@ -153,6 +155,8 @@ class EditPlaylistFragment : Fragment() {
 
         binding.playlistSongs.adapter = adapter
         touchHelper.attachToRecyclerView(binding.playlistSongs)
+        
+        viewModel.currentTracks.apply { if (value == null) value = playlist.tracks }
 
         observe(viewModel.currentTracks) { tracks ->
             tracks?.let {

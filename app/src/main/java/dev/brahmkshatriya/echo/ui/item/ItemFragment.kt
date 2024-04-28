@@ -51,6 +51,7 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdap
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 @AndroidEntryPoint
@@ -93,6 +94,7 @@ class ItemFragment : Fragment() {
         applyInsets {
             binding.coverContainer.updateLayoutParams<MarginLayoutParams> { topMargin = it.top }
             binding.recyclerView.applyContentInsets(it)
+            binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
