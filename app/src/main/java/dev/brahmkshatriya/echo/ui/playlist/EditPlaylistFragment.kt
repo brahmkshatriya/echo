@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
@@ -27,6 +29,7 @@ import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.coroutines.launch
 
 class EditPlaylistFragment : Fragment() {
 
@@ -44,7 +47,6 @@ class EditPlaylistFragment : Fragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val client by lazy { viewModel.extensionListFlow.getClient(clientId) }
 
     @Suppress("DEPRECATION")
     private val playlist by lazy {
@@ -72,16 +74,45 @@ class EditPlaylistFragment : Fragment() {
             binding.nestedScrollView.applyInsets(it)
             binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
+
+        val backCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                lifecycleScope.launch {
+                    binding.nestedScrollView.isVisible = false
+                    binding.loading.root.isVisible = true
+                    viewModel.onEditorExit(clientId, playlist)
+                    parentFragmentManager.popBackStack()
+                }
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
         applyBackPressCallback()
+
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
 
         binding.toolbar.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        viewModel.onEditorEnter(clientId, playlist)
+        binding.loading.root.isVisible = true
+        binding.nestedScrollView.isVisible = false
+
+        observe(viewModel.extensionListFlow.flow) {
+            viewModel.currentTracks.apply {
+                if (value == null) {
+                    value = playlist.tracks
+                    viewModel.onEditorEnter(clientId, playlist)
+                }
+            }
+
+            val client = viewModel.extensionListFlow.getClient(clientId)
+            binding.coverContainer.isVisible = client is EditPlaylistCoverClient
+
+            binding.loading.root.isVisible = false
+            binding.nestedScrollView.isVisible = true
+        }
 
         binding.toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
@@ -99,7 +130,6 @@ class EditPlaylistFragment : Fragment() {
         }
 
         //TODO Cover Selection
-        binding.coverContainer.isVisible = client is EditPlaylistCoverClient
         playlist.cover.loadInto(binding.cover, playlist.toMediaItem().placeHolder())
         binding.cover.setOnClickListener {
             createSnack("Cover Change Not Implemented")
@@ -111,6 +141,7 @@ class EditPlaylistFragment : Fragment() {
             binding.playlistName.text.toString(),
             binding.playlistDescription.text.toString().ifEmpty { null }
         )
+
         binding.playlistName.apply {
             setText(playlist.title)
             setOnEditorActionListener { _, _, _ -> updateMetadata();false }
@@ -131,13 +162,13 @@ class EditPlaylistFragment : Fragment() {
             ): Boolean {
                 val fromPos = viewHolder.bindingAdapterPosition
                 val toPos = target.bindingAdapterPosition
-                viewModel.moveTracks(clientId, playlist, fromPos, toPos)
+                viewModel.edit { add(toPos, removeAt(fromPos)) }
                 return true
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val pos = viewHolder.bindingAdapterPosition
-                viewModel.removeTracks(clientId, playlist, listOf(pos))
+                viewModel.edit { removeAt(pos) }
             }
         }
         val touchHelper = ItemTouchHelper(callback)
@@ -149,14 +180,12 @@ class EditPlaylistFragment : Fragment() {
             override fun onItemClicked(position: Int) {}
 
             override fun onItemClosedClicked(position: Int) {
-                viewModel.removeTracks(clientId, playlist, listOf(position))
+                viewModel.edit { removeAt(position) }
             }
         })
 
         binding.playlistSongs.adapter = adapter
         touchHelper.attachToRecyclerView(binding.playlistSongs)
-        
-        viewModel.currentTracks.apply { if (value == null) value = playlist.tracks }
 
         observe(viewModel.currentTracks) { tracks ->
             tracks?.let {
@@ -165,12 +194,12 @@ class EditPlaylistFragment : Fragment() {
                 })
             }
         }
+
     }
 
     override fun onDestroy() {
         super.onDestroy()
         viewModel.currentTracks.value = null
-        viewModel.onEditorExit(clientId, playlist)
         parentFragmentManager.setFragmentResult("reload", Bundle().apply {
             putString("id", playlist.id)
         })

@@ -241,12 +241,13 @@ object MediaStoreUtils {
         val playlists = mutableListOf<Pair<MPlaylist, MutableList<Long>>>()
         var foundPlaylistContent = false
         context.contentResolver.query(
-            @Suppress("DEPRECATION")
-            MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, arrayOf(
+            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+            arrayOf(
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists._ID,
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists.NAME,
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists.DATE_MODIFIED
-            ), null, null, null
+            ),
+            null, null, null
         )?.use {
             val playlistIdColumn = it.getColumnIndexOrThrow(
                 @Suppress("DEPRECATION") MediaStore.Audio.Playlists._ID
@@ -263,11 +264,12 @@ object MediaStoreUtils {
                 val modifiedDate = it.getLong(playlistModifiedDateColumn)
                 val content = mutableListOf<Long>()
                 context.contentResolver.query(
-                    @Suppress("DEPRECATION") MediaStore.Audio
-                        .Playlists.Members.getContentUri("external", playlistId), arrayOf(
-                        @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID,
-                    ), null, null, @Suppress("DEPRECATION")
-                    MediaStore.Audio.Playlists.Members.PLAY_ORDER + " ASC"
+                    @Suppress("DEPRECATION")
+                    MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId),
+                    arrayOf(
+                        @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID
+                    ), null, null,
+                    @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.PLAY_ORDER + " ASC"
                 )?.use { cursor ->
                     val column = cursor.getColumnIndexOrThrow(
                         @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID
@@ -614,7 +616,8 @@ object MediaStoreUtils {
             title
         )
         return contentResolver.insert(
-            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+            @Suppress("DEPRECATION")
+            MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
             values
         )?.lastPathSegment!!.toLong()
     }
@@ -662,21 +665,19 @@ object MediaStoreUtils {
     }
 
     fun Context.removeSongFromPlaylist(playlistId: Long, songId: Long) {
+        println("Removing : $songId from $playlistId")
         contentResolver.delete(
-            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.getContentUri(
-                "external",
-                playlistId
-            ),
+            @Suppress("DEPRECATION")
+            MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId),
             @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID + "=?",
             arrayOf(songId.toString())
         )
     }
 
     fun Context.moveSongInPlaylist(playlistId: Long, from: Int, to: Int) {
-        val uri = @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.getContentUri(
-            "external",
-            playlistId
-        )
+        val uri = @Suppress("DEPRECATION")
+        MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId)
+
         val cursor = contentResolver.query(
             uri,
             arrayOf(@Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID),

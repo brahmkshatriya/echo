@@ -43,7 +43,8 @@ class ItemViewModel @Inject constructor(
     fun load() {
         viewModelScope.launch {
             tryWith {
-                val item = item ?: throw IllegalArgumentException("Item is null")
+                val item = item ?: return@tryWith
+                println("loading item ${item.title}")
                 val mediaItem = when (item) {
                     is EchoMediaItem.Lists.AlbumItem -> getClient<AlbumClient>(client) {
                         load(item.album, ::loadAlbum, ::getMediaItems)?.toMediaItem()

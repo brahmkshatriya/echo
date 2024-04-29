@@ -197,8 +197,12 @@ class ItemFragment : Fragment() {
             }
         }
 
+        binding.swipeRefresh.setOnRefreshListener { viewModel.load() }
+
         observe(viewModel.itemFlow) {
+            println("got item : ${it?.title}")
             it ?: return@observe
+            binding.swipeRefresh.isRefreshing = false
             binding.toolBar.title = it.title.trim()
             it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
             when (it) {
@@ -218,13 +222,13 @@ class ItemFragment : Fragment() {
                 else -> Unit
             }
 
-            if (it is PlaylistItem && it.playlist.isEditable) {
-                binding.fabEditPlaylist.isVisible = true
+            binding.fabContainer.isVisible = if (it is PlaylistItem && it.playlist.isEditable) {
                 binding.fabEditPlaylist.transitionName = "edit${it.playlist.id}"
                 binding.fabEditPlaylist.setOnClickListener { view1 ->
                     openFragment(EditPlaylistFragment.newInstance(clientId, it.playlist), view1)
                 }
-            } else binding.fabEditPlaylist.isVisible = false
+                true
+            } else false
         }
 
         parentFragmentManager.setFragmentResultListener("reload", this) { _, bundle ->

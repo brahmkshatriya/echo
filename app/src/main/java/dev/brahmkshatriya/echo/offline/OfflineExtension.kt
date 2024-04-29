@@ -321,17 +321,15 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         context.editPlaylist(playlist.id.toLong(), title)
     }
 
-    override suspend fun addTracksToPlaylist(playlist: Playlist, tracks: List<Track>) {
+    override suspend fun addTracksToPlaylist(playlist: Playlist, index: Int, tracks: List<Track>) {
         tracks.forEach {
-            context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong())
+            context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong(), index)
         }
     }
 
-    override suspend fun removeTracksFromPlaylist(
-        playlist: Playlist, trackIndexes: List<Int>
-    ) {
+    override suspend fun removeTracksFromPlaylist(playlist: Playlist, trackIndexes: List<Track>) {
         trackIndexes.forEach {
-            context.removeSongFromPlaylist(playlist.id.toLong(), playlist.tracks[it].id.toLong())
+            context.removeSongFromPlaylist(playlist.id.toLong(), it.id.toLong())
         }
     }
 

@@ -57,7 +57,6 @@
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
-
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
@@ -147,13 +146,19 @@
                 android:id="@+id/playlistSongs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="96dp"
+                android:paddingBottom="96dp"
+                android:clipToPadding="false"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_playlist_item" />
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/loading"
+        layout="@layout/item_client_loading"/>
+
 
     <FrameLayout
         android:id="@+id/fabContainer"

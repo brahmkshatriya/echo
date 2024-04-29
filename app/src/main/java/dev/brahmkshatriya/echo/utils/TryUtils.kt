@@ -11,11 +11,11 @@ fun <T> tryWith(print: Boolean = false, block: () -> T): T? {
     }
 }
 
-suspend fun <T> tryWithSuspend(block: suspend () -> T): T? {
+suspend fun <T> tryWithSuspend(print: Boolean = true, block: suspend () -> T): T? {
     return try {
         block()
     } catch (e: Throwable) {
-        e.printStackTrace()
+        if(print) e.printStackTrace()
         null
     }
 }

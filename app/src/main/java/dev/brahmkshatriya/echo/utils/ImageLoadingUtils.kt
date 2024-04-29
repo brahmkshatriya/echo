@@ -55,7 +55,7 @@ suspend fun ImageHolder?.loadBitmap(
     val request = createRequest(builder, placeholder)
     coroutineScope {
         withContext(Dispatchers.IO) {
-            tryWithSuspend { request.submit().get() }
+            tryWithSuspend(false) { request.submit().get() }
         }
     }
 }
