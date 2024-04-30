@@ -14,7 +14,7 @@ interface LibraryClient {
     suspend fun createPlaylist(title: String, description: String?): Playlist
     suspend fun deletePlaylist(playlist: Playlist)
     suspend fun editPlaylistMetadata(playlist: Playlist, title: String, description: String?)
-    suspend fun addTracksToPlaylist(playlist: Playlist, index: Int, tracks: List<Track>)
+    suspend fun addTracksToPlaylist(playlist: Playlist, index: Int?, tracks: List<Track>)
     suspend fun removeTracksFromPlaylist(playlist: Playlist, trackIndexes: List<Track>)
     suspend fun moveTrackInPlaylist(playlist: Playlist, fromIndex: Int, toIndex: Int)
 }

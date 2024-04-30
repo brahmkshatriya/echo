@@ -113,6 +113,5 @@ class EditPlaylistViewModel @Inject constructor(
                 mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
             }
         }
-
     }
 }

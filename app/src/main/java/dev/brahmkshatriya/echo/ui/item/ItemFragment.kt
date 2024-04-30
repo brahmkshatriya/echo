@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
@@ -106,7 +107,7 @@ class ItemFragment : Fragment() {
         }
         FastScrollerHelper.applyTo(binding.recyclerView)
         binding.toolBar.title = item.title.trim()
-        binding.endIcon.load(item.placeHolder())
+        binding.endIcon.load(item.icon())
         item.cover.loadInto(binding.cover, item.placeHolder())
         if (item is EchoMediaItem.Profile) binding.coverContainer.run {
             val maxWidth = 240.dpToPx(context)
@@ -200,7 +201,6 @@ class ItemFragment : Fragment() {
         binding.swipeRefresh.setOnRefreshListener { viewModel.load() }
 
         observe(viewModel.itemFlow) {
-            println("got item : ${it?.title}")
             it ?: return@observe
             binding.swipeRefresh.isRefreshing = false
             binding.toolBar.title = it.title.trim()

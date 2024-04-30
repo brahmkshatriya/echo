@@ -91,6 +91,7 @@ class PlayerViewModel @Inject constructor(
 
     fun play(clientId: String, tracks: List<Track>, playIndex: Int? = null) {
         viewModelScope.launch {
+            global.clearQueue()
             val pos = global.addTracks(clientId, tracks).first
             playIndex?.let { audioIndexFlow.emit(pos + it) }
         }
@@ -101,7 +102,7 @@ class PlayerViewModel @Inject constructor(
 
     fun addToQueue(clientId: String, tracks: List<Track>, end:Boolean) {
         viewModelScope.launch {
-            val index = if (end) global.queue.size else 0
+            val index = if (end) global.queue.size else 1
             global.addTracks(clientId, tracks, index)
         }
     }

@@ -103,6 +103,14 @@ sealed class MediaItemViewHolder(itemView: View) :
             is EchoMediaItem.Lists.PlaylistItem -> R.drawable.art_library_music
         }
 
+        fun EchoMediaItem.icon() = when (this) {
+            is EchoMediaItem.TrackItem -> R.drawable.ic_music
+            is EchoMediaItem.Profile.ArtistItem -> R.drawable.ic_artist
+            is EchoMediaItem.Profile.UserItem -> R.drawable.ic_person
+            is EchoMediaItem.Lists.AlbumItem -> R.drawable.ic_album
+            is EchoMediaItem.Lists.PlaylistItem -> R.drawable.ic_library_music
+        }
+
         fun NewItemMediaTitleBinding.bind(item: EchoMediaItem) {
             title.text = item.title
             subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
@@ -111,6 +119,8 @@ sealed class MediaItemViewHolder(itemView: View) :
 
         fun ItemTrackCoverBinding.bind(item: EchoMediaItem) {
             item.cover.loadInto(trackImageView, item.placeHolder())
+            this.iconContainer.isVisible = item !is EchoMediaItem.TrackItem
+            this.icon.setImageResource(item.icon())
         }
 
         fun ItemProfileCoverBinding.bind(item: EchoMediaItem) {
@@ -127,7 +137,7 @@ sealed class MediaItemViewHolder(itemView: View) :
             albumImage(item.size, listImageContainer1, listImageContainer2)
         }
 
-        fun albumImage(size: Int?, view1: View, view2: View) {
+        private fun albumImage(size: Int?, view1: View, view2: View) {
             val tracks = size ?: 3
             view1.isVisible = tracks > 1
             view2.isVisible = tracks > 2

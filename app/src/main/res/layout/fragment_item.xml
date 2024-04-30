@@ -23,12 +23,13 @@
 
             <ImageView
                 android:id="@+id/endIcon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="bottom|end"
-                android:layout_margin="12dp"
+                android:layout_marginVertical="20dp"
+                android:layout_marginHorizontal="24dp"
                 android:contentDescription="@string/album"
-                app:srcCompat="@drawable/art_album"
+                app:srcCompat="@drawable/ic_album"
                 app:tint="?colorOnSurface" />
 
             <androidx.constraintlayout.widget.ConstraintLayout

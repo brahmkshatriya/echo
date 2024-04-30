@@ -37,6 +37,8 @@
         <item quantity="one">%1$d Follower</item>
         <item quantity="other">%1$d Followers</item>
     </plurals>
+    <string name="saved_to_playlist">Saved to %1$s</string>
+    <string name="saved_to_playlists">Saved to Playlists</string>
     <string name="songs">Songs</string>
     <string name="radio">Radio</string>
     <string name="view">View</string>
@@ -135,6 +137,9 @@
     <string name="add">Add</string>
     <string name="custom_colors">Custom Colors</string>
     <string name="random">Random</string>
+    <string name="choose_playlist">Choose Playlist</string>
+    <string name="save">Save</string>
+    <string name="saving">Saving…</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
