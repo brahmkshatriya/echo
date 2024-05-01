@@ -34,6 +34,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
@@ -126,7 +127,15 @@ class ItemFragment : Fragment() {
             view.transitionName,
             object : TrackAdapter.Listener {
                 override fun onClick(list: List<Track>, position: Int, view: View) {
-                    playerVM.play(clientId, list, position)
+                    if (mediaContainerAdapter.listener is MediaClickListener) {
+                        when (val item = viewModel.itemFlow.value) {
+                            is EchoMediaItem.Lists -> playerVM.play(clientId, item, position)
+                            else -> playerVM.play(clientId, list, position)
+                        }
+                    } else {
+                        val track = list[position]
+                        mediaContainerAdapter.listener.onClick(clientId, track.toMediaItem(), view)
+                    }
                 }
 
                 override fun onLongClick(list: List<Track>, position: Int, view: View): Boolean {
@@ -139,14 +148,17 @@ class ItemFragment : Fragment() {
 
         val albumHeaderAdapter = AlbumHeaderAdapter(
             object : AlbumHeaderAdapter.Listener {
-                override fun onPlayClicked(album: Album) = playerVM.play(clientId, album.tracks, 0)
+                override fun onPlayClicked(album: Album) =
+                    playerVM.play(clientId, album.toMediaItem(), 0)
+
                 override fun onRadioClicked(album: Album) = playerVM.radio(clientId, album)
             }
         )
 
         val playlistHeaderAdapter = PlaylistHeaderAdapter(
             object : PlaylistHeaderAdapter.Listener {
-                override fun onPlayClicked(list: Playlist) = playerVM.play(clientId, list.tracks, 0)
+                override fun onPlayClicked(list: Playlist) =
+                    playerVM.play(clientId, list.toMediaItem(), 0)
                 override fun onRadioClicked(list: Playlist) = playerVM.radio(clientId, list)
             }
         )
@@ -208,12 +220,12 @@ class ItemFragment : Fragment() {
             when (it) {
                 is AlbumItem -> {
                     albumHeaderAdapter.submit(it.album, isRadioClient)
-                    trackAdapter.submitList(it.album.tracks)
+                    trackAdapter.submitList(it.album.tracks.toList())
                 }
 
                 is PlaylistItem -> {
                     playlistHeaderAdapter.submit(it.playlist, isRadioClient)
-                    trackAdapter.submitList(it.playlist.tracks)
+                    trackAdapter.submitList(it.playlist.tracks.toList())
                 }
 
                 is ArtistItem ->

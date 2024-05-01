@@ -6,12 +6,12 @@
     android:layout_height="match_parent">
 
     <androidx.core.widget.NestedScrollView
-        android:visibility="gone"
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:paddingHorizontal="16dp">
+        android:paddingHorizontal="16dp"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,11 +34,11 @@
                     android:textAppearance="?attr/textAppearanceHeadlineSmall" />
 
                 <Button
-                    android:enabled="false"
                     android:id="@+id/save"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="8dp"
+                    android:enabled="false"
                     android:text="@string/save"
                     app:icon="@drawable/ic_add_circle"
                     app:iconGravity="end" />
@@ -57,10 +57,10 @@
     </androidx.core.widget.NestedScrollView>
 
     <include
-        android:visibility="visible"
         android:id="@+id/loading"
         layout="@layout/item_client_loading"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="visible" />
 
 </FrameLayout>

@@ -42,6 +42,9 @@ sealed class ListAction<T> {
                 if (curr is Add && next is Add && curr.index + curr.items.size == next.index) {
                     curr.items.addAll(next.items)
                     actions.removeAt(i + 1)
+                } else if (curr is Move && next is Move && curr.to == next.from) {
+                    actions[i] = Move(curr.from, next.to)
+                    actions.removeAt(i + 1)
                 } else {
                     i++
                 }

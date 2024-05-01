@@ -38,8 +38,8 @@ class TrackResolver(
             if (client !is TrackClient)
                 throw Exception(context.trackNotSupported(client.metadata.name).message)
 
-            val loadedTrack = getTrack(track, client)
-            loadAudio(loadedTrack, client)
+            val loadedTrack = getTrack(track, client).getOrElse { throw Exception(it) }
+            loadAudio(loadedTrack, client).getOrElse { throw Exception(it) }
         }
         global.currentAudioFlow.value = streamable
         return dataSpec.copy(customData = streamable)
@@ -47,10 +47,10 @@ class TrackResolver(
 
     private fun getTrack(
         streamableTrack: Queue.StreamableTrack, client: TrackClient
-    ): Track {
+    ) = runCatching {
         val track = streamableTrack.loaded ?: loadTrack(client, streamableTrack)
         current = track
-        return track
+        track
     }
 
 
@@ -71,12 +71,12 @@ class TrackResolver(
         return track
     }
 
-    private fun loadAudio(track: Track, client: TrackClient): StreamableAudio {
+    private fun loadAudio(track: Track, client: TrackClient): Result<StreamableAudio> {
         val streamable = selectStream(track.audioStreamables)
             ?: throw Exception(context.getString(R.string.no_streams_found))
         return runBlocking {
             runCatching { client.getStreamableAudio(streamable) }
-        }.getOrThrow()
+        }
     }
 
     private fun selectStream(streamables: List<Streamable>) =

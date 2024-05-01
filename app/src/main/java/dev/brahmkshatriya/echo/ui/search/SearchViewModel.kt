@@ -19,6 +19,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionFlow: ExtensionModule.ExtensionFlow,
+    val extensionListFlow: ExtensionModule.ExtensionListFlow,
 ) : CatchingViewModel(throwableFlow) {
 
     var recyclerPosition = 0

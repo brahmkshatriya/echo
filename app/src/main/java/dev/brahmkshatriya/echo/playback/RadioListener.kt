@@ -58,7 +58,7 @@ class RadioListener(
 
             is RadioClient -> {
                 val tracks = block(client)?.tracks
-                tracks?.let { queue.addTracks(client.metadata.id, it).first }
+                tracks?.let { queue.addTracks(client.metadata.id, it.toList()).first }
             }
 
             else -> {

@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.playlist
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
@@ -69,7 +70,7 @@ class EditPlaylistViewModel @Inject constructor(
         }
     }
 
-    fun deletePlaylist(clientId: String, playlist: Playlist) {
+    fun deletePlaylist(clientId: String, playlist: Playlist) = viewModelScope.launch {
         deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
     }
 
@@ -79,7 +80,11 @@ class EditPlaylistViewModel @Inject constructor(
         }
     }
 
-    suspend fun onEditorExit(clientId: String, playlist: Playlist) {
+    suspend fun onEditorExit(
+        clientId: String,
+        playlist: Playlist,
+        block: suspend (action: ListAction<Track>?) -> Unit
+    ) {
         val actions = currentTracks.value?.let { tracks ->
             ListAction.getActions(playlist.tracks, tracks) { it.id == this.id }
         }?.takeIf { it.isNotEmpty() } ?: return
@@ -91,27 +96,55 @@ class EditPlaylistViewModel @Inject constructor(
                     is ListAction.Move -> client.moveTrackInPlaylist(playlist, it.from, it.to)
                     is ListAction.Remove -> client.removeTracksFromPlaylist(playlist, it.items)
                 }
+                withContext(Dispatchers.Main) { block(it) }
             }
         }
-
+        block(null)
         client<EditPlayerListenerClient>(clientId) {
             it.onExitPlaylistEditor(playlist)
         }
     }
 
     companion object {
-        fun CatchingViewModel.deletePlaylist(
+        suspend fun CatchingViewModel.deletePlaylist(
             extensionListFlow: ExtensionModule.ExtensionListFlow,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
-            context: Application,
+            context: Context,
             clientId: String,
             playlist: Playlist
         ) {
             val client = extensionListFlow.getClient(clientId) as? LibraryClient ?: return
-            viewModelScope.launch(Dispatchers.IO) {
-                tryWith { client.deletePlaylist(playlist) } ?: return@launch
+            withContext(Dispatchers.IO) {
+                tryWith { client.deletePlaylist(playlist) } ?: return@withContext
                 mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
             }
+        }
+
+        suspend fun CatchingViewModel.addToPlaylists(
+            extensionListFlow: ExtensionModule.ExtensionListFlow,
+            messageFlow: MutableSharedFlow<SnackBar.Message>,
+            context: Context,
+            clientId: String,
+            playlists: List<Playlist>,
+            tracks: List<Track>
+        ) = run {
+            val client = extensionListFlow.getClient(clientId) ?: return
+            if (client !is LibraryClient) return
+            val listener = client as? EditPlayerListenerClient
+            withContext(Dispatchers.IO) {
+                playlists.forEach { playlist ->
+                    tryWith {
+                        check(playlist.isEditable)
+                        listener?.onEnterPlaylistEditor(playlist)
+                        client.addTracksToPlaylist(playlist, null, tracks)
+                        listener?.onExitPlaylistEditor(playlist)
+                    }
+                }
+            }
+            val message = if (playlists.size == 1)
+                context.getString(R.string.saved_to_playlist, playlists.first().title)
+            else context.getString(R.string.saved_to_playlists)
+            messageFlow.emit(SnackBar.Message(message))
         }
     }
 }

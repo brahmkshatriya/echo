@@ -42,7 +42,6 @@ fun MediaStoreUtils.MAlbum.toAlbum() = Album(
     cover.toString().toUri().toImageHolder(),
     artists.map { it.toArtist() },
     songList.size,
-    null,
     songList.sortedBy { it.mediaMetadata.trackNumber }.map { it.toTrack() },
     albumYear?.toString()
 )

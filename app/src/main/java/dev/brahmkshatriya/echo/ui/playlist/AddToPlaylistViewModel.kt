@@ -3,12 +3,11 @@ package dev.brahmkshatriya.echo.ui.playlist
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.EditPlayerListenerClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.Companion.addToPlaylists
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -43,24 +42,12 @@ class AddToPlaylistViewModel @Inject constructor(
 
     var saving = false
     val dismiss = MutableSharedFlow<Unit>()
-    fun addToPlaylists(list: List<Track>) = viewModelScope.launch(Dispatchers.IO) {
-        val client = extensionListFlow.getClient(clientId) ?: return@launch
-        if (client !is LibraryClient) return@launch
-        val listener = client as? EditPlayerListenerClient
+    fun addToPlaylists(tracks: List<Track>) = viewModelScope.launch {
         saving = true
-        selectedPlaylists.forEach { playlist ->
-            tryWith {
-                check(playlist.isEditable)
-                listener?.onEnterPlaylistEditor(playlist)
-                client.addTracksToPlaylist(playlist, null, list)
-                listener?.onExitPlaylistEditor(playlist)
-            }
-        }
+        addToPlaylists(
+            extensionListFlow, messageFlow, app, clientId, selectedPlaylists, tracks
+        )
         saving = false
         dismiss.emit(Unit)
-        val message = if (selectedPlaylists.size == 1)
-            app.getString(R.string.saved_to_playlist, selectedPlaylists.first().title)
-        else app.getString(R.string.saved_to_playlists)
-        messageFlow.emit(SnackBar.Message(message))
     }
 }

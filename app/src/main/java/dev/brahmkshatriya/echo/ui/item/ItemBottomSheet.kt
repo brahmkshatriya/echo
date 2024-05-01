@@ -110,13 +110,13 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         is EchoMediaItem.Lists -> {
             listOfNotNull(
                 ItemAction.Resource(R.drawable.ic_play, R.string.play) {
-                    playerViewModel.play(clientId, item.tracks, 0)
+                    playerViewModel.play(clientId, item, 0)
                 },
                 ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
-                    playerViewModel.addToQueue(clientId, item.tracks, false)
+                    playerViewModel.addToQueue(clientId, item, false)
                 },
                 ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
-                    playerViewModel.addToQueue(clientId, item.tracks, true)
+                    playerViewModel.addToQueue(clientId, item, true)
                 },
             ) + when (item) {
                 is EchoMediaItem.Lists.AlbumItem -> {

@@ -10,11 +10,11 @@ data class Album(
     val cover: ImageHolder? = null,
     val artists: List<Artist> = listOf(),
     val numberOfTracks: Int? = null,
-    val subtitle: String? = null,
     val tracks: List<Track> = listOf(),
     val releaseDate: String? = null,
     val publisher: String? = null,
     val duration: Long? = null,
     val description: String? = null,
+    val subtitle: String? = null,
     val extras: Map<String, String> = mapOf()
 ) : Parcelable

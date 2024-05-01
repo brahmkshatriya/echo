@@ -140,6 +140,11 @@
     <string name="choose_playlist">Choose Playlist</string>
     <string name="save">Save</string>
     <string name="saving">Saving…</string>
+    <string name="selected_songs">Selected Songs (%1$d)</string>
+    <string name="add_tracks">Add Tracks</string>
+    <string name="adding_tracks">Adding %1$s</string>
+    <string name="moving_track">Moving %1$s</string>
+    <string name="removing_tracks">Removing %1$s</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

@@ -1,13 +1,17 @@
 package dev.brahmkshatriya.echo.ui.media
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemMediaSelectableBinding
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.bind
+import dev.brahmkshatriya.echo.utils.dpToPx
+import kotlin.math.roundToInt
 
 class MediaItemSelectableAdapter(
     val listener: Listener
@@ -49,5 +53,20 @@ class MediaItemSelectableAdapter(
         this.selectedItems.clear()
         this.selectedItems.addAll(selectedItems)
         notifyDataSetChanged()
+    }
+
+    companion object {
+        fun mediaItemSpanCount(context: Context, horizontalPadding: Int = 24 * 2) =
+            with(context.resources) {
+                val typed = context.theme.obtainStyledAttributes(intArrayOf(R.attr.itemCoverSize))
+                val itemWidth = typed.getDimensionPixelSize(typed.getIndex(0), 0)
+                println(
+                    "itemWidth: $itemWidth, " +
+                            "width: ${displayMetrics.widthPixels - horizontalPadding.dpToPx(context)}, " +
+                            "dp: ${16.dpToPx(context)}"
+                )
+                val width = displayMetrics.widthPixels - horizontalPadding.dpToPx(context)
+                width.toFloat() / (itemWidth + 16.dpToPx(context))
+            }.roundToInt().also { println("spanCount: $it") }
     }
 }

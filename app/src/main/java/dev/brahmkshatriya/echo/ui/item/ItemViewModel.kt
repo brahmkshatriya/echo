@@ -71,7 +71,9 @@ class ItemViewModel @Inject constructor(
         }
     }
 
-    override fun onInitialize() { load() }
+    override fun onInitialize() {
+        load()
+    }
 
     private inline fun <reified T> getClient(
         client: ExtensionClient?, block: T.() -> EchoMediaItem?
@@ -105,7 +107,7 @@ class ItemViewModel @Inject constructor(
         }
     }
 
-    fun deletePlaylist(clientId: String, playlist: Playlist) {
+    fun deletePlaylist(clientId: String, playlist: Playlist) = viewModelScope.launch {
         deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
     }
 }

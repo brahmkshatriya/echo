@@ -19,9 +19,9 @@ fun Fragment.openFragment(newFragment: Fragment, view: View? = null) {
             }
         }
         setReorderingAllowed(true)
-        val fragment = this@openFragment
-        add(R.id.navHostFragment, newFragment)
-        hide(fragment)
+        val oldFragment = this@openFragment
+        add(oldFragment.id, newFragment)
+        hide(oldFragment)
         addToBackStack(null)
     }
     val uiViewModel by activityViewModels<UiViewModel>()

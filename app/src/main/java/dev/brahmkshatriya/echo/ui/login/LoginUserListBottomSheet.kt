@@ -42,8 +42,10 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
             list ?: return@observe
 
             binding.addAccount.setOnClickListener {
-                openFragment(LoginFragment.newInstance(client.metadata.id, client.metadata.name))
                 dismiss()
+                requireActivity().openFragment(
+                    LoginFragment.newInstance(client.metadata.id, client.metadata.name)
+                )
             }
             binding.accountListToggleGroup.removeAllViews()
             val listener = MaterialButtonToggleGroup.OnButtonCheckedListener { _, id, isChecked ->

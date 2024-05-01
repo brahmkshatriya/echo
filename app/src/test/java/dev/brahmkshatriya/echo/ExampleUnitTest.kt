@@ -10,7 +10,7 @@ class ExampleUnitTest {
     @Test
     fun testComparatorActions() {
         val oldList = listOf("C")
-        val newList = listOf("A", "F", "Z")
+        val newList = listOf("A", "F", "Z", "C")
         val modifiedList = oldList.toMutableList()
         getActions(oldList, newList).forEach {
             when (it) {

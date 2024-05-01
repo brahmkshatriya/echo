@@ -35,12 +35,12 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.settings.setOnClickListener {
-            openFragment(SettingsFragment())
             dismiss()
+            requireActivity().openFragment(SettingsFragment())
         }
         binding.switchAccount.setOnClickListener {
-            LoginUserListBottomSheet().show(parentFragmentManager, null)
             dismiss()
+            LoginUserListBottomSheet().show(parentFragmentManager, null)
         }
         observe(viewModel.currentUser) { (client, user) ->
             binding.userLoginContainer.isVisible = user == null

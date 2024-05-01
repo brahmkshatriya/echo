@@ -5,14 +5,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.tabs.TabLayout
+import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
@@ -21,8 +26,8 @@ import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
-import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
@@ -35,14 +40,14 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 
+@AndroidEntryPoint
 class SearchFragment : Fragment() {
 
     private var binding by autoCleared<FragmentSearchBinding>()
-    private val viewModel by activityViewModels<SearchViewModel>()
+    private val viewModel by viewModels<SearchViewModel>()
     private val uiViewModel by activityViewModels<UiViewModel>()
 
-    private val parent get() = parentFragment as MainFragment
-
+    private val parent get() = parentFragment as Fragment
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -64,8 +69,14 @@ class SearchFragment : Fragment() {
             binding.searchBar.alpha = 1 - offset
             binding.toolBar.alpha = 1 - offset
         }
-
-        binding.toolBar.configureMainMenu(parent)
+        val main = parent as? MainFragment
+        if (main != null) binding.toolBar.configureMainMenu(main)
+        else {
+            binding.toolBar.isVisible = false
+            binding.searchBar.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = 24.dpToPx(requireContext())
+            }
+        }
         FastScrollerHelper.applyTo(binding.recyclerView)
 
         binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
@@ -91,7 +102,7 @@ class SearchFragment : Fragment() {
 
         viewModel.initialize()
 
-        val mediaClickListener = MediaClickListener(parent.parentFragmentManager)
+        val mediaClickListener = getListener(this)
         val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
             override fun onClick(item: QuickSearchItem, transitionView: View) = when (item) {
                 is QuickSearchItem.SearchQueryItem -> {
@@ -133,10 +144,18 @@ class SearchFragment : Fragment() {
         val mediaContainerAdapter = MediaContainerAdapter(parent, "search", mediaClickListener)
         val concatAdapter = mediaContainerAdapter.withLoaders()
 
-        collect(viewModel.extensionFlow) {
+        fun applyClient(it: ExtensionClient?) {
             binding.swipeRefresh.isEnabled = it != null
             mediaContainerAdapter.clientId = it?.metadata?.id
             binding.recyclerView.applyAdapter<SearchClient>(it, R.string.search, concatAdapter)
+        }
+
+        val clientId = arguments?.getString("clientId")
+        if (clientId == null) collect(viewModel.extensionFlow) {
+            applyClient(it)
+        }
+        else collect(viewModel.extensionListFlow.flow) {
+            applyClient(viewModel.extensionListFlow.getClient(clientId))
         }
 
         val tabListener = object : TabLayout.OnTabSelectedListener {

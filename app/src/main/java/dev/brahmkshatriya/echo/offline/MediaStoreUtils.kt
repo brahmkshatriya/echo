@@ -647,11 +647,11 @@ object MediaStoreUtils {
         )
     }
 
-    fun Context.addSongToPlaylist(playlistId: Long, songId: Long, index: Int? = null) {
+    fun Context.addSongToPlaylist(playlistId: Long, songId: Long, index: Int) {
         val values = ContentValues()
         values.put(
             @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.PLAY_ORDER,
-            index ?: -1
+            index + 1
         )
         values.put(
             @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID,
@@ -701,7 +701,7 @@ object MediaStoreUtils {
                 val values = ContentValues()
                 values.put(
                     @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.PLAY_ORDER,
-                    index
+                    index + 1
                 )
                 values.put(
                     @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID,

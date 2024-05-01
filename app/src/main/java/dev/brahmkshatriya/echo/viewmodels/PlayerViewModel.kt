@@ -11,6 +11,7 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
@@ -88,6 +89,8 @@ class PlayerViewModel @Inject constructor(
     fun play(clientId: String, track: Track, playIndex: Int? = null) =
         play(clientId, listOf(track), playIndex)
 
+    fun play(clientId: String, lists: EchoMediaItem.Lists, playIndex: Int? = null) =
+        play(clientId, lists.tracks.toList(), playIndex)
 
     fun play(clientId: String, tracks: List<Track>, playIndex: Int? = null) {
         viewModelScope.launch {
@@ -100,7 +103,10 @@ class PlayerViewModel @Inject constructor(
     fun addToQueue(clientId: String, track: Track, end: Boolean) =
         addToQueue(clientId, listOf(track), end)
 
-    fun addToQueue(clientId: String, tracks: List<Track>, end:Boolean) {
+    fun addToQueue(clientId: String, lists: EchoMediaItem.Lists, end: Boolean) =
+        addToQueue(clientId, lists.tracks.toList(), end)
+
+    private fun addToQueue(clientId: String, tracks: List<Track>, end: Boolean) {
         viewModelScope.launch {
             val index = if (end) global.queue.size else 1
             global.addTracks(clientId, tracks, index)

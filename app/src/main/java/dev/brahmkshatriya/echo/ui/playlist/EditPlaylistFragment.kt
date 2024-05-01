@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.playlist
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,12 +14,16 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.EditPlaylistCoverClient
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
 import dev.brahmkshatriya.echo.playback.Queue
+import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.utils.ListAction
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -47,15 +50,8 @@ class EditPlaylistFragment : Fragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
+    private val playlist by lazy { args.getParcel<Playlist>("playlist")!! }
 
-    @Suppress("DEPRECATION")
-    private val playlist by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) args.getParcelable(
-            "playlist",
-            Playlist::class.java
-        )!!
-        else args.getParcelable("playlist")!!
-    }
     var binding by autoCleared<FragmentEditPlaylistBinding>()
     val viewModel by activityViewModels<EditPlaylistViewModel>()
 
@@ -77,10 +73,30 @@ class EditPlaylistFragment : Fragment() {
 
         val backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+
                 lifecycleScope.launch {
                     binding.nestedScrollView.isVisible = false
                     binding.loading.root.isVisible = true
-                    viewModel.onEditorExit(clientId, playlist)
+                    viewModel.onEditorExit(clientId, playlist) { action ->
+                        println("action : $action")
+                        binding.loading.textView.text = when (action) {
+                            is ListAction.Add -> getString(
+                                R.string.adding_tracks,
+                                action.items.joinToString(", ") { it.title }
+                            )
+
+                            is ListAction.Move -> getString(
+                                R.string.moving_track, playlist.tracks[action.from].title
+                            )
+
+                            is ListAction.Remove -> getString(
+                                R.string.removing_tracks,
+                                action.items.joinToString(", ") { it.title }
+                            )
+
+                            else -> getString(R.string.saving)
+                        }
+                    }
                     parentFragmentManager.popBackStack()
                 }
             }
@@ -94,6 +110,19 @@ class EditPlaylistFragment : Fragment() {
 
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+
+        binding.fabAddTracks.setOnClickListener {
+            backCallback.isEnabled = false
+            openFragment(SearchForPlaylistFragment.newInstance(clientId, playlist), it)
+        }
+        parentFragmentManager.setFragmentResultListener(
+            "searchedTracks",
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val album = bundle.getParcel<Album>("album")!!
+            viewModel.edit { addAll(album.tracks) }
+            backCallback.isEnabled = true
         }
 
         binding.loading.root.isVisible = true

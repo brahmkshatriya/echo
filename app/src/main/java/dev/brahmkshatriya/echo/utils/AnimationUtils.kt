@@ -108,7 +108,7 @@ fun Fragment.setupTransition(view: View) {
         if (transitionName != null && view.sharedElementTransitions) {
             view.transitionName = transitionName
             val transition = MaterialContainerTransform().apply {
-                drawingViewId = dev.brahmkshatriya.echo.R.id.navHostFragment
+                drawingViewId = id
                 setAllContainerColors(color)
                 setPathMotion(MaterialArcMotion())
                 duration = view.animationDuration

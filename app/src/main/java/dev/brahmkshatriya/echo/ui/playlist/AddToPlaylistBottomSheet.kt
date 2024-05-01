@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
@@ -16,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.DialogAddToPlaylistBinding
 import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter
+import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 
@@ -59,9 +61,6 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.loading.root.isVisible = true
-        binding.nestedScrollView.isVisible = false
-        binding.save.isEnabled = false
 
         binding.save.setOnClickListener {
             viewModel.saving = true
@@ -92,6 +91,8 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         observe(viewModel.dismiss) { dismiss() }
 
         binding.recyclerView.adapter = adapter
+        (binding.recyclerView.layoutManager as GridLayoutManager).spanCount =
+            mediaItemSpanCount(requireContext())
         viewModel.clientId = clientId
         viewModel.onInitialize()
     }

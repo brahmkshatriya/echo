@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.media
 
 import android.os.Parcelable
+import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -14,13 +15,31 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Category
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Container
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media
+import dev.brahmkshatriya.echo.ui.playlist.SearchForPlaylistClickListener
 import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
     val fragment: Fragment,
     val transition: String,
-    val listener: MediaClickListener = MediaClickListener(fragment.parentFragmentManager)
+    val listener: Listener = getListener(fragment)
 ) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
+
+    interface Listener : MediaItemAdapter.Listener {
+        fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View)
+        fun onLongClick(
+            clientId: String?, container: MediaItemsContainer, transitionView: View
+        ): Boolean
+    }
+
+    companion object {
+        fun getListener(fragment: Fragment): Listener {
+            val type = fragment.arguments?.getString("itemListener")
+            return when (type) {
+                "search" -> SearchForPlaylistClickListener(fragment.parentFragmentManager)
+                else -> MediaClickListener(fragment.parentFragmentManager)
+            }
+        }
+    }
 
     var clientId: String? = null
     fun withLoaders(): ConcatAdapter {
