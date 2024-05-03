@@ -48,6 +48,16 @@ class AudioFragment : BaseSettingsFragment() {
                 }
 
                 SwitchPreferenceCompat(context).apply {
+                    key = SKIP_SILENCE
+                    title = getString(R.string.skip_silence)
+                    summary = getString(R.string.skip_silence_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
                     key = AUTO_START_RADIO
                     title = getString(R.string.auto_start_radio)
                     summary = getString(R.string.auto_start_radio_summary)
@@ -95,6 +105,7 @@ class AudioFragment : BaseSettingsFragment() {
 
         companion object {
             const val CLOSE_PLAYER = "close_player_when_app_closes"
+            const val SKIP_SILENCE = "skip_silence"
             const val AUTO_START_RADIO = "auto_start_radio"
             const val STREAM_QUALITY = "stream_quality"
             const val EQUALIZER = "equalizer"

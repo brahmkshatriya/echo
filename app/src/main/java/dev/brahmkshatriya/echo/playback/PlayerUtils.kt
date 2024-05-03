@@ -7,6 +7,7 @@ import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
@@ -15,12 +16,43 @@ import androidx.media3.session.SessionCommand
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 
+val likeCommand = SessionCommand("liked", Bundle.EMPTY)
+val unlikeCommand = SessionCommand("unliked", Bundle.EMPTY)
+val repeatCommand = SessionCommand("repeat", Bundle.EMPTY)
+val repeatOffCommand = SessionCommand("repeat_off", Bundle.EMPTY)
+val repeatOneCommand = SessionCommand("repeat_one", Bundle.EMPTY)
 
-const val LIKED = "liked"
-const val UNLIKED = "unliked"
-val likeCommand = SessionCommand(LIKED, Bundle.EMPTY)
-val unlikeCommand = SessionCommand(UNLIKED, Bundle.EMPTY)
+fun getLikeButton(context: Context, liked: Boolean) = run {
+    val builder = CommandButton.Builder()
+    if (!liked) builder
+        .setDisplayName(context.getString(R.string.like))
+        .setIconResId(R.drawable.ic_heart_outline)
+        .setSessionCommand(likeCommand)
+    else builder
+        .setDisplayName(context.getString(R.string.unlike))
+        .setIconResId(R.drawable.ic_heart_filled)
+        .setSessionCommand(unlikeCommand)
+    builder.build()
+}
 
+fun getRepeatButton(context: Context, repeat: Int) = run {
+    val builder = CommandButton.Builder()
+    builder.setDisplayName(context.getString(R.string.repeat))
+    when (repeat) {
+        Player.REPEAT_MODE_ONE -> builder
+            .setIconResId(R.drawable.ic_repeat_one)
+            .setSessionCommand(repeatOffCommand)
+
+        Player.REPEAT_MODE_OFF -> builder
+            .setIconResId(R.drawable.ic_repeat_off)
+            .setSessionCommand(repeatCommand)
+
+        else -> builder
+            .setIconResId(R.drawable.ic_repeat)
+            .setSessionCommand(repeatOneCommand)
+    }
+    builder.build()
+}
 
 fun mediaItemBuilder(
     track: Track
@@ -43,20 +75,6 @@ fun Track.toMetaData() = MediaMetadata.Builder()
     .setIsPlayable(true)
     .setIsBrowsable(false)
     .build()
-
-fun toLikeCommand(context: Context, liked: Boolean) =
-    if (!liked) CommandButton.Builder()
-        .setDisplayName(context.getString(R.string.like))
-        .setIconResId(R.drawable.ic_heart_outline_40dp)
-        .setSessionCommand(likeCommand)
-        .build()
-    else CommandButton.Builder()
-        .setDisplayName(context.getString(R.string.unlike))
-        .setIconResId(R.drawable.ic_heart_filled_40dp)
-        .setSessionCommand(unlikeCommand)
-        .setEnabled(false)
-        .build()
-
 
 @OptIn(UnstableApi::class)
 fun DataSpec.copy(

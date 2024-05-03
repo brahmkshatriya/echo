@@ -146,6 +146,8 @@
     <string name="moving_track">Moving %1$s</string>
     <string name="removing_tracks">Removing %1$s</string>
     <string name="unlike">Unlike</string>
+    <string name="skip_silence">Skip Silence</string>
+    <string name="skip_silence_summary">Skip silent part in the song, to provide gapless playback.</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

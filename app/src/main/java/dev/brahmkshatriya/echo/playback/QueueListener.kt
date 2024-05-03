@@ -24,6 +24,7 @@ class QueueListener(
     private val player: Player,
     private val extensionListFlow: ExtensionModule.ExtensionListFlow,
     private val global: Queue,
+    private val updateLayout: (Queue.StreamableTrack) -> Unit,
     private val scope: CoroutineScope,
     private val settings: SharedPreferences,
     private val throwableFlow: MutableSharedFlow<Throwable>,
@@ -60,6 +61,10 @@ class QueueListener(
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         updateCurrent()
+    }
+
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        global.current?.let { updateLayout(it) }
     }
 
     companion object {

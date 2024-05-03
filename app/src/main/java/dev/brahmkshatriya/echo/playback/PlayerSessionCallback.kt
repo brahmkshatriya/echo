@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.Rating
 import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
@@ -18,6 +19,7 @@ import androidx.paging.AsyncPagingDataDiffer
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ListUpdateCallback
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -56,7 +58,9 @@ class PlayerSessionCallback(
         val connectionResult = super.onConnect(session, controller)
         return MediaSession.ConnectionResult.accept(
             connectionResult.availableSessionCommands.buildUpon()
-                .add(likeCommand).add(unlikeCommand).build(),
+                .add(likeCommand).add(unlikeCommand)
+                .add(repeatCommand).add(repeatOffCommand).add(repeatOneCommand)
+                .build(),
             connectionResult.availablePlayerCommands
         )
     }
@@ -67,15 +71,21 @@ class PlayerSessionCallback(
         customCommand: SessionCommand,
         args: Bundle
     ): ListenableFuture<SessionResult> {
-        val mediaId = session.player.currentMediaItem?.mediaId
+        val player = session.player
+        val mediaId = player.currentMediaItem?.mediaId
         return when (customCommand) {
             likeCommand -> rateMediaItem(ThumbRating(true), mediaId)
             unlikeCommand -> rateMediaItem(ThumbRating(false), mediaId)
-            else -> {
-                println(customCommand)
-                super.onCustomCommand(session, controller, customCommand, args)
-            }
+            repeatOffCommand -> setRepeat(player, Player.REPEAT_MODE_OFF)
+            repeatOneCommand -> setRepeat(player, Player.REPEAT_MODE_ONE)
+            repeatCommand -> setRepeat(player, Player.REPEAT_MODE_ALL)
+            else -> super.onCustomCommand(session, controller, customCommand, args)
         }
+    }
+
+    private fun setRepeat(player: Player, repeat: Int) = run {
+        player.repeatMode = repeat
+        Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
     }
 
     private fun rateMediaItem(

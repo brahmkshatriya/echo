@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,13 +81,16 @@ class PlaybackService : MediaLibraryService() {
             .setDataSourceFactory(dataSourceFactory)
 
         val player = ExoPlayer.Builder(this, factory)
+            .setRenderersFactory(RenderersFactory(this))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
+            .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
             .build()
 
         val listener = QueueListener(
-            this, player, extensionList, global, scope, settings, throwableFlow, messageFlow
+            this, player, extensionList, global, ::updateLayout,
+            scope, settings, throwableFlow, messageFlow
         )
         player.addListener(listener)
 
@@ -96,7 +100,8 @@ class PlaybackService : MediaLibraryService() {
         val pendingIntent = PendingIntent
             .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val callback = PlayerSessionCallback(this, scope, global, extensionList, extensionFlow)
+        val callback =
+            PlayerSessionCallback(this, scope, global, extensionList, extensionFlow)
 
         val mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
             .setSessionActivity(pendingIntent)
@@ -110,19 +115,31 @@ class PlaybackService : MediaLibraryService() {
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
         setMediaNotificationProvider(notificationProvider)
 
-        scope.launch {
-            global.listenToChanges(mediaLibrarySession) {
-                val supportsLike = extensionList.getClient(it.clientId) is LibraryClient
-                mediaLibrarySession.setCustomLayout(
-                    listOfNotNull(
-                        if (supportsLike) toLikeCommand(this@PlaybackService, it.liked)
-                        else null,
-                    )
-                )
+        scope.launch { global.listenToChanges(mediaLibrarySession, ::updateLayout) }
+
+        settings.registerOnSharedPreferenceChangeListener { prefs, key ->
+            when (key) {
+                SKIP_SILENCE -> player.skipSilenceEnabled = prefs.getBoolean(key, true)
             }
         }
+
         this.mediaLibrarySession = mediaLibrarySession
     }
+
+
+    private fun updateLayout(track: Queue.StreamableTrack) {
+        val context = this@PlaybackService
+        val mediaLibrarySession = mediaLibrarySession ?: return
+        val player = mediaLibrarySession.player
+        val supportsLike = extensionList.getClient(track.clientId) is LibraryClient
+
+        val commandButtons = listOfNotNull(
+            getRepeatButton(context, player.repeatMode),
+            getLikeButton(context, track.liked).takeIf { supportsLike }
+        )
+        mediaLibrarySession.setCustomLayout(commandButtons)
+    }
+
 
     override fun onDestroy() {
         mediaLibrarySession?.run {
