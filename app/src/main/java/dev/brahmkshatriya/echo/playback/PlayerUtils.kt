@@ -1,14 +1,26 @@
 package dev.brahmkshatriya.echo.playback
 
+import android.content.Context
 import android.net.Uri
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
+import androidx.media3.session.CommandButton
+import androidx.media3.session.SessionCommand
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
-import kotlin.math.roundToLong
+
+
+const val LIKED = "liked"
+const val UNLIKED = "unliked"
+val likeCommand = SessionCommand(LIKED, Bundle.EMPTY)
+val unlikeCommand = SessionCommand(UNLIKED, Bundle.EMPTY)
+
 
 fun mediaItemBuilder(
     track: Track
@@ -23,38 +35,41 @@ fun mediaItemBuilder(
     return item.build()
 }
 
-private fun Track.toMetaData() = MediaMetadata.Builder()
+fun Track.toMetaData() = MediaMetadata.Builder()
     .setTitle(title)
     .setArtist(artists.firstOrNull()?.name)
     .setArtworkUri(id.toUri())
+    .setUserRating(ThumbRating(liked))
     .setIsPlayable(true)
     .setIsBrowsable(false)
     .build()
 
+fun toLikeCommand(context: Context, liked: Boolean) =
+    if (!liked) CommandButton.Builder()
+        .setDisplayName(context.getString(R.string.like))
+        .setIconResId(R.drawable.ic_heart_outline_40dp)
+        .setSessionCommand(likeCommand)
+        .build()
+    else CommandButton.Builder()
+        .setDisplayName(context.getString(R.string.unlike))
+        .setIconResId(R.drawable.ic_heart_filled_40dp)
+        .setSessionCommand(unlikeCommand)
+        .setEnabled(false)
+        .build()
 
-fun Long.toTimeString(): String {
-    val seconds = (this.toFloat() / 1000).roundToLong()
-    val minutes = seconds / 60
-    val hours = minutes / 60
-    return if (hours > 0) {
-        String.format("%02d:%02d:%02d", hours, minutes % 60, seconds % 60)
-    } else {
-        String.format("%02d:%02d", minutes, seconds % 60)
-    }
-}
 
 @OptIn(UnstableApi::class)
 fun DataSpec.copy(
     uri: Uri? = null,
-    uriPositionOffset : Long? = null,
-    httpMethod : Int? = null,
-    httpBody : ByteArray? = null,
-    httpRequestHeaders : Map<String, String>? = null,
-    position : Long? = null,
-    length : Long? = null,
-    key : String? = null,
-    flags : Int? = null,
-    customData : Any? = null
+    uriPositionOffset: Long? = null,
+    httpMethod: Int? = null,
+    httpBody: ByteArray? = null,
+    httpRequestHeaders: Map<String, String>? = null,
+    position: Long? = null,
+    length: Long? = null,
+    key: String? = null,
+    flags: Int? = null,
+    customData: Any? = null
 ): DataSpec {
     return DataSpec.Builder()
         .setUri(uri ?: this.uri)

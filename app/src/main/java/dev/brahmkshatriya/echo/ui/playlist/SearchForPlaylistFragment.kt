@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -102,7 +101,7 @@ class SearchForPlaylistFragment : Fragment() {
 
         binding.addTracks.setOnClickListener {
             parentFragmentManager.setFragmentResult("searchedTracks", Bundle().apply {
-                putParcelable("album", Album("", "", tracks = viewModel.selectedTracks.value))
+                putParcelableArray("tracks", viewModel.selectedTracks.value.toTypedArray())
             })
             viewModel.selectedTracks.value = emptyList()
             parentFragmentManager.popBackStack()

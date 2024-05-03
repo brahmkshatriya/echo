@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.EditPlaylistCoverClient
-import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
 import dev.brahmkshatriya.echo.playback.Queue
 import dev.brahmkshatriya.echo.ui.common.openFragment
@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolde
 import dev.brahmkshatriya.echo.utils.ListAction
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getParcel
+import dev.brahmkshatriya.echo.utils.getParcelArray
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -120,8 +121,8 @@ class EditPlaylistFragment : Fragment() {
             "searchedTracks",
             viewLifecycleOwner
         ) { _, bundle ->
-            val album = bundle.getParcel<Album>("album")!!
-            viewModel.edit { addAll(album.tracks) }
+            val tracks = bundle.getParcelArray<Track>("tracks")!!
+            viewModel.edit { addAll(tracks) }
             backCallback.isEnabled = true
         }
 

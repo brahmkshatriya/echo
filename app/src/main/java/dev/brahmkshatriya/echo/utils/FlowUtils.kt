@@ -37,7 +37,7 @@ fun LifecycleOwner.emit(flow: MutableSharedFlow<Unit>) {
 }
 
 
-fun <T> CoroutineScope.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
+fun <T> CoroutineScope.collect(flow: Flow<T>, block: suspend (T) -> Unit) {
     launch { flow.collectLatest(block) }
 }
 

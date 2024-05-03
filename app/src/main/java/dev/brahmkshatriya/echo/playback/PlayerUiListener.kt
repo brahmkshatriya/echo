@@ -10,8 +10,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaBrowser
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 
-class PlayerListener(
-    private val player: MediaBrowser, private val viewModel: PlayerViewModel
+class PlayerUiListener(
+    private val player: MediaBrowser,
+    private val viewModel: PlayerViewModel
 ) : Player.Listener {
 
     private val updateProgressRunnable = Runnable { updateProgress() }
@@ -24,7 +25,6 @@ class PlayerListener(
         viewModel.buffering.value = player.playbackState == Player.STATE_BUFFERING
         viewModel.shuffle.value = player.shuffleModeEnabled
         viewModel.repeat.value = player.repeatMode
-        updateCurrent()
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -45,12 +45,7 @@ class PlayerListener(
         viewModel.isPlaying.value = isPlaying
     }
 
-    private fun updateCurrent() {
-        val mediaItems = (0 until player.mediaItemCount).map {
-            player.getMediaItemAt(it).mediaId
-        }
-        viewModel.updateList(mediaItems, player.currentMediaItemIndex)
-    }
+
 
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int
@@ -60,12 +55,10 @@ class PlayerListener(
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        updateCurrent()
         viewModel.startedPlaying(player.currentMediaItem?.mediaId)
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        updateCurrent()
         updateNavigation()
         updateProgress()
     }

@@ -1,14 +1,19 @@
 package dev.brahmkshatriya.echo.playback
 
 import androidx.media3.common.MediaItem
+import androidx.media3.session.MediaSession
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.utils.collect
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import java.util.Collections.synchronizedList
 
 class Queue {
+    val updateFlow = MutableSharedFlow<Unit>()
 
     private val trackQueue = synchronizedList(mutableListOf<StreamableTrack>())
     private val playerQueue = synchronizedList(mutableListOf<StreamableTrack>())
@@ -20,24 +25,22 @@ class Queue {
 
     fun getTrack(mediaId: String?) = trackQueue.find { it.unloaded.id == mediaId }
 
-    private val _clearQueue = MutableSharedFlow<Unit>()
-    val clearQueueFlow = _clearQueue.asSharedFlow()
+    private val clearQueueFlow = MutableSharedFlow<Unit>()
     suspend fun clearQueue() {
         trackQueue.clear()
-        _clearQueue.emit(Unit)
+        playerQueue.clear()
+        clearQueueFlow.emit(Unit)
     }
 
-    private val _removeTrack = MutableSharedFlow<Int>()
-    val removeTrackFlow = _removeTrack.asSharedFlow()
+    private val removeTrackFlow = MutableSharedFlow<Int>()
     suspend fun removeTrack(index: Int) {
         val track = playerQueue[index]
         trackQueue.remove(track)
-        _removeTrack.emit(index)
-        if (trackQueue.isEmpty()) _clearQueue.emit(Unit)
+        removeTrackFlow.emit(index)
+        if (trackQueue.isEmpty()) clearQueueFlow.emit(Unit)
     }
 
-    private val _addTrack = MutableSharedFlow<Pair<Int, List<MediaItem>>>()
-    val addTrackFlow = _addTrack.asSharedFlow()
+    private val addTrackFlow = MutableSharedFlow<Pair<Int, List<MediaItem>>>()
     suspend fun addTracks(
         client: String, tracks: List<Track>, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
@@ -53,14 +56,13 @@ class Queue {
         }
         trackQueue.addAll(queueItems)
         val mediaItems = position to items
-        _addTrack.emit(mediaItems)
+        addTrackFlow.emit(mediaItems)
         return mediaItems
     }
 
-    private val _moveTrack = MutableSharedFlow<Pair<Int, Int>>()
-    val moveTrackFlow = _moveTrack.asSharedFlow()
+    private val moveTrackFlow = MutableSharedFlow<Pair<Int, Int>>()
     suspend fun moveTrack(fromIndex: Int, toIndex: Int) {
-        _moveTrack.emit(fromIndex to toIndex)
+        moveTrackFlow.emit(fromIndex to toIndex)
     }
 
     fun updateQueue(mediaItems: List<String>) {
@@ -74,10 +76,45 @@ class Queue {
         val clientId: String,
         var loaded: Track? = null,
         var liked: Boolean = unloaded.liked,
-        val onLoad : MutableSharedFlow<Track> = MutableSharedFlow(),
-        val onLiked: MutableSharedFlow<Boolean> = MutableSharedFlow(),
+        val onLoad: MutableSharedFlow<Track> = MutableSharedFlow(),
+        val onLiked: MutableSharedFlow<Boolean> = MutableStateFlow(unloaded.liked),
+    ) {
+        val current get() = loaded ?: unloaded
+    }
 
-    )
+    suspend fun listenToChanges(
+        session: MediaSession,
+        updateLayout: (StreamableTrack) -> Unit
+    ) = withContext(Dispatchers.Main) {
+        val player = session.player
+        collect(addTrackFlow) { (index, item) ->
+            player.addMediaItems(index, item)
+            player.prepare()
+            player.playWhenReady = true
+        }
+        collect(moveTrackFlow) { (new, old) ->
+            player.moveMediaItem(old, new)
+        }
+        collect(removeTrackFlow) {
+            player.removeMediaItem(it)
+        }
+        collect(clearQueueFlow) {
+            player.pause()
+            player.clearMediaItems()
+            player.stop()
+        }
+        collect(currentIndexFlow) {
+            val track = current ?: return@collect
+            updateLayout(track)
+            collect(track.onLiked) { updateLayout(track) }
+            val loaded = track.loaded ?: track.onLoad.first()
+            val metadata = loaded.toMetaData()
+            player.apply {
+                val mediaItem = currentMediaItem ?: return@apply
+                val newItem = mediaItem.buildUpon().setMediaMetadata(metadata).build()
+                replaceMediaItem(currentMediaItemIndex, newItem)
+            }
+            updateLayout(track)
+        }
+    }
 }
-
-

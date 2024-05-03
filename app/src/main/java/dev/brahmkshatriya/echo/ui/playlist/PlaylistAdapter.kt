@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.playback.Queue.StreamableTrack
-import dev.brahmkshatriya.echo.playback.toTimeString
+import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.ui.player.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerTrackAdapter
 import dev.brahmkshatriya.echo.utils.loadInto

@@ -34,16 +34,15 @@ import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.playback.Queue.StreamableTrack
-import dev.brahmkshatriya.echo.playback.toTimeString
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
-import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
@@ -265,7 +264,7 @@ class PlayerTrackAdapter(
             if (extensionClient is LibraryClient) {
                 isChecked = item.liked
                 val likeListener = CheckBoxListener {
-                    lifecycleScope.launch { item.onLiked.emit(it) }
+                    viewModel.likeTrack(item, it)
                 }
                 addOnCheckedStateChangedListener(likeListener)
                 observe(item.onLiked) {
@@ -275,9 +274,6 @@ class PlayerTrackAdapter(
                 }
                 isVisible = true
             } else isVisible = false
-        }
-        collect(item.onLiked) { liked ->
-            viewModel.likeTrack(item, liked)
         }
     }
 

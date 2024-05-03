@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.playlist
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +18,7 @@ import dev.brahmkshatriya.echo.databinding.DialogAddToPlaylistBinding
 import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.getParcelArray
 import dev.brahmkshatriya.echo.utils.observe
 
 @AndroidEntryPoint
@@ -28,27 +28,21 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         fun newInstance(clientId: String, album: Album) = AddToPlaylistBottomSheet().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
-                putParcelable("album", album)
+                putParcelableArray("tracks", album.tracks.toTypedArray())
             }
         }
 
         fun newInstance(clientId: String, track: Track) = AddToPlaylistBottomSheet().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
-                putParcelable("album", Album("", "", tracks = listOf(track)))
+                putParcelableArray("tracks", arrayOf(track))
             }
         }
     }
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-
-    @Suppress("DEPRECATION")
-    private val album: Album by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            requireArguments().getParcelable("album", Album::class.java)!!
-        else args.getParcelable("album")!!
-    }
+    private val tracks: List<Track> by lazy { args.getParcelArray("tracks")!! }
 
     var binding by autoCleared<DialogAddToPlaylistBinding>()
     val viewModel by viewModels<AddToPlaylistViewModel>()
@@ -67,7 +61,7 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
             binding.loading.root.isVisible = true
             binding.loading.textView.text = getString(R.string.saving)
             binding.nestedScrollView.isVisible = false
-            viewModel.addToPlaylists(album.tracks)
+            viewModel.addToPlaylists(tracks)
         }
 
         val adapter = MediaItemSelectableAdapter { _, item ->

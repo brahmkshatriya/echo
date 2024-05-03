@@ -18,6 +18,7 @@ import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -84,7 +85,7 @@ class PlaybackService : MediaLibraryService() {
             .setAudioAttributes(audioAttributes, true)
             .build()
 
-        val listener = RadioListener(
+        val listener = QueueListener(
             this, player, extensionList, global, scope, settings, throwableFlow, messageFlow
         )
         player.addListener(listener)
@@ -95,9 +96,9 @@ class PlaybackService : MediaLibraryService() {
         val pendingIntent = PendingIntent
             .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val callback = PlayerSessionCallback(this, scope, global, extensionFlow)
+        val callback = PlayerSessionCallback(this, scope, global, extensionList, extensionFlow)
 
-        mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
+        val mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
             .setSessionActivity(pendingIntent)
             .setBitmapLoader(PlayerBitmapLoader(this, global, scope))
             .build()
@@ -108,6 +109,19 @@ class PlaybackService : MediaLibraryService() {
                 .build()
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
         setMediaNotificationProvider(notificationProvider)
+
+        scope.launch {
+            global.listenToChanges(mediaLibrarySession) {
+                val supportsLike = extensionList.getClient(it.clientId) is LibraryClient
+                mediaLibrarySession.setCustomLayout(
+                    listOfNotNull(
+                        if (supportsLike) toLikeCommand(this@PlaybackService, it.liked)
+                        else null,
+                    )
+                )
+            }
+        }
+        this.mediaLibrarySession = mediaLibrarySession
     }
 
     override fun onDestroy() {

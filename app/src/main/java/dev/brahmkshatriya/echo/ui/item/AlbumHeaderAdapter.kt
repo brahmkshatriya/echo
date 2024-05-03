@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.databinding.ItemAlbumInfoBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemAlbumInfoBinding
-import dev.brahmkshatriya.echo.playback.toTimeString
+import dev.brahmkshatriya.echo.utils.toTimeString
 
 class AlbumHeaderAdapter(
     private val listener: Listener
