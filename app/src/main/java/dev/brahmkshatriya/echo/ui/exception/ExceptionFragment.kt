@@ -9,11 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModel
+import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.getSerial
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
@@ -23,11 +23,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 class ExceptionFragment : Fragment() {
     private var binding by autoCleared<FragmentExceptionBinding>()
-    private val viewmodel by activityViewModels<ThrowableViewModel>()
-
-    class ThrowableViewModel : ViewModel() {
-        var throwable: Throwable? = null
-    }
+    private val throwable by lazy { requireArguments().getSerial<Throwable>("exception")!! }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,10 +44,14 @@ class ExceptionFragment : Fragment() {
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-        binding.exceptionMessage.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack()
+        binding.exceptionMessage.apply {
+            val icon = navigationIcon
+            navigationIcon = icon.takeIf { parentFragmentManager.fragments.size > 1 }
+
+            setNavigationOnClickListener {
+                parentFragmentManager.popBackStack()
+            }
         }
-        val throwable = viewmodel.throwable ?: return
 
         binding.exceptionMessage.title = requireContext().getTitle(throwable)
         binding.exceptionDetails.text = requireContext().getDetails(throwable)
@@ -78,6 +78,7 @@ class ExceptionFragment : Fragment() {
 
         fun Context.getTitle(throwable: Throwable) = when (throwable) {
             is NoSuchMethodError -> getString(R.string.extension_out_of_date)
+            is ExceptionActivity.AppCrashException -> getString(R.string.app_crashed)
             else -> throwable.message ?: getString(R.string.error)
         }
 
@@ -90,7 +91,14 @@ Stream : ${throwable.streamableTrack.toString()}
 ${throwable.cause.stackTraceToString()}
 """.trimIndent()
 
+            is ExceptionActivity.AppCrashException -> throwable.cause.stackTraceToString()
             else -> throwable.stackTraceToString()
+        }
+
+        fun newInstance(throwable: Throwable) = ExceptionFragment().apply {
+            arguments = Bundle().apply {
+                putSerializable("exception", throwable)
+            }
         }
     }
 }

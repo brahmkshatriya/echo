@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -11,6 +10,7 @@ import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.EchoApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.ColorListPreference
+import dev.brahmkshatriya.echo.utils.restartApp
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 
@@ -31,13 +31,7 @@ class LookFragment : BaseSettingsFragment() {
             val message = SnackBar.Message(
                 getString(R.string.restart_app),
                 SnackBar.Action(getString(R.string.restart)) {
-                    context.run {
-                        val mainIntent = Intent.makeRestartActivityTask(
-                            packageManager.getLaunchIntentForPackage(packageName)!!.component
-                        )
-                        startActivity(mainIntent)
-                        Runtime.getRuntime().exit(0)
-                    }
+                    context.restartApp()
                 }
             )
 

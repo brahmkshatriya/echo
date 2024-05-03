@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.CUSTOM_THEME_K
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.THEME_KEY
 import javax.inject.Inject
 
+
 @HiltAndroidApp
 class EchoApplication : Application() {
 
@@ -23,7 +24,13 @@ class EchoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         applyUiChanges(this, preferences)
+        Thread.setDefaultUncaughtExceptionHandler { _, exception ->
+            println("got exception : ${exception.message}")
+            ExceptionActivity.start(this, exception)
+            Runtime.getRuntime().exit(0)
+        }
     }
+
 
     companion object {
         @SuppressLint("RestrictedApi")

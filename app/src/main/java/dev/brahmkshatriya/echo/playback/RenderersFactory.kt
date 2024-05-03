@@ -17,11 +17,12 @@ class RenderersFactory(context: Context) : DefaultRenderersFactory(context) {
     ) = run {
 
         val minDuration = 10_00_000L
-        val ratio = 100f
+        val maxDuration = 20_00_000L
+        val ratio = 1f
         val minVolume = 0
         val threshHold = 256.toShort()
         val silenceSkippingAudioProcessor =
-            SilenceSkippingAudioProcessor(minDuration, ratio, minDuration, minVolume, threshHold)
+            SilenceSkippingAudioProcessor(minDuration, ratio, maxDuration, minVolume, threshHold)
 
         DefaultAudioSink.Builder(context)
             .setEnableFloatOutput(enableFloatOutput)

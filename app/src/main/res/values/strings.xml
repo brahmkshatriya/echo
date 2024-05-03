@@ -148,6 +148,7 @@
     <string name="unlike">Unlike</string>
     <string name="skip_silence">Skip Silence</string>
     <string name="skip_silence_summary">Skip silent part in the song, to provide gapless playback.</string>
+    <string name="app_crashed">App Crashed!</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
