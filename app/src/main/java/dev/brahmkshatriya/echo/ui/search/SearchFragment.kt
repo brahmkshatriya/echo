@@ -43,11 +43,10 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
 
+    private val parent get() = parentFragment as Fragment
     private var binding by autoCleared<FragmentSearchBinding>()
-    private val viewModel by viewModels<SearchViewModel>()
     private val uiViewModel by activityViewModels<UiViewModel>()
 
-    private val parent get() = parentFragment as Fragment
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -79,20 +78,29 @@ class SearchFragment : Fragment() {
         }
         FastScrollerHelper.applyTo(binding.recyclerView)
 
+        val viewModel by parent.viewModels<SearchViewModel>()
         binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
         binding.swipeRefresh.setOnRefreshListener {
+            println("swipe refresh")
             viewModel.refresh(true)
         }
+
+        binding.searchBar.setText(viewModel.query)
+        binding.quickSearchView.editText.setText(viewModel.query)
+
         binding.quickSearchView.setupWithSearchBar(binding.searchBar)
         binding.quickSearchView.editText.doOnTextChanged { text, _, _, _ ->
             viewModel.quickSearch(text.toString())
         }
         binding.quickSearchView.editText.setOnEditorActionListener { textView, _, _ ->
-            val query = textView.text.toString()
-            viewModel.query = query
+            val query = textView.text.toString().ifBlank { null }
             binding.searchBar.setText(query)
             binding.quickSearchView.hide()
-            viewModel.refresh(true)
+            if (query != viewModel.query) {
+                println("editText")
+                viewModel.query = query
+                viewModel.refresh(true)
+            }
             false
         }
 
@@ -102,7 +110,7 @@ class SearchFragment : Fragment() {
 
         viewModel.initialize()
 
-        val mediaClickListener = getListener(this)
+        val mediaClickListener = getListener(parent)
         val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
             override fun onClick(item: QuickSearchItem, transitionView: View) = when (item) {
                 is QuickSearchItem.SearchQueryItem -> {
@@ -163,7 +171,10 @@ class SearchFragment : Fragment() {
             var genres: List<Genre> = emptyList()
             override fun onTabSelected(tab: TabLayout.Tab) {
                 if (!enabled) return
-                viewModel.genre = genres[tab.position]
+                val genre = genres[tab.position]
+                if(viewModel.genre == genre) return
+                viewModel.genre = genre
+                viewModel.refresh()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) = Unit
@@ -188,7 +199,8 @@ class SearchFragment : Fragment() {
             }
         }
 
-        observe(viewModel.searchFeed) {
+        observe(viewModel.feed) {
+            println("feed : $it")
             mediaContainerAdapter.submit(it)
         }
 
@@ -208,6 +220,7 @@ class SearchFragment : Fragment() {
     }
 
     override fun onStop() {
+        val viewModel by parent.viewModels<SearchViewModel>()
         viewModel.recyclerPosition = binding.recyclerView.first()
         super.onStop()
     }

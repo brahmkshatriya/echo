@@ -84,7 +84,10 @@ class LibraryFragment : Fragment() {
             var genres: List<Genre> = emptyList()
             override fun onTabSelected(tab: TabLayout.Tab) {
                 if (!enabled) return
-                viewModel.genre = genres[tab.position]
+                val genre = genres[tab.position]
+                if (viewModel.genre == genre) return
+                viewModel.genre = genre
+                viewModel.refresh()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) = Unit
@@ -104,12 +107,12 @@ class LibraryFragment : Fragment() {
             genres.forEach { genre ->
                 val tab = binding.tabLayout.newTab()
                 tab.text = genre.name
-                val selected = viewModel.genre == genre
+                val selected = viewModel.genre?.id == genre.id
                 binding.tabLayout.addTab(tab, selected)
             }
         }
 
-        observe(viewModel.libraryFeed) {
+        observe(viewModel.feed) {
             mediaContainerAdapter.submit(it)
         }
 

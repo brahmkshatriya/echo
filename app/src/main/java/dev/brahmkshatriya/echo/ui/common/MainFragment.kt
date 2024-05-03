@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentMainBinding
 import dev.brahmkshatriya.echo.ui.home.HomeFragment
 import dev.brahmkshatriya.echo.ui.library.LibraryFragment
@@ -21,6 +22,7 @@ import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.utils.startAnimation
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
+@AndroidEntryPoint
 class MainFragment : Fragment() {
 
     var binding by autoCleared<FragmentMainBinding>()

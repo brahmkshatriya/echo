@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.ui.container
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
@@ -20,9 +19,7 @@ class ContainerViewModel @Inject constructor(
     val flow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
     override fun onInitialize() {
         viewModelScope.launch {
-            moreFlow?.collectTo { data ->
-                flow.value = data.map { it }
-            }
+            moreFlow!!.collectTo(flow)
         }
     }
 }

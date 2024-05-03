@@ -35,7 +35,7 @@ class MediaContainerAdapter(
         fun getListener(fragment: Fragment): Listener {
             val type = fragment.arguments?.getString("itemListener")
             return when (type) {
-                "search" -> SearchForPlaylistClickListener(fragment.parentFragmentManager)
+                "search" -> SearchForPlaylistClickListener(fragment.childFragmentManager)
                 else -> MediaClickListener(fragment.parentFragmentManager)
             }
         }

@@ -32,7 +32,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 class HomeFragment : Fragment() {
 
     private var binding by autoCleared<FragmentHomeBinding>()
-    private val viewModel by activityViewModels<HomeViewModel>()
+    private val viewModel by activityViewModels<HomeFeedViewModel>()
     private val parent get() = parentFragment as MainFragment
 
     override fun onCreateView(
@@ -76,7 +76,10 @@ class HomeFragment : Fragment() {
             var genres: List<Genre> = emptyList()
             override fun onTabSelected(tab: TabLayout.Tab) {
                 if (!enabled) return
-                viewModel.genre = genres[tab.position]
+                val genre = genres[tab.position]
+                if (viewModel.genre == genre) return
+                viewModel.genre = genre
+                viewModel.refresh()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) = Unit
@@ -96,12 +99,12 @@ class HomeFragment : Fragment() {
             genres.forEach { genre ->
                 val tab = binding.tabLayout.newTab()
                 tab.text = genre.name
-                val selected = viewModel.genre == genre
+                val selected = viewModel.genre?.id == genre.id
                 binding.tabLayout.addTab(tab, selected)
             }
         }
 
-        observe(viewModel.homeFeed) {
+        observe(viewModel.feed) {
             mediaContainerAdapter.submit(it)
         }
 

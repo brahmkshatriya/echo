@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
@@ -26,6 +27,7 @@ import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
+@AndroidEntryPoint
 class SearchForPlaylistFragment : Fragment() {
     private var binding by autoCleared<FragmentPlaylistSearchBinding>()
     private val viewModel by activityViewModels<SearchForPlaylistViewModel>()
@@ -79,11 +81,9 @@ class SearchForPlaylistFragment : Fragment() {
         applyBackPressCallback()
 
         val searchFragment = binding.playlistSearchContainer.getFragment<SearchFragment>()
-        searchFragment.arguments = Bundle().apply {
-            putString("clientId", clientId)
-            putString("itemListener", "search")
-        }
+        searchFragment.arguments = Bundle().apply { putString("clientId", clientId) }
 
+        args.putString("itemListener", "search")
         searchFragment.parentFragmentManager.addFragmentOnAttachListener { _, fragment ->
             val arguments = fragment.arguments ?: Bundle()
             arguments.putString("itemListener", "search")
