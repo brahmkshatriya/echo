@@ -8,31 +8,27 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
-import dev.brahmkshatriya.echo.playback.PlaybackService
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.isNightMode
+import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
-import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
+import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectBrowserToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
@@ -116,12 +112,16 @@ class MainActivity : AppCompatActivity() {
 
         val sessionToken =
             SessionToken(application, ComponentName(application, PlaybackService::class.java))
-        val future = MediaBrowser.Builder(application, sessionToken).buildAsync()
-        future.addListener({
-            val browser = tryWith(false) { future.get() } ?: return@addListener
-            connectPlayerToUI(browser, playerViewModel)
-        }, ContextCompat.getMainExecutor(this))
-        controllerFuture = future
+        val browserFuture = MediaBrowser.Builder(application, sessionToken).buildAsync()
+        listenFuture(browserFuture) {
+            val browser = it.getOrElse { e ->
+                e.printStackTrace()
+                return@listenFuture
+            }
+            connectBrowserToUI(browser, playerViewModel)
+        }
+
+        controllerFuture = browserFuture
 
     }
 
@@ -133,9 +133,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         intent?.hasExtra("fromNotification")?.let {
-            if (!it) return
-            emit(uiViewModel.changePlayerState) { STATE_EXPANDED }
-            emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
+            uiViewModel.fromNotification.value = it
         }
         super.onNewIntent(intent)
     }

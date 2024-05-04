@@ -1,15 +1,23 @@
 package dev.brahmkshatriya.echo.playback
 
+import android.content.Context
+import androidx.annotation.OptIn
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player.REPEAT_MODE_OFF
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.utils.collect
-import kotlinx.coroutines.Dispatchers
+import dev.brahmkshatriya.echo.utils.getFromCache
+import dev.brahmkshatriya.echo.utils.getListFromCache
+import dev.brahmkshatriya.echo.utils.saveToCache
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import java.util.Collections.synchronizedList
 
 class Queue {
@@ -20,16 +28,16 @@ class Queue {
     val queue get() = playerQueue.toList()
 
     val currentIndexFlow = MutableStateFlow(-1)
-    val current get() = queue.getOrNull(currentIndexFlow.value)
+    val current get() = playerQueue.getOrNull(currentIndexFlow.value)
     val currentAudioFlow = MutableStateFlow<StreamableAudio?>(null)
 
     fun getTrack(mediaId: String?) = trackQueue.find { it.unloaded.id == mediaId }
 
     private val clearQueueFlow = MutableSharedFlow<Unit>()
-    suspend fun clearQueue() {
+    suspend fun clearQueue(emit: Boolean = true) {
         trackQueue.clear()
         playerQueue.clear()
-        clearQueueFlow.emit(Unit)
+        if (emit) clearQueueFlow.emit(Unit)
     }
 
     private val removeTrackFlow = MutableSharedFlow<Int>()
@@ -77,20 +85,23 @@ class Queue {
         var loaded: Track? = null,
         var liked: Boolean = unloaded.liked,
         val onLoad: MutableSharedFlow<Track> = MutableSharedFlow(),
-        val onLiked: MutableSharedFlow<Boolean> = MutableStateFlow(unloaded.liked),
     ) {
         val current get() = loaded ?: unloaded
     }
 
-    suspend fun listenToChanges(
+    val repeat = MutableStateFlow(REPEAT_MODE_OFF)
+    val shuffle = MutableStateFlow(false)
+    val onLiked = MutableSharedFlow<Boolean>()
+
+    fun listenToChanges(
+        scope: CoroutineScope,
         session: MediaSession,
-        updateLayout: (StreamableTrack) -> Unit
-    ) = withContext(Dispatchers.Main) {
+        updateLayout: () -> Unit
+    ) = scope.launch {
         val player = session.player
         collect(addTrackFlow) { (index, item) ->
             player.addMediaItems(index, item)
             player.prepare()
-            player.playWhenReady = true
         }
         collect(moveTrackFlow) { (new, old) ->
             player.moveMediaItem(old, new)
@@ -105,8 +116,7 @@ class Queue {
         }
         collect(currentIndexFlow) {
             val track = current ?: return@collect
-            updateLayout(track)
-            collect(track.onLiked) { updateLayout(track) }
+            updateLayout()
             val loaded = track.loaded ?: track.onLoad.first()
             val metadata = loaded.toMetaData()
             player.apply {
@@ -114,7 +124,62 @@ class Queue {
                 val newItem = mediaItem.buildUpon().setMediaMetadata(metadata).build()
                 replaceMediaItem(currentMediaItemIndex, newItem)
             }
-            updateLayout(track)
+            updateLayout()
         }
+        collect(onLiked) {
+            updateLayout()
+        }
+        collect(repeat) {
+            player.repeatMode = it
+            updateLayout()
+        }
+        collect(shuffle) {
+            player.shuffleModeEnabled = it
+            updateLayout()
+        }
+    }
+
+    fun saveQueue(context: Context, currentIndex: Int) {
+        context.saveToCache("queue_tracks", trackQueue.map { it.unloaded }, "queue")
+        context.saveToCache("queue_clients", "queue") { parcel ->
+            parcel.writeStringList(trackQueue.map { it.clientId })
+        }
+        context.saveToCache("queue_index", "queue") {
+            it.writeInt(currentIndex)
+        }
+    }
+
+    fun saveCurrentPos(context: Context, position: Long) {
+        context.saveToCache("position", "queue") {
+            it.writeLong(position)
+        }
+    }
+
+    private fun recoverQueue(context: Context): List<StreamableTrack>? {
+        val queue = context.getListFromCache<Track>("queue_tracks", Track.creator, "queue")
+        val clientIds = context.getFromCache("queue_clients", "queue") {
+            it.createStringArrayList()
+        }
+        val streamableTracks = queue?.mapIndexedNotNull { index, track ->
+            val clientId = clientIds?.getOrNull(index) ?: return@mapIndexedNotNull null
+            StreamableTrack(track, clientId)
+        } ?: return null
+        trackQueue.addAll(streamableTracks)
+        return streamableTracks
+    }
+
+    private fun recoverIndex(context: Context) =
+        context.getFromCache("queue_index", "queue") { it.readInt() }
+
+    private fun recoverPosition(context: Context) =
+        context.getFromCache("position", "queue") { it.readLong() }
+
+    @OptIn(UnstableApi::class)
+    fun recoverPlaylist(context: Context): MediaSession.MediaItemsWithStartPosition {
+        val recoveredTracks = recoverQueue(context) ?: emptyList()
+        val index = recoverIndex(context) ?: C.INDEX_UNSET
+        val position = recoverPosition(context) ?: 0L
+        val items = recoveredTracks.map { mediaItemBuilder(it.unloaded) }
+        return MediaSession.MediaItemsWithStartPosition(items, index, position)
     }
 }

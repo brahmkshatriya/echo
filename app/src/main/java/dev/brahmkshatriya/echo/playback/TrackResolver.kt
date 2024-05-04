@@ -65,7 +65,7 @@ class TrackResolver(
             liked = track.liked
             runBlocking {
                 onLoad.emit(track)
-                onLiked.emit(track.liked)
+                global.onLiked.emit(track.liked)
             }
         }
         return track
@@ -90,7 +90,7 @@ class TrackResolver(
     private var current: Track? = null
     private fun getTrackFromCache(id: String): Track? {
         val track = current?.takeIf { it.id == id }
-            ?: context.getFromCache(id) { Track.creator.createFromParcel(it) } ?: return null
+            ?: context.getFromCache(id, Track.creator) ?: return null
         return if (!track.isExpired()) track else null
     }
 

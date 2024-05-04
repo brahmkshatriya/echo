@@ -59,8 +59,9 @@ class ExceptionFragment : Fragment() {
         binding.exceptionMessage.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.exception_copy -> {
-                    requireContext()
-                        .copyToClipboard(throwable.message, throwable.stackTraceToString())
+                    with(requireContext()) {
+                        copyToClipboard(throwable.message, "```\n${getDetails(throwable)}\n```")
+                    }
                     true
                 }
 

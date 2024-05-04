@@ -149,6 +149,8 @@
     <string name="skip_silence">Skip Silence</string>
     <string name="skip_silence_summary">Skip silent part in the song, to provide gapless playback.</string>
     <string name="app_crashed">App Crashed!</string>
+    <string name="keep_queue">Keep Player Queue</string>
+    <string name="keep_queue_summary">Recover the player queue, when you reopen the app.</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

@@ -71,16 +71,16 @@ class PlayerTrackAdapter(
         ItemPlayerTrackBinding.inflate(inflater, container, false)
 
     override fun Holder<StreamableTrack, ItemPlayerTrackBinding>.onBind(position: Int) {
-        val item = getItem(position)
-        val client = item?.clientId
-        val track = item?.loaded ?: item?.unloaded
+        val item = getItem(position) ?: return
+        val client = item.clientId
+        val track = item.current
         binding.applyTrackDetails(client, track)
         observe(item.onLoad) {
             binding.applyTrackDetails(client, it, item.unloaded)
         }
 
         lifecycleScope.launch {
-            val bitmap = track?.cover?.loadBitmap(binding.root.context)
+            val bitmap = track.cover?.loadBitmap(binding.root.context)
             val colors = binding.root.context.getPlayerColors(bitmap)
             binding.root.setBackgroundColor(colors.background)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
@@ -127,7 +127,7 @@ class PlayerTrackAdapter(
             block: (T?) -> Unit
         ) {
             observe(flow) {
-                if (viewModel.current?.unloaded?.id == track?.id)
+                if (viewModel.current?.unloaded?.id == track.id)
                     block(it)
                 else block(null)
             }
@@ -172,7 +172,7 @@ class PlayerTrackAdapter(
         }
 
         observeCurrent(viewModel.totalDuration) {
-            val duration = it ?: track?.duration?.toInt() ?: 100
+            val duration = it ?: track.duration?.toInt() ?: return@observeCurrent
             binding.collapsedContainer.run {
                 collapsedSeekBar.max = duration
                 collapsedBuffer.max = duration
@@ -258,7 +258,6 @@ class PlayerTrackAdapter(
             viewModel.repeatEnabled = true
         }
 
-        item ?: return
         val extensionClient = viewModel.extensionListFlow.getClient(item.clientId)
         binding.playerControls.trackHeart.run {
             if (extensionClient is LibraryClient) {
@@ -267,9 +266,9 @@ class PlayerTrackAdapter(
                     viewModel.likeTrack(item, it)
                 }
                 addOnCheckedStateChangedListener(likeListener)
-                observe(item.onLiked) {
+                observeCurrent(viewModel.onLiked) {
                     likeListener.enabled = false
-                    isChecked = it
+                    isChecked = it ?: track.liked
                     likeListener.enabled = true
                 }
                 isVisible = true

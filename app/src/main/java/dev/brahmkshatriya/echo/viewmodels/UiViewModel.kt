@@ -22,6 +22,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -103,6 +104,7 @@ class UiViewModel @Inject constructor(
         playerInsets.value = insets
     }
 
+    val fromNotification = MutableStateFlow(false)
     val playerSheetState = MutableStateFlow(initialPlayerState)
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
     val changePlayerState = MutableSharedFlow<Int>()
@@ -259,6 +261,15 @@ class UiViewModel @Inject constructor(
                     viewModel.playerSheetOffset.value = slideOffset
                 }
             })
+
+            viewModel.run {
+                observe(fromNotification) {
+                    if(!it) return@observe
+                    fromNotification.value = false
+                    emit(changePlayerState) { STATE_EXPANDED }
+                    emit(changeInfoState) { STATE_COLLAPSED }
+                }
+            }
         }
 
         fun LifecycleOwner.setupPlayerInfoBehavior(viewModel: UiViewModel, view: View) {

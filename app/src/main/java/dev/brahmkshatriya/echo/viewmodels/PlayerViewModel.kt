@@ -1,14 +1,14 @@
 package dev.brahmkshatriya.echo.viewmodels
 
-import android.app.Application
-import androidx.lifecycle.LifecycleOwner
+import android.content.SharedPreferences
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.ThumbRating
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionResult.RESULT_ERROR_UNKNOWN
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -16,12 +16,13 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.di.TrackerModule
-import dev.brahmkshatriya.echo.playback.PlayerUiListener
+import dev.brahmkshatriya.echo.playback.PlayerListener
 import dev.brahmkshatriya.echo.playback.Queue
-import dev.brahmkshatriya.echo.playback.QueueListener.Companion.radio
+import dev.brahmkshatriya.echo.playback.recoverQueue
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.utils.getSerial
+import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,25 +35,27 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val global: Queue,
-    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
-    private val app: Application,
-    private val trackerListFlow: TrackerModule.TrackerListFlow,
+    val settings: SharedPreferences,
     val extensionListFlow: ExtensionModule.ExtensionListFlow,
-    throwableFlow: MutableSharedFlow<Throwable>
+    throwableFlow: MutableSharedFlow<Throwable>,
+    private val listener: PlayerListener,
 ) : CatchingViewModel(throwableFlow) {
 
+    override fun onInitialize() {
+        listener.setViewModel(this)
+    }
 
     val playPause = MutableSharedFlow<Boolean>()
     val playPauseListener = CheckBoxListener {
         viewModelScope.launch { playPause.emit(it) }
     }
 
-    val shuffle = MutableStateFlow(false)
+    val shuffle = global.shuffle
     val shuffleListener = CheckBoxListener {
         viewModelScope.launch { shuffle.emit(it) }
     }
 
-    val repeat = MutableStateFlow(0)
+    val repeat = global.repeat
     var repeatEnabled = false
     fun onRepeat(it: Int) {
         if (repeatEnabled) viewModelScope.launch { repeat.emit(it) }
@@ -113,11 +116,12 @@ class PlayerViewModel @Inject constructor(
     private fun playRadio(clientId: String, block: suspend RadioClient.() -> Playlist) {
         val client = extensionListFlow.getClient(clientId)
         viewModelScope.launch(Dispatchers.IO) {
-            val position = radio(app, client, messageFlow, global) { tryWith { block(this) } }
+            val position = listener.radio(client) { block(this) }
             position?.let { audioIndexFlow.emit(it) }
         }
     }
 
+    val onLiked = global.onLiked
     fun likeTrack(track: Queue.StreamableTrack, isLiked: Boolean) = viewModelScope.launch {
         likeTrack.emit(track.unloaded.id to isLiked)
     }
@@ -130,47 +134,49 @@ class PlayerViewModel @Inject constructor(
 
 
     companion object {
-        fun LifecycleOwner.connectPlayerToUI(player: MediaBrowser, viewModel: PlayerViewModel) {
-            val listener = PlayerUiListener(player, viewModel)
-            player.addListener(listener)
-
+        fun AppCompatActivity.connectBrowserToUI(
+            browser: MediaBrowser,
+            viewModel: PlayerViewModel
+        ) {
+            viewModel.initialize()
             observe(viewModel.playPause) {
-                if (it) player.play() else player.pause()
+                if (it) browser.play() else browser.pause()
             }
             observe(viewModel.seekToPrevious) {
-                player.seekToPrevious()
-                player.playWhenReady = true
+                browser.seekToPrevious()
+                browser.playWhenReady = true
             }
             observe(viewModel.seekToNext) {
-                player.seekToNext()
-                player.playWhenReady = true
+                browser.seekToNext()
+                browser.playWhenReady = true
             }
             observe(viewModel.audioIndexFlow) {
-                if (it >= 0) player.seekToDefaultPosition(it)
+                if (it >= 0) {
+                    browser.seekToDefaultPosition(it)
+                    browser.playWhenReady = true
+                }
             }
             observe(viewModel.seekTo) {
-                player.seekTo(it)
-            }
-            observe(viewModel.repeat) {
-                player.repeatMode = it
-            }
-            observe(viewModel.shuffle) {
-                player.shuffleModeEnabled = it
+                browser.seekTo(it)
             }
 
             observe(viewModel.likeTrack) { (mediaId, isLiked) ->
                 val track = viewModel.global.getTrack(mediaId) ?: return@observe
                 if (track.liked == isLiked) return@observe
-                val result = player.setRating(mediaId, ThumbRating(isLiked)).get()
-                when (result.resultCode) {
-                    RESULT_ERROR_UNKNOWN -> {
+
+                val future = browser.setRating(mediaId, ThumbRating(isLiked))
+                listenFuture(future) {
+                    val result = it.getOrThrow()
+                    if (result.resultCode == RESULT_ERROR_UNKNOWN) {
                         val exception = result.extras.getSerial<Throwable>("error")!!
                         viewModel.createException(exception)
                     }
-
-                    else -> {}
                 }
             }
+
+            val keepQueue = viewModel.settings.getBoolean(KEEP_QUEUE, true)
+            if (keepQueue && browser.mediaItemCount == 0)
+                browser.sendCustomCommand(recoverQueue, Bundle.EMPTY)
         }
     }
 
@@ -190,39 +196,6 @@ class PlayerViewModel @Inject constructor(
         val currentAudio: StreamableAudio?
     ) : Throwable(cause.message)
 
-    private fun trackMedia(
-        mediaId: String?,
-        block: suspend TrackerClient.(clientId: String, track: Track) -> Unit
-    ) {
-        val streamableTrack = global.getTrack(mediaId) ?: return
-        val client = extensionListFlow.getClient(streamableTrack.clientId) ?: return
-        val track = streamableTrack.loaded ?: streamableTrack.unloaded
-        val clientId = client.metadata.id
-        val trackers = trackerListFlow.list ?: emptyList()
-        viewModelScope.launch(Dispatchers.IO) {
-            if (client is TrackerClient) tryWith {
-                client.block(clientId, track)
-            }
-            trackers.map {
-                launch {
-                    tryWith { it.block(clientId, track) }
-                }
-            }
-        }
-    }
-
-    fun markedAsPlayed(mediaId: String?) {
-        trackMedia(mediaId) { clientId, loaded ->
-            onMarkAsPlayed(clientId, loaded)
-        }
-    }
-
-    fun startedPlaying(mediaId: String?) {
-        trackMedia(mediaId) { clientId, loaded ->
-            onStartedPlaying(clientId, loaded)
-        }
-    }
-
 
     val current get() = global.current
     val currentIndex get() = global.currentIndexFlow.value
@@ -231,7 +204,7 @@ class PlayerViewModel @Inject constructor(
     val listChangeFlow = merge(MutableStateFlow(Unit), global.updateFlow).map { global.queue }
 
     val progress = MutableStateFlow(0 to 0)
-    val totalDuration = MutableStateFlow(0)
+    val totalDuration = MutableStateFlow<Int?>(null)
 
     val buffering = MutableStateFlow(false)
     val isPlaying = MutableStateFlow(false)

@@ -21,6 +21,7 @@ val unlikeCommand = SessionCommand("unliked", Bundle.EMPTY)
 val repeatCommand = SessionCommand("repeat", Bundle.EMPTY)
 val repeatOffCommand = SessionCommand("repeat_off", Bundle.EMPTY)
 val repeatOneCommand = SessionCommand("repeat_one", Bundle.EMPTY)
+val recoverQueue = SessionCommand("recover_queue", Bundle.EMPTY)
 
 fun getLikeButton(context: Context, liked: Boolean) = run {
     val builder = CommandButton.Builder()
@@ -69,7 +70,7 @@ fun mediaItemBuilder(
 
 fun Track.toMetaData() = MediaMetadata.Builder()
     .setTitle(title)
-    .setArtist(artists.firstOrNull()?.name)
+    .setArtist(artists.joinToString(", ") { it.name })
     .setArtworkUri(id.toUri())
     .setUserRating(ThumbRating(liked))
     .setIsPlayable(true)

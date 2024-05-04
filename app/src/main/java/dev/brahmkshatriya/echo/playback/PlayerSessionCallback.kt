@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Rating
@@ -35,13 +36,16 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.withContext
 
 class PlayerSessionCallback(
     private val context: Context,
@@ -56,15 +60,18 @@ class PlayerSessionCallback(
         controller: MediaSession.ControllerInfo
     ): MediaSession.ConnectionResult {
         val connectionResult = super.onConnect(session, controller)
+        println("onConnect called")
         return MediaSession.ConnectionResult.accept(
             connectionResult.availableSessionCommands.buildUpon()
                 .add(likeCommand).add(unlikeCommand)
                 .add(repeatCommand).add(repeatOffCommand).add(repeatOneCommand)
+                .add(recoverQueue)
                 .build(),
             connectionResult.availablePlayerCommands
         )
     }
 
+    @OptIn(UnstableApi::class)
     override fun onCustomCommand(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
@@ -79,6 +86,14 @@ class PlayerSessionCallback(
             repeatOffCommand -> setRepeat(player, Player.REPEAT_MODE_OFF)
             repeatOneCommand -> setRepeat(player, Player.REPEAT_MODE_ONE)
             repeatCommand -> setRepeat(player, Player.REPEAT_MODE_ALL)
+            recoverQueue -> {
+                global.recoverPlaylist(context).apply {
+                    player.setMediaItems(mediaItems, startIndex, startPositionMs)
+                    player.prepare()
+                }
+                Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
+            }
+
             else -> super.onCustomCommand(session, controller, customCommand, args)
         }
     }
@@ -97,18 +112,18 @@ class PlayerSessionCallback(
         val client = extensionListFlow.getClient(streamableTrack.clientId) ?: return@future errorIO
         if (client !is LibraryClient) return@future errorIO
         val track = streamableTrack.current
-        val liked = runCatching {
-            println("${rating.isThumbsUp}")
-            client.likeTrack(track, rating.isThumbsUp)
+        val liked = withContext(Dispatchers.IO) {
+            runCatching { client.likeTrack(track, rating.isThumbsUp) }
         }.getOrElse {
-            streamableTrack.onLiked.emit(track.liked)
+            global.onLiked.emit(track.liked)
             return@future SessionResult(
                 SessionResult.RESULT_ERROR_UNKNOWN,
                 Bundle().apply { putSerializable("error", it) }
             )
         }
         streamableTrack.liked = liked
-        streamableTrack.onLiked.emit(liked)
+        delay(1000)
+        global.onLiked.emit(liked)
         SessionResult(RESULT_SUCCESS)
     }
 
@@ -135,6 +150,14 @@ class PlayerSessionCallback(
         else rateMediaItem(rating, mediaId)
     }
 
+
+    @UnstableApi
+    override fun onPlaybackResumption(
+        mediaSession: MediaSession,
+        controller: MediaSession.ControllerInfo
+    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = scope.future {
+        return@future global.recoverPlaylist(context)
+    }
 
     // Google Assistant Stuff
 
@@ -189,16 +212,17 @@ class PlayerSessionCallback(
         if (client !is TrackClient)
             return default { trackNotSupported(client.metadata.id).message }
         val flow = client.search(query, null)
-            .catch { default { it.message ?: "Unknown Error" } }
+            .catch { default { it.message ?: "Unknown Error" } }.flowOn(Dispatchers.IO)
         val differ = AsyncPagingDataDiffer(MediaContainerAdapter.DiffCallback, updateCallback)
 
         return scope.future {
-            val itemsContainers = try {
+            val itemsContainers = runCatching {
                 flow.getItems(differ)
-            } catch (e: Throwable) {
-                default { e.message ?: "Unknown Error" }
+            }.getOrElse {
+                default { it.message ?: "Unknown Error" }
                 listOf()
             }
+
             val tracks = itemsContainers.mapNotNull {
                 when (it) {
                     is MediaItemsContainer.Category -> {

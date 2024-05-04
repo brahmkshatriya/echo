@@ -38,6 +38,16 @@ class AudioFragment : BaseSettingsFragment() {
                 screen.addPreference(this)
 
                 SwitchPreferenceCompat(context).apply {
+                    key = KEEP_QUEUE
+                    title = getString(R.string.keep_queue)
+                    summary = getString(R.string.keep_queue_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
                     key = CLOSE_PLAYER
                     title = getString(R.string.stop_player)
                     summary = getString(R.string.stop_player_summary)
@@ -104,6 +114,7 @@ class AudioFragment : BaseSettingsFragment() {
         }
 
         companion object {
+            const val KEEP_QUEUE = "keep_playlist"
             const val CLOSE_PLAYER = "close_player_when_app_closes"
             const val SKIP_SILENCE = "skip_silence"
             const val AUTO_START_RADIO = "auto_start_radio"

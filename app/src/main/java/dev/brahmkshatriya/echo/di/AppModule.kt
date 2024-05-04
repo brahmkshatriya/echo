@@ -16,6 +16,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.playback.PlayerListener
 import dev.brahmkshatriya.echo.playback.Queue
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -63,11 +64,24 @@ class AppModule {
     @Provides
     @Singleton
     fun provideDatabase(application: Application) = Room.databaseBuilder(
-        application,
-        EchoDatabase::class.java, "echo-database"
+        application, EchoDatabase::class.java, "echo-database"
     ).build()
 
     @Provides
     @Singleton
     fun provideLoginUserFlow() = MutableSharedFlow<UserEntity?>()
+
+    @Provides
+    @Singleton
+    fun providePlayerListener(
+        application: Application,
+        extensionList: ExtensionModule.ExtensionListFlow,
+        trackerListFlow: TrackerModule.TrackerListFlow,
+        global: Queue,
+        settings: SharedPreferences,
+        throwableFlow: MutableSharedFlow<Throwable>,
+        messageFlow: MutableSharedFlow<SnackBar.Message>,
+    ) = PlayerListener(
+        application, extensionList, trackerListFlow, global, settings, throwableFlow, messageFlow
+    )
 }

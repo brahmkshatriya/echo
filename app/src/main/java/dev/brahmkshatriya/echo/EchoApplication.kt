@@ -25,7 +25,7 @@ class EchoApplication : Application() {
         super.onCreate()
         applyUiChanges(this, preferences)
         Thread.setDefaultUncaughtExceptionHandler { _, exception ->
-            println("got exception : ${exception.message}")
+            exception.printStackTrace()
             ExceptionActivity.start(this, exception)
             Runtime.getRuntime().exit(0)
         }

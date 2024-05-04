@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.player
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,13 +17,13 @@ import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.collect
+import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -43,29 +42,21 @@ class TrackDetailsFragment : Fragment() {
         return binding.root
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val mediaClickListener = MediaClickListener(requireActivity().supportFragmentManager) {
             uiViewModel.collapsePlayer()
         }
         val adapter = MediaContainerAdapter(this, "track_details", mediaClickListener)
-
         binding.root.adapter = adapter.withLoaders()
-        collect(playerViewModel.currentFlow) {
-            it?.clientId ?: return@collect
-            val track = it.loaded
+
+        observe(playerViewModel.currentFlow) {
+            it?.clientId ?: return@observe
+            val track = it.loaded ?: it.onLoad.first()
             adapter.clientId = it.clientId
-            if (track == null) collect(it.onLoad) { loaded ->
-                viewModel.load(it.clientId, loaded)
-            }
-            else viewModel.load(it.clientId, track)
-            adapter.notifyDataSetChanged()
+            viewModel.load(it.clientId, track)
         }
 
-        val combined = viewModel.changeFlow.combine(viewModel.itemsFlow) { _, items ->
-            items
-        }
-        collect(combined) {
+        observe(viewModel.itemsFlow) {
             println("why?? $it")
             adapter.submit(it)
         }
@@ -79,20 +70,17 @@ class TrackDetailsViewModel @Inject constructor(
 ) : CatchingViewModel(throwableFlow) {
 
     private var previous: Track? = null
-    val changeFlow = MutableSharedFlow<Unit>()
     val itemsFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
 
     fun load(clientId: String, track: Track) {
-        val client = extensionListFlow.getClient(clientId) ?: return
-        if (client !is TrackClient) return
-
-        println("loading items ${track.id} & ${previous?.id}")
         if (previous?.id == track.id) return
         previous = track
+        itemsFlow.value = null
+        val client = extensionListFlow.getClient(clientId) ?: return
+        if (client !is TrackClient) return
+        println("loading items ${track.id} & ${previous?.id}")
         viewModelScope.launch {
             println("loading itemsssss")
-            itemsFlow.value = null
-            changeFlow.emit(Unit)
             client.getMediaItems(track).collectTo(itemsFlow)
         }
     }
