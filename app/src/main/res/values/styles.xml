@@ -141,4 +141,30 @@
         <item name="boxCornerRadiusTopEnd">12dp</item>
         <item name="boxCornerRadiusTopStart">12dp</item>
     </style>
+
+    <style name="playerInfoButtonBg" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">?colorOutlineVariant</item>
+        <item name="backgroundTint">@color/button_player_info</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="playerInfoButtonFg" parent="Selectable">
+        <item name="android:textColor">@color/amoled_fg</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="playerInfoButtonGroup">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">24dp</item>
+        <item name="android:layout_marginEnd">24dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="singleSelection">true</item>
+    </style>
 </resources>

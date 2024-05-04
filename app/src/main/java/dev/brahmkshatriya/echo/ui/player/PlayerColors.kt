@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.util.TypedValue
 import androidx.palette.graphics.Palette
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.utils.isNightMode
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
 
 data class PlayerColors(
     val background: Int,

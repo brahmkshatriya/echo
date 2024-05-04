@@ -32,6 +32,7 @@ import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 @AndroidEntryPoint
 class ItemBottomSheet : BottomSheetDialogFragment() {
@@ -50,6 +51,8 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     private var binding by autoCleared<DialogMediaItemBinding>()
     private val viewModel by viewModels<ItemViewModel>()
     private val playerViewModel by activityViewModels<PlayerViewModel>()
+    private val uiViewModel by activityViewModels<UiViewModel>()
+
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
     private val client by lazy { playerViewModel.extensionListFlow.getClient(clientId) }
@@ -103,7 +106,8 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun openItemFragment(item: EchoMediaItem) {
-        openFragment(ItemFragment.newInstance(clientId, item))
+        requireActivity().openFragment(ItemFragment.newInstance(clientId, item))
+        uiViewModel.collapsePlayer()
     }
 
     private fun getActions(item: EchoMediaItem, loaded: Boolean): List<ItemAction> = when (item) {

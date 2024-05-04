@@ -57,7 +57,6 @@ class TrackDetailsFragment : Fragment() {
         }
 
         observe(viewModel.itemsFlow) {
-            println("why?? $it")
             adapter.submit(it)
         }
     }
@@ -78,9 +77,7 @@ class TrackDetailsViewModel @Inject constructor(
         itemsFlow.value = null
         val client = extensionListFlow.getClient(clientId) ?: return
         if (client !is TrackClient) return
-        println("loading items ${track.id} & ${previous?.id}")
         viewModelScope.launch {
-            println("loading itemsssss")
             client.getMediaItems(track).collectTo(itemsFlow)
         }
     }

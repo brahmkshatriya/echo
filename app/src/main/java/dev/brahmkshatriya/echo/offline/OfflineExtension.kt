@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.offline
 
 import android.content.Context
+import androidx.media3.common.MediaItem
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.EditPlayerListenerClient
@@ -32,6 +34,8 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
+import dev.brahmkshatriya.echo.utils.getFromCache
+import dev.brahmkshatriya.echo.utils.saveToCache
 
 class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient, TrackClient,
     AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
@@ -48,6 +52,9 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
     lateinit var library: MediaStoreUtils.LibraryStoreClass
     private fun find(artist: Artist) =
         library.artistMap[artist.id.toLongOrNull()]
+
+    private fun find(album: Album) =
+        library.albumList.find { it.id == album.id.toLong() }
 
     override suspend fun onExtensionSelected() {
         library = MediaStoreUtils.getAllSongs(context)
@@ -103,27 +110,34 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
     override suspend fun getStreamableVideo(streamable: Streamable) = throw IllegalAccessException()
 
     override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> = PagedData.Single {
-        val items =
-            listOfNotNull(track.album?.toMediaItem()) + track.artists.map { it.toMediaItem() }
-        items.map { it.toMediaItemsContainer() }
+        listOfNotNull(
+            track.album?.let { find(it)?.toAlbum()?.toMediaItem()?.toMediaItemsContainer() }
+        ) + getArtistsWithCategories(track.artists) { it.mediaId != track.id }
     }
 
     override suspend fun loadAlbum(small: Album) =
-        library.albumList.find { it.id == small.id.toLong() }!!.toAlbum()
+        find(small)!!.toAlbum()
+
+    private fun getArtistsWithCategories(
+        artists: List<Artist>, filter: (MediaItem) -> Boolean
+    ) = artists.map { small ->
+        val artist = find(small)
+        val category = artist?.songList?.filter {
+                filter(it)
+            }?.map { it.toTrack().toMediaItem() }?.ifEmpty { null }?.let { tracks ->
+                val items = tracks as List<EchoMediaItem>
+                MediaItemsContainer.Category(
+                    context.getString(R.string.more_by_artist, small.name), items,
+                    null, PagedData.Single { items }
+                )
+            }
+        listOfNotNull(artist.toArtist().toMediaItem().toMediaItemsContainer(), category)
+    }.flatten()
 
     override fun getMediaItems(album: Album): PagedData<MediaItemsContainer> = PagedData.Single {
-        album.artists.map { artist ->
-            val category = find(artist)
-                ?.songList?.filter {
-                    it.mediaMetadata.extras?.getLong("AlbumId") != album.id.toLong()
-                }?.map { it.toTrack().toMediaItem() }?.ifEmpty { null }?.let { tracks ->
-                    val items = tracks as List<EchoMediaItem>
-                    MediaItemsContainer.Category(
-                        "More by ${artist.name}", items, null, PagedData.Single { items }
-                    )
-                }
-            listOfNotNull(artist.toMediaItem().toMediaItemsContainer(), category)
-        }.flatten()
+        getArtistsWithCategories(album.artists) {
+            it.mediaMetadata.extras?.getLong("AlbumId") != album.id.toLong()
+        }
     }
 
     override suspend fun loadArtist(small: Artist) =
@@ -152,7 +166,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         library.playlistList.find { it.id == playlist.id.toLong() }!!.toPlaylist()
 
     override fun getMediaItems(playlist: Playlist) = PagedData.Single<MediaItemsContainer> {
-        TODO("Not yet implemented")
+        emptyList()
     }
 
     override suspend fun radio(track: Track): Playlist {
@@ -234,18 +248,29 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
     }
 
     override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
-        return if (query.isNullOrEmpty()) {
-            //TODO("Implement Search History")
-            listOf()
+        return if (query.isNullOrBlank()) {
+            getHistory().map { QuickSearchItem.SearchQueryItem(it, true) }
         } else listOf()
     }
 
     override suspend fun searchGenres(query: String?) =
         listOf("All", "Tracks", "Albums", "Artists").map { Genre(it, it) }
 
+    private fun getHistory() = context.getFromCache("search_history", "offline") {
+        it.createStringArrayList()
+    } ?: emptyList()
+
+    private fun saveInHistory(query: String) {
+        val history = getHistory().toMutableList()
+        history.add(0, query)
+        context.saveToCache("search_history", "offline") { parcel ->
+            parcel.writeStringList(history)
+        }
+    }
 
     override fun search(query: String?, genre: Genre?) = run {
         query ?: return@run emptyList()
+        saveInHistory(query)
         val tracks = library.songList.map { it.toTrack() }.searchBy(query) {
             listOf(it.title, it.album?.title) + it.artists.map { artist -> artist.name }
         }.map { it.first to it.second.toMediaItem() }
@@ -323,7 +348,11 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
 
     override suspend fun addTracksToPlaylist(playlist: Playlist, index: Int?, tracks: List<Track>) {
         tracks.forEach {
-            context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong(), index ?: playlist.tracks.size)
+            context.addSongToPlaylist(
+                playlist.id.toLong(),
+                it.id.toLong(),
+                index ?: playlist.tracks.size
+            )
         }
     }
 

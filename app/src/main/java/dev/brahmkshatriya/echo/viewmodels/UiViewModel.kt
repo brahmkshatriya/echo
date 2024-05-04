@@ -1,6 +1,9 @@
 package dev.brahmkshatriya.echo.viewmodels
 
 import android.content.Context
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.UI_MODE_NIGHT_MASK
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.view.View
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
@@ -146,6 +149,12 @@ class UiViewModel @Inject constructor(
     companion object {
         fun Context.isRTL() =
             resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+
+        fun Context.isLandscape() =
+            resources.configuration.orientation == ORIENTATION_LANDSCAPE
+
+        fun Context.isNightMode() =
+            resources.configuration.uiMode and UI_MODE_NIGHT_MASK != UI_MODE_NIGHT_NO
 
         fun Fragment.applyInsets(block: UiViewModel.(Insets) -> Unit) {
             val uiViewModel by activityViewModels<UiViewModel>()

@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -109,17 +110,18 @@ class PlayerTrackAdapter(
                 translationY = -height * offset
                 alpha = 1 - offset
             }
-            binding.bgImage.alpha = offset
+
             binding.expandedTrackCoverContainer.alpha = offset
         }
 
         observe(uiViewModel.infoSheetOffset) {
-            binding.background.alpha = it
-            binding.playerControls.root.isVisible = it != 1f
+            binding.expandedContainer.alpha = 1 - it
+            binding.expandedContainer.isVisible = it != 1f
         }
 
         observe(uiViewModel.systemInsets) {
             binding.expandedTrackCoverContainer.applyInsets(it, 24)
+            binding.collapsedContainer.root.updatePaddingRelative(start = it.start, end = it.end)
         }
 
         fun <T> observeCurrent(
@@ -200,6 +202,9 @@ class PlayerTrackAdapter(
             binding.playerControls.trackPlayPause.isChecked = it
             binding.collapsedContainer.collapsedTrackPlayPause.isChecked = it
             playPauseListener.enabled = true
+            binding.bgImage.run {
+                if (it) resume() else pause()
+            }
         }
 
         observe(viewModel.nextEnabled) {
@@ -281,14 +286,12 @@ class PlayerTrackAdapter(
         track: Track?,
         oldTrack: Track? = null
     ) {
-        track?.cover.loadWith(expandedTrackCover, oldTrack?.cover) {
+        track?.cover.loadWith(bgImage, oldTrack?.cover) {
             collapsedContainer.collapsedTrackCover.load(it)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                bgImage.setImageDrawable(it)
-                bgImage.setRenderEffect(
-                    RenderEffect.createBlurEffect(400f, 400.0f, Shader.TileMode.MIRROR)
-                )
-            } else bgImage.load(it, 16)
+            expandedTrackCover.load(it)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) bgImage.setRenderEffect(
+                RenderEffect.createBlurEffect(400f, 400.0f, Shader.TileMode.MIRROR)
+            ) else bgImage.load(it, 16)
         }
 
         collapsedContainer.run {
@@ -338,7 +341,7 @@ class PlayerTrackAdapter(
     }
 
     private fun ItemPlayerCollapsedBinding.applyColors(colors: PlayerColors) {
-        root.setBackgroundColor(colors.background)
+//        root.setBackgroundColor(colors.background)
         collapsedProgressBar.setIndicatorColor(colors.accent)
         collapsedSeekBar.setIndicatorColor(colors.accent)
         collapsedBuffer.setIndicatorColor(colors.accent)

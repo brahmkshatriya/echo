@@ -6,35 +6,20 @@
     android:layout_height="match_parent"
     android:background="@color/amoled_bg">
 
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/bgImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:importantForAccessibility="no"
-            android:scaleType="centerCrop"
-            tools:srcCompat="@tools:sample/avatars" />
-
-        <ImageView
-            android:id="@+id/bgGradient"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:importantForAccessibility="no"
-            app:srcCompat="@drawable/gradient_track"
-            app:tint="@color/amoled_bg" />
-
-    </FrameLayout>
-
-    <View
-        android:id="@+id/background"
+    <com.flaviofaria.kenburnsview.KenBurnsView
+        android:id="@+id/bgImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0"
-        android:background="?navBackground" />
+        tools:src="@tools:sample/avatars[3]" />
+
+    <ImageView
+        android:id="@+id/bgGradient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        app:srcCompat="@drawable/gradient_track"
+        app:tint="@color/amoled_bg" />
+
 
     <LinearLayout
         android:id="@+id/expandedTrackCoverContainer"
@@ -54,9 +39,9 @@
             android:layout_marginBottom="-24dp"
             android:layout_weight="1"
             android:clipToPadding="false"
+            android:paddingVertical="10dp"
             android:paddingStart="24dp"
-            android:paddingEnd="36dp"
-            android:paddingVertical="10dp">
+            android:paddingEnd="36dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/expandedTrackCover"
@@ -81,26 +66,33 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_marginStart="-24dp"
             android:layout_marginTop="-24dp"
             android:layout_marginEnd="-24dp"
-            android:layout_marginStart="-24dp"
             android:layout_marginBottom="-24dp"
             android:layout_weight="1"
             android:clipToPadding="false"
             android:padding="24dp">
 
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/expandedToolbar"
-                style="@style/PlayerToolbarStyle" />
-
-            <include
-                android:id="@+id/playerControls"
-                layout="@layout/item_player_controls"
+            <FrameLayout
+                android:id="@+id/expandedContainer"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginStart="-24dp"
-                android:layout_marginEnd="-24dp" />
+                android:layout_height="match_parent"
+                tools:ignore="UselessParent">
+
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/expandedToolbar"
+                    style="@style/PlayerToolbarStyle" />
+
+                <include
+                    android:id="@+id/playerControls"
+                    layout="@layout/item_player_controls"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="-24dp"
+                    android:layout_marginEnd="-24dp" />
+            </FrameLayout>
         </FrameLayout>
     </LinearLayout>
 

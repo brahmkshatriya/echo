@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
@@ -22,7 +23,6 @@ import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.emit
-import dev.brahmkshatriya.echo.utils.isNightMode
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
@@ -31,6 +31,7 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectBrowserToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
 import kotlin.math.max
 import kotlin.math.min
@@ -82,10 +83,11 @@ class MainActivity : AppCompatActivity() {
             collect(uiViewModel.isMainFragment) { isMainFragment ->
                 val insets =
                     uiViewModel.setPlayerNavViewInsets(this, isMainFragment, isRail)
-                navView.animateTranslation(isRail, isMainFragment) {
+                val visible = uiViewModel.playerSheetState.value != STATE_EXPANDED
+                navView.animateTranslation(isRail, isMainFragment, visible) {
                     uiViewModel.setNavInsets(insets)
                 }
-                binding.navViewOutline?.animateVisibility(isMainFragment)
+                binding.navViewOutline?.animateVisibility(isMainFragment && visible)
             }
         }
 

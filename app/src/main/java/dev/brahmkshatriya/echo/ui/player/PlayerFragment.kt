@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -101,9 +102,9 @@ class PlayerFragment : Fragment() {
             binding.playerOutline.alpha = 1 - offset
         }
 
-        val tint = binding.playerInfoContainer.backgroundTintList
-        observe(uiViewModel.infoSheetOffset) {
-            binding.playerInfoContainer.backgroundTintList = tint?.withAlpha((255 * it).toInt())
+        observe(uiViewModel.infoSheetState) {
+            binding.viewPager.isUserInputEnabled =
+                it == STATE_COLLAPSED && !requireContext().isLandscape()
         }
     }
 

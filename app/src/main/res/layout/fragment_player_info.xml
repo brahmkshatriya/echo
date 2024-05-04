@@ -6,41 +6,50 @@
     android:clipToPadding="false"
     android:orientation="vertical">
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/buttonToggleGroup"
+    <FrameLayout
+        android:id="@+id/buttonToggleGroupContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginVertical="8dp"
-        app:singleSelection="true">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/upNext"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/up_next"
-            app:strokeColor="?colorOutlineVariant" />
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/buttonToggleGroupBg"
+            style="@style/playerInfoButtonGroup"
+            android:clickable="false"
+            app:checkedButton="@id/upNextBg">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/lyrics"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/lyrics"
-            app:strokeColor="?colorOutlineVariant" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/upNextBg"
+                style="@style/playerInfoButtonBg" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/info"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/info"
-            app:strokeColor="?colorOutlineVariant" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/lyricsBg"
+                style="@style/playerInfoButtonBg" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/infoBg"
+                style="@style/playerInfoButtonBg" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/buttonToggleGroupFg"
+            app:checkedButton="@id/upNextFg"
+            style="@style/playerInfoButtonGroup">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/upNextFg"
+                style="@style/playerInfoButtonFg"
+                android:text="@string/up_next" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/lyricsFg"
+                style="@style/playerInfoButtonFg"
+                android:text="@string/lyrics" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/infoFg"
+                style="@style/playerInfoButtonFg"
+                android:text="@string/info" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+    </FrameLayout>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/viewCard"
@@ -48,7 +57,7 @@
         android:layout_height="match_parent"
         android:layout_marginHorizontal="10dp"
         android:layout_marginBottom="10dp"
-        app:cardBackgroundColor="?colorSurfaceContainerLowest"
+        app:cardBackgroundColor="@android:color/transparent"
         app:cardCornerRadius="20dp">
 
         <androidx.viewpager2.widget.ViewPager2

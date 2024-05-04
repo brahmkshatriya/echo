@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
+import dev.brahmkshatriya.echo.utils.SlideInPageTransformer
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
@@ -42,27 +43,18 @@ class PlayerInfoFragment : Fragment() {
             }
         }
 
-        val buttons = listOf(
-            binding.upNext,
-            binding.lyrics,
-            binding.info
-        )
-        val initialWidth = buttons[0].strokeWidth
         observe(uiViewModel.infoSheetOffset) {
-            binding.buttonToggleGroup.translationY = it * uiViewModel.systemInsets.value.top
-            binding.viewCard.translationY = (1 - it) * binding.buttonToggleGroup.height
-            buttons.forEach { button ->
-                button.strokeWidth = (it * initialWidth).toInt()
+            binding.buttonToggleGroupContainer.run {
+                translationY = it * uiViewModel.systemInsets.value.top
+                binding.viewCard.translationY = (1 - it) * height
             }
+            binding.buttonToggleGroupBg.alpha = it
         }
 
         observe(uiViewModel.infoSheetState) {
-            binding.buttonToggleGroup.run {
-                if (it == STATE_COLLAPSED) {
-                    clearChecked()
-                } else if (it == STATE_EXPANDED) {
-                    check(ids[binding.viewPager.currentItem])
-                }
+            binding.buttonToggleGroupFg.run {
+                if (it == STATE_COLLAPSED) clearChecked()
+                else if (it == STATE_EXPANDED) check(idsFg[binding.viewPager.currentItem])
             }
         }
 
@@ -74,24 +66,24 @@ class PlayerInfoFragment : Fragment() {
                 isNestedScrollingEnabled = it != STATE_COLLAPSED
             }
         }
+
         binding.viewPager.isUserInputEnabled = false
         binding.viewPager.adapter = PlayerInfoAdapter(this)
+        binding.viewPager.setPageTransformer(SlideInPageTransformer())
 
-        binding.buttonToggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
+        binding.buttonToggleGroupFg.addOnButtonCheckedListener { group, checkedId, isChecked ->
             emit(uiViewModel.changeInfoState) {
                 if (group.checkedButtonId == -1) STATE_COLLAPSED else STATE_EXPANDED
             }
             if (!isChecked) return@addOnButtonCheckedListener
-            val index = ids.indexOf(checkedId)
+            val index = idsFg.indexOf(checkedId)
+            binding.buttonToggleGroupBg.check(idsBg[index])
             binding.viewPager.setCurrentItem(index, false)
         }
     }
 
-    private val ids = listOf(
-        R.id.upNext,
-        R.id.lyrics,
-        R.id.info
-    )
+    private val idsFg = listOf(R.id.upNextFg, R.id.lyricsFg, R.id.infoFg)
+    private val idsBg = listOf(R.id.upNextBg, R.id.lyricsBg, R.id.infoBg)
 
     class PlayerInfoAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
         override fun getItemCount() = 3

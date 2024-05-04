@@ -22,7 +22,7 @@
         android:outlineProvider="none"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:backgroundTint="?navBackground"
+        android:backgroundTint="@android:color/transparent"
         android:clipToPadding="false"
         app:behavior_hideable="false"
         app:behavior_peekHeight="@dimen/player_info_peek_height"
