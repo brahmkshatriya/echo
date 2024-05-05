@@ -36,6 +36,9 @@ interface UserDao {
     @Query("SELECT * FROM UserEntity WHERE id = :userId AND clientId = :clientId")
     fun getUser(clientId: String?, userId: String?) : UserEntity?
 
+    @Query("DELETE FROM UserEntity WHERE id = :userId AND clientId = :clientId")
+    fun deleteUser(userId: String, clientId: String)
+
     @Query("DELETE FROM UserEntity WHERE clientId = :clientId")
     fun deleteAllUsers(clientId: String)
 

@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.dao.UserDao
 import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.models.CurrentUser
@@ -62,6 +63,13 @@ class LoginUserViewModel @Inject constructor(
         }
     }
 
+    fun logout(client: String?, user: User?) {
+        if (client == null || user == null) return
+        viewModelScope.launch(Dispatchers.IO) {
+            userDao.deleteUser(user.id, client)
+        }
+    }
+
     fun setLoginUser(user: UserEntity?) {
         val currentUser = user?.toCurrentUser()
             ?: CurrentUser(extensionFlow.value?.metadata?.id ?: return, null)
@@ -81,7 +89,7 @@ class LoginUserViewModel @Inject constructor(
                     withContext(Dispatchers.IO) { userDao.getCurrentUser(client.metadata.id) }
                 }
                 val success =
-                    tryWith { client.onSetLoginUser(user?.toUser())}
+                    tryWith { client.onSetLoginUser(user?.toUser()) }
                 if (success != null) flow.emit(user)
             }
         }

@@ -198,9 +198,11 @@ class PlayerViewModel @Inject constructor(
 
 
     val current get() = global.current
-    val currentIndex get() = global.currentIndexFlow.value
+    val currentIndex get() = global.currentIndex
 
-    val currentFlow = global.currentIndexFlow.map { current }
+    val currentFlow =
+        merge(MutableStateFlow(Unit), global.currentIndexFlow).map { global.currentIndex }
+
     val listChangeFlow = merge(MutableStateFlow(Unit), global.updateFlow).map { global.queue }
 
     val progress = MutableStateFlow(0 to 0)

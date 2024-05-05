@@ -52,7 +52,7 @@ class PlayerListener(
     private var viewModel: PlayerViewModel? = null
     fun setViewModel(playerViewModel: PlayerViewModel) = with(playerViewModel) {
         viewModel = this
-        if(!::player.isInitialized) return@with
+        if (!::player.isInitialized) return@with
         isPlaying.value = player.isPlaying
         buffering.value = player.playbackState == Player.STATE_BUFFERING
         shuffle.value = player.shuffleModeEnabled
@@ -66,10 +66,10 @@ class PlayerListener(
         global.updateQueue(mediaItems)
         val index = player.currentMediaItemIndex
         global.saveQueue(context, index)
-        global.currentIndexFlow.value = index
-        viewModel?.totalDuration?.value = player.duration.toInt()
-
         scope.launch {
+            global.currentIndex = index
+            global.currentIndexFlow.emit(index)
+            viewModel?.totalDuration?.value = player.duration.toInt()
             global.updateFlow.emit(Unit)
         }
     }
@@ -118,6 +118,7 @@ class PlayerListener(
                 }
             }
         }
+        stoppedPlaying()
         startedPlaying(player.currentMediaItem?.mediaId)
     }
 
@@ -148,19 +149,29 @@ class PlayerListener(
         }
     }
 
+    private var currentlyPlaying: String? = null
     private fun startedPlaying(mediaId: String?) {
+        currentlyPlaying = mediaId
         trackMedia(mediaId) { clientId, loaded ->
             onStartedPlaying(clientId, loaded)
         }
     }
 
-    private fun markedAsPlayed(mediaId: String?) {
+    private fun markedAsPlayed() {
+        val mediaId = currentlyPlaying
         trackMedia(mediaId) { clientId, loaded ->
             onMarkAsPlayed(clientId, loaded)
         }
     }
 
-    private val markAsPlayedTime = 10000L // 10 seconds
+    private fun stoppedPlaying() {
+        val mediaId = currentlyPlaying
+        trackMedia(mediaId) { clientId, loaded ->
+            onStoppedPlaying(clientId, loaded)
+        }
+    }
+
+    private val markAsPlayedTime = 30 * 1000L // 30 seconds
     private var markedAsPlayed = false
     private fun updateProgress() {
         viewModel?.progress?.value =
@@ -171,7 +182,7 @@ class PlayerListener(
         if (current != null) {
             global.saveCurrentPos(context, player.currentPosition)
             if (player.currentPosition > markAsPlayedTime && !markedAsPlayed) {
-                markedAsPlayed(current.mediaId)
+                markedAsPlayed()
                 markedAsPlayed = true
             }
         }

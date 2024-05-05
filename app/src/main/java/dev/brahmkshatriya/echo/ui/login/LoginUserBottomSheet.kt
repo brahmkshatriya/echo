@@ -29,11 +29,10 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.logout.setOnClickListener {
-            viewModel.setLoginUser(null)
+        binding.incognito.setOnClickListener {
             dismiss()
+            viewModel.setLoginUser(null)
         }
-
         binding.settings.setOnClickListener {
             dismiss()
             requireActivity().openFragment(SettingsFragment())
@@ -43,15 +42,22 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
             LoginUserListBottomSheet().show(parentFragmentManager, null)
         }
         observe(viewModel.currentUser) { (client, user) ->
-            binding.userLoginContainer.isVisible = user == null
-            binding.userLogoutContainer.isVisible = user != null
-            binding.switchAccount.isVisible = user != null
+            binding.login.isVisible = user == null
+            binding.notLoggedInContainer.isVisible = user == null
+
+            binding.logout.isVisible = user != null
+            binding.userContainer.isVisible = user != null
 
             binding.login.setOnClickListener {
                 client?.metadata?.run {
-                    openFragment(LoginFragment.newInstance(id, name))
+                    requireActivity().openFragment(LoginFragment.newInstance(id, name))
                 }
                 dismiss()
+            }
+
+            binding.logout.setOnClickListener {
+                viewModel.logout(client?.metadata?.id, user)
+                viewModel.setLoginUser(null)
             }
 
             binding.currentUserName.text = user?.name

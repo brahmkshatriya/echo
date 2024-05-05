@@ -152,6 +152,7 @@
     <string name="keep_queue">Keep Player Queue</string>
     <string name="keep_queue_summary">Recover the player queue, when you reopen the app.</string>
     <string name="more_by_artist">More by %1$s</string>
+    <string name="incognito">Incognito</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

@@ -27,8 +27,9 @@ class Queue {
     private val playerQueue = synchronizedList(mutableListOf<StreamableTrack>())
     val queue get() = playerQueue.toList()
 
-    val currentIndexFlow = MutableStateFlow(-1)
-    val current get() = playerQueue.getOrNull(currentIndexFlow.value)
+    var currentIndex = -1
+    val currentIndexFlow = MutableSharedFlow<Int>()
+    val current get() = playerQueue.getOrNull(currentIndex)
     val currentAudioFlow = MutableStateFlow<StreamableAudio?>(null)
 
     fun getTrack(mediaId: String?) = trackQueue.find { it.unloaded.id == mediaId }
@@ -52,7 +53,7 @@ class Queue {
     suspend fun addTracks(
         client: String, tracks: List<Track>, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
-        var position = currentIndexFlow.value + 1
+        var position = currentIndex + 1
         position += offset
         position = position.coerceIn(0, playerQueue.size)
 

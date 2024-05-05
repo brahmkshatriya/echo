@@ -50,10 +50,11 @@ class TrackDetailsFragment : Fragment() {
         binding.root.adapter = adapter.withLoaders()
 
         observe(playerViewModel.currentFlow) {
-            it?.clientId ?: return@observe
-            val track = it.loaded ?: it.onLoad.first()
-            adapter.clientId = it.clientId
-            viewModel.load(it.clientId, track)
+            val streamableTrack = playerViewModel.current
+            streamableTrack?.clientId ?: return@observe
+            val track = streamableTrack.loaded ?: streamableTrack.onLoad.first()
+            adapter.clientId = streamableTrack.clientId
+            viewModel.load(streamableTrack.clientId, track)
         }
 
         observe(viewModel.itemsFlow) {

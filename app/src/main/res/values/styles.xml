@@ -167,4 +167,14 @@
         <item name="android:layout_marginBottom">8dp</item>
         <item name="singleSelection">true</item>
     </style>
+
+    <style name="DialogHorizontalButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="iconSize">20dp</item>
+    </style>
 </resources>

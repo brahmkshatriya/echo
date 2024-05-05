@@ -57,6 +57,7 @@ class PlayerQueueFragment : Fragment() {
             }
         }
         val touchHelper = ItemTouchHelper(callback)
+
         val adapter = PlaylistAdapter(viewModel.currentFlow, object : PlaylistAdapter.Callback() {
             override fun onDragHandleTouched(viewHolder: RecyclerView.ViewHolder) {
                 touchHelper.startDrag(viewHolder)

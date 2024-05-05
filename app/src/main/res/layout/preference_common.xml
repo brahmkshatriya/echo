@@ -16,7 +16,7 @@
             android:layout_height="24dp"
             android:importantForAccessibility="no"
             app:tint="?attr/colorPrimary"
-            tools:src="@drawable/ic_settings_outline" />
+            tools:src="@drawable/ic_delete" />
 
     </FrameLayout>
 
