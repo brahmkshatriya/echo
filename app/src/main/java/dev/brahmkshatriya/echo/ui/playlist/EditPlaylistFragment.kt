@@ -21,7 +21,9 @@ import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
 import dev.brahmkshatriya.echo.playback.Queue
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.utils.ListAction
+import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.ListAction.Add
+import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.ListAction.Move
+import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.ListAction.Remove
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.getParcelArray
@@ -56,7 +58,6 @@ class EditPlaylistFragment : Fragment() {
     var binding by autoCleared<FragmentEditPlaylistBinding>()
     val viewModel by activityViewModels<EditPlaylistViewModel>()
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -81,18 +82,18 @@ class EditPlaylistFragment : Fragment() {
                     viewModel.onEditorExit(clientId, playlist) { action ->
                         println("action : $action")
                         binding.loading.textView.text = when (action) {
-                            is ListAction.Add -> getString(
+                            is Add -> getString(
                                 R.string.adding_tracks,
                                 action.items.joinToString(", ") { it.title }
                             )
 
-                            is ListAction.Move -> getString(
-                                R.string.moving_track, playlist.tracks[action.from].title
+                            is Move -> getString(
+                                R.string.moving_track, action.to.toString()
                             )
 
-                            is ListAction.Remove -> getString(
-                                R.string.removing_tracks,
-                                action.items.joinToString(", ") { it.title }
+                            is Remove -> getString(
+                                R.string.removing_track,
+                                action.indexes.toString()
                             )
 
                             else -> getString(R.string.saving)
@@ -121,8 +122,8 @@ class EditPlaylistFragment : Fragment() {
             "searchedTracks",
             viewLifecycleOwner
         ) { _, bundle ->
-            val tracks = bundle.getParcelArray<Track>("tracks")!!
-            viewModel.edit { addAll(tracks) }
+            val tracks = bundle.getParcelArray<Track>("tracks")!!.toMutableList()
+            viewModel.edit(Add(playlist.tracks.size - 1, tracks))
             backCallback.isEnabled = true
         }
 
@@ -192,13 +193,13 @@ class EditPlaylistFragment : Fragment() {
             ): Boolean {
                 val fromPos = viewHolder.bindingAdapterPosition
                 val toPos = target.bindingAdapterPosition
-                viewModel.edit { add(toPos, removeAt(fromPos)) }
+                viewModel.edit(Move(fromPos, toPos))
                 return true
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val pos = viewHolder.bindingAdapterPosition
-                viewModel.edit { removeAt(pos) }
+                viewModel.edit(Remove(pos))
             }
         }
         val touchHelper = ItemTouchHelper(callback)
@@ -210,7 +211,7 @@ class EditPlaylistFragment : Fragment() {
             override fun onItemClicked(position: Int) {}
 
             override fun onItemClosedClicked(position: Int) {
-                viewModel.edit { removeAt(position) }
+                viewModel.edit(Remove(position))
             }
         })
 

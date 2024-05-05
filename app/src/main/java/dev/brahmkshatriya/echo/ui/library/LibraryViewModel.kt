@@ -18,8 +18,8 @@ class LibraryViewModel @Inject constructor(
     val userFlow: MutableSharedFlow<UserEntity?>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : FeedViewModel<LibraryClient>(throwableFlow, extensionFlow) {
-    override suspend fun getTabs(client: LibraryClient) = client.getLibraryGenres()
-    override fun getFeed(client: LibraryClient) = client.getLibraryFeed(genre)
+    override suspend fun getTabs(client: LibraryClient) = client.getLibraryTabs()
+    override fun getFeed(client: LibraryClient) = client.getLibraryFeed(tab)
 
     val playlistCreatedFlow = MutableSharedFlow<Pair<String, Playlist>>()
     fun createPlaylist(title: String) {

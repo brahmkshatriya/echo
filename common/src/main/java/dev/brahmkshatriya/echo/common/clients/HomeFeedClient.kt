@@ -1,11 +1,11 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Tab
 
 interface HomeFeedClient {
-    suspend fun getHomeGenres(): List<Genre>
-    fun getHomeFeed(genre: Genre?): PagedData<MediaItemsContainer>
+    suspend fun getHomeTabs(): List<Tab>
+    fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer>
 
 }

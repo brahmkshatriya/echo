@@ -19,7 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
-import dev.brahmkshatriya.echo.common.models.Genre
+import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
@@ -168,12 +168,12 @@ class SearchFragment : Fragment() {
 
         val tabListener = object : TabLayout.OnTabSelectedListener {
             var enabled = true
-            var genres: List<Genre> = emptyList()
+            var tabs: List<Tab> = emptyList()
             override fun onTabSelected(tab: TabLayout.Tab) {
                 if (!enabled) return
-                val genre = genres[tab.position]
-                if(viewModel.genre == genre) return
-                viewModel.genre = genre
+                val genre = tabs[tab.position]
+                if(viewModel.tab == genre) return
+                viewModel.tab = genre
                 viewModel.refresh()
             }
 
@@ -189,12 +189,12 @@ class SearchFragment : Fragment() {
         binding.tabLayout.addOnTabSelectedListener(tabListener)
         observe(viewModel.genres) { genres ->
             binding.tabLayout.removeAllTabs()
-            tabListener.genres = genres
+            tabListener.tabs = genres
             binding.tabLayout.isVisible = genres.isNotEmpty()
             genres.forEach { genre ->
                 val tab = binding.tabLayout.newTab()
                 tab.text = genre.name
-                val selected = viewModel.genre == genre
+                val selected = viewModel.tab == genre
                 binding.tabLayout.addTab(tab, selected)
             }
         }

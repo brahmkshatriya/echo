@@ -70,14 +70,14 @@
             android:layout_marginTop="-24dp"
             android:layout_marginEnd="-24dp"
             android:layout_marginBottom="-24dp"
-            android:layout_weight="1"
-            android:clipToPadding="false"
-            android:padding="24dp">
+            android:layout_weight="1">
 
             <FrameLayout
                 android:id="@+id/expandedContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:padding="24dp"
                 tools:ignore="UselessParent">
 
                 <com.google.android.material.appbar.MaterialToolbar

@@ -144,7 +144,7 @@
     <string name="add_tracks">Add Tracks</string>
     <string name="adding_tracks">Adding %1$s</string>
     <string name="moving_track">Moving %1$s</string>
-    <string name="removing_tracks">Removing %1$s</string>
+    <string name="removing_track">Removing %1$s</string>
     <string name="unlike">Unlike</string>
     <string name="skip_silence">Skip Silence</string>
     <string name="skip_silence_summary">Skip silent part in the song, to provide gapless playback.</string>
@@ -153,6 +153,7 @@
     <string name="keep_queue_summary">Recover the player queue, when you reopen the app.</string>
     <string name="more_by_artist">More by %1$s</string>
     <string name="incognito">Incognito</string>
+    <string name="no_internet">No Internet</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

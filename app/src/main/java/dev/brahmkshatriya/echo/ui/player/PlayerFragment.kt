@@ -104,7 +104,7 @@ class PlayerFragment : Fragment() {
 
         observe(uiViewModel.infoSheetState) {
             binding.viewPager.isUserInputEnabled =
-                it == STATE_COLLAPSED && !requireContext().isLandscape()
+                requireContext().isLandscape() || it == STATE_COLLAPSED
         }
     }
 

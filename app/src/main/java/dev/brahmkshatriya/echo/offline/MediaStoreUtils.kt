@@ -664,13 +664,13 @@ object MediaStoreUtils {
         )
     }
 
-    fun Context.removeSongFromPlaylist(playlistId: Long, songId: Long) {
-        println("Removing : $songId from $playlistId")
+    fun Context.removeSongFromPlaylist(playlistId: Long, index: Int) {
+        println("Removing : $index from $playlistId")
         contentResolver.delete(
             @Suppress("DEPRECATION")
             MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId),
-            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID + "=?",
-            arrayOf(songId.toString())
+            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.PLAY_ORDER + "=?",
+            arrayOf((index + 1).toString())
         )
     }
 
@@ -693,9 +693,7 @@ object MediaStoreUtils {
             while (it.moveToNext()) {
                 ids.add(it.getLong(idColumn))
             }
-            val fromId = ids[from]
-            ids.removeAt(from)
-            ids.add(to, fromId)
+            ids.add(to, ids.removeAt(from))
             contentResolver.delete(uri, null, null)
             ids.forEachIndexed { index, id ->
                 val values = ContentValues()

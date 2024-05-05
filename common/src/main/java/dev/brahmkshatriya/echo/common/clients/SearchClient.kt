@@ -1,12 +1,12 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.models.Genre
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.Tab
 
 interface SearchClient {
     suspend fun quickSearch(query: String?): List<QuickSearchItem>
-    suspend fun searchGenres(query: String?): List<Genre>
-    fun search(query: String?, genre: Genre?): PagedData<MediaItemsContainer>
+    suspend fun searchTabs(query: String?): List<Tab>
+    fun searchFeed(query: String?, tab: Tab?): PagedData<MediaItemsContainer>
 }

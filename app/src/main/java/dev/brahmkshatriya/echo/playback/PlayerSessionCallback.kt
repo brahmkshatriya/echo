@@ -211,7 +211,7 @@ class PlayerSessionCallback(
             return default { searchNotSupported(client.metadata.id).message }
         if (client !is TrackClient)
             return default { trackNotSupported(client.metadata.id).message }
-        val flow = client.search(query, null)
+        val flow = client.searchFeed(query, null)
             .catch { default { it.message ?: "Unknown Error" } }.flowOn(Dispatchers.IO)
         val differ = AsyncPagingDataDiffer(MediaContainerAdapter.DiffCallback, updateCallback)
 

@@ -14,7 +14,7 @@ class HomeFeedViewModel @Inject constructor(
     val userFlow: MutableSharedFlow<UserEntity?>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : FeedViewModel<HomeFeedClient>(throwableFlow, extensionFlow) {
-    override suspend fun getTabs(client: HomeFeedClient) = client.getHomeGenres()
-    override fun getFeed(client: HomeFeedClient) = client.getHomeFeed(genre)
+    override suspend fun getTabs(client: HomeFeedClient) = client.getHomeTabs()
+    override fun getFeed(client: HomeFeedClient) = client.getHomeFeed(tab)
 
 }

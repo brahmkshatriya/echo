@@ -11,7 +11,6 @@ import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.utils.ListAction
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -63,10 +62,16 @@ class EditPlaylistViewModel @Inject constructor(
         }
     }
 
+    private val actions = mutableListOf<ListAction<Track>>()
     val currentTracks = MutableStateFlow<List<Track>?>(null)
-    fun edit(block: MutableList<Track>.() -> Unit) {
+    fun edit(action: ListAction<Track>) {
         currentTracks.value = currentTracks.value?.toMutableList()?.apply {
-            block()
+            when (action) {
+                is ListAction.Add -> addAll(action.index, action.items)
+                is ListAction.Move -> add(action.to, removeAt(action.from))
+                is ListAction.Remove -> action.indexes.forEach { removeAt(it) }
+            }
+            actions.add(action)
         }
     }
 
@@ -80,21 +85,43 @@ class EditPlaylistViewModel @Inject constructor(
         }
     }
 
+    private fun mergeActions(actions: MutableList<ListAction<Track>>) {
+        var i = 0
+        while (i < actions.size - 1) {
+            val curr = actions[i]
+            val next = actions[i + 1]
+            if (curr is ListAction.Add && next is ListAction.Add && curr.index + curr.items.size == next.index) {
+                curr.items.addAll(next.items)
+                actions.removeAt(i + 1)
+            } else if (curr is ListAction.Move && next is ListAction.Move && curr.to == next.from) {
+                actions[i] = ListAction.Move(curr.from, next.to)
+                actions.removeAt(i + 1)
+            } else if (curr is ListAction.Remove && next is ListAction.Remove) {
+                actions[i] = ListAction.Remove(curr.indexes + next.indexes)
+                actions.removeAt(i + 1)
+            }
+            else {
+                i++
+            }
+        }
+    }
+
     suspend fun onEditorExit(
         clientId: String,
         playlist: Playlist,
         block: suspend (action: ListAction<Track>?) -> Unit
     ) {
-        val actions = currentTracks.value?.let { tracks ->
-            ListAction.getActions(playlist.tracks, tracks) { it.id == this.id }
-        }?.takeIf { it.isNotEmpty() } ?: return
+        mergeActions(actions)
+        val newActions = actions.toList().takeIf { it.isNotEmpty() } ?: return
+        actions.clear()
 
         libraryClient(clientId) { client ->
-            actions.forEach {
+            newActions.forEach {
+                println(it)
                 when (it) {
                     is ListAction.Add -> client.addTracksToPlaylist(playlist, it.index, it.items)
                     is ListAction.Move -> client.moveTrackInPlaylist(playlist, it.from, it.to)
-                    is ListAction.Remove -> client.removeTracksFromPlaylist(playlist, it.items)
+                    is ListAction.Remove -> client.removeTracksFromPlaylist(playlist, it.indexes)
                 }
                 withContext(Dispatchers.Main) { block(it) }
             }
@@ -103,6 +130,15 @@ class EditPlaylistViewModel @Inject constructor(
         client<EditPlayerListenerClient>(clientId) {
             it.onExitPlaylistEditor(playlist)
         }
+    }
+
+    sealed class ListAction<T> {
+        data class Add<T>(val index: Int, val items: MutableList<T>) : ListAction<T>()
+        data class Remove<T>(val indexes: List<Int>) : ListAction<T>() {
+            constructor(vararg indexes: Int) : this(indexes.toList())
+        }
+
+        data class Move<T>(val from: Int, val to: Int) : ListAction<T>()
     }
 
     companion object {

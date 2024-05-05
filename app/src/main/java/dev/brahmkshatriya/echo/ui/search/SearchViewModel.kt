@@ -20,8 +20,8 @@ class SearchViewModel @Inject constructor(
 ) : FeedViewModel<SearchClient>(throwableFlow, extensionFlow) {
 
     var query: String? = null
-    override suspend fun getTabs(client: SearchClient) = client.searchGenres(query)
-    override fun getFeed(client: SearchClient) = client.search(query, genre)
+    override suspend fun getTabs(client: SearchClient) = client.searchTabs(query)
+    override fun getFeed(client: SearchClient) = client.searchFeed(query, tab)
 
     val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
     fun quickSearch(query: String) {
