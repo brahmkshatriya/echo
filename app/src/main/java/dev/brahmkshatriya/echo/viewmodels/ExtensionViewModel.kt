@@ -5,80 +5,48 @@ import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.EchoApplication
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.clients.TrackerClient
-import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.di.TrackerModule
 import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.plugger.LyricsExtension
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
-import dev.brahmkshatriya.echo.utils.catchWith
-import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel.Companion.setLoginUser
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import tel.jeelpa.plugger.PluginRepo
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
-    database: EchoDatabase,
-    val extensionListFlow: ExtensionModule.ExtensionListFlow,
-    val extensionFlow: ExtensionModule.ExtensionFlow,
-    private val extensionPluginRepo: PluginRepo<ExtensionClient>,
-    private val trackerPluginRepo: PluginRepo<TrackerClient>,
-    private val trackerListFlow: TrackerModule.TrackerListFlow,
-    private val userFlow: MutableSharedFlow<UserEntity?>,
-    private val preferences: SharedPreferences,
+    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+    val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
+    val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
+    val extensionFlow: MutableStateFlow<MusicExtension?>,
+    val settings: SharedPreferences,
+    val database: EchoDatabase,
+    val userFlow: MutableSharedFlow<UserEntity?>
 ) : CatchingViewModel(throwableFlow) {
 
     val currentExtension
         get() = extensionFlow.value
 
-    override fun onInitialize() {
-        viewModelScope.launch {
-            launch {
-                tryWith {
-                    extensionPluginRepo.getAllPlugins {
-                        viewModelScope.launch { throwableFlow.emit(it) }
-                    }.catchWith(throwableFlow).collect(extensionListFlow.flow)
-                }
-                extensionListFlow.flow.collectLatest { list ->
-                    list ?: return@collectLatest
-                    val id = preferences.getString(LAST_EXTENSION_KEY, null)
-                    val client = list.find { it.metadata.id == id } ?: list.firstOrNull()
-                    setupClient(client)
-                }
-            }
-            trackerPluginRepo.getAllPlugins {
-                viewModelScope.launch { throwableFlow.emit(it) }
-            }.catchWith(throwableFlow).collect(trackerListFlow.flow)
-        }
-    }
-
-    fun setExtension(client: ExtensionClient) {
-        preferences.edit().putString(LAST_EXTENSION_KEY, client.metadata.id).apply()
-        viewModelScope.launch(Dispatchers.IO) {
-            setupClient(client)
-        }
-    }
-
     private val userDao = database.userDao()
-    private suspend fun setupClient(client: ExtensionClient?) {
-        tryWith {
-            client?.onExtensionSelected()
-            setLoginUser(client, userDao, userFlow)
-        }
-        extensionFlow.value = client
+    fun setExtension(extension: MusicExtension?) {
+        EchoApplication.setExtension(
+            viewModelScope,
+            settings,
+            extensionFlow,
+            userDao,
+            userFlow,
+            throwableFlow,
+            extension
+        )
     }
 
     companion object {
-        const val LAST_EXTENSION_KEY = "last_extension"
-
         fun Context.noClient() = SnackBar.Message(
             getString(R.string.error_no_client)
         )
@@ -100,24 +68,19 @@ class ExtensionViewModel @Inject constructor(
         )
 
         inline fun <reified T> RecyclerView.applyAdapter(
-            it: ExtensionClient?,
+            extension: MusicExtension?,
             name: Int,
             adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
             block: ((T?) -> Unit) = {}
         ) {
-            val newAdapter = if (it != null) {
-                if (it is T) {
-                    block(it)
-                    adapter
-                } else {
-                    block(null)
-                    ClientNotSupportedAdapter(name, it.metadata.name)
-                }
-            } else {
-                block(null)
-                ClientLoadingAdapter()
-            }
-            setAdapter(newAdapter)
+            block(extension?.client as? T)
+            setAdapter(
+                if (extension == null)
+                    ClientLoadingAdapter()
+                else if (extension.client !is T)
+                    ClientNotSupportedAdapter(name, extension.metadata.name)
+                else adapter
+            )
         }
 
     }

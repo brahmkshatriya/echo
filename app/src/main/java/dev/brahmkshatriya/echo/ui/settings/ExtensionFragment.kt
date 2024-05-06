@@ -15,32 +15,48 @@ import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingItem
 import dev.brahmkshatriya.echo.common.settings.SettingList
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
+import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.ExtensionType
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionFragment : BaseSettingsFragment() {
     private val name by lazy { requireArguments().getString("name")!! }
     private val id by lazy { requireArguments().getString("id")!! }
+    private val type by lazy { requireArguments().getString("type")!! }
     override val title get() = name
     override val transitionName get() = id
-    override val creator = { ExtensionPreference.newInstance(id) }
+    override val creator = { ExtensionPreference.newInstance(id, type) }
 
     companion object {
-        fun newInstance(name: String, id: String): ExtensionFragment {
+        fun newInstance(name: String, id: String, type: ExtensionType): ExtensionFragment {
             val bundle = Bundle().apply {
                 putString("name", name)
                 putString("id", id)
+                putString("type", type.name)
             }
             return ExtensionFragment().apply {
                 arguments = bundle
             }
         }
+
+        fun newInstance(extensionMetadata: ExtensionMetadata, extensionType: ExtensionType) =
+            newInstance(extensionMetadata.name, extensionMetadata.id, extensionType)
+
+        fun newInstance(extension: MusicExtension) =
+            newInstance(extension.metadata, ExtensionType.MUSIC)
+
     }
 
     class ExtensionPreference : PreferenceFragmentCompat() {
 
         private val extensionId: String by lazy {
-            requireArguments().getString("extensionId")
-                ?: throw IllegalArgumentException("Missing extensionId")
+            requireArguments().getString("extensionId")!!
+        }
+        private val extensionType: ExtensionType by lazy {
+            val type = requireArguments().getString("extensionType")!!
+            ExtensionType.valueOf(type)
         }
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -52,10 +68,16 @@ class ExtensionFragment : BaseSettingsFragment() {
 
 
             val viewModel by activityViewModels<ExtensionViewModel>()
-            val extension = viewModel.extensionListFlow.getClient(extensionId)
+            val client = viewModel.run {
+                when (extensionType) {
+                    ExtensionType.MUSIC -> extensionListFlow.getClient(extensionId)?.client
+                    ExtensionType.TRACKER -> trackerListFlow.getClient(extensionId)?.client
+                    ExtensionType.LYRICS -> lyricsListFlow.getClient(extensionId)?.client
+                }
+            }
 
-            extension ?: return
-            extension.settings.forEach { setting ->
+            client ?: return
+            client.settingItems.forEach { setting ->
                 setting.addPreferenceTo(screen)
             }
         }
@@ -124,9 +146,10 @@ class ExtensionFragment : BaseSettingsFragment() {
         }
 
         companion object {
-            fun newInstance(id: String): ExtensionPreference {
+            fun newInstance(id: String, type: String): ExtensionPreference {
                 val bundle = Bundle().apply {
                     putString("extensionId", id)
+                    putString("extensionType", type)
                 }
                 return ExtensionPreference().apply {
                     arguments = bundle

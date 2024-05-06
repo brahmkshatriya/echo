@@ -5,6 +5,7 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.appbar.MaterialToolbar
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
@@ -22,7 +23,7 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
     extensions.transitionName = "extensions"
 
     fragment.observe(extensionViewModel.extensionFlow) { client ->
-        client?.metadata?.iconUrl.loadWith(extensions, R.drawable.ic_extension) {
+        client?.metadata?.iconUrl?.toImageHolder().loadWith(extensions, R.drawable.ic_extension) {
             menu.findItem(R.id.menu_extensions).icon = it
         }
     }
@@ -31,7 +32,7 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
     }
     extensions.setOnLongClickListener {
         extensionViewModel.run {
-            val list = extensionListFlow.flow.value ?: return@run false
+            val list = extensionListFlow.value ?: return@run false
             val index = list.indexOf(currentExtension)
             val next = list[(index + 1) % list.size]
             setExtension(next)
@@ -39,7 +40,8 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
         }
     }
 
-    fragment.observe(loginUserViewModel.currentUser) { (client, user) ->
+    fragment.observe(loginUserViewModel.currentUser) { (extension, user) ->
+        val client = extension?.client
         if (client is LoginClient) {
             user?.cover.loadWith(settings, R.drawable.ic_account_circle_48dp) {
                 menu.findItem(R.id.menu_settings).icon = it

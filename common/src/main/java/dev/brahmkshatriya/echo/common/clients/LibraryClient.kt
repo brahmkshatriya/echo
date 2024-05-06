@@ -6,7 +6,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 
-interface LibraryClient {
+interface LibraryClient : PlaylistClient, AlbumClient {
     suspend fun getLibraryTabs(): List<Tab>
     fun getLibraryFeed(tab: Tab?): PagedData<MediaItemsContainer>
     suspend fun listEditablePlaylists(): List<Playlist>

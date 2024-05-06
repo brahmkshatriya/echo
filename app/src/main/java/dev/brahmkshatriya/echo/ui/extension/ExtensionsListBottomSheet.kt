@@ -10,9 +10,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
+import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -35,7 +36,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
         binding.addExtension.isEnabled = false
 
         val listener = object : OnButtonCheckedListener {
-            var map: Map<Int, ExtensionClient> = mapOf()
+            var map: Map<Int, MusicExtension> = mapOf()
             var enabled = false
             override fun onButtonChecked(
                 group: MaterialButtonToggleGroup?,
@@ -49,7 +50,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
             }
         }
         binding.buttonToggleGroup.addOnButtonCheckedListener(listener)
-        val extensionFlow = viewModel.extensionListFlow.flow
+        val extensionFlow = viewModel.extensionListFlow
         collect(extensionFlow) { clientList ->
             binding.buttonToggleGroup.removeAllViews()
             binding.progressIndicator.isVisible = clientList == null
@@ -66,7 +67,9 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
                 button.isChecked = extension == viewModel.currentExtension
-                metadata.iconUrl.loadWith(button, R.drawable.ic_extension) { button.icon = it }
+                metadata.iconUrl?.toImageHolder().loadWith(button, R.drawable.ic_extension) {
+                    button.icon = it
+                }
                 button.id = index
                 index to extension
             }.toMap()

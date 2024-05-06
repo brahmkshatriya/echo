@@ -7,6 +7,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.utils.collect
@@ -51,7 +52,7 @@ class Queue {
 
     private val addTrackFlow = MutableSharedFlow<Pair<Int, List<MediaItem>>>()
     suspend fun addTracks(
-        client: String, tracks: List<Track>, offset: Int = 0
+        client: String, context: EchoMediaItem?, tracks: List<Track>, offset: Int = 0
     ): Pair<Int, List<MediaItem>> {
         var position = currentIndex + 1
         position += offset
@@ -61,7 +62,7 @@ class Queue {
             mediaItemBuilder(track)
         }
         val queueItems = tracks.map { track ->
-            StreamableTrack(track, client)
+            StreamableTrack(track, client, context)
         }
         trackQueue.addAll(queueItems)
         val mediaItems = position to items
@@ -83,6 +84,7 @@ class Queue {
     data class StreamableTrack(
         val unloaded: Track,
         val clientId: String,
+        val context: EchoMediaItem? = null,
         var loaded: Track? = null,
         var liked: Boolean = unloaded.liked,
         val onLoad: MutableSharedFlow<Track> = MutableSharedFlow(),

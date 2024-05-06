@@ -154,6 +154,12 @@
     <string name="more_by_artist">More by %1$s</string>
     <string name="incognito">Incognito</string>
     <string name="no_internet">No Internet</string>
+    <string name="unknown_amount_songs">\??? Songs</string>
+    <string name="item_radio">%1$s Radio</string>
+    <string name="radio_based_on_item">Radio based on %1$s</string>
+    <string name="albums">Albums</string>
+    <string name="artists">Artists</string>
+    <string name="recently_added">Recently Added</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

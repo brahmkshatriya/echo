@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.playback.Queue.StreamableTrack
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
@@ -75,9 +76,9 @@ class PlayerTrackAdapter(
         val item = getItem(position) ?: return
         val client = item.clientId
         val track = item.current
-        binding.applyTrackDetails(client, track)
+        binding.applyTrackDetails(client, item, track)
         observe(item.onLoad) {
-            binding.applyTrackDetails(client, it, item.unloaded)
+            binding.applyTrackDetails(client, item, item.unloaded)
         }
 
         lifecycleScope.launch {
@@ -263,7 +264,7 @@ class PlayerTrackAdapter(
             viewModel.repeatEnabled = true
         }
 
-        val extensionClient = viewModel.extensionListFlow.getClient(item.clientId)
+        val extensionClient = viewModel.extensionListFlow.getClient(item.clientId)?.client
         binding.playerControls.trackHeart.run {
             if (extensionClient is LibraryClient) {
                 isChecked = item.liked
@@ -283,9 +284,10 @@ class PlayerTrackAdapter(
 
     private fun ItemPlayerTrackBinding.applyTrackDetails(
         client: String?,
-        track: Track?,
+        streamableTrack: StreamableTrack?,
         oldTrack: Track? = null
     ) {
+        val track = streamableTrack?.current
         track?.cover.loadWith(bgImage, oldTrack?.cover) {
             collapsedContainer.collapsedTrackCover.load(it)
             expandedTrackCover.load(it)
@@ -323,9 +325,9 @@ class PlayerTrackAdapter(
         }
 
         expandedToolbar.run {
-            val album = track?.album?.title
-            title = if (album != null) context.getString(R.string.playing_from) else null
-            subtitle = album
+            val item = streamableTrack?.context
+            title = if (item != null) context.getString(R.string.playing_from) else null
+            subtitle = item?.title
         }
     }
 

@@ -10,7 +10,8 @@ import dev.brahmkshatriya.echo.common.clients.EditPlaylistCoverClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EditPlaylistViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionListFlow: ExtensionModule.ExtensionListFlow,
+    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     private val context: Application
 ) : CatchingViewModel(throwableFlow) {
@@ -39,7 +40,7 @@ class EditPlaylistViewModel @Inject constructor(
     private suspend inline fun <reified T> client(
         clientId: String, crossinline block: suspend (client: T) -> Unit
     ) {
-        val client = extensionListFlow.getClient(clientId)
+        val client = extensionListFlow.getClient(clientId)?.client
         if (client !is T) return
         withContext(Dispatchers.IO) {
             tryWith { block.invoke(client) }
@@ -62,12 +63,13 @@ class EditPlaylistViewModel @Inject constructor(
         }
     }
 
+    val closing = MutableStateFlow<Boolean?>(null)
     private val actions = mutableListOf<ListAction<Track>>()
     val currentTracks = MutableStateFlow<List<Track>?>(null)
     fun edit(action: ListAction<Track>) {
         currentTracks.value = currentTracks.value?.toMutableList()?.apply {
             when (action) {
-                is ListAction.Add -> addAll(action.index, action.items)
+                is ListAction.Add -> addAll(action.index!!, action.items)
                 is ListAction.Move -> add(action.to, removeAt(action.from))
                 is ListAction.Remove -> action.indexes.forEach { removeAt(it) }
             }
@@ -90,7 +92,7 @@ class EditPlaylistViewModel @Inject constructor(
         while (i < actions.size - 1) {
             val curr = actions[i]
             val next = actions[i + 1]
-            if (curr is ListAction.Add && next is ListAction.Add && curr.index + curr.items.size == next.index) {
+            if (curr is ListAction.Add && next is ListAction.Add && curr.index!! + curr.items.size == next.index) {
                 curr.items.addAll(next.items)
                 actions.removeAt(i + 1)
             } else if (curr is ListAction.Move && next is ListAction.Move && curr.to == next.from) {
@@ -99,22 +101,20 @@ class EditPlaylistViewModel @Inject constructor(
             } else if (curr is ListAction.Remove && next is ListAction.Remove) {
                 actions[i] = ListAction.Remove(curr.indexes + next.indexes)
                 actions.removeAt(i + 1)
-            }
-            else {
+            } else {
                 i++
             }
         }
     }
 
-    suspend fun onEditorExit(
+    fun onEditorExit(
         clientId: String,
         playlist: Playlist,
         block: suspend (action: ListAction<Track>?) -> Unit
-    ) {
+    ) = viewModelScope.launch(Dispatchers.IO) {
         mergeActions(actions)
-        val newActions = actions.toList().takeIf { it.isNotEmpty() } ?: return
-        actions.clear()
-
+        val newActions = actions.toList().takeIf { it.isNotEmpty() }
+            ?: return@launch
         libraryClient(clientId) { client ->
             newActions.forEach {
                 println(it)
@@ -127,13 +127,14 @@ class EditPlaylistViewModel @Inject constructor(
             }
         }
         block(null)
+        actions.clear()
         client<EditPlayerListenerClient>(clientId) {
             it.onExitPlaylistEditor(playlist)
         }
     }
 
     sealed class ListAction<T> {
-        data class Add<T>(val index: Int, val items: MutableList<T>) : ListAction<T>()
+        data class Add<T>(val index: Int?, val items: MutableList<T>) : ListAction<T>()
         data class Remove<T>(val indexes: List<Int>) : ListAction<T>() {
             constructor(vararg indexes: Int) : this(indexes.toList())
         }
@@ -143,13 +144,14 @@ class EditPlaylistViewModel @Inject constructor(
 
     companion object {
         suspend fun CatchingViewModel.deletePlaylist(
-            extensionListFlow: ExtensionModule.ExtensionListFlow,
+            extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
             context: Context,
             clientId: String,
             playlist: Playlist
         ) {
-            val client = extensionListFlow.getClient(clientId) as? LibraryClient ?: return
+            val client = extensionListFlow.getClient(clientId)?.client ?: return
+            if (client !is LibraryClient) return
             withContext(Dispatchers.IO) {
                 tryWith { client.deletePlaylist(playlist) } ?: return@withContext
                 mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
@@ -157,14 +159,14 @@ class EditPlaylistViewModel @Inject constructor(
         }
 
         suspend fun CatchingViewModel.addToPlaylists(
-            extensionListFlow: ExtensionModule.ExtensionListFlow,
+            extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
             messageFlow: MutableSharedFlow<SnackBar.Message>,
             context: Context,
             clientId: String,
             playlists: List<Playlist>,
             tracks: List<Track>
         ) = run {
-            val client = extensionListFlow.getClient(clientId) ?: return
+            val client = extensionListFlow.getClient(clientId)?.client ?: return
             if (client !is LibraryClient) return
             val listener = client as? EditPlayerListenerClient
             withContext(Dispatchers.IO) {

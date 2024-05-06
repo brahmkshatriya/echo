@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.common.clients
 import dev.brahmkshatriya.echo.common.models.Request
 import dev.brahmkshatriya.echo.common.models.User
 
-sealed interface LoginClient {
+sealed interface LoginClient : ExtensionClient {
 
     interface UsernamePassword : LoginClient {
         suspend fun onLogin(username: String, password: String): List<User>
@@ -12,7 +12,7 @@ sealed interface LoginClient {
     interface WebView : LoginClient {
         val loginWebViewInitialUrl: Request
         val loginWebViewStopUrlRegex: Regex
-        suspend fun onLoginWebviewStop(url:String, cookie: String): List<User>
+        suspend fun onLoginWebviewStop(url: String, cookie: String): List<User>
     }
 
     interface CustomTextInput : LoginClient {

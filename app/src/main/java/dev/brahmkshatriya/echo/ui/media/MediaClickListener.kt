@@ -12,11 +12,13 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Category
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Container
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Item
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
 import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
+import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
@@ -59,9 +61,10 @@ class MediaClickListener(
             is EchoMediaItem.TrackItem -> {
                 clientId ?: return noClient()
                 val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
-                val client = playerViewModel.extensionListFlow.getClient(clientId)
-                client ?: return noClient()
-                if (client !is TrackClient) return trackNotSupported(client.metadata.name)
+                val extension = playerViewModel.extensionListFlow.getClient(clientId)
+                    ?: return noClient()
+                if (extension.client !is TrackClient)
+                    return trackNotSupported(extension.metadata.name)
                 playerViewModel.play(clientId, item.track, 0)
             }
 
@@ -83,11 +86,16 @@ class MediaClickListener(
             is Category -> openContainer(
                 clientId,
                 container.title,
-                container.more?.map { it.map { item -> item.toMediaItemsContainer() } },
+                container.more?.toFlow()?.map { it.map { item -> item.toMediaItemsContainer() } },
                 transitionView
             )
 
-            is Container -> openContainer(clientId, container.title, container.more, transitionView)
+            is Container -> openContainer(
+                clientId,
+                container.title,
+                container.more?.toFlow(),
+                transitionView
+            )
         }
     }
 

@@ -16,43 +16,33 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionResult.RESULT_SUCCESS
-import androidx.paging.AsyncPagingDataDiffer
-import androidx.paging.LoadState
-import androidx.paging.PagingData
-import androidx.recyclerview.widget.ListUpdateCallback
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.first
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
-import dev.brahmkshatriya.echo.utils.collect
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.guava.future
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PlayerSessionCallback(
     private val context: Context,
     private val scope: CoroutineScope,
     private val global: Queue,
-    private val extensionListFlow: ExtensionModule.ExtensionListFlow,
-    extensionFlow: Flow<ExtensionClient?>,
+    private val extensionListFlow: StateFlow<List<MusicExtension>?>,
+    private val extensionFlow: StateFlow<MusicExtension?>,
 ) : MediaLibraryService.MediaLibrarySession.Callback {
 
     override fun onConnect(
@@ -109,7 +99,8 @@ class PlayerSessionCallback(
     ) = scope.future {
         val errorIO = SessionResult(SessionResult.RESULT_ERROR_IO)
         val streamableTrack = global.getTrack(mediaId) ?: return@future errorIO
-        val client = extensionListFlow.getClient(streamableTrack.clientId) ?: return@future errorIO
+        val client =
+            extensionListFlow.getClient(streamableTrack.clientId)?.client ?: return@future errorIO
         if (client !is LibraryClient) return@future errorIO
         val track = streamableTrack.current
         val liked = withContext(Dispatchers.IO) {
@@ -161,31 +152,6 @@ class PlayerSessionCallback(
 
     // Google Assistant Stuff
 
-    init {
-        scope.collect(extensionFlow) { extension = it }
-    }
-
-    private var extension: ExtensionClient? = null
-
-    private val updateCallback = object : ListUpdateCallback {
-        override fun onChanged(position: Int, count: Int, payload: Any?) = Unit
-        override fun onMoved(fromPosition: Int, toPosition: Int) = Unit
-        override fun onInserted(position: Int, count: Int) = Unit
-        override fun onRemoved(position: Int, count: Int) = Unit
-    }
-
-    private suspend fun <T : Any> Flow<PagingData<T>>.getItems(
-        differ: AsyncPagingDataDiffer<T>
-    ) = coroutineScope {
-        val job = launch { collect { differ.submitData(it) } }
-        val refresh = differ.loadStateFlow
-            .first { it.refresh !is LoadState.Loading }
-            .refresh
-        job.cancel()
-        if (refresh is LoadState.Error) throw refresh.error
-        differ.snapshot().items
-    }
-
     private val handler = Handler(Looper.getMainLooper())
     private fun toast(message: String) {
         handler.post { Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
@@ -205,19 +171,16 @@ class PlayerSessionCallback(
             return super.onAddMediaItems(mediaSession, controller, mediaItems)
         }
 
-        val client = extension
+        val extension = extensionFlow.value
+        val client = extension?.client
             ?: return default { noClient().message }
         if (client !is SearchClient)
-            return default { searchNotSupported(client.metadata.id).message }
+            return default { searchNotSupported(extension.metadata.id).message }
         if (client !is TrackClient)
-            return default { trackNotSupported(client.metadata.id).message }
-        val flow = client.searchFeed(query, null)
-            .catch { default { it.message ?: "Unknown Error" } }.flowOn(Dispatchers.IO)
-        val differ = AsyncPagingDataDiffer(MediaContainerAdapter.DiffCallback, updateCallback)
-
+            return default { trackNotSupported(extension.metadata.id).message }
         return scope.future {
             val itemsContainers = runCatching {
-                flow.getItems(differ)
+                client.searchFeed(query, null).first()
             }.getOrElse {
                 default { it.message ?: "Unknown Error" }
                 listOf()
@@ -243,7 +206,7 @@ class PlayerSessionCallback(
                 }
             }.flatten()
             if (tracks.isEmpty()) default { getString(R.string.could_not_find_anything, query) }
-            val items = global.addTracks(client.metadata.id, tracks).second
+            val items = global.addTracks(extension.metadata.id, null, tracks).second
             items.toMutableList()
         }
     }

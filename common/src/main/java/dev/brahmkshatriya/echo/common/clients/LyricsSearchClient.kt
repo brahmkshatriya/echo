@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.models.LyricsItem
+import dev.brahmkshatriya.echo.common.models.Lyrics
 
-interface LyricsSearchClient {
-    suspend fun searchLyrics(query: String): PagedData<LyricsItem>
+interface LyricsSearchClient : LyricsClient {
+    fun searchLyrics(query: String): PagedData<Lyrics>
 }

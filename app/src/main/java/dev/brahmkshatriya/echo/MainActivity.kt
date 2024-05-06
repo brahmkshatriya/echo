@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
@@ -83,7 +83,9 @@ class MainActivity : AppCompatActivity() {
             collect(uiViewModel.isMainFragment) { isMainFragment ->
                 val insets =
                     uiViewModel.setPlayerNavViewInsets(this, isMainFragment, isRail)
-                val visible = uiViewModel.playerSheetState.value != STATE_EXPANDED
+                val visible = uiViewModel.playerSheetState.value.let {
+                    it == STATE_COLLAPSED || it == STATE_HIDDEN
+                }
                 navView.animateTranslation(isRail, isMainFragment, visible) {
                     uiViewModel.setNavInsets(insets)
                 }

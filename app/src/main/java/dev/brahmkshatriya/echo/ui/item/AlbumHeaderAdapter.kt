@@ -75,11 +75,11 @@ class AlbumHeaderAdapter(
         val album = holder.album
         binding.albumDescription.text = album.description
         binding.albumDescription.isVisible = !album.description.isNullOrBlank()
-        var info = binding.root.context.resources.getQuantityString(
-            R.plurals.number_songs,
-            album.tracks.size,
-            album.tracks.size
-        )
+        var info = binding.root.context.run {
+            album.tracks?.let {
+                resources.getQuantityString(R.plurals.number_songs, it, it)
+            } ?: getString(R.string.unknown_amount_songs)
+        }
         album.duration?.toTimeString()?.let {
             info += " • $it"
         }

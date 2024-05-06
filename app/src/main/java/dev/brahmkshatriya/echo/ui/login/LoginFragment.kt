@@ -19,7 +19,9 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
@@ -66,25 +68,27 @@ class LoginFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
         binding.toolbar.title = getString(R.string.extension_login, clientName)
-        val client = loginViewModel.extensionList.getClient(clientId)
-        if (client == null) {
+        val extension = loginViewModel.extensionList.getClient(clientId)
+        if (extension == null) {
             createSnack(requireContext().noClient())
             parentFragmentManager.popBackStack()
             return
         }
-        if (client as? LoginClient == null) {
+        if (extension.client as? LoginClient == null) {
             createSnack(requireContext().loginNotSupported(clientName))
             parentFragmentManager.popBackStack()
             return
         }
 
-        client.metadata.iconUrl.loadWith(binding.extensionIcon, R.drawable.ic_extension) {
+        extension.metadata.iconUrl?.toImageHolder().loadWith(
+            binding.extensionIcon, R.drawable.ic_extension
+        ) {
             binding.extensionIcon.setImageDrawable(it)
         }
 
         binding.loginContainer.isVisible = true
-        when (client) {
-            is LoginClient.WebView -> binding.configureWebView(client)
+        when (extension.client) {
+            is LoginClient.WebView -> binding.configureWebView(extension.client)
             else -> createSnack(R.string.todo)
         }
 
@@ -119,7 +123,7 @@ class LoginFragment : Fragment() {
                 url ?: return
                 if (loginWebViewStopUrlRegex.matches(url)) {
                     val cookie = CookieManager.getInstance().getCookie(url)
-                    loginViewModel.onWebViewStop(client, url, cookie)
+                    loginViewModel.onWebViewStop(clientId, client, url, cookie)
                     afterWebViewStop()
                     callback.isEnabled = false
                 }

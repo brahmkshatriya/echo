@@ -1,34 +1,36 @@
 package dev.brahmkshatriya.echo.common.helpers
 
-import androidx.paging.Pager
-import androidx.paging.PagingData
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
+sealed interface PagedData<T : Any> {
 
-sealed class PagedData<Value : Any>(
-    val flow: Flow<PagingData<Value>>
-) : Flow<PagingData<Value>> {
-    override suspend fun collect(collector: FlowCollector<PagingData<Value>>) {
-        flow.collect(collector)
+    fun interface Single<T : Any> : PagedData<T> {
+        suspend fun load(): List<T>
     }
 
-    class Source<Key : Any, Value : Any>(
-        source: ErrorPagingSource<Key, Value>,
-        pager: Pager<Key, Value> = Pager(
-            config = source.config,
-            pagingSourceFactory = { source }
-        )
-    ) : PagedData<Value>(pager.flow)
+    fun interface Continuous<T : Any> : PagedData<T> {
+        suspend fun load(continuation: String?): Page<T, String?>
+    }
 
-    class Single<Value : Any>(
-        val data: suspend () -> List<Value>
-    ) : PagedData<Value>(
-        SinglePagingSource(data).let {
-            Pager(
-                config = it.config,
-                pagingSourceFactory = { it }
-            ).flow
+    companion object {
+        suspend fun <T : Any> PagedData<T>.all() = when (this) {
+            is Continuous -> {
+                val list = mutableListOf<T>()
+                val init = load(null)
+                list.addAll(init.data)
+                var cont = init.continuation
+                while (cont != null) {
+                    val page = load(cont)
+                    list.addAll(page.data)
+                    cont = page.continuation
+                }
+                list
+            }
+
+            is Single -> load()
         }
-    )
 
+        suspend fun <T : Any> PagedData<T>.first() = when (this) {
+            is Continuous<T> -> load(null).data
+            is Single<T> -> load()
+        }
+    }
 }

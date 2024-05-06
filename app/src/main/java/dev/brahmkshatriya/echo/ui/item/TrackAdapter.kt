@@ -1,28 +1,37 @@
 package dev.brahmkshatriya.echo.ui.item
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.paging.PagingData
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemTrackSmallBinding
-import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.toTimeString
 
 class TrackAdapter(
     private val transition: String,
     private val listener: Listener,
-) : RecyclerView.Adapter<TrackAdapter.ViewHolder>() {
+) : PagingDataAdapter<Track, TrackAdapter.ViewHolder>(DiffCallback) {
+
+    object DiffCallback : DiffUtil.ItemCallback<Track>() {
+        override fun areItemsTheSame(oldItem: Track, newItem: Track) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Track, newItem: Track) = oldItem == newItem
+    }
 
     interface Listener {
         fun onClick(list: List<Track>, position: Int, view: View)
         fun onLongClick(list: List<Track>, position: Int, view: View): Boolean
     }
 
-    private var list: List<Track>? = null
+    suspend fun submit(pagingData: PagingData<Track>?) {
+        submitData(pagingData ?: PagingData.empty())
+    }
 
     inner class ViewHolder(val binding: ItemTrackSmallBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -31,11 +40,9 @@ class TrackAdapter(
         ItemTrackSmallBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
-    override fun getItemCount() = list?.size ?: 0
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
-        val track = list?.get(position) ?: return
+        val track = getItem(position) ?: return
         binding.itemNumber.text =
             binding.root.context.getString(R.string.number_dot, position + 1)
         binding.itemTitle.text = track.title
@@ -53,22 +60,16 @@ class TrackAdapter(
         binding.root.transitionName = (transition + track.id).hashCode().toString()
 
         binding.root.setOnClickListener {
-            val list = list ?: return@setOnClickListener
+            val list = snapshot().items
             listener.onClick(list, position, binding.root)
         }
         binding.root.setOnLongClickListener {
-            val list = list ?: return@setOnLongClickListener false
+            val list = snapshot().items
             listener.onLongClick(list, position, binding.root)
         }
         binding.itemMore.setOnClickListener {
-            val list = list ?: return@setOnClickListener
+            val list = snapshot().items
             listener.onLongClick(list, position, binding.root)
         }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun submitList(tracks: List<Track>) {
-        list = tracks
-        notifyDataSetChanged()
     }
 }

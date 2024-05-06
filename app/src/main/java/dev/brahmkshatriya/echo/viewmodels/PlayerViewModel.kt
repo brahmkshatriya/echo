@@ -8,17 +8,21 @@ import androidx.media3.common.ThumbRating
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionResult.RESULT_ERROR_UNKNOWN
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.first
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.playback.PlayerListener
 import dev.brahmkshatriya.echo.playback.Queue
 import dev.brahmkshatriya.echo.playback.recoverQueue
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.utils.getSerial
@@ -30,13 +34,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val global: Queue,
     val settings: SharedPreferences,
-    val extensionListFlow: ExtensionModule.ExtensionListFlow,
+    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     throwableFlow: MutableSharedFlow<Throwable>,
     private val listener: PlayerListener,
 ) : CatchingViewModel(throwableFlow) {
@@ -87,36 +92,80 @@ class PlayerViewModel @Inject constructor(
 
     val audioIndexFlow = MutableSharedFlow<Int>()
     fun play(clientId: String, track: Track, playIndex: Int? = null) =
-        play(clientId, listOf(track), playIndex)
+        play(clientId, null, listOf(track), playIndex)
 
-    fun play(clientId: String, lists: EchoMediaItem.Lists, playIndex: Int? = null) =
-        play(clientId, lists.tracks.toList(), playIndex)
+    private suspend fun getTracks(clientId: String, lists: EchoMediaItem.Lists) =
+        withContext(Dispatchers.IO) {
+            val client = extensionListFlow.getClient(clientId)?.client
+                ?: return@withContext null
+            when (lists) {
+                is EchoMediaItem.Lists.AlbumItem -> {
+                    if (client is AlbumClient) tryWith { client.loadTracks(lists.album).first() }
+                    else null
+                }
 
-    fun play(clientId: String, tracks: List<Track>, playIndex: Int? = null) {
+                is EchoMediaItem.Lists.PlaylistItem -> {
+                    if (client is PlaylistClient) tryWith {
+                        client.loadTracks(lists.playlist).first()
+                    }
+                    else null
+                }
+            }
+        }
+
+    fun play(
+        clientId: String,
+        lists: EchoMediaItem.Lists,
+        playIndex: Int?
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val tracks = getTracks(clientId, lists) ?: return@launch
+            play(clientId, lists, tracks, playIndex)
+        }
+    }
+
+    fun play(
+        clientId: String,
+        context: EchoMediaItem?,
+        tracks: List<Track>,
+        playIndex: Int? = null
+    ) {
         viewModelScope.launch {
             global.clearQueue()
-            val pos = global.addTracks(clientId, tracks).first
+            val pos = global.addTracks(clientId, context, tracks).first
             playIndex?.let { audioIndexFlow.emit(pos + it) }
         }
     }
 
     fun addToQueue(clientId: String, track: Track, end: Boolean) =
-        addToQueue(clientId, listOf(track), end)
+        addToQueue(clientId, null, listOf(track), end)
 
-    fun addToQueue(clientId: String, lists: EchoMediaItem.Lists, end: Boolean) =
-        addToQueue(clientId, lists.tracks.toList(), end)
+    fun addToQueue(
+        clientId: String,
+        lists: EchoMediaItem.Lists,
+        end: Boolean
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        val tracks = getTracks(clientId, lists) ?: return@launch
+        addToQueue(clientId, lists, tracks, end)
+    }
 
-    private fun addToQueue(clientId: String, tracks: List<Track>, end: Boolean) {
+
+    private fun addToQueue(
+        clientId: String,
+        context: EchoMediaItem?,
+        tracks: List<Track>,
+        end: Boolean
+    ) {
         viewModelScope.launch {
             val index = if (end) global.queue.size else 1
-            global.addTracks(clientId, tracks, index)
+            global.addTracks(clientId, context, tracks, index)
         }
     }
 
     private fun playRadio(clientId: String, block: suspend RadioClient.() -> Playlist) {
-        val client = extensionListFlow.getClient(clientId)
+        val extension = extensionListFlow.getClient(clientId)
         viewModelScope.launch(Dispatchers.IO) {
-            val position = listener.radio(client) { block(this) }
+            val position = listener.radio(extension) { block(this) }
             position?.let { audioIndexFlow.emit(it) }
         }
     }

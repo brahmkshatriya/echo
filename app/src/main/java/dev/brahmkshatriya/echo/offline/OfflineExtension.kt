@@ -14,19 +14,20 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.all
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.ExtensionMetadata
-import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
+import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.Setting
+import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.deletePlaylist
@@ -34,13 +35,17 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
+import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 
-class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient, TrackClient,
+class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, TrackClient,
     AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
     EditPlayerListenerClient {
-    override val metadata = ExtensionMetadata(
+
+    val metadata = ExtensionMetadata(
+        className = "OfflineExtension",
+        path = "",
         id = "echo_offline",
         name = "Offline",
         description = "Offline extension",
@@ -48,13 +53,19 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         author = "Echo",
         iconUrl = null
     )
-    override val settings: List<Setting> = listOf()
+
+    override val settingItems: List<Setting> = listOf()
+    override fun setSettings(settings: Settings) {}
+
     lateinit var library: MediaStoreUtils.LibraryStoreClass
     private fun find(artist: Artist) =
         library.artistMap[artist.id.toLongOrNull()]
 
     private fun find(album: Album) =
         library.albumList.find { it.id == album.id.toLong() }
+
+    private fun find(playlist: Playlist) =
+        library.playlistList.find { it.id == playlist.id.toLong() }
 
     override suspend fun onExtensionSelected() {
         library = MediaStoreUtils.getAllSongs(context)
@@ -85,15 +96,18 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
                     it.toArtist().toMediaItem()
                 }.shuffled()
                 listOf(
-                    MediaItemsContainer.Category("Recently Added",
+                    MediaItemsContainer.Category(
+                        context.getString(R.string.recently_added),
                         recentlyAdded.take(10),
                         null,
                         PagedData.Single { recentlyAdded }),
-                    MediaItemsContainer.Category("Albums",
+                    MediaItemsContainer.Category(
+                        context.getString(R.string.albums),
                         albums.take(10),
                         null,
                         PagedData.Single { albums }),
-                    MediaItemsContainer.Category("Artists",
+                    MediaItemsContainer.Category(
+                        context.getString(R.string.artists),
                         artists.take(10),
                         null,
                         PagedData.Single { artists })
@@ -117,6 +131,10 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
 
     override suspend fun loadAlbum(small: Album) =
         find(small)!!.toAlbum()
+
+    override fun loadTracks(album: Album): PagedData<Track> = PagedData.Single {
+        find(album)!!.songList.sortedBy { it.mediaMetadata.trackNumber }.map { it.toTrack() }
+    }
 
     private fun getArtistsWithCategories(
         artists: List<Artist>, filter: (MediaItem) -> Boolean
@@ -150,12 +168,12 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
             listOfNotNull(
                 tracks?.let {
                     MediaItemsContainer.Category(
-                        "Songs", it, null, PagedData.Single { tracks }
+                        context.getString(R.string.songs), it, null, PagedData.Single { tracks }
                     )
                 },
                 albums?.let {
                     MediaItemsContainer.Category(
-                        "Albums", it, null, PagedData.Single { albums }
+                        context.getString(R.string.albums), it, null, PagedData.Single { albums }
                     )
                 }
             )
@@ -163,14 +181,35 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
     }
 
     override suspend fun loadPlaylist(playlist: Playlist) =
-        library.playlistList.find { it.id == playlist.id.toLong() }!!.toPlaylist()
+        find(playlist)!!.toPlaylist()
+
+    override fun loadTracks(playlist: Playlist): PagedData<Track> = PagedData.Single {
+        if (playlist.id.startsWith("radio_")) radioMap[playlist.id]!!
+        else find(playlist)!!.songList.map { it.toTrack() }
+    }
 
     override fun getMediaItems(playlist: Playlist) = PagedData.Single<MediaItemsContainer> {
         emptyList()
     }
 
+    private val radioMap = mutableMapOf<String, List<Track>>()
+    private fun createRadioPlaylist(title: String, tracks: List<Track>): Playlist {
+        val id = "radio_${tracks.hashCode()}"
+        radioMap[id] = tracks
+        return Playlist(
+            id = id,
+            title = context.getString(R.string.item_radio, title),
+            cover = null,
+            isEditable = false,
+            authors = listOf(),
+            tracks = tracks.size,
+            creationDate = null,
+            subtitle = context.getString(R.string.radio_based_on_item, title)
+        )
+    }
+
     override suspend fun radio(track: Track): Playlist {
-        val albumTracks = track.album?.let { loadAlbum(it) }?.tracks
+        val albumTracks = track.album?.let { loadTracks(loadAlbum(it)).all() }
         val artistTracks = track.artists.map { artist ->
             find(artist)?.songList ?: emptyList()
         }.flatten().map { it.toTrack() }
@@ -180,35 +219,19 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
                 .toMutableList()
         allTracks.removeIf { it.id == track.id }
         allTracks.shuffle()
-
-        return Playlist(
-            id = "",
-            title = "${track.title} Radio",
-            cover = null,
-            isEditable = false,
-            authors = listOf(),
-            tracks = allTracks,
-            creationDate = null,
-            subtitle = "Radio based on ${track.title} by ${track.artists.firstOrNull()?.name}"
-        )
+        return createRadioPlaylist(track.title, allTracks)
     }
 
     override suspend fun radio(album: Album): Playlist {
-        val tracks = album.tracks
+        val tracks = loadTracks(album).all().asSequence()
+            .map { it.artists }.flatten()
+            .map { artist -> find(artist)?.songList?.map { it.toTrack() }!! }.flatten()
+            .filter { it.album?.id != album.id }.take(25)
+
         val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
         val allTracks = (tracks + randomTracks).distinctBy { it.id }.toMutableList()
         allTracks.shuffle()
-
-        return Playlist(
-            id = "",
-            title = "${album.title} Radio",
-            cover = null,
-            isEditable = false,
-            authors = listOf(),
-            tracks = allTracks,
-            creationDate = null,
-            subtitle = "Radio based on ${album.title}"
-        )
+        return createRadioPlaylist(album.title, allTracks)
     }
 
     override suspend fun radio(artist: Artist): Playlist {
@@ -216,35 +239,15 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
         val allTracks = (tracks + randomTracks).distinctBy { it.id }.toMutableList()
         allTracks.shuffle()
-
-        return Playlist(
-            id = "",
-            title = "${artist.name} Radio",
-            cover = null,
-            isEditable = false,
-            authors = listOf(),
-            tracks = allTracks,
-            creationDate = null,
-            subtitle = "Radio based on ${artist.name}"
-        )
+        return createRadioPlaylist(artist.name, allTracks)
     }
 
     override suspend fun radio(playlist: Playlist): Playlist {
-        val tracks = playlist.tracks
+        val tracks = loadTracks(playlist).all()
         val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
         val allTracks = (tracks + randomTracks).distinctBy { it.id }.toMutableList()
         allTracks.shuffle()
-
-        return Playlist(
-            id = "",
-            title = "${playlist.title} Radio",
-            cover = null,
-            isEditable = false,
-            authors = listOf(),
-            tracks = allTracks,
-            creationDate = null,
-            subtitle = "Radio based on ${playlist.title}"
-        )
+        return createRadioPlaylist(playlist.title, allTracks)
     }
 
     override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
@@ -257,7 +260,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
         listOf("All", "Tracks", "Albums", "Artists").map { Tab(it, it) }
 
     private fun getHistory() = context.getFromCache("search_history", "offline") {
-        it.createStringArrayList()
+        it.createStringArrayList()?.distinct()?.take(5)
     } ?: emptyList()
 
     private fun saveInHistory(query: String) {
@@ -354,7 +357,7 @@ class OfflineExtension(val context: Context) : ExtensionClient(), HomeFeedClient
             context.addSongToPlaylist(
                 playlist.id.toLong(),
                 it.id.toLong(),
-                index ?: playlist.tracks.size
+                index ?: playlist.tracks ?: 0
             )
         }
     }

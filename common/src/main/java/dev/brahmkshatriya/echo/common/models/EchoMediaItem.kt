@@ -19,16 +19,10 @@ sealed class EchoMediaItem : Parcelable {
         data class AlbumItem(val album: Album) : Lists()
         data class PlaylistItem(val playlist: Playlist) : Lists()
 
-        val tracks
+        val size
             get() = when (this) {
                 is AlbumItem -> album.tracks
                 is PlaylistItem -> playlist.tracks
-            }
-
-        val size
-            get() = when (this) {
-                is AlbumItem -> album.numberOfTracks ?: album.tracks.ifEmpty { null }?.size
-                is PlaylistItem -> playlist.tracks.ifEmpty { null }?.size
             }
     }
 

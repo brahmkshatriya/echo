@@ -13,9 +13,11 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentTrackDetailsBinding
-import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
@@ -66,7 +68,7 @@ class TrackDetailsFragment : Fragment() {
 @HiltViewModel
 class TrackDetailsViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionListFlow: ExtensionModule.ExtensionListFlow,
+    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
 ) : CatchingViewModel(throwableFlow) {
 
     private var previous: Track? = null
@@ -76,10 +78,10 @@ class TrackDetailsViewModel @Inject constructor(
         if (previous?.id == track.id) return
         previous = track
         itemsFlow.value = null
-        val client = extensionListFlow.getClient(clientId) ?: return
+        val client = extensionListFlow.getClient(clientId)?.client ?: return
         if (client !is TrackClient) return
         viewModelScope.launch {
-            client.getMediaItems(track).collectTo(itemsFlow)
+            tryWith { client.getMediaItems(track).toFlow().collectTo(itemsFlow) }
         }
     }
 

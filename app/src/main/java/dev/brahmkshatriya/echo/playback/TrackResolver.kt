@@ -10,18 +10,20 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 
 class TrackResolver(
     private val context: Context,
     private val global: Queue,
-    private val extensionListFlow: ExtensionModule.ExtensionListFlow,
+    private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val settings: SharedPreferences
 ) : Resolver {
 
@@ -32,11 +34,12 @@ class TrackResolver(
             val track = global.getTrack(id)
                 ?: throw Exception(context.getString(R.string.track_not_found))
 
-            val client = extensionListFlow.getClient(track.clientId)
+            val extension = extensionListFlow.getClient(track.clientId)
+            val client = extension?.client
                 ?: throw Exception(context.noClient().message)
 
             if (client !is TrackClient)
-                throw Exception(context.trackNotSupported(client.metadata.name).message)
+                throw Exception(context.trackNotSupported(extension.metadata.name).message)
 
             val loadedTrack = getTrack(track, client).getOrElse { throw Exception(it) }
             loadAudio(loadedTrack, client).getOrElse { throw Exception(it) }

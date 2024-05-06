@@ -18,8 +18,11 @@ import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.playback.PlayerListener
 import dev.brahmkshatriya.echo.playback.Queue
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 import javax.inject.Singleton
 
@@ -75,8 +78,8 @@ class AppModule {
     @Singleton
     fun providePlayerListener(
         application: Application,
-        extensionList: ExtensionModule.ExtensionListFlow,
-        trackerListFlow: TrackerModule.TrackerListFlow,
+        extensionList: MutableStateFlow<List<MusicExtension>?>,
+        trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
         global: Queue,
         settings: SharedPreferences,
         throwableFlow: MutableSharedFlow<Throwable>,

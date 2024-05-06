@@ -76,11 +76,11 @@ class PlaylistHeaderAdapter(
         val playlist = holder.playlist
         binding.albumDescription.text = playlist.description
         binding.albumDescription.isVisible = !playlist.description.isNullOrBlank()
-        var info = binding.root.context.resources.getQuantityString(
-            R.plurals.number_songs,
-            playlist.tracks.size,
-            playlist.tracks.size
-        )
+        var info =  binding.root.context.run {
+            playlist.tracks?.let {
+                resources.getQuantityString(R.plurals.number_songs, it, it)
+            } ?: getString(R.string.unknown_amount_songs)
+        }
         playlist.duration?.toTimeString()?.let {
             info += " • $it"
         }

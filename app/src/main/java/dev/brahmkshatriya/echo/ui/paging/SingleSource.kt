@@ -1,9 +1,9 @@
-package dev.brahmkshatriya.echo.common.helpers
+package dev.brahmkshatriya.echo.ui.paging
 
 import androidx.paging.PagingConfig
 import androidx.paging.PagingState
 
-class SinglePagingSource<Value : Any>(private val data: suspend () -> List<Value>) :
+class SingleSource<Value : Any>(private val data: suspend () -> List<Value>) :
     ErrorPagingSource<Int, Value>() {
     override fun getRefreshKey(state: PagingState<Int, Value>): Int? {
         return null

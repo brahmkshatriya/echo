@@ -179,8 +179,8 @@ class UiViewModel @Inject constructor(
             }
         }
 
-        fun View.applyContentInsets(insets: Insets) {
-            val verticalPadding = 8.dpToPx(context)
+        fun View.applyContentInsets(insets: Insets, paddingDp: Int = 8) {
+            val verticalPadding = paddingDp.dpToPx(context)
             updatePaddingRelative(
                 top = verticalPadding,
                 bottom = insets.bottom + verticalPadding,
@@ -295,7 +295,7 @@ class UiViewModel @Inject constructor(
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     viewModel.infoSheetState.value = newState
                     viewModel.infoBackPressCallback =
-                        backPress.takeIf { newState == STATE_EXPANDED }
+                        backPress.takeIf { newState != STATE_COLLAPSED }
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {

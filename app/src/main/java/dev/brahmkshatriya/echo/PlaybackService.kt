@@ -17,7 +17,6 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
-import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.PlayerListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
@@ -27,10 +26,13 @@ import dev.brahmkshatriya.echo.playback.StreamableDataSource
 import dev.brahmkshatriya.echo.playback.TrackResolver
 import dev.brahmkshatriya.echo.playback.getLikeButton
 import dev.brahmkshatriya.echo.playback.getRepeatButton
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,10 +40,10 @@ import javax.inject.Inject
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
     @Inject
-    lateinit var extensionFlow: ExtensionModule.ExtensionFlow
+    lateinit var extensionFlow: MutableStateFlow<MusicExtension?>
 
     @Inject
-    lateinit var extensionList: ExtensionModule.ExtensionListFlow
+    lateinit var extensionList: MutableStateFlow<List<MusicExtension>?>
 
     @Inject
     lateinit var global: Queue
@@ -129,7 +131,7 @@ class PlaybackService : MediaLibraryService() {
         val track = global.current ?: return
         val mediaLibrarySession = mediaLibrarySession ?: return
         val player = mediaLibrarySession.player
-        val supportsLike = extensionList.getClient(track.clientId) is LibraryClient
+        val supportsLike = extensionList.getClient(track.clientId)?.client is LibraryClient
 
         val commandButtons = listOfNotNull(
             getRepeatButton(context, player.repeatMode),

@@ -5,7 +5,7 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 
-interface RadioClient {
+interface RadioClient : PlaylistClient {
     suspend fun radio(track: Track): Playlist
     suspend fun radio(album: Album): Playlist
     suspend fun radio(artist: Artist): Playlist

@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaItemAdapter
+import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import kotlinx.coroutines.flow.Flow
@@ -72,11 +73,16 @@ class SearchForPlaylistClickListener(
             is Category -> openContainer(
                 clientId,
                 container.title,
-                container.more?.map { it.map { item -> item.toMediaItemsContainer() } },
+                container.more?.toFlow()?.map { it.map { item -> item.toMediaItemsContainer() } },
                 transitionView
             )
 
-            is Container -> openContainer(clientId, container.title, container.more, transitionView)
+            is Container -> openContainer(
+                clientId,
+                container.title,
+                container.more?.toFlow(),
+                transitionView
+            )
         }
     }
 

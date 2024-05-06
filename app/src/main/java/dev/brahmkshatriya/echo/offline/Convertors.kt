@@ -42,7 +42,6 @@ fun MediaStoreUtils.MAlbum.toAlbum() = Album(
     cover.toString().toUri().toImageHolder(),
     artists.map { it.toArtist() },
     songList.size,
-    songList.sortedBy { it.mediaMetadata.trackNumber }.map { it.toTrack() },
     albumYear?.toString()
 )
 
@@ -58,7 +57,7 @@ fun MediaStoreUtils.MPlaylist.toPlaylist() = Playlist(
     true,
     songList.firstOrNull()?.toTrack()?.cover,
     listOf(),
-    songList.map { it.toTrack() },
+    songList.size,
     "Modified " + modifiedDate.toTimeAgo(),
     songList.sumOf { it.mediaMetadata.extras?.getLong("Duration") ?: 0 },
     description

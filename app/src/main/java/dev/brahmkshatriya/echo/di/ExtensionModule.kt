@@ -1,74 +1,84 @@
 package dev.brahmkshatriya.echo.di
 
 import android.app.Application
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.plugger.ApkManifestParser
+import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.FileSystemPluginSource
 import dev.brahmkshatriya.echo.plugger.LocalExtensionRepo
-import dev.brahmkshatriya.echo.plugger.RepoWithPreferences
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
+import dev.brahmkshatriya.echo.plugger.LyricsExtension
+import dev.brahmkshatriya.echo.plugger.LyricsExtensionRepo
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.MusicExtensionRepo
+import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.plugger.TrackerExtensionRepo
+import dev.brahmkshatriya.echo.plugger.parser.ApkFileManifestParser
+import dev.brahmkshatriya.echo.plugger.parser.ApkManifestParser
 import kotlinx.coroutines.flow.MutableStateFlow
 import tel.jeelpa.plugger.PluginRepo
+import tel.jeelpa.plugger.PluginRepoImpl
 import tel.jeelpa.plugger.RepoComposer
-import tel.jeelpa.plugger.models.PluginConfiguration
 import tel.jeelpa.plugger.pluginloader.AndroidPluginLoader
-import tel.jeelpa.plugger.pluginloader.apk.ApkPluginLoader
-import tel.jeelpa.plugger.pluginloader.file.FilePluginConfig
-import tel.jeelpa.plugger.pluginloader.file.FileSystemPluginLoader
+import tel.jeelpa.plugger.pluginloader.apk.ApkPluginSource
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class ExtensionModule {
 
-    @Provides
-    @Singleton
-    fun providesPluginLoader(
-        application: Application
-    ): PluginRepo<ExtensionClient> {
-
-        val loader = AndroidPluginLoader(application)
-        val filePluginConfig = FilePluginConfig(application.filesDir.absolutePath, ".echo")
-        val apkPluginConfig = PluginConfiguration("dev.brahmkshatriya.echo")
-        val repo = RepoComposer(
-            FileSystemPluginLoader(application, filePluginConfig, loader),
-            ApkPluginLoader(application, apkPluginConfig, loader, ApkManifestParser()),
-            LocalExtensionRepo(application)
+    private fun <T> getComposed(
+        context: Context,
+        suffix: String,
+        vararg repo: PluginRepo<ExtensionMetadata, T>
+    ): RepoComposer<ExtensionMetadata, T> {
+        val loader = AndroidPluginLoader<ExtensionMetadata, T>(context)
+        val apkParser = ApkManifestParser()
+        val apkFileParser = ApkFileManifestParser(context.packageManager, apkParser)
+        val apkFilePluginRepo = PluginRepoImpl(
+            FileSystemPluginSource(context.filesDir, ".apk"),
+            apkFileParser,
+            loader,
         )
-        return RepoWithPreferences(application, repo)
+        val apkPluginRepo = PluginRepoImpl(
+            ApkPluginSource(context, "dev.brahmkshatriya.echo.$suffix"),
+            apkParser,
+            loader
+        )
+        return RepoComposer(apkPluginRepo, apkFilePluginRepo, *repo)
     }
 
     @Provides
     @Singleton
-    fun providesExtensionClient() = mutableExtensionFlow
+    fun providesMusicLoader(context: Application) =
+        MusicExtensionRepo(context, getComposed(context, "music", LocalExtensionRepo(context)))
 
     @Provides
     @Singleton
-    fun provideExtensionListFlow() = mutableExtensionListFlow
+    fun providesTrackerLoader(context: Application) =
+        TrackerExtensionRepo(context, getComposed(context, "tracker"))
 
-    // Dagger cannot directly infer Foo<Bar>, if Bar is an interface
-    // That means the Flow<ExtensionClient?> cannot be directly injected,
-    // So, we need to wrap it in a data class and inject that instead
-    data class ExtensionFlow(private val flow: MutableStateFlow<ExtensionClient?>) :
-        Flow<ExtensionClient?> {
-        var value get() = flow.value
-            set(value) { flow.value = value }
+    @Provides
+    @Singleton
+    fun providesLyricsLoader(context: Application) =
+        LyricsExtensionRepo(context, getComposed(context, "lyrics"))
 
-        override suspend fun collect(collector: FlowCollector<ExtensionClient?>) =
-            flow.collect(collector)
 
-    }
+    @Provides
+    @Singleton
+    fun providesCurrentFlow() = MutableStateFlow<MusicExtension?>(null)
 
-    data class ExtensionListFlow(val flow: MutableStateFlow<List<ExtensionClient>?>) {
-        fun getClient(clientId: String): ExtensionClient? =
-            flow.replayCache.firstOrNull()?.find { it.metadata.id == clientId }
+    @Provides
+    @Singleton
+    fun provideMusicListFlow() = MutableStateFlow<List<MusicExtension>?>(null)
 
-    }
+    @Provides
+    @Singleton
+    fun providesLyricsList() = MutableStateFlow<List<LyricsExtension>?>(null)
 
-    private val mutableExtensionFlow = ExtensionFlow(MutableStateFlow(null))
-    private val mutableExtensionListFlow = ExtensionListFlow(MutableStateFlow(null))
+    @Provides
+    @Singleton
+    fun provideTrackerListFlow() = MutableStateFlow<List<TrackerExtension>?>(null)
 }

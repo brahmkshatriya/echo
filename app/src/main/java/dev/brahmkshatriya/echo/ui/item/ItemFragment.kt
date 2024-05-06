@@ -129,8 +129,8 @@ class ItemFragment : Fragment() {
                 override fun onClick(list: List<Track>, position: Int, view: View) {
                     if (mediaContainerAdapter.listener is MediaClickListener) {
                         when (val item = viewModel.itemFlow.value) {
-                            is EchoMediaItem.Lists -> playerVM.play(clientId, item, position)
-                            else -> playerVM.play(clientId, list, position)
+                            is EchoMediaItem.Lists -> playerVM.play(clientId, item, list, position)
+                            else -> playerVM.play(clientId, null, list, position)
                         }
                     } else {
                         val track = list[position]
@@ -159,6 +159,7 @@ class ItemFragment : Fragment() {
             object : PlaylistHeaderAdapter.Listener {
                 override fun onPlayClicked(list: Playlist) =
                     playerVM.play(clientId, list.toMediaItem(), 0)
+
                 override fun onRadioClicked(list: Playlist) = playerVM.radio(clientId, list)
             }
         )
@@ -185,8 +186,9 @@ class ItemFragment : Fragment() {
             }
         }
 
-        collect(viewModel.extensionListFlow.flow) { list ->
-            val client = list?.find { it.metadata.id == clientId }
+        collect(viewModel.extensionListFlow) { list ->
+            val extension = list?.find { it.metadata.id == clientId }
+            val client = extension?.client
 
             mediaContainerAdapter.clientId = clientId
             isRadioClient = client is RadioClient
@@ -200,12 +202,12 @@ class ItemFragment : Fragment() {
             binding.recyclerView.run {
                 val adapter = concatAdapter(item)
                 when (item) {
-                    is UserItem -> applyAdapter<UserClient>(client, R.string.user, adapter)
-                    is ArtistItem -> applyAdapter<ArtistClient>(client, R.string.artist, adapter)
-                    is TrackItem -> applyAdapter<TrackClient>(client, R.string.track, adapter)
-                    is AlbumItem -> applyAdapter<AlbumClient>(client, R.string.album, adapter)
+                    is UserItem -> applyAdapter<UserClient>(extension, R.string.user, adapter)
+                    is ArtistItem -> applyAdapter<ArtistClient>(extension, R.string.artist, adapter)
+                    is TrackItem -> applyAdapter<TrackClient>(extension, R.string.track, adapter)
+                    is AlbumItem -> applyAdapter<AlbumClient>(extension, R.string.album, adapter)
                     is PlaylistItem ->
-                        applyAdapter<PlaylistClient>(client, R.string.playlist, adapter)
+                        applyAdapter<PlaylistClient>(extension, R.string.playlist, adapter)
                 }
             }
         }
@@ -220,12 +222,12 @@ class ItemFragment : Fragment() {
             when (it) {
                 is AlbumItem -> {
                     albumHeaderAdapter.submit(it.album, isRadioClient)
-                    trackAdapter.submitList(it.album.tracks.toList())
+                    viewModel.loadAlbum(it.album)
                 }
 
                 is PlaylistItem -> {
                     playlistHeaderAdapter.submit(it.playlist, isRadioClient)
-                    trackAdapter.submitList(it.playlist.tracks.toList())
+                    viewModel.loadPlaylist(it.playlist)
                 }
 
                 is ArtistItem ->
@@ -237,7 +239,13 @@ class ItemFragment : Fragment() {
             binding.fabContainer.isVisible = if (it is PlaylistItem && it.playlist.isEditable) {
                 binding.fabEditPlaylist.transitionName = "edit${it.playlist.id}"
                 binding.fabEditPlaylist.setOnClickListener { view1 ->
-                    openFragment(EditPlaylistFragment.newInstance(clientId, it.playlist), view1)
+                    openFragment(
+                        EditPlaylistFragment.newInstance(
+                            clientId,
+                            it.playlist,
+                            trackAdapter.snapshot().items
+                        ), view1
+                    )
                 }
                 true
             } else false
@@ -251,6 +259,9 @@ class ItemFragment : Fragment() {
             if (bundle.getString("id") == item.id) parentFragmentManager.popBackStack()
         }
 
+        observe(viewModel.songs) {
+            trackAdapter.submit(it)
+        }
         observe(viewModel.relatedFeed) {
             mediaContainerAdapter.submit(it)
         }

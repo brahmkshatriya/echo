@@ -21,7 +21,7 @@ class SettingsFragment : BaseSettingsFragment() {
     class SettingsPreference : PreferenceFragmentCompat() {
 
         private val extensionViewModel: ExtensionViewModel by activityViewModels()
-        private val extension get() = extensionViewModel.currentExtension?.metadata
+        private val extension get() = extensionViewModel.currentExtension
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
@@ -50,7 +50,7 @@ class SettingsFragment : BaseSettingsFragment() {
                 icon = AppCompatResources.getDrawable(context, R.drawable.ic_queue_music)
             }
 
-            TransitionPreference(context, extension?.id).add {
+            TransitionPreference(context, extension?.metadata?.id).add {
                 title = getString(R.string.extension_settings)
                 key = "extension"
                 summary = getString(R.string.extension_settings_summary)
@@ -80,11 +80,7 @@ class SettingsFragment : BaseSettingsFragment() {
             val fragment = when (preference.key) {
                 "about" -> AboutFragment()
                 "audio" -> AudioFragment()
-                "extension" -> {
-                    val extension = extension ?: return false
-                    ExtensionFragment.newInstance(extension.name, extension.id)
-                }
-
+                "extension" -> ExtensionFragment.newInstance(extension ?: return false)
                 "look" -> LookFragment()
                 else -> return false
             }

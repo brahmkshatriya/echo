@@ -7,14 +7,16 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.dao.UserDao
-import dev.brahmkshatriya.echo.di.ExtensionModule
 import dev.brahmkshatriya.echo.models.CurrentUser
 import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -25,7 +27,7 @@ import javax.inject.Inject
 class LoginUserViewModel @Inject constructor(
     database: EchoDatabase,
     throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionFlow: ExtensionModule.ExtensionFlow,
+    val extensionFlow: MutableStateFlow<MusicExtension?>,
     private val userFlow: MutableSharedFlow<UserEntity?>,
 ) : CatchingViewModel(throwableFlow) {
 
@@ -34,15 +36,15 @@ class LoginUserViewModel @Inject constructor(
     override fun onInitialize() {
         viewModelScope.launch(Dispatchers.IO) {
             userDao.observeCurrentUser().collect { user ->
-                val client = extensionFlow.value ?: return@collect
-                if (client.metadata.id == user?.clientId)
-                    tryWith { setLoginUser(client) }
+                val extension = extensionFlow.value ?: return@collect
+                if (extension.metadata.id == user?.clientId)
+                    setLoginUser(extension.metadata.id, extension.client)
             }
         }
     }
 
-    private suspend fun setLoginUser(client: ExtensionClient?) {
-        setLoginUser(client, userDao, userFlow)
+    private suspend fun setLoginUser(id: String, client: ExtensionClient) {
+        setLoginUser(id, client, userDao, userFlow, throwableFlow)
     }
 
     val currentUser = extensionFlow.combine(userDao.observeCurrentUser()) { client, user ->
@@ -79,19 +81,19 @@ class LoginUserViewModel @Inject constructor(
     }
 
     companion object {
-        suspend fun CatchingViewModel.setLoginUser(
-            client: ExtensionClient?,
+        suspend fun setLoginUser(
+            id: String,
+            client: ExtensionClient,
             userDao: UserDao,
-            flow: MutableSharedFlow<UserEntity?>
-        ) {
-            if (client is LoginClient) {
-                val user = coroutineScope {
-                    withContext(Dispatchers.IO) { userDao.getCurrentUser(client.metadata.id) }
-                }
-                val success =
-                    tryWith { client.onSetLoginUser(user?.toUser()) }
-                if (success != null) flow.emit(user)
+            flow: MutableSharedFlow<UserEntity?>,
+            throwableFlow: MutableSharedFlow<Throwable>,
+        ) = withContext(Dispatchers.IO) {
+            if (client !is LoginClient) return@withContext
+            val user = userDao.getCurrentUser(id)
+            val success = tryWith(throwableFlow) {
+                client.onSetLoginUser(user?.toUser())
             }
+            if (success != null) flow.emit(user)
         }
     }
 }

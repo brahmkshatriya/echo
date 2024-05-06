@@ -17,11 +17,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
-import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
@@ -152,7 +153,7 @@ class SearchFragment : Fragment() {
         val mediaContainerAdapter = MediaContainerAdapter(parent, "search", mediaClickListener)
         val concatAdapter = mediaContainerAdapter.withLoaders()
 
-        fun applyClient(it: ExtensionClient?) {
+        fun applyClient(it: MusicExtension?) {
             binding.swipeRefresh.isEnabled = it != null
             mediaContainerAdapter.clientId = it?.metadata?.id
             binding.recyclerView.applyAdapter<SearchClient>(it, R.string.search, concatAdapter)
@@ -162,7 +163,7 @@ class SearchFragment : Fragment() {
         if (clientId == null) collect(viewModel.extensionFlow) {
             applyClient(it)
         }
-        else collect(viewModel.extensionListFlow.flow) {
+        else collect(viewModel.extensionListFlow) {
             applyClient(viewModel.extensionListFlow.getClient(clientId))
         }
 

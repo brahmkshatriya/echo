@@ -1,9 +1,15 @@
-package dev.brahmkshatriya.echo.common.helpers
+package dev.brahmkshatriya.echo.ui.paging
 
+import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 
 abstract class ErrorPagingSource<Key : Any, Value : Any> : PagingSource<Key, Value>() {
+    fun toFlow() = Pager(
+        config = config,
+        pagingSourceFactory = { this }
+    ).flow
+
     abstract val config: PagingConfig
 
     override suspend fun load(params: LoadParams<Key>): LoadResult<Key, Value> {

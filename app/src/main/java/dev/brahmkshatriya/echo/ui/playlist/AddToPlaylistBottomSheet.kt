@@ -10,39 +10,30 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.DialogAddToPlaylistBinding
 import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.getParcelArray
+import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.observe
 
 @AndroidEntryPoint
 class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
-        fun newInstance(clientId: String, album: Album) = AddToPlaylistBottomSheet().apply {
+        fun newInstance(clientId: String, item: EchoMediaItem) = AddToPlaylistBottomSheet().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
-                putParcelableArray("tracks", album.tracks.toTypedArray())
-            }
-        }
-
-        fun newInstance(clientId: String, track: Track) = AddToPlaylistBottomSheet().apply {
-            arguments = Bundle().apply {
-                putString("clientId", clientId)
-                putParcelableArray("tracks", arrayOf(track))
+                putParcelable("item", item)
             }
         }
     }
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val tracks: List<Track> by lazy { args.getParcelArray("tracks")!! }
+    private val item: EchoMediaItem by lazy { args.getParcel("item")!! }
 
     var binding by autoCleared<DialogAddToPlaylistBinding>()
     val viewModel by viewModels<AddToPlaylistViewModel>()
@@ -61,7 +52,7 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
             binding.loading.root.isVisible = true
             binding.loading.textView.text = getString(R.string.saving)
             binding.nestedScrollView.isVisible = false
-            viewModel.addToPlaylists(tracks)
+            viewModel.addToPlaylists()
         }
 
         val adapter = MediaItemSelectableAdapter { _, item ->
@@ -88,6 +79,7 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         (binding.recyclerView.layoutManager as GridLayoutManager).spanCount =
             mediaItemSpanCount(requireContext())
         viewModel.clientId = clientId
+        viewModel.item = item
         viewModel.onInitialize()
     }
 }

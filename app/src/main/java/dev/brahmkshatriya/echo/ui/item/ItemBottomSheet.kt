@@ -23,6 +23,7 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media.Companion.bind
@@ -55,7 +56,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val client by lazy { playerViewModel.extensionListFlow.getClient(clientId) }
+    private val client by lazy { playerViewModel.extensionListFlow.getClient(clientId)?.client }
 
     @Suppress("DEPRECATION")
     private val item by lazy {
@@ -129,7 +130,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                             ItemAction.Resource(
                                 R.drawable.ic_bookmark_outline, R.string.save_to_playlist
                             ) {
-                                AddToPlaylistBottomSheet.newInstance(clientId, item.album)
+                                AddToPlaylistBottomSheet.newInstance(clientId, item)
                                     .show(parentFragmentManager, null)
                             }
                         else null,
@@ -150,6 +151,14 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         if (client is RadioClient)
                             ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
                                 playerViewModel.radio(clientId, item.playlist)
+                            }
+                        else null,
+                        if (client is LibraryClient)
+                            ItemAction.Resource(
+                                R.drawable.ic_bookmark_outline, R.string.save_to_playlist
+                            ) {
+                                AddToPlaylistBottomSheet.newInstance(clientId, item)
+                                    .show(parentFragmentManager, null)
                             }
                         else null,
                         if (client is LibraryClient && item.playlist.isEditable)
@@ -175,10 +184,10 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 else null,
                 if (client is ArtistFollowClient)
                     if (!item.artist.isFollowing)
-                        ItemAction.Resource(R.drawable.ic_heart_outline_40dp, R.string.follow) {
+                        ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
                             createSnack("Not implemented")
                         }
-                    else ItemAction.Resource(R.drawable.ic_heart_filled_40dp, R.string.unfollow) {
+                    else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unfollow) {
                         createSnack("Not implemented")
                     }
                 else null
@@ -199,7 +208,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 },
                 if (client is LibraryClient)
                     ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.save_to_playlist) {
-                        AddToPlaylistBottomSheet.newInstance(clientId, item.track)
+                        AddToPlaylistBottomSheet.newInstance(clientId, item)
                             .show(parentFragmentManager, null)
                     }
                 else null,

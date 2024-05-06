@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.common.clients
 
 interface ArtistFollowClient {
-    fun followArtist(artist: ArtistClient)
-    fun unfollowArtist(artist: ArtistClient)
+    suspend fun followArtist(artist: ArtistClient) : Boolean
+    suspend fun unfollowArtist(artist: ArtistClient) : Boolean
 }

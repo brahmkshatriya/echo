@@ -12,11 +12,14 @@ import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
-import dev.brahmkshatriya.echo.di.ExtensionModule
+import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -30,7 +33,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ItemViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionListFlow: ExtensionModule.ExtensionListFlow,
+    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     private val context: Application
 ) : CatchingViewModel(throwableFlow) {
@@ -86,7 +89,7 @@ class ItemViewModel @Inject constructor(
             val loaded = loadItem(item)
             viewModelScope.launch {
                 tryWith {
-                    loadRelated(loaded).map { it }
+                    loadRelated(loaded).toFlow().map { it }
                 }?.collectTo(relatedFeed)
             }
             loaded
@@ -109,5 +112,22 @@ class ItemViewModel @Inject constructor(
 
     fun deletePlaylist(clientId: String, playlist: Playlist) = viewModelScope.launch {
         deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
+    }
+
+    val songs = MutableStateFlow<PagingData<Track>?>(null)
+    fun loadAlbum(album: Album) {
+        val client = client
+        if (client !is AlbumClient) return
+        viewModelScope.launch {
+            tryWith { client.loadTracks(album).toFlow().collectTo(songs) }
+        }
+    }
+
+    fun loadPlaylist(playlist: Playlist) {
+        val client = client
+        if (client !is PlaylistClient) return
+        viewModelScope.launch {
+            tryWith { client.loadTracks(playlist).toFlow().collectTo(songs) }
+        }
     }
 }

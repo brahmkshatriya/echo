@@ -33,7 +33,7 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation("com.github.brahmkshatriya:plugger:1.0.1")
+    implementation("com.github.JeelPatel231:plugger:structure-overhaul-SNAPSHOT")
 
     implementation("androidx.appcompat:appcompat:1.6.1")
 
@@ -41,7 +41,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
-    implementation("androidx.fragment:fragment-ktx:1.7.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.paging:paging-common-ktx:3.2.1")
     implementation("androidx.paging:paging-runtime-ktx:3.2.1")

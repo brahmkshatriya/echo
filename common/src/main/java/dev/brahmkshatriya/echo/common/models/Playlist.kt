@@ -10,7 +10,7 @@ data class Playlist(
     val isEditable: Boolean,
     val cover: ImageHolder? = null,
     val authors: List<User> = listOf(),
-    val tracks: List<Track> = listOf(),
+    val tracks: Int? = null,
     val creationDate: String? = null,
     val duration: Long? = null,
     val description: String? = null,

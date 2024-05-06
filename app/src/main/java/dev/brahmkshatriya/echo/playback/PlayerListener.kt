@@ -9,13 +9,16 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.first
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.di.ExtensionModule
-import dev.brahmkshatriya.echo.di.TrackerModule
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
@@ -25,13 +28,14 @@ import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class PlayerListener(
     private val context: Context,
-    private val extensionListFlow: ExtensionModule.ExtensionListFlow,
-    private val trackerListFlow: TrackerModule.TrackerListFlow,
+    private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+    private val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     private val global: Queue,
     private val settings: SharedPreferences,
     private val throwableFlow: MutableSharedFlow<Throwable>,
@@ -113,8 +117,14 @@ class PlayerListener(
             val autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
             if (autoStartRadio) global.current?.let {
                 scope.launch(Dispatchers.IO) {
-                    val client = extensionListFlow.getClient(it.clientId)
-                    radio(client) { radio(it.loaded ?: it.onLoad.first()) }
+                    val extension = extensionListFlow.getClient(it.clientId)
+                    radio(extension) {
+                        when (val item = it.context) {
+                            is EchoMediaItem.Lists.PlaylistItem -> radio(item.playlist)
+                            is EchoMediaItem.Lists.AlbumItem -> radio(item.album)
+                            else -> radio(it.loaded ?: it.onLoad.first())
+                        }
+                    }
                 }
             }
         }
@@ -134,17 +144,23 @@ class PlayerListener(
 
     private fun trackMedia(
         mediaId: String?,
-        block: suspend TrackerClient.(clientId: String, track: Track) -> Unit
+        block: suspend TrackerClient.(clientId: String, context: EchoMediaItem?, track: Track) -> Unit
     ) {
         val streamableTrack = global.getTrack(mediaId) ?: return
-        val client = extensionListFlow.getClient(streamableTrack.clientId) ?: return
+        val client = extensionListFlow.getClient(streamableTrack.clientId)?.client ?: return
         val track = streamableTrack.loaded ?: streamableTrack.unloaded
-        val clientId = client.metadata.id
-        val trackers = trackerListFlow.list ?: emptyList()
+        val clientId = streamableTrack.clientId
+        val trackers = trackerListFlow.value ?: emptyList()
         scope.launch(Dispatchers.IO) {
-            if (client is TrackerClient) tryWith { client.block(clientId, track) }
+            if (client is TrackerClient) tryWith {
+                client.block(clientId, streamableTrack.context, track)
+            }
             trackers.map {
-                launch { tryWith { it.block(clientId, track) } }
+                launch {
+                    tryWith {
+                        it.client.block(clientId, streamableTrack.context, track)
+                    }
+                }
             }
         }
     }
@@ -152,22 +168,22 @@ class PlayerListener(
     private var currentlyPlaying: String? = null
     private fun startedPlaying(mediaId: String?) {
         currentlyPlaying = mediaId
-        trackMedia(mediaId) { clientId, loaded ->
-            onStartedPlaying(clientId, loaded)
+        trackMedia(mediaId) { clientId, context, loaded ->
+            onStartedPlaying(clientId, context, loaded)
         }
     }
 
     private fun markedAsPlayed() {
         val mediaId = currentlyPlaying
-        trackMedia(mediaId) { clientId, loaded ->
-            onMarkAsPlayed(clientId, loaded)
+        trackMedia(mediaId) { clientId, context, loaded ->
+            onMarkAsPlayed(clientId, context, loaded)
         }
     }
 
     private fun stoppedPlaying() {
         val mediaId = currentlyPlaying
-        trackMedia(mediaId) { clientId, loaded ->
-            onStoppedPlaying(clientId, loaded)
+        trackMedia(mediaId) { clientId, context, loaded ->
+            onStoppedPlaying(clientId, context, loaded)
         }
     }
 
@@ -221,21 +237,29 @@ class PlayerListener(
         viewModel?.createException(error)
     }
 
+    //TODO Continuous Playlist
     suspend fun radio(
-        client: ExtensionClient?,
+        extension: MusicExtension?,
         block: suspend RadioClient.() -> Playlist
-    ) = when (client) {
+    ) = when (val client = extension?.client) {
         null -> {
             messageFlow.emit(context.noClient()); null
         }
 
         !is RadioClient -> {
-            messageFlow.emit(context.radioNotSupported(client.metadata.name)); null
+            messageFlow.emit(context.radioNotSupported(extension.metadata.name)); null
         }
 
         else -> {
-            val tracks = tryWith { block(client) }?.tracks
-            tracks?.let { global.addTracks(client.metadata.id, it.toList()).first }
+            val playlist = tryWith { block(client) }
+            val tracks = playlist?.let { tryWith { client.loadTracks(it).first() } }
+            tracks?.let {
+                global.addTracks(
+                    extension.metadata.id,
+                    playlist.toMediaItem(),
+                    it
+                ).first
+            }
         }
     }
 
