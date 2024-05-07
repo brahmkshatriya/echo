@@ -21,7 +21,7 @@ class TrackAdapter(
 
     object DiffCallback : DiffUtil.ItemCallback<Track>() {
         override fun areItemsTheSame(oldItem: Track, newItem: Track) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Track, newItem: Track) = oldItem == newItem
+        override fun areContentsTheSame(oldItem: Track, newItem: Track) = false
     }
 
     interface Listener {

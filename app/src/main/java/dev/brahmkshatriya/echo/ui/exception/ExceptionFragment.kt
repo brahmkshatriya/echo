@@ -95,7 +95,7 @@ Stream : ${throwable.streamableTrack.toString()}
 ${throwable.cause.stackTraceToString()}
 """.trimIndent()
 
-            is ExceptionActivity.AppCrashException -> throwable.cause.stackTraceToString()
+            is ExceptionActivity.AppCrashException -> throwable.causedBy.stackTraceToString()
             else -> throwable.stackTraceToString()
         }
 

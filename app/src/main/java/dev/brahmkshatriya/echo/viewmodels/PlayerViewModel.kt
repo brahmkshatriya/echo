@@ -11,7 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.first
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -100,13 +99,13 @@ class PlayerViewModel @Inject constructor(
                 ?: return@withContext null
             when (lists) {
                 is EchoMediaItem.Lists.AlbumItem -> {
-                    if (client is AlbumClient) tryWith { client.loadTracks(lists.album).first() }
+                    if (client is AlbumClient) tryWith { client.loadTracks(lists.album).loadFirst() }
                     else null
                 }
 
                 is EchoMediaItem.Lists.PlaylistItem -> {
                     if (client is PlaylistClient) tryWith {
-                        client.loadTracks(lists.playlist).first()
+                        client.loadTracks(lists.playlist).loadFirst()
                     }
                     else null
                 }

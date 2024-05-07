@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Category
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Container
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media
 import dev.brahmkshatriya.echo.ui.playlist.SearchForPlaylistClickListener
+import dev.brahmkshatriya.echo.ui.playlist.SearchForPlaylistFragment
 import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
@@ -35,7 +36,10 @@ class MediaContainerAdapter(
         fun getListener(fragment: Fragment): Listener {
             val type = fragment.arguments?.getString("itemListener")
             return when (type) {
-                "search" -> SearchForPlaylistClickListener(fragment.childFragmentManager)
+                "search" -> SearchForPlaylistClickListener(
+                    if(fragment is SearchForPlaylistFragment) fragment.childFragmentManager
+                    else fragment.parentFragmentManager
+                )
                 else -> MediaClickListener(fragment.parentFragmentManager)
             }
         }

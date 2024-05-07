@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.item
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,11 +11,13 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
+import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -28,8 +29,6 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
@@ -43,10 +42,10 @@ import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
-import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
@@ -55,6 +54,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCa
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ItemFragment : Fragment() {
@@ -70,13 +70,7 @@ class ItemFragment : Fragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-
-    @Suppress("DEPRECATION")
-    private val item by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            args.getParcelable("item", EchoMediaItem::class.java)!!
-        else args.getParcelable("item")!!
-    }
+    private val item by lazy { args.getParcel<EchoMediaItem>("item")!! }
 
     private var binding by autoCleared<FragmentItemBinding>()
     private val viewModel by viewModels<ItemViewModel>()
@@ -119,16 +113,17 @@ class ItemFragment : Fragment() {
         }
 
         var isRadioClient = false
-        var isUserClient = false
+        var isFollowClient = false
 
-        val mediaContainerAdapter = MediaContainerAdapter(this, view.transitionName)
+        val mediaContainerAdapter =
+            MediaContainerAdapter(this, view.transitionName)
 
         val trackAdapter = TrackAdapter(
             view.transitionName,
             object : TrackAdapter.Listener {
                 override fun onClick(list: List<Track>, position: Int, view: View) {
                     if (mediaContainerAdapter.listener is MediaClickListener) {
-                        when (val item = viewModel.itemFlow.value) {
+                        when (val item = viewModel.loaded) {
                             is EchoMediaItem.Lists -> playerVM.play(clientId, item, list, position)
                             else -> playerVM.play(clientId, null, list, position)
                         }
@@ -186,37 +181,37 @@ class ItemFragment : Fragment() {
             }
         }
 
-        collect(viewModel.extensionListFlow) { list ->
-            val extension = list?.find { it.metadata.id == clientId }
-            val client = extension?.client
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.load()
+        }
 
-            mediaContainerAdapter.clientId = clientId
-            isRadioClient = client is RadioClient
-            isUserClient = client is UserClient
-
-            val item = item
-            viewModel.item = item
-            viewModel.client = client
-            viewModel.initialize()
-
-            binding.recyclerView.run {
-                val adapter = concatAdapter(item)
-                when (item) {
-                    is UserItem -> applyAdapter<UserClient>(extension, R.string.user, adapter)
-                    is ArtistItem -> applyAdapter<ArtistClient>(extension, R.string.artist, adapter)
-                    is TrackItem -> applyAdapter<TrackClient>(extension, R.string.track, adapter)
-                    is AlbumItem -> applyAdapter<AlbumClient>(extension, R.string.album, adapter)
-                    is PlaylistItem ->
-                        applyAdapter<PlaylistClient>(extension, R.string.playlist, adapter)
-                }
+        collect(lifecycle.currentStateFlow){
+            println("state change $it")
+        }
+        viewModel.songsLiveData.observe(viewLifecycleOwner) { songs ->
+            lifecycleScope.launch {
+                println("what? why?")
+                trackAdapter.submit(songs)
             }
         }
 
-        binding.swipeRefresh.setOnRefreshListener { viewModel.load() }
+        parentFragmentManager.setFragmentResultListener("reload", this) { _, bundle ->
+            if (bundle.getString("id") == item.id) viewModel.load()
+        }
 
-        observe(viewModel.itemFlow) {
-            it ?: return@observe
-            binding.swipeRefresh.isRefreshing = false
+        parentFragmentManager.setFragmentResultListener("deleted", this) { _, bundle ->
+            if (bundle.getString("id") == item.id) parentFragmentManager.popBackStack()
+        }
+
+
+        collect(viewModel.relatedFeed) {
+            mediaContainerAdapter.submit(it)
+        }
+
+        collect(viewModel.itemFlow) {
+            println("got $it")
+            binding.swipeRefresh.isRefreshing = it == null
+            it ?: return@collect
             binding.toolBar.title = it.title.trim()
             it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
             when (it) {
@@ -231,7 +226,7 @@ class ItemFragment : Fragment() {
                 }
 
                 is ArtistItem ->
-                    artistHeaderAdapter.submit(it.artist, isUserClient, isRadioClient)
+                    artistHeaderAdapter.submit(it.artist, isFollowClient, isRadioClient)
 
                 else -> Unit
             }
@@ -240,30 +235,49 @@ class ItemFragment : Fragment() {
                 binding.fabEditPlaylist.transitionName = "edit${it.playlist.id}"
                 binding.fabEditPlaylist.setOnClickListener { view1 ->
                     openFragment(
-                        EditPlaylistFragment.newInstance(
-                            clientId,
-                            it.playlist,
-                            trackAdapter.snapshot().items
-                        ), view1
+                        EditPlaylistFragment.newInstance(clientId, it.playlist), view1
                     )
                 }
                 true
             } else false
         }
 
-        parentFragmentManager.setFragmentResultListener("reload", this) { _, bundle ->
-            if (bundle.getString("id") == item.id) viewModel.load()
+
+        collect(viewModel.extensionListFlow) { list ->
+            val extension = list?.find { it.metadata.id == clientId }
+            val client = extension?.client
+
+            mediaContainerAdapter.clientId = clientId
+            isRadioClient = client is RadioClient
+            isFollowClient = client is ArtistFollowClient
+
+            val item = item
+            viewModel.item = item
+            viewModel.client = client
+            viewModel.initialize()
+
+            binding.recyclerView.run {
+                val adapter = concatAdapter(item)
+                when (item) {
+                    is EchoMediaItem.Profile.UserItem -> applyAdapter<UserClient>(
+                        extension,
+                        R.string.user,
+                        adapter
+                    )
+
+                    is ArtistItem -> applyAdapter<ArtistClient>(extension, R.string.artist, adapter)
+                    is EchoMediaItem.TrackItem -> applyAdapter<TrackClient>(
+                        extension,
+                        R.string.track,
+                        adapter
+                    )
+
+                    is AlbumItem -> applyAdapter<AlbumClient>(extension, R.string.album, adapter)
+                    is PlaylistItem ->
+                        applyAdapter<PlaylistClient>(extension, R.string.playlist, adapter)
+                }
+            }
         }
 
-        parentFragmentManager.setFragmentResultListener("deleted", this) { _, bundle ->
-            if (bundle.getString("id") == item.id) parentFragmentManager.popBackStack()
-        }
-
-        observe(viewModel.songs) {
-            trackAdapter.submit(it)
-        }
-        observe(viewModel.relatedFeed) {
-            mediaContainerAdapter.submit(it)
-        }
     }
 }

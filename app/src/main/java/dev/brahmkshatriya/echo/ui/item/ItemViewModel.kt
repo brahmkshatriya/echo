@@ -1,6 +1,9 @@
 package dev.brahmkshatriya.echo.ui.item
 
 import android.app.Application
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,16 +42,17 @@ class ItemViewModel @Inject constructor(
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
+    var loaded: EchoMediaItem? = null
     var client: ExtensionClient? = null
-    val itemFlow = MutableStateFlow<EchoMediaItem?>(null)
+    val itemFlow = MutableSharedFlow<EchoMediaItem?>()
     val relatedFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
 
     fun load() {
-        viewModelScope.launch {
-            tryWith {
-                val item = item ?: return@tryWith
-                println("loading item ${item.title}")
-                val mediaItem = when (item) {
+        viewModelScope.launch(Dispatchers.IO) {
+            loaded = null
+            itemFlow.emit(null)
+            val mediaItem = tryWith {
+                when (val item = item!!) {
                     is EchoMediaItem.Lists.AlbumItem -> getClient<AlbumClient>(client) {
                         load(item.album, ::loadAlbum, ::getMediaItems)?.toMediaItem()
                     }
@@ -69,8 +73,9 @@ class ItemViewModel @Inject constructor(
                         load(item.track, ::loadTrack, ::getMediaItems)?.toMediaItem()
                     }
                 }
-                mediaItem?.let { itemFlow.value = it }
             }
+            loaded = mediaItem
+            itemFlow.emit(mediaItem)
         }
     }
 
@@ -114,20 +119,28 @@ class ItemViewModel @Inject constructor(
         deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
     }
 
-    val songs = MutableStateFlow<PagingData<Track>?>(null)
+    private val songsFlow = MutableStateFlow<PagingData<Track>?>(null)
+    val songsLiveData: LiveData<PagingData<Track>?> = liveData {
+        emitSource(songsFlow.asLiveData())
+    }
+
     fun loadAlbum(album: Album) {
         val client = client
         if (client !is AlbumClient) return
-        viewModelScope.launch {
-            tryWith { client.loadTracks(album).toFlow().collectTo(songs) }
+        viewModelScope.launch(Dispatchers.IO) {
+            songsFlow.value = null
+            val tracks = tryWith { client.loadTracks(album) }
+            tracks?.toFlow()?.collectTo(songsFlow)
         }
     }
 
     fun loadPlaylist(playlist: Playlist) {
         val client = client
         if (client !is PlaylistClient) return
-        viewModelScope.launch {
-            tryWith { client.loadTracks(playlist).toFlow().collectTo(songs) }
+        viewModelScope.launch(Dispatchers.IO) {
+            songsFlow.value = null
+            val tracks = tryWith { client.loadTracks(playlist) }
+            tracks?.toFlow()?.collectTo(songsFlow)
         }
     }
 }

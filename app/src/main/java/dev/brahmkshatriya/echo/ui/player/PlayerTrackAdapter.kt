@@ -39,6 +39,7 @@ import dev.brahmkshatriya.echo.plugger.getClient
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
+import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
@@ -291,8 +292,9 @@ class PlayerTrackAdapter(
         track?.cover.loadWith(bgImage, oldTrack?.cover) {
             collapsedContainer.collapsedTrackCover.load(it)
             expandedTrackCover.load(it)
+            val radius = 200.dpToPx(bgImage.context).toFloat()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) bgImage.setRenderEffect(
-                RenderEffect.createBlurEffect(400f, 400.0f, Shader.TileMode.MIRROR)
+                RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.MIRROR)
             ) else bgImage.load(it, 16)
         }
 

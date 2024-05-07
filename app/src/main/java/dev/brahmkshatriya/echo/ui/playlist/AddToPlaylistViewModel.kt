@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.all
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
@@ -38,9 +37,9 @@ class AddToPlaylistViewModel @Inject constructor(
             tryWith {
                 when (val mediaItem = item) {
                     is EchoMediaItem.Lists.AlbumItem ->
-                        tracks.addAll(client.loadTracks(mediaItem.album).all())
+                        tracks.addAll(client.loadTracks(mediaItem.album).loadAll())
                     is EchoMediaItem.Lists.PlaylistItem ->
-                        tracks.addAll(client.loadTracks(mediaItem.playlist).all())
+                        tracks.addAll(client.loadTracks(mediaItem.playlist).loadAll())
                     is EchoMediaItem.TrackItem -> tracks.add(mediaItem.track)
                     else -> throw IllegalStateException()
                 }

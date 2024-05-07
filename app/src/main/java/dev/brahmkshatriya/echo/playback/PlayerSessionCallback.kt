@@ -22,7 +22,6 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.first
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.plugger.MusicExtension
@@ -180,7 +179,7 @@ class PlayerSessionCallback(
             return default { trackNotSupported(extension.metadata.id).message }
         return scope.future {
             val itemsContainers = runCatching {
-                client.searchFeed(query, null).first()
+                client.searchFeed(query, null).loadFirst()
             }.getOrElse {
                 default { it.message ?: "Unknown Error" }
                 listOf()

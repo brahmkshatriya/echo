@@ -14,7 +14,15 @@ interface LibraryClient : PlaylistClient, AlbumClient {
     suspend fun createPlaylist(title: String, description: String?): Playlist
     suspend fun deletePlaylist(playlist: Playlist)
     suspend fun editPlaylistMetadata(playlist: Playlist, title: String, description: String?)
-    suspend fun addTracksToPlaylist(playlist: Playlist, index: Int?, tracks: List<Track>)
-    suspend fun removeTracksFromPlaylist(playlist: Playlist, indexes: List<Int>)
-    suspend fun moveTrackInPlaylist(playlist: Playlist, fromIndex: Int, toIndex: Int)
+    suspend fun addTracksToPlaylist(
+        playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>
+    )
+
+    suspend fun removeTracksFromPlaylist(
+        playlist: Playlist, tracks: List<Track>, indexes: List<Int>
+    )
+
+    suspend fun moveTrackInPlaylist(
+        playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int
+    )
 }

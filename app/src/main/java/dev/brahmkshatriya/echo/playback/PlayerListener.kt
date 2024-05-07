@@ -11,7 +11,6 @@ import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.first
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -252,7 +251,7 @@ class PlayerListener(
 
         else -> {
             val playlist = tryWith { block(client) }
-            val tracks = playlist?.let { tryWith { client.loadTracks(it).first() } }
+            val tracks = playlist?.let { tryWith { client.loadTracks(it).loadFirst() } }
             tracks?.let {
                 global.addTracks(
                     extension.metadata.id,

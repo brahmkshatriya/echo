@@ -14,7 +14,6 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.all
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -209,7 +208,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     }
 
     override suspend fun radio(track: Track): Playlist {
-        val albumTracks = track.album?.let { loadTracks(loadAlbum(it)).all() }
+        val albumTracks = track.album?.let { loadTracks(loadAlbum(it)).loadAll() }
         val artistTracks = track.artists.map { artist ->
             find(artist)?.songList ?: emptyList()
         }.flatten().map { it.toTrack() }
@@ -223,7 +222,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     }
 
     override suspend fun radio(album: Album): Playlist {
-        val tracks = loadTracks(album).all().asSequence()
+        val tracks = loadTracks(album).loadAll().asSequence()
             .map { it.artists }.flatten()
             .map { artist -> find(artist)?.songList?.map { it.toTrack() }!! }.flatten()
             .filter { it.album?.id != album.id }.take(25)
@@ -243,7 +242,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     }
 
     override suspend fun radio(playlist: Playlist): Playlist {
-        val tracks = loadTracks(playlist).all()
+        val tracks = loadTracks(playlist).loadAll()
         val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
         val allTracks = (tracks + randomTracks).distinctBy { it.id }.toMutableList()
         allTracks.shuffle()
@@ -352,30 +351,30 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         context.editPlaylist(playlist.id.toLong(), title)
     }
 
-    override suspend fun addTracksToPlaylist(playlist: Playlist, index: Int?, tracks: List<Track>) {
-        tracks.forEach {
-            context.addSongToPlaylist(
-                playlist.id.toLong(),
-                it.id.toLong(),
-                index ?: playlist.tracks ?: 0
-            )
+    override suspend fun addTracksToPlaylist(
+        playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>
+    ) {
+        new.forEach {
+            context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong(), index)
         }
     }
 
-    override suspend fun removeTracksFromPlaylist(playlist: Playlist, indexes: List<Int>) {
+    override suspend fun removeTracksFromPlaylist(
+        playlist: Playlist, tracks: List<Track>, indexes: List<Int>
+    ) {
         indexes.forEach { index ->
             context.removeSongFromPlaylist(playlist.id.toLong(), index)
         }
     }
 
     override suspend fun moveTrackInPlaylist(
-        playlist: Playlist, fromIndex: Int, toIndex: Int
+        playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int
     ) {
         context.moveSongInPlaylist(playlist.id.toLong(), fromIndex, toIndex)
     }
 
-    override suspend fun onEnterPlaylistEditor(playlist: Playlist) {}
-    override suspend fun onExitPlaylistEditor(playlist: Playlist) {
+    override suspend fun onEnterPlaylistEditor(playlist: Playlist, tracks: List<Track>) {}
+    override suspend fun onExitPlaylistEditor(playlist: Playlist, tracks: List<Track>) {
         library = MediaStoreUtils.getAllSongs(context)
     }
 }

@@ -41,15 +41,13 @@ class EditPlaylistFragment : Fragment() {
     companion object {
         fun newInstance(
             client: String,
-            playlist: Playlist,
-            tracks: List<Track>
+            playlist: Playlist
         ): EditPlaylistFragment {
             check(playlist.isEditable)
             return EditPlaylistFragment().apply {
                 arguments = Bundle().apply {
                     putString("clientId", client)
                     putParcelable("playlist", playlist)
-                    putParcelableArray("tracks", tracks.toTypedArray())
                 }
             }
         }
@@ -58,8 +56,6 @@ class EditPlaylistFragment : Fragment() {
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
     private val playlist by lazy { args.getParcel<Playlist>("playlist")!! }
-    private val tracks by lazy { args.getParcelArray<Track>("tracks")!! }
-
     var binding by autoCleared<FragmentEditPlaylistBinding>()
     val viewModel by activityViewModels<EditPlaylistViewModel>()
 
@@ -75,7 +71,7 @@ class EditPlaylistFragment : Fragment() {
         applyInsets {
             binding.toolbarIconContainer.updatePadding(top = it.top)
             binding.recyclerView.updatePaddingRelative(
-                top = 0,
+                top = 16.dpToPx(requireContext()),
                 bottom = it.bottom + 96.dpToPx(requireContext()),
                 start = it.start,
                 end = it.end
@@ -85,41 +81,47 @@ class EditPlaylistFragment : Fragment() {
 
         val backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (viewModel.closing.value == true) return
-                viewModel.closing.value = true
-                viewModel.onEditorExit(clientId, playlist) { action ->
-                    println("action : $action")
-                    binding.loading.textView.text = when (action) {
-                        is Add -> getString(
-                            R.string.adding_tracks,
-                            action.items.joinToString(", ") { it.title }
-                        )
-
-                        is Move -> getString(
-                            R.string.moving_track, action.to.toString()
-                        )
-
-                        is Remove -> getString(
-                            R.string.removing_track,
-                            action.indexes.toString()
-                        )
-
-                        else -> getString(R.string.saving)
-                    }
-                }
-                viewModel.closing.value = false
+                viewModel.onEditorExit(clientId, playlist)
             }
         }
-        observe(viewModel.closing) {
-            when (it) {
-                true -> {
-                    binding.recyclerView.isVisible = false
-                    binding.loading.root.isVisible = true
-                }
 
-                false -> parentFragmentManager.popBackStack()
-                else -> {}
+        fun onLoadChange(it: Boolean?) = when (it) {
+            true -> {
+                binding.loading.root.isVisible = true
+                binding.recyclerView.isVisible = false
+                binding.fabContainer.isVisible = false
             }
+
+            false -> parentFragmentManager.popBackStack()
+            else -> {
+                binding.loading.root.isVisible = false
+                binding.recyclerView.isVisible = true
+                binding.fabContainer.isVisible = true
+            }
+        }
+        observe(viewModel.loadingFlow) { onLoadChange(it) }
+        onLoadChange(viewModel.loading)
+
+        observe(viewModel.performedActions) { (tracks, action) ->
+            println("action : $action")
+            binding.loading.textView.text = when (action) {
+                is Add -> getString(
+                    R.string.adding_tracks,
+                    action.items.joinToString(", ") { it.title }
+                )
+
+                is Move -> getString(
+                    R.string.moving_track, tracks[action.to].title
+                )
+
+                is Remove -> getString(
+                    R.string.removing_track,
+                    action.indexes.joinToString(", ") { tracks[it].title }
+                )
+
+                else -> getString(R.string.saving)
+            }
+
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
@@ -142,7 +144,7 @@ class EditPlaylistFragment : Fragment() {
             viewLifecycleOwner
         ) { _, bundle ->
             val tracks = bundle.getParcelArray<Track>("tracks")!!.toMutableList()
-            viewModel.edit(Add(playlist.tracks?.minus(1) ?: 0, tracks))
+            viewModel.edit(Add(viewModel.currentTracks.value?.size ?: 0, tracks))
             backCallback.isEnabled = true
         }
 
@@ -158,18 +160,9 @@ class EditPlaylistFragment : Fragment() {
             }
         })
         observe(viewModel.extensionListFlow) {
-            viewModel.currentTracks.apply {
-                if (value == null) {
-                    value = tracks
-                    viewModel.onEditorEnter(clientId, playlist)
-                }
-            }
-
+            viewModel.load(clientId, playlist)
             val client = viewModel.extensionListFlow.getClient(clientId)?.client
             header.showCover(client is EditPlaylistCoverClient)
-
-            binding.loading.root.isVisible = false
-            binding.recyclerView.isVisible = true
         }
 
         binding.toolbar.setOnMenuItemClickListener {
@@ -240,7 +233,6 @@ class EditPlaylistFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.currentTracks.value = null
         parentFragmentManager.setFragmentResult("reload", Bundle().apply {
             putString("id", playlist.id)
         })

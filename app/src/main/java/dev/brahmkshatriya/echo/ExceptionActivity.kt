@@ -51,5 +51,5 @@ class ExceptionActivity : AppCompatActivity() {
         }
     }
 
-    class AppCrashException(override val cause: Throwable) : Exception()
+    class AppCrashException(val causedBy: Throwable) : Exception()
 }

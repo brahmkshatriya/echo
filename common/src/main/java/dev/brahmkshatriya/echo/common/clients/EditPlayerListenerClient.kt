@@ -1,8 +1,9 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Track
 
 interface EditPlayerListenerClient {
-    suspend fun onEnterPlaylistEditor(playlist: Playlist)
-    suspend fun onExitPlaylistEditor(playlist: Playlist)
+    suspend fun onEnterPlaylistEditor(playlist: Playlist, tracks: List<Track>)
+    suspend fun onExitPlaylistEditor(playlist: Playlist, tracks: List<Track>)
 }

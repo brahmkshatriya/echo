@@ -6,6 +6,7 @@ import dev.brahmkshatriya.echo.common.helpers.Page
 
 class ContinuationSource<C : Any, P : Any>(
     private val load: suspend (token: P?) -> Page<C, P?>,
+    private val invalidate: (token: P?) -> Unit
 ) : ErrorPagingSource<P, C>() {
 
     override val config = PagingConfig(pageSize = 10, enablePlaceholders = false)
@@ -19,9 +20,10 @@ class ContinuationSource<C : Any, P : Any>(
         )
     }
 
-    override fun getRefreshKey(state: PagingState<P, C>): P? {
-        return state.anchorPosition?.let { anchorPosition ->
-            state.closestPageToPosition(anchorPosition)?.nextKey
+    override fun getRefreshKey(state: PagingState<P, C>) = state.anchorPosition?.let { position ->
+        state.closestPageToPosition(position)?.nextKey?.let { key ->
+            invalidate(key)
+            key
         }
     }
 }
