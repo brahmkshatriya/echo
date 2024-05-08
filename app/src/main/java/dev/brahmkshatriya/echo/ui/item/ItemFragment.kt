@@ -37,7 +37,7 @@ import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistFragment
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect

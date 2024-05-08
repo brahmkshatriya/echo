@@ -11,7 +11,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
@@ -34,7 +34,7 @@ class TrackResolver(
             val track = global.getTrack(id)
                 ?: throw Exception(context.getString(R.string.track_not_found))
 
-            val extension = extensionListFlow.getClient(track.clientId)
+            val extension = extensionListFlow.getExtension(track.clientId)
             val client = extension?.client
                 ?: throw Exception(context.noClient().message)
 

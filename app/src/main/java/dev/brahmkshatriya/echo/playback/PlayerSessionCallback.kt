@@ -25,7 +25,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -33,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.withContext
 
@@ -75,12 +76,13 @@ class PlayerSessionCallback(
             repeatOffCommand -> setRepeat(player, Player.REPEAT_MODE_OFF)
             repeatOneCommand -> setRepeat(player, Player.REPEAT_MODE_ONE)
             repeatCommand -> setRepeat(player, Player.REPEAT_MODE_ALL)
-            recoverQueue -> {
+            recoverQueue -> scope.future {
+                extensionListFlow.first { it != null }
                 global.recoverPlaylist(context).apply {
                     player.setMediaItems(mediaItems, startIndex, startPositionMs)
                     player.prepare()
                 }
-                Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
+                SessionResult(RESULT_SUCCESS)
             }
 
             else -> super.onCustomCommand(session, controller, customCommand, args)
@@ -99,7 +101,8 @@ class PlayerSessionCallback(
         val errorIO = SessionResult(SessionResult.RESULT_ERROR_IO)
         val streamableTrack = global.getTrack(mediaId) ?: return@future errorIO
         val client =
-            extensionListFlow.getClient(streamableTrack.clientId)?.client ?: return@future errorIO
+            extensionListFlow.getExtension(streamableTrack.clientId)?.client
+                ?: return@future errorIO
         if (client !is LibraryClient) return@future errorIO
         val track = streamableTrack.current
         val liked = withContext(Dispatchers.IO) {

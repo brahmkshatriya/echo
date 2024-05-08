@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.playlist
+package dev.brahmkshatriya.echo.ui.editplaylist
 
 import android.app.Application
 import android.content.Context
@@ -11,7 +11,7 @@ import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +37,7 @@ class EditPlaylistViewModel @Inject constructor(
         loading = true
         viewModelScope.launch {
             loadingFlow.emit(true)
-            val client = extensionListFlow.getClient(clientId)?.client
+            val client = extensionListFlow.getExtension(clientId)?.client
             if (client !is LibraryClient) return@launch
             withContext(Dispatchers.IO) {
                 tryWith {
@@ -60,7 +60,7 @@ class EditPlaylistViewModel @Inject constructor(
     private suspend inline fun <reified T> client(
         clientId: String, crossinline block: suspend (client: T) -> Unit
     ) {
-        val client = extensionListFlow.getClient(clientId)?.client
+        val client = extensionListFlow.getExtension(clientId)?.client
         if (client !is T) return
         withContext(Dispatchers.IO) {
             tryWith { block.invoke(client) }
@@ -194,7 +194,7 @@ class EditPlaylistViewModel @Inject constructor(
             clientId: String,
             playlist: Playlist
         ) {
-            val client = extensionListFlow.getClient(clientId)?.client ?: return
+            val client = extensionListFlow.getExtension(clientId)?.client ?: return
             if (client !is LibraryClient) return
             withContext(Dispatchers.IO) {
                 tryWith { client.deletePlaylist(playlist) } ?: return@withContext
@@ -210,7 +210,7 @@ class EditPlaylistViewModel @Inject constructor(
             playlists: List<Playlist>,
             new: List<Track>
         ) = run {
-            val client = extensionListFlow.getClient(clientId)?.client ?: return
+            val client = extensionListFlow.getExtension(clientId)?.client ?: return
             if (client !is LibraryClient) return
             val listener = client as? EditPlayerListenerClient
             withContext(Dispatchers.IO) {

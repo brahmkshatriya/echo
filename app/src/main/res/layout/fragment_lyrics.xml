@@ -3,20 +3,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/lyricsRecyclerView"
+    <com.bosphere.fadingedgelayout.FadingEdgeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="88dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_behavior="@string/searchbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_lyric" />
+        app:fel_edge="bottom|top"
+        app:fel_size_top="80dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:fel_size_bottom="80dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/lyricsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingVertical="88dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_lyric" />
+    </com.bosphere.fadingedgelayout.FadingEdgeLayout>
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:backgroundTint="@color/amoled_bg"
+        app:liftOnScroll="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -25,36 +36,50 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/search"
-            app:backgroundTint="@android:color/transparent"
+            app:backgroundTint="@color/amoled_bg"
             app:menu="@menu/lyrics_menu"
+            app:layout_scrollFlags="scroll|enterAlways"
             app:navigationIcon="@drawable/ic_search_outline" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.google.android.material.appbar.MaterialToolbar
+    <TextView
+        android:id="@+id/noLyrics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:alpha="0.66"
+        android:text="@string/no_lyrics"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall" />
+
+    <include
+        android:id="@+id/lyricsItem"
+        layout="@layout/item_lyrics_item"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/amoled_bg"
-        android:clipToPadding="false"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        app:subtitleTextAppearance="@null"
-        app:subtitleTextColor="?colorOutline"
-        app:titleMarginStart="24dp"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
-        tools:subtitle="Source: Bruh"
-        tools:title="Nice Track" />
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
+
+    <include
+        android:id="@+id/lyricsLoading"
+        layout="@layout/item_client_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <com.google.android.material.search.SearchView
+        android:id="@+id/searchView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:hint="@string/search"
-        app:backgroundTint="?navBackground"
+        app:backgroundTint="@color/amoled_bg"
         app:layout_anchor="@id/searchBar">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/searchRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </com.google.android.material.search.SearchView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

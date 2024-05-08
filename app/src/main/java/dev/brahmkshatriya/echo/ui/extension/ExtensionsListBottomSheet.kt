@@ -13,7 +13,9 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
-import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.ExtensionType
+import dev.brahmkshatriya.echo.ui.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -21,8 +23,17 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
 
+    companion object {
+        fun newInstance(type: ExtensionType) = ExtensionsListBottomSheet().apply {
+            arguments = Bundle().apply {
+                putString("type", type.name)
+            }
+        }
+    }
+
     private var binding by autoCleared<DialogExtensionsListBinding>()
-    private val viewModel by activityViewModels<ExtensionViewModel>()
+    private val args by lazy { requireArguments() }
+    private val type by lazy { ExtensionType.valueOf(args.getString("type")!!) }
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
         binding = DialogExtensionsListBinding.inflate(inflater, parent, false)
@@ -30,13 +41,17 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
-
         binding.addExtension.isEnabled = false
 
+        val viewModel = when (type) {
+            ExtensionType.LYRICS -> activityViewModels<LyricsViewModel>().value
+            ExtensionType.MUSIC -> activityViewModels<ExtensionViewModel>().value
+            ExtensionType.TRACKER -> throw IllegalStateException("Tracker not supported")
+        }
+
         val listener = object : OnButtonCheckedListener {
-            var map: Map<Int, MusicExtension> = mapOf()
+            var map: Map<Int, ExtensionMetadata> = mapOf()
             var enabled = false
             override fun onButtonChecked(
                 group: MaterialButtonToggleGroup?,
@@ -44,37 +59,36 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 isChecked: Boolean
             ) {
                 if (isChecked && enabled) map[checkedId]?.let {
-                    viewModel.setExtension(it)
+                    viewModel.onClientSelected(it.id)
                     dismiss()
                 }
             }
         }
         binding.buttonToggleGroup.addOnButtonCheckedListener(listener)
-        val extensionFlow = viewModel.extensionListFlow
+        val extensionFlow = viewModel.metadataFlow
         collect(extensionFlow) { clientList ->
             binding.buttonToggleGroup.removeAllViews()
             binding.progressIndicator.isVisible = clientList == null
             listener.enabled = false
             val list = clientList ?: emptyList()
 
-            val map = list.mapIndexed { index, extension ->
+            val map = list.mapIndexed { index, metadata ->
                 val button = ButtonExtensionBinding.inflate(
                     layoutInflater,
                     binding.buttonToggleGroup,
                     false
                 ).root
-                val metadata = extension.metadata
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
-                button.isChecked = extension == viewModel.currentExtension
+                button.isChecked = metadata.id == viewModel.currentFlow.value
                 metadata.iconUrl?.toImageHolder().loadWith(button, R.drawable.ic_extension) {
                     button.icon = it
                 }
                 button.id = index
-                index to extension
+                index to metadata
             }.toMap()
 
-            val checked = map.filter { it.value == viewModel.currentExtension }.keys
+            val checked = map.filter { it.value.id == viewModel.currentFlow.value }.keys
                 .firstOrNull()
 
             listener.map = map

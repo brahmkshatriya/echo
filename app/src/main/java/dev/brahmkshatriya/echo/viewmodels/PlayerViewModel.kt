@@ -21,7 +21,7 @@ import dev.brahmkshatriya.echo.playback.PlayerListener
 import dev.brahmkshatriya.echo.playback.Queue
 import dev.brahmkshatriya.echo.playback.recoverQueue
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.utils.getSerial
@@ -95,7 +95,7 @@ class PlayerViewModel @Inject constructor(
 
     private suspend fun getTracks(clientId: String, lists: EchoMediaItem.Lists) =
         withContext(Dispatchers.IO) {
-            val client = extensionListFlow.getClient(clientId)?.client
+            val client = extensionListFlow.getExtension(clientId)?.client
                 ?: return@withContext null
             when (lists) {
                 is EchoMediaItem.Lists.AlbumItem -> {
@@ -162,7 +162,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun playRadio(clientId: String, block: suspend RadioClient.() -> Playlist) {
-        val extension = extensionListFlow.getClient(clientId)
+        val extension = extensionListFlow.getExtension(clientId)
         viewModelScope.launch(Dispatchers.IO) {
             val position = listener.radio(extension) { block(this) }
             position?.let { audioIndexFlow.emit(it) }

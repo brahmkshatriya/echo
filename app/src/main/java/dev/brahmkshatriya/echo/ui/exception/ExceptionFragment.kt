@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCa
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import java.net.UnknownHostException
+import java.nio.channels.UnresolvedAddressException
 
 class ExceptionFragment : Fragment() {
     private var binding by autoCleared<FragmentExceptionBinding>()
@@ -81,7 +82,7 @@ class ExceptionFragment : Fragment() {
         fun Context.getTitle(throwable: Throwable): String = when (throwable) {
             is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
             is ExceptionActivity.AppCrashException -> getString(R.string.app_crashed)
-            is UnknownHostException -> getString(R.string.no_internet)
+            is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
             is PlayerViewModel.PlayerException -> getTitle(throwable.cause)
             else -> throwable.message ?: getString(R.string.error)
         }
@@ -95,7 +96,7 @@ Stream : ${throwable.streamableTrack.toString()}
 ${throwable.cause.stackTraceToString()}
 """.trimIndent()
 
-            is ExceptionActivity.AppCrashException -> throwable.causedBy.stackTraceToString()
+            is ExceptionActivity.AppCrashException -> throwable.causedBy
             else -> throwable.stackTraceToString()
         }
 

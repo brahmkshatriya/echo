@@ -22,7 +22,7 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
@@ -164,7 +164,7 @@ class SearchFragment : Fragment() {
             applyClient(it)
         }
         else collect(viewModel.extensionListFlow) {
-            applyClient(viewModel.extensionListFlow.getClient(clientId))
+            applyClient(viewModel.extensionListFlow.getExtension(clientId))
         }
 
         val tabListener = object : TabLayout.OnTabSelectedListener {

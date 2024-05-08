@@ -18,7 +18,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.ExtensionType
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionFragment : BaseSettingsFragment() {
@@ -70,9 +70,9 @@ class ExtensionFragment : BaseSettingsFragment() {
             val viewModel by activityViewModels<ExtensionViewModel>()
             val client = viewModel.run {
                 when (extensionType) {
-                    ExtensionType.MUSIC -> extensionListFlow.getClient(extensionId)?.client
-                    ExtensionType.TRACKER -> trackerListFlow.getClient(extensionId)?.client
-                    ExtensionType.LYRICS -> lyricsListFlow.getClient(extensionId)?.client
+                    ExtensionType.MUSIC -> extensionListFlow.getExtension(extensionId)?.client
+                    ExtensionType.TRACKER -> trackerListFlow.getExtension(extensionId)?.client
+                    ExtensionType.LYRICS -> lyricsListFlow.getExtension(extensionId)?.client
                 }
             }
 

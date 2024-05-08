@@ -10,7 +10,7 @@ data class MusicExtension(
     val client: ExtensionClient,
 )
 
-fun StateFlow<List<MusicExtension>?>.getClient(id: String?) =
+fun StateFlow<List<MusicExtension>?>.getExtension(id: String?) =
     value?.find { it.metadata.id == id }
 
 class MusicExtensionRepo(

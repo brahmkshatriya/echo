@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
+import dev.brahmkshatriya.echo.ui.lyrics.LyricsFragment
 import dev.brahmkshatriya.echo.utils.SlideInPageTransformer
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit

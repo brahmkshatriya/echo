@@ -160,6 +160,8 @@
     <string name="albums">Albums</string>
     <string name="artists">Artists</string>
     <string name="recently_added">Recently Added</string>
+    <string name="search_extension">Search %1$s</string>
+    <string name="no_lyrics">No Lyrics</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

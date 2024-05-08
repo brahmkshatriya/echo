@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.playlist
+package dev.brahmkshatriya.echo.ui.editplaylist
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,11 +19,11 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
 import dev.brahmkshatriya.echo.playback.Queue
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.ListAction.Add
-import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.ListAction.Move
-import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.ListAction.Remove
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Add
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Move
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Remove
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getParcel
@@ -161,7 +161,7 @@ class EditPlaylistFragment : Fragment() {
         })
         observe(viewModel.extensionListFlow) {
             viewModel.load(clientId, playlist)
-            val client = viewModel.extensionListFlow.getClient(clientId)?.client
+            val client = viewModel.extensionListFlow.getExtension(clientId)?.client
             header.showCover(client is EditPlaylistCoverClient)
         }
 

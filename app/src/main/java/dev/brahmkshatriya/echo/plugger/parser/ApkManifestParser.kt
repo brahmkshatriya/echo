@@ -17,7 +17,7 @@ class ApkManifestParser : ManifestParser<ApplicationInfo, ExtensionMetadata> {
             version = get("version"),
             description = get("description"),
             author = get("author"),
-            iconUrl = getString("iconUrl")
+            iconUrl = getString("icon_url")
         )
     }
 }

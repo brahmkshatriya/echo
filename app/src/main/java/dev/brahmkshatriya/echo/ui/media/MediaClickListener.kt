@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Category
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Container
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Item
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
@@ -61,7 +61,7 @@ class MediaClickListener(
             is EchoMediaItem.TrackItem -> {
                 clientId ?: return noClient()
                 val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
-                val extension = playerViewModel.extensionListFlow.getClient(clientId)
+                val extension = playerViewModel.extensionListFlow.getExtension(clientId)
                     ?: return noClient()
                 if (extension.client !is TrackClient)
                     return trackNotSupported(extension.metadata.name)

@@ -21,7 +21,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
@@ -68,7 +68,7 @@ class LoginFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
         binding.toolbar.title = getString(R.string.extension_login, clientName)
-        val extension = loginViewModel.extensionList.getClient(clientId)
+        val extension = loginViewModel.extensionList.getExtension(clientId)
         if (extension == null) {
             createSnack(requireContext().noClient())
             parentFragmentManager.popBackStack()

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.playlist
+package dev.brahmkshatriya.echo.ui.editplaylist
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

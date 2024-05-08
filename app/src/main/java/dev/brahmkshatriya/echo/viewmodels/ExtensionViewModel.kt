@@ -9,13 +9,18 @@ import dev.brahmkshatriya.echo.EchoApplication
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
+import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
+import dev.brahmkshatriya.echo.utils.mapState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,8 +32,18 @@ class ExtensionViewModel @Inject constructor(
     val extensionFlow: MutableStateFlow<MusicExtension?>,
     val settings: SharedPreferences,
     val database: EchoDatabase,
-    val userFlow: MutableSharedFlow<UserEntity?>
-) : CatchingViewModel(throwableFlow) {
+    val userFlow: MutableSharedFlow<UserEntity?>,
+) : ClientSelectionViewModel(throwableFlow) {
+
+
+    override val metadataFlow: StateFlow<List<ExtensionMetadata>?> = extensionListFlow.mapState {
+        it?.map { extension -> extension.metadata }
+    }
+    override val currentFlow: StateFlow<String?> = extensionFlow.mapState { it?.metadata?.id }
+
+    override fun onClientSelected(clientId: String) {
+        setExtension(extensionListFlow.getExtension(clientId))
+    }
 
     val currentExtension
         get() = extensionFlow.value

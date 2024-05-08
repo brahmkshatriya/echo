@@ -10,7 +10,7 @@ data class TrackerExtension(
     val client: TrackerClient,
 )
 
-fun StateFlow<List<TrackerExtension>?>.getClient(id: String?) =
+fun StateFlow<List<TrackerExtension>?>.getExtension(id: String?) =
     value?.find { it.metadata.id == id }
 
 class TrackerExtensionRepo(

@@ -35,7 +35,7 @@ import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.playback.Queue.StreamableTrack
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
@@ -265,7 +265,7 @@ class PlayerTrackAdapter(
             viewModel.repeatEnabled = true
         }
 
-        val extensionClient = viewModel.extensionListFlow.getClient(item.clientId)?.client
+        val extensionClient = viewModel.extensionListFlow.getExtension(item.clientId)?.client
         binding.playerControls.trackHeart.run {
             if (extensionClient is LibraryClient) {
                 isChecked = item.liked
@@ -292,7 +292,7 @@ class PlayerTrackAdapter(
         track?.cover.loadWith(bgImage, oldTrack?.cover) {
             collapsedContainer.collapsedTrackCover.load(it)
             expandedTrackCover.load(it)
-            val radius = 200.dpToPx(bgImage.context).toFloat()
+            val radius = 96.dpToPx(bgImage.context).toFloat()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) bgImage.setRenderEffect(
                 RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.MIRROR)
             ) else bgImage.load(it, 16)

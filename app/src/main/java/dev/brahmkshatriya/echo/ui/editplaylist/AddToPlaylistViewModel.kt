@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.playlist
+package dev.brahmkshatriya.echo.ui.editplaylist
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
@@ -8,8 +8,8 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
-import dev.brahmkshatriya.echo.ui.playlist.EditPlaylistViewModel.Companion.addToPlaylists
+import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.addToPlaylists
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,7 @@ class AddToPlaylistViewModel @Inject constructor(
     lateinit var item: EchoMediaItem
     val tracks = mutableListOf<Track>()
     override fun onInitialize() {
-        val client = extensionListFlow.getClient(clientId)?.client ?: return
+        val client = extensionListFlow.getExtension(clientId)?.client ?: return
         if (client !is LibraryClient) return
         viewModelScope.launch(Dispatchers.IO) {
             tryWith {

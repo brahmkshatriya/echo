@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.playlist
+package dev.brahmkshatriya.echo.ui.editplaylist
 
 import android.os.Bundle
 import android.view.LayoutInflater

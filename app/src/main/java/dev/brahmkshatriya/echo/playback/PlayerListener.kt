@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.utils.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
@@ -114,14 +114,15 @@ class PlayerListener(
         updateCurrent()
         if (!player.hasNextMediaItem()) {
             val autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
-            if (autoStartRadio) global.current?.let {
+            if (autoStartRadio) global.current?.let { track ->
                 scope.launch(Dispatchers.IO) {
-                    val extension = extensionListFlow.getClient(it.clientId)
+                    val list = extensionListFlow.first { it != null }
+                    val extension = list?.find { it.metadata.id == track.clientId }
                     radio(extension) {
-                        when (val item = it.context) {
+                        when (val item = track.context) {
                             is EchoMediaItem.Lists.PlaylistItem -> radio(item.playlist)
                             is EchoMediaItem.Lists.AlbumItem -> radio(item.album)
-                            else -> radio(it.loaded ?: it.onLoad.first())
+                            else -> radio(track.loaded ?: track.onLoad.first())
                         }
                     }
                 }
@@ -139,6 +140,12 @@ class PlayerListener(
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         viewModel?.shuffle?.value = shuffleModeEnabled
+        val indexes = mutableListOf(0)
+        var index = 0
+        while(index != -1) {
+            index = player.currentTimeline.getNextWindowIndex(index, player.repeatMode, shuffleModeEnabled)
+            if (index != -1) indexes.add(index)
+        }
     }
 
     private fun trackMedia(
@@ -146,7 +153,7 @@ class PlayerListener(
         block: suspend TrackerClient.(clientId: String, context: EchoMediaItem?, track: Track) -> Unit
     ) {
         val streamableTrack = global.getTrack(mediaId) ?: return
-        val client = extensionListFlow.getClient(streamableTrack.clientId)?.client ?: return
+        val client = extensionListFlow.getExtension(streamableTrack.clientId)?.client ?: return
         val track = streamableTrack.loaded ?: streamableTrack.unloaded
         val clientId = streamableTrack.clientId
         val trackers = trackerListFlow.value ?: emptyList()
@@ -207,16 +214,19 @@ class PlayerListener(
         if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
             var delayMs: Long
             if (player.playWhenReady && playbackState == ExoPlayer.STATE_READY) {
-                delayMs = 1000 - player.currentPosition % 1000
-                if (delayMs < 200) {
-                    delayMs += 1000
+                delayMs = delay - player.currentPosition % delay
+                if (delayMs < delay * threshold) {
+                    delayMs += delay
                 }
             } else {
-                delayMs = 1000
+                delayMs = delay
             }
             handler.postDelayed(updateProgressRunnable, delayMs)
         }
     }
+
+    private val delay = 500L
+    private val threshold = 0.2f
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateNavigation()

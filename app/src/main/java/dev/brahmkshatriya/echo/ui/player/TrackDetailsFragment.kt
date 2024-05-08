@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentTrackDetailsBinding
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.paging.toFlow
@@ -78,7 +78,7 @@ class TrackDetailsViewModel @Inject constructor(
         if (previous?.id == track.id) return
         previous = track
         itemsFlow.value = null
-        val client = extensionListFlow.getClient(clientId)?.client ?: return
+        val client = extensionListFlow.getExtension(clientId)?.client ?: return
         if (client !is TrackClient) return
         viewModelScope.launch {
             tryWith { client.getMediaItems(track).toFlow().collectTo(itemsFlow) }

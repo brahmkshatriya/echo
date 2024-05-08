@@ -27,7 +27,7 @@ import dev.brahmkshatriya.echo.playback.TrackResolver
 import dev.brahmkshatriya.echo.playback.getLikeButton
 import dev.brahmkshatriya.echo.playback.getRepeatButton
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import kotlinx.coroutines.CoroutineScope
@@ -131,7 +131,7 @@ class PlaybackService : MediaLibraryService() {
         val track = global.current ?: return
         val mediaLibrarySession = mediaLibrarySession ?: return
         val player = mediaLibrarySession.player
-        val supportsLike = extensionList.getClient(track.clientId)?.client is LibraryClient
+        val supportsLike = extensionList.getExtension(track.clientId)?.client is LibraryClient
 
         val commandButtons = listOfNotNull(
             getRepeatButton(context, player.repeatMode),

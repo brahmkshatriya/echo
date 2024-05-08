@@ -23,11 +23,11 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
-import dev.brahmkshatriya.echo.plugger.getClient
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media.Companion.bind
-import dev.brahmkshatriya.echo.ui.playlist.AddToPlaylistBottomSheet
+import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
@@ -56,7 +56,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val client by lazy { playerViewModel.extensionListFlow.getClient(clientId)?.client }
+    private val client by lazy { playerViewModel.extensionListFlow.getExtension(clientId)?.client }
 
     @Suppress("DEPRECATION")
     private val item by lazy {
