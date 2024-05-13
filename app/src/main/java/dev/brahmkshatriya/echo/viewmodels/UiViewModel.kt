@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.viewmodels
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.UI_MODE_NIGHT_MASK
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
@@ -23,6 +24,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.ui.settings.LookFragment
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
@@ -36,7 +38,7 @@ import kotlin.math.max
 
 @HiltViewModel
 class UiViewModel @Inject constructor(
-    initialPlayerState: Int
+    private val settings: SharedPreferences
 ) : ViewModel() {
 
     data class Insets(
@@ -108,7 +110,7 @@ class UiViewModel @Inject constructor(
     }
 
     val fromNotification = MutableStateFlow(false)
-    val playerSheetState = MutableStateFlow(initialPlayerState)
+    val playerSheetState = MutableStateFlow(STATE_HIDDEN)
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
     val changePlayerState = MutableSharedFlow<Int>()
     val changeInfoState = MutableSharedFlow<Int>()
@@ -123,11 +125,13 @@ class UiViewModel @Inject constructor(
             get() = infoBackPressCallback ?: playerBackPressCallback
 
         override fun handleOnBackStarted(backEvent: BackEventCompat) {
-            backPress?.handleOnBackStarted(backEvent)
+            if (settings.getBoolean(LookFragment.ANIMATIONS_KEY, true))
+                backPress?.handleOnBackStarted(backEvent)
         }
 
         override fun handleOnBackProgressed(backEvent: BackEventCompat) {
-            backPress?.handleOnBackProgressed(backEvent)
+            if (settings.getBoolean(LookFragment.ANIMATIONS_KEY, true))
+                backPress?.handleOnBackProgressed(backEvent)
         }
 
         override fun handleOnBackPressed() {
@@ -135,7 +139,8 @@ class UiViewModel @Inject constructor(
         }
 
         override fun handleOnBackCancelled() {
-            backPress?.handleOnBackCancelled()
+            if (settings.getBoolean(LookFragment.ANIMATIONS_KEY, true))
+                backPress?.handleOnBackCancelled()
         }
     }
 
@@ -273,7 +278,7 @@ class UiViewModel @Inject constructor(
 
             viewModel.run {
                 observe(fromNotification) {
-                    if(!it) return@observe
+                    if (!it) return@observe
                     fromNotification.value = false
                     emit(changePlayerState) { STATE_EXPANDED }
                     emit(changeInfoState) { STATE_COLLAPSED }

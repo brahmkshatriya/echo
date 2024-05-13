@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="player_gradient_angle">0</integer>
+    <integer name="navbar_gradient_angle">180</integer>
 </resources>

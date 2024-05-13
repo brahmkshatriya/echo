@@ -3,11 +3,8 @@ package dev.brahmkshatriya.echo.ui.player
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
-import android.graphics.RenderEffect
-import android.graphics.Shader
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimatedVectorDrawable
-import android.os.Build
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -23,6 +20,8 @@ import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.recyclerview.widget.DiffUtil
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
@@ -39,7 +38,6 @@ import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
-import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
@@ -49,6 +47,7 @@ import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -204,9 +203,6 @@ class PlayerTrackAdapter(
             binding.playerControls.trackPlayPause.isChecked = it
             binding.collapsedContainer.collapsedTrackPlayPause.isChecked = it
             playPauseListener.enabled = true
-            binding.bgImage.run {
-                if (it) resume() else pause()
-            }
         }
 
         observe(viewModel.nextEnabled) {
@@ -289,13 +285,13 @@ class PlayerTrackAdapter(
         oldTrack: Track? = null
     ) {
         val track = streamableTrack?.current
-        track?.cover.loadWith(bgImage, oldTrack?.cover) {
+        track?.cover.loadWith(expandedTrackCover, oldTrack?.cover) {
             collapsedContainer.collapsedTrackCover.load(it)
-            expandedTrackCover.load(it)
-            val radius = 96.dpToPx(bgImage.context).toFloat()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) bgImage.setRenderEffect(
-                RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.MIRROR)
-            ) else bgImage.load(it, 16)
+            Glide.with(bgImage).load(it)
+                .apply(RequestOptions.bitmapTransform(
+                        BlurTransformation(2, 4)
+                    ))
+                .into(bgImage)
         }
 
         collapsedContainer.run {

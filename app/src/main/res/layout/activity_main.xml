@@ -23,12 +23,6 @@
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         tools:layout="@layout/fragment_player" />
 
-    <View
-        android:id="@+id/navViewOutline"
-        style="@style/AppBarOutline"
-        android:elevation="5dp"
-        app:layout_anchor="@id/navView" />
-
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navView"
         style="@style/NavView"

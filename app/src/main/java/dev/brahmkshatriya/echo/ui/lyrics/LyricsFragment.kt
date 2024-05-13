@@ -101,15 +101,12 @@ class LyricsFragment : Fragment() {
         fun updateLyrics(current: Long) {
             if ((currentLyric?.endTime ?: 0) < current || current <= 0) {
                 val list = viewModel.currentLyrics.value?.lyrics?.map { lyric ->
-                    val isCurrent = lyric.startTime <= current && lyric.endTime >= current
-                    if (isCurrent) {
-                        println("lyric: $lyric")
-                        currentLyric = lyric
-                    }
+                    val isCurrent = lyric.startTime <= current
+                    if (isCurrent) currentLyric = lyric
                     isCurrent to lyric
                 } ?: emptyList()
                 lyricAdapter?.submitList(list)
-                val currentIndex = list.indexOfFirst { it.first }
+                val currentIndex = list.indexOfLast { it.first }
                     .takeIf { it != -1 } ?: return
                 smoothScroller.targetPosition = currentIndex
                 layoutManager.startSmoothScroll(smoothScroller)

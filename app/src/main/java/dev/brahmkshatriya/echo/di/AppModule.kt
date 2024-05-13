@@ -8,8 +8,6 @@ import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.room.Room
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -59,10 +57,6 @@ class AppModule {
             databaseProvider
         )
     }
-
-    @Provides
-    fun provideInitialPlayerState(global: Queue) =
-        if (global.queue.isEmpty()) STATE_HIDDEN else STATE_COLLAPSED
 
     @Provides
     @Singleton

@@ -149,6 +149,7 @@ class PlayerSessionCallback(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = scope.future {
+        extensionListFlow.first { it != null }
         return@future global.recoverPlaylist(context)
     }
 

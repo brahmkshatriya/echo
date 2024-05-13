@@ -62,8 +62,9 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48")
     ksp("com.google.dagger:hilt-android-compiler:2.48")
 
-    implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:ksp:4.14.2")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("jp.wasabeef:glide-transformations:4.3.0")
 
     implementation("com.github.madrapps:pikolo:2.0.2")
     implementation("com.github.bosphere.android-fadingedgelayout:fadingedgelayout:1.0.0")

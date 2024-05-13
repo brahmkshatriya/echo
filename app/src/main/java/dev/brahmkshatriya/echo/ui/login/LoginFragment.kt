@@ -134,6 +134,7 @@ class LoginFragment : Fragment() {
             }
         }
         webView.settings.javaScriptEnabled = true
+        webView.settings.userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
 
         lifecycleScope.launch {

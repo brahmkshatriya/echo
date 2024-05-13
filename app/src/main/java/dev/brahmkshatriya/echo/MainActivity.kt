@@ -19,9 +19,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.utils.animateTranslation
-import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.collect
+import dev.brahmkshatriya.echo.utils.createNavDrawable
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
 import kotlin.math.max
 import kotlin.math.min
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         checkPermissions(this)
 
         val navView = binding.navView as NavigationBarView
+
         navView.setOnItemSelectedListener {
             uiViewModel.navigation.value = uiViewModel.navIds.indexOf(it.itemId)
             true
@@ -72,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             uiViewModel.setSystemInsets(this, insets)
+            navView.createNavDrawable(uiViewModel.systemInsets.value.bottom)
             insets
         }
 
@@ -89,7 +92,6 @@ class MainActivity : AppCompatActivity() {
                 navView.animateTranslation(isRail, isMainFragment, visible) {
                     uiViewModel.setNavInsets(insets)
                 }
-                binding.navViewOutline?.animateVisibility(isMainFragment && visible)
             }
         }
 
@@ -105,7 +107,6 @@ class MainActivity : AppCompatActivity() {
             val offset = max(0f, it)
             if (isRail) navView.translationX = -navView.width * offset
             else navView.translationY = navView.height * offset
-            binding.navViewOutline?.alpha = 1 - offset
         }
 
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
@@ -141,4 +142,5 @@ class MainActivity : AppCompatActivity() {
         }
         super.onNewIntent(intent)
     }
+
 }
