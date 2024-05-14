@@ -133,8 +133,11 @@ class LoginFragment : Fragment() {
                 callback.isEnabled = webView.canGoBack()
             }
         }
-        webView.settings.javaScriptEnabled = true
-        webView.settings.userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
+        webView.settings.apply {
+            domStorageEnabled = true
+            javaScriptEnabled = true
+            userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
+        }
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
 
         lifecycleScope.launch {
