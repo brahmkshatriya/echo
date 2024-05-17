@@ -10,6 +10,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -36,6 +37,10 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
         binding.settings.setOnClickListener {
             dismiss()
             requireActivity().openFragment(SettingsFragment())
+        }
+        binding.downloads.setOnClickListener {
+            dismiss()
+            requireActivity().openFragment(DownloadingFragment())
         }
         binding.switchAccount.setOnClickListener {
             dismiss()

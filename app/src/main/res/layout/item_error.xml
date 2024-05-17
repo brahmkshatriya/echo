@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/view"
-            app:icon="@drawable/art_problem_48dp"
+            app:icon="@drawable/art_problem"
             app:iconPadding="8dp" />
 
         <com.google.android.material.button.MaterialButton

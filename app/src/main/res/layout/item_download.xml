@@ -1,50 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Selectable"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/collapsedTrackCover"
-        android:layout_width="@dimen/collapsed_cover_size"
-        android:layout_height="@dimen/collapsed_cover_size"
-        android:background="?attr/colorSurfaceContainerHigh"
-        android:importantForAccessibility="no"
-        tools:ignore="ImageContrastCheck"
-        tools:srcCompat="@tools:sample/avatars" />
-
-    <FrameLayout
+    <View
+        android:id="@+id/downloadGroup"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="?colorSurfaceContainer"
+        android:visibility="gone" />
 
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/collapsedBuffer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:alpha="0.5"
-            android:progress="40"
-            app:indicatorColor="?attr/colorTertiary"
-            app:indicatorTrackGapSize="0dp"
-            app:trackColor="?attr/colorOnSurface"
-            app:trackThickness="2dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp">
 
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/collapsedSeekBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:progress="20"
-            app:indicatorColor="?attr/colorTertiary"
-            app:trackColor="@android:color/transparent"
-            app:trackThickness="2dp" />
+        <FrameLayout
+            android:id="@+id/itemContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/itemExtension"
+                android:layout_width="32dp"
+                android:layout_height="@dimen/collapsed_cover_size"
+                android:layout_marginHorizontal="8dp"
+                android:contentDescription="@string/extension"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_extension" />
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/itemImageView"
+                android:layout_width="@dimen/collapsed_cover_size"
+                android:layout_height="@dimen/collapsed_cover_size"
+                android:layout_marginStart="48dp"
+                android:background="?attr/colorSurfaceContainerHigh"
+                android:scaleType="fitCenter"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraSmall"
+                tools:srcCompat="@tools:sample/avatars" />
+
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/collapsed_cover_size"
             android:baselineAligned="false"
             android:gravity="center"
             android:orientation="horizontal">
@@ -59,23 +61,20 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/collapsedTrackTitle"
+                    android:id="@+id/downloadTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="marquee"
                     android:maxLines="1"
-                    android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold"
-                    tools:text="@tools:sample/lorem/random" />
+                    tools:text="@tools:sample/full_names" />
 
                 <TextView
-                    android:id="@+id/collapsedTrackArtist"
+                    android:id="@+id/downloadProgressText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="end"
                     android:maxLines="1"
-                    android:textColor="?attr/colorOnSurface"
-                    tools:text="@tools:sample/lorem/random" />
+                    android:visibility="gone"
+                    tools:text="Downloaded: 33%" />
             </LinearLayout>
 
             <LinearLayout
@@ -89,29 +88,28 @@
                     android:layout_gravity="center">
 
                     <com.google.android.material.progressindicator.CircularProgressIndicator
-                        android:id="@+id/collapsedProgressBar"
+                        android:id="@+id/downloadProgressBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:indeterminate="true"
-                        android:visibility="gone"
+                        android:progress="33"
                         app:indicatorColor="?attr/colorTertiary" />
 
                     <com.google.android.material.checkbox.MaterialCheckBox
-                        android:id="@+id/collapsedTrackPlayPause"
+                        android:id="@+id/downloadPlayPause"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:layout_marginTop="0.5dp"
                         android:layout_marginStart="0.5dp"
+                        android:layout_marginTop="0.5dp"
                         android:background="@drawable/ripple_44dp"
                         android:button="@drawable/anim_play_pause"
+                        android:checked="true"
                         android:contentDescription="@string/play_pause"
-                        android:enabled="false"
                         app:buttonTint="@color/button_player" />
 
                 </FrameLayout>
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/playerClose"
+                    android:id="@+id/downloadClose"
                     style="?attr/materialIconButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -123,6 +121,5 @@
                     tools:ignore="DuplicateClickableBoundsCheck" />
             </LinearLayout>
         </LinearLayout>
-    </FrameLayout>
-
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>

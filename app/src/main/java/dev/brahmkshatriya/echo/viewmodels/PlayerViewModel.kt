@@ -99,7 +99,9 @@ class PlayerViewModel @Inject constructor(
                 ?: return@withContext null
             when (lists) {
                 is EchoMediaItem.Lists.AlbumItem -> {
-                    if (client is AlbumClient) tryWith { client.loadTracks(lists.album).loadFirst() }
+                    if (client is AlbumClient) tryWith {
+                        client.loadTracks(lists.album).loadFirst()
+                    }
                     else null
                 }
 

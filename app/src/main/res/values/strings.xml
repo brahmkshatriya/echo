@@ -162,6 +162,12 @@
     <string name="recently_added">Recently Added</string>
     <string name="search_extension">Search %1$s</string>
     <string name="no_lyrics">No Lyrics</string>
+    <string name="downloads">Downloads</string>
+    <string name="downloading">Downloading</string>
+    <string name="extension">Extension</string>
+    <string name="downloaded_percentage">Downloaded: %1$d\%</string>
+    <string name="download_started">Download Started</string>
+    <string name="download">Download</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

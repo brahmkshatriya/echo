@@ -62,7 +62,7 @@ class AppModule {
     @Singleton
     fun provideDatabase(application: Application) = Room.databaseBuilder(
         application, EchoDatabase::class.java, "echo-database"
-    ).build()
+    ).fallbackToDestructiveMigration().build()
 
     @Provides
     @Singleton

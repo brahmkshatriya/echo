@@ -32,20 +32,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:contentDescription="@string/album"
-                    android:src="@drawable/art_problem" />
+                    android:src="@drawable/art_download_for_offline" />
 
             </FrameLayout>
 
             <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/exceptionMessage"
+                android:id="@+id/toolBar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
-                app:menu="@menu/exception_menu"
                 app:navigationContentDescription="@string/close"
                 app:navigationIcon="@drawable/ic_back"
-                tools:title="@tools:sample/lorem/random" />
+                app:title="@string/downloads" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
@@ -58,28 +57,13 @@
         app:layout_anchorGravity="bottom" />
 
 
-    <androidx.core.widget.NestedScrollView
-        android:clipToPadding="false"
-        android:id="@+id/nestedScrollView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <HorizontalScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/exceptionDetails"
-                android:typeface="monospace"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingVertical="16dp"
-                android:paddingHorizontal="24dp"
-                android:textIsSelectable="true" />
-
-        </HorizontalScrollView>
-
-    </androidx.core.widget.NestedScrollView>
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/skeleton_item_category" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

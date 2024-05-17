@@ -75,20 +75,12 @@ class TrackResolver(
     }
 
     private fun loadAudio(track: Track, client: TrackClient): Result<StreamableAudio> {
-        val streamable = selectStream(track.audioStreamables)
+        val streamable = selectStream(settings, track.audioStreamables)
             ?: throw Exception(context.getString(R.string.no_streams_found))
         return runBlocking {
             runCatching { client.getStreamableAudio(streamable) }
         }
     }
-
-    private fun selectStream(streamables: List<Streamable>) =
-        when (settings.getString(AudioFragment.AudioPreference.STREAM_QUALITY, "lowest")) {
-            "highest" -> streamables.maxByOrNull { it.quality }
-            "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
-            "lowest" -> streamables.minByOrNull { it.quality }
-            else -> streamables.firstOrNull()
-        }
 
     private var current: Track? = null
     private fun getTrackFromCache(id: String): Track? {
@@ -98,4 +90,14 @@ class TrackResolver(
     }
 
     private fun Track.isExpired() = System.currentTimeMillis() > expiresAt
+
+    companion object {
+        fun selectStream(settings: SharedPreferences, streamables: List<Streamable>) =
+            when (settings.getString(AudioFragment.AudioPreference.STREAM_QUALITY, "lowest")) {
+                "highest" -> streamables.maxByOrNull { it.quality }
+                "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
+                "lowest" -> streamables.minByOrNull { it.quality }
+                else -> streamables.firstOrNull()
+            }
+    }
 }

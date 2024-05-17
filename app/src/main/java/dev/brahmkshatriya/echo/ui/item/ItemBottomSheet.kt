@@ -17,20 +17,23 @@ import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
+import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media.Companion.bind
-import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
@@ -52,6 +55,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     private var binding by autoCleared<DialogMediaItemBinding>()
     private val viewModel by viewModels<ItemViewModel>()
     private val playerViewModel by activityViewModels<PlayerViewModel>()
+    private val downloadViewModel by activityViewModels<DownloadViewModel>()
     private val uiViewModel by activityViewModels<UiViewModel>()
 
     private val args by lazy { requireArguments() }
@@ -113,17 +117,24 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     private fun getActions(item: EchoMediaItem, loaded: Boolean): List<ItemAction> = when (item) {
         is EchoMediaItem.Lists -> {
-            listOfNotNull(
-                ItemAction.Resource(R.drawable.ic_play, R.string.play) {
-                    playerViewModel.play(clientId, item, 0)
-                },
-                ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
-                    playerViewModel.addToQueue(clientId, item, false)
-                },
-                ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
-                    playerViewModel.addToQueue(clientId, item, true)
-                },
-            ) + when (item) {
+            (if (client is TrackClient)
+                listOfNotNull(
+                    ItemAction.Resource(R.drawable.ic_play, R.string.play) {
+                        playerViewModel.play(clientId, item, 0)
+                    },
+                    ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
+                        playerViewModel.addToQueue(clientId, item, false)
+                    },
+                    ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
+                        playerViewModel.addToQueue(clientId, item, true)
+                    },
+                    if (client !is OfflineExtension)
+                        ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
+                            downloadViewModel.addToDownload(requireActivity(), clientId, item)
+                        }
+                    else null
+                ) else listOf()
+                    ) + when (item) {
                 is EchoMediaItem.Lists.AlbumItem -> {
                     listOfNotNull(
                         if (client is LibraryClient)
@@ -196,16 +207,25 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         }
 
         is EchoMediaItem.TrackItem -> {
-            listOfNotNull(
-                ItemAction.Resource(R.drawable.ic_play, R.string.play) {
-                    playerViewModel.play(clientId, item.track)
-                },
-                ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
-                    playerViewModel.addToQueue(clientId, item.track, false)
-                },
-                ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
-                    playerViewModel.addToQueue(clientId, item.track, true)
-                },
+            (if (client is TrackClient)
+                listOfNotNull(
+                    ItemAction.Resource(R.drawable.ic_play, R.string.play) {
+                        playerViewModel.play(clientId, item.track)
+                    },
+                    ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
+                        playerViewModel.addToQueue(clientId, item.track, false)
+                    },
+                    ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
+                        playerViewModel.addToQueue(clientId, item.track, true)
+                    },
+                    if (client !is OfflineExtension)
+                        ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
+                            downloadViewModel.addToDownload(requireActivity(), clientId, item)
+                        }
+                    else null
+                )
+            else listOf()
+                    ) + listOfNotNull(
                 if (client is LibraryClient)
                     ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.save_to_playlist) {
                         AddToPlaylistBottomSheet.newInstance(clientId, item)
