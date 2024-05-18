@@ -41,10 +41,15 @@ class DownloadingFragment : Fragment() {
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-
+        binding.toolBar.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
         val downloads = binding.toolBar.findViewById<View>(R.id.menu_downloads)
         downloads.transitionName = "downloads"
-        downloads.setOnClickListener { openFragment(DownloadFragment(), downloads) }
+        downloads.setOnClickListener {
+            viewModel.loadOfflineDownloads()
+            openFragment(DownloadFragment(), downloads)
+        }
 
         val adapter = DownloadingAdapter(object : DownloadingAdapter.Listener {
             override fun onDownloadItemClick(download: DownloadItem.Single) {

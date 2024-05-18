@@ -72,6 +72,8 @@ dependencies {
     implementation("me.zhanghai.android.fastscroll:library:1.3.0")
     implementation("com.flaviofaria:kenburnsview:1.0.7")
 
+    implementation("com.github.Kyant0:taglib:1.0.0-alpha17")
+
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     testImplementation("junit:junit:4.13.2")
 

@@ -3,17 +3,22 @@ package dev.brahmkshatriya.echo.viewmodels
 import android.app.Application
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.models.DownloadEntity
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadItem
 import dev.brahmkshatriya.echo.ui.download.DownloadItem.Companion.toItem
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
+import dev.brahmkshatriya.echo.ui.paging.toFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -56,24 +61,26 @@ class DownloadViewModel @Inject constructor(
         }
         groups.forEach { (groupName, items) ->
             downloadItems.add(DownloadItem.Group(groupName, true))
-            if(visibleGroups.contains(groupName)) downloadItems.addAll(items)
+            if (visibleGroups.contains(groupName)) downloadItems.addAll(items)
         }
         downloads.value = downloadItems
     }
 
     fun addToDownload(
         activity: FragmentActivity, clientId: String, item: EchoMediaItem
-    ) = with(activity) {
-        viewModelScope.launch {
-            tryWith { downloader.addToDownload(activity, clientId, item) }
-            messageFlow.emit(
-                SnackBar.Message(
-                    getString(R.string.download_started),
-                    SnackBar.Action(getString(R.string.view)) {
-                        openFragment(DownloadingFragment())
-                    }
+    ) = viewModelScope.launch {
+        tryWith {
+            downloader.addToDownload(activity, clientId, item)
+            with(activity) {
+                messageFlow.emit(
+                    SnackBar.Message(
+                        getString(R.string.download_started),
+                        SnackBar.Action(getString(R.string.view)) {
+                            openFragment(DownloadingFragment())
+                        }
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -96,6 +103,16 @@ class DownloadViewModel @Inject constructor(
     fun removeDownload(download: DownloadItem.Single) {
         viewModelScope.launch {
             tryWith { downloader.removeDownload(application, download.id) }
+        }
+    }
+
+    val offlineFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    fun loadOfflineDownloads() {
+        offlineFlow.value = null
+        viewModelScope.launch {
+            val offline =
+                extensionListFlow.getExtension(OfflineExtension.metadata.id)?.client as OfflineExtension
+            offline.getDownloads().toFlow().collectTo(offlineFlow)
         }
     }
 }

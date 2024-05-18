@@ -9,6 +9,6 @@ import tel.jeelpa.plugger.PluginRepo
 class LocalExtensionRepo(val context: Context) : PluginRepo<ExtensionMetadata, ExtensionClient> {
     val extension = OfflineExtension(context)
     override fun getAllPlugins() = MutableStateFlow(
-        listOf(Result.success(extension.metadata to extension))
+        listOf(Result.success(OfflineExtension.metadata to extension))
     )
 }

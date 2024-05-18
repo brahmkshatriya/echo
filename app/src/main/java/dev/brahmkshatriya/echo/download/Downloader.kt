@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.models.DownloadEntity
@@ -35,25 +36,33 @@ class Downloader(
         client as TrackClient
         when (item) {
             is EchoMediaItem.Lists -> {
-                val tracks = when (item) {
+                when (item) {
                     is EchoMediaItem.Lists.AlbumItem -> {
                         client as AlbumClient
-                        client.loadTracks(item.album)
+                        val album = client.loadAlbum(item.album)
+                        val tracks = client.loadTracks(album)
+                        tracks.clear()
+                        tracks.loadAll().forEach {
+                            context.enqueueDownload(clientId, client, it, album.toMediaItem())
+                        }
                     }
 
                     is EchoMediaItem.Lists.PlaylistItem -> {
                         client as PlaylistClient
-                        client.loadTracks(item.playlist)
+                        val playlist = client.loadPlaylist(item.playlist)
+                        val tracks = client.loadTracks(playlist)
+                        tracks.clear()
+                        tracks.loadAll().forEach {
+                            context.enqueueDownload(clientId, client, it, playlist.toMediaItem())
+                        }
                     }
-                }
-                tracks.clear()
-                tracks.loadAll().forEach {
-                    val track = client.loadTrack(it)
-                    context.enqueueDownload(clientId, client, track, item)
                 }
             }
 
-            is EchoMediaItem.TrackItem -> context.enqueueDownload(clientId, client, item.track)
+            is EchoMediaItem.TrackItem -> {
+                context.enqueueDownload(clientId, client, item.track)
+            }
+
             else -> throw IllegalArgumentException("Not Supported")
         }
     }
@@ -61,9 +70,15 @@ class Downloader(
     private suspend fun Context.enqueueDownload(
         clientId: String,
         client: TrackClient,
-        track: Track,
+        small: Track,
         parent: EchoMediaItem.Lists? = null
     ) = withContext(Dispatchers.IO) {
+        val loaded = client.loadTrack(small)
+        val album = (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loaded.album?.let {
+            (client as? AlbumClient)?.loadAlbum(it)
+        } ?: loaded.album
+        val track = loaded.copy(album = album)
+
         val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
         val stream = TrackResolver.selectStream(settings, track.audioStreamables)
             ?: throw Exception("No Stream Found")
@@ -77,8 +92,6 @@ class Downloader(
 
             is StreamableAudio.StreamableRequest -> {
                 val request = audio.request
-
-                println("request: $request")
                 val downloadRequest = DownloadManager.Request(request.url.toUri()).apply {
                     request.headers.forEach {
                         addRequestHeader(it.key, it.value)
@@ -88,7 +101,7 @@ class Downloader(
                     setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                     downloadDirectoryFor(folder)
                     setDestinationInExternalPublicDir(
-                        Environment.DIRECTORY_MUSIC,
+                        Environment.DIRECTORY_DOWNLOADS,
                         "$folder/${track.title}"
                     )
                 }
@@ -101,7 +114,7 @@ class Downloader(
     }
 
     private fun downloadDirectoryFor(folder: String?): File {
-        val directory = File("${Environment.DIRECTORY_MUSIC}/$folder")
+        val directory = File("${Environment.DIRECTORY_DOWNLOADS}/$folder")
         if (!directory.exists()) directory.mkdirs()
         return directory
     }
@@ -117,10 +130,12 @@ class Downloader(
     }
 
     fun pauseDownload(context: Context, downloadId: Long) {
+        println("pauseDownload: $downloadId")
         context.downloadManager().remove(downloadId)
     }
 
     suspend fun resumeDownload(context: Context, downloadId: Long) = withContext(Dispatchers.IO) {
+        println("resumeDownload: $downloadId")
         val download = dao.getDownload(downloadId) ?: return@withContext
         val client = extensionList.getExtension(download.clientId)?.client
         client as TrackClient

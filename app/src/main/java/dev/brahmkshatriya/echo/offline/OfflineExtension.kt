@@ -42,16 +42,18 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
     EditPlayerListenerClient {
 
-    val metadata = ExtensionMetadata(
-        className = "OfflineExtension",
-        path = "",
-        id = "echo_offline",
-        name = "Offline",
-        description = "Offline extension",
-        version = "1.0.0",
-        author = "Echo",
-        iconUrl = null
-    )
+    companion object {
+        val metadata = ExtensionMetadata(
+            className = "OfflineExtension",
+            path = "",
+            id = "echo_offline",
+            name = "Offline",
+            description = "Offline extension",
+            version = "1.0.0",
+            author = "Echo",
+            iconUrl = null
+        )
+    }
 
     override val settingItems: List<Setting> = listOf()
     override fun setSettings(settings: Settings) {}
@@ -376,5 +378,16 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     override suspend fun onEnterPlaylistEditor(playlist: Playlist, tracks: List<Track>) {}
     override suspend fun onExitPlaylistEditor(playlist: Playlist, tracks: List<Track>) {
         library = MediaStoreUtils.getAllSongs(context)
+    }
+
+    suspend fun getDownloads(): PagedData<MediaItemsContainer> {
+        library = MediaStoreUtils.getAllSongs(context)
+        return library.folderStructure.folderList.entries.first().value
+            .toContainer(null).more!!.loadAll()
+            .filterIsInstance<MediaItemsContainer.Container>()
+            .find { it.title == "Download" }?.more?.loadAll()
+            ?.filterIsInstance<MediaItemsContainer.Container>()
+            ?.find { it.title == "Echo" }?.more
+            ?: PagedData.Single { listOf() }
     }
 }

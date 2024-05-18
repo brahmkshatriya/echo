@@ -43,15 +43,8 @@ class DownloadingAdapter(
         }
     }
 
-    fun withEmptyAdapter(): ConcatAdapter {
-        val empty = MediaContainerEmptyAdapter()
-        addLoadStateListener { loadStates ->
-            empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
-                LoadState.Loading
-            else LoadState.NotLoading(false)
-        }
-        return ConcatAdapter(empty, this)
-    }
+    private val empty = MediaContainerEmptyAdapter()
+    fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
     sealed class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
@@ -109,9 +102,11 @@ class DownloadingAdapter(
             0 -> ViewHolder.Single(
                 ItemDownloadBinding.inflate(inflater, parent, false), listener
             )
+
             1 -> ViewHolder.Group(
                 ItemDownloadGroupBinding.inflate(inflater, parent, false), listener
             )
+
             else -> throw IllegalArgumentException("Unknown View Type")
         }
     }
@@ -122,6 +117,7 @@ class DownloadingAdapter(
     }
 
     suspend fun submit(list: List<DownloadItem>) {
+        empty.loadState = if (list.isEmpty()) LoadState.Loading else LoadState.NotLoading(true)
         submitData(PagingData.from(list))
     }
 }
