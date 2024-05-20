@@ -26,8 +26,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="bottom|end"
-                android:layout_marginVertical="20dp"
                 android:layout_marginHorizontal="24dp"
+                android:layout_marginVertical="20dp"
                 android:contentDescription="@string/album"
                 app:srcCompat="@drawable/ic_album"
                 app:tint="?colorOnSurface" />
@@ -58,13 +58,8 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolBar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/transparent"
-                app:layout_collapseMode="pin"
-                app:menu="@menu/exception_menu"
-                app:navigationContentDescription="@string/close"
-                app:navigationIcon="@drawable/ic_back"
+                style="@style/Toolbar"
+                app:menu="@menu/more_menu"
                 tools:title="@tools:sample/lorem/random" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -78,8 +73,8 @@
         app:layout_anchorGravity="bottom" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:layout_width="match_parent"
         android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 

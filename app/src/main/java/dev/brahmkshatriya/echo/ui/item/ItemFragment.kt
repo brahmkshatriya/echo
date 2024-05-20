@@ -33,11 +33,11 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistFragment
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
@@ -100,6 +100,24 @@ class ItemFragment : Fragment() {
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
+
+        binding.toolBar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.menu_more -> {
+                    val loaded = viewModel.loaded
+                    ItemBottomSheet.newInstance(
+                        clientId,
+                        loaded ?: item,
+                        loaded = loaded != null,
+                        fromPlayer = false
+                    ).show(parentFragmentManager, null)
+                    true
+                }
+
+                else -> false
+            }
+        }
+
         FastScrollerHelper.applyTo(binding.recyclerView)
         binding.toolBar.title = item.title.trim()
         binding.endIcon.load(item.icon())
@@ -185,7 +203,7 @@ class ItemFragment : Fragment() {
             viewModel.load()
         }
 
-        collect(lifecycle.currentStateFlow){
+        collect(lifecycle.currentStateFlow) {
             println("state change $it")
         }
         viewModel.songsLiveData.observe(viewLifecycleOwner) { songs ->

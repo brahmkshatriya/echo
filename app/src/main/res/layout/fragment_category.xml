@@ -28,12 +28,7 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolBar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/transparent"
-                app:layout_collapseMode="pin"
-                app:navigationContentDescription="@string/close"
-                app:navigationIcon="@drawable/ic_back"
+                style="@style/Toolbar"
                 tools:title="@tools:sample/lorem/random" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

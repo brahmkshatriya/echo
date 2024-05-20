@@ -14,8 +14,10 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
@@ -49,14 +51,26 @@ class PlayerFragment : Fragment() {
 
         setupPlayerInfoBehavior(uiViewModel, binding.playerInfoContainer)
 
-        val adapter = PlayerTrackAdapter(this) { client, item ->
-            if (client == null) {
-                createSnack(requireContext().noClient())
-                return@PlayerTrackAdapter
+        val adapter = PlayerTrackAdapter(this, object : PlayerTrackAdapter.Listener {
+            override fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean) {
+                if (clientId == null) {
+                    createSnack(requireContext().noClient())
+                    return
+                }
+                ItemBottomSheet.newInstance(clientId, item, loaded, true)
+                    .show(parentFragmentManager, null)
             }
-            requireActivity().openFragment(ItemFragment.newInstance(client, item))
-            uiViewModel.collapsePlayer()
-        }
+
+            override fun onItemClicked(clientId: String?, item: EchoMediaItem) {
+                if (clientId == null) {
+                    createSnack(requireContext().noClient())
+                    return
+                }
+                requireActivity().openFragment(ItemFragment.newInstance(clientId, item))
+                uiViewModel.collapsePlayer()
+            }
+
+        })
         binding.viewPager.adapter = adapter
         binding.viewPager.setPageTransformer(
             ParallaxPageTransformer(R.id.expandedTrackCoverContainer)

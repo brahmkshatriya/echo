@@ -7,6 +7,7 @@ import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import java.io.InputStream
 
 @OptIn(UnstableApi::class)
 class ByteStreamDataSource : BaseDataSource(true) {
@@ -23,6 +24,8 @@ class ByteStreamDataSource : BaseDataSource(true) {
 
     override fun open(dataSpec: DataSpec): Long {
         val audio = dataSpec.customData as StreamableAudio.ByteStreamAudio
+        val requestedPosition = dataSpec.position
+        audio.stream.seek(requestedPosition)
         this.audio = audio
         return audio.totalBytes
     }
@@ -31,5 +34,14 @@ class ByteStreamDataSource : BaseDataSource(true) {
     override fun close() {
         audio?.stream?.close()
         audio = null
+    }
+
+    private fun InputStream.seek(requestedPosition: Long) {
+        var position = 0L
+        while (position < requestedPosition) {
+            val skipped = skip(requestedPosition - position)
+            if (skipped == 0L) break
+            position += skipped
+        }
     }
 }

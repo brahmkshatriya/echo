@@ -38,13 +38,8 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolBar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/transparent"
-                app:layout_collapseMode="pin"
+                style="@style/Toolbar"
                 app:menu="@menu/download_menu"
-                app:navigationContentDescription="@string/close"
-                app:navigationIcon="@drawable/ic_back"
                 app:title="@string/downloading" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

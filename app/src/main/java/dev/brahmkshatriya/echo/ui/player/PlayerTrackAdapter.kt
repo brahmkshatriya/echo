@@ -54,9 +54,14 @@ import kotlin.math.max
 import kotlin.math.min
 
 class PlayerTrackAdapter(
-    fragment: Fragment,
-    private val onItemClicked: (String?, EchoMediaItem) -> Unit
+    val fragment: Fragment,
+    private val listener: Listener
 ) : LifeCycleListAdapter<StreamableTrack, ItemPlayerTrackBinding>(DiffCallback) {
+
+    interface Listener {
+        fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean)
+        fun onItemClicked(clientId: String?, item: EchoMediaItem)
+    }
 
     private val viewModel by fragment.activityViewModels<PlayerViewModel>()
     private val uiViewModel by fragment.activityViewModels<UiViewModel>()
@@ -288,9 +293,11 @@ class PlayerTrackAdapter(
         track?.cover.loadWith(expandedTrackCover, oldTrack?.cover) {
             collapsedContainer.collapsedTrackCover.load(it)
             Glide.with(bgImage).load(it)
-                .apply(RequestOptions.bitmapTransform(
+                .apply(
+                    RequestOptions.bitmapTransform(
                         BlurTransformation(2, 4)
-                    ))
+                    )
+                )
                 .into(bgImage)
         }
 
@@ -313,7 +320,7 @@ class PlayerTrackAdapter(
                 val start = artistNames.indexOf(artist.name)
                 val end = start + artist.name.length
                 val clickableSpan = PlayerItemSpan(
-                    root.context, client, artist.toMediaItem(), onItemClicked
+                    root.context, client, artist.toMediaItem(), listener::onItemClicked
                 )
                 spannableString.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
@@ -323,9 +330,23 @@ class PlayerTrackAdapter(
         }
 
         expandedToolbar.run {
-            val item = streamableTrack?.context
-            title = if (item != null) context.getString(R.string.playing_from) else null
-            subtitle = item?.title
+            val itemContext = streamableTrack?.context
+            title = if (itemContext != null) context.getString(R.string.playing_from) else null
+            subtitle = itemContext?.title
+
+            setOnMenuItemClickListener {
+                val streamable = streamableTrack
+                    ?: return@setOnMenuItemClickListener false
+                when (it.itemId) {
+                    R.id.menu_more -> {
+                        val loaded = streamable.loaded?.toMediaItem()
+                        val unloaded = streamable.unloaded.toMediaItem()
+                        listener.onMoreClicked(client, loaded ?: unloaded, loaded != null)
+                        true
+                    }
+                    else -> false
+                }
+            }
         }
     }
 

@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.ui.item
 
 import android.content.res.ColorStateList
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +30,7 @@ import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
@@ -42,12 +42,13 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 class ItemBottomSheet : BottomSheetDialogFragment() {
     companion object {
         fun newInstance(
-            clientId: String, item: EchoMediaItem, loaded: Boolean
+            clientId: String, item: EchoMediaItem, loaded: Boolean, fromPlayer: Boolean
         ) = ItemBottomSheet().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
                 putParcelable("item", item)
                 putBoolean("loaded", loaded)
+                putBoolean("fromPlayer", fromPlayer)
             }
         }
     }
@@ -60,15 +61,11 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
+    private val item by lazy { args.getParcel<EchoMediaItem>("item")!! }
+    private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
+    private val loaded by lazy { args.getBoolean("loaded") }
     private val client by lazy { playerViewModel.extensionListFlow.getExtension(clientId)?.client }
 
-    @Suppress("DEPRECATION")
-    private val item by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            args.getParcelable("item", EchoMediaItem::class.java)!!
-        else args.getParcelable("item")!!
-    }
-    private val loaded by lazy { args.getBoolean("loaded") }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -207,8 +204,8 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         }
 
         is EchoMediaItem.TrackItem -> {
-            (if (client is TrackClient)
-                listOfNotNull(
+            (if (client is TrackClient && !fromPlayer)
+                listOf(
                     ItemAction.Resource(R.drawable.ic_play, R.string.play) {
                         playerViewModel.play(clientId, item.track)
                     },
@@ -217,15 +214,24 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     },
                     ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
                         playerViewModel.addToQueue(clientId, item.track, true)
-                    },
-                    if (client !is OfflineExtension)
-                        ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
-                            downloadViewModel.addToDownload(requireActivity(), clientId, item)
-                        }
-                    else null
+                    }
                 )
-            else listOf()
-                    ) + listOfNotNull(
+            else listOf()) + listOfNotNull(
+                if (fromPlayer)
+                    ItemAction.Resource(R.drawable.ic_equalizer, R.string.equalizer) {
+                        createSnack("Not implemented")
+                    }
+                else null,
+                if (fromPlayer)
+                    ItemAction.Resource(R.drawable.ic_snooze, R.string.sleep_timer) {
+                        createSnack("Not implemented")
+                    }
+                else null,
+                if (client !is OfflineExtension && client is TrackClient)
+                    ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
+                        downloadViewModel.addToDownload(requireActivity(), clientId, item)
+                    }
+                else null,
                 if (client is LibraryClient)
                     ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.save_to_playlist) {
                         AddToPlaylistBottomSheet.newInstance(clientId, item)

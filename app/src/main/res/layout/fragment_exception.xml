@@ -38,13 +38,8 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/exceptionMessage"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/transparent"
-                app:layout_collapseMode="pin"
+                style="@style/Toolbar"
                 app:menu="@menu/exception_menu"
-                app:navigationContentDescription="@string/close"
-                app:navigationIcon="@drawable/ic_back"
                 tools:title="@tools:sample/lorem/random" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

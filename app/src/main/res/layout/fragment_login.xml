@@ -37,12 +37,7 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/transparent"
-                app:layout_collapseMode="pin"
-                app:navigationContentDescription="@string/close"
-                app:navigationIcon="@drawable/ic_back"
+                style="@style/Toolbar"
                 app:title="@string/extension_login" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

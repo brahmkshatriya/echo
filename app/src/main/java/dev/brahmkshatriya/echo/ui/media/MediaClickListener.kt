@@ -76,7 +76,8 @@ class MediaClickListener(
         clientId: String?, item: EchoMediaItem, transitionView: View?
     ): Boolean {
         clientId ?: return run { noClient();false }
-        ItemBottomSheet.newInstance(clientId, item, false).show(fragmentManager, null)
+        ItemBottomSheet.newInstance(clientId, item, loaded = false, fromPlayer = false)
+            .show(fragmentManager, null)
         return true
     }
 
