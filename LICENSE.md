@@ -18,8 +18,3 @@ This Unabandon Public License (UPL) is designed to ensure the continued developm
     Termination
 ```
 This UPL terminates automatically if the terms and conditions are not followed by the licensee.
-
-```
-    Disclaimer
-```
-This UPL is provided as an example and is not a substitute for professional legal advice. It is highly recommended to consult with a lawyer specializing in software licensing to ensure your license meets your specific needs and is legally sound.
