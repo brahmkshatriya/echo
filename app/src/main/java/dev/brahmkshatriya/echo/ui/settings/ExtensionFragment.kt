@@ -16,7 +16,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingItem
 import dev.brahmkshatriya.echo.common.settings.SettingList
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel

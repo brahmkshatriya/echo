@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,21 +25,22 @@
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="64dp"
-                android:layout_marginBottom="32dp">
+                android:layout_marginBottom="32dp"
+                tools:layout_marginBottom="54dp">
 
                 <ImageView
                     android:id="@+id/extensionIcon"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:contentDescription="@string/login"
-                    app:srcCompat="@drawable/ic_account_circle_48dp" />
+                    app:srcCompat="@drawable/ic_extension" />
 
             </FrameLayout>
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 style="@style/Toolbar"
-                app:title="@string/extension_login" />
+                tools:title="Extension Login" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
@@ -47,6 +49,7 @@
     <View
         android:id="@+id/toolbarOutline"
         style="@style/AppBarOutline"
+        android:alpha="0"
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
@@ -57,12 +60,44 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:paddingVertical="8dp"
-        android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/loginToggleGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/loginUserPass"
+                    style="@style/OutlinedButton"
+                    android:text="@string/username_password"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_password" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/loginWebview"
+                    style="@style/OutlinedButton"
+                    android:text="@string/webview"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_language" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/loginCustomInput"
+                    style="@style/OutlinedButton"
+                    android:text="@string/manual"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_input" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <LinearLayout
                 android:id="@+id/usernamePasswordContainer"
@@ -74,13 +109,12 @@
                 android:visibility="gone">
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/login_id_cont"
                     style="@style/TextInput"
                     android:hint="@string/username"
                     app:startIconDrawable="@drawable/ic_account_circle">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/login_id"
+                        android:id="@+id/loginUsername"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
@@ -89,14 +123,13 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/login_password_cont"
                     style="@style/TextInput"
                     android:hint="@string/password"
                     app:passwordToggleEnabled="true"
                     app:startIconDrawable="@drawable/ic_password">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/login_password"
+                        android:id="@+id/loginPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
@@ -105,7 +138,33 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <Button
-                    android:id="@+id/login_submit"
+                    android:id="@+id/loginUserPassSubmit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:text="@string/login"
+                    app:icon="@drawable/ic_login"
+                    app:iconGravity="end" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/customInputContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginVertical="24dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/customInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <Button
+                    android:id="@+id/loginCustomSubmit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"

@@ -35,8 +35,9 @@ class LoginUserViewModel @Inject constructor(
 
     override fun onInitialize() {
         viewModelScope.launch(Dispatchers.IO) {
-            userDao.observeCurrentUser().collect { user ->
+            userDao.observeCurrentUser().collect { list ->
                 val extension = extensionFlow.value ?: return@collect
+                val user = list.find { it.clientId == extension.metadata.id }
                 if (extension.metadata.id == user?.clientId)
                     setLoginUser(extension.metadata.id, extension.client)
             }
@@ -47,10 +48,12 @@ class LoginUserViewModel @Inject constructor(
         setLoginUser(id, client, userDao, userFlow, throwableFlow)
     }
 
-    val currentUser = extensionFlow.combine(userDao.observeCurrentUser()) { client, user ->
+    val currentUser = extensionFlow.combine(userDao.observeCurrentUser()) { extension, list ->
+        val id = extension?.metadata?.id
+        val user = list.find { it.clientId == id }
         coroutineScope {
             withContext(Dispatchers.IO) {
-                client to userDao.getUser(client?.metadata?.id, user?.id)?.toUser()
+                extension to userDao.getUser(id, user?.id)?.toUser()
             }
         }
     }

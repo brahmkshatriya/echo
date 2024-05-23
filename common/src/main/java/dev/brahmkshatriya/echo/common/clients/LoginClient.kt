@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.common.clients
 import dev.brahmkshatriya.echo.common.models.Request
 import dev.brahmkshatriya.echo.common.models.User
 
-sealed interface LoginClient : ExtensionClient {
+sealed interface LoginClient {
 
     interface UsernamePassword : LoginClient {
         suspend fun onLogin(username: String, password: String): List<User>
@@ -16,9 +16,16 @@ sealed interface LoginClient : ExtensionClient {
     }
 
     interface CustomTextInput : LoginClient {
-        val loginInputFields: List<String>
-        suspend fun onLogin(data: Map<String, String>): List<User>
+        val loginInputFields: List<InputField>
+        suspend fun onLogin(data: Map<String, String?>): List<User>
     }
+
+    data class InputField(
+        val key: String,
+        val label: String,
+        val isRequired: Boolean,
+        val isPassword: Boolean
+    )
 
     suspend fun onSetLoginUser(user: User?)
 }

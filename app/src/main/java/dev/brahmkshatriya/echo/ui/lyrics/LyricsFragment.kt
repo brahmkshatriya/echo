@@ -24,7 +24,7 @@ import dev.brahmkshatriya.echo.common.models.Lyric
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.FragmentLyricsBinding
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit

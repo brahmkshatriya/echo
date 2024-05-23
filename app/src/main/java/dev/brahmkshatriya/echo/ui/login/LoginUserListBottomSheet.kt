@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
 import dev.brahmkshatriya.echo.models.UserEntity.Companion.toEntity
@@ -44,7 +45,9 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
             binding.addAccount.setOnClickListener {
                 dismiss()
                 requireActivity().openFragment(
-                    LoginFragment.newInstance(client.metadata.id, client.metadata.name)
+                    LoginFragment.newInstance(
+                        client.metadata.id, client.metadata.name, ExtensionType.MUSIC
+                    )
                 )
             }
             binding.accountListToggleGroup.removeAllViews()

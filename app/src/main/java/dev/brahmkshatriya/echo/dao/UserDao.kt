@@ -19,7 +19,7 @@ interface UserDao {
 
 
     @Query("SELECT * FROM CurrentUser")
-    fun observeCurrentUser() : Flow<CurrentUser?>
+    fun observeCurrentUser() : Flow<List<CurrentUser>>
 
     @Query("""
         SELECT UserEntity.* FROM UserEntity

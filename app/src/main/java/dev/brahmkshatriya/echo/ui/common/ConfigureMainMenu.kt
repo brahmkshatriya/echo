@@ -6,7 +6,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
-import dev.brahmkshatriya.echo.plugger.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment

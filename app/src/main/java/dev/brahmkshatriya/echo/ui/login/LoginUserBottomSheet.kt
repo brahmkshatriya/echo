@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
@@ -55,7 +56,9 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
 
             binding.login.setOnClickListener {
                 client?.metadata?.run {
-                    requireActivity().openFragment(LoginFragment.newInstance(id, name))
+                    requireActivity().openFragment(
+                        LoginFragment.newInstance(id, name, ExtensionType.MUSIC)
+                    )
                 }
                 dismiss()
             }

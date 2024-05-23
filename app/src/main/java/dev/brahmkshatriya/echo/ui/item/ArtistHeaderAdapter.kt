@@ -87,7 +87,13 @@ class ArtistHeaderAdapter(private val listener: Listener) :
             } else false
         } ?: false
 
-        if(_subscribe) {
+        binding.artistDescription.apply {
+            setOnClickListener {
+                maxLines = if (maxLines == 3) Int.MAX_VALUE else 3
+            }
+        }
+
+        if (_subscribe) {
             binding.artistSubscribe.isVisible = !isSubscribed
             binding.artistUnsubscribe.isVisible = isSubscribed
         } else {

@@ -168,6 +168,10 @@
     <string name="downloaded_percentage">Downloaded: %1$d\%</string>
     <string name="download_started">Download Started</string>
     <string name="download">Download</string>
+    <string name="username_password"><![CDATA[Username & Password]]></string>
+    <string name="webview">Webview</string>
+    <string name="manual">Manual</string>
+    <string name="required_field">%1$s is required.</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
