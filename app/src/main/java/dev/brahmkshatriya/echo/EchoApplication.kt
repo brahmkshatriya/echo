@@ -92,7 +92,6 @@ class EchoApplication : Application() {
         //Extension Loading
         scope.launch {
             musicExtensionRepo.getPlugins { list ->
-                println("beuh : $list")
                 val extensions = list.map { (metadata, client) ->
                     MusicExtension(metadata, client)
                 }
@@ -118,7 +117,9 @@ class EchoApplication : Application() {
                 list.mapNotNull { result ->
                     println("wut : ${result.getOrNull()}")
                     tryWith(throwableFlow) {
-                        result.getOrThrow()
+                        result.getOrElse {
+                            throw it.cause!!
+                        }
                     }
                 }
             }.collect(collector)

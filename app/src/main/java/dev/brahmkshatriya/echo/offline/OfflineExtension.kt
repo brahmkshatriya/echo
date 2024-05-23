@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.Setting
+import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
@@ -55,8 +56,22 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         )
     }
 
-    override val settingItems: List<Setting> = listOf()
-    override fun setSettings(settings: Settings) {}
+    override val settingItems: List<Setting> = listOf(
+        SettingSwitch(
+            "Refresh Library on Reload",
+            "refresh_library",
+            "Scan the device every time the feed is loaded",
+            false
+        )
+    )
+
+    private val refreshLibrary
+        get() = setting.getBoolean("refresh_library") ?: true
+
+    private lateinit var setting: Settings
+    override fun setSettings(settings: Settings) {
+        this.setting = settings
+    }
 
     lateinit var library: MediaStoreUtils.LibraryStoreClass
     private fun find(artist: Artist) =
@@ -79,6 +94,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     private fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }
 
     override fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer> {
+        if (refreshLibrary) library = MediaStoreUtils.getAllSongs(context)
         fun List<EchoMediaItem>.sorted() = sortedBy { it.title.lowercase() }
             .map { it.toMediaItemsContainer() }.toPaged()
         return when (tab?.id) {
@@ -314,6 +330,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     ).map { Tab(it, it) }
 
     override fun getLibraryFeed(tab: Tab?): PagedData<MediaItemsContainer> {
+        if(refreshLibrary) library = MediaStoreUtils.getAllSongs(context)
         return when (tab?.id) {
             "Folders" -> library.folderStructure.folderList.entries.first().value.toContainer(null).more!!
             else -> {
@@ -380,14 +397,13 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         library = MediaStoreUtils.getAllSongs(context)
     }
 
-    suspend fun getDownloads(): PagedData<MediaItemsContainer> {
+    fun getDownloads(): PagedData<MediaItemsContainer> {
         library = MediaStoreUtils.getAllSongs(context)
-        return library.folderStructure.folderList.entries.first().value
-            .toContainer(null).more!!.loadAll()
-            .filterIsInstance<MediaItemsContainer.Container>()
-            .find { it.title == "Download" }?.more?.loadAll()
-            ?.filterIsInstance<MediaItemsContainer.Container>()
-            ?.find { it.title == "Echo" }?.more
+        return library.folderStructure.folderList["storage"]
+            ?.folderList?.get("emulated")
+            ?.folderList?.get("0")
+            ?.folderList?.get("Download")
+            ?.folderList?.get("Echo")?.toContainer(null)?.more
             ?: PagedData.Single { listOf() }
     }
 }

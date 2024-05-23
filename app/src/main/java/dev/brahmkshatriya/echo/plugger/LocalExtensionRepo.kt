@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import tel.jeelpa.plugger.PluginRepo
 
 class LocalExtensionRepo(val context: Context) : PluginRepo<ExtensionMetadata, ExtensionClient> {
-    val extension = OfflineExtension(context)
+    private val extension = OfflineExtension(context)
     override fun getAllPlugins() = MutableStateFlow(
-        listOf(Result.success(OfflineExtension.metadata to extension))
+        listOf(
+            Result.success(OfflineExtension.metadata to extension),
+        )
     )
 }

@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.User
@@ -54,6 +55,10 @@ class LoginFragment : Fragment() {
                     putString("extensionType", extensionType.name)
                 }
             }
+
+        fun newInstance(error: LoginRequiredException) =
+            newInstance(error.clientId, error.clientName, error.clientType)
+
     }
 
     private var binding by autoCleared<FragmentLoginBinding>()
@@ -80,7 +85,7 @@ class LoginFragment : Fragment() {
                 client.onLogin(username, password)
 
             override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
-        }
+        } to binding.loginUserPass
         else null
 
     private fun createWebViewClient(client: LoginClient) =
@@ -90,7 +95,7 @@ class LoginFragment : Fragment() {
             override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
             override suspend fun onLoginWebviewStop(url: String, cookie: String) =
                 client.onLoginWebviewStop(url, cookie)
-        }
+        } to binding.loginWebview
         else null
 
     private fun createCustomTextInputClient(client: LoginClient) =
@@ -98,7 +103,7 @@ class LoginFragment : Fragment() {
             override val loginInputFields = client.loginInputFields
             override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
             override suspend fun onLogin(data: Map<String, String?>) = client.onLogin(data)
-        }
+        } to binding.loginCustomInput
         else null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -153,24 +158,24 @@ class LoginFragment : Fragment() {
 
         binding.loginContainer.isVisible = true
 
-        val map = mapOf(
-            LoginClient.UsernamePassword::class to binding.loginUserPass,
-            LoginClient.WebView::class to binding.loginWebview,
-            LoginClient.CustomTextInput::class to binding.loginCustomInput
-        )
-
         val clients = listOfNotNull(
             createUsernamePasswordClient(client),
             createWebViewClient(client),
             createCustomTextInputClient(client)
-        ).associateWith { map[it::class]!! }
+        )
 
-        if (clients.size == 1) loginViewModel.loginClient.value = clients.keys.first()
+        if (clients.isEmpty()) {
+            createSnack(requireContext().loginNotSupported(clientName))
+            parentFragmentManager.popBackStack()
+            return
+        } else if (clients.size == 1) loginViewModel.loginClient.value = clients.first().first
         else {
             binding.loginToggleGroup.isVisible = true
             clients.forEach { (loginClient, button) ->
+                button.isVisible = true
                 button.setOnClickListener {
                     loginViewModel.loginClient.value = loginClient
+                    binding.loginToggleGroup.isVisible = false
                 }
             }
         }
@@ -206,7 +211,7 @@ class LoginFragment : Fragment() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 url ?: return
                 if (loginWebViewStopUrlRegex.matches(url)) {
-                    val cookie = CookieManager.getInstance().getCookie(url)
+                    val cookie = CookieManager.getInstance().getCookie(url) ?: ""
                     loginViewModel.onWebViewStop(clientId, client, url, cookie)
                     afterWebViewStop()
                     callback.isEnabled = false
@@ -250,7 +255,7 @@ class LoginFragment : Fragment() {
         client: LoginClient.CustomTextInput
     ) {
         customInputContainer.isVisible = true
-        client.loginInputFields.forEach { field ->
+        client.loginInputFields.forEachIndexed { index, field ->
             val input = ItemInputBinding.inflate(
                 layoutInflater,
                 customInput,
@@ -262,6 +267,12 @@ class LoginFragment : Fragment() {
             input.editText.setText(loginViewModel.inputs[field.key])
             input.editText.doAfterTextChanged { editable ->
                 loginViewModel.inputs[field.key] = editable.toString().takeIf { it.isNotBlank() }
+            }
+            input.editText.setOnEditorActionListener { _, _, _ ->
+                if (index < client.loginInputFields.size - 1) {
+                    customInput.getChildAt(index + 1).requestFocus()
+                } else loginCustomSubmit.performClick()
+                true
             }
             customInput.addView(input.root)
         }
@@ -297,6 +308,10 @@ class LoginFragment : Fragment() {
             true
         }
         loginPassword.setOnEditorActionListener { _, _, _ ->
+            loginUserPassSubmit.performClick()
+            true
+        }
+        loginUserPassSubmit.setOnClickListener {
             val username = loginUsername.text.toString()
             val password = loginPassword.text.toString()
             if (username.isEmpty()) {
@@ -307,12 +322,11 @@ class LoginFragment : Fragment() {
                         )
                     )
                 }
-                return@setOnEditorActionListener true
+                return@setOnClickListener
             }
             loginViewModel.onUsernamePasswordSubmit(clientId, client, username, password)
             usernamePasswordContainer.isVisible = false
             loadingContainer.root.isVisible = true
-            true
         }
     }
 }

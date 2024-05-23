@@ -132,7 +132,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
 
         override fun onLoginRequired(view: View, error: LoginRequiredException) {
             fragment.requireActivity().openFragment(
-                LoginFragment.newInstance(error.clientId, error.clientName, error.clientType),
+                LoginFragment.newInstance(error),
                 view
             )
         }

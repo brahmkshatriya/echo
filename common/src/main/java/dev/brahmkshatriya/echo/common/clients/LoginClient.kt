@@ -24,7 +24,7 @@ sealed interface LoginClient {
         val key: String,
         val label: String,
         val isRequired: Boolean,
-        val isPassword: Boolean
+        val isPassword: Boolean = false
     )
 
     suspend fun onSetLoginUser(user: User?)

@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.home
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.MusicExtension
@@ -15,8 +16,10 @@ class HomeFeedViewModel @Inject constructor(
     override val extensionFlow: MutableStateFlow<MusicExtension?>,
     val userFlow: MutableSharedFlow<UserEntity?>,
     throwableFlow: MutableSharedFlow<Throwable>,
-) : FeedViewModel<HomeFeedClient>(throwableFlow, extensionFlow) {
-    override suspend fun getTabs(client: HomeFeedClient) = client.getHomeTabs()
-    override fun getFeed(client: HomeFeedClient) = client.getHomeFeed(tab).toFlow()
+) : FeedViewModel(throwableFlow, extensionFlow) {
+    override suspend fun getTabs(client: ExtensionClient) =
+        (client as? HomeFeedClient)?.getHomeTabs()
 
+    override fun getFeed(client: ExtensionClient) =
+        (client as? HomeFeedClient)?.getHomeFeed(tab)?.toFlow()
 }

@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.library
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.models.UserEntity
@@ -19,9 +20,12 @@ class LibraryViewModel @Inject constructor(
     override val extensionFlow: MutableStateFlow<MusicExtension?>,
     val userFlow: MutableSharedFlow<UserEntity?>,
     throwableFlow: MutableSharedFlow<Throwable>,
-) : FeedViewModel<LibraryClient>(throwableFlow, extensionFlow) {
-    override suspend fun getTabs(client: LibraryClient) = client.getLibraryTabs()
-    override fun getFeed(client: LibraryClient) = client.getLibraryFeed(tab).toFlow()
+) : FeedViewModel(throwableFlow, extensionFlow) {
+    override suspend fun getTabs(client: ExtensionClient) =
+        (client as? LibraryClient)?.getLibraryTabs()
+
+    override fun getFeed(client: ExtensionClient) =
+        (client as? LibraryClient)?.getLibraryFeed(tab)?.toFlow()
 
     val playlistCreatedFlow = MutableSharedFlow<Pair<String, Playlist>>()
     fun createPlaylist(title: String) {
