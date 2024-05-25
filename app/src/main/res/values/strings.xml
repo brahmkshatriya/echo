@@ -172,6 +172,7 @@
     <string name="webview">Webview</string>
     <string name="manual">Manual</string>
     <string name="required_field">%1$s is required.</string>
+    <string name="name_settings">%1$s Settings</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

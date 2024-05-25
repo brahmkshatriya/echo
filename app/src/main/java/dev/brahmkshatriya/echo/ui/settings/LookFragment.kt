@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
 import android.os.Bundle
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -10,6 +9,7 @@ import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.EchoApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.ColorListPreference
+import dev.brahmkshatriya.echo.utils.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.restartApp
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
@@ -55,7 +55,7 @@ class LookFragment : BaseSettingsFragment() {
                 layoutResource = R.layout.preference_category
                 screen.addPreference(this)
 
-                ListPreference(context).apply {
+                MaterialListPreference(context).apply {
                     key = THEME_KEY
                     title = getString(R.string.theme)
                     summary = getString(R.string.theme_summary)

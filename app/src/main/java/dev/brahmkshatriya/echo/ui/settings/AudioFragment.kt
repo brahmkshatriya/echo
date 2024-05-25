@@ -5,12 +5,12 @@ import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.utils.MaterialListPreference
 
 class AudioFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.audio)
@@ -77,7 +77,7 @@ class AudioFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-                ListPreference(context).apply {
+                MaterialListPreference(context).apply {
                     key = STREAM_QUALITY
                     title = getString(R.string.stream_quality)
                     summary = getString(R.string.stream_quality_summary)

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -40,9 +41,16 @@ class MainFragment : Fragment() {
         binding.root.adapter = adapter
         binding.root.setPageTransformer(SlideInPageTransformer())
         binding.root.isUserInputEnabled = false
+        val backCallback = object : OnBackPressedCallback(false){
+            override fun handleOnBackPressed() {
+                viewModel.navigation.value = 0
+            }
+        }
         observe(viewModel.navigation) {
+            backCallback.isEnabled = it != 0
             binding.root.setCurrentItem(it, false)
         }
+        requireActivity().onBackPressedDispatcher.addCallback(backCallback)
     }
 
     class MainAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
