@@ -17,7 +17,16 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
+import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.collect
@@ -29,6 +38,7 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectBrowserToUI
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
@@ -128,6 +138,7 @@ class MainActivity : AppCompatActivity() {
 
         controllerFuture = browserFuture
 
+        intent?.onIntent()
     }
 
     override fun onDestroy() {
@@ -135,11 +146,62 @@ class MainActivity : AppCompatActivity() {
         controllerFuture?.let { MediaBrowser.releaseFuture(it) }
     }
 
+    private fun Intent.onIntent() {
+        val fromNotif = hasExtra("fromNotification")
+        if (fromNotif) {
+            uiViewModel.fromNotification.value = true
+            return
+        }
+        println("Intent: $data")
+        val uri = data
+        if (uri != null) {
+            fun createSnack(id: Int) {
+                val snackbar by viewModels<SnackBar>()
+                val message = getString(id)
+                println("bruh : $message")
+                snackbar.create(SnackBar.Message(message))
+            }
+
+            val extensionType = uri.host
+            println(type)
+            when (extensionType) {
+                "music" -> {
+                    val extensionId = uri.pathSegments.firstOrNull()
+                    if (extensionId == null) {
+                        createSnack(R.string.error_no_client)
+                        return
+                    }
+                    val type = uri.pathSegments.getOrNull(1)
+                    val id = uri.pathSegments.getOrNull(2)
+                    if (id == null) {
+                        createSnack(R.string.error_no_id)
+                        return
+                    }
+                    val name = uri.getQueryParameter("name").orEmpty()
+                    val item: EchoMediaItem? = when (type) {
+                        "user" -> User(id, name).toMediaItem()
+                        "artist" -> Artist(id, name).toMediaItem()
+                        "track" -> Track(id, name).toMediaItem()
+                        "album" -> Album(id, name).toMediaItem()
+                        "playlist" -> Playlist(id, name, false).toMediaItem()
+                        else -> null
+                    }
+                    if (item == null) {
+                        createSnack(R.string.error_invalid_type)
+                        return
+                    }
+                    openFragment(ItemFragment.newInstance(extensionId, item))
+                }
+
+                else -> {
+                    createSnack(R.string.invalid_extension_host)
+                }
+            }
+        }
+    }
 
     override fun onNewIntent(intent: Intent?) {
-        intent?.hasExtra("fromNotification")?.let {
-            uiViewModel.fromNotification.value = it
-        }
+        intent?.onIntent()
         super.onNewIntent(intent)
     }
 

@@ -119,7 +119,7 @@ class ItemFragment : Fragment() {
         }
 
         FastScrollerHelper.applyTo(binding.recyclerView)
-        binding.toolBar.title = item.title.trim()
+        binding.toolBar.title = item.title.trim().takeIf { it.isNotEmpty() }
         binding.endIcon.load(item.icon())
         item.cover.loadInto(binding.cover, item.placeHolder())
         if (item is EchoMediaItem.Profile) binding.coverContainer.run {
@@ -227,10 +227,12 @@ class ItemFragment : Fragment() {
         }
 
         collect(viewModel.itemFlow) {
-            println("got $it")
             binding.swipeRefresh.isRefreshing = it == null
             it ?: return@collect
+
+            //I have no idea why this doesn't update, if title already exists
             binding.toolBar.title = it.title.trim()
+
             it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
             when (it) {
                 is AlbumItem -> {

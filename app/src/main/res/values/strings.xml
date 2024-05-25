@@ -173,6 +173,9 @@
     <string name="manual">Manual</string>
     <string name="required_field">%1$s is required.</string>
     <string name="name_settings">%1$s Settings</string>
+    <string name="invalid_extension_host">Invalid extension type in host.</string>
+    <string name="error_no_id">No id provided in parameter</string>
+    <string name="error_invalid_type">Invalid type in parameter</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
