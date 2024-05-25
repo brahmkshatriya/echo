@@ -4,17 +4,21 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.utils.mapState
 import tel.jeelpa.plugger.PluginRepo
 
 inline fun <reified T : ExtensionClient> Context.injectSettings(
+    type: ExtensionType,
     pluginRepo: PluginRepo<ExtensionMetadata, T>
 ) = pluginRepo.getAllPlugins().mapState { list ->
     list.map {
         runCatching {
             it.getOrThrow().apply {
-                val settings = toSettings(getSharedPreferences(first.id, Context.MODE_PRIVATE))
+                val settings = toSettings(
+                    getSharedPreferences("$type-${first.id}", Context.MODE_PRIVATE)
+                )
                 second.setSettings(settings)
             }
         }

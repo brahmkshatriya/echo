@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.plugger
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import kotlinx.coroutines.flow.StateFlow
 import tel.jeelpa.plugger.PluginRepo
 
@@ -18,6 +19,7 @@ class MusicExtensionRepo(
     private val pluginRepo: PluginRepo<ExtensionMetadata, ExtensionClient>
 ) : PluginRepo<ExtensionMetadata, ExtensionClient> {
 
-    override fun getAllPlugins() = context.injectSettings<ExtensionClient>(pluginRepo)
+    override fun getAllPlugins() = context
+        .injectSettings<ExtensionClient>(ExtensionType.MUSIC, pluginRepo)
 }
 
