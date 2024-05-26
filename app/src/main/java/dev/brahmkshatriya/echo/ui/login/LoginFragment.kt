@@ -43,6 +43,8 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInse
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -89,12 +91,25 @@ class LoginFragment : Fragment() {
         else null
 
     private fun createWebViewClient(client: LoginClient) =
-        if (client is LoginClient.WebView) object : LoginClient.WebView {
-            override val loginWebViewInitialUrl = client.loginWebViewInitialUrl
-            override val loginWebViewStopUrlRegex = client.loginWebViewStopUrlRegex
-            override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
-            override suspend fun onLoginWebviewStop(url: String, cookie: String) =
-                client.onLoginWebviewStop(url, cookie)
+        if (client is LoginClient.WebView) when (client) {
+            is LoginClient.WebView.Cookie -> object : LoginClient.WebView.Cookie {
+                override val loginWebViewInitialUrl = client.loginWebViewInitialUrl
+                override val loginWebViewStopUrlRegex = client.loginWebViewStopUrlRegex
+                override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
+                override suspend fun onLoginWebviewStop(url: String, data: String) =
+                    client.onLoginWebviewStop(url, data)
+            }
+
+            is LoginClient.WebView.Evaluate -> object : LoginClient.WebView.Evaluate {
+                override val loginWebViewInitialUrl = client.loginWebViewInitialUrl
+                override val loginWebViewStopUrlRegex = client.loginWebViewStopUrlRegex
+                override val javascriptToEvaluate = client.javascriptToEvaluate
+                override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
+                override suspend fun onLoginWebviewStop(url: String, data: String) =
+                    client.onLoginWebviewStop(url, data)
+            }
+
+            else -> null
         } to binding.loginWebview
         else null
 
@@ -210,11 +225,19 @@ class LoginFragment : Fragment() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 url ?: return
-                if (loginWebViewStopUrlRegex.matches(url)) {
-                    val cookie = CookieManager.getInstance().getCookie(url) ?: ""
-                    loginViewModel.onWebViewStop(clientId, client, url, cookie)
-                    afterWebViewStop()
-                    callback.isEnabled = false
+                lifecycleScope.launch {
+                    if (loginWebViewStopUrlRegex.matches(url)) {
+                        webView.stopLoading()
+                        val data = webView.loadData(url, client)
+                        loginViewModel.onWebViewStop(clientId, client, url, data)
+                        CookieManager.getInstance().run {
+                            removeAllCookies(null)
+                            flush()
+                        }
+                        webViewContainer.isVisible = false
+                        loadingContainer.root.isVisible = true
+                        callback.isEnabled = false
+                    }
                 }
             }
 
@@ -225,6 +248,7 @@ class LoginFragment : Fragment() {
         webView.settings.apply {
             domStorageEnabled = true
             javaScriptEnabled = true
+            databaseEnabled = true
             userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
         }
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
@@ -235,20 +259,19 @@ class LoginFragment : Fragment() {
         }
     }
 
+    private suspend fun WebView.loadData(url: String, client: LoginClient.WebView) = when (client) {
+        is LoginClient.WebView.Cookie ->
+            CookieManager.getInstance().getCookie(url) ?: ""
+
+        is LoginClient.WebView.Evaluate -> suspendCoroutine {
+            evaluateJavascript(client.javascriptToEvaluate) { result -> it.resume(result) }
+        }
+    }
+
     private fun WebView.applyDarkMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             settings.isAlgorithmicDarkeningAllowed = true
         }
-    }
-
-    private fun FragmentLoginBinding.afterWebViewStop() {
-        webView.stopLoading()
-        CookieManager.getInstance().run {
-            removeAllCookies(null)
-            flush()
-        }
-        webViewContainer.isVisible = false
-        loadingContainer.root.isVisible = true
     }
 
     private fun FragmentLoginBinding.configureCustomTextInput(

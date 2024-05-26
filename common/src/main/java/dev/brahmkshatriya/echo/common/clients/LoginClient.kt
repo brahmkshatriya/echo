@@ -9,10 +9,14 @@ sealed interface LoginClient {
         suspend fun onLogin(username: String, password: String): List<User>
     }
 
-    interface WebView : LoginClient {
+    sealed interface WebView : LoginClient {
         val loginWebViewInitialUrl: Request
         val loginWebViewStopUrlRegex: Regex
-        suspend fun onLoginWebviewStop(url: String, cookie: String): List<User>
+        suspend fun onLoginWebviewStop(url: String, data: String): List<User>
+        interface Cookie : WebView
+        interface Evaluate : WebView {
+            val javascriptToEvaluate: String
+        }
     }
 
     interface CustomTextInput : LoginClient {
