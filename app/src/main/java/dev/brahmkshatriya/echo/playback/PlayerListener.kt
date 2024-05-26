@@ -142,8 +142,12 @@ class PlayerListener(
         viewModel?.shuffle?.value = shuffleModeEnabled
         val indexes = mutableListOf(0)
         var index = 0
-        while(index != -1) {
-            index = player.currentTimeline.getNextWindowIndex(index, player.repeatMode, shuffleModeEnabled)
+        while (index != -1) {
+            index = player.currentTimeline.getNextWindowIndex(
+                index,
+                player.repeatMode,
+                shuffleModeEnabled
+            )
             if (index != -1) indexes.add(index)
         }
     }
@@ -157,15 +161,15 @@ class PlayerListener(
         val track = streamableTrack.loaded ?: streamableTrack.unloaded
         val clientId = streamableTrack.clientId
         val trackers = trackerListFlow.value ?: emptyList()
+        println("track : $track")
         scope.launch(Dispatchers.IO) {
-            if (client is TrackerClient) tryWith {
-                client.block(clientId, streamableTrack.context, track)
-            }
-            trackers.map {
+            if (client is TrackerClient)
+                tryWith { client.block(clientId, streamableTrack.context, track) }
+            println("trackers : $trackers")
+            trackers.forEach {
                 launch {
-                    tryWith {
-                        it.client.block(clientId, streamableTrack.context, track)
-                    }
+                    println("Tracking : ${it.metadata.name}")
+                    tryWith { it.client.block(clientId, streamableTrack.context, track) }
                 }
             }
         }

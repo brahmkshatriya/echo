@@ -8,6 +8,7 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.dao.UserDao
 import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
@@ -28,13 +29,17 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import tel.jeelpa.plugger.PluginRepo
 import javax.inject.Inject
 
@@ -91,6 +96,38 @@ class EchoApplication : Application() {
 
         //Extension Loading
         scope.launch {
+            val trackers = MutableStateFlow<Unit?>(null)
+            val lyrics = MutableStateFlow<Unit?>(null)
+            launch {
+                trackerExtensionRepo.getPlugins { list ->
+                    trackerListFlow.value = list.map { TrackerExtension(it.first, it.second) }
+                    list.map {
+                        async {
+                            setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
+                        }
+                    }.awaitAll()
+                    trackers.emit(Unit)
+                }
+            }
+
+            launch {
+                lyricsExtensionRepo.getPlugins { list ->
+                    lyricsListFlow.value = list.map { LyricsExtension(it.first, it.second) }
+                    list.map {
+                        async {
+                            setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
+                        }
+                    }.awaitAll()
+                    lyrics.emit(Unit)
+                }
+            }
+
+            println("Awaiting trackerJob and lyricsJob...")
+            trackers.first { it != null }
+            println("trackerJob completed.")
+            lyrics.first { it != null }
+            println("lyricsJob completed.")
+
             musicExtensionRepo.getPlugins { list ->
                 val extensions = list.map { (metadata, client) ->
                     MusicExtension(metadata, client)
@@ -98,33 +135,24 @@ class EchoApplication : Application() {
                 extensionListFlow.value = extensions
                 val id = settings.getString(LAST_EXTENSION_KEY, null)
                 val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
-                setupExtension(extension)
-            }
-            trackerExtensionRepo.getPlugins { list ->
-                trackerListFlow.value = list.map { TrackerExtension(it.first, it.second) }
-            }
-            lyricsExtensionRepo.getPlugins { list ->
-                lyricsListFlow.value = list.map { LyricsExtension(it.first, it.second) }
+                setupMusicExtension(
+                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
+                )
             }
         }
     }
 
     private suspend fun <T> PluginRepo<ExtensionMetadata, T>.getPlugins(
         collector: FlowCollector<List<Pair<ExtensionMetadata, T>>>
-    ) = coroutineScope {
-        launch {
-            getAllPlugins().catchWith(throwableFlow).map { list ->
-                list.mapNotNull { result ->
-                    println("wut : ${result.getOrNull()}")
-                    tryWith(throwableFlow) {
-                        result.getOrElse {
-                            throw it.cause!!
-                        }
-                    }
+    ) = getAllPlugins().catchWith(throwableFlow).map { list ->
+        list.mapNotNull { result ->
+            tryWith(throwableFlow) {
+                result.getOrElse {
+                    throw it.cause!!
                 }
-            }.collect(collector)
+            }
         }
-    }
+    }.collect(collector)
 
     @Inject
     lateinit var database: EchoDatabase
@@ -134,16 +162,13 @@ class EchoApplication : Application() {
 
     private val userDao by lazy { database.userDao() }
 
-    private fun setupExtension(extension: MusicExtension?) {
-        setExtension(scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension)
-    }
-
 
     companion object {
 
         const val LAST_EXTENSION_KEY = "last_extension"
+        const val TIMEOUT = 5000L
 
-        fun setExtension(
+        fun setupMusicExtension(
             scope: CoroutineScope,
             settings: SharedPreferences,
             extensionFlow: MutableStateFlow<MusicExtension?>,
@@ -153,13 +178,24 @@ class EchoApplication : Application() {
             extension: MusicExtension?
         ) {
             settings.edit().putString(LAST_EXTENSION_KEY, extension?.metadata?.id).apply()
-            scope.launch(Dispatchers.IO) {
-                extension?.run {
-                    client.onExtensionSelected()
-                    setLoginUser(metadata.id, client, userDao, userFlow, throwableFlow)
-                }
+            extension ?: return
+            scope.launch {
+                setExtension(userDao, userFlow, throwableFlow, extension.metadata, extension.client)
                 extensionFlow.value = extension
             }
+        }
+
+        suspend fun setExtension(
+            userDao: UserDao,
+            userFlow: MutableSharedFlow<UserEntity?>,
+            throwableFlow: MutableSharedFlow<Throwable>,
+            metadata: ExtensionMetadata,
+            client: ExtensionClient
+        ) = withContext(Dispatchers.IO) {
+            tryWith(throwableFlow) {
+                withTimeout(TIMEOUT) { client.onExtensionSelected() }
+            }
+            setLoginUser(metadata.id, client, userDao, userFlow, throwableFlow)
         }
 
         @SuppressLint("RestrictedApi")
@@ -172,8 +208,8 @@ class EchoApplication : Application() {
             val customColor = if (!preferences.getBoolean(CUSTOM_THEME_KEY, false)) null
             else preferences.getInt(COLOR_KEY, -1).takeIf { it != -1 }
 
-            val builder = if (customColor != null)
-                DynamicColorsOptions.Builder().setContentBasedSource(customColor)
+            val builder = if (customColor != null) DynamicColorsOptions.Builder()
+                .setContentBasedSource(customColor)
             else DynamicColorsOptions.Builder()
 
             theme?.let {

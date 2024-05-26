@@ -110,7 +110,7 @@
     <string name="no_streams_found">No stream found</string>
     <string name="create_playlist">Create Playlist</string>
     <string name="not_loading">Not Loading</string>
-    <string name="login_required">Login Required</string>
+    <string name="login_required">%1$s Login Required</string>
     <string name="error">Error</string>
     <string name="extension_out_of_date">Extension is out of date</string>
     <string name="playlist_favourite">Liked Songs</string>

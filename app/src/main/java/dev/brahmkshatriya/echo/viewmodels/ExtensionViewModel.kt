@@ -50,14 +50,8 @@ class ExtensionViewModel @Inject constructor(
 
     private val userDao = database.userDao()
     fun setExtension(extension: MusicExtension?) {
-        EchoApplication.setExtension(
-            viewModelScope,
-            settings,
-            extensionFlow,
-            userDao,
-            userFlow,
-            throwableFlow,
-            extension
+        EchoApplication.setupMusicExtension(
+            viewModelScope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
         )
     }
 

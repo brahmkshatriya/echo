@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.ui.login
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType.TYPE_CLASS_TEXT
@@ -30,6 +29,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -194,8 +194,8 @@ class LoginFragment : Fragment() {
                 }
             }
         }
-        observe(loginViewModel.loginClient) { loginClient ->
-            loginClient ?: return@observe
+        collect(loginViewModel.loginClient) { loginClient ->
+            loginClient ?: return@collect
             binding.loginToggleGroup.isVisible = false
             when (loginClient) {
                 is LoginClient.WebView -> binding.configureWebView(loginClient)
@@ -223,13 +223,15 @@ class LoginFragment : Fragment() {
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         webView.webViewClient = object : WebViewClient() {
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+
+            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                callback.isEnabled = webView.canGoBack()
                 url ?: return
                 lifecycleScope.launch {
                     if (loginWebViewStopUrlRegex.matches(url)) {
                         webView.stopLoading()
                         val data = webView.loadData(url, client)
-                        loginViewModel.onWebViewStop(clientId, client, url, data)
+                        loginViewModel.onWebViewStop(clientId, clientType, client, url, data)
                         CookieManager.getInstance().run {
                             removeAllCookies(null)
                             flush()
@@ -239,10 +241,6 @@ class LoginFragment : Fragment() {
                         callback.isEnabled = false
                     }
                 }
-            }
-
-            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
-                callback.isEnabled = webView.canGoBack()
             }
         }
         webView.settings.apply {
@@ -315,7 +313,7 @@ class LoginFragment : Fragment() {
                     return@setOnClickListener
                 }
             }
-            loginViewModel.onCustomTextInputSubmit(clientId, client)
+            loginViewModel.onCustomTextInputSubmit(clientId, clientType, client)
             customInputContainer.isVisible = false
             loadingContainer.root.isVisible = true
         }
@@ -347,7 +345,9 @@ class LoginFragment : Fragment() {
                 }
                 return@setOnClickListener
             }
-            loginViewModel.onUsernamePasswordSubmit(clientId, client, username, password)
+            loginViewModel.onUsernamePasswordSubmit(
+                clientId, clientType, client, username, password
+            )
             usernamePasswordContainer.isVisible = false
             loadingContainer.root.isVisible = true
         }

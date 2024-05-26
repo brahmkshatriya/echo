@@ -87,7 +87,7 @@ class SnackBar @Inject constructor(
                 throwable.printStackTrace()
                 val message = when (throwable) {
                     is LoginRequiredException -> Message(
-                        message = getString(R.string.login_required),
+                        message = getString(R.string.login_required, throwable.clientName),
                         action = Action(getString(R.string.login)) {
                             openFragment(LoginFragment.newInstance(throwable))
                         }

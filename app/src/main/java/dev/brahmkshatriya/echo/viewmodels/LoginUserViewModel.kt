@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.viewmodels
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.EchoApplication.Companion.TIMEOUT
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 @HiltViewModel
@@ -93,8 +95,9 @@ class LoginUserViewModel @Inject constructor(
         ) = withContext(Dispatchers.IO) {
             if (client !is LoginClient) return@withContext
             val user = userDao.getCurrentUser(id)
+            println("$id user : $user")
             val success = tryWith(throwableFlow) {
-                client.onSetLoginUser(user?.toUser())
+                withTimeout(TIMEOUT) { client.onSetLoginUser(user?.toUser()) }
             }
             if (success != null) flow.emit(user)
         }
