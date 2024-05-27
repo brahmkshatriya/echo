@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.FileSystemPluginSource
+import dev.brahmkshatriya.echo.plugger.ImportType
 import dev.brahmkshatriya.echo.plugger.LocalExtensionRepo
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.LyricsExtensionRepo
@@ -17,6 +18,7 @@ import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtensionRepo
 import dev.brahmkshatriya.echo.plugger.parser.ApkFileManifestParser
 import dev.brahmkshatriya.echo.plugger.parser.ApkManifestParser
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import tel.jeelpa.plugger.PluginRepo
 import tel.jeelpa.plugger.PluginRepoImpl
@@ -29,25 +31,28 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class ExtensionModule {
 
+
+    @Provides
+    @Singleton
+    fun providesRefresher() = MutableSharedFlow<Boolean>()
+
     private fun <T> getComposed(
         context: Context,
         suffix: String,
         vararg repo: PluginRepo<ExtensionMetadata, T>
     ): RepoComposer<ExtensionMetadata, T> {
         val loader = AndroidPluginLoader<ExtensionMetadata, T>(context)
-        val apkParser = ApkManifestParser()
-        val apkFileParser = ApkFileManifestParser(context.packageManager, apkParser)
         val apkFilePluginRepo = PluginRepoImpl(
             FileSystemPluginSource(context.filesDir, ".apk"),
-            apkFileParser,
+            ApkFileManifestParser(context.packageManager, ApkManifestParser(ImportType.Apk)),
             loader,
         )
-        val apkPluginRepo = PluginRepoImpl(
+        val appPluginRepo = PluginRepoImpl(
             ApkPluginSource(context, "dev.brahmkshatriya.echo.$suffix"),
-            apkParser,
+            ApkManifestParser(ImportType.App),
             loader
         )
-        return RepoComposer(apkPluginRepo, apkFilePluginRepo, *repo)
+        return RepoComposer(appPluginRepo, apkFilePluginRepo, *repo)
     }
 
     @Provides

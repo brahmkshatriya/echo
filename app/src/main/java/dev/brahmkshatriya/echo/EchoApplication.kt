@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,6 +50,9 @@ class EchoApplication : Application() {
 
     @Inject
     lateinit var settings: SharedPreferences
+
+    @Inject
+    lateinit var refresher: MutableSharedFlow<Boolean>
 
     @Inject
     lateinit var musicExtensionRepo: MusicExtensionRepo
@@ -96,49 +100,57 @@ class EchoApplication : Application() {
 
         //Extension Loading
         scope.launch {
-            val trackers = MutableStateFlow<Unit?>(null)
-            val lyrics = MutableStateFlow<Unit?>(null)
-            launch {
-                trackerExtensionRepo.getPlugins { list ->
-                    trackerListFlow.value = list.map { TrackerExtension(it.first, it.second) }
-                    list.map {
-                        async {
-                            setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
-                        }
-                    }.awaitAll()
-                    trackers.emit(Unit)
-                }
-            }
+            getAllPlugins()
+        }
 
-            launch {
-                lyricsExtensionRepo.getPlugins { list ->
-                    lyricsListFlow.value = list.map { LyricsExtension(it.first, it.second) }
-                    list.map {
-                        async {
-                            setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
-                        }
-                    }.awaitAll()
-                    lyrics.emit(Unit)
-                }
+        // Refresh Extensions
+        scope.launch {
+            refresher.collect {
+                println("refreshing $it")
+                if (it) getAllPlugins()
             }
+        }
+    }
 
-            println("Awaiting trackerJob and lyricsJob...")
-            trackers.first { it != null }
-            println("trackerJob completed.")
-            lyrics.first { it != null }
-            println("lyricsJob completed.")
-
-            musicExtensionRepo.getPlugins { list ->
-                val extensions = list.map { (metadata, client) ->
-                    MusicExtension(metadata, client)
-                }
-                extensionListFlow.value = extensions
-                val id = settings.getString(LAST_EXTENSION_KEY, null)
-                val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
-                setupMusicExtension(
-                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
-                )
+    private suspend fun getAllPlugins() = coroutineScope {
+        val trackers = MutableStateFlow<Unit?>(null)
+        val lyrics = MutableStateFlow<Unit?>(null)
+        launch {
+            trackerExtensionRepo.getPlugins { list ->
+                trackerListFlow.value = list.map { TrackerExtension(it.first, it.second) }
+                list.map {
+                    async {
+                        setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
+                    }
+                }.awaitAll()
+                trackers.emit(Unit)
             }
+        }
+
+        launch {
+            lyricsExtensionRepo.getPlugins { list ->
+                lyricsListFlow.value = list.map { LyricsExtension(it.first, it.second) }
+                list.map {
+                    async {
+                        setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
+                    }
+                }.awaitAll()
+                lyrics.emit(Unit)
+            }
+        }
+        trackers.first { it != null }
+        lyrics.first { it != null }
+        musicExtensionRepo.getPlugins { list ->
+            val extensions = list.map { (metadata, client) ->
+                MusicExtension(metadata, client)
+            }
+            extensionListFlow.value = extensions
+            val id = settings.getString(LAST_EXTENSION_KEY, null)
+            val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
+            setupMusicExtension(
+                scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
+            )
+            refresher.emit(false)
         }
     }
 

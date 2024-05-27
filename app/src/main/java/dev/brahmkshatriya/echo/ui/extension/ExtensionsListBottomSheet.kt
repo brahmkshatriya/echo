@@ -10,11 +10,12 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
@@ -43,7 +44,10 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
         binding.addExtension.isEnabled = false
-
+        binding.manageExtensions.setOnClickListener {
+            dismiss()
+            requireActivity().openFragment(ManageExtensionsFragment())
+        }
         val viewModel = when (type) {
             ExtensionType.LYRICS -> activityViewModels<LyricsViewModel>().value
             ExtensionType.MUSIC -> activityViewModels<ExtensionViewModel>().value

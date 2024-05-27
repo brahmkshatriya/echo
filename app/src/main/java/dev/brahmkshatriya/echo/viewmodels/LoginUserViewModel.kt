@@ -12,10 +12,10 @@ import dev.brahmkshatriya.echo.models.CurrentUser
 import dev.brahmkshatriya.echo.models.UserEntity
 import dev.brahmkshatriya.echo.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -50,22 +50,33 @@ class LoginUserViewModel @Inject constructor(
         setLoginUser(id, client, userDao, userFlow, throwableFlow)
     }
 
-    val currentUser = extensionFlow.combine(userDao.observeCurrentUser()) { extension, list ->
+    val currentMusicUser = extensionFlow.combine(userDao.observeCurrentUser()) { extension, list ->
         val id = extension?.metadata?.id
         val user = list.find { it.clientId == id }
-        coroutineScope {
-            withContext(Dispatchers.IO) {
-                extension to userDao.getUser(id, user?.id)?.toUser()
-            }
+        withContext(Dispatchers.IO) {
+            extension to userDao.getUser(id, user?.id)?.toUser()
         }
     }
 
-    val allUsers = extensionFlow.map { client ->
-        coroutineScope {
-            withContext(Dispatchers.IO) {
-                client to client?.metadata?.id?.let { id ->
-                    userDao.getAllUsers(id).map { it.toUser() }
-                }
+    val currentExtension = MutableStateFlow<Pair<ExtensionMetadata, ExtensionClient>?>(null)
+    val currentUser = currentExtension.combine(userDao.observeCurrentUser()) { it, list ->
+        val metadata = it?.first
+        val client = it?.second
+        val user = list.find { it.clientId == metadata?.id }
+        withContext(Dispatchers.IO) {
+            Triple(
+                metadata,
+                client,
+                userDao.getUser(metadata?.id, user?.id)?.toUser()
+            )
+        }
+    }
+
+    val allUsers = currentExtension.map { it ->
+        val metadata = it?.first
+        withContext(Dispatchers.IO) {
+            metadata to metadata?.id?.let { id ->
+                userDao.getAllUsers(id).map { it.toUser() }
             }
         }
     }

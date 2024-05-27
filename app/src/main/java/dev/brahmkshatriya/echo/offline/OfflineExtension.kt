@@ -36,6 +36,7 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.ImportType
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 
@@ -47,6 +48,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         val metadata = ExtensionMetadata(
             className = "OfflineExtension",
             path = "",
+            importType = ImportType.Inbuilt,
             id = "echo_offline",
             name = "Offline",
             description = "Offline extension",

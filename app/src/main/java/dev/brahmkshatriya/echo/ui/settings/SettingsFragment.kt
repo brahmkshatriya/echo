@@ -4,13 +4,12 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.fragment.app.activityViewModels
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.ui.extension.ManageExtensionsFragment
 
 
 class SettingsFragment : BaseSettingsFragment() {
@@ -19,10 +18,6 @@ class SettingsFragment : BaseSettingsFragment() {
     override val creator = { SettingsPreference() }
 
     class SettingsPreference : PreferenceFragmentCompat() {
-
-        private val extensionViewModel: ExtensionViewModel by activityViewModels()
-        private val extension get() = extensionViewModel.currentExtension
-
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
             preferenceManager.sharedPreferencesName = context.packageName
@@ -50,10 +45,10 @@ class SettingsFragment : BaseSettingsFragment() {
                 icon = AppCompatResources.getDrawable(context, R.drawable.ic_queue_music)
             }
 
-            TransitionPreference(context, extension?.metadata?.id).add {
-                title = getString(R.string.extension_settings)
-                key = "extension"
-                summary = getString(R.string.extension_settings_summary)
+            TransitionPreference(context).add {
+                title = getString(R.string.extensions)
+                key = "manage_extensions"
+                summary = getString(R.string.extensions_summary)
                 icon = AppCompatResources.getDrawable(context, R.drawable.ic_stream)
             }
 
@@ -66,13 +61,12 @@ class SettingsFragment : BaseSettingsFragment() {
         }
 
         class TransitionPreference(
-            context: Context,
-            private val transition: String? = null
+            context: Context
         ) : Preference(context) {
             override fun onBindViewHolder(holder: PreferenceViewHolder) {
                 super.onBindViewHolder(holder)
                 holder.itemView.id = key.hashCode()
-                holder.itemView.transitionName = transition ?: key
+                holder.itemView.transitionName = key
             }
         }
 
@@ -80,7 +74,7 @@ class SettingsFragment : BaseSettingsFragment() {
             val fragment = when (preference.key) {
                 "about" -> AboutFragment()
                 "audio" -> AudioFragment()
-                "extension" -> ExtensionFragment.newInstance(extension ?: return false)
+                "manage_extensions" -> ManageExtensionsFragment()
                 "look" -> LookFragment()
                 else -> return false
             }

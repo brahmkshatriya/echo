@@ -5,6 +5,7 @@ import tel.jeelpa.plugger.models.PluginMetadata
 data class ExtensionMetadata(
     override val className: String,
     override val path: String,
+    val importType: ImportType,
     val id: String,
     val name: String,
     val version: String,

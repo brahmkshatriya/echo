@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.utils.mapState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,8 +34,8 @@ class ExtensionViewModel @Inject constructor(
     val settings: SharedPreferences,
     val database: EchoDatabase,
     val userFlow: MutableSharedFlow<UserEntity?>,
+    val refresher: MutableSharedFlow<Boolean>
 ) : ClientSelectionViewModel(throwableFlow) {
-
 
     override val metadataFlow: StateFlow<List<ExtensionMetadata>?> = extensionListFlow.mapState {
         it?.map { extension -> extension.metadata }
@@ -54,6 +55,8 @@ class ExtensionViewModel @Inject constructor(
             viewModelScope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
         )
     }
+
+    fun refresh() = viewModelScope.launch { refresher.emit(true) }
 
     companion object {
         fun Context.noClient() = SnackBar.Message(

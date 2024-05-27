@@ -44,7 +44,7 @@ class ExtensionFragment : BaseSettingsFragment() {
             }
         }
 
-        private fun newInstance(
+        fun newInstance(
             extensionMetadata: ExtensionMetadata,
             extensionType: ExtensionType
         ) = newInstance(extensionMetadata.name, extensionMetadata.id, extensionType)

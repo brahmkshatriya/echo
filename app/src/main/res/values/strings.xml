@@ -176,6 +176,13 @@
     <string name="invalid_extension_host">Invalid extension type in host.</string>
     <string name="error_no_id">No id provided in parameter</string>
     <string name="error_invalid_type">Invalid type in parameter</string>
+    <string name="extensions_summary">Manage your installed Extensions</string>
+    <string name="refresh">Refresh</string>
+    <string name="music">Music</string>
+    <string name="tracker">Tracker</string>
+    <string name="name_extension">%1$s Extension</string>
+    <string name="by_author">By %1$s</string>
+    <string name="manage_extensions">Manage Extensions</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

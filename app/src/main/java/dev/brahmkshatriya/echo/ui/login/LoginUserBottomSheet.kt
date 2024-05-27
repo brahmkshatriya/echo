@@ -5,11 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserBinding
+import dev.brahmkshatriya.echo.databinding.ItemLoginUserBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
@@ -31,10 +33,6 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.incognito.setOnClickListener {
-            dismiss()
-            viewModel.setLoginUser(null)
-        }
         binding.settings.setOnClickListener {
             dismiss()
             requireActivity().openFragment(SettingsFragment())
@@ -43,34 +41,49 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
             dismiss()
             requireActivity().openFragment(DownloadingFragment())
         }
-        binding.switchAccount.setOnClickListener {
-            dismiss()
-            LoginUserListBottomSheet().show(parentFragmentManager, null)
-        }
-        observe(viewModel.currentUser) { (client, user) ->
-            binding.login.isVisible = user == null
-            binding.notLoggedInContainer.isVisible = user == null
+        val extension = viewModel.extensionFlow.value ?: return
+        viewModel.currentExtension.value = extension.metadata to extension.client
+        binding.userContainer.bind(this, ::dismiss)
+    }
 
-            binding.logout.isVisible = user != null
-            binding.userContainer.isVisible = user != null
+    companion object {
 
-            binding.login.setOnClickListener {
-                client?.metadata?.run {
-                    requireActivity().openFragment(
-                        LoginFragment.newInstance(id, name, ExtensionType.MUSIC)
-                    )
-                }
+        fun ItemLoginUserBinding.bind(fragment: Fragment, dismiss: () -> Unit) = with(fragment) {
+            val viewModel by activityViewModels<LoginUserViewModel>()
+            val binding = this@bind
+            binding.incognito.setOnClickListener {
                 dismiss()
-            }
-
-            binding.logout.setOnClickListener {
-                viewModel.logout(client?.metadata?.id, user)
                 viewModel.setLoginUser(null)
             }
+            binding.switchAccount.setOnClickListener {
+                dismiss()
+                LoginUserListBottomSheet().show(parentFragmentManager, null)
+            }
+            observe(viewModel.currentUser) { (metadata, _, user) ->
+                binding.login.isVisible = user == null
+                binding.notLoggedInContainer.isVisible = user == null
 
-            binding.currentUserName.text = user?.name
-            binding.currentUserSubTitle.text = client?.metadata?.name
-            user?.cover.loadInto(binding.currentUserAvatar, R.drawable.ic_account_circle)
+                binding.logout.isVisible = user != null
+                binding.userContainer.isVisible = user != null
+
+                binding.login.setOnClickListener {
+                    metadata?.run {
+                        requireActivity().openFragment(
+                            LoginFragment.newInstance(id, name, ExtensionType.MUSIC)
+                        )
+                    }
+                    dismiss()
+                }
+
+                binding.logout.setOnClickListener {
+                    viewModel.logout(metadata?.id, user)
+                    viewModel.setLoginUser(null)
+                }
+
+                binding.currentUserName.text = user?.name
+                binding.currentUserSubTitle.text = metadata?.name
+                user?.cover.loadInto(binding.currentUserAvatar, R.drawable.ic_account_circle)
+            }
         }
     }
 }

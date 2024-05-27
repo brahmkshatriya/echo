@@ -36,17 +36,16 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.accountListLogin.isEnabled = false
 
-        observe(viewModel.allUsers) { (client, list) ->
+        observe(viewModel.allUsers) { (metadata, list) ->
             binding.accountListLoading.root.isVisible = list == null
             binding.accountListToggleGroup.isVisible = list != null
-            client ?: return@observe
+            metadata ?: return@observe
             list ?: return@observe
-
             binding.addAccount.setOnClickListener {
                 dismiss()
                 requireActivity().openFragment(
                     LoginFragment.newInstance(
-                        client.metadata.id, client.metadata.name, ExtensionType.MUSIC
+                        metadata.id, metadata.name, ExtensionType.MUSIC
                     )
                 )
             }
@@ -56,7 +55,7 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
                     val user = list[id]
                     binding.accountListLogin.isEnabled = true
                     binding.accountListLogin.setOnClickListener {
-                        viewModel.setLoginUser(user.toEntity(client.metadata.id))
+                        viewModel.setLoginUser(user.toEntity(metadata.id))
                         dismiss()
                     }
                 }
