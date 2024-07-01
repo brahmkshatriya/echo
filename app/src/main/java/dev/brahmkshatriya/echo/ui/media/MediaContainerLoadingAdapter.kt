@@ -12,10 +12,9 @@ import dev.brahmkshatriya.echo.databinding.ItemErrorBinding
 import dev.brahmkshatriya.echo.databinding.ItemLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemNotLoadingBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemContainerBinding
-import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
-import dev.brahmkshatriya.echo.ui.login.LoginFragment
+import dev.brahmkshatriya.echo.ui.exception.openLoginException
 
 class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     LoadStateAdapter<MediaContainerLoadingAdapter.LoadViewHolder>() {
@@ -64,6 +63,9 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
             override fun bind(loadState: LoadState) {
                 val error =
                     (loadState as LoadState.Error).error as LoginRequiredException
+                binding.error.run {
+                    text = context.getTitle(loadState.error)
+                }
                 binding.login.transitionName = error.hashCode().toString()
                 binding.login.setOnClickListener {
                     listener?.onLoginRequired(it, error)
@@ -131,10 +133,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
         }
 
         override fun onLoginRequired(view: View, error: LoginRequiredException) {
-            fragment.requireActivity().openFragment(
-                LoginFragment.newInstance(error),
-                view
-            )
+            fragment.requireActivity().openLoginException(error, view)
         }
     })
 }

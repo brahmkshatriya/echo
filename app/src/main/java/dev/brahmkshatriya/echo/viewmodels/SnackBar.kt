@@ -14,10 +14,9 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
-import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
-import dev.brahmkshatriya.echo.ui.login.LoginFragment
+import dev.brahmkshatriya.echo.ui.exception.openLoginException
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -87,9 +86,9 @@ class SnackBar @Inject constructor(
                 throwable.printStackTrace()
                 val message = when (throwable) {
                     is LoginRequiredException -> Message(
-                        message = getString(R.string.login_required, throwable.clientName),
+                        message = getTitle(throwable),
                         action = Action(getString(R.string.login)) {
-                            openFragment(LoginFragment.newInstance(throwable))
+                            openLoginException(throwable)
                         }
                     )
 

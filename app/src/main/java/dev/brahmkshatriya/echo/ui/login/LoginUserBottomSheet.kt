@@ -76,7 +76,7 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
                 }
 
                 binding.logout.setOnClickListener {
-                    viewModel.logout(metadata?.id, user)
+                    viewModel.logout(metadata?.id, user?.id)
                     viewModel.setLoginUser(null)
                 }
 

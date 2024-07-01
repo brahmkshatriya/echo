@@ -2,8 +2,8 @@ package dev.brahmkshatriya.echo.common.exceptions
 
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 
-data class LoginRequiredException(
-    val clientId: String,
-    val clientName: String,
-    val clientType: ExtensionType
+open class LoginRequiredException(
+    open val clientId: String,
+    open val clientName: String,
+    open val clientType: ExtensionType
 ) : Exception("Login Required ($clientId : $clientName)")

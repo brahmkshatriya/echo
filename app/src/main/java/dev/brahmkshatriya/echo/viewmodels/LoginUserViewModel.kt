@@ -6,7 +6,6 @@ import dev.brahmkshatriya.echo.EchoApplication.Companion.TIMEOUT
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.dao.UserDao
 import dev.brahmkshatriya.echo.models.CurrentUser
 import dev.brahmkshatriya.echo.models.UserEntity
@@ -81,10 +80,10 @@ class LoginUserViewModel @Inject constructor(
         }
     }
 
-    fun logout(client: String?, user: User?) {
+    fun logout(client: String?, user: String?) {
         if (client == null || user == null) return
         viewModelScope.launch(Dispatchers.IO) {
-            userDao.deleteUser(user.id, client)
+            userDao.deleteUser(user, client)
         }
     }
 

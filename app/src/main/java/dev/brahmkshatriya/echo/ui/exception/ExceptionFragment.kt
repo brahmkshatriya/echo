@@ -11,6 +11,8 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
+import dev.brahmkshatriya.echo.common.exceptions.UnauthorizedException
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerial
@@ -84,6 +86,13 @@ class ExceptionFragment : Fragment() {
             is ExceptionActivity.AppCrashException -> getString(R.string.app_crashed)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
             is PlayerViewModel.PlayerException -> getTitle(throwable.cause)
+            is LoginRequiredException -> {
+                if (throwable is UnauthorizedException)
+                    getString(R.string.unauthorized, throwable.clientName)
+                else
+                    getString(R.string.login_required, throwable.clientName)
+            }
+
             else -> throwable.message ?: getString(R.string.error)
         }
 
