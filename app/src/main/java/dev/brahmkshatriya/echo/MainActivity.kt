@@ -34,8 +34,6 @@ import dev.brahmkshatriya.echo.utils.createNavDrawable
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
-import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectBrowserToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -52,8 +50,6 @@ class MainActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
-    private val extensionViewModel by viewModels<ExtensionViewModel>()
-    private val loginViewModel by viewModels<LoginUserViewModel>()
     private val uiViewModel by viewModels<UiViewModel>()
     private val playerViewModel by viewModels<PlayerViewModel>()
 
@@ -121,9 +117,6 @@ class MainActivity : AppCompatActivity() {
 
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
         configureSnackBar(binding.navView)
-
-        extensionViewModel.initialize()
-        loginViewModel.initialize()
 
         val sessionToken =
             SessionToken(application, ComponentName(application, PlaybackService::class.java))

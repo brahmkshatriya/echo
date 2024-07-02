@@ -145,11 +145,12 @@ class PlayerListener(
         while (index != -1) {
             index = player.currentTimeline.getNextWindowIndex(
                 index,
-                player.repeatMode,
+                Player.REPEAT_MODE_OFF,
                 shuffleModeEnabled
             )
             if (index != -1) indexes.add(index)
         }
+        //TODO Update ui with indexes
     }
 
     private fun trackMedia(

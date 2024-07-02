@@ -12,11 +12,11 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
+import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Category
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Container
 import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media
-import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
-import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
 import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(

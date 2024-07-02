@@ -78,6 +78,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
 
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadViewHolder {
         val inflater = LayoutInflater.from(parent.context)
+        println("creating state view type for  : $loadState")
         return LoadViewHolder(
             when (getStateViewType(loadState)) {
 

@@ -106,8 +106,19 @@ class EchoApplication : Application() {
         // Refresh Extensions
         scope.launch {
             refresher.collect {
-                println("refreshing $it")
                 if (it) getAllPlugins()
+            }
+        }
+
+        //User
+        scope.launch {
+            userDao.observeCurrentUser().collect { list ->
+                val extension = extensionFlow.value ?: return@collect
+                val (metadata, client) = extension
+                val user = list.find { it.clientId == metadata.id }
+                if (metadata.id == user?.clientId) setLoginUser(
+                    metadata.id, client, userDao, userFlow, throwableFlow
+                )
             }
         }
     }
@@ -140,6 +151,7 @@ class EchoApplication : Application() {
         }
         trackers.first { it != null }
         lyrics.first { it != null }
+
         musicExtensionRepo.getPlugins { list ->
             val extensions = list.map { (metadata, client) ->
                 MusicExtension(metadata, client)
@@ -150,6 +162,7 @@ class EchoApplication : Application() {
             setupMusicExtension(
                 scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
             )
+
             refresher.emit(false)
         }
     }

@@ -43,6 +43,7 @@ class AlbumHeaderAdapter(
         fun onRadioClicked(album: Album)
     }
 
+    //TODO Fix this, make it
     override fun getItemViewType(position: Int) = if (_album == null) 0 else 1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
