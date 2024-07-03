@@ -1,11 +1,11 @@
-package dev.brahmkshatriya.echo.dao
+package dev.brahmkshatriya.echo.db
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import dev.brahmkshatriya.echo.models.CurrentUser
-import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.db.models.CurrentUser
+import dev.brahmkshatriya.echo.db.models.UserEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

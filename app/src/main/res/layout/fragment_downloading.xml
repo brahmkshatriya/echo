@@ -39,7 +39,6 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolBar"
                 style="@style/Toolbar"
-                app:menu="@menu/download_menu"
                 app:title="@string/downloading" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

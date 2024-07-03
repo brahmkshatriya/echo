@@ -1,9 +1,9 @@
-package dev.brahmkshatriya.echo.dao
+package dev.brahmkshatriya.echo.db
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import dev.brahmkshatriya.echo.models.DownloadEntity
+import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

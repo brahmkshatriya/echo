@@ -1,11 +1,11 @@
-package dev.brahmkshatriya.echo.models
+package dev.brahmkshatriya.echo.db.models
 
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.TypeConverters
 import dev.brahmkshatriya.echo.common.models.User
-import dev.brahmkshatriya.echo.models.ImageHolderEntity.Companion.toEntity
-import dev.brahmkshatriya.echo.models.ImageHolderEntity.Companion.toImageHolder
+import dev.brahmkshatriya.echo.db.models.ImageHolderEntity.Companion.toEntity
+import dev.brahmkshatriya.echo.db.models.ImageHolderEntity.Companion.toImageHolder
 import dev.brahmkshatriya.echo.utils.MapTypeConverter
 
 @Entity(primaryKeys = ["id", "clientId"])

@@ -21,7 +21,8 @@ class ApkManifestParser(
             version = get("version"),
             description = get("description"),
             author = get("author"),
-            iconUrl = getString("icon_url")
+            iconUrl = getString("icon_url"),
+            enabled = getBoolean("enabled", true)
         )
     }
 }

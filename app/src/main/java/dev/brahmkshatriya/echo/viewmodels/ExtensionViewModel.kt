@@ -8,7 +8,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoApplication
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.db.models.ExtensionEntity
+import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
@@ -18,6 +20,7 @@ import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
 import dev.brahmkshatriya.echo.utils.mapState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,6 +60,15 @@ class ExtensionViewModel @Inject constructor(
     }
 
     fun refresh() = viewModelScope.launch { refresher.emit(true) }
+
+    private val extensionDao = database.extensionDao()
+    fun setExtensionEnabled(extensionType: ExtensionType, id: String, checked: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            extensionDao.setExtension(ExtensionEntity(id, extensionType, checked))
+            println("$id Enabled : ${extensionDao.getExtension(extensionType, id)}")
+            refresher.emit(true)
+        }
+    }
 
     companion object {
         fun Context.noClient() = SnackBar.Message(

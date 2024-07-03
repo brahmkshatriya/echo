@@ -54,13 +54,18 @@ class ManageExtensionsFragment : Fragment() {
         val flow = MutableStateFlow(
             viewModel.extensionListFlow.value?.map { it.metadata }
         )
+
+        fun change(pos: Int) {
+            when (pos) {
+                0 -> flow.value = viewModel.extensionListFlow.value?.map { it.metadata }
+                1 -> flow.value = viewModel.trackerListFlow.value?.map { it.metadata }
+                2 -> flow.value = viewModel.lyricsListFlow.value?.map { it.metadata }
+            }
+        }
+
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                when (tab.position) {
-                    0 -> flow.value = viewModel.extensionListFlow.value?.map { it.metadata }
-                    1 -> flow.value = viewModel.trackerListFlow.value?.map { it.metadata }
-                    2 -> flow.value = viewModel.lyricsListFlow.value?.map { it.metadata }
-                }
+                change(tab.position)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -75,7 +80,8 @@ class ManageExtensionsFragment : Fragment() {
         }
         binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
         observe(flow) { extensionAdapter.submit(it ?: emptyList()) }
-        observe(viewModel.refresher){
+        observe(viewModel.refresher) {
+            change(binding.tabLayout.selectedTabPosition)
             binding.swipeRefresh.isRefreshing = it
         }
     }

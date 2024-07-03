@@ -22,8 +22,8 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
+import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +44,10 @@ class ItemViewModel @Inject constructor(
     var item: EchoMediaItem? = null
     var loaded: EchoMediaItem? = null
     var client: ExtensionClient? = null
-    val itemFlow = MutableSharedFlow<EchoMediaItem?>()
+    var isRadioClient = false
+    var isFollowClient = false
+
+    val itemFlow = MutableStateFlow<EchoMediaItem?>(null)
     val relatedFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
 
     fun load() {

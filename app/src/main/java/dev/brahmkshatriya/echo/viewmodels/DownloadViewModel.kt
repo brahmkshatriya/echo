@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.download.Downloader
-import dev.brahmkshatriya.echo.models.DownloadEntity
+import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
@@ -64,6 +64,7 @@ class DownloadViewModel @Inject constructor(
             if (visibleGroups.contains(groupName)) downloadItems.addAll(items)
         }
         downloads.value = downloadItems
+        loadOfflineDownloads()
     }
 
     fun addToDownload(
@@ -107,8 +108,7 @@ class DownloadViewModel @Inject constructor(
     }
 
     val offlineFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
-    fun loadOfflineDownloads() {
-        offlineFlow.value = null
+    private fun loadOfflineDownloads() {
         viewModelScope.launch {
             val offline =
                 extensionListFlow.getExtension(OfflineExtension.metadata.id)?.client as OfflineExtension

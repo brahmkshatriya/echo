@@ -119,6 +119,22 @@ class ExtensionInfoFragment : Fragment() {
         }
         val typeString = getString(R.string.name_extension, getString(type))
         binding.extensionDescription.text = "$typeString\n\n${metadata.description}\n\n$byAuthor"
+
+        fun updateText(enabled: Boolean) {
+            binding.enabledText.text = getString(
+                if (enabled) R.string.enabled else R.string.disabled
+            )
+        }
+        binding.enabledSwitch.apply {
+            setOnCheckedChangeListener { _, isChecked ->
+                updateText(isChecked)
+                viewModel.setExtensionEnabled(extensionType, metadata.id, isChecked)
+            }
+            binding.enabledCont.setOnClickListener { toggle() }
+            updateText(metadata.enabled)
+            isChecked = metadata.enabled
+        }
+
         if (client is LoginClient) {
             val loginViewModel by activityViewModels<LoginUserViewModel>()
             loginViewModel.currentExtension.value = pair

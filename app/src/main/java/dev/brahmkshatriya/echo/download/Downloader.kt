@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.models.DownloadEntity
+import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.playback.TrackResolver
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension

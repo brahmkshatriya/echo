@@ -33,7 +33,7 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation("com.github.JeelPatel231:plugger:structure-overhaul-SNAPSHOT")
+    implementation("com.github.brahmkshatriya:plugger:structure-overhaul-SNAPSHOT")
 
     implementation("androidx.appcompat:appcompat:1.6.1")
 

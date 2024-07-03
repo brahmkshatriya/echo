@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.models
+package dev.brahmkshatriya.echo.db.models
 
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Request

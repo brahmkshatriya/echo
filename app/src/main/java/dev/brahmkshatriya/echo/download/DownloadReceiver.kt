@@ -16,7 +16,7 @@ import com.kyant.taglib.TagLib
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.dao.DownloadDao
+import dev.brahmkshatriya.echo.db.DownloadDao
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.loadBitmap
 import kotlinx.coroutines.Dispatchers

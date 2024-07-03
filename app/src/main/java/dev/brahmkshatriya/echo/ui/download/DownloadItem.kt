@@ -4,7 +4,7 @@ import android.content.Context
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.models.DownloadEntity
+import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.utils.getFromCache
@@ -33,7 +33,7 @@ sealed class DownloadItem {
             val extension = extensionList.getExtension(clientId) ?: return null
             val item = context.getFromCache(itemId, Track.creator, "downloads")?.toMediaItem()
                 ?: return null
-            return DownloadItem.Single(
+            return Single(
                 id = id,
                 item = item,
                 clientId = clientId,

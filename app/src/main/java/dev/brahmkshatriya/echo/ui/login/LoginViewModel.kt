@@ -8,9 +8,9 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.User
-import dev.brahmkshatriya.echo.models.UserEntity.Companion.toCurrentUser
-import dev.brahmkshatriya.echo.models.UserEntity.Companion.toEntity
-import dev.brahmkshatriya.echo.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toEntity
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension

@@ -17,7 +17,8 @@ import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.ui.media.MediaContainerEmptyAdapter
 import dev.brahmkshatriya.echo.utils.loadWith
 
-class ExtensionAdapter(
+class
+ExtensionAdapter(
     val listener: Listener
 ) : PagingDataAdapter<ExtensionMetadata, ExtensionAdapter.ViewHolder>(DiffCallback) {
 
@@ -44,7 +45,10 @@ class ExtensionAdapter(
         fun bind(metadata: ExtensionMetadata) {
             binding.root.transitionName = metadata.id
             binding.root.setOnClickListener { listener.onClick(metadata, binding.root) }
-            binding.extensionName.text = metadata.name
+            binding.extensionName.apply {
+                text = if (metadata.enabled) metadata.name
+                else context.getString(R.string.extension_disabled, metadata.name)
+            }
             binding.extensionVersion.text = "${metadata.version} • ${metadata.importType.name}"
             binding.itemExtension.apply {
                 metadata.iconUrl?.toImageHolder().loadWith(this, R.drawable.ic_extension) {

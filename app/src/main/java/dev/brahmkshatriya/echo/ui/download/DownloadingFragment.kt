@@ -7,10 +7,15 @@ import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.paging.PagingData
+import androidx.recyclerview.widget.ConcatAdapter
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
+import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -44,12 +49,6 @@ class DownloadingFragment : Fragment() {
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        val downloads = binding.toolBar.findViewById<View>(R.id.menu_downloads)
-        downloads.transitionName = "downloads"
-        downloads.setOnClickListener {
-            viewModel.loadOfflineDownloads()
-            openFragment(DownloadFragment(), downloads)
-        }
 
         val adapter = DownloadingAdapter(object : DownloadingAdapter.Listener {
             override fun onDownloadItemClick(download: DownloadItem.Single) {
@@ -73,7 +72,27 @@ class DownloadingFragment : Fragment() {
             }
         })
 
-        binding.recyclerView.adapter = adapter.withEmptyAdapter()
-        observe(viewModel.downloads){ adapter.submit(it) }
+        val downloadedAdapter = MediaContainerAdapter(this, "downloads")
+        val titleAdapter = MediaContainerAdapter(this, "")
+
+        val concatAdapter = ConcatAdapter(
+            adapter.withEmptyAdapter(),
+            titleAdapter,
+            downloadedAdapter.withLoaders()
+        )
+
+        downloadedAdapter.clientId = OfflineExtension.metadata.id
+        titleAdapter.clientId = OfflineExtension.metadata.id
+        binding.recyclerView.adapter = concatAdapter
+
+        observe(viewModel.offlineFlow) {
+            titleAdapter.submit(
+                PagingData.from(
+                    listOf(MediaItemsContainer.Container(getString(R.string.downloads)))
+                )
+            )
+            downloadedAdapter.submit(it)
+        }
+        observe(viewModel.downloads) { adapter.submit(it) }
     }
 }

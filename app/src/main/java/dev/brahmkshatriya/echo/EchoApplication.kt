@@ -9,8 +9,9 @@ import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.dao.UserDao
-import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.db.UserDao
+import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.LyricsExtensionRepo
@@ -106,7 +107,9 @@ class EchoApplication : Application() {
         // Refresh Extensions
         scope.launch {
             refresher.collect {
-                if (it) getAllPlugins()
+                if (it) launch {
+                    getAllPlugins()
+                }
             }
         }
 
@@ -128,24 +131,22 @@ class EchoApplication : Application() {
         val lyrics = MutableStateFlow<Unit?>(null)
         launch {
             trackerExtensionRepo.getPlugins { list ->
-                trackerListFlow.value = list.map { TrackerExtension(it.first, it.second) }
-                list.map {
-                    async {
-                        setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
-                    }
-                }.awaitAll()
+                trackerListFlow.value = list.map { (metadata, client) ->
+                    val metadataEnabled = isExtensionEnabled(ExtensionType.TRACKER, metadata)
+                    TrackerExtension(metadataEnabled, client)
+                }
+                list.setExtensions()
                 trackers.emit(Unit)
             }
         }
 
         launch {
             lyricsExtensionRepo.getPlugins { list ->
-                lyricsListFlow.value = list.map { LyricsExtension(it.first, it.second) }
-                list.map {
-                    async {
-                        setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
-                    }
-                }.awaitAll()
+                lyricsListFlow.value = list.map { (metadata, client) ->
+                    val metadataEnabled = isExtensionEnabled(ExtensionType.LYRICS, metadata)
+                    LyricsExtension(metadataEnabled, client)
+                }
+                list.setExtensions()
                 lyrics.emit(Unit)
             }
         }
@@ -154,7 +155,8 @@ class EchoApplication : Application() {
 
         musicExtensionRepo.getPlugins { list ->
             val extensions = list.map { (metadata, client) ->
-                MusicExtension(metadata, client)
+                val metadataEnabled = isExtensionEnabled(ExtensionType.MUSIC, metadata)
+                MusicExtension(metadataEnabled, client)
             }
             extensionListFlow.value = extensions
             val id = settings.getString(LAST_EXTENSION_KEY, null)
@@ -179,6 +181,15 @@ class EchoApplication : Application() {
         }
     }.collect(collector)
 
+    private suspend fun List<Pair<ExtensionMetadata, ExtensionClient>>.setExtensions() =
+        coroutineScope {
+            map {
+                async {
+                    setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
+                }
+            }.awaitAll()
+        }
+
     @Inject
     lateinit var database: EchoDatabase
 
@@ -186,7 +197,13 @@ class EchoApplication : Application() {
     lateinit var userFlow: MutableSharedFlow<UserEntity?>
 
     private val userDao by lazy { database.userDao() }
+    private val extensionDao by lazy { database.extensionDao() }
 
+    private suspend fun isExtensionEnabled(type: ExtensionType, metadata: ExtensionMetadata) =
+        withContext(Dispatchers.IO) {
+            extensionDao.getExtension(type, metadata.id)?.enabled
+                ?.let { metadata.copy(enabled = it) } ?: metadata
+        }
 
     companion object {
 

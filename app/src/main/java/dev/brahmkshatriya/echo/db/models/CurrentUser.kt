@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.models
+package dev.brahmkshatriya.echo.db.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

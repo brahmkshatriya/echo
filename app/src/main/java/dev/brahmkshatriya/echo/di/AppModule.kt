@@ -13,7 +13,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
-import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.playback.PlayerListener
 import dev.brahmkshatriya.echo.playback.Queue
 import dev.brahmkshatriya.echo.plugger.MusicExtension

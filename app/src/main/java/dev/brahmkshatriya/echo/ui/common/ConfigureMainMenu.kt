@@ -34,8 +34,9 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
     }
     extensions.setOnLongClickListener {
         extensionViewModel.run {
-            val list = extensionListFlow.value ?: return@run false
+            val list = extensionListFlow.value?.filter { it.metadata.enabled } ?: return@run false
             val index = list.indexOf(currentExtension)
+            if(index == -1) return@run false
             val next = list[(index + 1) % list.size]
             setExtension(next)
             true

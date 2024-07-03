@@ -130,9 +130,6 @@ class ItemFragment : Fragment() {
             }
         }
 
-        var isRadioClient = false
-        var isFollowClient = false
-
         val mediaContainerAdapter =
             MediaContainerAdapter(this, view.transitionName)
 
@@ -203,12 +200,8 @@ class ItemFragment : Fragment() {
             viewModel.load()
         }
 
-        collect(lifecycle.currentStateFlow) {
-            println("state change $it")
-        }
         viewModel.songsLiveData.observe(viewLifecycleOwner) { songs ->
             lifecycleScope.launch {
-                println("what? why?")
                 trackAdapter.submit(songs)
             }
         }
@@ -234,21 +227,23 @@ class ItemFragment : Fragment() {
             binding.toolBar.title = it.title.trim()
 
             it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
-            when (it) {
-                is AlbumItem -> {
-                    albumHeaderAdapter.submit(it.album, isRadioClient)
-                    viewModel.loadAlbum(it.album)
+            with(viewModel) {
+                when (it) {
+                    is AlbumItem -> {
+                        albumHeaderAdapter.submit(it.album, isRadioClient)
+                        loadAlbum(it.album)
+                    }
+
+                    is PlaylistItem -> {
+                        playlistHeaderAdapter.submit(it.playlist, isRadioClient)
+                        loadPlaylist(it.playlist)
+                    }
+
+                    is ArtistItem ->
+                        artistHeaderAdapter.submit(it.artist, isFollowClient, isRadioClient)
+
+                    else -> Unit
                 }
-
-                is PlaylistItem -> {
-                    playlistHeaderAdapter.submit(it.playlist, isRadioClient)
-                    viewModel.loadPlaylist(it.playlist)
-                }
-
-                is ArtistItem ->
-                    artistHeaderAdapter.submit(it.artist, isFollowClient, isRadioClient)
-
-                else -> Unit
             }
 
             binding.fabContainer.isVisible = if (it is PlaylistItem && it.playlist.isEditable) {
@@ -268,8 +263,8 @@ class ItemFragment : Fragment() {
             val client = extension?.client
 
             mediaContainerAdapter.clientId = clientId
-            isRadioClient = client is RadioClient
-            isFollowClient = client is ArtistFollowClient
+            viewModel.isRadioClient = client is RadioClient
+            viewModel.isFollowClient = client is ArtistFollowClient
 
             val item = item
             viewModel.item = item
@@ -279,20 +274,18 @@ class ItemFragment : Fragment() {
             binding.recyclerView.run {
                 val adapter = concatAdapter(item)
                 when (item) {
-                    is EchoMediaItem.Profile.UserItem -> applyAdapter<UserClient>(
-                        extension,
-                        R.string.user,
-                        adapter
-                    )
+                    is EchoMediaItem.Profile.UserItem ->
+                        applyAdapter<UserClient>(extension, R.string.user, adapter)
 
-                    is ArtistItem -> applyAdapter<ArtistClient>(extension, R.string.artist, adapter)
-                    is EchoMediaItem.TrackItem -> applyAdapter<TrackClient>(
-                        extension,
-                        R.string.track,
-                        adapter
-                    )
+                    is ArtistItem ->
+                        applyAdapter<ArtistClient>(extension, R.string.artist, adapter)
 
-                    is AlbumItem -> applyAdapter<AlbumClient>(extension, R.string.album, adapter)
+                    is EchoMediaItem.TrackItem ->
+                        applyAdapter<TrackClient>(extension, R.string.track, adapter)
+
+                    is AlbumItem ->
+                        applyAdapter<AlbumClient>(extension, R.string.album, adapter)
+
                     is PlaylistItem ->
                         applyAdapter<PlaylistClient>(extension, R.string.playlist, adapter)
                 }

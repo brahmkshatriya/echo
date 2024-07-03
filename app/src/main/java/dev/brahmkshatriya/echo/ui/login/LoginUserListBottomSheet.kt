@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
-import dev.brahmkshatriya.echo.models.UserEntity.Companion.toEntity
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadWith

@@ -74,7 +74,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
             binding.buttonToggleGroup.removeAllViews()
             binding.progressIndicator.isVisible = clientList == null
             listener.enabled = false
-            val list = clientList ?: emptyList()
+            val list = clientList?.filter { it.enabled } ?: emptyList()
 
             val map = list.mapIndexed { index, metadata ->
                 val button = ButtonExtensionBinding.inflate(

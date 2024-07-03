@@ -2,21 +2,25 @@ package dev.brahmkshatriya.echo
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import dev.brahmkshatriya.echo.dao.DownloadDao
-import dev.brahmkshatriya.echo.dao.UserDao
-import dev.brahmkshatriya.echo.models.CurrentUser
-import dev.brahmkshatriya.echo.models.DownloadEntity
-import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.db.DownloadDao
+import dev.brahmkshatriya.echo.db.ExtensionDao
+import dev.brahmkshatriya.echo.db.UserDao
+import dev.brahmkshatriya.echo.db.models.CurrentUser
+import dev.brahmkshatriya.echo.db.models.DownloadEntity
+import dev.brahmkshatriya.echo.db.models.ExtensionEntity
+import dev.brahmkshatriya.echo.db.models.UserEntity
 
 @Database(
     entities = [
         UserEntity::class,
         CurrentUser::class,
-        DownloadEntity::class
+        DownloadEntity::class,
+        ExtensionEntity::class
     ],
-    version = 2
+    version = 3
 )
 abstract class EchoDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun downloadDao(): DownloadDao
+    abstract fun extensionDao(): ExtensionDao
 }

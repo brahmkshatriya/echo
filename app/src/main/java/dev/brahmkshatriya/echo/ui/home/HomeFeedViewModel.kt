@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.home
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.models.UserEntity
+import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.ui.common.FeedViewModel
 import dev.brahmkshatriya.echo.ui.paging.toFlow

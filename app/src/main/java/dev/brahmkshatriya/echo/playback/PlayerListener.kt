@@ -161,7 +161,7 @@ class PlayerListener(
         val client = extensionListFlow.getExtension(streamableTrack.clientId)?.client ?: return
         val track = streamableTrack.loaded ?: streamableTrack.unloaded
         val clientId = streamableTrack.clientId
-        val trackers = trackerListFlow.value ?: emptyList()
+        val trackers = trackerListFlow.value?.filter { it.metadata.enabled } ?: emptyList()
         println("track : $track")
         scope.launch(Dispatchers.IO) {
             if (client is TrackerClient)

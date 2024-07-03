@@ -6,11 +6,11 @@ import dev.brahmkshatriya.echo.EchoApplication.Companion.TIMEOUT
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.dao.UserDao
-import dev.brahmkshatriya.echo.models.CurrentUser
-import dev.brahmkshatriya.echo.models.UserEntity
-import dev.brahmkshatriya.echo.models.UserEntity.Companion.toCurrentUser
-import dev.brahmkshatriya.echo.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.db.UserDao
+import dev.brahmkshatriya.echo.db.models.CurrentUser
+import dev.brahmkshatriya.echo.db.models.UserEntity
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.utils.tryWith

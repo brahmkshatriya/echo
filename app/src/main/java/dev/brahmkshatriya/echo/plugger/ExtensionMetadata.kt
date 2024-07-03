@@ -11,5 +11,6 @@ data class ExtensionMetadata(
     val version: String,
     val description: String,
     val author: String,
-    val iconUrl: String?
+    val iconUrl: String?,
+    val enabled: Boolean = true
 ) : PluginMetadata
