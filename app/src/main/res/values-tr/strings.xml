@@ -156,7 +156,7 @@
     <string name="no_internet">İnternet Yok</string>
     <string name="unknown_amount_songs">\??? Şarkı</string>
     <string name="item_radio">%1$s Radyo</string>
-    <string name="radio_based_on_item">%1$s'a dayalı radyo</string>
+    <string name="radio_based_on_item">%1$s\'a dayalı radyo</string>
     <string name="albums">Albümler</string>
     <string name="artists">Sanatçılar</string>
     <string name="recently_added">Son Eklenenler</string>
