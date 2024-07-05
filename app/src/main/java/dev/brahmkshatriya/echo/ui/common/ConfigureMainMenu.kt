@@ -36,7 +36,7 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
         extensionViewModel.run {
             val list = extensionListFlow.value?.filter { it.metadata.enabled } ?: return@run false
             val index = list.indexOf(currentExtension)
-            if(index == -1) return@run false
+            if (index == -1) return@run false
             val next = list[(index + 1) % list.size]
             setExtension(next)
             true
@@ -55,7 +55,8 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
         settings.setOnClickListener {
             if (client is LoginClient) {
                 val metadata = extension.metadata
-                loginUserViewModel.currentExtension.value = metadata to client
+                loginUserViewModel.currentExtension.value =
+                    LoginUserViewModel.ExtensionData(ExtensionType.MUSIC, metadata, client)
                 LoginUserBottomSheet()
                     .show(fragment.parentFragmentManager, null)
             } else fragment.openFragment(SettingsFragment(), settings)

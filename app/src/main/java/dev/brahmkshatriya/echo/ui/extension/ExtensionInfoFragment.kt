@@ -126,18 +126,20 @@ class ExtensionInfoFragment : Fragment() {
             )
         }
         binding.enabledSwitch.apply {
+            updateText(metadata.enabled)
+            isChecked = metadata.enabled
             setOnCheckedChangeListener { _, isChecked ->
                 updateText(isChecked)
                 viewModel.setExtensionEnabled(extensionType, metadata.id, isChecked)
             }
             binding.enabledCont.setOnClickListener { toggle() }
-            updateText(metadata.enabled)
-            isChecked = metadata.enabled
         }
 
         if (client is LoginClient) {
             val loginViewModel by activityViewModels<LoginUserViewModel>()
-            loginViewModel.currentExtension.value = pair
+            loginViewModel.currentExtension.value = LoginUserViewModel.ExtensionData(
+                extensionType, metadata, client
+            )
             binding.extensionLoginUser.bind(this) {}
         } else binding.extensionLoginUser.root.isVisible = false
 
