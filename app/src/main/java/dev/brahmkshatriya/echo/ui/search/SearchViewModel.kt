@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.ui.common.FeedViewModel
 import dev.brahmkshatriya.echo.ui.paging.toFlow
@@ -19,7 +20,8 @@ class SearchViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     override val extensionFlow: MutableStateFlow<MusicExtension?>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-) : FeedViewModel(throwableFlow, extensionFlow) {
+    override val userFlow: MutableSharedFlow<UserEntity?>,
+) : FeedViewModel(throwableFlow, userFlow, extensionFlow) {
 
     var query: String? = null
     override suspend fun getTabs(client: ExtensionClient) =

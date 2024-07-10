@@ -41,6 +41,7 @@ import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolde
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
+import dev.brahmkshatriya.echo.utils.configure
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.load
@@ -196,7 +197,7 @@ class ItemFragment : Fragment() {
             }
         }
 
-        binding.swipeRefresh.setOnRefreshListener {
+        binding.swipeRefresh.configure {
             viewModel.load()
         }
 

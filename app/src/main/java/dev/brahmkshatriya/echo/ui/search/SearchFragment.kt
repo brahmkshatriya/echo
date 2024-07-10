@@ -14,22 +14,19 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
-import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
-import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
+import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter.Companion.getListener
-import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -77,14 +74,16 @@ class SearchFragment : Fragment() {
                 marginEnd = 24.dpToPx(requireContext())
             }
         }
-        FastScrollerHelper.applyTo(binding.recyclerView)
 
         val viewModel by parent.viewModels<SearchViewModel>()
-        binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
-        binding.swipeRefresh.setOnRefreshListener {
-            println("swipe refresh")
-            viewModel.refresh(true)
-        }
+
+        val mediaContainerAdapter = configureFeedUI(
+            R.string.search,
+            viewModel,
+            binding.recyclerView,
+            binding.swipeRefresh,
+            binding.tabLayout
+        )
 
         binding.searchBar.setText(viewModel.query)
         binding.quickSearchView.editText.setText(viewModel.query)
@@ -98,7 +97,6 @@ class SearchFragment : Fragment() {
             binding.searchBar.setText(query)
             binding.quickSearchView.hide()
             if (query != viewModel.query) {
-                println("editText")
                 viewModel.query = query
                 viewModel.refresh(true)
             }
@@ -108,8 +106,6 @@ class SearchFragment : Fragment() {
         observe(uiViewModel.navigationReselected) {
             if (it == 1) binding.quickSearchView.show()
         }
-
-        viewModel.initialize()
 
         val mediaClickListener = getListener(parent)
         val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
@@ -150,9 +146,7 @@ class SearchFragment : Fragment() {
 
         binding.quickSearchRecyclerView.adapter = quickSearchAdapter
 
-        val mediaContainerAdapter = MediaContainerAdapter(parent, "search", mediaClickListener)
         val concatAdapter = mediaContainerAdapter.withLoaders()
-
         fun applyClient(it: MusicExtension?) {
             binding.swipeRefresh.isEnabled = it != null
             mediaContainerAdapter.clientId = it?.metadata?.id
@@ -160,50 +154,14 @@ class SearchFragment : Fragment() {
         }
 
         val clientId = arguments?.getString("clientId")
-        if (clientId == null) collect(viewModel.extensionFlow) {
-            applyClient(it)
-        }
-        else collect(viewModel.extensionListFlow) {
-            applyClient(viewModel.extensionListFlow.getExtension(clientId))
-        }
-
-        val tabListener = object : TabLayout.OnTabSelectedListener {
-            var enabled = true
-            var tabs: List<Tab> = emptyList()
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                if (!enabled) return
-                val genre = tabs[tab.position]
-                if(viewModel.tab == genre) return
-                viewModel.tab = genre
-                viewModel.refresh()
+        if (clientId == null)
+            collect(viewModel.extensionFlow) {
+                applyClient(it)
             }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
-            override fun onTabReselected(tab: TabLayout.Tab) = Unit
-        }
-
-        observe(viewModel.loading) {
-            tabListener.enabled = !it
-            binding.swipeRefresh.isRefreshing = it
-        }
-
-        binding.tabLayout.addOnTabSelectedListener(tabListener)
-        observe(viewModel.genres) { genres ->
-            binding.tabLayout.removeAllTabs()
-            tabListener.tabs = genres
-            binding.tabLayout.isVisible = genres.isNotEmpty()
-            genres.forEach { genre ->
-                val tab = binding.tabLayout.newTab()
-                tab.text = genre.name
-                val selected = viewModel.tab == genre
-                binding.tabLayout.addTab(tab, selected)
+        else
+            collect(viewModel.extensionListFlow) {
+                applyClient(viewModel.extensionListFlow.getExtension(clientId))
             }
-        }
-
-        observe(viewModel.feed) {
-            println("feed : $it")
-            mediaContainerAdapter.submit(it)
-        }
 
         observe(viewModel.quickFeed) {
             quickSearchAdapter.submitList(it)

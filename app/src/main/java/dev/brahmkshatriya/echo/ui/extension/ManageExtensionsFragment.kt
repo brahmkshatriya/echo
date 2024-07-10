@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.configure
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
@@ -48,8 +48,7 @@ class ManageExtensionsFragment : Fragment() {
         FastScrollerHelper.applyTo(binding.recyclerView)
         val refresh = binding.toolBar.findViewById<View>(R.id.menu_refresh)
         refresh.setOnClickListener { viewModel.refresh() }
-        binding.swipeRefresh.setProgressViewOffset(true, 0, 32.dpToPx(requireContext()))
-        binding.swipeRefresh.setOnRefreshListener { viewModel.refresh() }
+        binding.swipeRefresh.configure { viewModel.refresh() }
 
         val flow = MutableStateFlow(
             viewModel.extensionListFlow.value?.map { it.metadata }
