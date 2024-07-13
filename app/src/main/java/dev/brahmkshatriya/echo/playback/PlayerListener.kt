@@ -4,10 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
-import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.ExoPlayer
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
@@ -110,7 +110,10 @@ class PlayerListener(
 
     private suspend fun <T> tryWith(block: suspend () -> T) = tryWith(throwableFlow, block)
 
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+    override fun onTracksChanged(tracks: Tracks) {
+        super.onTracksChanged(tracks)
+        stoppedPlaying()
+        if (tracks.isEmpty) return
         updateCurrent()
         if (!player.hasNextMediaItem()) {
             val autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
@@ -128,7 +131,6 @@ class PlayerListener(
                 }
             }
         }
-        stoppedPlaying()
         startedPlaying(player.currentMediaItem?.mediaId)
     }
 
