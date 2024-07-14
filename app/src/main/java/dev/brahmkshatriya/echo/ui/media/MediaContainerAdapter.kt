@@ -11,6 +11,7 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
@@ -149,8 +150,9 @@ class MediaContainerAdapter(
         }
     }
 
+    private val sharedPool = RecycledViewPool()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        0 -> Category.create(parent, stateViewModel, clientId, listener)
+        0 -> Category.create(parent, stateViewModel, sharedPool,clientId, listener)
         1 -> Container.create(parent)
         else -> Media.create(parent, clientId, listener)
     }
