@@ -14,13 +14,17 @@ import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingItem
 import dev.brahmkshatriya.echo.common.settings.SettingList
+import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
+import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.utils.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.MaterialMultipleChoicePreference
+import dev.brahmkshatriya.echo.utils.MaterialTextInputPreference
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionFragment : BaseSettingsFragment() {
@@ -138,10 +142,40 @@ class ExtensionFragment : BaseSettingsFragment() {
                         it.key = this.key
                         defaultEntryIndex?.let { index ->
                             it.setDefaultValue(this.entryValues[index])
-                            it.summary = this.entryTitles[index]
                         }
                         it.entries = this.entryTitles.toTypedArray()
                         it.entryValues = this.entryValues.toTypedArray()
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingMultipleChoice -> {
+                    MaterialMultipleChoicePreference(preferenceGroup.context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        defaultEntryIndices?.let { indices ->
+                            it.setDefaultValue(indices.mapNotNull { index ->
+                                entryValues.getOrNull(index)
+                            }.toSet())
+                        }
+                        it.entries = this.entryTitles.toTypedArray()
+                        it.entryValues = this.entryValues.toTypedArray()
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingTextInput -> {
+                    MaterialTextInputPreference(preferenceGroup.context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        it.text = this.defaultValue
 
                         it.isIconSpaceReserved = false
                         it.layoutResource = R.layout.preference

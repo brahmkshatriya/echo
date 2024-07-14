@@ -122,6 +122,7 @@
     <string name="playlist_name">Playlist Name</string>
     <string name="create">Create</string>
     <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
     <string name="playlist_name_empty">Playlist name cannot be empty</string>
     <string name="playlist_created">Playlist Created : %1$s</string>
     <string name="delete_playlist">Delete Playlist</string>
