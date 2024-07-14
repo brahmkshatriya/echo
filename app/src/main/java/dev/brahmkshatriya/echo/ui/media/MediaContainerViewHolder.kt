@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
@@ -24,6 +25,7 @@ sealed class MediaContainerViewHolder(
     class Category(
         val binding: NewItemCategoryBinding,
         val viewModel: MediaContainerAdapter.StateViewModel,
+        private val sharedPool: RecyclerView.RecycledViewPool,
         private val clientId: String?,
         val listener: MediaItemAdapter.Listener,
     ) :
@@ -40,9 +42,11 @@ sealed class MediaContainerViewHolder(
                     clientId,
                     category.list
                 )
-            binding.recyclerView.setHasFixedSize(true)
+            binding.recyclerView.setRecycledViewPool(sharedPool)
             val position = bindingAdapterPosition
-            binding.recyclerView.layoutManager?.apply {
+            val layoutManager = binding.recyclerView.layoutManager as LinearLayoutManager
+            layoutManager.apply {
+                initialPrefetchItemCount = category.list.size.coerceAtMost(4)
                 val state: Parcelable? = viewModel.layoutManagerStates[position]
                 if (state != null) onRestoreInstanceState(state)
                 else scrollToPosition(0)
@@ -59,6 +63,7 @@ sealed class MediaContainerViewHolder(
             fun create(
                 parent: ViewGroup,
                 viewModel: MediaContainerAdapter.StateViewModel,
+                sharedPool: RecyclerView.RecycledViewPool,
                 clientId: String?,
                 listener: MediaItemAdapter.Listener,
             ): MediaContainerViewHolder {
@@ -66,6 +71,7 @@ sealed class MediaContainerViewHolder(
                 return Category(
                     NewItemCategoryBinding.inflate(layoutInflater, parent, false),
                     viewModel,
+                    sharedPool,
                     clientId,
                     listener
                 )
@@ -122,8 +128,8 @@ sealed class MediaContainerViewHolder(
                     listener,
                 )
             }
-            
-            fun NewItemMediaBinding.bind(item:EchoMediaItem){
+
+            fun NewItemMediaBinding.bind(item: EchoMediaItem) {
                 title.text = item.title
                 subtitle.text = item.subtitle
                 subtitle.isVisible = item.subtitle.isNullOrBlank().not()
