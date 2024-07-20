@@ -145,13 +145,11 @@ class MainActivity : AppCompatActivity() {
             uiViewModel.fromNotification.value = true
             return
         }
-        println("Intent: $data")
         val uri = data
         if (uri != null) {
             fun createSnack(id: Int) {
                 val snackbar by viewModels<SnackBar>()
                 val message = getString(id)
-                println("bruh : $message")
                 snackbar.create(SnackBar.Message(message))
             }
 

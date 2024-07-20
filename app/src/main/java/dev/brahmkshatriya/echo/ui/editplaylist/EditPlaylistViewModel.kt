@@ -27,7 +27,7 @@ class EditPlaylistViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
-    private val context: Application
+    private val context: Application,
 ) : CatchingViewModel(throwableFlow) {
 
     var loading: Boolean? = null

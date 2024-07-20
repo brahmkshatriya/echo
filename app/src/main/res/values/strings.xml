@@ -188,6 +188,7 @@
     <string name="extension_disabled">%1$s (Disabled)</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
+    <string name="radio_playlist_empty">Radio Playlist is Empty</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

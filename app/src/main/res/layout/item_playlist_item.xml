@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="?echoBackground"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="?echoBackground">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/playlistCurrentItem"
@@ -16,6 +16,7 @@
         app:cardCornerRadius="0dp" />
 
     <LinearLayout
+        android:id="@+id/playlistItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -27,6 +28,7 @@
             android:layout_height="wrap_content">
 
             <ImageView
+                android:id="@+id/playlistItemDragImg"
                 android:layout_width="24dp"
                 android:layout_height="@dimen/collapsed_cover_size"
                 android:contentDescription="@string/drag_to_change_playlist_position"
@@ -77,17 +79,32 @@
                     tools:text="Author" />
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/playlistItemClose"
-                style="?attr/materialIconButtonStyle"
+            <FrameLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:contentDescription="@string/next"
-                android:padding="8dp"
-                app:icon="@drawable/ic_close_small"
-                app:iconSize="24dp"
-                app:iconTint="@color/button_player" />
+                android:layout_height="match_parent">
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/playlistProgressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    app:indicatorColor="?attr/colorTertiary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/playlistItemClose"
+                    style="?attr/materialIconButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:contentDescription="@string/next"
+                    android:padding="8dp"
+                    app:icon="@drawable/ic_close_small"
+                    app:iconSize="24dp"
+                    app:iconTint="@color/button_player" />
+            </FrameLayout>
+
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

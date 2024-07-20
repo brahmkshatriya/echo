@@ -112,7 +112,6 @@ class LoginUserViewModel @Inject constructor(
         ) = withContext(Dispatchers.IO) {
             if (client !is LoginClient) return@withContext
             val user = userDao.getCurrentUser(id)
-            println("$id user : $user")
             val success = tryWith(throwableFlow) {
                 withTimeout(TIMEOUT) { client.onSetLoginUser(user?.toUser()) }
             }

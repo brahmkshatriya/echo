@@ -13,6 +13,8 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentTrackDetailsBinding
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.media.MediaClickListener
@@ -25,7 +27,6 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -52,11 +53,9 @@ class TrackDetailsFragment : Fragment() {
         binding.root.adapter = adapter.withLoaders()
 
         observe(playerViewModel.currentFlow) {
-            val streamableTrack = playerViewModel.current
-            streamableTrack?.clientId ?: return@observe
-            val track = streamableTrack.loaded ?: streamableTrack.onLoad.first()
-            adapter.clientId = streamableTrack.clientId
-            viewModel.load(streamableTrack.clientId, track)
+            val (_, item) = it ?: return@observe
+            adapter.clientId = item.clientId
+            viewModel.load(item.clientId, item.track)
         }
 
         observe(viewModel.itemsFlow) {
