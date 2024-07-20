@@ -15,7 +15,7 @@ fun <T> Context.getFromCache(
     val fileName = id.hashCode().toString()
     val cacheDir = cacheDir(this, folderName)
     val file = File(cacheDir, fileName)
-    return if (file.exists()) tryWith {
+    return if (file.exists()) tryWith(false) {
         val bytes = FileInputStream(file).use { it.readBytes() }
         val parcel = Parcel.obtain()
         parcel.unmarshall(bytes, 0, bytes.size)
@@ -43,11 +43,11 @@ inline fun <reified T : Parcelable> Context.getFromCache(
 ) = getFromCache(id, folderName ?: T::class.java.simpleName) { creator.createFromParcel(it) }
 
 inline fun <reified T : Parcelable> Context.saveToCache(
-    id: String, value: T, folderName: String? = null
-) = saveToCache(id, folderName ?: T::class.java.simpleName) { value.writeToParcel(it, 0) }
+    id: String, value: T?, folderName: String? = null
+) = saveToCache(id, folderName ?: T::class.java.simpleName) { value?.writeToParcel(it, 0) }
 
 inline fun <reified T : Parcelable> Context.saveToCache(
-    id: String, value: List<T>, folderName: String? = null
+    id: String, value: List<T?>, folderName: String? = null
 ) = saveToCache(id, folderName ?: T::class.java.simpleName) { it.writeTypedList(value) }
 
 inline fun <reified T : Parcelable> Context.getListFromCache(

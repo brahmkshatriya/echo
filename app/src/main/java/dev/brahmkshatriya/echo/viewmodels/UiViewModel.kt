@@ -24,7 +24,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.playback.Queue
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -33,6 +33,7 @@ import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.max
@@ -40,7 +41,7 @@ import kotlin.math.max
 @HiltViewModel
 class UiViewModel @Inject constructor(
     private val settings: SharedPreferences,
-    global : Queue
+    currentFlow: MutableStateFlow<Current?>,
 ) : ViewModel() {
 
     data class Insets(
@@ -113,7 +114,7 @@ class UiViewModel @Inject constructor(
 
     val fromNotification = MutableStateFlow(false)
     val playerSheetState = MutableStateFlow(
-        if(global.queue.isEmpty()) STATE_HIDDEN else STATE_COLLAPSED
+        if (currentFlow.value == null) STATE_HIDDEN else STATE_COLLAPSED
     )
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
     val changePlayerState = MutableSharedFlow<Int>()
@@ -281,11 +282,14 @@ class UiViewModel @Inject constructor(
             })
 
             viewModel.run {
-                observe(fromNotification) {
-                    if (!it) return@observe
-                    fromNotification.value = false
-                    emit(changePlayerState) { STATE_EXPANDED }
-                    emit(changeInfoState) { STATE_COLLAPSED }
+                viewModelScope.launch {
+                    changePlayerState.first()
+                    observe(fromNotification) {
+                        if (!it) return@observe
+                        fromNotification.value = false
+                        emit(changePlayerState) { STATE_EXPANDED }
+                        emit(changeInfoState) { STATE_COLLAPSED }
+                    }
                 }
             }
         }

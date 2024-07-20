@@ -28,7 +28,7 @@ import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
@@ -77,11 +77,8 @@ class PlayerFragment : Fragment() {
         )
 
         binding.viewPager.registerOnUserPageChangeCallback { position, userInitiated ->
-            if (viewModel.currentIndex != position && userInitiated)
-                lifecycleScope.launch {
-                    delay(300)
-                    viewModel.audioIndexFlow.emit(position)
-                }
+            if (viewModel.currentFlow.value?.index != position && userInitiated)
+                lifecycleScope.launch { viewModel.play(position) }
         }
 
         binding.viewPager.getChildAt(0).run {
@@ -90,8 +87,10 @@ class PlayerFragment : Fragment() {
             overScrollMode = View.OVER_SCROLL_NEVER
         }
 
-        observe(viewModel.listChangeFlow) {
-            if (it.isEmpty()) {
+        val combined = viewModel.run { currentFlow.combine(listUpdateFlow) { it, _ -> it } }
+        observe(combined) {
+            val list = viewModel.list
+            if (list.isEmpty()) {
                 emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
                 emit(uiViewModel.changePlayerState) { STATE_HIDDEN }
             } else {
@@ -100,9 +99,8 @@ class PlayerFragment : Fragment() {
                     emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
                 }
             }
-
-            adapter.submitList(it)
-            val index = viewModel.currentIndex
+            adapter.submitList(list)
+            val index = it?.index ?: -1
             val smooth = abs(index - binding.viewPager.currentItem) <= 1
             binding.viewPager.setCurrentItem(index, smooth)
         }

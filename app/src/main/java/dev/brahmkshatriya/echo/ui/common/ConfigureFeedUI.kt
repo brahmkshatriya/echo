@@ -81,7 +81,6 @@ fun Fragment.configureFeedUI(
     }
 
     observe(viewModel.feed) {
-        println("Feed : $it")
         mediaContainerAdapter.submit(it)
     }
 

@@ -16,6 +16,7 @@ import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
@@ -29,11 +30,13 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
-import dev.brahmkshatriya.echo.playback.Queue.StreamableTrack
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
@@ -56,7 +59,7 @@ import kotlin.math.min
 class PlayerTrackAdapter(
     val fragment: Fragment,
     private val listener: Listener
-) : LifeCycleListAdapter<StreamableTrack, ItemPlayerTrackBinding>(DiffCallback) {
+) : LifeCycleListAdapter<MediaItem, ItemPlayerTrackBinding>(DiffCallback) {
 
     interface Listener {
         fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean)
@@ -66,28 +69,27 @@ class PlayerTrackAdapter(
     private val viewModel by fragment.activityViewModels<PlayerViewModel>()
     private val uiViewModel by fragment.activityViewModels<UiViewModel>()
 
-    object DiffCallback : DiffUtil.ItemCallback<StreamableTrack>() {
-        override fun areItemsTheSame(oldItem: StreamableTrack, newItem: StreamableTrack) =
-            oldItem.unloaded.id == newItem.unloaded.id
+    object DiffCallback : DiffUtil.ItemCallback<MediaItem>() {
+        override fun areItemsTheSame(oldItem: MediaItem, newItem: MediaItem) =
+            oldItem.mediaId == newItem.mediaId
 
-        override fun areContentsTheSame(oldItem: StreamableTrack, newItem: StreamableTrack) =
-            true
+        override fun areContentsTheSame(oldItem: MediaItem, newItem: MediaItem) =
+            oldItem == newItem
+
     }
 
     override fun inflateCallback(inflater: LayoutInflater, container: ViewGroup?) =
         ItemPlayerTrackBinding.inflate(inflater, container, false)
 
-    override fun Holder<StreamableTrack, ItemPlayerTrackBinding>.onBind(position: Int) {
+    override fun Holder<MediaItem, ItemPlayerTrackBinding>.onBind(position: Int) {
         val item = getItem(position) ?: return
-        val client = item.clientId
-        val track = item.current
-        binding.applyTrackDetails(client, item, track)
-        observe(item.onLoad) {
-            binding.applyTrackDetails(client, item, item.unloaded)
-        }
+        val clientId = item.clientId
+
+        binding.applyTrackDetails(clientId, item)
+
 
         lifecycleScope.launch {
-            val bitmap = track.cover?.loadBitmap(binding.root.context)
+            val bitmap = item.track.cover?.loadBitmap(binding.root.context)
             val colors = binding.root.context.getPlayerColors(bitmap)
             binding.root.setBackgroundColor(colors.background)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
@@ -135,10 +137,27 @@ class PlayerTrackAdapter(
             block: (T?) -> Unit
         ) {
             observe(flow) {
-                if (viewModel.current?.unloaded?.id == track.id)
+                if (viewModel.currentFlow.value?.index == bindingAdapterPosition)
                     block(it)
                 else block(null)
             }
+        }
+
+        val client = viewModel.extensionListFlow.getExtension(clientId)?.client
+        val isLibrary = client is LibraryClient
+        val likeListener =
+            if (isLibrary) CheckBoxListener { viewModel.likeTrack(it) }
+            else null
+
+        binding.playerControls.trackHeart.run {
+            isVisible = isLibrary
+            likeListener?.let { addOnCheckedStateChangedListener(it) }
+        }
+
+        observeCurrent(viewModel.isLiked) {
+            likeListener?.enabled = false
+            binding.playerControls.trackHeart.isChecked = it ?: false
+            likeListener?.enabled = true
         }
 
         binding.playerControls.seekBar.apply {
@@ -149,7 +168,7 @@ class PlayerTrackAdapter(
             addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
                 override fun onStartTrackingTouch(slider: Slider) = Unit
                 override fun onStopTrackingTouch(slider: Slider) =
-                    emit(viewModel.seekTo) { slider.value.toLong() }
+                    viewModel.seekTo(slider.value.toLong())
             })
         }
         observeCurrent(viewModel.progress) {
@@ -180,7 +199,7 @@ class PlayerTrackAdapter(
         }
 
         observeCurrent(viewModel.totalDuration) {
-            val duration = it ?: track.duration?.toInt() ?: return@observeCurrent
+            val duration = it ?: item.track.duration?.toInt() ?: return@observeCurrent
             binding.collapsedContainer.run {
                 collapsedSeekBar.max = duration
                 collapsedBuffer.max = duration
@@ -214,7 +233,7 @@ class PlayerTrackAdapter(
             binding.playerControls.trackNext.isEnabled = it
         }
         binding.playerControls.trackNext.setOnClickListener {
-            emit(viewModel.seekToNext)
+            viewModel.seekToNext()
             it as MaterialButton
             (it.icon as Animatable).start()
         }
@@ -222,14 +241,14 @@ class PlayerTrackAdapter(
             binding.playerControls.trackPrevious.isEnabled = it
         }
         binding.playerControls.trackPrevious.setOnClickListener {
-            emit(viewModel.seekToPrevious)
+            viewModel.seekToPrevious()
             it as MaterialButton
             (it.icon as Animatable).start()
         }
 
         val shuffleListener = viewModel.shuffleListener
         binding.playerControls.trackShuffle.addOnCheckedStateChangedListener(shuffleListener)
-        observe(viewModel.shuffle) {
+        observe(viewModel.shuffleMode) {
             shuffleListener.enabled = false
             binding.playerControls.trackShuffle.isChecked = it
             shuffleListener.enabled = true
@@ -251,7 +270,7 @@ class PlayerTrackAdapter(
             (icon as Animatable).start()
         }
         binding.playerControls.trackRepeat.setOnClickListener {
-            val mode = when (viewModel.repeat.value) {
+            val mode = when (viewModel.repeatMode.value) {
                 REPEAT_MODE_OFF -> REPEAT_MODE_ALL
                 REPEAT_MODE_ALL -> REPEAT_MODE_ONE
                 else -> REPEAT_MODE_OFF
@@ -260,37 +279,19 @@ class PlayerTrackAdapter(
             viewModel.onRepeat(mode)
         }
 
-        observe(viewModel.repeat) {
+        observe(viewModel.repeatMode) {
             viewModel.repeatEnabled = false
             changeRepeatDrawable(it)
             viewModel.repeatEnabled = true
         }
-
-        val extensionClient = viewModel.extensionListFlow.getExtension(item.clientId)?.client
-        binding.playerControls.trackHeart.run {
-            if (extensionClient is LibraryClient) {
-                isChecked = item.liked
-                val likeListener = CheckBoxListener {
-                    viewModel.likeTrack(item, it)
-                }
-                addOnCheckedStateChangedListener(likeListener)
-                observeCurrent(viewModel.onLiked) {
-                    likeListener.enabled = false
-                    isChecked = it ?: track.liked
-                    likeListener.enabled = true
-                }
-                isVisible = true
-            } else isVisible = false
-        }
     }
 
     private fun ItemPlayerTrackBinding.applyTrackDetails(
-        client: String?,
-        streamableTrack: StreamableTrack?,
-        oldTrack: Track? = null
+        client: String,
+        item: MediaItem,
     ) {
-        val track = streamableTrack?.current
-        track?.cover.loadWith(expandedTrackCover, oldTrack?.cover) {
+        val track = item.track
+        track.cover.loadWith(expandedTrackCover) {
             collapsedContainer.collapsedTrackCover.load(it)
             Glide.with(bgImage).load(it)
                 .apply(
@@ -302,21 +303,21 @@ class PlayerTrackAdapter(
         }
 
         collapsedContainer.run {
-            collapsedTrackArtist.text = track?.artists?.joinToString(", ") { it.name }
-            collapsedTrackTitle.text = track?.title
+            collapsedTrackArtist.text = track.artists.joinToString(", ") { it.name }
+            collapsedTrackTitle.text = track.title
             collapsedTrackTitle.isSelected = true
             collapsedTrackTitle.setHorizontallyScrolling(true)
         }
 
         playerControls.run {
-            trackTitle.text = track?.title
+            trackTitle.text = track.title
             trackTitle.isSelected = true
             trackTitle.setHorizontallyScrolling(true)
-            val artists = track?.artists
-            val artistNames = artists?.joinToString(", ") { it.name } ?: ""
+            val artists = track.artists
+            val artistNames = artists.joinToString(", ") { it.name }
             val spannableString = SpannableString(artistNames)
 
-            artists?.forEach { artist ->
+            artists.forEach { artist ->
                 val start = artistNames.indexOf(artist.name)
                 val end = start + artist.name.length
                 val clickableSpan = PlayerItemSpan(
@@ -330,20 +331,17 @@ class PlayerTrackAdapter(
         }
 
         expandedToolbar.run {
-            val itemContext = streamableTrack?.context
+            val itemContext = item.context
             title = if (itemContext != null) context.getString(R.string.playing_from) else null
             subtitle = itemContext?.title
 
             setOnMenuItemClickListener {
-                val streamable = streamableTrack
-                    ?: return@setOnMenuItemClickListener false
                 when (it.itemId) {
                     R.id.menu_more -> {
-                        val loaded = streamable.loaded?.toMediaItem()
-                        val unloaded = streamable.unloaded.toMediaItem()
-                        listener.onMoreClicked(client, loaded ?: unloaded, loaded != null)
+                        listener.onMoreClicked(client, track.toMediaItem(), item.isLoaded)
                         true
                     }
+
                     else -> false
                 }
             }

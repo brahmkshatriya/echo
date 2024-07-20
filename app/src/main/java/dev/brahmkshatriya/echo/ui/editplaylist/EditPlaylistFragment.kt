@@ -18,12 +18,13 @@ import dev.brahmkshatriya.echo.common.clients.EditPlaylistCoverClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
-import dev.brahmkshatriya.echo.playback.Queue
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Add
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Move
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Remove
+import dev.brahmkshatriya.echo.ui.player.PlaylistAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getParcel
@@ -205,7 +206,7 @@ class EditPlaylistFragment : Fragment() {
             }
         }
         val touchHelper = ItemTouchHelper(callback)
-        val adapter = PlaylistAdapter(null, object : PlaylistAdapter.Callback() {
+        val adapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
             override fun onDragHandleTouched(viewHolder: RecyclerView.ViewHolder) {
                 touchHelper.startDrag(viewHolder)
             }
@@ -224,7 +225,7 @@ class EditPlaylistFragment : Fragment() {
         observe(viewModel.currentTracks) { tracks ->
             tracks?.let {
                 adapter.submitList(it.map { track ->
-                    Queue.StreamableTrack(track, clientId)
+                    false to MediaItemUtils.build(null, track, clientId, null)
                 })
             }
         }

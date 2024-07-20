@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.audiofx.AudioEffect
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,6 +11,7 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.utils.MaterialListPreference
 
 class AudioFragment : BaseSettingsFragment() {
@@ -118,9 +120,21 @@ class AudioFragment : BaseSettingsFragment() {
             const val CLOSE_PLAYER = "close_player_when_app_closes"
             const val SKIP_SILENCE = "skip_silence"
             const val AUTO_START_RADIO = "auto_start_radio"
-            const val STREAM_QUALITY = "stream_quality"
             const val EQUALIZER = "equalizer"
+
+            const val STREAM_QUALITY = "stream_quality"
             val streamQualities = arrayOf("highest", "medium", "lowest")
+
+            fun selectStreamIndex(settings: SharedPreferences, audioStreamables: List<Streamable>) =
+                audioStreamables.indexOf(selectStream(settings, audioStreamables))
+
+            fun selectStream(settings: SharedPreferences, streamables: List<Streamable>) =
+                when (settings.getString(STREAM_QUALITY, "lowest")) {
+                    "highest" -> streamables.maxByOrNull { it.quality }
+                    "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
+                    "lowest" -> streamables.minByOrNull { it.quality }
+                    else -> streamables.firstOrNull()
+                }
         }
     }
 }

@@ -14,10 +14,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.db.models.UserEntity
-import dev.brahmkshatriya.echo.playback.PlayerListener
-import dev.brahmkshatriya.echo.playback.Queue
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,10 +26,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
-
-    @Provides
-    @Singleton
-    fun provideGlobalQueue() = Queue()
 
     @Provides
     @Singleton
@@ -48,6 +42,16 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun provideDatabase(application: Application) = Room.databaseBuilder(
+        application, EchoDatabase::class.java, "echo-database"
+    ).fallbackToDestructiveMigration().build()
+
+    @Provides
+    @Singleton
+    fun provideLoginUserFlow() = MutableSharedFlow<UserEntity?>()
+
+    @Provides
+    @Singleton
     @UnstableApi
     fun provideCache(application: Application): SimpleCache {
         val databaseProvider = StandaloneDatabaseProvider(application)
@@ -60,25 +64,9 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(application: Application) = Room.databaseBuilder(
-        application, EchoDatabase::class.java, "echo-database"
-    ).fallbackToDestructiveMigration().build()
+    fun currentMediaItemFlow() = MutableStateFlow<Current?>(null)
 
     @Provides
     @Singleton
-    fun provideLoginUserFlow() = MutableSharedFlow<UserEntity?>()
-
-    @Provides
-    @Singleton
-    fun providePlayerListener(
-        application: Application,
-        extensionList: MutableStateFlow<List<MusicExtension>?>,
-        trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
-        global: Queue,
-        settings: SharedPreferences,
-        throwableFlow: MutableSharedFlow<Throwable>,
-        messageFlow: MutableSharedFlow<SnackBar.Message>,
-    ) = PlayerListener(
-        application, extensionList, trackerListFlow, global, settings, throwableFlow, messageFlow
-    )
+    fun provideExtensionListFlow() = MutableStateFlow<Radio.State>(Radio.State.Empty)
 }
