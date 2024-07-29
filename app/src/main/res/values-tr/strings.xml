@@ -49,7 +49,7 @@
     <string name="stop_player">Oynatıcıyı durdur</string>
     <string name="stop_player_summary">Uygulama sonlandığında oynatmayı durdur</string>
     <string name="auto_start_radio">Otomatik olarak radyoyu başlat</string>
-    <string name="auto_start_radio_summary">Oynatma listesine ilgili şarkıları otomatik olarak ekle, sonsuz kuyruk için</string>
+    <string name="auto_start_radio_summary">Sonsuz bir oynatma kuyruğu için oynatma listesine ilgili şarkıları otomatik olarak ekle</string>
     <string name="track">Parça</string>
     <string name="about_summary">Echo hakkında daha fazla bilgi edinin</string>
     <string name="look_and_feel">Görünüm ve Hissiyat</string>
@@ -108,7 +108,7 @@
     <string name="no_streams_found">Yayın bulunamadı</string>
     <string name="create_playlist">Oynatma Listesi Oluştur</string>
     <string name="not_loading">Yüklenmiyor</string>
-    <string name="login_required">%1$s Giriş Gereklidir</string>
+    <string name="login_required">%1$s: Giriş Gerekiyor</string>
     <string name="error">Hata</string>
     <string name="extension_out_of_date">Eklenti güncel değil</string>
     <string name="playlist_favourite">Beğenilen Şarkılar</string>
@@ -120,7 +120,7 @@
     <string name="playlist_name">Oynatma Listesi Adı</string>
     <string name="create">Oluştur</string>
     <string name="cancel">İptal</string>
-    <string name="playlist_name_empty">Oynatma listesi adı boş olamaz</string>
+    <string name="playlist_name_empty">Oynatma listesinin ismi boş olamaz</string>
     <string name="playlist_created">Oynatma Listesi Oluşturuldu : %1$s</string>
     <string name="delete_playlist">Oynatma Listesini Sil</string>
     <string name="playlist_deleted">Oynatma listesi silindi</string>
@@ -130,7 +130,7 @@
     <string name="crying_af" translatable="false">(;-;)</string>
     <string name="add_color">Renk Ekle</string>
     <string name="custom_theme_color">Özel Tema Rengi</string>
-    <string name="custom_theme_color_summary">Sistem temasını yerine özel tema rengi kullan.</string>
+    <string name="custom_theme_color_summary">Sistem teması yerine özel tema rengi kullan.</string>
     <string name="choose_a_color">Bir renk seçiniz</string>
     <string name="add">Ekle</string>
     <string name="custom_colors">Özel Renkler</string>
@@ -145,7 +145,7 @@
     <string name="removing_track">%1$s kaldırılıyor</string>
     <string name="unlike">Beğenmekten vazgeç</string>
     <string name="skip_silence">Sessizliği atla</string>
-    <string name="skip_silence_summary">Şarkıdaki sessiz kısmı atla, kesintisiz oynatma sağlamak için.</string>
+    <string name="skip_silence_summary">Kesintisiz bir oynatma sağlamak için şarkıdaki sessiz kısmıları atla.</string>
     <string name="app_crashed">Uygulama Çöktü!</string>
     <string name="keep_queue">Oynatıcı kuyruğunu sakla</string>
     <string name="keep_queue_summary">Uygulamayı yeniden açtığınızda oynatıcı kuyruğunu kurtar.</string>
@@ -164,27 +164,27 @@
     <string name="downloading">İndiriliyor</string>
     <string name="extension">Eklenti</string>
     <string name="downloaded_percentage">İndirilme oranı: %1$d</string>
-    <string name="download_started">İndirme başladı</string>
+    <string name="download_started">İndirme başlatıldı</string>
     <string name="download">İndir</string>
     <string name="username_password">Kullanıcı adı &amp; Şifre</string>
     <string name="webview">Web Görünümü</string>
     <string name="manual">Manuel</string>
     <string name="required_field">%1$s gerekli.</string>
-    <string name="name_settings">%1$s Ayarları</string>
-    <string name="invalid_extension_host">Ana bilgisayarda geçersiz eklenti türü.</string>
+    <string name="name_settings">%1$s ayarları</string>
+    <string name="invalid_extension_host">Sunucudaki geçersiz eklenti türü.</string>
     <string name="error_no_id">Parametre içinde kimlik sağlanmadı</string>
     <string name="error_invalid_type">Parametre içinde geçersiz tür</string>
-    <string name="extensions_summary">Yüklediğiniz eklentileri yönetin</string>
+    <string name="extensions_summary">Yüklenmiş eklentilerinizi yönetin</string>
     <string name="refresh">Yenile</string>
     <string name="music">Müzik</string>
     <string name="tracker">İzleyici</string>
     <string name="name_extension">%1$s Eklentisi</string>
-    <string name="by_author">%1$s Tarafından</string>
-    <string name="manage_extensions">Eklentileri Yönet</string>
-    <string name="unauthorized">$1%s : Kullanıcı yetkisiz</string>
+    <string name="by_author">%1$s tarafından</string>
+    <string name="manage_extensions">Eklentileri yönet</string>
+    <string name="unauthorized">$1%s : Kullanıcının yetkisi yok</string>
     <string name="extension_disabled">%1$s (Devre Dışı)</string>
     <string name="enabled">Etkin</string>
-    <string name="disabled">Devre Dışı</string>
+    <string name="disabled">Devre dışı</string>
     <string-array name="stream_qualities">
         <item>En Yüksek</item>
         <item>Orta</item>
