@@ -16,23 +16,27 @@ import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
-import dev.brahmkshatriya.echo.playback.PlayerListener
+import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
-import dev.brahmkshatriya.echo.playback.Queue
+import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.RenderersFactory
+import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.StreamableDataSource
 import dev.brahmkshatriya.echo.playback.TrackResolver
-import dev.brahmkshatriya.echo.playback.getLikeButton
-import dev.brahmkshatriya.echo.playback.getRepeatButton
+import dev.brahmkshatriya.echo.playback.TrackingListener
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,13 +44,22 @@ import javax.inject.Inject
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
     @Inject
-    lateinit var extensionFlow: MutableStateFlow<MusicExtension?>
+    lateinit var extFlow: MutableStateFlow<MusicExtension?>
 
     @Inject
-    lateinit var extensionList: MutableStateFlow<List<MusicExtension>?>
+    lateinit var extListFlow: MutableStateFlow<List<MusicExtension>?>
 
     @Inject
-    lateinit var global: Queue
+    lateinit var trackerList: MutableStateFlow<List<TrackerExtension>?>
+
+    @Inject
+    lateinit var throwFlow: MutableSharedFlow<Throwable>
+
+    @Inject
+    lateinit var messageFlow: MutableSharedFlow<SnackBar.Message>
+
+    @Inject
+    lateinit var stateFlow: MutableStateFlow<Radio.State>
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -55,7 +68,7 @@ class PlaybackService : MediaLibraryService() {
     lateinit var cache: SimpleCache
 
     @Inject
-    lateinit var listener: PlayerListener
+    lateinit var current: MutableStateFlow<Current?>
 
     private var mediaLibrarySession: MediaLibrarySession? = null
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -63,8 +76,9 @@ class PlaybackService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
 
-        val player = createExoplayer()
-        listener.setup(player, scope)
+        val exoPlayer = createExoplayer()
+
+        exoPlayer.prepare()
 
         val intent = Intent(this, MainActivity::class.java)
             .putExtra("fromNotification", true)
@@ -73,12 +87,12 @@ class PlaybackService : MediaLibraryService() {
             .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         val callback = PlayerSessionCallback(
-            this, scope, global, extensionList, extensionFlow
+            this, settings, scope, extListFlow, extFlow, throwFlow, messageFlow, stateFlow
         )
 
-        val mediaLibrarySession = MediaLibrarySession.Builder(this, player, callback)
+        val session = MediaLibrarySession.Builder(this, exoPlayer, callback)
             .setSessionActivity(pendingIntent)
-            .setBitmapLoader(PlayerBitmapLoader(this, global, scope))
+            .setBitmapLoader(PlayerBitmapLoader(this, exoPlayer, scope))
             .build()
 
         val notificationProvider =
@@ -88,13 +102,29 @@ class PlaybackService : MediaLibraryService() {
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
         setMediaNotificationProvider(notificationProvider)
 
-        global.listenToChanges(scope, mediaLibrarySession, ::updateLayout)
+        exoPlayer.addListener(PlayerEventListener(this, session, current, extListFlow))
+        exoPlayer.addListener(
+            Radio(session,this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)
+        )
+        exoPlayer.addListener(
+            TrackingListener(session, scope, extListFlow, trackerList, throwFlow)
+        )
         settings.registerOnSharedPreferenceChangeListener { prefs, key ->
             when (key) {
-                SKIP_SILENCE -> player.skipSilenceEnabled = prefs.getBoolean(key, true)
+                SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, true)
             }
         }
-        this.mediaLibrarySession = mediaLibrarySession
+
+        val keepQueue = settings.getBoolean(KEEP_QUEUE, true)
+        if (keepQueue) scope.launch {
+            extListFlow.first { it != null }
+            ResumptionUtils.recoverPlaylist(this@PlaybackService).apply {
+                exoPlayer.setMediaItems(mediaItems, startIndex, startPositionMs)
+                exoPlayer.prepare()
+            }
+        }
+
+        this.mediaLibrarySession = session
     }
 
 
@@ -108,12 +138,10 @@ class PlaybackService : MediaLibraryService() {
         val cacheFactory = CacheDataSource
             .Factory().setCache(cache)
             .setUpstreamDataSourceFactory(streamableFactory)
-        val dataSourceFactory =
-            ResolvingDataSource.Factory(
-                cacheFactory,
-                TrackResolver(this, global, extensionList, settings)
-            )
 
+        val trackResolver = TrackResolver(this, extListFlow, settings)
+
+        val dataSourceFactory = ResolvingDataSource.Factory(cacheFactory, trackResolver)
         val factory = DefaultMediaSourceFactory(this)
             .setDataSourceFactory(dataSourceFactory)
 
@@ -124,24 +152,10 @@ class PlaybackService : MediaLibraryService() {
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
             .build()
-    }
-
-    private fun updateLayout() {
-        val context = this@PlaybackService
-        val track = global.current ?: return
-        val mediaLibrarySession = mediaLibrarySession ?: return
-        val player = mediaLibrarySession.player
-        val supportsLike = extensionList.getExtension(track.clientId)?.client is LibraryClient
-
-        val commandButtons = listOfNotNull(
-            getRepeatButton(context, player.repeatMode),
-            getLikeButton(context, track.liked).takeIf { supportsLike }
-        )
-        mediaLibrarySession.setCustomLayout(commandButtons)
+            .also { trackResolver.player = it }
     }
 
     override fun onDestroy() {
-        scope.launch { global.clearQueue(false) }
         mediaLibrarySession?.run {
             player.release()
             release()

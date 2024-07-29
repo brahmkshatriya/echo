@@ -1,11 +1,13 @@
 package dev.brahmkshatriya.echo.common.models
 
+import android.os.Parcel
 import android.os.Parcelable
-import dev.brahmkshatriya.echo.common.helpers.PagedData
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.parcelableCreator
 
-@Parcelize
 sealed class EchoMediaItem : Parcelable {
+
+    @Parcelize
     data class TrackItem(val track: Track) : EchoMediaItem()
 
     @Parcelize
@@ -31,14 +33,28 @@ sealed class EchoMediaItem : Parcelable {
         fun Album.toMediaItem() = Lists.AlbumItem(this)
         fun Artist.toMediaItem() = Profile.ArtistItem(this)
         fun User.toMediaItem() = Profile.UserItem(this)
-
         fun Playlist.toMediaItem() = Lists.PlaylistItem(this)
 
+        val creator = object : Parcelable.Creator<EchoMediaItem> {
 
-        fun List<EchoMediaItem>.toMediaItemsContainer(
-            title: String, subtitle: String? = null, more: PagedData<EchoMediaItem>? = null
-        ) = MediaItemsContainer.Category(title, this, subtitle, more)
+            inline fun <reified T : Parcelable> create(source: Parcel?) = runCatching {
+                parcelableCreator<T>().createFromParcel(source)!!
+            }.getOrNull()
 
+            override fun createFromParcel(source: Parcel?): EchoMediaItem {
+                return create<Lists.AlbumItem>(source)
+                    ?: create<Lists.PlaylistItem>(source)
+                    ?: create<TrackItem>(source)
+                    ?: create<Profile.ArtistItem>(source)
+                    ?: create<Profile.UserItem>(source)
+                    ?: throw IllegalArgumentException("Unknown parcelable type")
+            }
+
+            override fun newArray(size: Int): Array<EchoMediaItem?> {
+                return arrayOfNulls(size)
+            }
+
+        }
     }
 
     fun toMediaItemsContainer() = MediaItemsContainer.Item(

@@ -1,14 +1,13 @@
 <resources>
-
     <string name="app_name">Echo</string>
-
-    <string name="home">Ana Sayfa</string>
+  
+    <string name="home">Ev</string>
     <string name="library">Kütüphane</string>
-    <string name="search">Arama</string>
-
+    <string name="search">Ara</string>
+  
     <string name="extensions">Eklentiler</string>
     <string name="settings">Ayarlar</string>
-    <string name="play_pause">Oynat/Duraklat</string>
+    <string name="play_pause">Oynat/Durdur</string>
     <string name="previous">Önceki</string>
     <string name="next">Sonraki</string>
     <string name="add_extension">Eklenti Ekle</string>
@@ -193,4 +192,3 @@
         <item>En Düşük</item>
     </string-array>
 </resources>
-

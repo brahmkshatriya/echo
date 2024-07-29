@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserBinding
 import dev.brahmkshatriya.echo.databinding.ItemLoginUserBinding
+import dev.brahmkshatriya.echo.db.models.CurrentUser
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
@@ -42,7 +43,9 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
             requireActivity().openFragment(DownloadingFragment())
         }
         val extension = viewModel.extensionFlow.value ?: return
-        viewModel.currentExtension.value = extension.metadata to extension.client
+        viewModel.currentExtension.value = LoginUserViewModel.ExtensionData(
+            ExtensionType.MUSIC, extension.metadata, extension.client
+        )
         binding.userContainer.bind(this, ::dismiss)
     }
 
@@ -51,33 +54,38 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
         fun ItemLoginUserBinding.bind(fragment: Fragment, dismiss: () -> Unit) = with(fragment) {
             val viewModel by activityViewModels<LoginUserViewModel>()
             val binding = this@bind
-            binding.incognito.setOnClickListener {
-                dismiss()
-                viewModel.setLoginUser(null)
-            }
+
             binding.switchAccount.setOnClickListener {
                 dismiss()
                 LoginUserListBottomSheet().show(parentFragmentManager, null)
             }
-            observe(viewModel.currentUser) { (metadata, _, user) ->
+            observe(viewModel.currentUser) { (extensionData, user) ->
                 binding.login.isVisible = user == null
                 binding.notLoggedInContainer.isVisible = user == null
 
                 binding.logout.isVisible = user != null
                 binding.userContainer.isVisible = user != null
 
+                val metadata = extensionData?.metadata
                 binding.login.setOnClickListener {
                     metadata?.run {
                         requireActivity().openFragment(
-                            LoginFragment.newInstance(id, name, ExtensionType.MUSIC)
+                            LoginFragment.newInstance(id, name, extensionData.type)
                         )
                     }
                     dismiss()
                 }
 
                 binding.logout.setOnClickListener {
-                    viewModel.logout(metadata?.id, user?.id)
-                    viewModel.setLoginUser(null)
+                    val id = metadata?.id ?: return@setOnClickListener
+                    viewModel.logout(id, user?.id)
+                    viewModel.setLoginUser(CurrentUser(id, null))
+                }
+
+                binding.incognito.setOnClickListener {
+                    dismiss()
+                    val id = metadata?.id ?: return@setOnClickListener
+                    viewModel.setLoginUser(CurrentUser(id, null))
                 }
 
                 binding.currentUserName.text = user?.name

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="extension_settings">Utvidelsesinnstillinger</string>
+    <string name="more">Mer</string>
+    <string name="retry">Prøv igjen</string>
+    <string name="repeat">Gjenta</string>
+    <string name="is_not_supported">" "</string>
+    <string name="str_copy">Kopier</string>
+    <string name="library">Bibliotek</string>
+    <string name="search">Søk</string>
+    <string name="settings">Innstillinger</string>
+    <string name="next">Neste</string>
+    <string name="home">Hjem</string>
+    <string name="extensions">Utvidelser</string>
+    <string name="play_pause">Spill av/pause</string>
+    <string name="previous">Forrige</string>
+    <string name="add_extension">Legg til utvidelse</string>
+    <string name="theme">Drakt</string>
+    <string name="equalizer">Tonekontroll</string>
+    <string name="switch_account">Bytt konto</string>
+    <string name="close">Lukk</string>
+    <string name="artist">Artist</string>
+    <string name="about">Om</string>
+    <string name="add_account">Legg til konto</string>
+    <string name="create_playlist">Opprett spilleliste</string>
+    <string name="playlist">Spilleliste</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d spor</item>
+        <item quantity="other">%1$d spor</item>
+    </plurals>
+    <string name="loading">Laster inn …</string>
+    <string name="album">Album</string>
+    <string name="animation">Animasjon</string>
+    <string name="play">Spill av</string>
+    <plurals name="number_followers">
+        <item quantity="one">%1$d følger</item>
+        <item quantity="other">%1$d følgere</item>
+    </plurals>
+    <string name="track">Spor</string>
+    <string name="about_summary">Lær mer om Echo</string>
+    <string name="user">Bruker</string>
+    <string name="ui">Grensesnitt</string>
+    <string name="password">Passord</string>
+    <string name="username">Brukernavn</string>
+    <string name="confirm">Bekreft</string>
+    <string name="animations">Animasjoner</string>
+    <string name="app_name">Echo</string>
+    <string name="songs">Spor</string>
+    <string name="radio">Radio</string>
+    <string name="view">Vis</string>
+    <string name="version">Versjon</string>
+    <string name="audio">Lyd</string>
+    <string name="behavior">Adferd</string>
+    <string name="info">Info</string>
+    <string name="select_an_account">Velg en konto</string>
+    <string name="not_logged_in">Ikke innlogget</string>
+    <string name="error">Feil</string>
+</resources>

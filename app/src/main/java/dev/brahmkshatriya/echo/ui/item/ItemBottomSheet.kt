@@ -144,7 +144,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         else null,
                         if (client is RadioClient)
                             ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
-                                playerViewModel.radio(clientId, item.album)
+                                playerViewModel.radio(clientId, item)
                             }
                         else null,
                     ) + item.album.artists.map {
@@ -158,7 +158,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     listOfNotNull(
                         if (client is RadioClient)
                             ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
-                                playerViewModel.radio(clientId, item.playlist)
+                                playerViewModel.radio(clientId, item)
                             }
                         else null,
                         if (client is LibraryClient)
@@ -187,7 +187,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             if (item is EchoMediaItem.Profile.ArtistItem) listOfNotNull(
                 if (client is RadioClient)
                     ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
-                        playerViewModel.radio(clientId, item.artist)
+                        playerViewModel.radio(clientId, item)
                     }
                 else null,
                 if (client is ArtistFollowClient)
@@ -240,7 +240,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 else null,
                 if (client is RadioClient)
                     ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
-                        playerViewModel.radio(clientId, item.track)
+                        playerViewModel.radio(clientId, item)
                     }
                 else null,
                 item.track.album?.let {

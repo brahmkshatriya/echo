@@ -537,7 +537,6 @@ object MediaStoreUtils {
 
         val playlistsFinal = playlists.map {
             it.first.also { playlist ->
-                println("Playlist : ${playlist.title} with ${it.second.size} songs")
                 playlist.songList.addAll(it.second.map { value ->
                     idMap!![value]
                         ?: if (DEBUG_MISSING_SONG) throw NullPointerException(

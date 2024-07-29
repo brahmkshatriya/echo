@@ -2,102 +2,126 @@ package dev.brahmkshatriya.echo.playback
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
+import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.ResolvingDataSource.Resolver
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 
 class TrackResolver(
     private val context: Context,
-    private val global: Queue,
     private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val settings: SharedPreferences
 ) : Resolver {
 
+    lateinit var player: Player
+
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-        val id = dataSpec.uri.toString()
-        val streamable = dataSpec.customData as? StreamableAudio ?: run {
-            val track = global.getTrack(id)
-                ?: throw Exception(context.getString(R.string.track_not_found))
 
-            val extension = extensionListFlow.getExtension(track.clientId)
-            val client = extension?.client
-                ?: throw Exception(context.noClient().message)
+        val (index, mediaItem) = runBlocking(Dispatchers.Main) {
+            player.getMediaItemById(dataSpec.uri.toString())
+        } ?: throw Exception(context.getString(R.string.track_not_found))
 
-            if (client !is TrackClient)
-                throw Exception(context.trackNotSupported(extension.metadata.name).message)
+        val track = mediaItem.track
+        val clientId = mediaItem.clientId
 
-            val loadedTrack = getTrack(track, client).getOrElse { throw Exception(it) }
-            loadAudio(loadedTrack, client).getOrElse { throw Exception(it) }
+        val extension = extensionListFlow.getExtension(clientId)
+        val client = extension?.client
+            ?: throw Exception(context.noClient().message)
+
+        if (client !is TrackClient)
+            throw Exception(context.trackNotSupported(extension.metadata.name).message)
+
+        val loadedTrack = if (!mediaItem.isLoaded) loadTrack(client, track) else track
+        val newMediaItem = MediaItemUtils.build(settings, mediaItem, loadedTrack)
+
+        runBlocking(Dispatchers.Main) {
+            player.replaceMediaItem(index, newMediaItem)
         }
-        global.currentAudioFlow.value = streamable
+
+        val streamable = loadAudio(client, newMediaItem).getOrElse { throw Exception(it) }
         return dataSpec.copy(customData = streamable)
     }
 
-    private fun getTrack(
-        streamableTrack: Queue.StreamableTrack, client: TrackClient
-    ) = runCatching {
-        val track = streamableTrack.loaded ?: loadTrack(client, streamableTrack)
-        current = track
-        track
-    }
-
-
-    private fun loadTrack(client: TrackClient, streamableTrack: Queue.StreamableTrack): Track {
-        val id = streamableTrack.unloaded.id
-        val track = getTrackFromCache(id) ?: runBlocking {
-            runCatching { client.loadTrack(streamableTrack.unloaded) }
+    private fun loadTrack(client: TrackClient, track: Track): Track {
+        val id = track.id
+        val loaded = getTrackFromCache(id) ?: runBlocking {
+            runCatching { client.loadTrack(track) }
         }.getOrThrow()
-        context.saveToCache(id, track)
-        if (streamableTrack.loaded == null) streamableTrack.run {
-            loaded = track
-            liked = track.liked
-            runBlocking {
-                onLoad.emit(track)
-                global.onLiked.emit(track.liked)
-            }
-        }
-        return track
+        context.saveToCache(id, loaded)
+        return loaded
     }
 
-    private fun loadAudio(track: Track, client: TrackClient): Result<StreamableAudio> {
-        val streamable = selectStream(settings, track.audioStreamables)
-            ?: throw Exception(context.getString(R.string.no_streams_found))
+    private fun loadAudio(client: TrackClient, mediaItem: MediaItem): Result<StreamableAudio> {
+        val streams = mediaItem.track.audioStreamables
+        val index = mediaItem.audioStreamIndex
+        val streamable = streams[index]
         return runBlocking {
             runCatching { client.getStreamableAudio(streamable) }
         }
     }
 
-    private var current: Track? = null
     private fun getTrackFromCache(id: String): Track? {
-        val track = current?.takeIf { it.id == id }
-            ?: context.getFromCache(id, Track.creator) ?: return null
+        val track = context.getFromCache(id, Track.creator) ?: return null
         return if (!track.isExpired()) track else null
     }
 
     private fun Track.isExpired() = System.currentTimeMillis() > expiresAt
 
     companion object {
-        fun selectStream(settings: SharedPreferences, streamables: List<Streamable>) =
-            when (settings.getString(AudioFragment.AudioPreference.STREAM_QUALITY, "lowest")) {
-                "highest" -> streamables.maxByOrNull { it.quality }
-                "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
-                "lowest" -> streamables.minByOrNull { it.quality }
-                else -> streamables.firstOrNull()
+        @OptIn(UnstableApi::class)
+        fun DataSpec.copy(
+            uri: Uri? = null,
+            uriPositionOffset: Long? = null,
+            httpMethod: Int? = null,
+            httpBody: ByteArray? = null,
+            httpRequestHeaders: Map<String, String>? = null,
+            position: Long? = null,
+            length: Long? = null,
+            key: String? = null,
+            flags: Int? = null,
+            customData: Any? = null
+        ): DataSpec {
+            return DataSpec.Builder()
+                .setUri(uri ?: this.uri)
+                .setUriPositionOffset(uriPositionOffset ?: this.uriPositionOffset)
+                .setHttpMethod(httpMethod ?: this.httpMethod)
+                .setHttpBody(httpBody ?: this.httpBody)
+                .setHttpRequestHeaders(httpRequestHeaders ?: this.httpRequestHeaders)
+                .setPosition(position ?: this.position)
+                .setLength(length ?: this.length)
+                .setKey(key ?: this.key)
+                .setFlags(flags ?: this.flags)
+                .setCustomData(customData ?: this.customData)
+                .build()
+        }
+
+        fun Player.getMediaItemById(id: String): Pair<Int, MediaItem>? {
+            (0 until mediaItemCount).forEach { index ->
+                val mediaItem = getMediaItemAt(index)
+                if (mediaItem.mediaId == id) return index to mediaItem
             }
+            return null
+        }
     }
 }

@@ -41,6 +41,7 @@ import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolde
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
+import dev.brahmkshatriya.echo.utils.configure
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.load
@@ -161,7 +162,8 @@ class ItemFragment : Fragment() {
                 override fun onPlayClicked(album: Album) =
                     playerVM.play(clientId, album.toMediaItem(), 0)
 
-                override fun onRadioClicked(album: Album) = playerVM.radio(clientId, album)
+                override fun onRadioClicked(album: Album) =
+                    playerVM.radio(clientId, album.toMediaItem())
             }
         )
 
@@ -170,7 +172,8 @@ class ItemFragment : Fragment() {
                 override fun onPlayClicked(list: Playlist) =
                     playerVM.play(clientId, list.toMediaItem(), 0)
 
-                override fun onRadioClicked(list: Playlist) = playerVM.radio(clientId, list)
+                override fun onRadioClicked(list: Playlist) =
+                    playerVM.radio(clientId, list.toMediaItem())
             }
         )
 
@@ -179,7 +182,8 @@ class ItemFragment : Fragment() {
                 artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter
             ) = Unit
 
-            override fun onRadioClicked(artist: Artist) = playerVM.radio(clientId, artist)
+            override fun onRadioClicked(artist: Artist) =
+                playerVM.radio(clientId, artist.toMediaItem())
         })
 
         fun concatAdapter(item: EchoMediaItem): ConcatAdapter {
@@ -196,7 +200,7 @@ class ItemFragment : Fragment() {
             }
         }
 
-        binding.swipeRefresh.setOnRefreshListener {
+        binding.swipeRefresh.configure {
             viewModel.load()
         }
 

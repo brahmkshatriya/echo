@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">Home</string>
+    <string name="library">Library</string>
+    <string name="extensions">Extensions</string>
+    <string name="settings">Settings</string>
+    <string name="play_pause">Play/Pause</string>
+    <string name="next">Aage</string>
+    <string name="add_extension">Extension Daale</string>
+    <string name="extension_settings">Extension Settings</string>
+    <string name="more">More</string>
+    <string name="retry">Retry</string>
+    <string name="failed_loading">Load nahi kar paya</string>
+    <string name="repeat">Vapas</string>
+    <string name="is_not_supported">%2$s, %1$s ko nahi support karta!</string>
+    <string name="drag_to_change_playlist_position">Drag karke playlist ki position change karo</string>
+    <string name="up_next">Up Next</string>
+    <string name="collapse_player">Player ko chhota kare</string>
+    <string name="shuffle">Hilaaye</string>
+    <string name="clear_playlist">Playlist ko Khali kare</string>
+    <string name="playlist">Playlist</string>
+    <string name="loading">Load ho Raha h…</string>
+    <string name="number_dot">%1$d.</string>
+    <string name="play">Play</string>
+    <string name="songs">Songs</string>
+    <string name="radio">Radio</string>
+    <string name="app_name">Echo</string>
+    <string name="search">Search</string>
+    <string name="previous">Piche</string>
+    <string name="close">Close</string>
+    <string name="album">Album</string>
+</resources>

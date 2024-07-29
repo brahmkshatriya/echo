@@ -14,9 +14,9 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeFeedViewModel @Inject constructor(
     override val extensionFlow: MutableStateFlow<MusicExtension?>,
-    val userFlow: MutableSharedFlow<UserEntity?>,
+    override val userFlow: MutableSharedFlow<UserEntity?>,
     throwableFlow: MutableSharedFlow<Throwable>,
-) : FeedViewModel(throwableFlow, extensionFlow) {
+) : FeedViewModel(throwableFlow, userFlow, extensionFlow) {
     override suspend fun getTabs(client: ExtensionClient) =
         (client as? HomeFeedClient)?.getHomeTabs()
 

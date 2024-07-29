@@ -6,6 +6,7 @@ import dev.brahmkshatriya.echo.EchoApplication.Companion.TIMEOUT
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.db.UserDao
 import dev.brahmkshatriya.echo.db.models.CurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity
@@ -57,22 +58,24 @@ class LoginUserViewModel @Inject constructor(
         }
     }
 
-    val currentExtension = MutableStateFlow<Pair<ExtensionMetadata, ExtensionClient>?>(null)
-    val currentUser = currentExtension.combine(userDao.observeCurrentUser()) { it, list ->
-        val metadata = it?.first
-        val client = it?.second
-        val user = list.find { it.clientId == metadata?.id }
-        withContext(Dispatchers.IO) {
-            Triple(
-                metadata,
-                client,
-                userDao.getUser(metadata?.id, user?.id)?.toUser()
-            )
-        }
-    }
+    data class ExtensionData(
+        val type: ExtensionType,
+        val metadata: ExtensionMetadata,
+        val client: ExtensionClient
+    )
 
-    val allUsers = currentExtension.map { it ->
-        val metadata = it?.first
+    val currentExtension = MutableStateFlow<ExtensionData?>(null)
+    val currentUser =
+        currentExtension.combine(userDao.observeCurrentUser()) { extensionData, list ->
+            val metadata = extensionData?.metadata
+            val user = list.find { it.clientId == metadata?.id }
+            withContext(Dispatchers.IO) {
+                extensionData to userDao.getUser(metadata?.id, user?.id)?.toUser()
+            }
+        }
+
+    val allUsers = currentExtension.map { extensionData ->
+        val metadata = extensionData?.metadata
         withContext(Dispatchers.IO) {
             metadata to metadata?.id?.let { id ->
                 userDao.getAllUsers(id).map { it.toUser() }
@@ -90,6 +93,10 @@ class LoginUserViewModel @Inject constructor(
     fun setLoginUser(user: UserEntity?) {
         val currentUser = user?.toCurrentUser()
             ?: CurrentUser(extensionFlow.value?.metadata?.id ?: return, null)
+        setLoginUser(currentUser)
+    }
+
+    fun setLoginUser(currentUser: CurrentUser) {
         viewModelScope.launch(Dispatchers.IO) {
             userDao.setCurrentUser(currentUser)
         }
@@ -105,7 +112,6 @@ class LoginUserViewModel @Inject constructor(
         ) = withContext(Dispatchers.IO) {
             if (client !is LoginClient) return@withContext
             val user = userDao.getCurrentUser(id)
-            println("$id user : $user")
             val success = tryWith(throwableFlow) {
                 withTimeout(TIMEOUT) { client.onSetLoginUser(user?.toUser()) }
             }

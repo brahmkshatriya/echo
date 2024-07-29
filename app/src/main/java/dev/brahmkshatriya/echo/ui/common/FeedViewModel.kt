@@ -5,9 +5,11 @@ import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Tab
+import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
 
 abstract class FeedViewModel(
     throwableFlow: MutableSharedFlow<Throwable>,
+    open val userFlow: MutableSharedFlow<UserEntity?>,
     open val extensionFlow: MutableStateFlow<MusicExtension?>,
 ) : CatchingViewModel(throwableFlow) {
     abstract suspend fun getTabs(client: ExtensionClient): List<Tab>?
@@ -47,10 +50,12 @@ abstract class FeedViewModel(
         getFeed(client)?.collectTo(feed)
     }
 
+    private var job: Job? = null
     fun refresh(reset: Boolean = false) {
+        job?.cancel()
         feed.value = null
         val client = extensionFlow.value?.client ?: return
-        viewModelScope.launch(Dispatchers.IO) {
+        job = viewModelScope.launch(Dispatchers.IO) {
             if (reset) loadGenres(client)
             loadFeed(client)
         }

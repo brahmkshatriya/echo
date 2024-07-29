@@ -14,6 +14,9 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
 import dev.brahmkshatriya.echo.common.exceptions.UnauthorizedException
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerial
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -99,8 +102,9 @@ class ExceptionFragment : Fragment() {
         @Suppress("UnusedReceiverParameter")
         fun Context.getDetails(throwable: Throwable) = when (throwable) {
             is PlayerViewModel.PlayerException -> """
-Current : ${throwable.currentAudio.toString()}
-Stream : ${throwable.streamableTrack.toString()}
+Client : ${throwable.mediaItem?.clientId}
+Track : ${throwable.mediaItem?.track}
+Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioStreamIndex) }}
 
 ${throwable.cause.stackTraceToString()}
 """.trimIndent()

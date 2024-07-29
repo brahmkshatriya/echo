@@ -19,15 +19,14 @@ import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Lyric
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.FragmentLyricsBinding
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
-import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
@@ -96,7 +95,7 @@ class LyricsFragment : Fragment() {
 
         var currentLyric: Lyric? = null
         var lyricAdapter: LyricAdapter? = null
-        val smoothScroller = CenterSmoothScroller(binding.lyricsRecyclerView)
+
         val layoutManager = binding.lyricsRecyclerView.layoutManager as LinearLayoutManager
         fun updateLyrics(current: Long) {
             if ((currentLyric?.endTime ?: 0) < current || current <= 0) {
@@ -108,15 +107,18 @@ class LyricsFragment : Fragment() {
                 lyricAdapter?.submitList(list)
                 val currentIndex = list.indexOfLast { it.first }
                     .takeIf { it != -1 } ?: return
+
+                val smoothScroller = CenterSmoothScroller(binding.lyricsRecyclerView)
                 smoothScroller.targetPosition = currentIndex
                 layoutManager.startSmoothScroll(smoothScroller)
+
                 binding.appBarLayout.setExpanded(false)
                 slideDown()
             }
         }
         lyricAdapter = LyricAdapter { lyric ->
             currentLyric = null
-            emit(playerVM.seekTo) { lyric.startTime }
+            playerVM.seekTo(lyric.startTime)
             updateLyrics(lyric.startTime)
         }
         binding.lyricsRecyclerView.adapter = lyricAdapter
