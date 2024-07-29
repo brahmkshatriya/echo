@@ -1,10 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Echo</string>
-  
     <string name="home">Ev</string>
     <string name="library">Kütüphane</string>
     <string name="search">Ara</string>
-  
     <string name="extensions">Eklentiler</string>
     <string name="settings">Ayarlar</string>
     <string name="play_pause">Oynat/Durdur</string>
@@ -37,19 +36,19 @@
         <item quantity="other">%1$d Takipçi</item>
     </plurals>
     <string name="saved_to_playlist">%1$s Listesine Kaydedildi</string>
-    <string name="saved_to_playlists">Listelere Kaydedildi</string>
+    <string name="saved_to_playlists">Oynatma Listelerine Kaydedildi</string>
     <string name="songs">Şarkılar</string>
     <string name="radio">Radyo</string>
     <string name="view">Görünüm</string>
     <string name="str_copy">Kopyala</string>
     <string name="artist">Sanatçı</string>
-    <string name="unfollow">Takibi Bırak</string>
+    <string name="unfollow">Takipten çık</string>
     <string name="follow">Takip Et</string>
     <string name="version">Versiyon</string>
     <string name="about">Hakkında</string>
-    <string name="stop_player">Oynatıcıyı Durdur</string>
-    <string name="stop_player_summary">Uygulama sonlandığında oynatıcıyı durdur</string>
-    <string name="auto_start_radio">Radyoyu Otomatik Başlat</string>
+    <string name="stop_player">Oynatıcıyı durdur</string>
+    <string name="stop_player_summary">Uygulama sonlandığında oynatmayı durdur</string>
+    <string name="auto_start_radio">Otomatik olarak radyoyu başlat</string>
     <string name="auto_start_radio_summary">Oynatma listesine ilgili şarkıları otomatik olarak ekle, sonsuz kuyruk için</string>
     <string name="track">Parça</string>
     <string name="about_summary">Echo hakkında daha fazla bilgi edinin</string>
@@ -67,7 +66,7 @@
         <item>Sistem</item>
     </string-array>
     <string name="amoled">Amoled</string>
-    <string name="amoled_summary">Zifiri Siyah, Saf Siyah</string>
+    <string name="amoled_summary">Zifiri Karanlık, Saf Siyah</string>
     <string name="ui">UI</string>
     <string name="restart_app">Değişiklikleri uygulamak için uygulamayı yeniden başlatın</string>
     <string name="dynamic_player">Dinamik Oynatıcı Rengi</string>
