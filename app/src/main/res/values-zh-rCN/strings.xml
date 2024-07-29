@@ -62,7 +62,7 @@
     <string name="animations">动画</string>
     <string name="animations_summary">感觉太口吃了？关闭此功能可能会有所帮助</string>
     <string name="shared_element_transitions">曲目封面过渡</string>
-    <string name="shared_element_transitions_summary">­很酷的元素转换，为什么要关闭它？</string>
+    <string name="shared_element_transitions_summary">很酷的元素转换，为什么要关闭它？</string>
     <string name="restart">重启</string>
     <string name="equalizer">均衡器</string>
     <string name="equalizer_summary">打开设备的均衡器设置</string>
@@ -72,7 +72,7 @@
     <string name="password">密码</string>
     <string name="select_an_account">选择账户</string>
     <string name="confirm">确认</string>
-    <string name="todo">代办，还没做。</string>
+    <string name="todo">待办，还没做。</string>
     <string name="play_pause">播放/暂停</string>
     <string name="settings">设置</string>
     <string name="previous">上一首</string>
