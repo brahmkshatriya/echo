@@ -54,4 +54,10 @@
     <string name="stop_player">Wiedergabe abbrechen</string>
     <string name="unfollow">Unfollow</string>
     <string name="track">Track</string>
+    <string name="extension_settings_summary">Einstellungen der gewählten Erweiterung</string>
+    <string name="theme">Farbschema</string>
+    <string name="theme_summary">Willst du blind werden?</string>
+    <string name="amoled">Amoled</string>
+    <string name="audio_summary">(Audiophile hier hin)</string>
+    <string name="behavior">Verhalten</string>
 </resources>
