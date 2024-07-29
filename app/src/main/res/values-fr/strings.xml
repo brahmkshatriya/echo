@@ -6,4 +6,5 @@
     <string name="extensions"></string>
     <string name="play_pause"></string>
     <string name="settings">Paramètres</string>
+    <string name="library">Bibliothèque</string>
 </resources>
