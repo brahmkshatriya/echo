@@ -1,2 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="settings">Einstellungen</string>
+    <string name="home">Start</string>
+    <string name="library">Bibliothek</string>
+    <string name="extensions">Erweiterungen</string>
+    <string name="previous">Vorheriges</string>
+    <string name="next">Nächstes</string>
+    <string name="add_extension">Erweiterung Hinzufügen</string>
+    <string name="extension_settings">Erweiterungseinstellungen</string>
+    <string name="more">Mehr</string>
+    <string name="is_not_supported">%1$s ist nicht in der %2$s Erweiterung unterstützt</string>
+    <string name="drag_to_change_playlist_position">Ziehen um Position in Playlist zu ändern</string>
+    <string name="up_next">Als Nächstes</string>
+    <string name="close">Schließen</string>
+    <string name="collapse_player">Spieler zusammenfalten</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="playlist">Playliste</string>
+    <string name="loading">Lädt…</string>
+    <string name="album">Album</string>
+    <string name="number_dot">%1$d.</string>
+    <string name="play">Abspielen</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d Song</item>
+        <item quantity="other">%1$d Songs</item>
+    </plurals>
+    <string name="search">Suche</string>
+    <string name="play_pause">Abspielen/Pausieren</string>
+    <string name="retry">Erneut Versuchen</string>
+    <string name="app_name">Echo</string>
+    <string name="failed_loading">Ladevorgang Fehlgeschlagen</string>
+    <string name="repeat">Wiederholen</string>
+    <string name="clear_playlist">Playliste leeren</string>
+</resources>
