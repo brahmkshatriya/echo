@@ -25,7 +25,7 @@
         <item quantity="many">%1$d Chansons</item>
         <item quantity="other">%1$d Chansons</item>
     </plurals>
-    <string name="saved_to_playlist">Sauvegarder dans la playlist \"%1$s\"</string>
+    <string name="saved_to_playlist">Sauvegardé dans la playlist \"%1$s\"</string>
     <string name="songs">Chansons</string>
     <string name="radio">Radio</string>
     <string name="str_copy">Copier</string>
@@ -39,10 +39,10 @@
     <string name="stop_player">Arrêter le lecteur</string>
     <string name="stop_player_summary">Arrêter la lecture quand l\'application est retirée de l\'onglet récent</string>
     <string name="about_summary">En savoir plus à propos d\'Echo</string>
-    <string name="look_and_feel">Appearance et Sensation</string>
+    <string name="look_and_feel">Appearance et Ressenti</string>
     <string name="audio">Audio</string>
     <string name="look_and_feel_summary">Paramètres d\'interface et animation</string>
-    <string name="audio_summary">(Réunion d\'audiophiles)</string>
+    <string name="audio_summary">(Audiophiles venez ici)</string>
     <string name="extension_settings_summary">Paramètres de l\'extension sélectionnée</string>
     <string name="behavior">Comportement</string>
     <string name="currently_playing">En lecture</string>
@@ -166,4 +166,7 @@
     <string name="extension_disabled">%1$s (désactivé)</string>
     <string name="disabled">Désactivé</string>
     <string name="radio_playlist_empty">La playlist radio est vide</string>
+    <string name="saved_to_playlists">Sauvegardé dans les playlists</string>
+    <string name="auto_start_radio">Auto Start Radio</string>
+    <string name="view">Voir</string>
 </resources>
