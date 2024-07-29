@@ -60,4 +60,7 @@
     <string name="amoled">Amoled</string>
     <string name="audio_summary">(Audiophile hier hin)</string>
     <string name="behavior">Verhalten</string>
+    <string name="amoled_summary">Pures Schwarz</string>
+    <string name="ui">Benutzeroberfläche</string>
+    <string name="restart_app">Zum vollen anwenden der Änderungen App neustarten</string>
 </resources>
