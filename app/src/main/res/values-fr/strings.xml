@@ -12,4 +12,7 @@
     <string name="play_pause">Lecture/Pause</string>
     <string name="extensions">Extension</string>
     <string name="repeat">Répéter</string>
+    <string name="previous">Précédent</string>
+    <string name="next">Suivant</string>
+    <string name="add_extension">Ajouter une Extension</string>
 </resources>
