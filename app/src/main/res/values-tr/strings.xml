@@ -181,4 +181,5 @@
     <string name="choose_a_color"></string>
     <string name="close"></string>
     <string name="auto_start_radio"></string>
+    <string name="is_not_supported"></string>
 </resources>
