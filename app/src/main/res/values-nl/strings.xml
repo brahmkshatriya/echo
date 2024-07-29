@@ -49,4 +49,8 @@
     <string name="unfollow">Ontvolgen</string>
     <string name="version">Versie</string>
     <string name="stop_player_summary">Speler stoppen wanneer app wordt verwijderd uit recenten</string>
+    <string name="about_summary">Meer informatie over Echo</string>
+    <string name="auto_start_radio_summary">Voeg automatisch gerelateerde nummers toe aan de afspeellijst voor een oneindige wachtrij</string>
+    <string name="track">Nummer</string>
+    <string name="look_and_feel">Weergave en Interactie</string>
 </resources>
