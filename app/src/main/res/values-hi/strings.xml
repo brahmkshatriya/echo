@@ -181,4 +181,5 @@
     <string name="error_invalid_type"></string>
     <string name="radio_playlist_empty"></string>
     <string name="number_dot"></string>
+    <string name="is_not_supported"></string>
 </resources>
