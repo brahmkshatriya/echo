@@ -5,4 +5,11 @@
     <string name="home">Home</string>
     <string name="settings">Paramètres</string>
     <string name="library">Bibliothèque</string>
+    <string name="extension_settings">Paramètres d\'extension</string>
+    <string name="more">Plus</string>
+    <string name="retry">Réessayer</string>
+    <string name="failed_loading">Chargement erroné</string>
+    <string name="play_pause">Lecture/Pause</string>
+    <string name="extensions">Extension</string>
+    <string name="repeat">Répéter</string>
 </resources>
