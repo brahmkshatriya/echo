@@ -1,2 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="search">Recherche</string>
+    <string name="app_name">Echo</string>
+    <string name="home">Home</string>
+    <string name="extensions"></string>
+    <string name="play_pause"></string>
+    <string name="settings">Paramètres</string>
+</resources>
