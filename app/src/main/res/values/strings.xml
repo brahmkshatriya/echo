@@ -15,7 +15,7 @@
     <string name="retry">Retry</string>
     <string name="failed_loading">Failed Loading</string>
     <string name="repeat">Repeat</string>
-    <string name="is_not_supported">%1$s is not supported in %2$s Extension!</string>
+    <string name="is_not_supported">%1$s is not supported in %2$s Extension</string>
     <string name="drag_to_change_playlist_position">Drag to change playlist position</string>
     <string name="up_next">Up Next</string>
     <string name="close">Close</string>
