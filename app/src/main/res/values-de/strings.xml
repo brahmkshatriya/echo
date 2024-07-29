@@ -31,4 +31,27 @@
     <string name="failed_loading">Ladevorgang Fehlgeschlagen</string>
     <string name="repeat">Wiederholen</string>
     <string name="clear_playlist">Playliste leeren</string>
+    <string name="artist">Künstler</string>
+    <string name="look_and_feel_summary">Interface und Animations Einstellungen</string>
+    <string name="saved_to_playlists">Gespeichert zu Playlists</string>
+    <string name="look_and_feel">Design und Handhabung</string>
+    <plurals name="number_followers">
+        <item quantity="one">%1$d Follower</item>
+        <item quantity="other">%1$d Follower</item>
+    </plurals>
+    <string name="audio">Audio</string>
+    <string name="about_summary">Erfahre mehr über Echo</string>
+    <string name="stop_player_summary">Wiedergabe abbrechen, wenn die App aus den Hintergrund-Apps entfernt wird</string>
+    <string name="str_copy">Kopieren</string>
+    <string name="radio">Radio</string>
+    <string name="auto_start_radio_summary">Automatisches hinzufügen von ähnlichen Songs zur Playliste, um eine unendliche Warteschlange zu haben</string>
+    <string name="follow">Folgen</string>
+    <string name="songs">Songs</string>
+    <string name="about">Über Uns</string>
+    <string name="auto_start_radio">Radio Automatisch Starten</string>
+    <string name="version">Version</string>
+    <string name="saved_to_playlist">In %1$s gespeichert</string>
+    <string name="stop_player">Wiedergabe abbrechen</string>
+    <string name="unfollow">Unfollow</string>
+    <string name="track">Track</string>
 </resources>
