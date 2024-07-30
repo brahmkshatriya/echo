@@ -22,22 +22,18 @@ import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.RenderersFactory
-import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.StreamableDataSource
 import dev.brahmkshatriya.echo.playback.TrackResolver
 import dev.brahmkshatriya.echo.playback.TrackingListener
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -104,7 +100,7 @@ class PlaybackService : MediaLibraryService() {
 
         exoPlayer.addListener(PlayerEventListener(this, session, current, extListFlow))
         exoPlayer.addListener(
-            Radio(session,this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)
+            Radio(exoPlayer, this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)
         )
         exoPlayer.addListener(
             TrackingListener(session, scope, extListFlow, trackerList, throwFlow)
@@ -112,15 +108,6 @@ class PlaybackService : MediaLibraryService() {
         settings.registerOnSharedPreferenceChangeListener { prefs, key ->
             when (key) {
                 SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, true)
-            }
-        }
-
-        val keepQueue = settings.getBoolean(KEEP_QUEUE, true)
-        if (keepQueue) scope.launch {
-            extListFlow.first { it != null }
-            ResumptionUtils.recoverPlaylist(this@PlaybackService).apply {
-                exoPlayer.setMediaItems(mediaItems, startIndex, startPositionMs)
-                exoPlayer.prepare()
             }
         }
 

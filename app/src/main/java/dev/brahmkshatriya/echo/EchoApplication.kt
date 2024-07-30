@@ -173,11 +173,7 @@ class EchoApplication : Application() {
         collector: FlowCollector<List<Pair<ExtensionMetadata, T>>>
     ) = getAllPlugins().catchWith(throwableFlow).map { list ->
         list.mapNotNull { result ->
-            tryWith(throwableFlow) {
-                result.getOrElse {
-                    throw it.cause!!
-                }
-            }
+            tryWith(throwableFlow) { result.getOrElse { throw it.cause ?: it } }
         }
     }.collect(collector)
 

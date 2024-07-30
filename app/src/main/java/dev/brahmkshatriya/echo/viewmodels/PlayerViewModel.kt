@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.viewmodels
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.core.os.bundleOf
@@ -18,15 +19,18 @@ import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
 import dev.brahmkshatriya.echo.playback.Radio
+import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.ui.player.PlayerUiListener
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.utils.getSerial
 import dev.brahmkshatriya.echo.utils.listenFuture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -47,9 +51,9 @@ class PlayerViewModel @Inject constructor(
         if (browser != null) viewModelScope.launch(Dispatchers.Main) {
             tryWith { block(browser) }
         }
-        else viewModelScope.launch {
-            throwableFlow.emit(IllegalStateException("Browser not connected"))
-        }
+//        else viewModelScope.launch {
+//            throwableFlow.emit(IllegalStateException("Browser not connected"))
+//        }
     }
 
     val playPauseListener = CheckBoxListener {
@@ -188,12 +192,24 @@ class PlayerViewModel @Inject constructor(
     }
 
     companion object {
+        @SuppressLint("UnsafeOptInUsageError")
         fun connectBrowserToUI(
             browser: MediaBrowser,
             viewModel: PlayerViewModel
         ) {
             viewModel.browser = browser
             browser.addListener(PlayerUiListener(browser, viewModel))
+
+            viewModel.run {
+                val keepQueue = settings.getBoolean(KEEP_QUEUE, true)
+                if (keepQueue && !browser.isPlaying) viewModelScope.launch {
+                    extensionListFlow.first { it != null }
+                    ResumptionUtils.recoverPlaylist(app).apply {
+                        browser.setMediaItems(mediaItems, startIndex, startPositionMs)
+                        browser.prepare()
+                    }
+                }
+            }
         }
     }
 

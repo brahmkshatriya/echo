@@ -28,7 +28,6 @@ import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
@@ -87,8 +86,7 @@ class PlayerFragment : Fragment() {
             overScrollMode = View.OVER_SCROLL_NEVER
         }
 
-        val combined = viewModel.run { currentFlow.combine(listUpdateFlow) { it, _ -> it } }
-        observe(combined) {
+        fun update() {
             val list = viewModel.list
             if (list.isEmpty()) {
                 emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
@@ -100,10 +98,15 @@ class PlayerFragment : Fragment() {
                 }
             }
             adapter.submitList(list)
-            val index = it?.index ?: -1
+            val index = viewModel.currentFlow.value?.index ?: -1
             val smooth = abs(index - binding.viewPager.currentItem) <= 1
-            binding.viewPager.setCurrentItem(index, smooth)
+            binding.viewPager.post {
+                binding.viewPager.setCurrentItem(index, smooth)
+            }
         }
+
+        observe(viewModel.listUpdateFlow) { update() }
+        observe(viewModel.currentFlow) { update() }
 
         observe(uiViewModel.playerSheetState) {
             if (it == STATE_HIDDEN) viewModel.clearQueue()

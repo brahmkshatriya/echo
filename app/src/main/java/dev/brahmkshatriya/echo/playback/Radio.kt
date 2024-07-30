@@ -3,7 +3,8 @@ package dev.brahmkshatriya.echo.playback
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
-import androidx.media3.session.MediaLibraryService.MediaLibrarySession
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class Radio(
-    session: MediaLibrarySession,
+    private val player: Player,
     private val context: Context,
     private val settings: SharedPreferences,
     private val scope: CoroutineScope,
@@ -40,7 +41,7 @@ class Radio(
     private val throwFlow: MutableSharedFlow<Throwable>,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val stateFlow: MutableStateFlow<State>,
-) : PlayerListener(session.player) {
+) : Player.Listener {
 
     sealed class State {
         data object Empty : State()
@@ -140,7 +141,7 @@ class Radio(
         }
     }
 
-    override fun onTrackStart(mediaItem: MediaItem) {
+    private fun startRadio(){
         val autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
         if (!autoStartRadio) return
         if (player.hasNextMediaItem()) return
@@ -149,8 +150,7 @@ class Radio(
                 if (stateFlow.value != State.Empty) return
                 loadPlaylist()
             }
-
-            State.Loading -> {}
+            is State.Loading -> {}
             is State.Loaded -> {
                 val toBePlayed = state.played + 1
                 if (toBePlayed == state.tracks.size) loadPlaylist()
@@ -161,8 +161,9 @@ class Radio(
         }
     }
 
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) { startRadio() }
+
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        super.onMediaItemTransition(mediaItem, reason)
         if(player.mediaItemCount == 0) stateFlow.value = State.Empty
     }
 }
