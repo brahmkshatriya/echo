@@ -39,7 +39,7 @@
     <string name="stop_player">Arrêter le lecteur</string>
     <string name="stop_player_summary">Arrêter la lecture quand l\'application est retirée de l\'onglet récent</string>
     <string name="about_summary">En savoir plus à propos d\'Echo</string>
-    <string name="look_and_feel">Appearance et Ressenti</string>
+    <string name="look_and_feel">Apparence et Ressenti</string>
     <string name="audio">Audio</string>
     <string name="look_and_feel_summary">Paramètres d\'interface et animation</string>
     <string name="audio_summary">(Audiophiles venez ici)</string>
