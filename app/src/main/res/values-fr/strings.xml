@@ -160,7 +160,7 @@
     <string name="required_field">%1$s est requis.</string>
     <string name="downloading">Téléchargement en cours</string>
     <string name="extension">Extensions</string>
-    <string name="invalid_extension_host">Hôte d\'extension invalide.</string>
+    <string name="invalid_extension_host">Type d\'extension hôte invalide.</string>
     <string name="music">Musique</string>
     <string name="name_extension">%1$s Extension</string>
     <string name="extension_disabled">%1$s (désactivé)</string>
