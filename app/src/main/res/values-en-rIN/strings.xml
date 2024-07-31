@@ -12,9 +12,9 @@
     <string name="retry">Retry</string>
     <string name="failed_loading">Load nahi kar paya</string>
     <string name="repeat">Vapas</string>
-    <string name="is_not_supported">%2$s, %1$s ko nahi support karta!</string>
+    <string name="is_not_supported">%1$s ka support, %2$s me nahi h.</string>
     <string name="drag_to_change_playlist_position">Drag karke playlist ki position change karo</string>
-    <string name="up_next">Up Next</string>
+    <string name="up_next">Ane wala</string>
     <string name="collapse_player">Player ko chhota kare</string>
     <string name="shuffle">Hilaaye</string>
     <string name="clear_playlist">Playlist ko Khali kare</string>
@@ -22,11 +22,14 @@
     <string name="loading">Load ho Raha h…</string>
     <string name="number_dot">%1$d.</string>
     <string name="play">Play</string>
-    <string name="songs">Songs</string>
+    <string name="songs">Gaane</string>
     <string name="radio">Radio</string>
     <string name="app_name">Echo</string>
     <string name="search">Search</string>
     <string name="previous">Piche</string>
-    <string name="close">Close</string>
+    <string name="close">Bandh</string>
     <string name="album">Album</string>
+    <string name="view">Dekhe</string>
+    <string name="stop_player">Player ko roko</string>
+    <string name="stop_player_summary">Player ko roko, jab app</string>
 </resources>
