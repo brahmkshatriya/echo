@@ -3,8 +3,6 @@ package dev.brahmkshatriya.echo.ui.exception
 import android.view.View
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
-import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
-import dev.brahmkshatriya.echo.common.exceptions.UnauthorizedException
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.login.LoginFragment
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
@@ -18,12 +16,12 @@ fun FragmentActivity.openException(throwable: Throwable, view: View? = null) {
 
 
 fun FragmentActivity.openLoginException(
-    throwable: LoginRequiredException,
+    throwable: AppException.LoginRequired,
     view: View? = null
 ) {
-    if (throwable is UnauthorizedException) {
+    if (throwable is AppException.Unauthorized) {
         val model by viewModels<LoginUserViewModel>()
-        model.logout(throwable.clientId, throwable.userId)
+        model.logout(throwable.extensionId, throwable.userId)
     }
     openFragment(LoginFragment.newInstance(throwable), view)
 }

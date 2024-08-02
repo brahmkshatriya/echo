@@ -37,15 +37,15 @@ class EditPlaylistViewModel @Inject constructor(
         loading = true
         viewModelScope.launch {
             loadingFlow.emit(true)
-            val client = extensionListFlow.getExtension(clientId)?.client
+            val extension = extensionListFlow.getExtension(clientId)
+            val client = extension?.client
             if (client !is LibraryClient) return@launch
             withContext(Dispatchers.IO) {
-                tryWith {
-                    originalList = client.loadTracks(playlist).loadAll()
-                    currentTracks.value = originalList
-                    loading = null
-                    loadingFlow.emit(null)
-                }
+                originalList = tryWith(extension.info) { client.loadTracks(playlist).loadAll() }
+                    ?: emptyList()
+                currentTracks.value = originalList
+                loading = null
+                loadingFlow.emit(null)
             }
         }
     }
@@ -60,10 +60,10 @@ class EditPlaylistViewModel @Inject constructor(
     private suspend inline fun <reified T> client(
         clientId: String, crossinline block: suspend (client: T) -> Unit
     ) {
-        val client = extensionListFlow.getExtension(clientId)?.client
-        if (client !is T) return
-        withContext(Dispatchers.IO) {
-            tryWith { block.invoke(client) }
+        val extension = extensionListFlow.getExtension(clientId)
+        val client = extension?.client ?: return
+        if (client is T) withContext(Dispatchers.IO) {
+            tryWith(extension.info) { block.invoke(client) }
         }
     }
 
@@ -194,10 +194,11 @@ class EditPlaylistViewModel @Inject constructor(
             clientId: String,
             playlist: Playlist
         ) {
-            val client = extensionListFlow.getExtension(clientId)?.client ?: return
+            val extension = extensionListFlow.getExtension(clientId) ?: return
+            val client = extension.client
             if (client !is LibraryClient) return
             withContext(Dispatchers.IO) {
-                tryWith { client.deletePlaylist(playlist) } ?: return@withContext
+                tryWith(extension.info) { client.deletePlaylist(playlist) } ?: return@withContext
                 mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
             }
         }
@@ -210,12 +211,13 @@ class EditPlaylistViewModel @Inject constructor(
             playlists: List<Playlist>,
             new: List<Track>
         ) = run {
-            val client = extensionListFlow.getExtension(clientId)?.client ?: return
+            val extension = extensionListFlow.getExtension(clientId) ?: return
+            val client = extension.client
             if (client !is LibraryClient) return
             val listener = client as? EditPlayerListenerClient
             withContext(Dispatchers.IO) {
                 playlists.forEach { playlist ->
-                    tryWith {
+                    tryWith(extension.info) {
                         check(playlist.isEditable)
                         val tracks = client.loadTracks(playlist).loadAll()
                         listener?.onEnterPlaylistEditor(playlist, tracks)

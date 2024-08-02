@@ -6,6 +6,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.db.models.UserEntity
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,7 @@ abstract class FeedViewModel(
     throwableFlow: MutableSharedFlow<Throwable>,
     open val userFlow: MutableSharedFlow<UserEntity?>,
     open val extensionFlow: MutableStateFlow<MusicExtension?>,
+    open val extensionListFlow: MutableStateFlow<List<MusicExtension>?>
 ) : CatchingViewModel(throwableFlow) {
     abstract suspend fun getTabs(client: ExtensionClient): List<Tab>?
     abstract fun getFeed(client: ExtensionClient): Flow<PagingData<MediaItemsContainer>>?
@@ -37,16 +39,16 @@ abstract class FeedViewModel(
     }
 
 
-    private suspend fun loadGenres(client: ExtensionClient) {
+    private suspend fun loadGenres(info: ExtensionInfo, client: ExtensionClient) {
         loading.emit(true)
-        val list = tryWith { getTabs(client) } ?: emptyList()
+        val list = tryWith(info) { getTabs(client) } ?: emptyList()
         loading.emit(false)
         if (!list.any { it.id == tab?.id }) tab = list.firstOrNull()
         genres.value = list
     }
 
 
-    private suspend fun loadFeed(client: ExtensionClient) = tryWith {
+    private suspend fun loadFeed(info: ExtensionInfo, client: ExtensionClient) = tryWith(info) {
         getFeed(client)?.collectTo(feed)
     }
 
@@ -54,10 +56,12 @@ abstract class FeedViewModel(
     fun refresh(reset: Boolean = false) {
         job?.cancel()
         feed.value = null
-        val client = extensionFlow.value?.client ?: return
+        val extension = extensionFlow.value ?: return
+        val client = extension.client
+        val info = extension.info
         job = viewModelScope.launch(Dispatchers.IO) {
-            if (reset) loadGenres(client)
-            loadFeed(client)
+            if (reset) loadGenres(info, client)
+            loadFeed(info, client)
         }
     }
 }

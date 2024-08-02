@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemEditPlaylistHeaderBinding
-import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.loadInto
 
 class EditPlaylistHeader(

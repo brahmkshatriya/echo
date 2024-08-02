@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
 import tel.jeelpa.plugger.PluginRepo
 
 data class MusicExtension(
-    val metadata: ExtensionMetadata,
-    val client: ExtensionClient,
-)
+    override val metadata: ExtensionMetadata,
+    override val client: ExtensionClient,
+) : GenericExtension(ExtensionType.MUSIC, metadata, client)
 
 fun StateFlow<List<MusicExtension>?>.getExtension(id: String?) =
     value?.find { it.metadata.id == id }

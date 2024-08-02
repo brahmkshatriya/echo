@@ -32,12 +32,13 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
+import dev.brahmkshatriya.echo.ui.adapter.MediaClickListener
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter.Companion.getListener
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistFragment
-import dev.brahmkshatriya.echo.ui.media.MediaClickListener
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
-import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.icon
-import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
@@ -85,6 +86,9 @@ class ItemFragment : Fragment() {
         return binding.root
     }
 
+    private var mediaContainerAdapter: MediaContainerAdapter? = null
+    private val listener = getListener(this)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         setupTransition(view)
@@ -131,28 +135,25 @@ class ItemFragment : Fragment() {
             }
         }
 
-        val mediaContainerAdapter =
-            MediaContainerAdapter(this, view.transitionName)
 
         val trackAdapter = TrackAdapter(
             view.transitionName,
             object : TrackAdapter.Listener {
                 override fun onClick(list: List<Track>, position: Int, view: View) {
-                    if (mediaContainerAdapter.listener is MediaClickListener) {
+                    if (listener is MediaClickListener) {
                         when (val item = viewModel.loaded) {
                             is EchoMediaItem.Lists -> playerVM.play(clientId, item, list, position)
                             else -> playerVM.play(clientId, null, list, position)
                         }
                     } else {
                         val track = list[position]
-                        mediaContainerAdapter.listener.onClick(clientId, track.toMediaItem(), view)
+                        listener.onClick(clientId, track.toMediaItem(), view)
                     }
                 }
 
                 override fun onLongClick(list: List<Track>, position: Int, view: View): Boolean {
                     val track = list[position]
-                    return mediaContainerAdapter.listener
-                        .onLongClick(clientId, track.toMediaItem(), view)
+                    return listener.onLongClick(clientId, track.toMediaItem(), view)
                 }
             }
         )
@@ -186,8 +187,7 @@ class ItemFragment : Fragment() {
                 playerVM.radio(clientId, artist.toMediaItem())
         })
 
-        fun concatAdapter(item: EchoMediaItem): ConcatAdapter {
-            val itemsAdapter = mediaContainerAdapter.withLoaders()
+        fun concatAdapter(item: EchoMediaItem, itemsAdapter: ConcatAdapter): ConcatAdapter {
             return when (item) {
                 is AlbumItem ->
                     ConcatAdapter(albumHeaderAdapter, trackAdapter, itemsAdapter)
@@ -220,7 +220,7 @@ class ItemFragment : Fragment() {
 
 
         collect(viewModel.relatedFeed) {
-            mediaContainerAdapter.submit(it)
+            mediaContainerAdapter?.submit(it)
         }
 
         collect(viewModel.itemFlow) {
@@ -264,19 +264,23 @@ class ItemFragment : Fragment() {
 
         collect(viewModel.extensionListFlow) { list ->
             val extension = list?.find { it.metadata.id == clientId }
-            val client = extension?.client
+            extension ?: return@collect
+            val extensionInfo = extension.info
+            val client = extension.client
 
-            mediaContainerAdapter.clientId = clientId
+            val mediaAdapter =
+                MediaContainerAdapter(this, view.transitionName, extensionInfo, listener)
+            mediaContainerAdapter = mediaAdapter
             viewModel.isRadioClient = client is RadioClient
             viewModel.isFollowClient = client is ArtistFollowClient
 
             val item = item
             viewModel.item = item
-            viewModel.client = client
+            viewModel.extension = extension
             viewModel.initialize()
 
             binding.recyclerView.run {
-                val adapter = concatAdapter(item)
+                val adapter = concatAdapter(item, mediaAdapter.withLoaders())
                 when (item) {
                     is EchoMediaItem.Profile.UserItem ->
                         applyAdapter<UserClient>(extension, R.string.user, adapter)

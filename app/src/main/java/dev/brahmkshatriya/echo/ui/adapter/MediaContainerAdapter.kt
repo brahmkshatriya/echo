@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.adapter
 
 import android.os.Parcelable
 import android.view.View
@@ -13,16 +13,18 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
-import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Category
-import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Container
-import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Category
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Container
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Media
 import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
-    val fragment: Fragment,
-    val transition: String,
+    private val fragment: Fragment,
+    private val transition: String,
+    private val extensionInfo: ExtensionInfo,
     val listener: Listener = getListener(fragment)
 ) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
 
@@ -38,18 +40,18 @@ class MediaContainerAdapter(
             val type = fragment.arguments?.getString("itemListener")
             return when (type) {
                 "search" -> SearchForPlaylistClickListener(
-                    if(fragment is SearchForPlaylistFragment) fragment.childFragmentManager
+                    if (fragment is SearchForPlaylistFragment) fragment.childFragmentManager
                     else fragment.parentFragmentManager
                 )
+
                 else -> MediaClickListener(fragment.parentFragmentManager)
             }
         }
     }
 
-    var clientId: String? = null
     fun withLoaders(): ConcatAdapter {
-        val footer = MediaContainerLoadingAdapter(fragment) { retry() }
-        val header = MediaContainerLoadingAdapter(fragment) { retry() }
+        val footer = MediaContainerLoadingAdapter(fragment, extensionInfo) { retry() }
+        val header = MediaContainerLoadingAdapter(fragment, extensionInfo) { retry() }
         val empty = MediaContainerEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
@@ -133,10 +135,10 @@ class MediaContainerAdapter(
         holder.bind(items)
         val clickView = holder.clickView
         clickView.setOnClickListener {
-            listener.onClick(clientId, items, holder.transitionView)
+            listener.onClick(extensionInfo.id, items, holder.transitionView)
         }
         clickView.setOnLongClickListener {
-            listener.onLongClick(clientId, items, holder.transitionView)
+            listener.onLongClick(extensionInfo.id, items, holder.transitionView)
             true
         }
     }
@@ -152,9 +154,9 @@ class MediaContainerAdapter(
 
     private val sharedPool = RecycledViewPool()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        0 -> Category.create(parent, stateViewModel, sharedPool,clientId, listener)
+        0 -> Category.create(parent, stateViewModel, sharedPool, extensionInfo.id, listener)
         1 -> Container.create(parent)
-        else -> Media.create(parent, clientId, listener)
+        else -> Media.create(parent, extensionInfo.id, listener)
     }
 }
 

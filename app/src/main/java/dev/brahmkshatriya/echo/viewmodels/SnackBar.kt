@@ -13,7 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
+import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
 import dev.brahmkshatriya.echo.ui.exception.openLoginException
@@ -85,7 +85,7 @@ class SnackBar @Inject constructor(
             observe(viewModel.throwableFlow) { throwable ->
                 throwable.printStackTrace()
                 val message = when (throwable) {
-                    is LoginRequiredException -> Message(
+                    is AppException.LoginRequired -> Message(
                         message = getTitle(throwable),
                         action = Action(getString(R.string.login)) {
                             openLoginException(throwable)

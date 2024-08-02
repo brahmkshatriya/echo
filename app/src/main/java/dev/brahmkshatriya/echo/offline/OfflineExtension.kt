@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
@@ -260,6 +261,8 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         allTracks.shuffle()
         return createRadioPlaylist(artist.name, allTracks)
     }
+
+    override suspend fun radio(user: User): Playlist = throw IllegalAccessException()
 
     override suspend fun radio(playlist: Playlist): Playlist {
         val tracks = loadTracks(playlist).loadAll()

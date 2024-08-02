@@ -10,12 +10,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ConcatAdapter
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
 import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo.Companion.toExtensionInfo
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -72,8 +74,9 @@ class DownloadingFragment : Fragment() {
             }
         })
 
-        val downloadedAdapter = MediaContainerAdapter(this, "downloads")
-        val titleAdapter = MediaContainerAdapter(this, "")
+        val extensionInfo = OfflineExtension.metadata.toExtensionInfo(ExtensionType.MUSIC)
+        val downloadedAdapter = MediaContainerAdapter(this, "downloads", extensionInfo)
+        val titleAdapter = MediaContainerAdapter(this, "", extensionInfo)
 
         val concatAdapter = ConcatAdapter(
             adapter.withEmptyAdapter(),
@@ -81,8 +84,6 @@ class DownloadingFragment : Fragment() {
             downloadedAdapter.withLoaders()
         )
 
-        downloadedAdapter.clientId = OfflineExtension.metadata.id
-        titleAdapter.clientId = OfflineExtension.metadata.id
         binding.recyclerView.adapter = concatAdapter
 
         observe(viewModel.offlineFlow) {

@@ -5,25 +5,43 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.tabs.TabLayout
-import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.models.Tab
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.configure
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 
-fun Fragment.configureFeedUI(
+inline fun <reified T> Fragment.applyClient(
+    recyclerView: RecyclerView,
+    swipeRefresh: SwipeRefreshLayout,
+    id: Int,
+    it: MusicExtension?
+) {
+    swipeRefresh.isEnabled = it != null
+    it ?: return
+    val parent = parentFragment as Fragment
+    val adapter = MediaContainerAdapter(
+        parent,
+        id.toString(),
+        it.info
+    )
+    val concatAdapter = adapter.withLoaders()
+    recyclerView.applyAdapter<T>(it, id, concatAdapter)
+}
+
+inline fun <reified T> Fragment.configureFeedUI(
     id: Int,
     viewModel: FeedViewModel,
     recyclerView: RecyclerView,
     swipeRefresh: SwipeRefreshLayout,
     tabLayout: TabLayout,
-    listener: MediaContainerAdapter.Listener? = null
-): MediaContainerAdapter {
+    clientId: String? = null
+) {
 
-    val parent = parentFragment as Fragment
 
     FastScrollerHelper.applyTo(recyclerView)
     swipeRefresh.configure {
@@ -34,18 +52,17 @@ fun Fragment.configureFeedUI(
     }
 
     viewModel.initialize()
-    val mediaContainerAdapter = if (listener == null)
-        MediaContainerAdapter(parent, id.toString())
-    else MediaContainerAdapter(parent, id.toString(), listener)
+    val mediaContainerAdapter: MediaContainerAdapter? = null
 
-    if (listener == null) {
-        val concatAdapter = mediaContainerAdapter.withLoaders()
+    if (clientId == null)
         collect(viewModel.extensionFlow) {
-            swipeRefresh.isEnabled = it != null
-            mediaContainerAdapter.clientId = it?.metadata?.id
-            recyclerView.applyAdapter<HomeFeedClient>(it, id, concatAdapter)
+            applyClient<T>(recyclerView, swipeRefresh, id, it)
         }
-    }
+    else
+        collect(viewModel.extensionListFlow) {
+            val extension = viewModel.extensionListFlow.getExtension(clientId)
+            applyClient<T>(recyclerView, swipeRefresh, id, extension)
+        }
 
     val tabListener = object : TabLayout.OnTabSelectedListener {
         var enabled = true
@@ -81,8 +98,6 @@ fun Fragment.configureFeedUI(
     }
 
     observe(viewModel.feed) {
-        mediaContainerAdapter.submit(it)
+        mediaContainerAdapter?.submit(it)
     }
-
-    return mediaContainerAdapter
 }

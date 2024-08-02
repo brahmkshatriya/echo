@@ -13,8 +13,8 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.DialogAddToPlaylistBinding
-import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter
-import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.observe

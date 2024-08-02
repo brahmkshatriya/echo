@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemMediaSelectableBinding
-import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.bind
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.utils.dpToPx
 import kotlin.math.roundToInt
 

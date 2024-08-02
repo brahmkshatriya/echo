@@ -12,9 +12,9 @@ import dev.brahmkshatriya.echo.db.models.CurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,13 +41,16 @@ class LoginUserViewModel @Inject constructor(
                 val extension = extensionFlow.value ?: return@collect
                 val user = list.find { it.clientId == extension.metadata.id }
                 if (extension.metadata.id == user?.clientId)
-                    setLoginUser(extension.metadata.id, extension.client)
+                    setLoginUser(extension.info, extension.client)
             }
         }
     }
 
-    private suspend fun setLoginUser(id: String, client: ExtensionClient) {
-        setLoginUser(id, client, userDao, userFlow, throwableFlow)
+    private suspend fun setLoginUser(
+        extensionInfo: ExtensionInfo,
+        client: ExtensionClient
+    ) {
+        setLoginUser(extensionInfo, client, userDao, userFlow, throwableFlow)
     }
 
     val currentMusicUser = extensionFlow.combine(userDao.observeCurrentUser()) { extension, list ->
@@ -104,15 +107,15 @@ class LoginUserViewModel @Inject constructor(
 
     companion object {
         suspend fun setLoginUser(
-            id: String,
+            info: ExtensionInfo,
             client: ExtensionClient,
             userDao: UserDao,
             flow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
         ) = withContext(Dispatchers.IO) {
             if (client !is LoginClient) return@withContext
-            val user = userDao.getCurrentUser(id)
-            val success = tryWith(throwableFlow) {
+            val user = userDao.getCurrentUser(info.id)
+            val success = tryWith(throwableFlow, info) {
                 withTimeout(TIMEOUT) { client.onSetLoginUser(user?.toUser()) }
             }
             if (success != null) flow.emit(user)

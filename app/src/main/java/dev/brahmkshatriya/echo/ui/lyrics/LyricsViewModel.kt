@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
@@ -53,7 +54,7 @@ class LyricsViewModel @Inject constructor(
             val extension = extensionListFlow.getExtension(id)
             val client = extension?.client
             if (client !is LyricsClient) return@let null
-            LyricsExtension(extension.metadata, client)
+            LyricsExtension(extension.metadata, client, extension.info)
         }
         lyricsExtensionList.value =
             listOfNotNull(trackExtension) + lyricsListFlow.value.orEmpty()
@@ -77,12 +78,13 @@ class LyricsViewModel @Inject constructor(
     private fun onLyricsClientSelected(extension: LyricsExtension?) {
         currentExtension.value = extension
         currentLyrics.value = null
-        settings.edit().putString(LAST_LYRICS_KEY, extension?.metadata?.id).apply()
+        settings.edit().putString(LAST_LYRICS_KEY, extension?.info?.id).apply()
         val streamableTrack = currentMediaFlow.value?.mediaItem ?: return
+        extension ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val data = onTrackChange(streamableTrack)
+            val data = onTrackChange(extension.info, streamableTrack)
             if (data != null) {
-                currentLyrics.value = data.loadFirst().firstOrNull()
+                currentLyrics.value = tryWith(extension.info) { data.loadFirst().firstOrNull() }
                 data.toFlow().collectTo(searchResults)
             } else searchResults.value = null
         }
@@ -94,24 +96,28 @@ class LyricsViewModel @Inject constructor(
 
 
     val searchResults = MutableStateFlow<PagingData<Lyrics>?>(null)
-    private suspend fun onSearch(query: String?): PagedData<Lyrics>? {
+    private suspend fun onSearch(info: ExtensionInfo, query: String?): PagedData<Lyrics>? {
         val client = currentExtension.value?.client
         if (client !is LyricsSearchClient) return null
         if (query == null) {
             return null
         }
-        return tryWith { client.searchLyrics(query) }
+        return tryWith(info) { client.searchLyrics(query) }
     }
 
-    private suspend fun onTrackChange(mediaItem: MediaItem): PagedData<Lyrics>? {
+    private suspend fun onTrackChange(
+        info: ExtensionInfo,
+        mediaItem: MediaItem
+    ): PagedData<Lyrics>? {
         val client = currentExtension.value?.client ?: return null
         val track = mediaItem.track
-        return tryWith { client.searchTrackLyrics(mediaItem.clientId, track) }
+        return tryWith(info) { client.searchTrackLyrics(mediaItem.clientId, track) }
     }
 
     fun search(query: String?) {
+        val info = currentExtension.value?.info ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val data = onSearch(query)
+            val data = onSearch(info, query)
             if (data != null) data.toFlow().collectTo(searchResults)
             else searchResults.value = null
         }
@@ -122,9 +128,11 @@ class LyricsViewModel @Inject constructor(
     fun onLyricsSelected(lyricsItem: Lyrics) {
         loading.value = true
         currentLyrics.value = lyricsItem
-        val client = currentExtension.value?.client ?: return
+        val extension = currentExtension.value ?: return
+        val client = extension.client
+        val info = extension.info
         viewModelScope.launch(Dispatchers.IO) {
-            currentLyrics.value = tryWith { client.loadLyrics(lyricsItem) }?.fillGaps()
+            currentLyrics.value = tryWith(info) { client.loadLyrics(lyricsItem) }?.fillGaps()
             loading.value = false
         }
     }

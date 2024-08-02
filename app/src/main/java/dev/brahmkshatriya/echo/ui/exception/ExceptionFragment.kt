@@ -11,8 +11,6 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
-import dev.brahmkshatriya.echo.common.exceptions.UnauthorizedException
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
@@ -89,11 +87,19 @@ class ExceptionFragment : Fragment() {
             is ExceptionActivity.AppCrashException -> getString(R.string.app_crashed)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
             is PlayerViewModel.PlayerException -> getTitle(throwable.cause)
-            is LoginRequiredException -> {
-                if (throwable is UnauthorizedException)
-                    getString(R.string.unauthorized, throwable.clientName)
-                else
-                    getString(R.string.login_required, throwable.clientName)
+            is AppException -> throwable.run {
+                when (this) {
+                    is AppException.Unauthorized ->
+                        getString(R.string.unauthorized, extensionName)
+
+                    is AppException.LoginRequired ->
+                        getString(R.string.login_required, extensionName)
+
+                    is AppException.NotSupported ->
+                        getString(R.string.is_not_supported, operation, extensionName)
+
+                    is AppException.Other -> cause.message ?: getString(R.string.error)
+                }
             }
 
             else -> throwable.message ?: getString(R.string.error)
@@ -102,9 +108,17 @@ class ExceptionFragment : Fragment() {
         @Suppress("UnusedReceiverParameter")
         fun Context.getDetails(throwable: Throwable) = when (throwable) {
             is PlayerViewModel.PlayerException -> """
-Client : ${throwable.mediaItem?.clientId}
+Client Id : ${throwable.mediaItem?.clientId}
 Track : ${throwable.mediaItem?.track}
 Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioStreamIndex) }}
+
+${throwable.cause.stackTraceToString()}
+""".trimIndent()
+
+            is AppException -> """
+Extension : ${throwable.extensionName}
+Id : ${throwable.extensionId}
+Type : ${throwable.extensionType}
 
 ${throwable.cause.stackTraceToString()}
 """.trimIndent()

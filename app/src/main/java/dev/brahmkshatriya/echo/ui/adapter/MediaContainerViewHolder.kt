@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.adapter
 
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.databinding.NewItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.NewItemContainerBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaBinding
-import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.bind
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import java.lang.ref.WeakReference
 
 sealed class MediaContainerViewHolder(

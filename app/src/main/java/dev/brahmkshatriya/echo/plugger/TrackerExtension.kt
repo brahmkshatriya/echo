@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
 import tel.jeelpa.plugger.PluginRepo
 
 data class TrackerExtension(
-    val metadata: ExtensionMetadata,
-    val client: TrackerClient,
-)
+    override val metadata: ExtensionMetadata,
+    override val client: TrackerClient,
+) : GenericExtension(ExtensionType.TRACKER, metadata, client)
 
 fun StateFlow<List<TrackerExtension>?>.getExtension(id: String?) =
     value?.find { it.metadata.id == id }

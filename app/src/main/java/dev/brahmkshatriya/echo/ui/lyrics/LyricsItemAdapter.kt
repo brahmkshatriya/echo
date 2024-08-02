@@ -10,11 +10,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
-import dev.brahmkshatriya.echo.ui.media.MediaContainerEmptyAdapter
-import dev.brahmkshatriya.echo.ui.media.MediaContainerLoadingAdapter
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerEmptyAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerLoadingAdapter
 
 class LyricsItemAdapter(
     private val fragment: Fragment,
+    private val info: ExtensionInfo,
     private val listener: Listener
 ) : PagingDataAdapter<Lyrics, LyricsItemAdapter.ViewHolder>(DiffCallback) {
 
@@ -45,8 +47,8 @@ class LyricsItemAdapter(
     }
 
     fun withLoaders(): ConcatAdapter {
-        val footer = MediaContainerLoadingAdapter(fragment) { retry() }
-        val header = MediaContainerLoadingAdapter(fragment) { retry() }
+        val footer = MediaContainerLoadingAdapter(fragment, info) { retry() }
+        val header = MediaContainerLoadingAdapter(fragment, info) { retry() }
         val empty = MediaContainerEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)

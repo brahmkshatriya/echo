@@ -31,10 +31,11 @@ class AddToPlaylistViewModel @Inject constructor(
     lateinit var item: EchoMediaItem
     val tracks = mutableListOf<Track>()
     override fun onInitialize() {
-        val client = extensionListFlow.getExtension(clientId)?.client ?: return
+        val extension = extensionListFlow.getExtension(clientId) ?: return
+        val client = extension.client
         if (client !is LibraryClient) return
         viewModelScope.launch(Dispatchers.IO) {
-            tryWith {
+            tryWith(extension.info) {
                 when (val mediaItem = item) {
                     is EchoMediaItem.Lists.AlbumItem ->
                         tracks.addAll(client.loadTracks(mediaItem.album).loadAll())
@@ -44,7 +45,7 @@ class AddToPlaylistViewModel @Inject constructor(
                     else -> throw IllegalStateException()
                 }
             }
-            playlists.value = tryWith { client.listEditablePlaylists() }
+            playlists.value = tryWith(extension.info) { client.listEditablePlaylists() }
             if (playlists.value == null) dismiss.emit(Unit)
         }
     }

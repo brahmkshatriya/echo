@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
@@ -45,7 +46,7 @@ class HomeFragment : Fragment() {
             binding.toolBar.alpha = 1 - offset
         }
 
-        configureFeedUI(
+        configureFeedUI<HomeFeedClient>(
             R.string.home,
             viewModel,
             binding.recyclerView,

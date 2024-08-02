@@ -14,8 +14,8 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemDownloadBinding
 import dev.brahmkshatriya.echo.databinding.ItemDownloadGroupBinding
-import dev.brahmkshatriya.echo.ui.media.MediaContainerEmptyAdapter
-import dev.brahmkshatriya.echo.ui.media.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerEmptyAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 

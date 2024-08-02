@@ -49,7 +49,9 @@ class PlayerViewModel @Inject constructor(
     private fun withBrowser(block: (MediaBrowser) -> Unit) {
         val browser = browser
         if (browser != null) viewModelScope.launch(Dispatchers.Main) {
-            tryWith { block(browser) }
+            runCatching { block(browser) }.getOrElse {
+                createException(it)
+            }
         }
 //        else viewModelScope.launch {
 //            throwableFlow.emit(IllegalStateException("Browser not connected"))
@@ -101,18 +103,18 @@ class PlayerViewModel @Inject constructor(
 
     private suspend fun getTracks(clientId: String, lists: EchoMediaItem.Lists) =
         withContext(Dispatchers.IO) {
-            val client = extensionListFlow.getExtension(clientId)?.client
-                ?: return@withContext null
+            val extension = extensionListFlow.getExtension(clientId) ?: return@withContext null
+            val client = extension.client
             when (lists) {
                 is EchoMediaItem.Lists.AlbumItem -> {
-                    if (client is AlbumClient) tryWith {
+                    if (client is AlbumClient) tryWith(extension.info) {
                         client.loadTracks(lists.album).loadAll()
                     }
                     else null
                 }
 
                 is EchoMediaItem.Lists.PlaylistItem -> {
-                    if (client is PlaylistClient) tryWith {
+                    if (client is PlaylistClient) tryWith(extension.info) {
                         client.loadTracks(lists.playlist).loadAll()
                     }
                     else null

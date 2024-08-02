@@ -9,8 +9,8 @@ import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
-import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
@@ -36,7 +36,7 @@ class DownloadViewModel @Inject constructor(
     val downloads = MutableStateFlow<List<DownloadItem>>(emptyList())
     private val visibleGroups = mutableSetOf<String>()
     private val downloadEntities = MutableStateFlow<List<DownloadEntity>>(emptyList())
-    private val downloader = Downloader(extensionListFlow, database)
+    private val downloader = Downloader(extensionListFlow, throwableFlow, database)
 
     init {
         viewModelScope.launch {
@@ -70,18 +70,16 @@ class DownloadViewModel @Inject constructor(
     fun addToDownload(
         activity: FragmentActivity, clientId: String, item: EchoMediaItem
     ) = viewModelScope.launch {
-        tryWith {
-            downloader.addToDownload(activity, clientId, item)
-            with(activity) {
-                messageFlow.emit(
-                    SnackBar.Message(
-                        getString(R.string.download_started),
-                        SnackBar.Action(getString(R.string.view)) {
-                            openFragment(DownloadingFragment())
-                        }
-                    )
+        downloader.addToDownload(activity, clientId, item)
+        with(activity) {
+            messageFlow.emit(
+                SnackBar.Message(
+                    getString(R.string.download_started),
+                    SnackBar.Action(getString(R.string.view)) {
+                        openFragment(DownloadingFragment())
+                    }
                 )
-            }
+            )
         }
     }
 
@@ -94,16 +92,16 @@ class DownloadViewModel @Inject constructor(
     fun toggleDownloading(download: DownloadItem.Single, downloading: Boolean) {
         viewModelScope.launch {
             if (downloading) {
-                tryWith { downloader.resumeDownload(application, download.id) }
+                downloader.resumeDownload(application, download.id)
             } else {
-                tryWith { downloader.pauseDownload(application, download.id) }
+                downloader.pauseDownload(application, download.id)
             }
         }
     }
 
     fun removeDownload(download: DownloadItem.Single) {
         viewModelScope.launch {
-            tryWith { downloader.removeDownload(application, download.id) }
+            downloader.removeDownload(application, download.id)
         }
     }
 

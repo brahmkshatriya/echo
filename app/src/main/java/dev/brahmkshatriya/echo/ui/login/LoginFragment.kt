@@ -21,13 +21,14 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.exceptions.LoginRequiredException
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -58,8 +59,8 @@ class LoginFragment : Fragment() {
                 }
             }
 
-        fun newInstance(error: LoginRequiredException) =
-            newInstance(error.clientId, error.clientName, error.clientType)
+        fun newInstance(error: AppException.LoginRequired) =
+            newInstance(error.extensionId, error.extensionName, error.extensionType)
 
     }
 
@@ -173,6 +174,7 @@ class LoginFragment : Fragment() {
 
         binding.loginContainer.isVisible = true
 
+        val info = ExtensionInfo(metadata, clientType)
         val clients = listOfNotNull(
             createUsernamePasswordClient(client),
             createWebViewClient(client),
@@ -198,9 +200,14 @@ class LoginFragment : Fragment() {
             loginClient ?: return@collect
             binding.loginToggleGroup.isVisible = false
             when (loginClient) {
-                is LoginClient.WebView -> binding.configureWebView(loginClient)
-                is LoginClient.CustomTextInput -> binding.configureCustomTextInput(loginClient)
-                is LoginClient.UsernamePassword -> binding.configureUsernamePassword(loginClient)
+                is LoginClient.WebView ->
+                    binding.configureWebView(info, loginClient)
+
+                is LoginClient.CustomTextInput ->
+                    binding.configureCustomTextInput(info, loginClient)
+
+                is LoginClient.UsernamePassword ->
+                    binding.configureUsernamePassword(info, loginClient)
             }
         }
 
@@ -212,6 +219,7 @@ class LoginFragment : Fragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentLoginBinding.configureWebView(
+        info: ExtensionInfo,
         client: LoginClient.WebView
     ) = with(client) {
         webViewContainer.isVisible = true
@@ -231,7 +239,7 @@ class LoginFragment : Fragment() {
                     if (loginWebViewStopUrlRegex.matches(url)) {
                         webView.stopLoading()
                         val data = webView.loadData(url, client)
-                        loginViewModel.onWebViewStop(clientId, clientType, client, url, data)
+                        loginViewModel.onWebViewStop(info, client, url, data)
                         CookieManager.getInstance().run {
                             removeAllCookies(null)
                             flush()
@@ -273,6 +281,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun FragmentLoginBinding.configureCustomTextInput(
+        info: ExtensionInfo,
         client: LoginClient.CustomTextInput
     ) {
         customInputContainer.isVisible = true
@@ -313,13 +322,14 @@ class LoginFragment : Fragment() {
                     return@setOnClickListener
                 }
             }
-            loginViewModel.onCustomTextInputSubmit(clientId, clientType, client)
+            loginViewModel.onCustomTextInputSubmit(info, client)
             customInputContainer.isVisible = false
             loadingContainer.root.isVisible = true
         }
     }
 
     private fun FragmentLoginBinding.configureUsernamePassword(
+        info: ExtensionInfo,
         client: LoginClient.UsernamePassword
     ) {
         usernamePasswordContainer.isVisible = true
@@ -345,9 +355,7 @@ class LoginFragment : Fragment() {
                 }
                 return@setOnClickListener
             }
-            loginViewModel.onUsernamePasswordSubmit(
-                clientId, clientType, client, username, password
-            )
+            loginViewModel.onUsernamePasswordSubmit(info, client, username, password)
             usernamePasswordContainer.isVisible = false
             loadingContainer.root.isVisible = true
         }

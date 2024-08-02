@@ -19,8 +19,9 @@ import javax.inject.Inject
 class LibraryViewModel @Inject constructor(
     override val extensionFlow: MutableStateFlow<MusicExtension?>,
     override val userFlow: MutableSharedFlow<UserEntity?>,
+    override val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     throwableFlow: MutableSharedFlow<Throwable>,
-) : FeedViewModel(throwableFlow, userFlow, extensionFlow) {
+) : FeedViewModel(throwableFlow, userFlow, extensionFlow, extensionListFlow) {
     override suspend fun getTabs(client: ExtensionClient) =
         (client as? LibraryClient)?.getLibraryTabs()
 
@@ -32,7 +33,7 @@ class LibraryViewModel @Inject constructor(
         val extension = extensionFlow.value ?: return
         val client = extension.client as? LibraryClient ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val playlist = tryWith { client.createPlaylist(title, null) }
+            val playlist = tryWith(extension.info) { client.createPlaylist(title, null) }
                 ?: return@launch
             playlistCreatedFlow.emit(extension.metadata.id to playlist)
         }

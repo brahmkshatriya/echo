@@ -15,7 +15,7 @@ fun <T> Context.getFromCache(
     val fileName = id.hashCode().toString()
     val cacheDir = cacheDir(this, folderName)
     val file = File(cacheDir, fileName)
-    return if (file.exists()) tryWith(false) {
+    return if (file.exists()) runCatching {
         val bytes = FileInputStream(file).use { it.readBytes() }
         val parcel = Parcel.obtain()
         parcel.unmarshall(bytes, 0, bytes.size)
@@ -23,7 +23,7 @@ fun <T> Context.getFromCache(
         val value = creator(parcel)
         parcel.recycle()
         value
-    } else null
+    }.getOrNull() else null
 }
 
 fun Context.saveToCache(

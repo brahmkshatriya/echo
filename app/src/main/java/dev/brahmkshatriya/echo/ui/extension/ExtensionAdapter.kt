@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.ui.media.MediaContainerEmptyAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerEmptyAdapter
 import dev.brahmkshatriya.echo.utils.loadWith
 
 class

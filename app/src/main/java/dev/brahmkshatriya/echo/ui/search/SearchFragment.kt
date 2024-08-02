@@ -19,21 +19,17 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter.Companion.getListener
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
@@ -77,12 +73,15 @@ class SearchFragment : Fragment() {
 
         val viewModel by parent.viewModels<SearchViewModel>()
 
-        val mediaContainerAdapter = configureFeedUI(
+        val clientId = arguments?.getString("clientId")
+
+        configureFeedUI<SearchClient>(
             R.string.search,
             viewModel,
             binding.recyclerView,
             binding.swipeRefresh,
-            binding.tabLayout
+            binding.tabLayout,
+            clientId
         )
 
         binding.searchBar.setText(viewModel.query)
@@ -145,23 +144,6 @@ class SearchFragment : Fragment() {
         })
 
         binding.quickSearchRecyclerView.adapter = quickSearchAdapter
-
-        val concatAdapter = mediaContainerAdapter.withLoaders()
-        fun applyClient(it: MusicExtension?) {
-            binding.swipeRefresh.isEnabled = it != null
-            mediaContainerAdapter.clientId = it?.metadata?.id
-            binding.recyclerView.applyAdapter<SearchClient>(it, R.string.search, concatAdapter)
-        }
-
-        val clientId = arguments?.getString("clientId")
-        if (clientId == null)
-            collect(viewModel.extensionFlow) {
-                applyClient(it)
-            }
-        else
-            collect(viewModel.extensionListFlow) {
-                applyClient(viewModel.extensionListFlow.getExtension(clientId))
-            }
 
         observe(viewModel.quickFeed) {
             quickSearchAdapter.submitList(it)

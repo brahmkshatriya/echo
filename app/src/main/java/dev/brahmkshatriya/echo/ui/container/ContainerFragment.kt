@@ -9,7 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentCategoryBinding
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
@@ -63,14 +63,20 @@ class ContainerFragment : Fragment() {
 
         binding.toolBar.title = title
 
-        val adapter = MediaContainerAdapter(this, view.transitionName)
-        val concatAdapter = adapter.withLoaders()
+        var mediaContainerAdapter: MediaContainerAdapter? = null
 
-        adapter.clientId = clientId
-        binding.recyclerView.adapter = concatAdapter
+        observe(activityViewModel.extensionListFlow) { list ->
+            val extension = list?.find { it.metadata.id == clientId }
+            extension ?: return@observe
+            val extensionInfo = extension.info
+            val adapter = MediaContainerAdapter(this, view.transitionName, extensionInfo)
+            val concatAdapter = adapter.withLoaders()
+            mediaContainerAdapter = adapter
+            binding.recyclerView.adapter = concatAdapter
+        }
 
         observe(viewModel.flow) { data ->
-            adapter.submit(data)
+            mediaContainerAdapter?.submit(data)
         }
     }
 

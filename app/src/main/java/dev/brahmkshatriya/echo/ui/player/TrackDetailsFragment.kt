@@ -17,8 +17,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.ui.media.MediaClickListener
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaClickListener
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
@@ -49,17 +49,21 @@ class TrackDetailsFragment : Fragment() {
         val mediaClickListener = MediaClickListener(requireActivity().supportFragmentManager) {
             uiViewModel.collapsePlayer()
         }
-        val adapter = MediaContainerAdapter(this, "track_details", mediaClickListener)
-        binding.root.adapter = adapter.withLoaders()
 
+        var mediaAdapter: MediaContainerAdapter? = null
         observe(playerViewModel.currentFlow) {
             val (_, item) = it ?: return@observe
-            adapter.clientId = item.clientId
+            val extension =
+                playerViewModel.extensionListFlow.getExtension(item.clientId) ?: return@observe
+            val adapter =
+                MediaContainerAdapter(this, "track_details", extension.info, mediaClickListener)
+            mediaAdapter = adapter
+            binding.root.adapter = adapter.withLoaders()
             viewModel.load(item.clientId, item.track)
         }
 
         observe(viewModel.itemsFlow) {
-            adapter.submit(it)
+            mediaAdapter?.submit(it)
         }
     }
 }
@@ -77,10 +81,11 @@ class TrackDetailsViewModel @Inject constructor(
         if (previous?.id == track.id) return
         previous = track
         itemsFlow.value = null
-        val client = extensionListFlow.getExtension(clientId)?.client ?: return
+        val extension = extensionListFlow.getExtension(clientId) ?: return
+        val client = extension.client
         if (client !is TrackClient) return
         viewModelScope.launch {
-            tryWith { client.getMediaItems(track).toFlow().collectTo(itemsFlow) }
+            tryWith(extension.info) { client.getMediaItems(track).toFlow().collectTo(itemsFlow) }
         }
     }
 

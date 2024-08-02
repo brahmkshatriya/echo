@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.db.UserDao
 import dev.brahmkshatriya.echo.db.models.UserEntity
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.LyricsExtensionRepo
@@ -24,7 +25,7 @@ import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.COLOR_KEY
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.CUSTOM_THEME_KEY
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.THEME_KEY
 import dev.brahmkshatriya.echo.utils.catchWith
-import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel.Companion.setLoginUser
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -120,7 +121,7 @@ class EchoApplication : Application() {
                 val (metadata, client) = extension
                 val user = list.find { it.clientId == metadata.id }
                 if (metadata.id == user?.clientId) setLoginUser(
-                    metadata.id, client, userDao, userFlow, throwableFlow
+                    extension.info, client, userDao, userFlow, throwableFlow
                 )
             }
         }
@@ -135,7 +136,7 @@ class EchoApplication : Application() {
                     val metadataEnabled = isExtensionEnabled(ExtensionType.TRACKER, metadata)
                     TrackerExtension(metadataEnabled, client)
                 }
-                list.setExtensions()
+                list.setExtensions(ExtensionType.TRACKER)
                 trackers.emit(Unit)
             }
         }
@@ -146,7 +147,7 @@ class EchoApplication : Application() {
                     val metadataEnabled = isExtensionEnabled(ExtensionType.LYRICS, metadata)
                     LyricsExtension(metadataEnabled, client)
                 }
-                list.setExtensions()
+                list.setExtensions(ExtensionType.LYRICS)
                 lyrics.emit(Unit)
             }
         }
@@ -173,15 +174,22 @@ class EchoApplication : Application() {
         collector: FlowCollector<List<Pair<ExtensionMetadata, T>>>
     ) = getAllPlugins().catchWith(throwableFlow).map { list ->
         list.mapNotNull { result ->
-            tryWith(throwableFlow) { result.getOrElse { throw it.cause ?: it } }
+            result.getOrElse {
+                val error = it.cause ?: it
+                throwableFlow.emit(error)
+                null
+            }
         }
     }.collect(collector)
 
-    private suspend fun List<Pair<ExtensionMetadata, ExtensionClient>>.setExtensions() =
+    private suspend fun List<Pair<ExtensionMetadata, ExtensionClient>>.setExtensions(
+        type: ExtensionType
+    ) =
         coroutineScope {
             map {
                 async {
-                    setExtension(userDao, userFlow, throwableFlow, it.first, it.second)
+                    val info = ExtensionInfo(it.first, type)
+                    setExtension(userDao, userFlow, throwableFlow, info, it.second)
                 }
             }.awaitAll()
         }
@@ -218,7 +226,8 @@ class EchoApplication : Application() {
             settings.edit().putString(LAST_EXTENSION_KEY, extension?.metadata?.id).apply()
             extension ?: return
             scope.launch {
-                setExtension(userDao, userFlow, throwableFlow, extension.metadata, extension.client)
+                val info = extension.info
+                setExtension(userDao, userFlow, throwableFlow, info, extension.client)
                 extensionFlow.value = extension
             }
         }
@@ -227,13 +236,13 @@ class EchoApplication : Application() {
             userDao: UserDao,
             userFlow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
-            metadata: ExtensionMetadata,
+            info: ExtensionInfo,
             client: ExtensionClient
         ) = withContext(Dispatchers.IO) {
-            tryWith(throwableFlow) {
+            tryWith(throwableFlow, info) {
                 withTimeout(TIMEOUT) { client.onExtensionSelected() }
             }
-            setLoginUser(metadata.id, client, userDao, userFlow, throwableFlow)
+            setLoginUser(info, client, userDao, userFlow, throwableFlow)
         }
 
         @SuppressLint("RestrictedApi")

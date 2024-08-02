@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.AUTO_START_RADIO
-import dev.brahmkshatriya.echo.utils.tryWith
+import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -78,7 +78,7 @@ class Radio(
 
                     suspend fun <T> tryIO(block: suspend () -> T): T? =
                         withContext(Dispatchers.IO) {
-                            tryWith(throwableFlow) { block() }
+                            tryWith(throwableFlow, extension.info) { block() }
                         }
 
                     val playlist = tryIO {
@@ -87,7 +87,7 @@ class Radio(
                             is Lists.PlaylistItem -> client.radio(item.playlist)
                             is Lists.AlbumItem -> client.radio(item.album)
                             is Profile.ArtistItem -> client.radio(item.artist)
-                            is Profile.UserItem -> throw Exception("User radio not supported")
+                            is Profile.UserItem -> client.radio(item.user)
                         }
                     }
 
@@ -141,16 +141,18 @@ class Radio(
         }
     }
 
-    private fun startRadio(){
+    private fun startRadio() {
         val autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
         if (!autoStartRadio) return
+        if (player.mediaItemCount == 0) stateFlow.value = State.Empty
         if (player.hasNextMediaItem()) return
         when (val state = stateFlow.value) {
+            is State.Loading -> {}
             is State.Empty -> {
                 if (stateFlow.value != State.Empty) return
                 loadPlaylist()
             }
-            is State.Loading -> {}
+
             is State.Loaded -> {
                 val toBePlayed = state.played + 1
                 if (toBePlayed == state.tracks.size) loadPlaylist()
@@ -161,10 +163,12 @@ class Radio(
         }
     }
 
-    override fun onTimelineChanged(timeline: Timeline, reason: Int) { startRadio() }
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        startRadio()
+    }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if(player.mediaItemCount == 0) stateFlow.value = State.Empty
+        if (player.mediaItemCount == 0) stateFlow.value = State.Empty
     }
 }
 

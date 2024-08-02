@@ -9,7 +9,6 @@ import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -21,6 +20,8 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.GenericExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.ui.paging.toFlow
@@ -43,7 +44,7 @@ class ItemViewModel @Inject constructor(
 
     var item: EchoMediaItem? = null
     var loaded: EchoMediaItem? = null
-    var client: ExtensionClient? = null
+    var extension: GenericExtension? = null
     var isRadioClient = false
     var isFollowClient = false
 
@@ -54,29 +55,28 @@ class ItemViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             loaded = null
             itemFlow.emit(null)
-            val mediaItem = tryWith {
-                when (val item = item!!) {
-                    is EchoMediaItem.Lists.AlbumItem -> getClient<AlbumClient>(client) {
-                        load(item.album, ::loadAlbum, ::getMediaItems)?.toMediaItem()
-                    }
+            val mediaItem = when (val item = item!!) {
+                is EchoMediaItem.Lists.AlbumItem -> getClient<AlbumClient, EchoMediaItem> {
+                    load(it, item.album, ::loadAlbum, ::getMediaItems)?.toMediaItem()
+                }
 
-                    is EchoMediaItem.Lists.PlaylistItem -> getClient<PlaylistClient>(client) {
-                        load(item.playlist, ::loadPlaylist, ::getMediaItems)?.toMediaItem()
-                    }
+                is EchoMediaItem.Lists.PlaylistItem -> getClient<PlaylistClient, EchoMediaItem> {
+                    load(it, item.playlist, ::loadPlaylist, ::getMediaItems)?.toMediaItem()
+                }
 
-                    is EchoMediaItem.Profile.ArtistItem -> getClient<ArtistClient>(client) {
-                        load(item.artist, ::loadArtist, ::getMediaItems)?.toMediaItem()
-                    }
+                is EchoMediaItem.Profile.ArtistItem -> getClient<ArtistClient, EchoMediaItem> {
+                    load(it, item.artist, ::loadArtist, ::getMediaItems)?.toMediaItem()
+                }
 
-                    is EchoMediaItem.Profile.UserItem -> getClient<UserClient>(client) {
-                        load(item.user, ::loadUser, ::getMediaItems)?.toMediaItem()
-                    }
+                is EchoMediaItem.Profile.UserItem -> getClient<UserClient, EchoMediaItem> {
+                    load(it, item.user, ::loadUser, ::getMediaItems)?.toMediaItem()
+                }
 
-                    is EchoMediaItem.TrackItem -> getClient<TrackClient>(client) {
-                        load(item.track, ::loadTrack, ::getMediaItems)?.toMediaItem()
-                    }
+                is EchoMediaItem.TrackItem -> getClient<TrackClient, EchoMediaItem> {
+                    load(it, item.track, ::loadTrack, ::getMediaItems)?.toMediaItem()
                 }
             }
+
             loaded = mediaItem
             itemFlow.emit(mediaItem)
         }
@@ -86,17 +86,23 @@ class ItemViewModel @Inject constructor(
         load()
     }
 
-    private inline fun <reified T> getClient(
-        client: ExtensionClient?, block: T.() -> EchoMediaItem?
-    ) = if (client is T) block(client) else null
+    private inline fun <reified T, R> getClient(
+        block: T.(info: ExtensionInfo) -> R?
+    ) = extension?.run {
+        val client = client
+        if (client is T) block(client, info) else null
+    }
 
     private suspend fun <T> load(
-        item: T, loadItem: suspend (T) -> T, loadRelated: (T) -> PagedData<MediaItemsContainer>
+        info: ExtensionInfo,
+        item: T,
+        loadItem: suspend (T) -> T,
+        loadRelated: (T) -> PagedData<MediaItemsContainer>
     ): T? {
-        return tryWith {
+        return tryWith(info) {
             val loaded = loadItem(item)
             viewModelScope.launch {
-                tryWith {
+                tryWith(info) {
                     loadRelated(loaded).toFlow().map { it }
                 }?.collectTo(relatedFeed)
             }
@@ -128,22 +134,22 @@ class ItemViewModel @Inject constructor(
     }
 
     fun loadAlbum(album: Album) {
-        val client = client
-        if (client !is AlbumClient) return
         viewModelScope.launch(Dispatchers.IO) {
-            songsFlow.value = null
-            val tracks = tryWith { client.loadTracks(album) }
-            tracks?.toFlow()?.collectTo(songsFlow)
+            getClient<AlbumClient, Unit> {
+                songsFlow.value = null
+                val tracks = tryWith(it) { loadTracks(album) }
+                tracks?.toFlow()?.collectTo(songsFlow)
+            }
         }
     }
 
     fun loadPlaylist(playlist: Playlist) {
-        val client = client
-        if (client !is PlaylistClient) return
         viewModelScope.launch(Dispatchers.IO) {
-            songsFlow.value = null
-            val tracks = tryWith { client.loadTracks(playlist) }
-            tracks?.toFlow()?.collectTo(songsFlow)
+            getClient<PlaylistClient, Unit> {
+                songsFlow.value = null
+                val tracks = tryWith(it) { loadTracks(playlist) }
+                tracks?.toFlow()?.collectTo(songsFlow)
+            }
         }
     }
 }

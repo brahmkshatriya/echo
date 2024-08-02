@@ -17,5 +17,3 @@ sealed class StreamableAudio : Parcelable {
             StreamableRequest(this.toRequest(headers))
     }
 }
-
-data class StreamableVideo(val request: Request, val looping: Boolean, val crop: Boolean)

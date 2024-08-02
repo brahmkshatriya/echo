@@ -25,10 +25,10 @@ import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
-import dev.brahmkshatriya.echo.ui.media.MediaContainerViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getParcel
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -64,7 +64,8 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     private val item by lazy { args.getParcel<EchoMediaItem>("item")!! }
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
     private val loaded by lazy { args.getBoolean("loaded") }
-    private val client by lazy { playerViewModel.extensionListFlow.getExtension(clientId)?.client }
+    private val extension by lazy { playerViewModel.extensionListFlow.getExtension(clientId) }
+    private val client by lazy { extension?.client }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -91,7 +92,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 ConcatAdapter(ActionAdapter(getActions(item, false)), LoadingAdapter())
 
             viewModel.item = item
-            viewModel.client = client
+            viewModel.extension = extension
             viewModel.initialize()
             observe(viewModel.itemFlow) {
                 if (it != null) {

@@ -46,7 +46,6 @@ object MediaItemUtils {
         .setArtist(artists.joinToString(", ") { it.name })
         .setArtworkUri(id.toUri())
         .setUserRating(ThumbRating(liked))
-        .setIsPlayable(true)
         .setIsBrowsable(false)
         .setExtras(
             bundleOf(
@@ -57,6 +56,7 @@ object MediaItemUtils {
                 "audioStream" to selectStream(settings, loaded, audioStreamIndex)
             )
         )
+
         .setIsPlayable(loaded)
         .build()
 

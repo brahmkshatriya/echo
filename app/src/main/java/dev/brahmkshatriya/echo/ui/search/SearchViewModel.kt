@@ -19,9 +19,9 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     override val extensionFlow: MutableStateFlow<MusicExtension?>,
-    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+    override val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     override val userFlow: MutableSharedFlow<UserEntity?>,
-) : FeedViewModel(throwableFlow, userFlow, extensionFlow) {
+) : FeedViewModel(throwableFlow, userFlow, extensionFlow, extensionListFlow) {
 
     var query: String? = null
     override suspend fun getTabs(client: ExtensionClient) =
@@ -32,10 +32,11 @@ class SearchViewModel @Inject constructor(
 
     val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
     fun quickSearch(query: String) {
-        val client = extensionFlow.value?.client
+        val extension = extensionFlow.value ?: return
+        val client = extension.client
         if (client !is SearchClient) return
         viewModelScope.launch(Dispatchers.IO) {
-            val list = tryWith { client.quickSearch(query) } ?: emptyList()
+            val list =tryWith(extension.info) {  client.quickSearch(query) } ?: emptyList()
             quickFeed.value = list
         }
     }

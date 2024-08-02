@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
+import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.utils.catchWith
-import dev.brahmkshatriya.echo.utils.tryWith
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,10 +25,24 @@ abstract class CatchingViewModel(
         onInitialize()
     }
 
-    suspend fun <T> tryWith(block: suspend () -> T) = tryWith(throwableFlow, block)
+    suspend fun <T> tryWith(extensionInfo: ExtensionInfo, block: suspend () -> T) =
+        tryWith(throwableFlow, extensionInfo, block)
 
     suspend fun <T : Any> Flow<PagingData<T>>.collectTo(
         collector: FlowCollector<PagingData<T>>
     ) = cachedIn(viewModelScope).catchWith(throwableFlow).collect(collector)
 
+    companion object {
+        suspend fun <T> tryWith(
+            throwableFlow: MutableSharedFlow<Throwable>,
+            info: ExtensionInfo,
+            block: suspend () -> T
+        ) = try {
+            block()
+        } catch (e: Throwable) {
+            throwableFlow.emit(e.toAppException(info))
+            e.printStackTrace()
+            null
+        }
+    }
 }

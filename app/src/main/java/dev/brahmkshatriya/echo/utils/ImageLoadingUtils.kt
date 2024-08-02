@@ -14,6 +14,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
+private fun <T> tryWith(print: Boolean = false, block: () -> T): T? {
+    return try {
+        block()
+    } catch (e: Throwable) {
+        if (print) e.printStackTrace()
+        null
+    }
+}
+
+private suspend fun <T> tryWithSuspend(print: Boolean = true, block: suspend () -> T): T? {
+    return try {
+        block()
+    } catch (e: Throwable) {
+        if(print) e.printStackTrace()
+        null
+    }
+}
+
 fun ImageHolder?.loadInto(
     imageView: ImageView, placeholder: Int? = null, errorDrawable: Int? = null
 ) = tryWith {

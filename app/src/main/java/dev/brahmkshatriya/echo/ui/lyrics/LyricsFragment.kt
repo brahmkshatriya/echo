@@ -61,6 +61,7 @@ class LyricsFragment : Fragment() {
         }
         val menu = binding.searchBar.menu
         val extension = binding.searchBar.findViewById<View>(R.id.menu_lyrics)
+        var lyricsItemAdapter: LyricsItemAdapter? = null
         observe(viewModel.currentExtension) { current ->
             binding.searchBar.hint = current?.metadata?.name
             current?.metadata?.iconUrl?.toImageHolder()
@@ -78,19 +79,24 @@ class LyricsFragment : Fragment() {
             binding.searchView.hint = if (isSearchable == true)
                 getString(R.string.search_extension, current.metadata.name)
             else current?.metadata?.name
+            lyricsItemAdapter = current?.info?.let { info ->
+                LyricsItemAdapter(this, info) { lyrics ->
+                    viewModel.onLyricsSelected(lyrics)
+                    binding.searchView.hide()
+                }
+            }
+            binding.searchRecyclerView.adapter = lyricsItemAdapter?.withLoaders()
         }
+
         binding.searchView.editText.setOnEditorActionListener { v, _, _ ->
             viewModel.search(v.text.toString().takeIf { it.isNotBlank() })
             true
         }
 
-        val lyricsItemAdapter = LyricsItemAdapter(this) { lyrics ->
-            viewModel.onLyricsSelected(lyrics)
-            binding.searchView.hide()
-        }
+
         binding.searchRecyclerView.adapter = lyricsItemAdapter
         observe(viewModel.searchResults) {
-            lyricsItemAdapter.submitData(it ?: PagingData.empty())
+            lyricsItemAdapter?.submitData(it ?: PagingData.empty())
         }
 
         var currentLyric: Lyric? = null

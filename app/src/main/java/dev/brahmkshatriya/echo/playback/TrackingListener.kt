@@ -9,10 +9,12 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.utils.PauseCountDown
+import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -31,8 +33,8 @@ class TrackingListener(
     private var current: MediaItem? = null
     private var timer: PauseCountDown? = null
 
-    private suspend fun <T> tryWith(block: suspend () -> T) =
-        dev.brahmkshatriya.echo.utils.tryWith(throwableFlow, block)
+    private suspend fun <T> tryIO(info: ExtensionInfo, block: suspend () -> T) =
+        tryWith(throwableFlow, info, block)
 
     private fun trackMedia(
         block: suspend TrackerClient.(clientId: String, context: EchoMediaItem?, track: Track) -> Unit
@@ -41,15 +43,16 @@ class TrackingListener(
         val clientId = item.clientId
         val track = item.track
 
-        val client = extensionList.getExtension(clientId)?.client ?: return
+        val extension = extensionList.getExtension(clientId)
         val trackers = trackerList.value?.filter { it.metadata.enabled } ?: emptyList()
 
         scope.launch(Dispatchers.IO) {
+            val client = extension?.client
             if (client is TrackerClient)
-                tryWith { client.block(clientId, item.context, track) }
+                tryIO(extension.info) { client.block(clientId, item.context, track) }
             trackers.forEach {
                 launch {
-                    tryWith { it.client.block(clientId, item.context, track) }
+                    tryIO(it.info) { it.client.block(clientId, item.context, track) }
                 }
             }
         }

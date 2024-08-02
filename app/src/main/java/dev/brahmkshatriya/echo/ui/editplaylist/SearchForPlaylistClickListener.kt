@@ -15,8 +15,8 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
-import dev.brahmkshatriya.echo.ui.media.MediaContainerAdapter
-import dev.brahmkshatriya.echo.ui.media.MediaItemAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemAdapter
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack

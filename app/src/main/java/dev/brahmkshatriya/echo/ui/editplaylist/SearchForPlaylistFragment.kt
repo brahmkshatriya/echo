@@ -18,7 +18,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistSearchBinding
-import dev.brahmkshatriya.echo.ui.media.MediaItemSelectableAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.search.SearchFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
