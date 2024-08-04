@@ -16,7 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
-import dev.brahmkshatriya.echo.ui.lyrics.LyricsFragment
+import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsFragment
 import dev.brahmkshatriya.echo.utils.SlideInPageTransformer
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
@@ -90,7 +90,7 @@ class PlayerInfoFragment : Fragment() {
         override fun getItemCount() = 3
 
         override fun createFragment(position: Int) = when (position) {
-            0 -> PlayerQueueFragment()
+            0 -> QueueFragment()
             1 -> LyricsFragment()
             2 -> TrackDetailsFragment()
             else -> throw IllegalArgumentException("Invalid position")

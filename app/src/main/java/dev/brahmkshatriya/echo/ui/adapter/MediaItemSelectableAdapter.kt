@@ -1,9 +1,10 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
@@ -56,17 +57,15 @@ class MediaItemSelectableAdapter(
     }
 
     companion object {
-        fun mediaItemSpanCount(context: Context, horizontalPadding: Int = 24 * 2) =
-            with(context.resources) {
+        fun View.mediaItemSpanCount(horizontalPadding: Int = 24 * 2, block: (count: Int) -> Unit) =
+            doOnLayout {
                 val typed = context.theme.obtainStyledAttributes(intArrayOf(R.attr.itemCoverSize))
                 val itemWidth = typed.getDimensionPixelSize(typed.getIndex(0), 0)
-                println(
-                    "itemWidth: $itemWidth, " +
-                            "width: ${displayMetrics.widthPixels - horizontalPadding.dpToPx(context)}, " +
-                            "dp: ${16.dpToPx(context)}"
-                )
-                val width = displayMetrics.widthPixels - horizontalPadding.dpToPx(context)
-                width.toFloat() / (itemWidth + 16.dpToPx(context))
-            }.roundToInt().also { println("spanCount: $it") }
+                val newWidth = width - horizontalPadding.dpToPx(context)
+                val count =
+                    (newWidth.toFloat() / (itemWidth + 16.dpToPx(context))).roundToInt()
+                block(count)
+                requestLayout()
+            }
     }
 }

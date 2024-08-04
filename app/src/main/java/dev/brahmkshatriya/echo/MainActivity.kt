@@ -27,6 +27,7 @@ import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
+import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.checkPermissions
 import dev.brahmkshatriya.echo.utils.collect
@@ -76,11 +77,14 @@ class MainActivity : AppCompatActivity() {
         navView.setOnItemReselectedListener {
             emit(uiViewModel.navigationReselected) { uiViewModel.navIds.indexOf(it.itemId) }
         }
+
         val isRail = binding.navView is NavigationRailView
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             uiViewModel.setSystemInsets(this, insets)
-            navView.createNavDrawable(uiViewModel.systemInsets.value.bottom)
+            val navBarSize =  uiViewModel.systemInsets.value.bottom
+            val full = playerViewModel.settings.getBoolean(NAVBAR_GRADIENT, true)
+            navView.createNavDrawable(isRail,navBarSize, !full)
             insets
         }
 
@@ -89,6 +93,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.navView.post {
+            collect(uiViewModel.navigation) { navView.selectedItemId = uiViewModel.navIds[it] }
             collect(uiViewModel.isMainFragment) { isMainFragment ->
                 val insets =
                     uiViewModel.setPlayerNavViewInsets(this, isMainFragment, isRail)

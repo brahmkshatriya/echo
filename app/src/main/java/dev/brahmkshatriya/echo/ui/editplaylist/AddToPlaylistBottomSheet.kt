@@ -76,8 +76,9 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         observe(viewModel.dismiss) { dismiss() }
 
         binding.recyclerView.adapter = adapter
-        (binding.recyclerView.layoutManager as GridLayoutManager).spanCount =
-            mediaItemSpanCount(requireContext())
+        binding.recyclerView.mediaItemSpanCount {
+            (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = it
+        }
         viewModel.clientId = clientId
         viewModel.item = item
         viewModel.onInitialize()

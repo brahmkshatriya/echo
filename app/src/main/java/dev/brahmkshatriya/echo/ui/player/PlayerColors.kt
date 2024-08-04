@@ -2,8 +2,8 @@ package dev.brahmkshatriya.echo.ui.player
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.TypedValue
 import androidx.palette.graphics.Palette
+import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
 
@@ -30,17 +30,16 @@ data class PlayerColors(
         }
 
         fun Context.defaultPlayerColors(): PlayerColors {
-            val background = TypedValue()
-            theme.resolveAttribute(R.attr.navBackground, background, true)
-            val primary = TypedValue()
-            theme.resolveAttribute(
-                com.google.android.material.R.attr.colorPrimary, primary, true
+            val background = MaterialColors.getColor(
+                this, R.attr.navBackground, 0
             )
-            val onSurface = TypedValue()
-            theme.resolveAttribute(
-                com.google.android.material.R.attr.colorOnSurface, onSurface, true
+            val primary = MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorPrimary, 0
             )
-            return PlayerColors(background.data, primary.data, onSurface.data)
+            val onSurface = MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorOnSurface, 0
+            )
+            return PlayerColors(background, primary, onSurface)
         }
     }
 }

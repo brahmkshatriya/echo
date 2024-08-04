@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistSearchBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
 import dev.brahmkshatriya.echo.ui.search.SearchFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -96,8 +97,9 @@ class SearchForPlaylistFragment : Fragment() {
         }
 
         binding.recyclerView.adapter = adapter
-        (binding.recyclerView.layoutManager as GridLayoutManager).spanCount =
-            MediaItemSelectableAdapter.mediaItemSpanCount(requireContext())
+        binding.recyclerView.mediaItemSpanCount {
+            (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = it
+        }
 
         binding.addTracks.setOnClickListener {
             parentFragmentManager.setFragmentResult("searchedTracks", Bundle().apply {

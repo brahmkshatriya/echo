@@ -101,7 +101,7 @@ class PlayerFragment : Fragment() {
             val index = viewModel.currentFlow.value?.index ?: -1
             val smooth = abs(index - binding.viewPager.currentItem) <= 1
             binding.viewPager.post {
-                binding.viewPager.setCurrentItem(index, smooth)
+                runCatching { binding.viewPager.setCurrentItem(index, smooth) }
             }
         }
 

@@ -19,9 +19,8 @@ import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
-import kotlinx.coroutines.flow.combine
 
-class PlayerQueueFragment : Fragment() {
+class QueueFragment : Fragment() {
 
     private var binding by autoCleared<FragmentPlaylistBinding>()
     private val viewModel by activityViewModels<PlayerViewModel>()
@@ -98,14 +97,19 @@ class PlayerQueueFragment : Fragment() {
         binding.root.adapter = ConcatAdapter(queueAdapter, radioLoaderAdapter, radioAdapter)
         touchHelper.attachToRecyclerView(binding.root)
 
-        val combined = viewModel.listUpdateFlow.combine(viewModel.currentFlow) { _, current ->
+        fun submit() {
+            val current = viewModel.currentFlow.value
             val currentIndex = current?.index
-            viewModel.list.mapIndexed { index, mediaItem ->
+            val it = viewModel.list.mapIndexed { index, mediaItem ->
                 if (currentIndex == index) true to current.mediaItem
                 else false to mediaItem
             }
+            queueAdapter.submitList(it)
         }
-        observe(combined) { queueAdapter.submitList(it) }
+
+        observe(viewModel.currentFlow) { submit() }
+        observe(viewModel.listUpdateFlow) { submit() }
+
         observe(viewModel.radioStateFlow) { state ->
             radioLoaderAdapter.setLoading(state is Radio.State.Loading)
             val list = if (state is Radio.State.Loaded) state.tracks.drop(state.played + 1).map {

@@ -101,6 +101,16 @@ class LookFragment : BaseSettingsFragment() {
                 }
 
                 SwitchPreferenceCompat(context).apply {
+                    key = NAVBAR_GRADIENT
+                    title = getString(R.string.navbar_gradient)
+                    summary = getString(R.string.navbar_gradient_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
                     key = DYNAMIC_PLAYER
                     title = getString(R.string.dynamic_player)
                     summary = getString(R.string.dynamic_player_summary)
@@ -149,6 +159,7 @@ class LookFragment : BaseSettingsFragment() {
         const val CUSTOM_THEME_KEY = "custom_theme"
         const val COLOR_KEY = "theme_color"
         const val AMOLED_KEY = "amoled"
+        const val NAVBAR_GRADIENT = "navbar_gradient"
         const val DYNAMIC_PLAYER = "dynamic_player"
         const val ANIMATIONS_KEY = "animations"
         const val SHARED_ELEMENT_KEY = "shared_element_transitions"

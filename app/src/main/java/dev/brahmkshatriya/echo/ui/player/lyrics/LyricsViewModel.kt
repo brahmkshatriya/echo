@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.lyrics
+package dev.brahmkshatriya.echo.ui.player.lyrics
 
 import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope

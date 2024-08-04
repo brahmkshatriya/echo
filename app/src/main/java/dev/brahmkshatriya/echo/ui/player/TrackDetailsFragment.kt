@@ -66,27 +66,28 @@ class TrackDetailsFragment : Fragment() {
             mediaAdapter?.submit(it)
         }
     }
-}
 
-@HiltViewModel
-class TrackDetailsViewModel @Inject constructor(
-    throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-) : CatchingViewModel(throwableFlow) {
+    @HiltViewModel
+    class TrackDetailsViewModel @Inject constructor(
+        throwableFlow: MutableSharedFlow<Throwable>,
+        val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+    ) : CatchingViewModel(throwableFlow) {
 
-    private var previous: Track? = null
-    val itemsFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+        private var previous: Track? = null
+        val itemsFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
 
-    fun load(clientId: String, track: Track) {
-        if (previous?.id == track.id) return
-        previous = track
-        itemsFlow.value = null
-        val extension = extensionListFlow.getExtension(clientId) ?: return
-        val client = extension.client
-        if (client !is TrackClient) return
-        viewModelScope.launch {
-            tryWith(extension.info) { client.getMediaItems(track).toFlow().collectTo(itemsFlow) }
+        fun load(clientId: String, track: Track) {
+            if (previous?.id == track.id) return
+            previous = track
+            itemsFlow.value = null
+            val extension = extensionListFlow.getExtension(clientId) ?: return
+            val client = extension.client
+            if (client !is TrackClient) return
+            viewModelScope.launch {
+                tryWith(extension.info) { client.getMediaItems(track).toFlow().collectTo(itemsFlow) }
+            }
         }
     }
-
 }
+
+

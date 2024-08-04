@@ -65,7 +65,6 @@ class ExtensionViewModel @Inject constructor(
     fun setExtensionEnabled(extensionType: ExtensionType, id: String, checked: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             extensionDao.setExtension(ExtensionEntity(id, extensionType, checked))
-            println("$id Enabled : ${extensionDao.getExtension(extensionType, id)}")
             refresher.emit(true)
         }
     }

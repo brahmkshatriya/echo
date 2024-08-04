@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.utils
 
 import android.content.Context.MODE_PRIVATE
-import android.util.TypedValue
 import android.view.View
 import android.view.ViewPropertyAnimator
 import androidx.core.view.doOnPreDraw
@@ -11,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.R
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.MaterialArcMotion
@@ -40,9 +40,9 @@ fun NavigationBarView.animateTranslation(
         var animation = if (isRail) animate().translationX(value)
         else animate().translationY(value)
 
-        animation = if (isMainFragment) animation.withStartAction(action)
-            .withEndAction { isVisible = true }
-        else animation.withEndAction { action(); isVisible = false }
+        animation =
+            if (isMainFragment) animation.withStartAction(action).withEndAction { isVisible = true }
+            else animation.withEndAction { action(); isVisible = false }
 
         startAnimation(this, animation)
 
@@ -66,12 +66,12 @@ fun NavigationBarView.animateTranslation(
     }
 }
 
-fun View.animateVisibility(isVisible: Boolean) {
-    if (animations) startAnimation(this,
-        animate().alpha(if (isVisible) 1f else 0f)
-            .withEndAction { alpha = if (isVisible) 1f else 0f })
-    else alpha = if (isVisible) 1f else 0f
-}
+//fun View.animateVisibility(isVisible: Boolean) {
+//    if (animations) startAnimation(this,
+//        animate().alpha(if (isVisible) 1f else 0f)
+//            .withEndAction { alpha = if (isVisible) 1f else 0f })
+//    else alpha = if (isVisible) 1f else 0f
+//}
 
 fun animateTranslation(view: View, old: Int, newHeight: Int) = view.run {
     if (view.animations) {
@@ -98,10 +98,9 @@ private val View.sharedElementTransitions
     }
 
 fun Fragment.setupTransition(view: View) {
-    val background = TypedValue()
-    val theme = requireContext().theme
-    theme.resolveAttribute(dev.brahmkshatriya.echo.R.attr.echoBackground, background, true)
-    val color = resources.getColor(background.resourceId, theme)
+    val color = MaterialColors.getColor(
+        view, dev.brahmkshatriya.echo.R.attr.echoBackground, 0
+    )
     view.setBackgroundColor(color)
 
     if (view.animations) {
