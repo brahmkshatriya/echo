@@ -36,8 +36,17 @@ class SearchViewModel @Inject constructor(
         val client = extension.client
         if (client !is SearchClient) return
         viewModelScope.launch(Dispatchers.IO) {
-            val list =tryWith(extension.info) {  client.quickSearch(query) } ?: emptyList()
+            val list = tryWith(extension.info) { client.quickSearch(query) } ?: emptyList()
             quickFeed.value = list
+        }
+    }
+
+    fun deleteSearchQuery(query: QuickSearchItem.SearchQueryItem) {
+        val extension = extensionFlow.value ?: return
+        val client = extension.client
+        if (client !is SearchClient) return
+        viewModelScope.launch {
+            tryWith(extension.info) { client.deleteSearchHistory(query) }
         }
     }
 

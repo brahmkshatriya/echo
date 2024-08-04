@@ -136,7 +136,6 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
                 }
             }.toPaged()
         }
-
     }
 
     override suspend fun loadTrack(track: Track) = track
@@ -278,8 +277,13 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         } else listOf()
     }
 
-    override suspend fun searchTabs(query: String?) =
-        listOf("All", "Tracks", "Albums", "Artists").map { Tab(it, it) }
+    override suspend fun deleteSearchHistory(query: QuickSearchItem.SearchQueryItem) {
+        val history = getHistory().toMutableList()
+        history.remove(query.query)
+        context.saveToCache("search_history", "offline") { parcel ->
+            parcel.writeStringList(history)
+        }
+    }
 
     private fun getHistory() = context.getFromCache("search_history", "offline") {
         it.createStringArrayList()?.distinct()?.take(5)
@@ -292,6 +296,9 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
             parcel.writeStringList(history)
         }
     }
+
+    override suspend fun searchTabs(query: String?) =
+        listOf("All", "Tracks", "Albums", "Artists").map { Tab(it, it) }
 
     override fun searchFeed(query: String?, tab: Tab?) = run {
         query ?: return@run emptyList()

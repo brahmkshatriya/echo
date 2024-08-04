@@ -19,12 +19,12 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
@@ -124,7 +124,8 @@ class SearchFragment : Fragment() {
 
             override fun onLongClick(item: QuickSearchItem, transitionView: View) = when (item) {
                 is QuickSearchItem.SearchQueryItem -> {
-                    onClick(item, transitionView)
+                    viewModel.deleteSearchQuery(item)
+                    viewModel.quickSearch(binding.quickSearchView.editText.text.toString())
                     true
                 }
 
