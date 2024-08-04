@@ -120,6 +120,7 @@ class PlayerSessionCallback(
             if (client !is LibraryClient) return@future errorIO
             val track = item.track
             val liked = withContext(Dispatchers.IO) {
+                println("likeTrack : ${track.title} : ${rating.isThumbsUp}")
                 runCatching { client.likeTrack(track, rating.isThumbsUp) }
             }.getOrElse {
                 return@future SessionResult(

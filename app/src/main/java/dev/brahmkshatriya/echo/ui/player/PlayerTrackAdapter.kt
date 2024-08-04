@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.getExtension
@@ -143,22 +144,26 @@ class PlayerTrackAdapter(
             }
         }
 
-        val client = viewModel.extensionListFlow.getExtension(clientId)?.client
-        val isLibrary = client is LibraryClient
-        val likeListener =
-            if (isLibrary) CheckBoxListener { viewModel.likeTrack(it) }
-            else null
 
         binding.playerControls.trackHeart.run {
+            viewModel.isLiked.value = item.isLiked
+            isChecked = item.isLiked
+            viewModel.likeListener.checked = item.isLiked
+            val client = viewModel.extensionListFlow.getExtension(clientId)?.client
+            val isLibrary = client is LibraryClient
             isVisible = isLibrary
-            likeListener?.let { addOnCheckedStateChangedListener(it) }
+            if (isLibrary) {
+                val likeListener = viewModel.likeListener
+                addOnCheckedStateChangedListener(likeListener)
+                observeCurrent(viewModel.isLiked) {
+                    likeListener.enabled = false
+                    binding.playerControls.trackHeart.isChecked = it ?: false
+                    likeListener.enabled = true
+                }
+            } else removeOnCheckedStateChangedListener(viewModel.likeListener)
         }
 
-        observeCurrent(viewModel.isLiked) {
-            likeListener?.enabled = false
-            binding.playerControls.trackHeart.isChecked = it ?: false
-            likeListener?.enabled = true
-        }
+
 
         binding.playerControls.seekBar.apply {
             addOnChangeListener { _, value, fromUser ->

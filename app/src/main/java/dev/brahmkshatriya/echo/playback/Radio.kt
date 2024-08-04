@@ -141,11 +141,16 @@ class Radio(
         }
     }
 
+    private var autoStartRadio = true
+    init {
+        settings.registerOnSharedPreferenceChangeListener { pref, key ->
+            if (key == AUTO_START_RADIO)
+                autoStartRadio = pref.getBoolean(AUTO_START_RADIO, true)
+        }
+    }
     private fun startRadio() {
-        val autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
         if (!autoStartRadio) return
-        if (player.mediaItemCount == 0) stateFlow.value = State.Empty
-        if (player.hasNextMediaItem()) return
+        if (player.hasNextMediaItem() || player.currentMediaItem == null) return
         when (val state = stateFlow.value) {
             is State.Loading -> {}
             is State.Empty -> {
@@ -169,6 +174,7 @@ class Radio(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (player.mediaItemCount == 0) stateFlow.value = State.Empty
+        startRadio()
     }
 }
 

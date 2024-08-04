@@ -76,7 +76,9 @@ class PlayerViewModel @Inject constructor(
     fun seekTo(position: Long) = withBrowser { it.seekTo(position) }
     fun seekToPrevious() = withBrowser { it.seekToPrevious() }
     fun seekToNext() = withBrowser { it.seekToNext() }
-    fun likeTrack(isLiked: Boolean) = withBrowser {
+
+    val likeListener = CheckBoxListener { likeTrack(it) }
+    private fun likeTrack(isLiked: Boolean) = withBrowser {
         val old = this.isLiked.value
         this.isLiked.value = isLiked
         val future = it.setRating(ThumbRating(isLiked))

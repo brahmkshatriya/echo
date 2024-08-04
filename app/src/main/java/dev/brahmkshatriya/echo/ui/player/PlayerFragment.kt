@@ -100,9 +100,7 @@ class PlayerFragment : Fragment() {
             adapter.submitList(list)
             val index = viewModel.currentFlow.value?.index ?: -1
             val smooth = abs(index - binding.viewPager.currentItem) <= 1
-            binding.viewPager.post {
-                runCatching { binding.viewPager.setCurrentItem(index, smooth) }
-            }
+            binding.viewPager.setCurrentItem(index, smooth)
         }
 
         observe(viewModel.listUpdateFlow) { update() }
