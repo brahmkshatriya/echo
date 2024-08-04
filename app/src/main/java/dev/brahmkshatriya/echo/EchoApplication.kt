@@ -10,14 +10,19 @@ import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.providers.LyricsClientsProvider
+import dev.brahmkshatriya.echo.common.providers.MusicClientsProvider
+import dev.brahmkshatriya.echo.common.providers.TrackerClientsProvider
 import dev.brahmkshatriya.echo.db.UserDao
 import dev.brahmkshatriya.echo.db.models.UserEntity
+import dev.brahmkshatriya.echo.plugger.ExtensionException
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.LyricsExtensionRepo
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtensionRepo
+import dev.brahmkshatriya.echo.plugger.RequiredExtensionsException
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtensionRepo
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
@@ -39,6 +44,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
@@ -103,6 +109,55 @@ class EchoApplication : Application() {
         //Extension Loading
         scope.launch {
             getAllPlugins()
+
+            //Inject User
+            launch {
+                userDao.observeCurrentUser().collect { list ->
+                    val extension = extensionFlow.value ?: return@collect
+                    val (metadata, client) = extension
+                    val user = list.find { it.clientId == metadata.id }
+                    if (metadata.id == user?.clientId) setLoginUser(
+                        extension.info, client, userDao, userFlow, throwableFlow
+                    )
+                }
+            }
+            //Inject other extensions
+            launch {
+                val combined = merge(
+                    extensionListFlow,
+                    trackerListFlow,
+                    lyricsListFlow
+                )
+                combined.collect { list ->
+                    val trackerClients =
+                        trackerListFlow.value?.filter { it.metadata.enabled }
+                            ?.map { it.metadata.id to it.client }.orEmpty()
+                    val lyricsClients =
+                        lyricsListFlow.value?.filter { it.metadata.enabled }
+                            ?.map { it.metadata.id to it.client }.orEmpty()
+                    val musicClients =
+                        extensionListFlow.value?.filter { it.metadata.enabled }
+                            ?.map { it.metadata.id to it.client }.orEmpty()
+                    list?.forEach { extension ->
+                        val info = extension.info
+                        val client = extension.client
+                        tryWith(throwableFlow, info) {
+                            if (client is TrackerClientsProvider) client.injectClients(
+                                client.requiredTrackerClients,
+                                trackerClients
+                            ) { client.setTrackerClients(it) }
+                            if (client is LyricsClientsProvider) client.injectClients(
+                                client.requiredLyricsClients,
+                                lyricsClients
+                            ) { client.setLyricsClients(it) }
+                            if (client is MusicClientsProvider) client.injectClients(
+                                client.requiredMusicClients,
+                                musicClients
+                            ) { client.setMusicClients(it) }
+                        }
+                    }
+                }
+            }
         }
 
         // Refresh Extensions
@@ -113,28 +168,29 @@ class EchoApplication : Application() {
                 }
             }
         }
+    }
 
-        //User
-        scope.launch {
-            userDao.observeCurrentUser().collect { list ->
-                val extension = extensionFlow.value ?: return@collect
-                val (metadata, client) = extension
-                val user = list.find { it.clientId == metadata.id }
-                if (metadata.id == user?.clientId) setLoginUser(
-                    extension.info, client, userDao, userFlow, throwableFlow
-                )
-            }
+    private fun <T, R : ExtensionClient> T.injectClients(
+        required: List<String>,
+        clients: List<Pair<String, R>>,
+        set: T.(List<Pair<String, R>>) -> Unit
+    ) {
+        if (required.isEmpty()) set(clients)
+        else {
+            val filtered = clients.filter { it.first in required }
+            if (filtered.size == required.size) set(filtered)
+            else throw RequiredExtensionsException(required)
         }
     }
 
     private suspend fun getAllPlugins() = coroutineScope {
         val trackers = MutableStateFlow<Unit?>(null)
         val lyrics = MutableStateFlow<Unit?>(null)
+        val music = MutableStateFlow<Unit?>(null)
         launch {
-            trackerExtensionRepo.getPlugins { list ->
+            trackerExtensionRepo.getPlugins(ExtensionType.TRACKER) { list ->
                 trackerListFlow.value = list.map { (metadata, client) ->
-                    val metadataEnabled = isExtensionEnabled(ExtensionType.TRACKER, metadata)
-                    TrackerExtension(metadataEnabled, client)
+                    TrackerExtension(metadata, client)
                 }
                 list.setExtensions(ExtensionType.TRACKER)
                 trackers.emit(Unit)
@@ -142,43 +198,49 @@ class EchoApplication : Application() {
         }
 
         launch {
-            lyricsExtensionRepo.getPlugins { list ->
+            lyricsExtensionRepo.getPlugins(ExtensionType.LYRICS) { list ->
                 lyricsListFlow.value = list.map { (metadata, client) ->
-                    val metadataEnabled = isExtensionEnabled(ExtensionType.LYRICS, metadata)
-                    LyricsExtension(metadataEnabled, client)
+                    LyricsExtension(metadata, client)
                 }
                 list.setExtensions(ExtensionType.LYRICS)
                 lyrics.emit(Unit)
             }
         }
+
         trackers.first { it != null }
         lyrics.first { it != null }
 
-        musicExtensionRepo.getPlugins { list ->
-            val extensions = list.map { (metadata, client) ->
-                val metadataEnabled = isExtensionEnabled(ExtensionType.MUSIC, metadata)
-                MusicExtension(metadataEnabled, client)
+        launch {
+            musicExtensionRepo.getPlugins(ExtensionType.MUSIC) { list ->
+                val extensions = list.map { (metadata, client) ->
+                    MusicExtension(metadata, client)
+                }
+                extensionListFlow.value = extensions
+                val id = settings.getString(LAST_EXTENSION_KEY, null)
+                val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
+                setupMusicExtension(
+                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
+                )
+                refresher.emit(false)
+                music.emit(Unit)
             }
-            extensionListFlow.value = extensions
-            val id = settings.getString(LAST_EXTENSION_KEY, null)
-            val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
-            setupMusicExtension(
-                scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
-            )
-
-            refresher.emit(false)
         }
+
+        music.first { it != null }
     }
 
     private suspend fun <T> PluginRepo<ExtensionMetadata, T>.getPlugins(
+        type: ExtensionType,
         collector: FlowCollector<List<Pair<ExtensionMetadata, T>>>
     ) = getAllPlugins().catchWith(throwableFlow).map { list ->
         list.mapNotNull { result ->
-            result.getOrElse {
+            val (metadata, client) = result.getOrElse {
                 val error = it.cause ?: it
-                throwableFlow.emit(error)
+                throwableFlow.emit(ExtensionException(type, error))
                 null
-            }
+            } ?: return@mapNotNull null
+            val metadataEnabled = isExtensionEnabled(type, metadata)
+            metadataEnabled to client
         }
     }.collect(collector)
 
@@ -224,7 +286,7 @@ class EchoApplication : Application() {
             extension: MusicExtension?
         ) {
             settings.edit().putString(LAST_EXTENSION_KEY, extension?.metadata?.id).apply()
-            extension ?: return
+            extension?.takeIf { it.metadata.enabled } ?: return
             scope.launch {
                 val info = extension.info
                 setExtension(userDao, userFlow, throwableFlow, info, extension.client)

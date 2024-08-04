@@ -18,6 +18,7 @@ class TrackerExtensionRepo(
     private val context: Context,
     private val pluginRepo: PluginRepo<ExtensionMetadata, TrackerClient>
 ) : PluginRepo<ExtensionMetadata, TrackerClient> {
-    override fun getAllPlugins() = context
-        .injectSettings<TrackerClient>(ExtensionType.TRACKER, pluginRepo)
+    override fun getAllPlugins() = pluginRepo.getAllPlugins()
+        .injectSettings(ExtensionType.TRACKER, context)
+        .injectContext(context)
 }

@@ -87,7 +87,6 @@ class ItemFragment : Fragment() {
     }
 
     private var mediaContainerAdapter: MediaContainerAdapter? = null
-    private val listener = getListener(this)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
@@ -135,6 +134,7 @@ class ItemFragment : Fragment() {
             }
         }
 
+        val listener = getListener(this)
 
         val trackAdapter = TrackAdapter(
             view.transitionName,

@@ -19,7 +19,8 @@ class MusicExtensionRepo(
     private val pluginRepo: PluginRepo<ExtensionMetadata, ExtensionClient>
 ) : PluginRepo<ExtensionMetadata, ExtensionClient> {
 
-    override fun getAllPlugins() = context
-        .injectSettings<ExtensionClient>(ExtensionType.MUSIC, pluginRepo)
+    override fun getAllPlugins() = pluginRepo.getAllPlugins()
+        .injectSettings(ExtensionType.MUSIC, context)
+        .injectContext(context)
 }
 

@@ -32,4 +32,7 @@ sealed interface LoginClient {
     )
 
     suspend fun onSetLoginUser(user: User?)
+
+    //Will be only used by other clients, be sure to remove any sensitive data
+    suspend fun getCurrentUser(): User?
 }

@@ -20,6 +20,7 @@ class LyricsExtensionRepo(
     private val context: Context,
     private val pluginRepo: PluginRepo<ExtensionMetadata, LyricsClient>
 ) : PluginRepo<ExtensionMetadata, LyricsClient> {
-    override fun getAllPlugins() = context
-        .injectSettings<LyricsClient>(ExtensionType.LYRICS, pluginRepo)
+    override fun getAllPlugins() = pluginRepo.getAllPlugins()
+        .injectSettings(ExtensionType.LYRICS, context)
+        .injectContext(context)
 }

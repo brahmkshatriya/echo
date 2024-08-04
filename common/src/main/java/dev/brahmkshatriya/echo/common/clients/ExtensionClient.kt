@@ -1,10 +1,7 @@
 package dev.brahmkshatriya.echo.common.clients
 
-import dev.brahmkshatriya.echo.common.settings.Setting
-import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.common.providers.SettingsProvider
 
-interface ExtensionClient {
-    val settingItems: List<Setting>
-    fun setSettings(settings: Settings)
+interface ExtensionClient : SettingsProvider {
     suspend fun onExtensionSelected()
 }

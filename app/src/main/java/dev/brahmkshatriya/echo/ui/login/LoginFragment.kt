@@ -88,6 +88,7 @@ class LoginFragment : Fragment() {
                 client.onLogin(username, password)
 
             override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
+            override suspend fun getCurrentUser() = client.getCurrentUser()
         } to binding.loginUserPass
         else null
 
@@ -97,6 +98,7 @@ class LoginFragment : Fragment() {
                 override val loginWebViewInitialUrl = client.loginWebViewInitialUrl
                 override val loginWebViewStopUrlRegex = client.loginWebViewStopUrlRegex
                 override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
+                override suspend fun getCurrentUser() = client.getCurrentUser()
                 override suspend fun onLoginWebviewStop(url: String, data: String) =
                     client.onLoginWebviewStop(url, data)
             }
@@ -106,6 +108,7 @@ class LoginFragment : Fragment() {
                 override val loginWebViewStopUrlRegex = client.loginWebViewStopUrlRegex
                 override val javascriptToEvaluate = client.javascriptToEvaluate
                 override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
+                override suspend fun getCurrentUser() = client.getCurrentUser()
                 override suspend fun onLoginWebviewStop(url: String, data: String) =
                     client.onLoginWebviewStop(url, data)
             }
@@ -118,6 +121,7 @@ class LoginFragment : Fragment() {
         if (client is LoginClient.CustomTextInput) object : LoginClient.CustomTextInput {
             override val loginInputFields = client.loginInputFields
             override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
+            override suspend fun getCurrentUser() = client.getCurrentUser()
             override suspend fun onLogin(data: Map<String, String?>) = client.onLogin(data)
         } to binding.loginCustomInput
         else null
