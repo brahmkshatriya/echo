@@ -175,4 +175,8 @@
     <string name="radio_playlist_empty">电台播放列表是空的</string>
     <string name="manage_extensions">管理扩展</string>
     <string name="disabled">已禁用</string>
+    <string name="app_name">Echo</string>
+    <string name="number_dot">%1$d.</string>
+    <string name="amoled">黑色主题</string>
+    <string name="seekbar">Seekbar</string>
 </resources>
