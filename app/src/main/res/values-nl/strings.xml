@@ -181,4 +181,6 @@
     <string name="download_started">Download begonnen</string>
     <string name="download">Download</string>
     <string name="extension">Extensie</string>
+    <string name="navbar_gradient">Doorzichtige navigatiebalk</string>
+    <string name="navbar_gradient_summary">Navigatiebalk wordt geleidelijk transparant</string>
 </resources>
