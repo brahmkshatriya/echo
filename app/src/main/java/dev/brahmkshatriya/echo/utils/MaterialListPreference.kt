@@ -8,7 +8,7 @@ import dev.brahmkshatriya.echo.R
 
 class MaterialListPreference(context: Context) : ListPreference(context) {
 
-    private var customSummary: String? = null
+    private var customSummary: CharSequence? = null
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
@@ -21,7 +21,12 @@ class MaterialListPreference(context: Context) : ListPreference(context) {
 
     override fun onSetInitialValue(defaultValue: Any?) {
         super.onSetInitialValue(defaultValue)
-        customSummary = summary.toString()
+        customSummary = summary
+        layoutResource = if (customSummary != null){
+            R.layout.preference_summary_button
+        } else {
+            this.layoutResource
+        }
         updateSummary()
     }
 
@@ -46,7 +51,7 @@ class MaterialListPreference(context: Context) : ListPreference(context) {
 
     private fun showSummaryDialog() {
         MaterialAlertDialogBuilder(context)
-            .setMessage(customSummary)
+            .setMessage(customSummary.toString())
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
