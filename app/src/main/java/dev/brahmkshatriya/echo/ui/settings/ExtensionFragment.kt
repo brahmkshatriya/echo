@@ -140,6 +140,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                     MaterialListPreference(preferenceGroup.context).also {
                         it.title = this.title
                         it.key = this.key
+                        it.summary = this.summary
                         defaultEntryIndex?.let { index ->
                             it.setDefaultValue(this.entryValues[index])
                         }
@@ -147,7 +148,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                         it.entryValues = this.entryValues.toTypedArray()
 
                         it.isIconSpaceReserved = false
-                        it.layoutResource = R.layout.preference
+                        it.layoutResource = R.layout.preference_summary_button
                         preferenceGroup.addPreference(it)
                     }
                 }
