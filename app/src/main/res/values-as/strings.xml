@@ -181,4 +181,6 @@
     <string name="unauthorized">$1%s : ব্যৱহাৰকাৰী অনুমতি নাই</string>
     <string name="extension_disabled">%1$s (অক্ষমিত)</string>
     <string name="radio_playlist_empty">ৰেডিঅ\' প্লেলিষ্ট খালি</string>
+    <string name="navbar_gradient">গ্ৰেডিয়েণ্ট নেভবাৰ</string>
+    <string name="navbar_gradient_summary">নেভবাৰ অলপ অলপকৈ পৰিস্ফুট হৈ পৰে</string>
 </resources>
