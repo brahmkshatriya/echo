@@ -181,4 +181,6 @@
     <string name="refresh">ताज़ा करें</string>
     <string name="music">संगीत</string>
     <string name="tracker">ट्रैकर</string>
+    <string name="navbar_gradient">ग्रेडिएंट नेवबार</string>
+    <string name="navbar_gradient_summary">नेवबार धीरे-धीरे पारदर्शी हो जाता है</string>
 </resources>
