@@ -181,4 +181,6 @@
     <string name="required_field">%1$s आवश्यकः अस्ति।</string>
     <string name="name_settings">%1$s विन्यासः</string>
     <string name="invalid_extension_host">मेजबानः मध्ये अमान्यः प्रत्यायुक्तिः प्रकारः।</string>
+    <string name="navbar_gradient">आभासं नेवबार</string>
+    <string name="navbar_gradient_summary">नेवबार शनैः शनैः पारदर्शं भवति</string>
 </resources>
