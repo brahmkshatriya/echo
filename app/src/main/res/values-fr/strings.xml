@@ -169,4 +169,19 @@
     <string name="saved_to_playlists">Sauvegardé dans les playlists</string>
     <string name="auto_start_radio">Auto Start Radio</string>
     <string name="view">Voir</string>
+    <string name="up_next">Suivante</string>
+    <string name="amoled_summary">Noir complet, Noir pur</string>
+    <string name="dynamic_player_summary">Appliquer la couleur au lecteur en fonction de l’illustration de la piste</string>
+    <string name="animations">Animations</string>
+    <string name="shared_element_transitions">Transitions de la pochette</string>
+    <string name="shared_element_transitions_summary">Cool transitions d’éléments, pourquoi avez-vous éteint cela ?</string>
+    <string name="equalizer_summary">Ouvrez les paramètres de l’égaliseur de l\'appareil</string>
+    <string name="sleep_timer">Minuterie de sommeil</string>
+    <string name="not_loading">Chargent pas</string>
+    <string name="unlike">Ne pas aimer</string>
+    <string name="webview">Webview</string>
+    <string name="manual">Manuel</string>
+    <string name="error_no_id">Identifiant manquant dans le paramètre</string>
+    <string name="navbar_gradient">Barre de navigation dégradé</string>
+    <string name="navbar_gradient_summary">La barre de navigation devient lentement transparente</string>
 </resources>
