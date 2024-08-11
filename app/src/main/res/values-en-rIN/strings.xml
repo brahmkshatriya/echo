@@ -181,4 +181,6 @@
     <string name="not_logged_in">Not logged in</string>
     <string name="add_account">Account Add karo</string>
     <string name="no_streams_found">Koi stream nahi mila</string>
+    <string name="navbar_gradient_summary">Navbar dheere dheere transparent ho jati hai</string>
+    <string name="navbar_gradient">Rangantar Navbar</string>
 </resources>
