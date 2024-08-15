@@ -1,10 +1,8 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.parcelableCreator
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data class Track(
     val id: String,
     val title: String,
@@ -19,9 +17,4 @@ data class Track(
     val videoStreamable: List<Streamable> = listOf(),
     val audioStreamables: List<Streamable> = listOf(),
     val expiresAt: Long = 0,
-) : Parcelable {
-
-    companion object {
-        val creator = parcelableCreator<Track>()
-    }
-}
+)

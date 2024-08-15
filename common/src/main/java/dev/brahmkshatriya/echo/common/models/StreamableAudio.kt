@@ -1,15 +1,13 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.os.Parcelable
 import dev.brahmkshatriya.echo.common.models.Request.Companion.toRequest
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
+import kotlinx.serialization.Serializable
 import java.io.InputStream
 
-@Parcelize
-sealed class StreamableAudio : Parcelable {
+@Serializable
+sealed class StreamableAudio {
     data class StreamableRequest(val request: Request) : StreamableAudio()
-    data class ByteStreamAudio(val stream: @RawValue InputStream, val totalBytes: Long) :
+    data class ByteStreamAudio(val stream: InputStream, val totalBytes: Long) :
         StreamableAudio()
 
     companion object {

@@ -9,7 +9,8 @@ import androidx.media3.common.ThumbRating
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectStreamIndex
-import dev.brahmkshatriya.echo.utils.getParcel
+import dev.brahmkshatriya.echo.utils.getSerialized
+import dev.brahmkshatriya.echo.utils.toJson
 
 object MediaItemUtils {
 
@@ -49,9 +50,9 @@ object MediaItemUtils {
         .setIsBrowsable(false)
         .setExtras(
             bundleOf(
-                "track" to this,
+                "track" to this.toJson(),
                 "clientId" to clientId,
-                "context" to context,
+                "context" to context.toJson(),
                 "loaded" to loaded,
                 "audioStream" to selectStream(settings, loaded, audioStreamIndex)
             )
@@ -71,9 +72,9 @@ object MediaItemUtils {
     }
 
     val MediaMetadata.isLoaded get() = extras?.getBoolean("loaded") ?: false
-    val MediaMetadata.track get() = requireNotNull(extras?.getParcel<Track>("track"))
+    val MediaMetadata.track get() = requireNotNull(extras?.getSerialized<Track>("track"))
     val MediaMetadata.clientId get() = requireNotNull(extras?.getString("clientId"))
-    val MediaMetadata.context get() = extras?.getParcel<EchoMediaItem?>("context")
+    val MediaMetadata.context get() = extras?.getSerialized<EchoMediaItem?>("context")
     val MediaMetadata.audioStreamIndex get() = extras?.getInt("audioStream") ?: -1
     val MediaMetadata.isLiked get() = (userRating as? ThumbRating)?.isThumbsUp == true
 

@@ -2,16 +2,17 @@ package dev.brahmkshatriya.echo.utils
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import java.io.Serializable
 
 @Suppress("DEPRECATION")
-inline fun <reified T> Bundle.getParcel(key: String?) =
+inline fun <reified T:Parcelable> Bundle.getParcel(key: String?) =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         getParcelable(key, T::class.java)
     else getParcelable(key)
 
 @Suppress("DEPRECATION")
-inline fun <reified T> Bundle.getParcelArray(key: String?) =
+inline fun <reified T:Parcelable> Bundle.getParcelArray(key: String?) =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         getParcelableArray(key, T::class.java)?.toList()
     else getParcelableArray(key)?.map { it as T }

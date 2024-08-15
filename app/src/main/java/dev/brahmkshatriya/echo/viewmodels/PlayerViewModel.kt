@@ -27,6 +27,7 @@ import dev.brahmkshatriya.echo.ui.player.PlayerUiListener
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.utils.getSerial
 import dev.brahmkshatriya.echo.utils.listenFuture
+import dev.brahmkshatriya.echo.utils.toJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -179,7 +180,7 @@ class PlayerViewModel @Inject constructor(
 
     fun radio(clientId: String, item: EchoMediaItem) {
         withBrowser {
-            it.sendCustomCommand(radioCommand, bundleOf("clientId" to clientId, "item" to item))
+            it.sendCustomCommand(radioCommand, bundleOf("clientId" to clientId, "item" to item.toJson()))
         }
     }
 

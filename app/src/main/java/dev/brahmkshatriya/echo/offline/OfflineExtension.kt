@@ -280,21 +280,17 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     override suspend fun deleteSearchHistory(query: QuickSearchItem.SearchQueryItem) {
         val history = getHistory().toMutableList()
         history.remove(query.query)
-        context.saveToCache("search_history", "offline") { parcel ->
-            parcel.writeStringList(history)
-        }
+        context.saveToCache("search_history", history, "offline")
     }
 
-    private fun getHistory() = context.getFromCache("search_history", "offline") {
-        it.createStringArrayList()?.distinct()?.take(5)
-    } ?: emptyList()
+    private fun getHistory() = context.getFromCache<List<String>>("search_history", "offline")
+        ?.distinct()?.take(5)
+        ?: emptyList()
 
     private fun saveInHistory(query: String) {
         val history = getHistory().toMutableList()
         history.add(0, query)
-        context.saveToCache("search_history", "offline") { parcel ->
-            parcel.writeStringList(history)
-        }
+        context.saveToCache("search_history", history, "offline")
     }
 
     override suspend fun searchTabs(query: String?) =
@@ -342,7 +338,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     ).map { Tab(it, it) }
 
     override fun getLibraryFeed(tab: Tab?): PagedData<MediaItemsContainer> {
-        if(refreshLibrary) library = MediaStoreUtils.getAllSongs(context)
+        if (refreshLibrary) library = MediaStoreUtils.getAllSongs(context)
         return when (tab?.id) {
             "Folders" -> library.folderStructure.folderList.entries.first().value.toContainer(null).more!!
             else -> {

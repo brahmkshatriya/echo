@@ -1,9 +1,8 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data class Album(
     val id: String,
     val title: String,
@@ -16,4 +15,4 @@ data class Album(
     val description: String? = null,
     val subtitle: String? = null,
     val extras: Map<String, String> = mapOf()
-) : Parcelable
+)

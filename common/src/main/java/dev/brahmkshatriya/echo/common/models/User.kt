@@ -1,12 +1,11 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
-open class User(
-    open val id: String,
-    open val name: String,
-    open val cover: ImageHolder? = null,
-    open val extras: Map<String, String> = mapOf()
-) : Parcelable
+@Serializable
+data class User(
+    val id: String,
+    val name: String,
+    val cover: ImageHolder? = null,
+    val extras: Map<String, String> = emptyMap(),
+)
