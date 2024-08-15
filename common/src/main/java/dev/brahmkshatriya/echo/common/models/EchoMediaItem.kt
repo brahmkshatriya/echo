@@ -1,22 +1,21 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.os.Parcel
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.parcelableCreator
+import kotlinx.serialization.Serializable
+import java.io.Serializable as JSerializable
 
-sealed class EchoMediaItem : Parcelable {
 
-    @Parcelize
+sealed class EchoMediaItem : JSerializable {
+
+    @Serializable
     data class TrackItem(val track: Track) : EchoMediaItem()
 
-    @Parcelize
+    @Serializable
     sealed class Profile : EchoMediaItem() {
         data class ArtistItem(val artist: Artist) : Profile()
         data class UserItem(val user: User) : Profile()
     }
 
-    @Parcelize
+    @Serializable
     sealed class Lists : EchoMediaItem() {
         data class AlbumItem(val album: Album) : Lists()
         data class PlaylistItem(val playlist: Playlist) : Lists()
@@ -35,26 +34,26 @@ sealed class EchoMediaItem : Parcelable {
         fun User.toMediaItem() = Profile.UserItem(this)
         fun Playlist.toMediaItem() = Lists.PlaylistItem(this)
 
-        val creator = object : Parcelable.Creator<EchoMediaItem> {
-
-            inline fun <reified T : Parcelable> create(source: Parcel?) = runCatching {
-                parcelableCreator<T>().createFromParcel(source)!!
-            }.getOrNull()
-
-            override fun createFromParcel(source: Parcel?): EchoMediaItem {
-                return create<Lists.AlbumItem>(source)
-                    ?: create<Lists.PlaylistItem>(source)
-                    ?: create<TrackItem>(source)
-                    ?: create<Profile.ArtistItem>(source)
-                    ?: create<Profile.UserItem>(source)
-                    ?: throw IllegalArgumentException("Unknown parcelable type")
-            }
-
-            override fun newArray(size: Int): Array<EchoMediaItem?> {
-                return arrayOfNulls(size)
-            }
-
-        }
+//        val creator = object : Parcelable.Creator<EchoMediaItem> {
+//
+//            inline fun <reified T : Parcelable> create(source: Parcel?) = runCatching {
+//                parcelableCreator<T>().createFromParcel(source)!!
+//            }.getOrNull()
+//
+//            override fun createFromParcel(source: Parcel?): EchoMediaItem {
+//                return create<Lists.AlbumItem>(source)
+//                    ?: create<Lists.PlaylistItem>(source)
+//                    ?: create<TrackItem>(source)
+//                    ?: create<Profile.ArtistItem>(source)
+//                    ?: create<Profile.UserItem>(source)
+//                    ?: throw IllegalArgumentException("Unknown parcelable type")
+//            }
+//
+//            override fun newArray(size: Int): Array<EchoMediaItem?> {
+//                return arrayOfNulls(size)
+//            }
+//
+//        }
     }
 
     fun toMediaItemsContainer() = MediaItemsContainer.Item(

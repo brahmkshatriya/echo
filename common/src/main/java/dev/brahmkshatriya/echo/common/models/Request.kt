@@ -1,13 +1,13 @@
 package dev.brahmkshatriya.echo.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+import java.io.Serializable as JSerializable
 
-@Parcelize
+@Serializable
 data class Request(
     val url: String,
     val headers: Map<String, String> = emptyMap()
-) : Parcelable {
+) : JSerializable {
     companion object {
         fun String.toRequest(headers: Map<String, String> = emptyMap()): Request {
             return Request(this, headers)
