@@ -31,7 +31,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.utils.getParcel
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -91,7 +91,7 @@ class PlayerSessionCallback(
     private fun radio(player: Player, args: Bundle) = scope.future {
         val error = SessionResult(SessionResult.RESULT_ERROR_UNKNOWN)
         val clientId = args.getString("clientId") ?: return@future error
-        val item = args.getParcel<EchoMediaItem>("item") ?: return@future error
+        val item = args.getSerialized<EchoMediaItem>("item") ?: return@future error
         radioFlow.value = Radio.State.Loading
         val loaded = Radio.start(
             context, messageFlow, throwableFlow, extensionList, clientId, item, 0

@@ -45,10 +45,12 @@ import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.configure
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getParcel
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
@@ -65,14 +67,14 @@ class ItemFragment : Fragment() {
         fun newInstance(clientId: String, item: EchoMediaItem) = ItemFragment().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
-                putParcelable("item", item)
+                putSerialized("item", item)
             }
         }
     }
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val item by lazy { args.getParcel<EchoMediaItem>("item")!! }
+    private val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
 
     private var binding by autoCleared<FragmentItemBinding>()
     private val viewModel by viewModels<ItemViewModel>()

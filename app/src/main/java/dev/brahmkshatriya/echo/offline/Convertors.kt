@@ -1,12 +1,11 @@
 package dev.brahmkshatriya.echo.offline
 
-import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toUriImageHolder
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -25,7 +24,7 @@ fun MediaItem.toTrack() = mediaMetadata.run {
         title.toString(),
         artists,
         album,
-        artworkUri.toString().toUri().toImageHolder(),
+        artworkUri.toString().toUriImageHolder(),
         extras?.getLong("Duration"),
         null,
         releaseYear.toString(),
@@ -39,7 +38,7 @@ fun MediaItem.toTrack() = mediaMetadata.run {
 fun MediaStoreUtils.MAlbum.toAlbum() = Album(
     id.toString(),
     title ?: "Unknown",
-    cover.toString().toUri().toImageHolder(),
+    cover.toString().toUriImageHolder(),
     artists.map { it.toArtist() },
     songList.size,
     albumYear?.toString()

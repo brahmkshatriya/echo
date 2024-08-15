@@ -30,9 +30,10 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.getParcel
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
@@ -46,7 +47,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         ) = ItemBottomSheet().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
-                putParcelable("item", item)
+                putSerialized("item", item)
                 putBoolean("loaded", loaded)
                 putBoolean("fromPlayer", fromPlayer)
             }
@@ -61,7 +62,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val item by lazy { args.getParcel<EchoMediaItem>("item")!! }
+    private val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
     private val loaded by lazy { args.getBoolean("loaded") }
     private val extension by lazy { playerViewModel.extensionListFlow.getExtension(clientId) }

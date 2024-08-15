@@ -27,10 +27,10 @@ import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.
 import dev.brahmkshatriya.echo.ui.player.PlaylistAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
-import dev.brahmkshatriya.echo.utils.getParcel
-import dev.brahmkshatriya.echo.utils.getParcelArray
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
@@ -48,7 +48,7 @@ class EditPlaylistFragment : Fragment() {
             return EditPlaylistFragment().apply {
                 arguments = Bundle().apply {
                     putString("clientId", client)
-                    putParcelable("playlist", playlist)
+                    putSerialized("playlist", playlist)
                 }
             }
         }
@@ -56,7 +56,7 @@ class EditPlaylistFragment : Fragment() {
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val playlist by lazy { args.getParcel<Playlist>("playlist")!! }
+    private val playlist by lazy { args.getSerialized<Playlist>("playlist")!! }
     var binding by autoCleared<FragmentEditPlaylistBinding>()
     val viewModel by activityViewModels<EditPlaylistViewModel>()
 
@@ -144,7 +144,7 @@ class EditPlaylistFragment : Fragment() {
             "searchedTracks",
             viewLifecycleOwner
         ) { _, bundle ->
-            val tracks = bundle.getParcelArray<Track>("tracks")!!.toMutableList()
+            val tracks = bundle.getSerialized<List<Track>>("tracks")!!.toMutableList()
             viewModel.edit(Add(viewModel.currentTracks.value?.size ?: 0, tracks))
             backCallback.isEnabled = true
         }

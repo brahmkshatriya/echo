@@ -31,7 +31,7 @@ sealed class DownloadItem {
             context: Context, extensionList: MutableStateFlow<List<MusicExtension>?>
         ): DownloadItem? {
             val extension = extensionList.getExtension(clientId) ?: return null
-            val item = context.getFromCache(itemId, Track.creator, "downloads")?.toMediaItem()
+            val item = context.getFromCache<Track>(itemId, "downloads")?.toMediaItem()
                 ?: return null
             return Single(
                 id = id,

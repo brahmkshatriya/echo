@@ -21,6 +21,6 @@ class MusicExtensionRepo(
 
     override fun getAllPlugins() = pluginRepo.getAllPlugins()
         .injectSettings(ExtensionType.MUSIC, context)
-        .injectContext(context)
+//        .injectContext(context)
 }
 
