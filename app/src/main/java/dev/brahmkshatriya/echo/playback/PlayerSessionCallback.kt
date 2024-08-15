@@ -92,9 +92,12 @@ class PlayerSessionCallback(
         val error = SessionResult(SessionResult.RESULT_ERROR_UNKNOWN)
         val clientId = args.getString("clientId") ?: return@future error
         val item = args.getParcel<EchoMediaItem>("item") ?: return@future error
+        radioFlow.value = Radio.State.Loading
         val loaded = Radio.start(
-            context, messageFlow, throwableFlow, radioFlow, extensionList, clientId, item, 0
-        ) ?: return@future error
+            context, messageFlow, throwableFlow, extensionList, clientId, item, 0
+        )
+        radioFlow.value = loaded ?: Radio.State.Empty
+        if (loaded == null) return@future error
         val mediaItem = MediaItemUtils.build(
             settings, loaded.tracks[0], loaded.clientId, loaded.playlist.toMediaItem()
         )

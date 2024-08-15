@@ -148,7 +148,6 @@ class PlayerTrackAdapter(
         binding.playerControls.trackHeart.run {
             viewModel.isLiked.value = item.isLiked
             isChecked = item.isLiked
-            viewModel.likeListener.checked = item.isLiked
             val client = viewModel.extensionListFlow.getExtension(clientId)?.client
             val isLibrary = client is LibraryClient
             isVisible = isLibrary

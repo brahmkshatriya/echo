@@ -56,7 +56,6 @@ class Radio(
             context: Context,
             messageFlow: MutableSharedFlow<SnackBar.Message>,
             throwableFlow: MutableSharedFlow<Throwable>,
-            stateFlow: MutableStateFlow<State>,
             extensionListFlow: StateFlow<List<MusicExtension>?>,
             clientId: String,
             item: EchoMediaItem,
@@ -74,8 +73,6 @@ class Radio(
                 }
 
                 else -> {
-                    stateFlow.value = State.Loading
-
                     suspend fun <T> tryIO(block: suspend () -> T): T? =
                         withContext(Dispatchers.IO) {
                             tryWith(throwableFlow, extension.info) { block() }
@@ -107,10 +104,7 @@ class Radio(
                             )
                             null
                         }
-                        stateFlow.value = state ?: State.Empty
                         return state
-                    } else {
-                        stateFlow.value = State.Empty
                     }
                 }
             }
@@ -133,21 +127,23 @@ class Radio(
         val mediaItem = player.currentMediaItem ?: return
         val client = mediaItem.clientId
         val item = mediaItem.context ?: mediaItem.track.toMediaItem()
+        stateFlow.value = State.Loading
         scope.launch {
-            val loaded = start(
-                context, messageFlow, throwFlow, stateFlow, extensionList, client, item, 0
-            ) ?: return@launch
-            play(loaded, 0)
+            val loaded = start(context, messageFlow, throwFlow, extensionList, client, item, 0)
+            stateFlow.value = loaded ?: State.Empty
+            if (loaded != null) play(loaded, 0)
         }
     }
 
     private var autoStartRadio = true
+
     init {
         settings.registerOnSharedPreferenceChangeListener { pref, key ->
             if (key == AUTO_START_RADIO)
                 autoStartRadio = pref.getBoolean(AUTO_START_RADIO, true)
         }
     }
+
     private fun startRadio() {
         if (!autoStartRadio) return
         if (player.hasNextMediaItem() || player.currentMediaItem == null) return
