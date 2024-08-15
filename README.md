@@ -25,6 +25,12 @@ We would be very grateful if you could contribute to the development of this app
 
 <a href="https://hosted.weblate.org/engage/echo/"><img src="https://hosted.weblate.org/widget/echo/app/multi-auto.svg" alt="Translation status" /></a>
 
+## Credits
+A big thank you to everyone who has contributed to the development of Echo! Your efforts in improving the app are greatly appreciated.
+<a href="https://github.com/brahmkshatriya/echo/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=brahmkshatriya/echo" />
+</a>
+
 ## License
 
 Echo is licensed under the [GNU General Public License v3.0](LICENSE.md)
