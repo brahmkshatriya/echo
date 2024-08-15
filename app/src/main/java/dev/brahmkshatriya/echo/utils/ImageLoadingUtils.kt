@@ -99,7 +99,6 @@ private fun <T> createRequest(
     requestBuilder: RequestBuilder<T>,
 ) = imageHolder.run {
     when (this) {
-        is ImageHolder.BitmapImageHolder -> requestBuilder.load(bitmap)
         is ImageHolder.UriImageHolder -> requestBuilder.load(uri)
         is ImageHolder.UrlRequestImageHolder ->
             requestBuilder.load(GlideUrl(request.url) { request.headers })

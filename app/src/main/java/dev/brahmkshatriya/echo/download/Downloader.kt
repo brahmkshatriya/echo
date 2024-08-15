@@ -151,7 +151,7 @@ class Downloader(
         client as TrackClient
         val info = extension.info
         val track =
-            context.getFromCache(download.itemId, Track.creator, "downloads")
+            context.getFromCache<Track>(download.itemId, "downloads")
                 ?: return@withContext
         context.enqueueDownload(info, client, track)
     }

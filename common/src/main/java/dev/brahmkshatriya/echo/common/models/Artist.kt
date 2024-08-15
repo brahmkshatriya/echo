@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.models
 
 import kotlinx.serialization.Serializable
-import java.io.Serializable as JSerializable
 
 @Serializable
 data class Artist(
@@ -13,4 +12,4 @@ data class Artist(
     val description: String? = null,
     val followers: Int? = null,
     val isFollowing : Boolean = false,
-) : JSerializable
+)

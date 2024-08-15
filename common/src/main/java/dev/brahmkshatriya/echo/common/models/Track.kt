@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.models
 
 import kotlinx.serialization.Serializable
-import java.io.Serializable as JSerializable
 
 @Serializable
 data class Track(
@@ -18,9 +17,4 @@ data class Track(
     val videoStreamable: List<Streamable> = listOf(),
     val audioStreamables: List<Streamable> = listOf(),
     val expiresAt: Long = 0,
-) : JSerializable {
-
-//    companion object {
-//        val creator = parcelableCreator<Track>()
-//    }
-}
+)

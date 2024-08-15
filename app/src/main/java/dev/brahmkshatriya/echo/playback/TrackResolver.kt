@@ -82,7 +82,7 @@ class TrackResolver(
     }
 
     private fun getTrackFromCache(id: String): Track? {
-        val track = context.getFromCache(id, Track.creator) ?: return null
+        val track = context.getFromCache<Track>(id) ?: return null
         return if (!track.isExpired()) track else null
     }
 

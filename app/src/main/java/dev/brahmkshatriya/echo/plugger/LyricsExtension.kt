@@ -22,5 +22,5 @@ class LyricsExtensionRepo(
 ) : PluginRepo<ExtensionMetadata, LyricsClient> {
     override fun getAllPlugins() = pluginRepo.getAllPlugins()
         .injectSettings(ExtensionType.LYRICS, context)
-        .injectContext(context)
+//        .injectContext(context)
 }

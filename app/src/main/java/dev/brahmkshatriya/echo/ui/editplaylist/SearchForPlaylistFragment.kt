@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.ui.search.SearchFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
@@ -103,7 +104,7 @@ class SearchForPlaylistFragment : Fragment() {
 
         binding.addTracks.setOnClickListener {
             parentFragmentManager.setFragmentResult("searchedTracks", Bundle().apply {
-                putParcelableArray("tracks", viewModel.selectedTracks.value.toTypedArray())
+                putSerialized("tracks", viewModel.selectedTracks.value)
             })
             viewModel.selectedTracks.value = emptyList()
             parentFragmentManager.popBackStack()
@@ -123,7 +124,6 @@ class SearchForPlaylistFragment : Fragment() {
         fun newInstance(clientId: String, playlist: Playlist) = SearchForPlaylistFragment().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
-                putParcelable("playlist", playlist)
             }
         }
     }

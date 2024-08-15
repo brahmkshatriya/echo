@@ -20,5 +20,5 @@ class TrackerExtensionRepo(
 ) : PluginRepo<ExtensionMetadata, TrackerClient> {
     override fun getAllPlugins() = pluginRepo.getAllPlugins()
         .injectSettings(ExtensionType.TRACKER, context)
-        .injectContext(context)
+//        .injectContext(context)
 }

@@ -42,7 +42,7 @@ class DownloadReceiver : BroadcastReceiver() {
                 withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) }
             } ?: return
             val track =
-                context.getFromCache(download.itemId, Track.creator, "downloads") ?: return
+                context.getFromCache<Track>(download.itemId, "downloads") ?: return
 
             val downloadManager =
                 context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager

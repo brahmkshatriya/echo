@@ -16,8 +16,9 @@ import dev.brahmkshatriya.echo.databinding.DialogAddToPlaylistBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.getParcel
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.putSerialized
 
 @AndroidEntryPoint
 class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
@@ -26,14 +27,14 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         fun newInstance(clientId: String, item: EchoMediaItem) = AddToPlaylistBottomSheet().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
-                putParcelable("item", item)
+                putSerialized("item", item)
             }
         }
     }
 
     private val args by lazy { requireArguments() }
     private val clientId by lazy { args.getString("clientId")!! }
-    private val item: EchoMediaItem by lazy { args.getParcel("item")!! }
+    private val item: EchoMediaItem by lazy { args.getSerialized("item")!! }
 
     var binding by autoCleared<DialogAddToPlaylistBinding>()
     val viewModel by viewModels<AddToPlaylistViewModel>()

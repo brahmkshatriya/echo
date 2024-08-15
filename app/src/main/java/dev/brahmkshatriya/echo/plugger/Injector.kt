@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
-import dev.brahmkshatriya.echo.common.providers.ContextProvider
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.utils.mapState
 import kotlinx.coroutines.flow.StateFlow
@@ -26,17 +25,17 @@ inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<ExtensionMet
     }
 }
 
-inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<ExtensionMetadata, T>>>>.injectContext(
-    context: Context
-) = mapState { list ->
-    list.map {
-        runCatching {
-            it.getOrThrow().apply {
-                (second as? ContextProvider)?.setContext(context)
-            }
-        }
-    }
-}
+//inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<ExtensionMetadata, T>>>>.injectContext(
+//    context: Context
+//) = mapState { list ->
+//    list.map {
+//        runCatching {
+//            it.getOrThrow().apply {
+//                (second as? ContextProvider)?.setContext(context)
+//            }
+//        }
+//    }
+//}
 
 fun toSettings(prefs: SharedPreferences) = object : Settings {
     override fun getString(key: String) = prefs.getString(key, null)
