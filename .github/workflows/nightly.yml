@@ -32,7 +32,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew assembleDebug \
+          ./gradlew assembleRelease \
           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
           -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} \
           -Pandroid.injected.signing.key.alias=key0 \
