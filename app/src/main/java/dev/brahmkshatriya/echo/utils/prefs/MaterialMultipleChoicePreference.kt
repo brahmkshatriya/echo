@@ -48,6 +48,7 @@ class MaterialMultipleChoicePreference(context: Context) : MultiSelectListPrefer
             val index = entryValues.indexOf(v)
             if (index >= 0) entries.getOrNull(index).toString() else v
         } ?: context.getString(R.string.not_set)
-        summary = "$value : $entry\n\n$customSummary"
+        val sum = customSummary?.let { "\n\n$it" } ?: ""
+        summary = "$value : $entry$sum"
     }
 }
