@@ -12,7 +12,7 @@ jobs:
     env:
       VERSION: $( echo ${{ github.event.head_commit.id }} | cut -c1-7 )
       SED: "s/(.*) <.*@.*>/\\1/g;t"
-      COMMIT: $( sed -E "$SED" <<< "${{ github.event.head_commit.message }}" | jq -Rsa . | tail -c +2 | head -c -2 )
+      COMMIT: $( sed -E "${{ SED }}" <<< "${{ github.event.head_commit.message }}" | jq -Rsa . | tail -c +2 | head -c -2 )
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          path: app/build/${{ env.VERSION }}.apk
+          path: app/build/outputs/apk/release/app-release.apk
 
       - name: Upload APK to Discord
         shell: bash
