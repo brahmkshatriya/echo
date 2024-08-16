@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.prefs
 
 import android.graphics.Color
 import android.os.Bundle
@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.madrapps.pikolo.listeners.OnColorSelectionListener
 import dev.brahmkshatriya.echo.databinding.DialogColorPickerBinding
+import dev.brahmkshatriya.echo.utils.autoCleared
 import kotlin.random.Random
 
 class ColorPickerDialog : DialogFragment() {

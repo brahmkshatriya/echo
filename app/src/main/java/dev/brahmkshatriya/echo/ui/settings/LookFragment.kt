@@ -8,8 +8,8 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.EchoApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.utils.ColorListPreference
-import dev.brahmkshatriya.echo.utils.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.prefs.ColorListPreference
+import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.restartApp
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack

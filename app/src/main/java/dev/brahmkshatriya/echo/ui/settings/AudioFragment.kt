@@ -12,7 +12,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.utils.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 
 class AudioFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.audio)

@@ -22,9 +22,9 @@ import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.utils.MaterialListPreference
-import dev.brahmkshatriya.echo.utils.MaterialMultipleChoicePreference
-import dev.brahmkshatriya.echo.utils.MaterialTextInputPreference
+import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.prefs.MaterialMultipleChoicePreference
+import dev.brahmkshatriya.echo.utils.prefs.MaterialTextInputPreference
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionFragment : BaseSettingsFragment() {

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.prefs
 
 import android.content.Context
 import androidx.preference.ListPreference
@@ -30,6 +30,8 @@ class MaterialListPreference(context: Context) : ListPreference(context) {
     }
 
     private fun updateSummary() {
-        summary = "Value : $entry\n\n$customSummary"
+        val value = context.getString(R.string.value)
+        val entry = entry ?: context.getString(R.string.not_set)
+        summary = "$value : $entry\n\n$customSummary"
     }
 }
