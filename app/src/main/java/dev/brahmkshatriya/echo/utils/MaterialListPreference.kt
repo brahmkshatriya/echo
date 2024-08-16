@@ -7,8 +7,11 @@ import dev.brahmkshatriya.echo.R
 
 class MaterialListPreference(context: Context) : ListPreference(context) {
 
+    private var customSummary: CharSequence? = null
+
     override fun onSetInitialValue(defaultValue: Any?) {
         super.onSetInitialValue(defaultValue)
+        customSummary = summary
         updateSummary()
     }
 
@@ -27,6 +30,6 @@ class MaterialListPreference(context: Context) : ListPreference(context) {
     }
 
     private fun updateSummary() {
-        summary = entry
+        summary = "Value : $entry\n\n$customSummary"
     }
 }

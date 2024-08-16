@@ -140,6 +140,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                     MaterialListPreference(preferenceGroup.context).also {
                         it.title = this.title
                         it.key = this.key
+                        it.summary = this.summary
                         defaultEntryIndex?.let { index ->
                             it.setDefaultValue(this.entryValues[index])
                         }
