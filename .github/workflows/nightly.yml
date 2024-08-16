@@ -37,12 +37,12 @@ jobs:
           -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} \
           -Pandroid.injected.signing.key.alias=key0 \
           -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
-          cp app/build/outputs/apk/debug/app-debug.apk app/build/${{ env.VERSION }}.apk
+          cp app/build/outputs/apk/release/app-release.apk app/build/${{ env.VERSION }}.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/${{ env.VERSION }}.apk
 
       - name: Upload APK to Discord
         shell: bash
