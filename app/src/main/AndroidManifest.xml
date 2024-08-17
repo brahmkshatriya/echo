@@ -31,6 +31,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true"
+        android:extractNativeLibs="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -84,7 +85,7 @@
             android:permission="android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+                <action android:name="dev.brahmkshatriya.echo.DOWNLOAD_COMPLETE" />
             </intent-filter>
         </receiver>
 

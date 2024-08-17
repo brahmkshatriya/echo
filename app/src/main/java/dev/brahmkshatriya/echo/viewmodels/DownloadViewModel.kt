@@ -36,7 +36,7 @@ class DownloadViewModel @Inject constructor(
     val downloads = MutableStateFlow<List<DownloadItem>>(emptyList())
     private val visibleGroups = mutableSetOf<String>()
     private val downloadEntities = MutableStateFlow<List<DownloadEntity>>(emptyList())
-    private val downloader = Downloader(extensionListFlow, throwableFlow, database)
+    private val downloader = Downloader(extensionListFlow, throwableFlow, database, application)
 
     init {
         viewModelScope.launch {
@@ -94,14 +94,14 @@ class DownloadViewModel @Inject constructor(
             if (downloading) {
                 downloader.resumeDownload(application, download.id)
             } else {
-                downloader.pauseDownload(application, download.id)
+                downloader.pauseDownload(download.id)
             }
         }
     }
 
     fun removeDownload(download: DownloadItem.Single) {
         viewModelScope.launch {
-            downloader.removeDownload(application, download.id)
+            downloader.removeDownload(download.id)
         }
     }
 

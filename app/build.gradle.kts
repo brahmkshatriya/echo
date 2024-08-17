@@ -79,9 +79,14 @@ dependencies {
     implementation("com.flaviofaria:kenburnsview:1.0.7")
 
     implementation("com.github.Kyant0:taglib:1.0.0-alpha17")
+    implementation("net.jthink:jaudiotagger:3.0.1")
 
     //TODO : use fetch instead of download manager
 //    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")
+    implementation("io.github.junkfood02.youtubedl-android:library:0.16.1")
+    implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.16.1")
+    implementation("io.reactivex.rxjava2:rxjava:2.2.21")
+    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     testImplementation("junit:junit:4.13.2")

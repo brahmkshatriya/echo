@@ -1,9 +1,12 @@
 package dev.brahmkshatriya.echo.download
 
-import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.os.Environment
-import androidx.core.net.toUri
+import com.yausername.ffmpeg.FFmpeg
+import com.yausername.youtubedl_android.YoutubeDL
+import com.yausername.youtubedl_android.YoutubeDLException
+import com.yausername.youtubedl_android.YoutubeDLRequest
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
@@ -20,18 +23,44 @@ import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Compani
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.Unit
 
 class Downloader(
     private val extensionList: MutableStateFlow<List<MusicExtension>?>,
     private val throwable: MutableSharedFlow<Throwable>,
     database: EchoDatabase,
+    private val context: Context
 ) {
     val dao = database.downloadDao()
+    private val compositeDisposable = CompositeDisposable()
+    private var downloading = false
+    private val processId = "MyDlProcess"
+
+    init {
+        // Pre-initialize YoutubeDL
+        try {
+            YoutubeDL.getInstance().init(context)
+            FFmpeg.getInstance().init(context)
+        } catch (e: YoutubeDLException) {
+            e.printStackTrace()
+        }
+    }
+
+    private val callback = object : Function3<Float, Long, String, Unit> {
+        override fun invoke(p1: Float, p2: Long, p3: String): Unit {
+            // You can update the UI here if needed
+            return Unit
+        }
+    }
 
     suspend fun <T> tryWith(info: ExtensionInfo, block: suspend () -> T) =
         tryWith(throwable, info, block)
@@ -82,6 +111,11 @@ class Downloader(
         small: Track,
         parent: EchoMediaItem.Lists? = null
     ) = withContext(Dispatchers.IO) {
+        if (downloading) {
+            println("Cannot start download. A download is already in progress.")
+            return@withContext
+        }
+
         val loaded = tryWith(info) { client.loadTrack(small) } ?: return@withContext
         val album = (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loaded.album?.let {
             (client as? AlbumClient)?.loadAlbum(it)
@@ -93,6 +127,7 @@ class Downloader(
             ?: throw Exception("No Stream Found")
         val audio = client.getStreamableAudio(stream)
         val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
+        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "${folder}/${track.title}")
 
         val id = when (audio) {
             is StreamableAudio.ByteStreamAudio -> {
@@ -101,46 +136,73 @@ class Downloader(
 
             is StreamableAudio.StreamableRequest -> {
                 val request = audio.request
-                val downloadRequest = DownloadManager.Request(request.url.toUri()).apply {
+                val downloadRequest = YoutubeDLRequest(request.url).apply {
+                    addOption("--no-mtime")
                     request.headers.forEach {
-                        addRequestHeader(it.key, it.value)
+                        addOption("--add-header", "${it.key}:${it.value}.")
                     }
-                    setTitle(track.title)
-                    setDescription(track.artists.joinToString(", ") { it.name })
-                    setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    downloadDirectoryFor(folder)
-                    setDestinationInExternalPublicDir(
-                        Environment.DIRECTORY_DOWNLOADS,
-                        "$folder/${track.title}"
-                    )
+                    // Simplified file name to avoid long filename error
+                    addOption("-o", file.absolutePath + ".%(ext)s")
+                    addOption("-x")
+                    //addOption("--audio-format", "mp3")
+                    // Options to manage speed and connections
+                    addOption("--limit-rate", "1000M") // Adjust as needed
+                    addOption("--http-chunk-size", "100M") // Adjust as needed
                 }
-                downloadManager().enqueue(downloadRequest)
+
+                showStart()
+
+                downloading = true
+
+                val id = downloadRequest.hashCode().toLong()
+                val disposable = Observable.fromCallable {
+                    YoutubeDL.getInstance().execute(downloadRequest, processId, callback)
+                }
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ response ->
+                        sendDownloadCompleteBroadcast(id)
+                        println("Download complete")
+                        println(response.out)
+                        downloading = false
+                    }, { e ->
+                        println("Failed to download: ${e.message}")
+                        downloading = false
+                    })
+
+                compositeDisposable.add(disposable)
+                id
             }
         }
 
-        dao.insertDownload(DownloadEntity(id, track.id, info.id, parent?.title))
+        dao.insertDownload(DownloadEntity(id, track.id, info.id, parent?.title, file.absolutePath  + ".mp3"))
         saveToCache(track.id, track, "downloads")
     }
 
-    private fun downloadDirectoryFor(folder: String?): File {
-        val directory = File("${Environment.DIRECTORY_DOWNLOADS}/$folder")
-        if (!directory.exists()) directory.mkdirs()
-        return directory
+    private fun sendDownloadCompleteBroadcast(downloadId: Long) {
+        val intent = Intent(context, DownloadReceiver::class.java).apply {
+            action = "dev.brahmkshatriya.echo.DOWNLOAD_COMPLETE"
+            putExtra("downloadId", downloadId)
+        }
+        context.sendBroadcast(intent)
     }
 
-    private fun Context.downloadManager() =
-        getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
-    suspend fun removeDownload(context: Context, downloadId: Long) {
-        context.downloadManager().remove(downloadId)
+
+    private fun showStart() {
+        // Update UI to show download start
+        println("Download started")
+    }
+
+    suspend fun removeDownload(downloadId: Long) {
         withContext(Dispatchers.IO) {
             dao.deleteDownload(downloadId)
         }
     }
 
-    fun pauseDownload(context: Context, downloadId: Long) {
+    fun pauseDownload(downloadId: Long) {
         println("pauseDownload: $downloadId")
-        context.downloadManager().remove(downloadId)
+        // Handle pausing download if supported by YoutubeDL
     }
 
     suspend fun resumeDownload(context: Context, downloadId: Long) = withContext(Dispatchers.IO) {
