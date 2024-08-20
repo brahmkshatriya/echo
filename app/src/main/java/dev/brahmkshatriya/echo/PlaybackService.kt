@@ -11,12 +11,12 @@ import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.playback.CustomMediaSourceFactory
 import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.playback.RenderersFactory
 import dev.brahmkshatriya.echo.playback.StreamableDataSource
 import dev.brahmkshatriya.echo.playback.TrackResolver
 import dev.brahmkshatriya.echo.playback.TrackingListener
+import dev.brahmkshatriya.echo.playback.VideoResolver
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
@@ -121,16 +122,21 @@ class PlaybackService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val streamableFactory = StreamableDataSource.Factory(this)
-        val cacheFactory = CacheDataSource
+        val audioCache = CacheDataSource
             .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(streamableFactory)
+            .setUpstreamDataSourceFactory(StreamableDataSource.Factory(this))
+
+        val videoCache = CacheDataSource
+            .Factory().setCache(cache)
+            .setUpstreamDataSourceFactory(VideoResolver.DS.Factory(this))
 
         val trackResolver = TrackResolver(this, extListFlow, settings)
-
-        val dataSourceFactory = ResolvingDataSource.Factory(cacheFactory, trackResolver)
-        val factory = DefaultMediaSourceFactory(this)
-            .setDataSourceFactory(dataSourceFactory)
+        val videoResolver = VideoResolver(trackResolver)
+        val factory = CustomMediaSourceFactory(this)
+            .setSourceFactory(
+                ResolvingDataSource.Factory(audioCache, trackResolver),
+                ResolvingDataSource.Factory(videoCache, videoResolver)
+            )
 
         ExoPlayer.Builder(this, factory)
             .setRenderersFactory(RenderersFactory(this))

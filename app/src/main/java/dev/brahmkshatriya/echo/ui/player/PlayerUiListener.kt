@@ -88,6 +88,7 @@ class PlayerUiListener(
     ) {
         updateNavigation()
         updateProgress()
+        viewModel.discontinuity.value = newPosition.positionMs
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {

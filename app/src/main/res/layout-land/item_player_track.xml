@@ -6,97 +6,111 @@
     android:layout_height="match_parent"
     android:background="@color/amoled_bg">
 
-    <com.flaviofaria.kenburnsview.KenBurnsView
-        android:id="@+id/bgImage"
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/bgVideo"
+        app:use_controller="false"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:src="@tools:sample/avatars[3]" />
+        android:layout_height="match_parent" />
 
-    <ImageView
-        android:id="@+id/bgGradient"
+    <FrameLayout
+        android:id="@+id/playerContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:importantForAccessibility="no"
-        app:srcCompat="@drawable/gradient_track"
-        app:tint="@color/amoled_bg" />
+        android:layout_height="match_parent">
 
-
-    <LinearLayout
-        android:id="@+id/expandedTrackCoverContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:baselineAligned="false"
-        android:clipToPadding="false"
-        android:orientation="horizontal"
-        android:padding="24dp">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="0dp"
+        <com.flaviofaria.kenburnsview.KenBurnsView
+            android:id="@+id/bgImage"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="-24dp"
-            android:layout_marginTop="-24dp"
-            android:layout_marginEnd="-4dp"
-            android:layout_marginBottom="-24dp"
-            android:layout_weight="1"
+            tools:src="@tools:sample/avatars[3]"
+            tools:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/bgGradient"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            app:srcCompat="@drawable/gradient_track"
+            app:tint="@color/amoled_bg" />
+
+        <LinearLayout
+            android:id="@+id/expandedTrackCoverContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
             android:clipToPadding="false"
-            android:paddingVertical="10dp"
-            android:paddingStart="24dp"
-            android:paddingEnd="36dp">
+            android:orientation="horizontal"
+            android:padding="24dp">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/expandedTrackCover"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:background="?attr/colorSurfaceContainerHigh"
-                android:elevation="2dp"
-                android:importantForAccessibility="no"
-                android:scaleType="fitCenter"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1,1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_max="@dimen/max_cover_size"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_max="@dimen/max_cover_size"
-                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
-                tools:ignore="ImageContrastCheck" />
+                android:layout_height="match_parent"
+                android:layout_marginStart="-24dp"
+                android:layout_marginTop="-24dp"
+                android:layout_marginEnd="-4dp"
+                android:layout_marginBottom="-24dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:paddingVertical="10dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="36dp">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/expandedTrackCover"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="?attr/colorSurfaceContainerHigh"
+                    android:elevation="2dp"
+                    android:importantForAccessibility="no"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintDimensionRatio="1,1"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHeight_max="@dimen/max_cover_size"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="@dimen/max_cover_size"
+                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
+                    tools:ignore="ImageContrastCheck" />
 
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="-24dp"
-            android:layout_marginTop="-24dp"
-            android:layout_marginEnd="-24dp"
-            android:layout_marginBottom="-24dp"
-            android:layout_weight="1">
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <FrameLayout
-                android:id="@+id/expandedContainer"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:padding="24dp"
-                tools:ignore="UselessParent">
+                android:layout_marginStart="-24dp"
+                android:layout_marginTop="-24dp"
+                android:layout_marginEnd="-24dp"
+                android:layout_marginBottom="-24dp"
+                android:layout_weight="1">
 
-                <com.google.android.material.appbar.MaterialToolbar
-                    android:id="@+id/expandedToolbar"
-                    style="@style/PlayerToolbarStyle" />
-
-                <include
-                    android:id="@+id/playerControls"
-                    layout="@layout/item_player_controls"
+                <FrameLayout
+                    android:id="@+id/expandedContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="-24dp"
-                    android:layout_marginEnd="-24dp" />
-            </FrameLayout>
-        </FrameLayout>
-    </LinearLayout>
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:padding="24dp"
+                    tools:ignore="UselessParent">
 
-    <include
-        android:id="@+id/collapsedContainer"
-        layout="@layout/item_player_collapsed" />
+                    <com.google.android.material.appbar.MaterialToolbar
+                        android:id="@+id/expandedToolbar"
+                        style="@style/PlayerToolbarStyle" />
+
+                    <include
+                        android:id="@+id/playerControls"
+                        layout="@layout/item_player_controls"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="-24dp"
+                        android:layout_marginEnd="-24dp" />
+                </FrameLayout>
+            </FrameLayout>
+        </LinearLayout>
+
+        <include
+            android:id="@+id/collapsedContainer"
+            layout="@layout/item_player_collapsed" />
+    </FrameLayout>
+
+
 </FrameLayout>

@@ -3,10 +3,13 @@ package dev.brahmkshatriya.echo.viewmodels
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.SharedPreferences
+import androidx.annotation.OptIn
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.ThumbRating
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.LibraryResult.RESULT_SUCCESS
 import androidx.media3.session.MediaBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +17,8 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.common.models.StreamableVideo
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
@@ -37,16 +42,18 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(UnstableApi::class)
 class PlayerViewModel @Inject constructor(
     val settings: SharedPreferences,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     val app: Application,
     val currentFlow: MutableStateFlow<Current?>,
     val radioStateFlow: MutableStateFlow<Radio.State>,
+    val cache: SimpleCache,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
-    private var browser: MediaBrowser? = null
+    var browser: MediaBrowser? = null
     private fun withBrowser(block: (MediaBrowser) -> Unit) {
         val browser = browser
         if (browser != null) viewModelScope.launch(Dispatchers.Main) {
@@ -180,7 +187,10 @@ class PlayerViewModel @Inject constructor(
 
     fun radio(clientId: String, item: EchoMediaItem) {
         withBrowser {
-            it.sendCustomCommand(radioCommand, bundleOf("clientId" to clientId, "item" to item.toJson()))
+            it.sendCustomCommand(
+                radioCommand,
+                bundleOf("clientId" to clientId, "item" to item.toJson())
+            )
         }
     }
 
@@ -239,6 +249,7 @@ class PlayerViewModel @Inject constructor(
 
     val isLiked = MutableStateFlow(false)
     val progress = MutableStateFlow(0 to 0)
+    val discontinuity = MutableStateFlow(0L)
     val totalDuration = MutableStateFlow<Int?>(null)
 
     val buffering = MutableStateFlow(false)

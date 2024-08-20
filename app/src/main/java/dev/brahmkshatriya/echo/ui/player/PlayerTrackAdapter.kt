@@ -10,6 +10,7 @@ import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
@@ -20,6 +21,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import androidx.recyclerview.widget.DiffUtil
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -38,6 +42,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
+import dev.brahmkshatriya.echo.playback.VideoResolver
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
@@ -82,12 +88,12 @@ class PlayerTrackAdapter(
     override fun inflateCallback(inflater: LayoutInflater, container: ViewGroup?) =
         ItemPlayerTrackBinding.inflate(inflater, container, false)
 
+    @OptIn(UnstableApi::class)
     override fun Holder<MediaItem, ItemPlayerTrackBinding>.onBind(position: Int) {
         val item = getItem(position) ?: return
         val clientId = item.clientId
 
         binding.applyTrackDetails(clientId, item)
-
 
         lifecycleScope.launch {
             val bitmap = item.track.cover?.loadBitmap(binding.root.context)
@@ -287,6 +293,38 @@ class PlayerTrackAdapter(
             viewModel.repeatEnabled = false
             changeRepeatDrawable(it)
             viewModel.repeatEnabled = true
+        }
+
+        //VIDEO STUFF
+        binding.bgVideo.apply {
+            println("bgVideo : ${item.video}")
+            val video = item.video
+            isVisible = video != null
+            binding.bgImage.isVisible = !isVisible
+
+            if (video != null) {
+                binding.expandedTrackCover.setOnClickListener {
+                    binding.playerContainer.isVisible = false
+                }
+                setOnClickListener {
+                    binding.playerContainer.isVisible = true
+                }
+                if (video.looping) {
+                    val player = VideoResolver.getPlayer(context, viewModel.cache, video)
+                    setPlayer(player)
+                } else {
+                    observe(viewModel.currentFlow) {
+                        val isCurrent = it?.index == bindingAdapterPosition
+                        if (!isCurrent) return@observe
+                        setPlayer(null)
+                        setPlayer(viewModel.browser)
+                    }
+                }
+                resizeMode = if(video.crop) RESIZE_MODE_ZOOM else RESIZE_MODE_FIT
+            } else {
+                binding.expandedTrackCover.setOnClickListener(null)
+                setOnClickListener(null)
+            }
         }
     }
 

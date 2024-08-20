@@ -7,10 +7,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.ThumbRating
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.StreamableVideo
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectStreamIndex
 import dev.brahmkshatriya.echo.utils.getSerialized
+import dev.brahmkshatriya.echo.utils.json
 import dev.brahmkshatriya.echo.utils.toJson
+import kotlinx.serialization.encodeToString
 
 object MediaItemUtils {
 
@@ -28,10 +31,10 @@ object MediaItemUtils {
         return item.build()
     }
 
-    fun build(settings: SharedPreferences?, mediaItem: MediaItem, track: Track): MediaItem =
+    fun build(settings: SharedPreferences?, mediaItem: MediaItem, track: Track, video: StreamableVideo?): MediaItem =
         with(mediaItem) {
             val item = buildUpon()
-            val metadata = track.toMetaData(settings, clientId, context, true)
+            val metadata = track.toMetaData(settings, clientId, context, true, video)
             item.setMediaMetadata(metadata)
             return item.build()
         }
@@ -41,7 +44,8 @@ object MediaItemUtils {
         clientId: String,
         context: EchoMediaItem?,
         loaded: Boolean = false,
-        audioStreamIndex: Int? = null
+        video: StreamableVideo? = null,
+        audioStreamIndex: Int? = null,
     ) = MediaMetadata.Builder()
         .setTitle(title)
         .setArtist(artists.joinToString(", ") { it.name })
@@ -54,7 +58,9 @@ object MediaItemUtils {
                 "clientId" to clientId,
                 "context" to context.toJson(),
                 "loaded" to loaded,
-                "audioStream" to selectStream(settings, loaded, audioStreamIndex)
+                "audioStream" to selectStream(settings, loaded, audioStreamIndex),
+                "videoStream" to null,
+                "video" to json.encodeToString(video)
             )
         )
 
@@ -76,13 +82,17 @@ object MediaItemUtils {
     val MediaMetadata.clientId get() = requireNotNull(extras?.getString("clientId"))
     val MediaMetadata.context get() = extras?.getSerialized<EchoMediaItem?>("context")
     val MediaMetadata.audioStreamIndex get() = extras?.getInt("audioStream") ?: -1
+    val MediaMetadata.videoStreamIndex get() = extras?.getInt("videoStream") ?: -1
     val MediaMetadata.isLiked get() = (userRating as? ThumbRating)?.isThumbsUp == true
+    val MediaMetadata.video get() = extras?.getSerialized<StreamableVideo>("video")
 
     val MediaItem.track get() = mediaMetadata.track
     val MediaItem.clientId get() = mediaMetadata.clientId
     val MediaItem.context get() = mediaMetadata.context
     val MediaItem.isLoaded get() = mediaMetadata.isLoaded
     val MediaItem.audioStreamIndex get() = mediaMetadata.audioStreamIndex
+    val MediaItem.videoStreamIndex get() = mediaMetadata.videoStreamIndex
+    val MediaItem.video get() = mediaMetadata.video
     val MediaItem.isLiked get() = mediaMetadata.isLiked
 
 }

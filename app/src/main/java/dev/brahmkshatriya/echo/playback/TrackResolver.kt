@@ -12,11 +12,13 @@ import androidx.media3.datasource.ResolvingDataSource.Resolver
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.StreamableVideo
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoStreamIndex
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.utils.getFromCache
@@ -34,6 +36,7 @@ class TrackResolver(
 ) : Resolver {
 
     lateinit var player: Player
+    var video: MutableStateFlow<VideoResolver.State> = MutableStateFlow(VideoResolver.State.Idle)
 
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
@@ -53,14 +56,22 @@ class TrackResolver(
             throw Exception(context.trackNotSupported(extension.metadata.name).message)
 
         val loadedTrack = if (!mediaItem.isLoaded) loadTrack(client, track) else track
-        val newMediaItem = MediaItemUtils.build(settings, mediaItem, loadedTrack)
+
+        video.value = VideoResolver.State.Loading
+        val streamableVideo = loadVideo(client, loadedTrack, mediaItem.videoStreamIndex).getOrElse {
+            video.value = VideoResolver.State.Idle
+            throw Exception(it)
+        }
+        video.value = VideoResolver.State.Loaded(streamableVideo)
+
+        val newMediaItem = MediaItemUtils.build(settings, mediaItem, loadedTrack, streamableVideo)
 
         runBlocking(Dispatchers.Main) {
             player.replaceMediaItem(index, newMediaItem)
         }
 
-        val streamable = loadAudio(client, newMediaItem).getOrElse { throw Exception(it) }
-        return dataSpec.copy(customData = streamable)
+        val streamableAudio = loadAudio(client, newMediaItem).getOrElse { throw Exception(it) }
+        return dataSpec.copy(customData = streamableAudio)
     }
 
     private fun loadTrack(client: TrackClient, track: Track): Track {
@@ -78,6 +89,15 @@ class TrackResolver(
         val streamable = streams[index]
         return runBlocking {
             runCatching { client.getStreamableAudio(streamable) }
+        }
+    }
+
+    private fun loadVideo(client: TrackClient, track: Track, index: Int): Result<StreamableVideo?> {
+        val streams = track.videoStreamable
+        val streamable =
+            streams.getOrNull(index) ?: streams.firstOrNull() ?: return Result.success(null)
+        return runBlocking {
+            runCatching { client.getStreamableVideo(streamable) }
         }
     }
 
