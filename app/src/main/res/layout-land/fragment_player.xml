@@ -10,6 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+<!--    <include layout="@layout/item_player_track" />-->
+
     <View
         android:id="@+id/playerOutline"
         style="@style/AppBarOutline"
@@ -30,6 +32,13 @@
             android:layout_marginStart="-24dp"
             android:layout_height="match_parent"
             android:layout_weight="1">
+
+<!--            <include-->
+<!--                android:layout_gravity="bottom"-->
+<!--                android:layout_marginBottom="-10dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_width="match_parent"-->
+<!--                layout="@layout/fragment_player_info" />-->
 
             <androidx.fragment.app.FragmentContainerView
                 android:name="dev.brahmkshatriya.echo.ui.player.PlayerInfoFragment"

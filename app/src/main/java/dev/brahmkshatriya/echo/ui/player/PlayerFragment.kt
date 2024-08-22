@@ -100,7 +100,9 @@ class PlayerFragment : Fragment() {
             adapter.submitList(list)
             val index = viewModel.currentFlow.value?.index ?: -1
             val smooth = abs(index - binding.viewPager.currentItem) <= 1
-            binding.viewPager.setCurrentItem(index, smooth)
+            binding.viewPager.post {
+                runCatching { binding.viewPager.setCurrentItem(index, smooth) }
+            }
         }
 
         observe(viewModel.listUpdateFlow) { update() }
@@ -108,6 +110,7 @@ class PlayerFragment : Fragment() {
 
         observe(uiViewModel.playerSheetState) {
             if (it == STATE_HIDDEN) viewModel.clearQueue()
+            if (it == STATE_COLLAPSED) emit(uiViewModel.playerBgVisibleState) { false }
         }
 
         observe(uiViewModel.playerSheetOffset) {
@@ -119,6 +122,8 @@ class PlayerFragment : Fragment() {
             binding.viewPager.isUserInputEnabled =
                 requireContext().isLandscape() || it == STATE_COLLAPSED
         }
+
+
     }
 
     private fun ViewPager2.registerOnUserPageChangeCallback(

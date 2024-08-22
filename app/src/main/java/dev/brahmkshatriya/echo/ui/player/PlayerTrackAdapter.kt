@@ -10,6 +10,7 @@ import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
@@ -34,6 +35,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
@@ -48,6 +50,7 @@ import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
+import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
@@ -57,6 +60,7 @@ import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -99,13 +103,18 @@ class PlayerTrackAdapter(
             val bitmap = item.track.cover?.loadBitmap(binding.root.context)
             val colors = binding.root.context.getPlayerColors(bitmap)
             binding.root.setBackgroundColor(colors.background)
+            binding.bgInfoSpace?.setBackgroundColor(colors.background)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
+            binding.bgInfoGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.expandedToolbar.run {
                 setTitleTextColor(colors.text)
                 setSubtitleTextColor(colors.text)
             }
             binding.collapsedContainer.applyColors(colors)
             binding.playerControls.applyColors(colors)
+
+            binding.bgInfoTitle.setTextColor(colors.text)
+            binding.bgInfoArtist.setTextColor(colors.text)
         }
 
         binding.collapsedContainer.root.setOnClickListener {
@@ -125,19 +134,49 @@ class PlayerTrackAdapter(
                 translationY = -height * offset
                 alpha = 1 - offset
             }
-
             binding.expandedTrackCoverContainer.alpha = offset
         }
 
+        observe(uiViewModel.playerBgVisibleState) {
+            binding.bgInfoContainer.animateVisibility(it)
+            if (uiViewModel.playerSheetState.value == BottomSheetBehavior.STATE_EXPANDED) {
+                binding.bgGradient.animateVisibility(!it)
+                binding.expandedTrackCoverContainer.animateVisibility(!it)
+            } else {
+                binding.bgGradient.animateVisibility(true)
+                binding.expandedTrackCoverContainer.isVisible = true
+            }
+        }
+
+        binding.bgImage.setOnClickListener {
+            emit(uiViewModel.playerBgVisibleState) { false }
+        }
+
+        binding.bgVideo.setOnClickListener {
+            emit(uiViewModel.playerBgVisibleState) { false }
+        }
+
+        binding.expandedTrackCover.setOnClickListener {
+            emit(uiViewModel.playerBgVisibleState) { true }
+        }
+
         observe(uiViewModel.infoSheetOffset) {
-            binding.expandedContainer.alpha = 1 - it
-            binding.expandedContainer.isVisible = it != 1f
+            if (uiViewModel.playerBgVisibleState.value) {
+                if (!binding.root.context.isLandscape())
+                    binding.bgInfoContainer.alpha = 1 - it
+            } else {
+                binding.expandedContainer.alpha = 1 - it
+                binding.expandedContainer.isVisible = it != 1f
+            }
         }
 
         observe(uiViewModel.systemInsets) {
             binding.expandedTrackCoverContainer.applyInsets(it, 24)
+            binding.bgInfoContent.applyInsets(it)
             binding.collapsedContainer.root.updatePaddingRelative(start = it.start, end = it.end)
         }
+
+
 
         fun <T> observeCurrent(
             flow: Flow<T>,
@@ -300,15 +339,8 @@ class PlayerTrackAdapter(
             println("bgVideo : ${item.video}")
             val video = item.video
             isVisible = video != null
-            binding.bgImage.isVisible = !isVisible
 
             if (video != null) {
-                binding.expandedTrackCover.setOnClickListener {
-                    binding.playerContainer.isVisible = false
-                }
-                setOnClickListener {
-                    binding.playerContainer.isVisible = true
-                }
                 if (video.looping) {
                     val player = VideoResolver.getPlayer(context, viewModel.cache, video)
                     setPlayer(player)
@@ -320,7 +352,7 @@ class PlayerTrackAdapter(
                         setPlayer(viewModel.browser)
                     }
                 }
-                resizeMode = if(video.crop) RESIZE_MODE_ZOOM else RESIZE_MODE_FIT
+                resizeMode = if (video.crop) RESIZE_MODE_ZOOM else RESIZE_MODE_FIT
             } else {
                 binding.expandedTrackCover.setOnClickListener(null)
                 setOnClickListener(null)
@@ -352,25 +384,9 @@ class PlayerTrackAdapter(
         }
 
         playerControls.run {
-            trackTitle.text = track.title
-            trackTitle.isSelected = true
-            trackTitle.setHorizontallyScrolling(true)
-            val artists = track.artists
-            val artistNames = artists.joinToString(", ") { it.name }
-            val spannableString = SpannableString(artistNames)
-
-            artists.forEach { artist ->
-                val start = artistNames.indexOf(artist.name)
-                val end = start + artist.name.length
-                val clickableSpan = PlayerItemSpan(
-                    root.context, client, artist.toMediaItem(), listener::onItemClicked
-                )
-                spannableString.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
-
-            trackArtist.text = spannableString
-            trackArtist.movementMethod = LinkMovementMethod.getInstance()
+            applyTitles(track, trackTitle, trackArtist, client, listener)
         }
+        applyTitles(track, bgInfoTitle, bgInfoArtist, client, listener)
 
         expandedToolbar.run {
             val itemContext = item.context
@@ -388,6 +404,30 @@ class PlayerTrackAdapter(
                 }
             }
         }
+    }
+
+    private fun applyTitles(
+        track: Track, trackTitle: TextView, trackArtist: TextView,
+        client: String, listener: Listener
+    ) {
+        trackTitle.text = track.title
+        trackTitle.isSelected = true
+        trackTitle.setHorizontallyScrolling(true)
+        val artists = track.artists
+        val artistNames = artists.joinToString(", ") { it.name }
+        val spannableString = SpannableString(artistNames)
+
+        artists.forEach { artist ->
+            val start = artistNames.indexOf(artist.name)
+            val end = start + artist.name.length
+            val clickableSpan = PlayerItemSpan(
+                trackArtist.context, client, artist.toMediaItem(), listener::onItemClicked
+            )
+            spannableString.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+        trackArtist.text = spannableString
+        trackArtist.movementMethod = LinkMovementMethod.getInstance()
     }
 
     private fun Context.getPlayerColors(bitmap: Bitmap?): PlayerColors {

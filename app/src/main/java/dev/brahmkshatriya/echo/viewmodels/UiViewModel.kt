@@ -117,6 +117,8 @@ class UiViewModel @Inject constructor(
         if (currentFlow.value == null) STATE_HIDDEN else STATE_COLLAPSED
     )
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
+    val playerBgVisibleState = MutableStateFlow(false)
+
     val changePlayerState = MutableSharedFlow<Int>()
     val changeInfoState = MutableSharedFlow<Int>()
 
