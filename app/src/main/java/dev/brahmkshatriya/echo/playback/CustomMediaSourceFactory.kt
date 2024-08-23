@@ -12,34 +12,48 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 
 @OptIn(UnstableApi::class)
-class CustomMediaSourceFactory(val context: Context) : MediaSource.Factory {
+class CustomMediaSourceFactory(
+    val context: Context,
+) : MediaSource.Factory {
+
     private val audioSource = DefaultMediaSourceFactory(context)
     private val videoSource = DefaultMediaSourceFactory(context)
 
-    override fun setDrmSessionManagerProvider(drmSessionManagerProvider: DrmSessionManagerProvider): MediaSource.Factory {
+    override fun setDrmSessionManagerProvider(
+        drmSessionManagerProvider: DrmSessionManagerProvider
+    ): MediaSource.Factory {
         audioSource.setDrmSessionManagerProvider(drmSessionManagerProvider)
         videoSource.setDrmSessionManagerProvider(drmSessionManagerProvider)
         return this
     }
 
-    override fun setLoadErrorHandlingPolicy(loadErrorHandlingPolicy: LoadErrorHandlingPolicy): MediaSource.Factory {
+    override fun setLoadErrorHandlingPolicy(
+        loadErrorHandlingPolicy: LoadErrorHandlingPolicy
+    ): MediaSource.Factory {
         audioSource.setLoadErrorHandlingPolicy(loadErrorHandlingPolicy)
         videoSource.setLoadErrorHandlingPolicy(loadErrorHandlingPolicy)
         return this
     }
 
-    fun setSourceFactory(a: DataSource.Factory, v: DataSource.Factory): CustomMediaSourceFactory {
-        audioSource.setDataSourceFactory(a)
-        videoSource.setDataSourceFactory(v)
+    fun setSourceFactory(
+        audioFactory: DataSource.Factory,
+        videoFactory: DataSource.Factory
+    ): CustomMediaSourceFactory {
+        audioSource.setDataSourceFactory(audioFactory)
+        videoSource.setDataSourceFactory(videoFactory)
         return this
     }
 
     override fun getSupportedTypes() = videoSource.supportedTypes
 
     override fun createMediaSource(mediaItem: MediaItem): MediaSource {
+        // I do not know if mediaItem will have video streams or not, yet.
+        // Only known, once the mediaItem is loaded.
         return MergingMediaSource(
+            true,
+            false,
             audioSource.createMediaSource(mediaItem),
-            videoSource.createMediaSource(mediaItem)
+//            videoSource.createMediaSource(mediaItem),
         )
     }
 }

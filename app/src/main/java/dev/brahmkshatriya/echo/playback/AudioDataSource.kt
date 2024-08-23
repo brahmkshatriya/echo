@@ -11,7 +11,7 @@ import dev.brahmkshatriya.echo.common.models.StreamableAudio
 import dev.brahmkshatriya.echo.playback.TrackResolver.Companion.copy
 
 @UnstableApi
-class StreamableDataSource(
+class AudioDataSource(
     private val defaultDataSourceFactory: DefaultDataSource.Factory,
     private val byteStreamDataSourceFactory: ByteStreamDataSource.Factory,
 ) : BaseDataSource(true) {
@@ -23,7 +23,7 @@ class StreamableDataSource(
         private val defaultDataSourceFactory = DefaultDataSource.Factory(context)
         private val byteStreamDataSourceFactory = ByteStreamDataSource.Factory()
         override fun createDataSource() =
-            StreamableDataSource(defaultDataSourceFactory, byteStreamDataSourceFactory)
+            AudioDataSource(defaultDataSourceFactory, byteStreamDataSourceFactory)
     }
 
     private var source: DataSource? = null

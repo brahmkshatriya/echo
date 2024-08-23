@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -110,7 +110,7 @@ class ExceptionFragment : Fragment() {
             is PlayerViewModel.PlayerException -> """
 Client Id : ${throwable.mediaItem?.clientId}
 Track : ${throwable.mediaItem?.track}
-Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioStreamIndex) }}
+Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioIndex) }}
 
 ${throwable.cause.stackTraceToString()}
 """.trimIndent()

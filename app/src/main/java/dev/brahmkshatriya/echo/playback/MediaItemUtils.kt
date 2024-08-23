@@ -11,9 +11,7 @@ import dev.brahmkshatriya.echo.common.models.StreamableVideo
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectStreamIndex
 import dev.brahmkshatriya.echo.utils.getSerialized
-import dev.brahmkshatriya.echo.utils.json
 import dev.brahmkshatriya.echo.utils.toJson
-import kotlinx.serialization.encodeToString
 
 object MediaItemUtils {
 
@@ -60,7 +58,7 @@ object MediaItemUtils {
                 "loaded" to loaded,
                 "audioStream" to selectStream(settings, loaded, audioStreamIndex),
                 "videoStream" to null,
-                "video" to json.encodeToString(video)
+                "video" to video?.toJson()
             )
         )
 
@@ -81,8 +79,8 @@ object MediaItemUtils {
     val MediaMetadata.track get() = requireNotNull(extras?.getSerialized<Track>("track"))
     val MediaMetadata.clientId get() = requireNotNull(extras?.getString("clientId"))
     val MediaMetadata.context get() = extras?.getSerialized<EchoMediaItem?>("context")
-    val MediaMetadata.audioStreamIndex get() = extras?.getInt("audioStream") ?: -1
-    val MediaMetadata.videoStreamIndex get() = extras?.getInt("videoStream") ?: -1
+    val MediaMetadata.audioIndex get() = extras?.getInt("audioStream") ?: -1
+    val MediaMetadata.videoIndex get() = extras?.getInt("videoStream") ?: -1
     val MediaMetadata.isLiked get() = (userRating as? ThumbRating)?.isThumbsUp == true
     val MediaMetadata.video get() = extras?.getSerialized<StreamableVideo>("video")
 
@@ -90,8 +88,8 @@ object MediaItemUtils {
     val MediaItem.clientId get() = mediaMetadata.clientId
     val MediaItem.context get() = mediaMetadata.context
     val MediaItem.isLoaded get() = mediaMetadata.isLoaded
-    val MediaItem.audioStreamIndex get() = mediaMetadata.audioStreamIndex
-    val MediaItem.videoStreamIndex get() = mediaMetadata.videoStreamIndex
+    val MediaItem.audioIndex get() = mediaMetadata.audioIndex
+    val MediaItem.videoIndex get() = mediaMetadata.videoIndex
     val MediaItem.video get() = mediaMetadata.video
     val MediaItem.isLiked get() = mediaMetadata.isLiked
 

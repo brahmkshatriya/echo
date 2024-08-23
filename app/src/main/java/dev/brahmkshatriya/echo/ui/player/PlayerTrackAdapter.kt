@@ -138,6 +138,7 @@ class PlayerTrackAdapter(
         }
 
         observe(uiViewModel.playerBgVisibleState) {
+            println("playerBgVisibleState: $it")
             binding.bgInfoContainer.animateVisibility(it)
             if (uiViewModel.playerSheetState.value == BottomSheetBehavior.STATE_EXPANDED) {
                 binding.bgGradient.animateVisibility(!it)
@@ -157,6 +158,7 @@ class PlayerTrackAdapter(
         }
 
         binding.expandedTrackCover.setOnClickListener {
+            println("expandedTrackCover clicked")
             emit(uiViewModel.playerBgVisibleState) { true }
         }
 

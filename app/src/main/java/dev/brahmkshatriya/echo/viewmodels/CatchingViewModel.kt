@@ -33,15 +33,16 @@ abstract class CatchingViewModel(
     ) = cachedIn(viewModelScope).catchWith(throwableFlow).collect(collector)
 
     companion object {
+        @Suppress("USELESS_CAST")
         suspend fun <T> tryWith(
             throwableFlow: MutableSharedFlow<Throwable>,
             info: ExtensionInfo,
             block: suspend () -> T
-        ) = try {
-            block()
-        } catch (e: Throwable) {
-            throwableFlow.emit(e.toAppException(info))
-            e.printStackTrace()
+        ) = runCatching {
+            block() as T
+        }.getOrElse {
+            throwableFlow.emit(it.toAppException(info))
+            it.printStackTrace()
             null
         }
     }

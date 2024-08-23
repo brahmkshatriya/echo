@@ -15,6 +15,7 @@ import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.playback.AudioDataSource
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.CustomMediaSourceFactory
 import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
@@ -22,9 +23,9 @@ import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.RenderersFactory
-import dev.brahmkshatriya.echo.playback.StreamableDataSource
 import dev.brahmkshatriya.echo.playback.TrackResolver
 import dev.brahmkshatriya.echo.playback.TrackingListener
+import dev.brahmkshatriya.echo.playback.VideoDataSource
 import dev.brahmkshatriya.echo.playback.VideoResolver
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
@@ -124,11 +125,11 @@ class PlaybackService : MediaLibraryService() {
 
         val audioCache = CacheDataSource
             .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(StreamableDataSource.Factory(this))
+            .setUpstreamDataSourceFactory(AudioDataSource.Factory(this))
 
         val videoCache = CacheDataSource
             .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(VideoResolver.DS.Factory(this))
+            .setUpstreamDataSourceFactory(VideoDataSource.Factory(this))
 
         val trackResolver = TrackResolver(this, extListFlow, settings)
         val videoResolver = VideoResolver(trackResolver)

@@ -3,13 +3,9 @@ package dev.brahmkshatriya.echo.playback
 import android.content.Context
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
-import androidx.media3.common.C.RESULT_END_OF_INPUT
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.BaseDataSource
-import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource.Resolver
 import androidx.media3.datasource.cache.CacheDataSource
@@ -25,52 +21,13 @@ class VideoResolver(
     private val trackResolver: TrackResolver,
 ) : Resolver {
 
-    @OptIn(UnstableApi::class)
-    class DS(val factory: DefaultDataSource.Factory) : BaseDataSource(true) {
-
-        class Factory(context: Context) : DataSource.Factory {
-            private val defaultDataSourceFactory = DefaultDataSource.Factory(context)
-            override fun createDataSource() = DS(defaultDataSourceFactory)
-        }
-
-        private var source: DataSource? = null
-
-        override fun getUri() = source?.uri
-
-        override fun read(buffer: ByteArray, offset: Int, length: Int) =
-            source?.read(buffer, offset, length) ?: RESULT_END_OF_INPUT
-
-        override fun close() {
-            source?.close()
-            source = null
-        }
-
-        override fun open(dataSpec: DataSpec): Long {
-            val video = dataSpec.customData as? StreamableVideo ?: return 0
-            val spec = video.request.run {
-                dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
-            }
-            val source = factory.createDataSource()
-            this.source = source
-            return source.open(spec)
-        }
-
-    }
-
-    sealed class State {
-        data object Idle : State()
-        data object Loading : State()
-        data class Loaded(val video: StreamableVideo?) : State()
-    }
-
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
+        println("dataSpec: ${dataSpec.uri}")
         val streamable = runBlocking {
-            val state = trackResolver.video.first { it is State.Loaded }
-            trackResolver.video.value = State.Idle
-            state as State.Loaded
-            state.video
+            trackResolver.video.first()
         }?.takeIf { !it.looping }
+        println("streamable: $streamable")
         return dataSpec.copy(
             customData = streamable,
         )
