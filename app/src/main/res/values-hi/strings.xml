@@ -183,4 +183,9 @@
     <string name="tracker">ट्रैकर</string>
     <string name="navbar_gradient">ग्रेडिएंट नेवबार</string>
     <string name="navbar_gradient_summary">नेवबार धीरे-धीरे पारदर्शी हो जाता है</string>
+    <string name="value">मान</string>
+    <string name="not_set">सेट नहीं किया गया</string>
+    <string name="language">भाषा</string>
+    <string name="system">सिस्टम</string>
+    <string name="language_summary">ऐप की भाषा, सिस्टम डिफ़ॉल्ट रूप से अंग्रेज़ी में होगा</string>
 </resources>
