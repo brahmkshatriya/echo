@@ -84,7 +84,7 @@
     <string name="playing_from">বাজি থকা স্থান</string>
     <string name="animations_summary">অতি অলপ নিকাশ বোধ কৰিছা নেকি? এইটো বন্ধ কৰিলে সহায় কৰিব পাৰে</string>
     <string name="seekbar">সিকবৰ</string>
-    <string name="shared_element_transitions">কভার আৰ্ট স্থানান্তৰণসমূহ</string>
+    <string name="shared_element_transitions">কভাৰ আৰ্ট স্থানান্তৰণসমূহ</string>
     <string name="shared_element_transitions_summary">কুল উপাদান স্থানান্তৰণসমূহ, এইটো কিয় বন্ধ কৰিবা?</string>
     <string name="restart">পুনৰ আৰম্ভ কৰক</string>
     <string name="equalizer">ইকুৱালাইজাৰ</string>
@@ -97,7 +97,7 @@
     <string name="password">পাছৱৰ্ড</string>
     <string name="select_an_account">এটা একাউণ্ট বাছনি কৰক</string>
     <string name="confirm">নিশ্চিত কৰক</string>
-    <string name="todo">TODO, এতিয়ালৈকে নিৰ্মাণ কৰা হোৱা নাই।</string>
+    <string name="todo">কৰিবলগীয়া কাম, এতিয়ালৈকে নিৰ্মাণ কৰা হোৱা নাই।</string>
     <string name="stream_quality">স্ট্ৰীম গুণমান</string>
     <string name="stream_quality_summary">স্ট্ৰীমৰ গুণমান বাছনি কৰক</string>
     <string name="no_user_found">কোনো ব্যৱহাৰকাৰী পোৱা নগ’ল</string>
@@ -127,7 +127,7 @@
     <string name="nothing_to_show">দেখুৱাবলৈ একো নাই</string>
     <string name="add_color">ৰং যোগ কৰক</string>
     <string name="custom_theme_color">নিজস্ব থিমৰ ৰং</string>
-    <string name="custom_theme_color_summary">চistem থিমৰ পরিবর্তে নিজস্ব থিমৰ ৰং ব্যৱহাৰ কৰক।</string>
+    <string name="custom_theme_color_summary">চিস্টেম থিমৰ পৰিবর্তে নিজস্ব থিমৰ ৰং ব্যৱহাৰ কৰক।</string>
     <string name="custom_colors">নিজস্ব ৰং</string>
     <string name="random">যিকোনো এটা</string>
     <string name="choose_a_color">এটা ৰং বাচক</string>
