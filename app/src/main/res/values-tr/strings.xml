@@ -192,4 +192,11 @@
     </string-array>
     <string name="ok">Tamam</string>
     <string name="radio_playlist_empty">Radyo listesi boş</string>
+    <string name="value">Değer</string>
+    <string name="not_set">Belirlenmedi</string>
+    <string name="language">Dil</string>
+    <string name="system">Sistem</string>
+    <string name="language_summary">Uygulamanın dili, Sistem seçeneği varsayılan olarak İngilizce olacaktır</string>
+    <string name="navbar_gradient">Gradyan Navigasyon Çubuğu</string>
+    <string name="navbar_gradient_summary">Navigasyon çubuğu gittikçe saydamlaşır</string>
 </resources>
