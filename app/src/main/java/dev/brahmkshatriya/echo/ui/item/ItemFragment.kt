@@ -180,9 +180,8 @@ class ItemFragment : Fragment() {
         )
 
         val artistHeaderAdapter = ArtistHeaderAdapter(object : ArtistHeaderAdapter.Listener {
-            override fun onSubscribeClicked(
-                artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter
-            ) = Unit
+            override fun onSubscribeClicked(artist: Artist, subscribe: Boolean) =
+                viewModel.subscribe(artist, subscribe)
 
             override fun onRadioClicked(artist: Artist) =
                 playerVM.radio(clientId, artist.toMediaItem())

@@ -108,7 +108,7 @@ class EchoApplication : Application() {
 
         //Extension Loading
         scope.launch {
-            getAllPlugins()
+            getAllPlugins(scope)
 
             //Inject User
             launch {
@@ -124,35 +124,27 @@ class EchoApplication : Application() {
             //Inject other extensions
             launch {
                 val combined = merge(
-                    extensionListFlow,
-                    trackerListFlow,
-                    lyricsListFlow
+                    extensionListFlow, trackerListFlow, lyricsListFlow
                 )
                 combined.collect { list ->
-                    val trackerClients =
-                        trackerListFlow.value?.filter { it.metadata.enabled }
-                            ?.map { it.metadata.id to it.client }.orEmpty()
-                    val lyricsClients =
-                        lyricsListFlow.value?.filter { it.metadata.enabled }
-                            ?.map { it.metadata.id to it.client }.orEmpty()
-                    val musicClients =
-                        extensionListFlow.value?.filter { it.metadata.enabled }
-                            ?.map { it.metadata.id to it.client }.orEmpty()
+                    val trackerClients = trackerListFlow.value?.filter { it.metadata.enabled }
+                        ?.map { it.metadata.id to it.client }.orEmpty()
+                    val lyricsClients = lyricsListFlow.value?.filter { it.metadata.enabled }
+                        ?.map { it.metadata.id to it.client }.orEmpty()
+                    val musicClients = extensionListFlow.value?.filter { it.metadata.enabled }
+                        ?.map { it.metadata.id to it.client }.orEmpty()
                     list?.forEach { extension ->
                         val info = extension.info
                         val client = extension.client
                         tryWith(throwableFlow, info) {
                             if (client is TrackerClientsProvider) client.injectClients(
-                                client.requiredTrackerClients,
-                                trackerClients
+                                client.requiredTrackerClients, trackerClients
                             ) { client.setTrackerClients(it) }
                             if (client is LyricsClientsProvider) client.injectClients(
-                                client.requiredLyricsClients,
-                                lyricsClients
+                                client.requiredLyricsClients, lyricsClients
                             ) { client.setLyricsClients(it) }
                             if (client is MusicClientsProvider) client.injectClients(
-                                client.requiredMusicClients,
-                                musicClients
+                                client.requiredMusicClients, musicClients
                             ) { client.setMusicClients(it) }
                         }
                     }
@@ -164,7 +156,7 @@ class EchoApplication : Application() {
         scope.launch {
             refresher.collect {
                 if (it) launch {
-                    getAllPlugins()
+                    getAllPlugins(scope)
                 }
             }
         }
@@ -183,11 +175,11 @@ class EchoApplication : Application() {
         }
     }
 
-    private suspend fun getAllPlugins() = coroutineScope {
+    private suspend fun getAllPlugins(scope: CoroutineScope) {
         val trackers = MutableStateFlow<Unit?>(null)
         val lyrics = MutableStateFlow<Unit?>(null)
         val music = MutableStateFlow<Unit?>(null)
-        launch {
+        scope.launch {
             trackerExtensionRepo.getPlugins(ExtensionType.TRACKER) { list ->
                 trackerListFlow.value = list.map { (metadata, client) ->
                     TrackerExtension(metadata, client)
@@ -196,8 +188,7 @@ class EchoApplication : Application() {
                 trackers.emit(Unit)
             }
         }
-
-        launch {
+        scope.launch {
             lyricsExtensionRepo.getPlugins(ExtensionType.LYRICS) { list ->
                 lyricsListFlow.value = list.map { (metadata, client) ->
                     LyricsExtension(metadata, client)
@@ -206,11 +197,10 @@ class EchoApplication : Application() {
                 lyrics.emit(Unit)
             }
         }
-
-        trackers.first { it != null }
         lyrics.first { it != null }
+        trackers.first { it != null }
 
-        launch {
+        scope.launch {
             musicExtensionRepo.getPlugins(ExtensionType.MUSIC) { list ->
                 val extensions = list.map { (metadata, client) ->
                     MusicExtension(metadata, client)
@@ -225,13 +215,11 @@ class EchoApplication : Application() {
                 music.emit(Unit)
             }
         }
-
         music.first { it != null }
     }
 
     private suspend fun <T> PluginRepo<ExtensionMetadata, T>.getPlugins(
-        type: ExtensionType,
-        collector: FlowCollector<List<Pair<ExtensionMetadata, T>>>
+        type: ExtensionType, collector: FlowCollector<List<Pair<ExtensionMetadata, T>>>
     ) = getAllPlugins().catchWith(throwableFlow).map { list ->
         list.mapNotNull { result ->
             val (metadata, client) = result.getOrElse {
@@ -246,15 +234,14 @@ class EchoApplication : Application() {
 
     private suspend fun List<Pair<ExtensionMetadata, ExtensionClient>>.setExtensions(
         type: ExtensionType
-    ) =
-        coroutineScope {
-            map {
-                async {
-                    val info = ExtensionInfo(it.first, type)
-                    setExtension(userDao, userFlow, throwableFlow, info, it.second)
-                }
-            }.awaitAll()
-        }
+    ) = coroutineScope {
+        map {
+            async {
+                val info = ExtensionInfo(it.first, type)
+                setExtension(userDao, userFlow, throwableFlow, info, it.second)
+            }
+        }.awaitAll()
+    }
 
     @Inject
     lateinit var database: EchoDatabase

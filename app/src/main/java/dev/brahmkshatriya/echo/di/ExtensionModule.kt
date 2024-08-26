@@ -34,7 +34,7 @@ class ExtensionModule {
 
     @Provides
     @Singleton
-    fun providesRefresher(): MutableSharedFlow<Boolean> = MutableStateFlow(true)
+    fun providesRefresher(): MutableSharedFlow<Boolean> = MutableStateFlow(false)
 
     private fun <T> getComposed(
         context: Context,

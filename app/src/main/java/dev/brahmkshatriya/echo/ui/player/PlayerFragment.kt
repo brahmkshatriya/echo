@@ -49,7 +49,7 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         setupPlayerInfoBehavior(uiViewModel, binding.playerInfoContainer)
-
+        println("Setting up player adapter")
         val adapter = PlayerTrackAdapter(this, object : PlayerTrackAdapter.Listener {
             override fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean) {
                 if (clientId == null) {
@@ -122,8 +122,6 @@ class PlayerFragment : Fragment() {
             binding.viewPager.isUserInputEnabled =
                 requireContext().isLandscape() || it == STATE_COLLAPSED
         }
-
-
     }
 
     private fun ViewPager2.registerOnUserPageChangeCallback(

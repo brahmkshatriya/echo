@@ -20,14 +20,13 @@ class ArtistHeaderAdapter(private val listener: Listener) :
             val binding: ItemArtistInfoBinding,
             val artist: Artist,
             listener: Listener,
-            adapter: ArtistHeaderAdapter,
         ) : ViewHolder(binding.root) {
             init {
                 binding.artistSubscribe.setOnClickListener {
-                    artist.let { it1 -> listener.onSubscribeClicked(it1, true, adapter) }
+                    artist.let { it1 -> listener.onSubscribeClicked(it1, true) }
                 }
                 binding.artistUnsubscribe.setOnClickListener {
-                    artist.let { it1 -> listener.onSubscribeClicked(it1, false, adapter) }
+                    artist.let { it1 -> listener.onSubscribeClicked(it1, false) }
                 }
                 binding.artistRadio.setOnClickListener {
                     artist.let { it1 -> listener.onRadioClicked(it1) }
@@ -39,27 +38,23 @@ class ArtistHeaderAdapter(private val listener: Listener) :
     }
 
     interface Listener {
-        fun onSubscribeClicked(artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter)
+        fun onSubscribeClicked(artist: Artist, subscribe: Boolean)
         fun onRadioClicked(artist: Artist)
     }
 
     override fun getItemViewType(position: Int) = if (_artist == null) 0 else 1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return if (viewType == 0) {
-            ViewHolder.ShimmerViewHolder(
-                SkeletonItemArtistInfoBinding.inflate(
-                    LayoutInflater.from(
-                        parent.context
-                    ), parent, false
-                )
-            )
-        } else {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == 0) ViewHolder.ShimmerViewHolder(
+            SkeletonItemArtistInfoBinding.inflate(inflater, parent, false)
+        )
+        else {
             val artist = _artist!!
             ViewHolder.Info(
-                ItemArtistInfoBinding.inflate(
-                    LayoutInflater.from(parent.context), parent, false
-                ), artist, listener, this
+                ItemArtistInfoBinding.inflate(inflater, parent, false),
+                artist,
+                listener
             )
         }
     }
@@ -74,9 +69,8 @@ class ArtistHeaderAdapter(private val listener: Listener) :
         val artist = holder.artist
 
         binding.artistSubtitle.isVisible = artist.followers?.let {
-            binding.artistSubtitle.text = binding.artistSubtitle.resources.getQuantityString(
-                R.plurals.number_followers, it, it
-            )
+            binding.artistSubtitle.text = binding.artistSubtitle.resources.
+                getQuantityString(R.plurals.number_followers, it, it)
             true
         } ?: false
 
@@ -110,8 +104,4 @@ class ArtistHeaderAdapter(private val listener: Listener) :
         notifyItemChanged(0)
     }
 
-    fun submitSubscribe(subscribe: Boolean) {
-        isSubscribed = subscribe
-        notifyItemChanged(0)
-    }
 }

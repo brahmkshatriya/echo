@@ -137,6 +137,7 @@ class PlayerTrackAdapter(
             binding.expandedTrackCoverContainer.alpha = offset
         }
 
+        println("onBind : ${item.track.title}")
         observe(uiViewModel.playerBgVisibleState) {
             println("playerBgVisibleState: $it")
             binding.bgInfoContainer.animateVisibility(it)

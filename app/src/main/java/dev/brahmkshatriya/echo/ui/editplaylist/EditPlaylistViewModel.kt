@@ -130,7 +130,7 @@ class EditPlaylistViewModel @Inject constructor(
         if (loading == true) return@launch
         loading = true
         loadingFlow.emit(true)
-        mergeActions(actions)
+//        mergeActions(actions)
         val newActions = actions.toList().takeIf { it.isNotEmpty() }
         if (newActions != null) {
             val tracks = originalList.toMutableList()

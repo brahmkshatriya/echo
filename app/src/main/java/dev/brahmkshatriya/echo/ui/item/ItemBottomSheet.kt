@@ -195,10 +195,10 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 if (client is ArtistFollowClient)
                     if (!item.artist.isFollowing)
                         ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
-                            createSnack("Not implemented")
+                            viewModel.subscribe(item.artist, false)
                         }
                     else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unfollow) {
-                        createSnack("Not implemented")
+                        viewModel.subscribe(item.artist, true)
                     }
                 else null
             )

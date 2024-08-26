@@ -9,12 +9,14 @@ import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
+import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
@@ -149,6 +151,15 @@ class ItemViewModel @Inject constructor(
                 songsFlow.value = null
                 val tracks = tryWith(it) { loadTracks(playlist) }
                 tracks?.toFlow()?.collectTo(songsFlow)
+            }
+        }
+    }
+
+    fun subscribe(artist: Artist, subscribe: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<ArtistFollowClient, Unit> {
+                tryWith(it) { if (subscribe) followArtist(artist) else unfollowArtist(artist) }
+                load()
             }
         }
     }
