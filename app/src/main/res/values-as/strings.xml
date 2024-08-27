@@ -183,4 +183,9 @@
     <string name="radio_playlist_empty">ৰেডিঅ\' প্লেলিষ্ট খালি</string>
     <string name="navbar_gradient">গ্ৰেডিয়েণ্ট নেভবাৰ</string>
     <string name="navbar_gradient_summary">নেভবাৰ অলপ অলপকৈ পৰিস্ফুট হৈ পৰে</string>
+    <string name="value">মান</string>
+    <string name="not_set">স্থাপন কৰা হোৱা নাই</string>
+    <string name="language">ভাষা</string>
+    <string name="system">চিস্টেম</string>
+    <string name="language_summary">এপ্‌টোৰ ভাষা, চিস্টেমে প্ৰতিৰূপভাৱে ইংৰাজী বাছনি কৰিব</string>
 </resources>
