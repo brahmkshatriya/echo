@@ -1,9 +1,7 @@
 package dev.brahmkshatriya.echo.ui.item
 
 import android.app.Application
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,7 +43,6 @@ class ItemViewModel @Inject constructor(
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
-    var loaded: EchoMediaItem? = null
     var extension: GenericExtension? = null
     var isRadioClient = false
     var isFollowClient = false
@@ -55,8 +52,7 @@ class ItemViewModel @Inject constructor(
 
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
-            loaded = null
-            itemFlow.emit(null)
+            itemFlow.value = null
             val mediaItem = when (val item = item!!) {
                 is EchoMediaItem.Lists.AlbumItem -> getClient<AlbumClient, EchoMediaItem> {
                     load(it, item.album, ::loadAlbum, ::getMediaItems)?.toMediaItem()
@@ -78,9 +74,7 @@ class ItemViewModel @Inject constructor(
                     load(it, item.track, ::loadTrack, ::getMediaItems)?.toMediaItem()
                 }
             }
-
-            loaded = mediaItem
-            itemFlow.emit(mediaItem)
+            itemFlow.value = mediaItem
         }
     }
 
@@ -131,11 +125,9 @@ class ItemViewModel @Inject constructor(
     }
 
     private val songsFlow = MutableStateFlow<PagingData<Track>?>(null)
-    val songsLiveData: LiveData<PagingData<Track>?> = liveData {
-        emitSource(songsFlow.asLiveData())
-    }
+    val songsLiveData = songsFlow.asLiveData()
 
-    fun loadAlbum(album: Album) {
+    fun loadAlbumTracks(album: Album) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<AlbumClient, Unit> {
                 songsFlow.value = null
@@ -145,7 +137,7 @@ class ItemViewModel @Inject constructor(
         }
     }
 
-    fun loadPlaylist(playlist: Playlist) {
+    fun loadPlaylistTracks(playlist: Playlist) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<PlaylistClient, Unit> {
                 songsFlow.value = null

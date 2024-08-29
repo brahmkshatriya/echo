@@ -109,7 +109,7 @@ class ItemFragment : Fragment() {
         binding.toolBar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.menu_more -> {
-                    val loaded = viewModel.loaded
+                    val loaded = viewModel.itemFlow.value
                     ItemBottomSheet.newInstance(
                         clientId,
                         loaded ?: item,
@@ -142,7 +142,7 @@ class ItemFragment : Fragment() {
             object : TrackAdapter.Listener {
                 override fun onClick(list: List<Track>, position: Int, view: View) {
                     if (listener is MediaClickListener) {
-                        when (val item = viewModel.loaded) {
+                        when (val item = viewModel.itemFlow.value) {
                             is EchoMediaItem.Lists -> playerVM.play(clientId, item, list, position)
                             else -> playerVM.play(clientId, null, list, position)
                         }
@@ -211,11 +211,13 @@ class ItemFragment : Fragment() {
         }
 
         parentFragmentManager.setFragmentResultListener("reload", this) { _, bundle ->
-            if (bundle.getString("id") == item.id) viewModel.load()
+            if (bundle.getString("id") == viewModel.itemFlow.value?.id)
+                viewModel.load()
         }
 
         parentFragmentManager.setFragmentResultListener("deleted", this) { _, bundle ->
-            if (bundle.getString("id") == item.id) parentFragmentManager.popBackStack()
+            if (bundle.getString("id") == viewModel.itemFlow.value?.id)
+                parentFragmentManager.popBackStack()
         }
 
 
@@ -228,19 +230,21 @@ class ItemFragment : Fragment() {
             it ?: return@collect
 
             //I have no idea why this doesn't update, if title already exists
-            binding.toolBar.title = it.title.trim()
+            binding.toolBar.post {
+                binding.toolBar.title = it.title.trim()
+            }
 
             it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
             with(viewModel) {
                 when (it) {
                     is AlbumItem -> {
                         albumHeaderAdapter.submit(it.album, isRadioClient)
-                        loadAlbum(it.album)
+                        loadAlbumTracks(it.album)
                     }
 
                     is PlaylistItem -> {
                         playlistHeaderAdapter.submit(it.playlist, isRadioClient)
-                        loadPlaylist(it.playlist)
+                        loadPlaylistTracks(it.playlist)
                     }
 
                     is ArtistItem ->

@@ -23,11 +23,9 @@ class VideoResolver(
 
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-        println("dataSpec: ${dataSpec.uri}")
         val streamable = runBlocking {
             trackResolver.video.first()
         }?.takeIf { !it.looping }
-        println("streamable: $streamable")
         return dataSpec.copy(
             customData = streamable,
         )

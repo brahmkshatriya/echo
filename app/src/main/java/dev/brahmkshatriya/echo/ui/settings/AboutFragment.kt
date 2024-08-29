@@ -77,7 +77,6 @@ class AboutFragment : BaseSettingsFragment() {
                 screen.addPreference(this)
             }
             preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener { pref, key ->
-                println(key)
                 if (key == "language") applyLocale(pref)
             }
         }

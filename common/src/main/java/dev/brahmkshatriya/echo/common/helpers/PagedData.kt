@@ -18,7 +18,6 @@ sealed class PagedData<T : Any> {
         }
 
         override fun clear() {
-            println("Clearing items")
             items.clear()
             loaded = false
         }

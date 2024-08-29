@@ -61,8 +61,8 @@ class ArtistHeaderAdapter(private val listener: Listener) :
 
     private var _artist: Artist? = null
     private var isSubscribed = false
-    private var _subscribe = false
-    private var _radio = false
+    private var _hasSubscribe = false
+    private var _hasRadio = false
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
@@ -87,20 +87,20 @@ class ArtistHeaderAdapter(private val listener: Listener) :
             }
         }
 
-        if (_subscribe) {
+        if (_hasSubscribe) {
             binding.artistSubscribe.isVisible = !isSubscribed
             binding.artistUnsubscribe.isVisible = isSubscribed
         } else {
             binding.artistSubscribe.isVisible = false
             binding.artistUnsubscribe.isVisible = false
         }
-        binding.artistRadio.isVisible = _radio
+        binding.artistRadio.isVisible = _hasRadio
     }
 
-    fun submit(artist: Artist, subscribe: Boolean, radio: Boolean) {
+    fun submit(artist: Artist, hasSubscribe: Boolean, hasRadio: Boolean) {
         _artist = artist
-        _subscribe = subscribe
-        _radio = radio
+        _hasSubscribe = hasSubscribe
+        _hasRadio = hasRadio
         notifyItemChanged(0)
     }
 

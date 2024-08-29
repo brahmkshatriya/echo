@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.playback.AudioDataSource
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.CustomMediaSourceFactory
+import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
@@ -67,6 +68,9 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var current: MutableStateFlow<Current?>
+
+    @Inject
+    lateinit var fftAudioProcessor: FFTAudioProcessor
 
     private var mediaLibrarySession: MediaLibrarySession? = null
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -140,7 +144,7 @@ class PlaybackService : MediaLibraryService() {
             )
 
         ExoPlayer.Builder(this, factory)
-            .setRenderersFactory(RenderersFactory(this))
+            .setRenderersFactory(RenderersFactory(this, fftAudioProcessor))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))

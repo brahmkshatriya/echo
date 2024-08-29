@@ -36,33 +36,39 @@
         app:tint="@color/amoled_bg"
         app:tintMode="src_in" />
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/bgInfoContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        tools:visibility="gone">
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <ImageView
-            android:id="@+id/bgInfoGradient"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="80dp"
-            android:importantForAccessibility="no"
-            app:srcCompat="@drawable/gradient_track_info"
-            app:tint="@color/amoled_bg"
-            app:tintMode="src_in" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="vertical">
+            <dev.brahmkshatriya.echo.utils.ExoVisualizer
+                android:id="@+id/bgVisualizer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ImageView
+                android:id="@+id/bgInfoGradient"
+                android:layout_width="match_parent"
+                android:layout_height="256sp"
+                android:layout_gravity="bottom"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/gradient_track_info"
+                app:tint="@color/amoled_bg"
+                app:tintMode="src_in" />
 
             <LinearLayout
                 android:id="@+id/bgInfoContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:orientation="vertical">
 
                 <TextView
@@ -90,15 +96,14 @@
                     android:textSize="16sp"
                     tools:text="@tools:sample/lorem/random" />
             </LinearLayout>
+        </FrameLayout>
 
-            <View
-                android:id="@+id/bgInfoSpace"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:background="@color/amoled_bg" />
-        </LinearLayout>
-
-    </FrameLayout>
+        <View
+            android:id="@+id/bgInfoSpace"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@color/amoled_bg" />
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/expandedContainer"

@@ -161,7 +161,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             val extensionType = uri.host
-            println(type)
             when (extensionType) {
                 "music" -> {
                     val extensionId = uri.pathSegments.firstOrNull()

@@ -137,7 +137,7 @@ class LyricsFragment : Fragment() {
         }
 
         observe(playerVM.progress) { updateLyrics(it.first.toLong()) }
-        observe(viewModel.loading) { binding.lyricsLoading.root.isVisible = it }
+        observe(viewModel.loading) { binding.lyricsLoading.isVisible = it }
         viewModel.initialize()
     }
 

@@ -10,10 +10,12 @@ import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,6 +31,8 @@ import androidx.recyclerview.widget.DiffUtil
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
@@ -51,6 +55,7 @@ import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerCol
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
 import dev.brahmkshatriya.echo.utils.animateVisibility
+import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
@@ -94,6 +99,8 @@ class PlayerTrackAdapter(
 
     @OptIn(UnstableApi::class)
     override fun Holder<MediaItem, ItemPlayerTrackBinding>.onBind(position: Int) {
+        binding.bgVisualizer.processor = viewModel.fftAudioProcessor
+
         val item = getItem(position) ?: return
         val clientId = item.clientId
 
@@ -103,7 +110,8 @@ class PlayerTrackAdapter(
             val bitmap = item.track.cover?.loadBitmap(binding.root.context)
             val colors = binding.root.context.getPlayerColors(bitmap)
             binding.root.setBackgroundColor(colors.background)
-            binding.bgInfoSpace?.setBackgroundColor(colors.background)
+            binding.bgInfoSpace.setBackgroundColor(colors.background)
+            binding.bgVisualizer.setColors(colors.accent)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.bgInfoGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.expandedToolbar.run {
@@ -115,13 +123,16 @@ class PlayerTrackAdapter(
 
             binding.bgInfoTitle.setTextColor(colors.text)
             binding.bgInfoArtist.setTextColor(colors.text)
+            Glide.with(binding.bgImage).load(bitmap)
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 4)))
+                .into(binding.bgImage)
         }
 
         binding.collapsedContainer.root.setOnClickListener {
-            emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_EXPANDED }
+            emit(uiViewModel.changePlayerState) { STATE_EXPANDED }
         }
         binding.expandedToolbar.setNavigationOnClickListener {
-            emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_COLLAPSED }
+            emit(uiViewModel.changePlayerState) { STATE_COLLAPSED }
         }
         binding.collapsedContainer.playerClose.setOnClickListener {
             emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_HIDDEN }
@@ -137,34 +148,42 @@ class PlayerTrackAdapter(
             binding.expandedTrackCoverContainer.alpha = offset
         }
 
-        println("onBind : ${item.track.title}")
         observe(uiViewModel.playerBgVisibleState) {
-            println("playerBgVisibleState: $it")
-            binding.bgInfoContainer.animateVisibility(it)
-            if (uiViewModel.playerSheetState.value == BottomSheetBehavior.STATE_EXPANDED) {
-                binding.bgGradient.animateVisibility(!it)
-                binding.expandedTrackCoverContainer.animateVisibility(!it)
+            val animate = viewModel.currentFlow.value?.index == bindingAdapterPosition
+            binding.bgInfoContainer.animateVisibility(it, animate)
+            if (uiViewModel.playerSheetState.value == STATE_EXPANDED) {
+                binding.bgGradient.animateVisibility(!it, animate)
+                binding.expandedTrackCoverContainer.animateVisibility(!it, animate)
             } else {
-                binding.bgGradient.animateVisibility(true)
+                binding.bgGradient.animateVisibility(true, animate)
                 binding.expandedTrackCoverContainer.isVisible = true
+            }
+            if (!it) {
+                binding.expandedContainer.alpha = 1f
+                binding.expandedContainer.isVisible = true
             }
         }
 
         binding.bgImage.setOnClickListener {
             emit(uiViewModel.playerBgVisibleState) { false }
+            if (uiViewModel.infoSheetState.value == STATE_EXPANDED)
+                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
         }
 
         binding.bgVideo.setOnClickListener {
             emit(uiViewModel.playerBgVisibleState) { false }
+            if (uiViewModel.infoSheetState.value == STATE_EXPANDED)
+                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
         }
 
         binding.expandedTrackCover.setOnClickListener {
-            println("expandedTrackCover clicked")
             emit(uiViewModel.playerBgVisibleState) { true }
         }
 
         observe(uiViewModel.infoSheetOffset) {
             if (uiViewModel.playerBgVisibleState.value) {
+                binding.bgGradient.isVisible = it != 0f
+                binding.bgGradient.alpha = it
                 if (!binding.root.context.isLandscape())
                     binding.bgInfoContainer.alpha = 1 - it
             } else {
@@ -175,23 +194,21 @@ class PlayerTrackAdapter(
 
         observe(uiViewModel.systemInsets) {
             binding.expandedTrackCoverContainer.applyInsets(it, 24)
-            binding.bgInfoContent.applyInsets(it)
+            binding.bgInfoContainer.applyInsets(it)
+            binding.bgInfoSpace.updateLayoutParams<MarginLayoutParams> {
+                val context = binding.bgInfoSpace.context
+                height = (if (context.isLandscape()) 0 else 64).dpToPx(context) + it.bottom
+                bottomMargin = -it.bottom
+            }
             binding.collapsedContainer.root.updatePaddingRelative(start = it.start, end = it.end)
         }
 
-
-
-        fun <T> observeCurrent(
-            flow: Flow<T>,
-            block: (T?) -> Unit
-        ) {
+        fun <T> observeCurrent(flow: Flow<T>, block: (T?) -> Unit) {
             observe(flow) {
-                if (viewModel.currentFlow.value?.index == bindingAdapterPosition)
-                    block(it)
+                if (viewModel.currentFlow.value?.index == bindingAdapterPosition) block(it)
                 else block(null)
             }
         }
-
 
         binding.playerControls.trackHeart.run {
             viewModel.isLiked.value = item.isLiked
@@ -210,8 +227,6 @@ class PlayerTrackAdapter(
             } else removeOnCheckedStateChangedListener(viewModel.likeListener)
         }
 
-
-
         binding.playerControls.seekBar.apply {
             addOnChangeListener { _, value, fromUser ->
                 if (fromUser)
@@ -223,6 +238,7 @@ class PlayerTrackAdapter(
                     viewModel.seekTo(slider.value.toLong())
             })
         }
+
         observeCurrent(viewModel.progress) {
             val (current, buffered) = it ?: (0 to 0)
             binding.collapsedContainer.run {
@@ -339,12 +355,11 @@ class PlayerTrackAdapter(
 
         //VIDEO STUFF
         binding.bgVideo.apply {
-            println("bgVideo : ${item.video}")
             val video = item.video
-            isVisible = video != null
-
+            isVisible = false
             if (video != null) {
                 if (video.looping) {
+                    isVisible = true
                     val player = VideoResolver.getPlayer(context, viewModel.cache, video)
                     setPlayer(player)
                 } else {
@@ -356,9 +371,6 @@ class PlayerTrackAdapter(
                     }
                 }
                 resizeMode = if (video.crop) RESIZE_MODE_ZOOM else RESIZE_MODE_FIT
-            } else {
-                binding.expandedTrackCover.setOnClickListener(null)
-                setOnClickListener(null)
             }
         }
     }
@@ -370,13 +382,6 @@ class PlayerTrackAdapter(
         val track = item.track
         track.cover.loadWith(expandedTrackCover) {
             collapsedContainer.collapsedTrackCover.load(it)
-            Glide.with(bgImage).load(it)
-                .apply(
-                    RequestOptions.bitmapTransform(
-                        BlurTransformation(2, 4)
-                    )
-                )
-                .into(bgImage)
         }
 
         collapsedContainer.run {

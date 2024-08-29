@@ -15,6 +15,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -69,4 +70,8 @@ class AppModule {
     @Provides
     @Singleton
     fun provideExtensionListFlow() = MutableStateFlow<Radio.State>(Radio.State.Empty)
+
+    @Provides
+    @Singleton
+    fun providesAudioProcessor() = FFTAudioProcessor()
 }

@@ -664,7 +664,6 @@ object MediaStoreUtils {
     }
 
     fun Context.removeSongFromPlaylist(playlistId: Long, index: Int) {
-        println("Removing : $index from $playlistId")
         contentResolver.delete(
             @Suppress("DEPRECATION")
             MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId),

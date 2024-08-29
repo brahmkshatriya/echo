@@ -26,7 +26,6 @@ abstract class LifeCycleListAdapter<TData : Any, TBindingType : ViewBinding>(
         viewType: Int
     ): Holder<TData, TBindingType> {
         val binding = inflateCallback(LayoutInflater.from(parent.context), parent)
-        println("onCreateViewHolder: $binding")
         val holder = Holder(binding) { onBind(it) }
         holder.lifecycleRegistry = LifecycleRegistry(holder)
         return holder

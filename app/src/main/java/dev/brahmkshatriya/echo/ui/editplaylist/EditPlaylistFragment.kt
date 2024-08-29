@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.core.view.updatePaddingRelative
@@ -25,6 +26,7 @@ import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Move
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Remove
 import dev.brahmkshatriya.echo.ui.player.PlaylistAdapter
+import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getSerialized
@@ -221,6 +223,7 @@ class EditPlaylistFragment : Fragment() {
 
         binding.recyclerView.adapter = ConcatAdapter(header, adapter)
         touchHelper.attachToRecyclerView(binding.recyclerView)
+        FastScrollerHelper.applyTo(binding.recyclerView)
 
         observe(viewModel.currentTracks) { tracks ->
             tracks?.let {
@@ -234,8 +237,6 @@ class EditPlaylistFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        parentFragmentManager.setFragmentResult("reload", Bundle().apply {
-            putString("id", playlist.id)
-        })
+        parentFragmentManager.setFragmentResult("reload", bundleOf("id" to playlist.id))
     }
 }

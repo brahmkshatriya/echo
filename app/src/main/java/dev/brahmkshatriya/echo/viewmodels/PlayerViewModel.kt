@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
 import dev.brahmkshatriya.echo.playback.Radio
@@ -48,6 +49,7 @@ class PlayerViewModel @Inject constructor(
     val currentFlow: MutableStateFlow<Current?>,
     val radioStateFlow: MutableStateFlow<Radio.State>,
     val cache: SimpleCache,
+    val fftAudioProcessor: FFTAudioProcessor,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 

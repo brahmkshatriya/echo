@@ -64,7 +64,6 @@ class TrackResolver(
     )
 
     private suspend fun resolve(mediaItem: MediaItem): Res {
-        println("resolving")
         val track = mediaItem.track
         val clientId = mediaItem.clientId
 
@@ -75,9 +74,7 @@ class TrackResolver(
         if (client !is TrackClient)
             throw Exception(context.trackNotSupported(extension.metadata.name).message)
 
-        println("loading track")
         val loadedTrack = if (!mediaItem.isLoaded) loadTrack(client, track) else track
-        println("loaded")
         val streamableVideo = loadVideo(client, loadedTrack, mediaItem.videoIndex)
 
         val newMediaItem = MediaItemUtils.build(settings, mediaItem, loadedTrack, streamableVideo)

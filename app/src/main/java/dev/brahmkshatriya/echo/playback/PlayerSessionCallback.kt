@@ -16,6 +16,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionResult.RESULT_SUCCESS
 import com.google.common.util.concurrent.Futures
@@ -88,8 +89,9 @@ class PlayerSessionCallback(
         }
     }
 
+    @OptIn(UnstableApi::class)
     private fun radio(player: Player, args: Bundle) = scope.future {
-        val error = SessionResult(SessionResult.RESULT_ERROR_UNKNOWN)
+        val error = SessionResult(SessionError.ERROR_UNKNOWN)
         val clientId = args.getString("clientId") ?: return@future error
         val item = args.getSerialized<EchoMediaItem>("item") ?: return@future error
         radioFlow.value = Radio.State.Loading
@@ -112,22 +114,22 @@ class PlayerSessionCallback(
         Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
     }
 
+    @OptIn(UnstableApi::class)
     override fun onSetRating(
         session: MediaSession, controller: MediaSession.ControllerInfo, rating: Rating
     ): ListenableFuture<SessionResult> {
         return if (rating !is ThumbRating) super.onSetRating(session, controller, rating)
         else scope.future {
-            val errorIO = SessionResult(SessionResult.RESULT_ERROR_IO)
+            val errorIO = SessionResult(SessionError.ERROR_IO)
             val item = session.player.currentMediaItem ?: return@future errorIO
             val client = extensionList.getExtension(item.clientId)?.client ?: return@future errorIO
             if (client !is LibraryClient) return@future errorIO
             val track = item.track
             val liked = withContext(Dispatchers.IO) {
-                println("likeTrack : ${track.title} : ${rating.isThumbsUp}")
                 runCatching { client.likeTrack(track, rating.isThumbsUp) }
             }.getOrElse {
                 return@future SessionResult(
-                    SessionResult.RESULT_ERROR_UNKNOWN, bundleOf("error" to it)
+                    SessionError.ERROR_UNKNOWN, bundleOf("error" to it)
                 )
             }
             val newItem = item.run {
