@@ -32,9 +32,7 @@ class AboutFragment : BaseSettingsFragment() {
             preferenceScreen = screen
 
             LongClickPreference(context).apply {
-                val version = context.packageManager
-                    .getPackageInfo(context.packageName, 0)
-                    .versionName
+                val version = context.appVersion()
                 title = getString(R.string.version)
                 summary = version
                 layoutResource = R.layout.preference
@@ -103,6 +101,10 @@ class AboutFragment : BaseSettingsFragment() {
                 else LocaleListCompat.forLanguageTags(value)
                 AppCompatDelegate.setApplicationLocales(locale)
             }
+
+            fun Context.appVersion(): String = packageManager
+                .getPackageInfo(packageName, 0)
+                .versionName
         }
     }
 }

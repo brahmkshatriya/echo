@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.ui.settings.AboutFragment.AboutPreference.Companion.appVersion
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerial
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -98,29 +99,30 @@ class ExceptionFragment : Fragment() {
                     is AppException.NotSupported ->
                         getString(R.string.is_not_supported, operation, extensionName)
 
-                    is AppException.Other -> cause.message ?: getString(R.string.error)
+                    is AppException.Other -> getTitle(cause)
                 }
             }
 
             else -> throwable.message ?: getString(R.string.error)
         }
 
-        @Suppress("UnusedReceiverParameter")
-        fun Context.getDetails(throwable: Throwable) = when (throwable) {
+        fun Context.getDetails(throwable: Throwable): String = when (throwable) {
             is PlayerViewModel.PlayerException -> """
 Client Id : ${throwable.mediaItem?.clientId}
 Track : ${throwable.mediaItem?.track}
 Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioIndex) }}
 
-${throwable.cause.stackTraceToString()}
+${getDetails(throwable.cause)}
 """.trimIndent()
 
             is AppException -> """
 Extension : ${throwable.extensionName}
 Id : ${throwable.extensionId}
 Type : ${throwable.extensionType}
+Version : ${throwable.extensionMetadata.version}
+App Version : ${appVersion()}
 
-${throwable.cause.stackTraceToString()}
+${getDetails(throwable.cause)}
 """.trimIndent()
 
             is ExceptionActivity.AppCrashException -> throwable.causedBy

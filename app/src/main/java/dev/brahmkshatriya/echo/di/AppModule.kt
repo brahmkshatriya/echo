@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
@@ -74,4 +75,8 @@ class AppModule {
     @Provides
     @Singleton
     fun providesAudioProcessor() = FFTAudioProcessor()
+
+    @Provides
+    @Singleton
+    fun providesCurrentMediaItem() = MutableStateFlow<MediaItem?>(null)
 }

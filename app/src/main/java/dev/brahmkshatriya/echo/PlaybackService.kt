@@ -6,28 +6,23 @@ import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.ResolvingDataSource
-import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
-import dev.brahmkshatriya.echo.playback.AudioDataSource
 import dev.brahmkshatriya.echo.playback.Current
-import dev.brahmkshatriya.echo.playback.CustomMediaSourceFactory
+import dev.brahmkshatriya.echo.playback.EchoMediaSourceFactory
 import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.RenderersFactory
-import dev.brahmkshatriya.echo.playback.TrackResolver
 import dev.brahmkshatriya.echo.playback.TrackingListener
-import dev.brahmkshatriya.echo.playback.VideoDataSource
-import dev.brahmkshatriya.echo.playback.VideoResolver
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
@@ -68,6 +63,9 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var current: MutableStateFlow<Current?>
+
+    @Inject
+    lateinit var internalCurrent: MutableStateFlow<MediaItem?>
 
     @Inject
     lateinit var fftAudioProcessor: FFTAudioProcessor
@@ -127,21 +125,9 @@ class PlaybackService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val audioCache = CacheDataSource
-            .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(AudioDataSource.Factory(this))
-
-        val videoCache = CacheDataSource
-            .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(VideoDataSource.Factory(this))
-
-        val trackResolver = TrackResolver(this, extListFlow, settings)
-        val videoResolver = VideoResolver(trackResolver)
-        val factory = CustomMediaSourceFactory(this)
-            .setSourceFactory(
-                ResolvingDataSource.Factory(audioCache, trackResolver),
-                ResolvingDataSource.Factory(videoCache, videoResolver)
-            )
+        val factory = EchoMediaSourceFactory(
+            cache, this, scope, extListFlow, settings, throwFlow
+        )
 
         ExoPlayer.Builder(this, factory)
             .setRenderersFactory(RenderersFactory(this, fftAudioProcessor))
@@ -150,7 +136,7 @@ class PlaybackService : MediaLibraryService() {
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
             .build()
-            .also { trackResolver.player = it }
+            .also { factory.setPlayer(it) }
     }
 
     override fun onDestroy() {

@@ -10,13 +10,13 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectStream
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectAudioStream
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
@@ -89,17 +89,15 @@ class Downloader(
         val track = loaded.copy(album = album)
 
         val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
-        val stream = selectStream(settings, track.audioStreamables)
+        val stream = selectAudioStream(settings, track.audioStreamables)
             ?: throw Exception("No Stream Found")
-        val audio = client.getStreamableAudio(stream)
+        require(stream.mimeType == Streamable.MimeType.Progressive)
+        val media = client.getStreamableMedia(stream) as Streamable.Media.AudioOnly
         val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
 
-        val id = when (audio) {
-            is StreamableAudio.ByteStreamAudio -> {
-                TODO("inputStream to file")
-            }
-
-            is StreamableAudio.StreamableRequest -> {
+        val id = when (val audio = media.audio) {
+            is Streamable.Audio.ByteStream -> TODO()
+            is Streamable.Audio.Http -> {
                 val request = audio.request
                 val downloadRequest = DownloadManager.Request(request.url.toUri()).apply {
                     request.headers.forEach {

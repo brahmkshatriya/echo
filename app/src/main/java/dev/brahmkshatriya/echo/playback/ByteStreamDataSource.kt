@@ -6,7 +6,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
-import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.Streamable
 import java.io.InputStream
 
 @OptIn(UnstableApi::class)
@@ -16,14 +16,13 @@ class ByteStreamDataSource : BaseDataSource(true) {
         override fun createDataSource() = ByteStreamDataSource()
     }
 
-
-    private var audio: StreamableAudio.ByteStreamAudio? = null
+    private var audio: Streamable.Audio.ByteStream? = null
 
     override fun read(buffer: ByteArray, offset: Int, length: Int) =
         audio!!.stream.read(buffer, offset, length)
 
     override fun open(dataSpec: DataSpec): Long {
-        val audio = dataSpec.customData as StreamableAudio.ByteStreamAudio
+        val audio = dataSpec.customData as Streamable.Audio.ByteStream
         val requestedPosition = dataSpec.position
         audio.stream.seek(requestedPosition)
         this.audio = audio

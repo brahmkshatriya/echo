@@ -30,8 +30,7 @@ fun MediaItem.toTrack() = mediaMetadata.run {
         releaseYear.toString(),
         liked,
         mapOf(),
-        listOf(),
-        listOf(Streamable(localConfiguration!!.uri.toString(), 0))
+        listOf(Streamable.audio(localConfiguration!!.uri.toString(), 0))
     )
 }
 

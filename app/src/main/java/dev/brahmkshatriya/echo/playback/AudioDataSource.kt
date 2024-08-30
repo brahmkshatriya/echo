@@ -7,8 +7,8 @@ import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
-import dev.brahmkshatriya.echo.common.models.StreamableAudio
-import dev.brahmkshatriya.echo.playback.TrackResolver.Companion.copy
+import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.playback.AudioResolver.Companion.copy
 
 @UnstableApi
 class AudioDataSource(
@@ -39,20 +39,20 @@ class AudioDataSource(
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        val audio = dataSpec.customData as? StreamableAudio
-            ?: throw Exception("No audio found")
+        val audio = dataSpec.customData as? Streamable.Audio
         val (source, spec) = when (audio) {
-            is StreamableAudio.ByteStreamAudio -> {
+            is Streamable.Audio.ByteStream -> {
                 val spec = dataSpec.copy(customData = audio)
                 byteStreamDataSourceFactory.createDataSource() to spec
             }
 
-            is StreamableAudio.StreamableRequest -> {
+            is Streamable.Audio.Http -> {
                 val spec = audio.request.run {
                     dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
                 }
                 defaultDataSourceFactory.createDataSource() to spec
             }
+            else -> defaultDataSourceFactory.createDataSource() to dataSpec
         }
         this.source = source
         return source.open(spec)

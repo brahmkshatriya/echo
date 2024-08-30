@@ -22,7 +22,8 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.StreamableAudio.Companion.toAudio
+import dev.brahmkshatriya.echo.common.models.Streamable.Audio.Companion.toAudio
+import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toMedia
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
@@ -139,8 +140,9 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     }
 
     override suspend fun loadTrack(track: Track) = track
-    override suspend fun getStreamableAudio(streamable: Streamable) = streamable.id.toAudio()
-    override suspend fun getStreamableVideo(streamable: Streamable) = throw IllegalAccessException()
+    override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
+        return streamable.id.toAudio().toMedia()
+    }
 
     override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> = PagedData.Single {
         listOfNotNull(

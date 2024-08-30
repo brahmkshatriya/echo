@@ -190,10 +190,13 @@
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
     <string name="value">Value</string>
-    <string name="not_set">Not Set</string>
+    <string name="not_set" tools:ignore="PrivateResource">Not Set</string>
     <string name="language">Language</string>
     <string name="system">System</string>
     <string name="language_summary">Language of the app, System will default to English</string>
+    <string name="video_quality">Video Quality</string>
+    <string name="video_quality_summary">Quality of the video, Video can also be disabled from here</string>
+    <string name="video_quality_none">None</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

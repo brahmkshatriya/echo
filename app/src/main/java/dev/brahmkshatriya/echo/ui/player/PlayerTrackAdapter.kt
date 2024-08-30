@@ -39,6 +39,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
@@ -356,10 +357,9 @@ class PlayerTrackAdapter(
         //VIDEO STUFF
         binding.bgVideo.apply {
             val video = item.video
-            isVisible = false
+            isVisible = video != null
             if (video != null) {
-                if (video.looping) {
-                    isVisible = true
+                if (video is Streamable.Media.WithVideo.Only && video.looping) {
                     val player = VideoResolver.getPlayer(context, viewModel.cache, video)
                     setPlayer(player)
                 } else {

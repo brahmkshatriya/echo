@@ -14,7 +14,16 @@ data class Track(
     val releaseDate: String? = null,
     val liked: Boolean = false,
     val extras: Map<String, String> = mapOf(),
-    val videoStreamable: List<Streamable> = listOf(),
-    val audioStreamables: List<Streamable> = listOf(),
+    val streamables: List<Streamable> = listOf(),
     val expiresAt: Long = 0,
-)
+) {
+    val audioStreamables: List<Streamable> by lazy {
+        streamables.filter { it.mediaType == Streamable.MediaType.Audio }
+    }
+    val videoStreamables: List<Streamable> by lazy {
+        mediaStreamables + streamables.filter { it.mediaType == Streamable.MediaType.Video }
+    }
+    val mediaStreamables: List<Streamable> by lazy {
+        streamables.filter { it.mediaType == Streamable.MediaType.AudioVideo }
+    }
+}

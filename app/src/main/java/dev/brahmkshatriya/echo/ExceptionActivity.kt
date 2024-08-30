@@ -11,6 +11,7 @@ import androidx.fragment.app.commit
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.ActivityExceptionBinding
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetails
 import dev.brahmkshatriya.echo.utils.restartApp
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
@@ -43,7 +44,7 @@ class ExceptionActivity : AppCompatActivity() {
     companion object {
         fun start(context: Context, exception: Throwable) {
             val intent = Intent(context, ExceptionActivity::class.java).apply {
-                putExtra("stackTrace", exception.stackTraceToString())
+                putExtra("stackTrace", context.getDetails(exception))
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
             context.startActivity(intent)

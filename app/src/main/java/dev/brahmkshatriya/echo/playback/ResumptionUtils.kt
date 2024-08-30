@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 
 object ResumptionUtils {
-    fun saveQueue(context: Context, currentIndex: Int, list: List<MediaItem>) {
+    fun saveQueue(context: Context, currentIndex: Int, list: List<MediaItem>) = runCatching {
         val tracks = list.map { it.track }
         val clients = list.map { it.clientId }
         val contexts = list.map { it.context }
@@ -33,7 +33,7 @@ object ResumptionUtils {
         val settings = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         val tracks = context.getFromCache<List<Track>>("queue_tracks", "queue")
         val clientIds = context.getFromCache<List<String>>("queue_clients", "queue")
-        val contexts = context.getFromCache<List<EchoMediaItem>>("queue_contexts",  "queue")
+        val contexts = context.getFromCache<List<EchoMediaItem>>("queue_contexts", "queue")
         return tracks?.mapIndexedNotNull { index, track ->
             val clientId = clientIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)

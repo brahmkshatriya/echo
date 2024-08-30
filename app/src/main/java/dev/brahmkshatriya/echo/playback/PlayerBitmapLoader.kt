@@ -9,8 +9,8 @@ import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.playback.DelayedSource.Companion.getMediaItemById
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.playback.TrackResolver.Companion.getMediaItemById
 import dev.brahmkshatriya.echo.utils.loadBitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
