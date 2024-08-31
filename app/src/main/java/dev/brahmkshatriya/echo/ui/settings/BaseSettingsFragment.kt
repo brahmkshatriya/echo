@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
+import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
@@ -33,9 +34,7 @@ abstract class BaseSettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsets {
-            binding.fragmentContainer.applyContentInsets(it)
-        }
+
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
@@ -47,6 +46,15 @@ abstract class BaseSettingsFragment : Fragment() {
         binding.title.title = title
         childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
             .commit()
+
+        view.post {
+            binding.fragmentContainer.getFragment<PreferenceFragmentCompat>().listView?.apply {
+                clipToPadding = false
+                applyInsets { applyContentInsets(it) }
+                isVerticalScrollBarEnabled = false
+                FastScrollerHelper.applyTo(this)
+            }
+        }
     }
 
 }
