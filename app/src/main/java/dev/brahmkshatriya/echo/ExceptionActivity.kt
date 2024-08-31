@@ -35,7 +35,12 @@ class ExceptionActivity : AppCompatActivity() {
         supportFragmentManager.commit {
             replace(
                 R.id.exceptionFragmentContainer,
-                ExceptionFragment.newInstance(AppCrashException(exception))
+                ExceptionFragment.newInstance(
+                    ExceptionFragment.ExceptionDetails(
+                        getString(R.string.app_crashed),
+                        exception
+                    )
+                )
             )
         }
         binding.restartApp.setOnClickListener { restartApp() }
@@ -50,6 +55,4 @@ class ExceptionActivity : AppCompatActivity() {
             context.startActivity(intent)
         }
     }
-
-    class AppCrashException(val causedBy: String) : Exception()
 }
