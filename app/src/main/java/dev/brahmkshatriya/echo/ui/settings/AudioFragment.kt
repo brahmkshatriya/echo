@@ -13,6 +13,7 @@ import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
 
 class AudioFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.audio)
@@ -106,6 +107,15 @@ class AudioFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
+                MaterialSliderPreference(context, 100, 1000, 100).apply {
+                    key = CACHE_SIZE
+                    title = getString(R.string.cache_size)
+                    summary = getString(R.string.cache_size_summary)
+                    isIconSpaceReserved = false
+                    setDefaultValue(200)
+                    addPreference(this)
+                }
+
                 Preference(context).apply {
                     key = EQUALIZER
                     title = getString(R.string.equalizer)
@@ -139,6 +149,7 @@ class AudioFragment : BaseSettingsFragment() {
 
             const val AUDIO_STREAM_QUALITY = "stream_quality"
             const val VIDEO_STREAM_QUALITY = "video_stream_quality"
+            const val CACHE_SIZE = "cache_size"
             val streamQualities = arrayOf("highest", "medium", "lowest")
             val videoQualities = arrayOf("highest", "medium", "lowest", "none")
 

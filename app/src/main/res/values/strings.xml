@@ -197,6 +197,8 @@
     <string name="video_quality">Video Quality</string>
     <string name="video_quality_summary">Quality of the video, Video can also be disabled from here</string>
     <string name="video_quality_none">None</string>
+    <string name="cache_size">Cache Size</string>
+    <string name="cache_size_summary">Size in MB to cache audio and video</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

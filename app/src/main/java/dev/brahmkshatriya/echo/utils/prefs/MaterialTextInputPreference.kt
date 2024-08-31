@@ -32,7 +32,7 @@ class MaterialTextInputPreference(context: Context) : EditTextPreference(context
             editText?.hint = summary
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val newText = editText?.text.toString()
+                val newText = editText?.text?.toString()
                 if (callChangeListener(newText)) {
                     text = newText
                     dialog.dismiss()

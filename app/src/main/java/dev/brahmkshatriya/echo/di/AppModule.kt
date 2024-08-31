@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.Radio
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CACHE_SIZE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,11 +56,12 @@ class AppModule {
     @Provides
     @Singleton
     @UnstableApi
-    fun provideCache(application: Application): SimpleCache {
+    fun provideCache(application: Application, settings: SharedPreferences): SimpleCache {
         val databaseProvider = StandaloneDatabaseProvider(application)
+        val cacheSize = settings.getInt(CACHE_SIZE, 200)
         return SimpleCache(
             File(application.cacheDir, "exoplayer"),
-            LeastRecentlyUsedCacheEvictor(100 * 1024 * 1024L),
+            LeastRecentlyUsedCacheEvictor(cacheSize * 1024 * 1024L),
             databaseProvider
         )
     }
