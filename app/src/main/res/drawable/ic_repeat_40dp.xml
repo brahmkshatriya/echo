@@ -1,0 +1,89 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+    <group android:name="group_1">
+        <path
+            android:name="middle2"
+            android:pathData="M 9.7 30 L 30.3 30"
+            android:strokeWidth="2.5"
+            android:strokeColor="#000000"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeMiterLimit="10" />
+        <path
+            android:name="end2"
+            android:pathData="M 30.3 23.3 L 30.3 30"
+            android:strokeWidth="2.5"
+            android:strokeColor="#000000"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeMiterLimit="10" />
+        <path
+            android:name="start2"
+            android:pathData="M 9.7 30 L 9.7 30"
+            android:strokeWidth="2.5"
+            android:strokeColor="#000000"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeMiterLimit="10" />
+        <group
+            android:name="group2"
+            android:pivotX="10.2788"
+            android:pivotY="29.9834">
+            <path
+                android:name="arrow2"
+                android:pathData="M 12.7 25.2 L 7.9 30 L 12.6 34.7"
+                android:strokeWidth="2.5"
+                android:strokeColor="#000000"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeMiterLimit="10" />
+        </group>
+    </group>
+    <group
+        android:name="group_2"
+        android:pivotX="20"
+        android:pivotY="20"
+        android:rotation="180">
+        <path
+            android:name="middle"
+            android:pathData="M 9.7 30 L 30.3 30"
+            android:strokeWidth="2.5"
+            android:strokeColor="#000000"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeMiterLimit="10" />
+        <path
+            android:name="end"
+            android:pathData="M 30.3 23.3 L 30.3 30"
+            android:strokeWidth="2.5"
+            android:strokeColor="#000000"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeMiterLimit="10" />
+        <path
+            android:name="start"
+            android:pathData="M 9.7 30 L 9.7 30"
+            android:strokeWidth="2.5"
+            android:strokeColor="#000000"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeMiterLimit="10" />
+        <group
+            android:name="group"
+            android:pivotX="10.2788"
+            android:pivotY="29.9834">
+            <path
+                android:name="arrow"
+                android:pathData="M 12.7 25.2 L 7.9 30 L 12.6 34.7"
+                android:strokeWidth="2.5"
+                android:strokeColor="#000000"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeMiterLimit="10" />
+        </group>
+    </group>
+</vector>

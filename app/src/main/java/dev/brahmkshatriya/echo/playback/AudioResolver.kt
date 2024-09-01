@@ -49,8 +49,12 @@ class AudioResolver(
         val index = mediaItem.audioIndex
         val streamable = streams[index]
         return mediaItem.getTrackClient(context, extensionListFlow) {
-            getStreamableMedia(streamable) as Streamable.Media.AudioOnly
-        }.audio
+            when (val media = getStreamableMedia(streamable)) {
+                is Streamable.Media.AudioOnly -> media.audio
+                is Streamable.Media.WithVideo.WithAudio -> media.toAudio()
+                else -> throw IllegalStateException()
+            }
+        }
     }
 
     companion object {

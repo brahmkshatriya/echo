@@ -9,7 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.FileSystemPluginSource
 import dev.brahmkshatriya.echo.plugger.ImportType
-import dev.brahmkshatriya.echo.plugger.LocalExtensionRepo
+import dev.brahmkshatriya.echo.offline.LocalExtensionRepo
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.LyricsExtensionRepo
 import dev.brahmkshatriya.echo.plugger.MusicExtension

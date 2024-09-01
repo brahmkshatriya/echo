@@ -323,19 +323,33 @@ class PlayerTrackAdapter(
             shuffleListener.enabled = true
         }
 
-        val drawables = binding.root.context.run {
+        val animatedVectorDrawables = binding.root.context.run {
             fun asAnimated(id: Int) =
                 AppCompatResources.getDrawable(this, id) as AnimatedVectorDrawable
             listOf(
-                asAnimated(R.drawable.ic_repeat_one_to_no_repeat_40dp),
-                asAnimated(R.drawable.ic_no_repeat_to_repeat_40dp),
+                asAnimated(R.drawable.ic_repeat_one_to_repeat_off_40dp),
+                asAnimated(R.drawable.ic_repeat_off_to_repeat_40dp),
                 asAnimated(R.drawable.ic_repeat_to_repeat_one_40dp)
             )
         }
+        val drawables = binding.root.context.run {
+            fun asDrawable(id: Int) = AppCompatResources.getDrawable(this, id)!!
+            listOf(
+                asDrawable(R.drawable.ic_repeat_off_40dp),
+                asDrawable(R.drawable.ic_repeat_40dp),
+                asDrawable(R.drawable.ic_repeat_one_40dp),
+            )
+        }
+
         val repeatModes = listOf(REPEAT_MODE_OFF, REPEAT_MODE_ALL, REPEAT_MODE_ONE)
+        var currRepeatMode = viewModel.repeatMode.value
         fun changeRepeatDrawable(repeatMode: Int) = binding.playerControls.trackRepeat.run {
+            if(currRepeatMode == repeatMode) {
+                icon = drawables[repeatModes.indexOf(repeatMode)]
+                return
+            }
             val index = repeatModes.indexOf(repeatMode)
-            icon = drawables[index]
+            icon = animatedVectorDrawables[index]
             (icon as Animatable).start()
         }
         binding.playerControls.trackRepeat.setOnClickListener {
@@ -344,13 +358,14 @@ class PlayerTrackAdapter(
                 REPEAT_MODE_ALL -> REPEAT_MODE_ONE
                 else -> REPEAT_MODE_OFF
             }
-            changeRepeatDrawable(mode)
             viewModel.onRepeat(mode)
+            changeRepeatDrawable(mode)
         }
 
         observe(viewModel.repeatMode) {
             viewModel.repeatEnabled = false
             changeRepeatDrawable(it)
+            currRepeatMode = it
             viewModel.repeatEnabled = true
         }
 
@@ -366,8 +381,10 @@ class PlayerTrackAdapter(
                     observe(viewModel.currentFlow) {
                         val isCurrent = it?.index == bindingAdapterPosition
                         if (!isCurrent) return@observe
-                        setPlayer(null)
-                        setPlayer(viewModel.browser)
+                        post {
+                            setPlayer(null)
+                            setPlayer(viewModel.browser)
+                        }
                     }
                 }
                 resizeMode = if (video.crop) RESIZE_MODE_ZOOM else RESIZE_MODE_FIT

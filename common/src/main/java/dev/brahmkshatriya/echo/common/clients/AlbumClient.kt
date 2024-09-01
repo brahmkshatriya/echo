@@ -6,7 +6,7 @@ import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Track
 
 interface AlbumClient {
-    suspend fun loadAlbum(small: Album): Album
+    suspend fun loadAlbum(album: Album): Album
     fun loadTracks(album: Album): PagedData<Track>
     fun getMediaItems(album: Album): PagedData<MediaItemsContainer>
 }

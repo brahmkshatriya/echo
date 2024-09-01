@@ -150,8 +150,8 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         ) + getArtistsWithCategories(track.artists) { it.mediaId != track.id }
     }
 
-    override suspend fun loadAlbum(small: Album) =
-        find(small)!!.toAlbum()
+    override suspend fun loadAlbum(album: Album) =
+        find(album)!!.toAlbum()
 
     override fun loadTracks(album: Album): PagedData<Track> = PagedData.Single {
         find(album)!!.songList.sortedBy { it.mediaMetadata.trackNumber }.map { it.toTrack() }

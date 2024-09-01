@@ -126,4 +126,6 @@ object MediaItemUtils {
     val MediaItem.video get() = mediaMetadata.video
     val MediaItem.isLiked get() = mediaMetadata.isLiked
 
+    val MediaItem.audioStreamable get() = track.audioStreamables[audioIndex]
+    val MediaItem.videoStreamable get() = track.videoStreamables.getOrNull(videoIndex)
 }

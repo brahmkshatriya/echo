@@ -37,7 +37,9 @@ data class Streamable(
                 override val request: Request,
                 override val crop: Boolean = false,
                 val skipSilence: Boolean? = null,
-            ) : WithVideo()
+            ) : WithVideo() {
+                fun toAudio() = Audio.Http(request, skipSilence)
+            }
         }
 
         companion object {
@@ -54,13 +56,11 @@ data class Streamable(
         abstract val skipSilence: Boolean?
 
         data class Http(
-            val request: Request,
-            override val skipSilence: Boolean? = null
+            val request: Request, override val skipSilence: Boolean? = null
         ) : Audio()
 
         data class ByteStream(
-            val stream: InputStream, val totalBytes: Long,
-            override val skipSilence: Boolean? = null
+            val stream: InputStream, val totalBytes: Long, override val skipSilence: Boolean? = null
         ) : Audio()
 
         companion object {
@@ -73,7 +73,7 @@ data class Streamable(
         fun audio(
             id: String,
             quality: Int,
-            type : MimeType = MimeType.Progressive,
+            type: MimeType = MimeType.Progressive,
             title: String? = null,
             extra: Map<String, String> = mapOf()
         ) = Streamable(id, quality, MediaType.Audio, type, title, extra)
@@ -81,7 +81,7 @@ data class Streamable(
         fun video(
             id: String,
             quality: Int,
-            type : MimeType = MimeType.Progressive,
+            type: MimeType = MimeType.Progressive,
             title: String? = null,
             extra: Map<String, String> = mapOf()
         ) = Streamable(id, quality, MediaType.Video, type, title, extra)
@@ -89,7 +89,7 @@ data class Streamable(
         fun audioVideo(
             id: String,
             quality: Int,
-            type : MimeType = MimeType.Progressive,
+            type: MimeType = MimeType.Progressive,
             title: String? = null,
             extra: Map<String, String> = mapOf()
         ) = Streamable(id, quality, MediaType.AudioVideo, type, title, extra)

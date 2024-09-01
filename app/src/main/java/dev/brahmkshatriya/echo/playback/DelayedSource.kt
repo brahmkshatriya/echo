@@ -20,11 +20,13 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoStreamable
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo.Companion.toExtensionInfo
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
@@ -58,7 +60,8 @@ class DelayedSource(
     override fun prepareSourceInternal(mediaTransferListener: TransferListener?) {
         super.prepareSourceInternal(mediaTransferListener)
         scope.launch(Dispatchers.IO) {
-            val new = runCatching { resolve(mediaItem) }.getOrElse {
+            val new = if (mediaItem.isLoaded) mediaItem
+            else runCatching { resolve(mediaItem) }.getOrElse {
                 throwableFlow.emit(it)
                 return@launch
             }
@@ -68,18 +71,25 @@ class DelayedSource(
 
     private suspend fun onUrlResolved(new: MediaItem) = withContext(Dispatchers.Main) {
         resolvedMediaItem = new
-        val video = new.video
-        println("onUrlResolved ${new.track.title} : $video")
-        actualSource = when (video) {
-            is Streamable.Media.WithVideo.WithAudio -> videoFactory.create(new)
+        val useVideoFactory = when (val video = new.video) {
+            is Streamable.Media.WithVideo.WithAudio -> new.videoStreamable == new.audioStreamable
+            is Streamable.Media.WithVideo.Only -> if (!video.looping) false else null
+            null -> null
+        }
+        actualSource = when (useVideoFactory) {
+            true -> videoFactory.create(new)
             null -> FilteringMediaSource(audioFactory.create(new), C.TRACK_TYPE_AUDIO)
-            is Streamable.Media.WithVideo.Only -> if (!video.looping) MergingMediaSource(
+            false -> MergingMediaSource(
                 FilteringMediaSource(videoFactory.create(new), C.TRACK_TYPE_VIDEO),
                 FilteringMediaSource(audioFactory.create(new), C.TRACK_TYPE_AUDIO)
-            ) else FilteringMediaSource(audioFactory.create(new), C.TRACK_TYPE_AUDIO)
+            )
         }
-        prepareChildSource(null, actualSource)
+        runCatching { prepareChildSource(null, actualSource) }
     }
+
+    override fun onChildSourceInfoRefreshed(
+        childSourceId: Nothing?, mediaSource: MediaSource, newTimeline: Timeline
+    ) = refreshSourceInfo(newTimeline)
 
     override fun getMediaItem() = resolvedMediaItem ?: mediaItem
 
@@ -90,10 +100,11 @@ class DelayedSource(
     override fun releasePeriod(mediaPeriod: MediaPeriod) =
         actualSource.releasePeriod(mediaPeriod)
 
-    override fun onChildSourceInfoRefreshed(
-        childSourceId: Nothing?, mediaSource: MediaSource, newTimeline: Timeline
-    ) = refreshSourceInfo(newTimeline)
+    override fun canUpdateMediaItem(mediaItem: MediaItem) =
+        actualSource.canUpdateMediaItem(mediaItem)
 
+    override fun updateMediaItem(mediaItem: MediaItem) =
+        actualSource.updateMediaItem(mediaItem)
 
     private suspend fun resolve(mediaItem: MediaItem): MediaItem {
         val track = mediaItem.track

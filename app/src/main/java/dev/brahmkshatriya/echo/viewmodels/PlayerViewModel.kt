@@ -58,12 +58,9 @@ class PlayerViewModel @Inject constructor(
         val browser = browser
         if (browser != null) viewModelScope.launch(Dispatchers.Main) {
             runCatching { block(browser) }.getOrElse {
-                createException(it)
+                throwableFlow.emit(it)
             }
         }
-//        else viewModelScope.launch {
-//            throwableFlow.emit(IllegalStateException("Browser not connected"))
-//        }
     }
 
     val playPauseListener = CheckBoxListener {
@@ -228,13 +225,11 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun createException(exception: Throwable) {
-        withBrowser {
-            viewModelScope.launch {
-                throwableFlow.emit(
-                    PlayerException(exception.cause ?: exception, it.currentMediaItem)
-                )
-            }
+    fun createException(exception: Throwable) = withBrowser {
+        viewModelScope.launch {
+            throwableFlow.emit(
+                PlayerException(exception.cause ?: exception, it.currentMediaItem)
+            )
         }
     }
 

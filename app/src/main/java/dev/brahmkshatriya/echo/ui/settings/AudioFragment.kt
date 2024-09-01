@@ -88,7 +88,7 @@ class AudioFragment : BaseSettingsFragment() {
                     entryValues = streamQualities
                     layoutResource = R.layout.preference
                     isIconSpaceReserved = false
-                    setDefaultValue(streamQualities[0])
+                    setDefaultValue(streamQualities[1])
                     addPreference(this)
                 }
 
@@ -96,14 +96,15 @@ class AudioFragment : BaseSettingsFragment() {
                     key = VIDEO_STREAM_QUALITY
                     title = getString(R.string.video_quality)
                     summary = getString(R.string.video_quality_summary)
-                    entries = context.resources.getStringArray(R.array.stream_qualities).toMutableList().let {
-                        it.add(getString(R.string.video_quality_none))
-                        it.toTypedArray()
-                    }
+                    entries = context.resources.getStringArray(R.array.stream_qualities)
+                        .toMutableList().let {
+                            it.add(getString(R.string.video_quality_none))
+                            it.toTypedArray()
+                        }
                     entryValues = videoQualities
                     layoutResource = R.layout.preference
                     isIconSpaceReserved = false
-                    setDefaultValue(streamQualities[0])
+                    setDefaultValue(streamQualities[1])
                     addPreference(this)
                 }
 
@@ -153,14 +154,11 @@ class AudioFragment : BaseSettingsFragment() {
             val streamQualities = arrayOf("highest", "medium", "lowest")
             val videoQualities = arrayOf("highest", "medium", "lowest", "none")
 
-            fun selectAudioIndex(
-                settings: SharedPreferences?,
-                audioStreamables: List<Streamable>
-            ) =
-                audioStreamables.indexOf(selectAudioStream(settings, audioStreamables))
+            fun selectAudioIndex(settings: SharedPreferences?, streamables: List<Streamable>) =
+                streamables.indexOf(selectAudioStream(settings, streamables))
 
             fun selectAudioStream(settings: SharedPreferences?, streamables: List<Streamable>) =
-                when (settings?.getString(AUDIO_STREAM_QUALITY, "lowest")) {
+                when (settings?.getString(AUDIO_STREAM_QUALITY, "medium")) {
                     "highest" -> streamables.maxByOrNull { it.quality }
                     "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
                     "lowest" -> streamables.minByOrNull { it.quality }
@@ -172,14 +170,13 @@ class AudioFragment : BaseSettingsFragment() {
 
             private fun selectVideoStream(
                 settings: SharedPreferences?, streamables: List<Streamable>
-            ) =
-                when (settings?.getString(VIDEO_STREAM_QUALITY, "lowest")) {
-                    "highest" -> streamables.maxByOrNull { it.quality }
-                    "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
-                    "lowest" -> streamables.minByOrNull { it.quality }
-                    "none" -> null
-                    else -> streamables.firstOrNull()
-                }
+            ) = when (settings?.getString(VIDEO_STREAM_QUALITY, "medium")) {
+                "highest" -> streamables.maxByOrNull { it.quality }
+                "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
+                "lowest" -> streamables.minByOrNull { it.quality }
+                "none" -> null
+                else -> streamables.firstOrNull()
+            }
         }
     }
 }
