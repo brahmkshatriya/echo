@@ -89,7 +89,7 @@ class ExceptionFragment : Fragment() {
         fun Context.getTitle(throwable: Throwable): String = when (throwable) {
             is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
-            is PlayerViewModel.PlayerException -> getTitle(throwable.cause)
+            is PlayerViewModel.PlayerException -> throwable.details.title
             is AppException -> throwable.run {
                 when (this) {
                     is AppException.Unauthorized ->
@@ -114,7 +114,7 @@ Client Id : ${throwable.mediaItem?.clientId}
 Track : ${throwable.mediaItem?.track}
 Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioIndex) }}
 
-${getDetails(throwable.cause)}
+${throwable.details.causedBy}
 """.trimIndent()
 
             is AppException -> """
@@ -143,6 +143,8 @@ ${getDetails(throwable.cause)}
             return newInstance(details)
         }
 
+        fun Throwable.toExceptionDetails(context: Context) =
+            ExceptionDetails(context.getTitle(this), context.getDetails(this))
     }
 
     @Serializable

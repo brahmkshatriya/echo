@@ -32,7 +32,9 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.utils.getSerialized
+import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -129,7 +131,8 @@ class PlayerSessionCallback(
                 runCatching { client.likeTrack(track, rating.isThumbsUp) }
             }.getOrElse {
                 return@future SessionResult(
-                    SessionError.ERROR_UNKNOWN, bundleOf("error" to it)
+                    SessionError.ERROR_UNKNOWN,
+                    Bundle().apply { putSerialized("error", it.toExceptionDetails(context)) }
                 )
             }
             val newItem = item.run {

@@ -15,8 +15,10 @@ import androidx.media3.session.MediaBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
@@ -26,10 +28,12 @@ import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.ui.player.PlayerUiListener
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
-import dev.brahmkshatriya.echo.utils.getSerial
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.toJson
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +54,7 @@ class PlayerViewModel @Inject constructor(
     val radioStateFlow: MutableStateFlow<Radio.State>,
     val cache: SimpleCache,
     val fftAudioProcessor: FFTAudioProcessor,
+    val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
@@ -82,7 +87,10 @@ class PlayerViewModel @Inject constructor(
     fun seekToPrevious() = withBrowser { it.seekToPrevious() }
     fun seekToNext() = withBrowser { it.seekToNext() }
 
-    val likeListener = CheckBoxListener { likeTrack(it) }
+    val likeListener = CheckBoxListener {
+        println("sending like $it")
+        likeTrack(it)
+    }
     private fun likeTrack(isLiked: Boolean) = withBrowser {
         val old = this.isLiked.value
         this.isLiked.value = isLiked
@@ -90,8 +98,9 @@ class PlayerViewModel @Inject constructor(
         app.listenFuture(future) { sessionResult ->
             val result = sessionResult.getOrThrow()
             if (result.resultCode != RESULT_SUCCESS) {
-                val exception = result.extras.getSerial<Throwable>("error")
-                    ?: Exception("Error : ${result.resultCode}")
+                val exception =
+                    result.extras.getSerialized<ExceptionFragment.ExceptionDetails>("error")
+                        ?: ExceptionFragment.ExceptionDetails("IO Error", "")
                 createException(exception)
                 this.isLiked.value = old
             }
@@ -225,18 +234,18 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun createException(exception: Throwable) = withBrowser {
+    fun createException(exceptionDetails: ExceptionFragment.ExceptionDetails) = withBrowser {
         viewModelScope.launch {
             throwableFlow.emit(
-                PlayerException(exception.cause ?: exception, it.currentMediaItem)
+                PlayerException(exceptionDetails, it.currentMediaItem)
             )
         }
     }
 
     data class PlayerException(
-        override val cause: Throwable,
+        val details: ExceptionFragment.ExceptionDetails,
         val mediaItem: MediaItem?
-    ) : Throwable(cause.message)
+    ) : Throwable()
 
     var list: List<MediaItem> = listOf()
 
@@ -253,4 +262,22 @@ class PlayerViewModel @Inject constructor(
     val previousEnabled = MutableStateFlow(false)
     val repeatMode = MutableStateFlow(0)
     val shuffleMode = MutableStateFlow(false)
+
+
+    val shareLink = MutableSharedFlow<String>()
+    fun onShare(client: ShareClient, item: EchoMediaItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val link = when (item) {
+                is EchoMediaItem.Lists.AlbumItem -> client.onShare(item.album)
+                is EchoMediaItem.Lists.PlaylistItem -> client.onShare(item.playlist)
+                is EchoMediaItem.Profile.ArtistItem -> client.onShare(item.artist)
+                is EchoMediaItem.Profile.UserItem -> client.onShare(item.user)
+                is EchoMediaItem.TrackItem -> client.onShare(item.track)
+            }
+            shareLink.emit(link)
+        }
+    }
+
+    fun deletePlaylist(clientId: String, playlist: Playlist) =
+        deletePlaylist(extensionListFlow, mutableMessageFlow, app, clientId, playlist)
 }

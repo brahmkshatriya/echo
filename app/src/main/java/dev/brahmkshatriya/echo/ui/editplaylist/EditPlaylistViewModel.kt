@@ -41,8 +41,8 @@ class EditPlaylistViewModel @Inject constructor(
             val client = extension?.client
             if (client !is LibraryClient) return@launch
             withContext(Dispatchers.IO) {
-                originalList = tryWith(extension.info) { client.loadTracks(playlist).loadAll() }
-                    ?: emptyList()
+                originalList =
+                    tryWith(extension.info) { client.loadTracks(playlist).loadAll() } ?: emptyList()
                 currentTracks.value = originalList
                 loading = null
                 loadingFlow.emit(null)
@@ -51,8 +51,7 @@ class EditPlaylistViewModel @Inject constructor(
     }
 
     private suspend fun libraryClient(
-        clientId: String,
-        block: suspend (client: LibraryClient) -> Unit
+        clientId: String, block: suspend (client: LibraryClient) -> Unit
     ) {
         client(clientId, block)
     }
@@ -99,9 +98,8 @@ class EditPlaylistViewModel @Inject constructor(
         }
     }
 
-    fun deletePlaylist(clientId: String, playlist: Playlist) = viewModelScope.launch {
+    fun deletePlaylist(clientId: String, playlist: Playlist) =
         deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
-    }
 
     private fun mergeActions(actions: MutableList<ListAction<Track>>) {
         var i = 0
@@ -124,8 +122,7 @@ class EditPlaylistViewModel @Inject constructor(
     }
 
     fun onEditorExit(
-        clientId: String,
-        playlist: Playlist
+        clientId: String, playlist: Playlist
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (loading == true) return@launch
         loading = true
@@ -187,7 +184,7 @@ class EditPlaylistViewModel @Inject constructor(
     }
 
     companion object {
-        suspend fun CatchingViewModel.deletePlaylist(
+        fun CatchingViewModel.deletePlaylist(
             extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
             context: Context,
@@ -197,8 +194,12 @@ class EditPlaylistViewModel @Inject constructor(
             val extension = extensionListFlow.getExtension(clientId) ?: return
             val client = extension.client
             if (client !is LibraryClient) return
-            withContext(Dispatchers.IO) {
-                tryWith(extension.info) { client.deletePlaylist(playlist) } ?: return@withContext
+            viewModelScope.launch(Dispatchers.IO) {
+                tryWith(extension.info) {
+                    println("deleting playlist : ${playlist.title}")
+                    client.deletePlaylist(playlist)
+                    println("deleted playlist : ${playlist.title}")
+                }
                 mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
             }
         }
@@ -219,17 +220,22 @@ class EditPlaylistViewModel @Inject constructor(
                 playlists.forEach { playlist ->
                     tryWith(extension.info) {
                         check(playlist.isEditable)
-                        val tracks = client.loadTracks(playlist).loadAll()
-                        listener?.onEnterPlaylistEditor(playlist, tracks)
-                        client.addTracksToPlaylist(playlist, tracks, tracks.size, new)
-                        listener?.onExitPlaylistEditor(playlist, tracks)
-                    }
+                        val loaded = client.loadPlaylist(playlist)
+                        println("loaded : $loaded")
+                        val tracks = client.loadTracks(loaded).loadAll()
+                        println("tracks: ${tracks.size}")
+                        listener?.onEnterPlaylistEditor(loaded, tracks)
+                        client.addTracksToPlaylist(loaded, tracks, tracks.size, new)
+                        println("added to ${loaded.title}")
+                        listener?.onExitPlaylistEditor(loaded, tracks)
+                        Unit
+                    } ?: return@withContext
                 }
+                val message =
+                    if (playlists.size != 1) context.getString(R.string.saved_to_playlists)
+                    else context.getString(R.string.saved_to_playlist, playlists.first().title)
+                messageFlow.emit(SnackBar.Message(message))
             }
-            val message = if (playlists.size == 1)
-                context.getString(R.string.saved_to_playlist, playlists.first())
-            else context.getString(R.string.saved_to_playlists)
-            messageFlow.emit(SnackBar.Message(message))
         }
     }
 }

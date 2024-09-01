@@ -58,6 +58,7 @@ class AddToPlaylistViewModel @Inject constructor(
     val dismiss = MutableSharedFlow<Unit>()
     fun addToPlaylists() = viewModelScope.launch {
         saving = true
+        println("selectedPlaylists: ${selectedPlaylists.joinToString(", ") { it.title }}")
         addToPlaylists(
             extensionListFlow, messageFlow, app, clientId, selectedPlaylists, tracks
         )

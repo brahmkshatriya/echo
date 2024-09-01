@@ -124,9 +124,11 @@ class PlayerTrackAdapter(
 
             binding.bgInfoTitle.setTextColor(colors.text)
             binding.bgInfoArtist.setTextColor(colors.text)
-            Glide.with(binding.bgImage).load(bitmap)
-                .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 4)))
-                .into(binding.bgImage)
+            runCatching {
+                Glide.with(binding.bgImage).load(bitmap)
+                    .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 4)))
+                    .into(binding.bgImage)
+            }
         }
 
         binding.collapsedContainer.root.setOnClickListener {
@@ -212,20 +214,21 @@ class PlayerTrackAdapter(
         }
 
         binding.playerControls.trackHeart.run {
-            viewModel.isLiked.value = item.isLiked
-            isChecked = item.isLiked
             val client = viewModel.extensionListFlow.getExtension(clientId)?.client
             val isLibrary = client is LibraryClient
             isVisible = isLibrary
+
+            val likeListener = viewModel.likeListener
             if (isLibrary) {
-                val likeListener = viewModel.likeListener
                 addOnCheckedStateChangedListener(likeListener)
                 observeCurrent(viewModel.isLiked) {
+                    it ?: return@observeCurrent
                     likeListener.enabled = false
-                    binding.playerControls.trackHeart.isChecked = it ?: false
+                    binding.playerControls.trackHeart.isChecked = it
                     likeListener.enabled = true
                 }
-            } else removeOnCheckedStateChangedListener(viewModel.likeListener)
+            } else removeOnCheckedStateChangedListener(likeListener)
+            viewModel.isLiked.value = item.isLiked
         }
 
         binding.playerControls.seekBar.apply {
@@ -344,7 +347,7 @@ class PlayerTrackAdapter(
         val repeatModes = listOf(REPEAT_MODE_OFF, REPEAT_MODE_ALL, REPEAT_MODE_ONE)
         var currRepeatMode = viewModel.repeatMode.value
         fun changeRepeatDrawable(repeatMode: Int) = binding.playerControls.trackRepeat.run {
-            if(currRepeatMode == repeatMode) {
+            if (currRepeatMode == repeatMode) {
                 icon = drawables[repeatModes.indexOf(repeatMode)]
                 return
             }

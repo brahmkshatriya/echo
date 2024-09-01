@@ -104,7 +104,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         } else {
             binding.recyclerView.adapter = ActionAdapter(getActions(item, true))
         }
-        observe(viewModel.shareLink) {
+        observe(playerViewModel.shareLink) {
             requireContext().copyToClipboard(it, it)
         }
     }
@@ -173,7 +173,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         else null,
                         if (client is LibraryClient && item.playlist.isEditable)
                             ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
-                                viewModel.deletePlaylist(clientId, item.playlist)
+                                playerViewModel.deletePlaylist(clientId, item.playlist)
                             }
                         else null,
                     ) + item.playlist.authors.map {
@@ -262,7 +262,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             R.string.share
         ) {
             val shareClient = client as ShareClient
-            viewModel.onShare(shareClient, item)
+            playerViewModel.onShare(shareClient, item)
         } else null
     )
 

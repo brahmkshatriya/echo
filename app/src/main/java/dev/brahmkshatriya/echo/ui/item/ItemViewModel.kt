@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.item
 
-import android.app.Application
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -9,7 +8,6 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
-import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
@@ -23,10 +21,8 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.GenericExtension
 import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,8 +34,6 @@ import javax.inject.Inject
 class ItemViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
-    private val context: Application
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
@@ -104,24 +98,6 @@ class ItemViewModel @Inject constructor(
             }
             loaded
         }
-    }
-
-    val shareLink = MutableSharedFlow<String>()
-    fun onShare(client: ShareClient, item: EchoMediaItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val link = when (item) {
-                is EchoMediaItem.Lists.AlbumItem -> client.onShare(item.album)
-                is EchoMediaItem.Lists.PlaylistItem -> client.onShare(item.playlist)
-                is EchoMediaItem.Profile.ArtistItem -> client.onShare(item.artist)
-                is EchoMediaItem.Profile.UserItem -> client.onShare(item.user)
-                is EchoMediaItem.TrackItem -> client.onShare(item.track)
-            }
-            shareLink.emit(link)
-        }
-    }
-
-    fun deletePlaylist(clientId: String, playlist: Playlist) = viewModelScope.launch {
-        deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
     }
 
     private val songsFlow = MutableStateFlow<PagingData<Track>?>(null)

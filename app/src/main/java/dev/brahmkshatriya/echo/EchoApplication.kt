@@ -25,6 +25,8 @@ import dev.brahmkshatriya.echo.plugger.MusicExtensionRepo
 import dev.brahmkshatriya.echo.plugger.RequiredExtensionsException
 import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtensionRepo
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetails
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.COLOR_KEY
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.CUSTOM_THEME_KEY
@@ -102,7 +104,8 @@ class EchoApplication : Application() {
 
         scope.launch {
             throwableFlow.collect {
-                it.printStackTrace()
+                println(getTitle(it))
+                println(getDetails(it))
             }
         }
 
