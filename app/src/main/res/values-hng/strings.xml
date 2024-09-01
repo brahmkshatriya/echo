@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home">Ghar</string>
+    <string name="home">Home</string>
     <string name="library">Library</string>
     <string name="extensions">Extensions</string>
     <string name="settings">Settings</string>
@@ -19,7 +19,7 @@
     <string name="shuffle">Shuffle</string>
     <string name="clear_playlist">Playlist clear karo</string>
     <string name="playlist">Playlist</string>
-    <string name="loading">Loading…</string>
+    <string name="loading">Load ho raha hai…</string>
     <string name="number_dot">%1$d.</string>
     <string name="play">Play</string>
     <string name="songs">Gaane</string>
@@ -58,7 +58,7 @@
     <string name="playlist_deleted">Playlist delete ho gayi</string>
     <string name="add_color">Color Add karo</string>
     <string name="add_tracks">Tracks Add karo</string>
-    <string name="adding_tracks">Adding %1$s</string>
+    <string name="adding_tracks">%1$s ko add kar rahe hain</string>
     <string name="moving_track">%1$s ko move kar rahe hain</string>
     <string name="removing_track">%1$s ko remove kar rahe hain</string>
     <string name="unlike">Unlike</string>
@@ -183,4 +183,9 @@
     <string name="no_streams_found">Koi stream nahi mila</string>
     <string name="navbar_gradient_summary">Navbar dheere dheere transparent ho jati hai</string>
     <string name="navbar_gradient">Rangantar Navbar</string>
+    <string name="language">Bhasha</string>
+    <string name="system">System</string>
+    <string name="value">Moolya</string>
+    <string name="not_set">Set Nahi Hua</string>
+    <string name="language_summary">App ki bhasha, System default mein English choose karega</string>
 </resources>

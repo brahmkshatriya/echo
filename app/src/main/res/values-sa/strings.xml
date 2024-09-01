@@ -183,4 +183,9 @@
     <string name="invalid_extension_host">मेजबानः मध्ये अमान्यः प्रत्यायुक्तिः प्रकारः।</string>
     <string name="navbar_gradient">आभासं नेवबार</string>
     <string name="navbar_gradient_summary">नेवबार शनैः शनैः पारदर्शं भवति</string>
+    <string name="value">मूल्य</string>
+    <string name="not_set">न निर्धृतम्</string>
+    <string name="language">भाषा</string>
+    <string name="system">प्रणाली</string>
+    <string name="language_summary">अनुप्रयोगस्य भाषा, प्रणाली संस्कृतं निर्दिश्य, आवश्यं प्राकृत्यरूपेण आङ्ग्लं भविष्यति।</string>
 </resources>
