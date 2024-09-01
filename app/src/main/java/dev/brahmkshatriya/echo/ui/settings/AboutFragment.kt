@@ -104,7 +104,7 @@ class AboutFragment : BaseSettingsFragment() {
 
             fun Context.appVersion(): String = packageManager
                 .getPackageInfo(packageName, 0)
-                .versionName
+                .versionName!!
         }
     }
 }

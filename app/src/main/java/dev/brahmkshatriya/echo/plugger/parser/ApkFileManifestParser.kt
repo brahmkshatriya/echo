@@ -15,7 +15,7 @@ class ApkFileManifestParser(
         return apkManifestParser.parseManifest(
             packageManager
                 .getPackageArchiveInfo(data.path, ApkPluginSource.PACKAGE_FLAGS)!!
-                .applicationInfo
+                .applicationInfo!!
         )
     }
 }
