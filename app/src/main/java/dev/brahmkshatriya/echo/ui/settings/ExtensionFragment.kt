@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingItem
 import dev.brahmkshatriya.echo.common.settings.SettingList
 import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
+import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
@@ -24,6 +25,7 @@ import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialMultipleChoicePreference
+import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialTextInputPreference
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
@@ -180,6 +182,17 @@ class ExtensionFragment : BaseSettingsFragment() {
 
                         it.isIconSpaceReserved = false
                         it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingSlider -> {
+                    MaterialSliderPreference(preferenceGroup.context, from, to, steps).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+
+                        it.isIconSpaceReserved = false
                         preferenceGroup.addPreference(it)
                     }
                 }
