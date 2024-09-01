@@ -192,6 +192,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                         it.key = this.key
                         it.summary = this.summary
 
+                        it.isIconSpaceReserved = false
                         preferenceGroup.addPreference(it)
                     }
                 }
