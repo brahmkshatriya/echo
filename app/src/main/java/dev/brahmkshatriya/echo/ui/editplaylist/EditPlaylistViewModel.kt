@@ -219,14 +219,11 @@ class EditPlaylistViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 playlists.forEach { playlist ->
                     tryWith(extension.info) {
-                        check(playlist.isEditable)
                         val loaded = client.loadPlaylist(playlist)
-                        println("loaded : $loaded")
+                        check(loaded.isEditable)
                         val tracks = client.loadTracks(loaded).loadAll()
-                        println("tracks: ${tracks.size}")
                         listener?.onEnterPlaylistEditor(loaded, tracks)
                         client.addTracksToPlaylist(loaded, tracks, tracks.size, new)
-                        println("added to ${loaded.title}")
                         listener?.onExitPlaylistEditor(loaded, tracks)
                         Unit
                     } ?: return@withContext
