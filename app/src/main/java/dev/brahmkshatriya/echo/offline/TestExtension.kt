@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Audio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toAudioVideoMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtitleMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toVideoMedia
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
@@ -60,6 +61,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
             Streamable.MediaType.Audio -> streamable.id.toAudio().toMedia()
             Streamable.MediaType.Video -> streamable.id.toVideoMedia()
             Streamable.MediaType.AudioVideo -> streamable.id.toAudioVideoMedia()
+            Streamable.MediaType.Subtitle -> streamable.id.toSubtitleMedia(Streamable.SubtitleType.VTT)
         }
     }
 
@@ -75,6 +77,9 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     private val video =
         "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
+    private val subtitle =
+        "https://gist.githubusercontent.com/samdutton/ca37f3adaf4e23679957b8083e061177/raw/e19399fbccbc069a2af4266e5120ae6bad62699a/sample.vtt"
+
     private fun createTrack(id: String, title: String, streamables: List<Streamable>) = Track(
         id,
         title,
@@ -89,10 +94,16 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
             createTrack("audio", "Audio", listOf(Streamable.audio(audio, 0))),
             createTrack("video", "Video", listOf(Streamable.video(video, 0))),
             createTrack(
-                "both", "Both", listOf(Streamable.audio(audio, 0), Streamable.video(video, 0))
+                "both", "Both", listOf(
+                    Streamable.audio(audio, 0),
+                    Streamable.video(video, 0),
+                    Streamable.subtitle(subtitle)
+                )
             ),
             createTrack(
-                "audioVideo", "Audio Video", listOf(Streamable.audioVideo(audio, 0))
+                "audioVideo",
+                "Audio Video",
+                listOf(Streamable.audioVideo(audio, 0), Streamable.subtitle(subtitle))
             )
         )
     }
@@ -129,27 +140,31 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         playlist: Playlist,
         title: String,
         description: String?
-    ) {}
+    ) {
+    }
 
     override suspend fun addTracksToPlaylist(
         playlist: Playlist,
         tracks: List<Track>,
         index: Int,
         new: List<Track>
-    ) {}
+    ) {
+    }
 
     override suspend fun removeTracksFromPlaylist(
         playlist: Playlist,
         tracks: List<Track>,
         indexes: List<Int>
-    ) {}
+    ) {
+    }
 
     override suspend fun moveTrackInPlaylist(
         playlist: Playlist,
         tracks: List<Track>,
         fromIndex: Int,
         toIndex: Int
-    ) {}
+    ) {
+    }
 
     override suspend fun loadPlaylist(playlist: Playlist) = playlist
     override fun loadTracks(playlist: Playlist): PagedData<Track> = PagedData.Single {

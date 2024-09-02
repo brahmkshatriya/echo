@@ -6,10 +6,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.brahmkshatriya.echo.offline.LocalExtensionRepo
+import dev.brahmkshatriya.echo.plugger.ApkPluginSource
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.FileSystemPluginSource
 import dev.brahmkshatriya.echo.plugger.ImportType
-import dev.brahmkshatriya.echo.offline.LocalExtensionRepo
 import dev.brahmkshatriya.echo.plugger.LyricsExtension
 import dev.brahmkshatriya.echo.plugger.LyricsExtensionRepo
 import dev.brahmkshatriya.echo.plugger.MusicExtension
@@ -24,7 +25,7 @@ import tel.jeelpa.plugger.PluginRepo
 import tel.jeelpa.plugger.PluginRepoImpl
 import tel.jeelpa.plugger.RepoComposer
 import tel.jeelpa.plugger.pluginloader.AndroidPluginLoader
-import tel.jeelpa.plugger.pluginloader.apk.ApkPluginSource
+import java.io.File
 import javax.inject.Singleton
 
 @Module
@@ -36,6 +37,7 @@ class ExtensionModule {
     @Singleton
     fun providesRefresher(): MutableSharedFlow<Boolean> = MutableStateFlow(false)
 
+    private fun Context.getPluginFileDir() = File(filesDir, "extensions").apply { mkdirs() }
     private fun <T> getComposed(
         context: Context,
         suffix: String,
@@ -43,7 +45,7 @@ class ExtensionModule {
     ): RepoComposer<ExtensionMetadata, T> {
         val loader = AndroidPluginLoader<ExtensionMetadata, T>(context)
         val apkFilePluginRepo = PluginRepoImpl(
-            FileSystemPluginSource(context.filesDir, ".apk"),
+            FileSystemPluginSource(context.getPluginFileDir(), ".eapk"),
             ApkFileManifestParser(context.packageManager, ApkManifestParser(ImportType.Apk)),
             loader,
         )

@@ -52,7 +52,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
-    implementation("androidx.fragment:fragment-ktx:1.8.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
     implementation("androidx.paging:paging-common-ktx:3.3.2")
     implementation("androidx.paging:paging-runtime-ktx:3.3.2")

@@ -173,11 +173,11 @@ class PlayerTrackAdapter(
                 emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
         }
 
-        binding.bgVideo.setOnClickListener {
-            emit(uiViewModel.playerBgVisibleState) { false }
-            if (uiViewModel.infoSheetState.value == STATE_EXPANDED)
-                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
-        }
+//        binding.bgVideo.setOnClickListener {
+//            emit(uiViewModel.playerBgVisibleState) { false }
+//            if (uiViewModel.infoSheetState.value == STATE_EXPANDED)
+//                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
+//        }
 
         binding.expandedTrackCover.setOnClickListener {
             emit(uiViewModel.playerBgVisibleState) { true }

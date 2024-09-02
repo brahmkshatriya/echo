@@ -115,6 +115,13 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
+        //TODO: Quality Selection
+        //TODO: Open .eapk files
+        //TODO: extension updater
+        //TODO: Spotify
+        //TODO: EQ, Pitch, Tempo, Reverb & Sleep Timer(5m, 10m, 15m, 30m, 45m, 1hr, End of track)
+//        val equalizer = Equalizer(1, exoPlayer.audioSessionId)
+
         this.mediaLibrarySession = session
     }
 

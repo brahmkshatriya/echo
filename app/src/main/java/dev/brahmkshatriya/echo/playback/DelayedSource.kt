@@ -23,6 +23,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
@@ -80,7 +81,10 @@ class DelayedSource(
             true -> videoFactory.create(new)
             null -> FilteringMediaSource(audioFactory.create(new), C.TRACK_TYPE_AUDIO)
             false -> MergingMediaSource(
-                FilteringMediaSource(videoFactory.create(new), C.TRACK_TYPE_VIDEO),
+                FilteringMediaSource(
+                    videoFactory.create(new),
+                    setOf(C.TRACK_TYPE_VIDEO, C.TRACK_TYPE_TEXT)
+                ),
                 FilteringMediaSource(audioFactory.create(new), C.TRACK_TYPE_AUDIO)
             )
         }
@@ -109,9 +113,14 @@ class DelayedSource(
     private suspend fun resolve(mediaItem: MediaItem): MediaItem {
         val track = mediaItem.track
         val loadedTrack = if (!mediaItem.isLoaded) loadTrack(mediaItem) else track
-        val newMediaItem = MediaItemUtils.build(settings, mediaItem, loadedTrack)
+        var newMediaItem = MediaItemUtils.build(settings, mediaItem, loadedTrack)
         val video = if (mediaItem.videoIndex < 0) return newMediaItem else loadVideo(mediaItem)
-        return MediaItemUtils.build(newMediaItem, video)
+        newMediaItem = MediaItemUtils.build(newMediaItem, video)
+        println("subtitleIndex: ${mediaItem.subtitleIndex}")
+        val subtitle =
+            if (mediaItem.subtitleIndex < 0) return newMediaItem else loadSubtitle(mediaItem)
+        println("subtitle: $subtitle")
+        return MediaItemUtils.build(newMediaItem, subtitle)
     }
 
     private suspend fun loadTrack(
@@ -137,6 +146,15 @@ class DelayedSource(
         val streamable = streams[index]
         return mediaItem.getTrackClient(context, extensionListFlow) {
             getStreamableMedia(streamable) as Streamable.Media.WithVideo
+        }
+    }
+
+    private suspend fun loadSubtitle(mediaItem: MediaItem): Streamable.Media.Subtitle {
+        val streams = mediaItem.track.subtitleStreamables
+        val index = mediaItem.subtitleIndex
+        val streamable = streams[index]
+        return mediaItem.getTrackClient(context, extensionListFlow) {
+            getStreamableMedia(streamable) as Streamable.Media.Subtitle
         }
     }
 

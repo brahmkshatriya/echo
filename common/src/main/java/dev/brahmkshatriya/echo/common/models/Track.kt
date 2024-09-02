@@ -17,6 +17,10 @@ data class Track(
     val streamables: List<Streamable> = listOf(),
     val expiresAt: Long = 0,
 ) {
+    val subtitleStreamables: List<Streamable> by lazy {
+        streamables.filter { it.mediaType == Streamable.MediaType.Subtitle }
+    }
+
     val audioStreamables: List<Streamable> by lazy {
         mediaStreamables + streamables.filter { it.mediaType == Streamable.MediaType.Audio }
     }

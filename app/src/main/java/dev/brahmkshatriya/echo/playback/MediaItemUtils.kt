@@ -4,8 +4,10 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.ThumbRating
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -35,42 +37,58 @@ object MediaItemUtils {
         settings: SharedPreferences?,
         mediaItem: MediaItem,
         track: Track
-    ): MediaItem =
-        with(mediaItem) {
-            val item = buildUpon()
-            val metadata =
-                track.toMetaData(mediaMetadata.extras!!, clientId, context, true, settings)
-            item.setMediaMetadata(metadata)
-            return item.build()
-        }
+    ): MediaItem = with(mediaItem) {
+        val item = buildUpon()
+        val metadata =
+            track.toMetaData(mediaMetadata.extras!!, clientId, context, true, settings)
+        item.setMediaMetadata(metadata)
+        return item.build()
+    }
 
-    fun buildAudio(mediaItem: MediaItem, index: Int): MediaItem =
-        with(mediaItem) {
-            val item = buildUpon()
-            val metadata = track.toMetaData(mediaMetadata.extras!!, audioStreamIndex = index)
-            item.setMediaMetadata(metadata)
-            return item.build()
-        }
+    fun buildAudio(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
+        val item = buildUpon()
+        val metadata = track.toMetaData(mediaMetadata.extras!!, audioStreamIndex = index)
+        item.setMediaMetadata(metadata)
+        return item.build()
+    }
 
-    fun buildVideo(mediaItem: MediaItem, index: Int): MediaItem =
-        with(mediaItem) {
-            val item = buildUpon()
-            val metadata = track.toMetaData(mediaMetadata.extras!!, videoStreamIndex = index)
-            item.setMediaMetadata(metadata)
-            return item.build()
-        }
+    fun buildVideo(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
+        val item = buildUpon()
+        val metadata = track.toMetaData(mediaMetadata.extras!!, videoStreamIndex = index)
+        item.setMediaMetadata(metadata)
+        return item.build()
+    }
 
-    fun build(mediaItem: MediaItem, video: Streamable.Media.WithVideo): MediaItem =
-        with(mediaItem) {
-            val item = buildUpon()
-            val bundle = mediaMetadata.extras!!
-            bundle.putSerialized("video", video)
-            val metadata = mediaMetadata.buildUpon()
-                .setExtras(bundle)
-                .build()
-            item.setMediaMetadata(metadata)
-            return item.build()
-        }
+    fun buildSubtitle(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
+        val item = buildUpon()
+        val metadata = track.toMetaData(mediaMetadata.extras!!, subtitleIndex = index)
+        item.setMediaMetadata(metadata)
+        return item.build()
+    }
+
+    fun build(mediaItem: MediaItem, video: Streamable.Media.WithVideo) = with(mediaItem) {
+        val item = buildUpon()
+        val bundle = mediaMetadata.extras!!
+        bundle.putSerialized("video", video)
+        val metadata = mediaMetadata.buildUpon()
+            .setExtras(bundle)
+            .build()
+        item.setMediaMetadata(metadata)
+        item.build()
+    }
+
+    fun build(mediaItem: MediaItem, subtitle: Streamable.Media.Subtitle) = with(mediaItem) {
+        val item = buildUpon()
+        item.setSubtitleConfigurations(
+            listOf(
+                MediaItem.SubtitleConfiguration.Builder(subtitle.url.toUri())
+                    .setMimeType(subtitle.type.toMimeType())
+                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                    .build()
+            )
+        )
+        item.build()
+    }
 
     private fun Track.toMetaData(
         bundle: Bundle,
@@ -81,6 +99,7 @@ object MediaItemUtils {
         video: Streamable.Media.WithVideo? = null,
         audioStreamIndex: Int? = null,
         videoStreamIndex: Int? = null,
+        subtitleIndex: Int? = null
     ) = MediaMetadata.Builder()
         .setTitle(title)
         .setArtist(artists.joinToString(", ") { it.name })
@@ -102,6 +121,10 @@ object MediaItemUtils {
                     "videoStream",
                     videoStreamIndex ?: selectVideoIndex(settings, videoStreamables)
                 )
+                putInt(
+                    "subtitle",
+                    subtitleIndex ?: 0.takeIf { subtitleStreamables.isNotEmpty() } ?: -1
+                )
             }
         )
 
@@ -114,6 +137,7 @@ object MediaItemUtils {
     val MediaMetadata.context get() = extras?.getSerialized<EchoMediaItem?>("context")
     val MediaMetadata.audioIndex get() = extras?.getInt("audioStream") ?: -1
     val MediaMetadata.videoIndex get() = extras?.getInt("videoStream") ?: -1
+    val MediaMetadata.subtitleIndex get() = extras?.getInt("subtitle") ?: -1
     val MediaMetadata.isLiked get() = (userRating as? ThumbRating)?.isThumbsUp == true
     val MediaMetadata.video get() = extras?.getSerialized<Streamable.Media.WithVideo?>("video")
 
@@ -123,9 +147,16 @@ object MediaItemUtils {
     val MediaItem.isLoaded get() = mediaMetadata.isLoaded
     val MediaItem.audioIndex get() = mediaMetadata.audioIndex
     val MediaItem.videoIndex get() = mediaMetadata.videoIndex
+    val MediaItem.subtitleIndex get() = mediaMetadata.subtitleIndex
     val MediaItem.video get() = mediaMetadata.video
     val MediaItem.isLiked get() = mediaMetadata.isLiked
 
     val MediaItem.audioStreamable get() = track.audioStreamables[audioIndex]
     val MediaItem.videoStreamable get() = track.videoStreamables.getOrNull(videoIndex)
+
+    private fun Streamable.SubtitleType.toMimeType() = when (this) {
+        Streamable.SubtitleType.VTT -> MimeTypes.TEXT_VTT
+        Streamable.SubtitleType.SRT -> MimeTypes.APPLICATION_SUBRIP
+        Streamable.SubtitleType.ASS -> MimeTypes.TEXT_SSA
+    }
 }

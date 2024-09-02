@@ -15,9 +15,12 @@ data class Streamable(
     val extra: Map<String, String> = mapOf()
 ) {
     enum class MimeType { Progressive, HLS, DASH }
-    enum class MediaType { Audio, Video, AudioVideo }
+    enum class MediaType { Audio, Video, AudioVideo, Subtitle }
+    enum class SubtitleType { VTT, SRT, ASS }
 
     sealed class Media {
+        data class Subtitle(val url: String, val type: SubtitleType) : Media()
+
         data class AudioOnly(val audio: Audio) : Media()
 
         @Serializable
@@ -49,6 +52,8 @@ data class Streamable(
 
             fun String.toAudioVideoMedia(headers: Map<String, String> = mapOf()) =
                 WithVideo.WithAudio(this.toRequest(headers))
+
+            fun String.toSubtitleMedia(type: SubtitleType) = Subtitle(this, type)
         }
     }
 
@@ -93,5 +98,11 @@ data class Streamable(
             title: String? = null,
             extra: Map<String, String> = mapOf()
         ) = Streamable(id, quality, MediaType.AudioVideo, type, title, extra)
+
+        fun subtitle(
+            id: String,
+            title: String? = null,
+            extra: Map<String, String> = mapOf()
+        ) = Streamable(id, 0, MediaType.Subtitle, MimeType.Progressive, title, extra)
     }
 }
