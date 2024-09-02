@@ -188,4 +188,9 @@
     <string name="language">ভাষা</string>
     <string name="system">চিস্টেম</string>
     <string name="language_summary">এপ্‌টোৰ ভাষা, চিস্টেমে প্ৰতিৰূপভাৱে ইংৰাজী বাছনি কৰিব</string>
+    <string name="video_quality">ভিডিঅ\'ৰ মানদণ্ড</string>
+    <string name="video_quality_summary">ভিডিঅ\'টোৰ মান, ভিডিঅ ইয়াৰ পৰাও নিষ্ক্ৰিয় কৰিব পাৰিব</string>
+    <string name="video_quality_none">একো নাই</string>
+    <string name="cache_size">কেচৰ আকাৰ</string>
+    <string name="cache_size_summary">অডিঅ\' আৰু ভিডিঅ\' কেচ কৰিবলৈ MB ত আকাৰ</string>
 </resources>
