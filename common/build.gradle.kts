@@ -10,6 +10,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 }
