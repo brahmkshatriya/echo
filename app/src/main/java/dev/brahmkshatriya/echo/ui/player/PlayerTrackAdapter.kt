@@ -386,7 +386,7 @@ class PlayerTrackAdapter(
                         if (!isCurrent) return@observe
                         post {
                             setPlayer(null)
-                            setPlayer(viewModel.browser)
+                            setPlayer(viewModel.browser.value)
                         }
                     }
                 }

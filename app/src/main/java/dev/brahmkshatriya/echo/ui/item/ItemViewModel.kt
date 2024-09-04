@@ -42,6 +42,7 @@ class ItemViewModel @Inject constructor(
     var isFollowClient = false
 
     val itemFlow = MutableStateFlow<EchoMediaItem?>(null)
+    var loadRelatedFeed = true
     val relatedFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
 
     fun load() {
@@ -91,7 +92,7 @@ class ItemViewModel @Inject constructor(
     ): T? {
         return tryWith(info) {
             val loaded = loadItem(item)
-            viewModelScope.launch {
+            if(loadRelatedFeed) viewModelScope.launch {
                 tryWith(info) {
                     loadRelated(loaded).toFlow().map { it }
                 }?.collectTo(relatedFeed)

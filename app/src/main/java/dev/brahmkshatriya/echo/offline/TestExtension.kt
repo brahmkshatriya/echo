@@ -77,8 +77,11 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     private val video =
         "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
+    private val m3u8 =
+        "https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8"
+
     private val subtitle =
-        "https://gist.githubusercontent.com/samdutton/ca37f3adaf4e23679957b8083e061177/raw/e19399fbccbc069a2af4266e5120ae6bad62699a/sample.vtt"
+        "https://raw.githubusercontent.com/brenopolanski/html5-video-webvtt-example/master/MIB2-subtitles-pt-BR.vtt"
 
     private fun createTrack(id: String, title: String, streamables: List<Streamable>) = Track(
         id,
@@ -104,6 +107,14 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
                 "audioVideo",
                 "Audio Video",
                 listOf(Streamable.audioVideo(audio, 0), Streamable.subtitle(subtitle))
+            ),
+            createTrack(
+                "m3u8",
+                "M3U8",
+                listOf(
+                    Streamable.audioVideo(m3u8, 0, Streamable.MimeType.HLS),
+                    Streamable.subtitle(subtitle)
+                )
             )
         )
     }

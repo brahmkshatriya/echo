@@ -114,7 +114,7 @@ class PlayerFragment : Fragment() {
         }
 
         observe(uiViewModel.playerSheetOffset) {
-            viewModel.browser?.volume = 1 + min(0f, it)
+            viewModel.browser.value?.volume = 1 + min(0f, it)
             val offset = max(0f, it)
             binding.playerOutline.alpha = 1 - offset
         }

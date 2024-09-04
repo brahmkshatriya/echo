@@ -28,6 +28,7 @@ fun MediaItem.toTrack() = mediaMetadata.run {
         extras?.getLong("Duration"),
         null,
         releaseYear.toString(),
+        null,
         liked,
         mapOf(),
         listOf(Streamable.audio(localConfiguration!!.uri.toString(), 0))

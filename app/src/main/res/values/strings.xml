@@ -199,6 +199,14 @@
     <string name="video_quality_none">None</string>
     <string name="cache_size">Cache Size</string>
     <string name="cache_size_summary">Size in MB to cache audio and video</string>
+    <string name="audio_qualities">Audio Qualities</string>
+    <string name="video_qualities">Video Qualities</string>
+    <string name="subtitles">Subtitles</string>
+    <string name="audio_selection">Audio Selection</string>
+    <string name="video_selection">Video Selection</string>
+    <string name="subtitle_selection">Subtitle Selection</string>
+    <string name="track_total_plays">%1$d Plays</string>
+    <string name="off">Off</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

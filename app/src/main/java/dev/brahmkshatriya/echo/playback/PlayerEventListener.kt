@@ -29,7 +29,7 @@ class PlayerEventListener(
 
     private fun updateCurrent() {
         handler.removeCallbacks(runnable)
-        if(player.isPlaying) ResumptionUtils.saveCurrentPos(context, player.currentPosition)
+        if (player.isPlaying) ResumptionUtils.saveCurrentPos(context, player.currentPosition)
         handler.postDelayed(runnable, 1000)
     }
 

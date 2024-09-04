@@ -94,6 +94,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
             viewModel.item = item
             viewModel.extension = extension
+            viewModel.loadRelatedFeed = false
             viewModel.initialize()
             observe(viewModel.itemFlow) {
                 if (it != null) {

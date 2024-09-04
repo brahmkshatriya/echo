@@ -58,9 +58,9 @@ class PlayerViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
-    var browser: MediaBrowser? = null
+    var browser = MutableStateFlow<MediaBrowser?>(null)
     private fun withBrowser(block: (MediaBrowser) -> Unit) {
-        val browser = browser
+        val browser = browser.value
         if (browser != null) viewModelScope.launch(Dispatchers.Main) {
             runCatching { block(browser) }.getOrElse {
                 throwableFlow.emit(it)
@@ -218,7 +218,7 @@ class PlayerViewModel @Inject constructor(
             browser: MediaBrowser,
             viewModel: PlayerViewModel
         ) {
-            viewModel.browser = browser
+            viewModel.browser.value = browser
             browser.addListener(PlayerUiListener(browser, viewModel))
 
             viewModel.run {

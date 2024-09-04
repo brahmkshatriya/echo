@@ -12,6 +12,7 @@ data class Track(
     val duration: Long? = null,
     val plays: Int? = null,
     val releaseDate: String? = null,
+    val description: String? = null,
     val liked: Boolean = false,
     val extras: Map<String, String> = mapOf(),
     val streamables: List<Streamable> = listOf(),
