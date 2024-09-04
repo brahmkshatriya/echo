@@ -188,4 +188,9 @@
     <string name="language">भाषा</string>
     <string name="system">प्रणाली</string>
     <string name="language_summary">अनुप्रयोगस्य भाषा, प्रणाली संस्कृतं निर्दिश्य, आवश्यं प्राकृत्यरूपेण आङ्ग्लं भविष्यति।</string>
+    <string name="video_quality">विडियो क्वालिटी</string>
+    <string name="video_quality_summary">विडियोस्य गुणवत्ता, विडिओ अपि अत्रतः अक्षमं कर्तुं शक्यते</string>
+    <string name="video_quality_none">न कश्चित्</string>
+    <string name="cache_size_summary">श्रव्यं विडियो च संग्रहणार्थं MB मध्ये आकारः</string>
+    <string name="cache_size">सङ्ग्राहक परिमाण</string>
 </resources>
