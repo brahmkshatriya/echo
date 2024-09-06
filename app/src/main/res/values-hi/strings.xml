@@ -193,4 +193,12 @@
     <string name="video_quality_none">कोई नहीं</string>
     <string name="cache_size">कैचे आकार</string>
     <string name="cache_size_summary">ऑडियो और वीडियो कैश करने के लिए MB में आकार</string>
+    <string name="off">बंद</string>
+    <string name="video_qualities">वीडियो गुणवत्ता</string>
+    <string name="video_selection">वीडियो चयन</string>
+    <string name="track_total_plays">%1$d चल रहा है</string>
+    <string name="audio_qualities">ऑडियो गुणवत्ता</string>
+    <string name="subtitles">उपशीर्षक</string>
+    <string name="audio_selection">ऑडियो चयन</string>
+    <string name="subtitle_selection">उपशीर्षक चयन</string>
 </resources>
