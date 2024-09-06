@@ -193,4 +193,12 @@
     <string name="video_quality_none">न कश्चित्</string>
     <string name="cache_size_summary">श्रव्यं विडियो च संग्रहणार्थं MB मध्ये आकारः</string>
     <string name="cache_size">सङ्ग्राहक परिमाण</string>
+    <string name="audio_selection">श्रव्यचयनम्</string>
+    <string name="video_selection">विडियो चयन</string>
+    <string name="track_total_plays">%1$d गीतं वाद्यते</string>
+    <string name="off">दूरे</string>
+    <string name="video_qualities">विडियो गुण</string>
+    <string name="subtitles">उपशीर्षक</string>
+    <string name="audio_qualities">श्रव्यगुणाः</string>
+    <string name="subtitle_selection">उपशीर्षकचयनम्</string>
 </resources>
