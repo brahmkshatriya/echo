@@ -54,17 +54,15 @@ class PlayerViewModel @Inject constructor(
     val radioStateFlow: MutableStateFlow<Radio.State>,
     val cache: SimpleCache,
     val fftAudioProcessor: FFTAudioProcessor,
-    val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
     var browser = MutableStateFlow<MediaBrowser?>(null)
-    private fun withBrowser(block: (MediaBrowser) -> Unit) {
-        val browser = browser.value
-        if (browser != null) viewModelScope.launch(Dispatchers.Main) {
-            runCatching { block(browser) }.getOrElse {
-                throwableFlow.emit(it)
-            }
+    fun withBrowser(block: (MediaBrowser) -> Unit) {
+        viewModelScope.launch(Dispatchers.Main) {
+            val browser = browser.first { it != null }!!
+            runCatching { block(browser) }.getOrElse { throwableFlow.emit(it) }
         }
     }
 
@@ -91,6 +89,7 @@ class PlayerViewModel @Inject constructor(
         println("sending like $it")
         likeTrack(it)
     }
+
     private fun likeTrack(isLiked: Boolean) = withBrowser {
         val old = this.isLiked.value
         this.isLiked.value = isLiked

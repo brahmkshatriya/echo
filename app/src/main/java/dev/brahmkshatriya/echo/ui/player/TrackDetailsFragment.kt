@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.ui.player
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,19 +14,29 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.Format
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagingData
+import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
+import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentTrackDetailsBinding
+import dev.brahmkshatriya.echo.databinding.ItemTrackInfoBinding
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
@@ -64,51 +76,22 @@ class TrackDetailsFragment : Fragment() {
             uiViewModel.collapsePlayer()
         }
 
+        val infoAdapter = InfoAdapter(playerViewModel)
         var mediaAdapter: MediaContainerAdapter? = null
-        println("created ${playerViewModel.currentFlow.value}")
         observe(playerViewModel.currentFlow) { current ->
-            println("item : ${current?.mediaItem?.isLoaded}")
             val (_, item) = current ?: return@observe
             item.takeIf { it.isLoaded } ?: return@observe
-
             val track = item.track
-            println("track : $track")
-            var desc = ""
-            track.plays?.let { desc += getString(R.string.track_total_plays, it) }
-            track.releaseDate?.let { desc += " • $it" }
-            track.description?.let { desc += "\n$it" }
-            binding.trackDescription.apply {
-                text = desc
-                isVisible = desc.isNotEmpty()
-            }
+            infoAdapter.applyCurrent(item)
 
-            applyChips(
-                track.audioStreamables,
-                binding.streamableAudios,
-                binding.streamableAudiosGroup,
-                item.audioIndex
-            )
-
-            applyChips(
-                listOf(null, *track.videoStreamables.toTypedArray()),
-                binding.streamableVideos,
-                binding.streamableVideosGroup,
-                item.videoIndex + 1
-            )
-
-            applyChips(
-                listOf(null, *track.subtitleStreamables.toTypedArray()),
-                binding.streamableSubtitles,
-                binding.streamableSubtitleGroup,
-                item.subtitleIndex + 1
-            )
+            if (viewModel.previous?.id == track.id) return@observe
 
             val extension =
                 playerViewModel.extensionListFlow.getExtension(item.clientId) ?: return@observe
             val adapter =
                 MediaContainerAdapter(this, "track_details", extension.info, mediaClickListener)
             mediaAdapter = adapter
-            binding.relatedRecyclerView.adapter = adapter.withLoaders()
+            binding.root.adapter = ConcatAdapter(infoAdapter, adapter.withLoaders())
             viewModel.load(item.clientId, track)
         }
 
@@ -118,170 +101,302 @@ class TrackDetailsFragment : Fragment() {
 
         observe(playerViewModel.browser) { player ->
             player ?: return@observe
-            applyTracks(player.currentTracks)
+            infoAdapter.applyTracks(player, player.currentTracks)
             player.addListener(object : Player.Listener {
                 @OptIn(UnstableApi::class)
-                override fun onTracksChanged(tracks: Tracks) = applyTracks(tracks)
+                override fun onTracksChanged(tracks: Tracks) {
+                    infoAdapter.applyTracks(player, tracks)
+                }
             })
         }
     }
 
-    private fun applyTracks(tracks: Tracks) {
-        val audios = tracks.groups.filter { it.type == C.TRACK_TYPE_AUDIO }
-        val videos = tracks.groups.filter { it.type == C.TRACK_TYPE_VIDEO }
-        val subtitles = tracks.groups.filter { it.type == C.TRACK_TYPE_TEXT }
+    @SuppressLint("NotifyDataSetChanged")
+    class InfoAdapter(
+        private val playerViewModel: PlayerViewModel
+    ) : RecyclerView.Adapter<InfoAdapter.ViewHolder>() {
 
-        val audio = applyChipsGetSelected(audios,
-            binding.trackAudios,
-            binding.trackAudiosGroup,
-            { it.toAudioDetails() })
-        val video = applyChipsGetSelected(videos,
-            binding.trackVideos,
-            binding.trackVideosGroup,
-            { it.toVideoDetails() })
+        private var item: MediaItem? = null
+        private var tracks: Tracks? = null
+        private var player: Player? = null
 
-        val subtitle = applyChipsGetSelected(subtitles,
-            binding.trackSubtitles,
-            binding.trackSubtitlesGroup,
-            { it.toSubtitleDetails() })
+        inner class ViewHolder(val binding: ItemTrackInfoBinding) :
+            RecyclerView.ViewHolder(binding.root)
 
-        val list = listOfNotNull(audio?.toAudioDetails(),
-            video?.toVideoDetails(),
-            subtitle?.toSubtitleDetails()?.takeIf { it != "Unknown" })
-        println("list : $list")
-        binding.streamableInfo.isVisible = list.isNotEmpty()
-        binding.streamableInfo.text = list.joinToString("\n")
-    }
-
-    @OptIn(UnstableApi::class)
-    private fun Format.getBitrate() =
-        (bitrate / 1000).takeIf { it > 0 }?.let { " • ${it}kbps" } ?: ""
-
-    private fun Format.getFrameRate() =
-        frameRate.toInt().takeIf { it > 0 }?.let { " • $it fps" } ?: ""
-
-    private fun Format.toVideoDetails() = "${height}p${getFrameRate()}${getBitrate()}"
-
-    private fun Format.getMimeType() = when (val mime = sampleMimeType?.replace("audio/", "")) {
-        "mp4a-latm" -> "AAC"
-        else -> mime?.uppercase()
-    }
-
-    private fun Format.getHertz() =
-        sampleRate.takeIf { it > 0 }?.let { " • $it Hz" } ?: ""
-
-    @OptIn(UnstableApi::class)
-    private fun Format.toAudioDetails() =
-        "${getMimeType()}${getHertz()}• ${channelCount}ch${getBitrate()}"
-
-
-    private fun Format.toSubtitleDetails() = label ?: language ?: "Unknown"
-
-    @OptIn(UnstableApi::class)
-    private fun applyChipsGetSelected(
-        groups: List<Tracks.Group>,
-        textView: TextView,
-        chipGroup: ChipGroup,
-        text: (Format) -> String = {
-            it.toString()
-        },
-        onClick: Chip.(Pair<Tracks.Group, Int>?) -> Unit = {
-            println("group : ${it!!.first.getTrackFormat(it.second)}")
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val layoutInflater = LayoutInflater.from(parent.context)
+            val binding = ItemTrackInfoBinding.inflate(layoutInflater, parent, false)
+            return ViewHolder(binding)
         }
-    ): Format? {
-        var selected: Pair<Tracks.Group, Int>? = null
-        val trackGroups = groups.map { trackGroup ->
-            (0 until trackGroup.length).map { i ->
-                val pair = Pair(trackGroup, i)
-                val isSelected = trackGroup.isTrackSelected(i)
-                if (isSelected) selected = pair
-                pair
-            }
-        }.flatten()
-        val select = trackGroups.indexOf(selected).takeIf { it != -1 }
-        applyChips(
-            trackGroups, textView, chipGroup, select, {
-                val format = it!!.first.getTrackFormat(it.second)
-                text(format)
-            }, onClick
-        )
-        return selected?.run { first.getTrackFormat(second) }
-    }
 
-    private fun applyChips(
-        streamables: List<Streamable?>,
-        textView: TextView,
-        chipGroup: ChipGroup,
-        selected: Int?,
-        onClick: Chip.(Streamable?) -> Unit = { println("clicked : $it") }
-    ) {
-        applyChips(
-            streamables,
-            textView,
-            chipGroup,
-            selected,
-            { it?.title ?: it?.quality?.toString() ?: getString(R.string.off) },
-            onClick
-        )
-    }
+        override fun getItemCount() = 1
 
-    private fun <T> applyChips(
-        list: List<T?>,
-        textView: TextView,
-        chipGroup: ChipGroup,
-        selected: Int?,
-        text: (T?) -> String,
-        onClick: Chip.(T?) -> Unit
-    ) {
-        val visible = list.size > 1
-        println("${textView.text} $visible : ${list.size}")
-        textView.isVisible = visible
-        chipGroup.apply {
-            isVisible = visible
-            removeAllViews()
-            fun makeChip(text: String, onClick: Chip.(T?) -> Unit): Chip {
-                val chip = Chip(context)
-                chip.text = text
-                chip.isCheckable = true
-                chip.setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) onClick(chip, null)
-                }
-                addView(chip)
-                return chip
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val binding = holder.binding
+            item?.let { binding.applyCurrent(it) }
+            player?.let { binding.applyTracks(it, tracks ?: Tracks.EMPTY) }
+        }
+
+        fun applyCurrent(item: MediaItem) {
+            this.item = item
+            notifyDataSetChanged()
+        }
+
+        fun applyTracks(player: Player, tracks: Tracks) {
+            this.player = player
+            this.tracks = tracks
+            notifyDataSetChanged()
+        }
+
+        private fun ItemTrackInfoBinding.applyCurrent(item: MediaItem) {
+            val context = root.context
+            val track = item.track
+            var desc = ""
+            track.plays?.let { desc += context.getString(R.string.track_total_plays, it) }
+            track.releaseDate?.let { desc += " • $it" }
+            track.description?.let { desc += "\n$it" }
+            trackDescription.apply {
+                text = desc
+                isVisible = desc.isNotEmpty()
             }
 
-            list.forEachIndexed { index, t ->
-                val chip = makeChip(text(t)) {
-                    onClick(this, t)
+            applyChips(
+                track.audioStreamables,
+                streamableAudios,
+                streamableAudiosGroup,
+                item.audioIndex
+            ) {
+                it ?: return@applyChips
+                val index = track.audioStreamables.indexOf(it)
+                val newItem = MediaItemUtils.buildAudio(item, index)
+                playerViewModel.withBrowser { player ->
+                    player.replaceMediaItem(player.currentMediaItemIndex, newItem)
                 }
-                if (index == selected) check(chip.id)
+            }
+
+            applyChips(
+                listOf(null, *track.videoStreamables.toTypedArray()),
+                streamableVideos,
+                streamableVideosGroup,
+                item.videoIndex + 1
+            ) {
+                val index = track.videoStreamables.indexOf(it)
+                val newItem = MediaItemUtils.buildVideo(item, index)
+                playerViewModel.withBrowser { player ->
+                    player.replaceMediaItem(player.currentMediaItemIndex, newItem)
+                }
+            }
+
+            applyChips(
+                listOf(null, *track.subtitleStreamables.toTypedArray()),
+                streamableSubtitles,
+                streamableSubtitleGroup,
+                item.subtitleIndex + 1
+            ) {
+                val index = track.subtitleStreamables.indexOf(it)
+                val newItem = MediaItemUtils.buildSubtitle(item, index)
+                playerViewModel.withBrowser { player ->
+                    player.replaceMediaItem(player.currentMediaItemIndex, newItem)
+                }
             }
         }
+
+        private fun ItemTrackInfoBinding.applyTracks(player: Player, tracks: Tracks) {
+            val audios = tracks.groups.filter { it.type == C.TRACK_TYPE_AUDIO }
+            val videos = tracks.groups.filter { it.type == C.TRACK_TYPE_VIDEO }
+            val subtitles = tracks.groups.filter { it.type == C.TRACK_TYPE_TEXT }
+
+            val param: Chip.(Pair<Tracks.Group, Int>?) -> Unit = {
+                val trackGroup = it!!.first.mediaTrackGroup
+                player.trackSelectionParameters = player.trackSelectionParameters
+                    .buildUpon()
+                    .clearOverride(trackGroup)
+                    .addOverride(TrackSelectionOverride(trackGroup, it.second))
+                    .build()
+            }
+
+            val audio = applyChipsGetSelected(
+                audios,
+                trackAudios,
+                trackAudiosGroup,
+                { it.toAudioDetails() },
+                param
+            )
+
+            val video = applyChipsGetSelected(
+                videos,
+                trackVideos,
+                trackVideosGroup,
+                { it.toVideoDetails() },
+                param
+            )
+
+            val subtitle = applyChipsGetSelected(
+                subtitles, trackSubtitles,
+                trackSubtitlesGroup,
+                { it.toSubtitleDetails() },
+                param
+            )
+
+            val list = listOfNotNull(audio?.toAudioDetails(),
+                video?.toVideoDetails(),
+                subtitle?.toSubtitleDetails()?.takeIf { it != "Unknown" })
+
+            streamableInfo.isVisible = list.isNotEmpty()
+            streamableInfo.text = list.joinToString("\n")
+        }
+
+        @OptIn(UnstableApi::class)
+        private fun Format.getBitrate() =
+            (bitrate / 1000).takeIf { it > 0 }?.let { " • ${it}kbps" } ?: ""
+
+        private fun Format.getFrameRate() =
+            frameRate.toInt().takeIf { it > 0 }?.let { " • $it fps" } ?: ""
+
+        private fun Format.toVideoDetails() = "${height}p${getFrameRate()}${getBitrate()}"
+
+        private fun Format.getMimeType() = when (val mime = sampleMimeType?.replace("audio/", "")) {
+            "mp4a-latm" -> "AAC"
+            else -> mime?.uppercase()
+        }
+
+        private fun Format.getHertz() =
+            sampleRate.takeIf { it > 0 }?.let { " • $it Hz" } ?: ""
+
+        @OptIn(UnstableApi::class)
+        private fun Format.toAudioDetails() =
+            "${getMimeType()}${getHertz()} • ${channelCount}ch${getBitrate()}"
+
+
+        private fun Format.toSubtitleDetails() = label ?: language ?: "Unknown"
+
+        @OptIn(UnstableApi::class)
+        private fun applyChipsGetSelected(
+            groups: List<Tracks.Group>,
+            textView: TextView,
+            chipGroup: ChipGroup,
+            text: (Format) -> String,
+            onClick: Chip.(Pair<Tracks.Group, Int>?) -> Unit
+        ): Format? {
+            var selected: Pair<Tracks.Group, Int>? = null
+            val trackGroups = groups.map { trackGroup ->
+                (0 until trackGroup.length).map { i ->
+                    val pair = Pair(trackGroup, i)
+                    val isSelected = trackGroup.isTrackSelected(i)
+                    if (isSelected) selected = pair
+                    pair
+                }
+            }.flatten()
+            val select = trackGroups.indexOf(selected).takeIf { it != -1 }
+            applyChips(
+                trackGroups, textView, chipGroup, select, {
+                    val format = it!!.first.getTrackFormat(it.second)
+                    text(format)
+                }, onClick
+            )
+            return selected?.run { first.getTrackFormat(second) }
+        }
+
+        private fun applyChips(
+            streamables: List<Streamable?>,
+            textView: TextView,
+            chipGroup: ChipGroup,
+            selected: Int?,
+            onClick: Chip.(Streamable?) -> Unit
+        ) {
+            val context = chipGroup.context
+            applyChips(
+                streamables,
+                textView,
+                chipGroup,
+                selected,
+                {
+                    it?.let {
+                        it.title ?: when (it.mediaType) {
+                            Streamable.MediaType.Subtitle -> context.getString(R.string.unknown)
+                            else -> context.getString(R.string.quality_number, it.quality)
+                        }
+                    } ?: context.getString(R.string.off)
+                },
+                onClick
+            )
+        }
+
+        private fun <T> applyChips(
+            list: List<T?>,
+            textView: TextView,
+            chipGroup: ChipGroup,
+            selected: Int?,
+            text: (T?) -> String,
+            onClick: Chip.(T?) -> Unit
+        ) {
+            val visible = list.size > 1
+            textView.isVisible = visible
+            chipGroup.apply {
+                isVisible = visible
+                removeAllViews()
+                list.forEachIndexed { index, t ->
+                    val chip = Chip(context)
+                    chip.text = text(t)
+                    chip.isCheckable = true
+                    addView(chip)
+                    if (index == selected) check(chip.id)
+                    chip.setOnCheckedChangeListener { _, isChecked ->
+                        if (isChecked) onClick(chip, t)
+                    }
+                }
+            }
+        }
+
     }
+
 
     @HiltViewModel
     class TrackDetailsViewModel @Inject constructor(
-        throwableFlow: MutableSharedFlow<Throwable>,
+        val app: Application,
         val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+        throwableFlow: MutableSharedFlow<Throwable>,
     ) : CatchingViewModel(throwableFlow) {
 
-        private var previous: Track? = null
+        var previous: Track? = null
         val itemsFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
 
         fun load(clientId: String, track: Track) {
-            if (previous?.id == track.id) return
             previous = track
             itemsFlow.value = null
+
             val extension = extensionListFlow.getExtension(clientId) ?: return
             val client = extension.client
-            if (client !is TrackClient) return
+            val album = track.album
+            val artists = track.artists
+
             viewModelScope.launch {
+                val pagedData = PagedData.Concat(
+                    if (client is AlbumClient && album != null) PagedData.Single {
+                        listOf(
+                            client.loadAlbum(album).toMediaItem().toMediaItemsContainer()
+                        )
+                    } else PagedData.empty(),
+                    if (artists.isNotEmpty()) PagedData.Single {
+                        listOf(
+                            MediaItemsContainer.Category(
+                                app.getString(R.string.artists),
+                                if(client is ArtistClient) artists.map {
+                                    val artist = client.loadArtist(it)
+                                    artist.toMediaItem()
+                                } else artists.map { it.toMediaItem() }
+                            )
+                        )
+                    } else PagedData.empty(),
+                    if (client is TrackClient) tryWith(extension.info) {
+                        client.getMediaItems(track)
+                    } ?: PagedData.empty()
+                    else PagedData.empty()
+                )
                 tryWith(extension.info) {
-                    client.getMediaItems(track).toFlow().collectTo(itemsFlow)
+                    pagedData.toFlow().collectTo(itemsFlow)
                 }
             }
         }
     }
 }
-
-

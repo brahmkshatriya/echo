@@ -144,11 +144,8 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         return streamable.id.toAudio().toMedia()
     }
 
-    override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> = PagedData.Single {
-        listOfNotNull(
-            track.album?.let { find(it)?.toAlbum()?.toMediaItem()?.toMediaItemsContainer() }
-        ) + getArtistsWithCategories(track.artists) { it.mediaId != track.id }
-    }
+    override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> =
+        PagedData.Single { listOf() }
 
     override suspend fun loadAlbum(album: Album) =
         find(album)!!.toAlbum()

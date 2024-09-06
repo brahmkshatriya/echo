@@ -46,41 +46,56 @@ object MediaItemUtils {
     }
 
     fun buildAudio(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
-        val item = buildUpon()
-        val metadata = track.toMetaData(mediaMetadata.extras!!, audioStreamIndex = index)
-        item.setMediaMetadata(metadata)
-        return item.build()
+        val bundle = Bundle().apply {
+            putAll(mediaMetadata.extras!!)
+            putInt("audioStream", index)
+        }
+        build(mediaItem, bundle).apply {
+            println("build audio : $audioIndex $videoIndex $subtitleIndex")
+        }
     }
 
     fun buildVideo(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
-        val item = buildUpon()
-        val metadata = track.toMetaData(mediaMetadata.extras!!, videoStreamIndex = index)
-        item.setMediaMetadata(metadata)
-        return item.build()
+        val bundle = Bundle().apply {
+            putAll(mediaMetadata.extras!!)
+            putInt("videoStream", index)
+        }
+        build(mediaItem, bundle).apply {
+            println("build video : $audioIndex $videoIndex $subtitleIndex")
+        }
     }
 
     fun buildSubtitle(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
-        val item = buildUpon()
-        val metadata = track.toMetaData(mediaMetadata.extras!!, subtitleIndex = index)
-        item.setMediaMetadata(metadata)
-        return item.build()
+        val bundle = Bundle().apply {
+            putAll(mediaMetadata.extras!!)
+            putInt("subtitle", index)
+        }
+        build(mediaItem, bundle).apply {
+            println("build subtitle : $audioIndex $videoIndex $subtitleIndex")
+        }
     }
 
-    fun build(mediaItem: MediaItem, video: Streamable.Media.WithVideo) = with(mediaItem) {
-        val item = buildUpon()
-        val bundle = mediaMetadata.extras!!
-        bundle.putSerialized("video", video)
-        val metadata = mediaMetadata.buildUpon()
+    fun build(mediaItem: MediaItem, bundle: Bundle) = run {
+        val item = mediaItem.buildUpon()
+        val metadata = mediaItem.mediaMetadata.buildUpon()
             .setExtras(bundle)
+            .setSubtitle(bundle.indexes())
             .build()
         item.setMediaMetadata(metadata)
         item.build()
     }
 
-    fun build(mediaItem: MediaItem, subtitle: Streamable.Media.Subtitle) = with(mediaItem) {
+    fun build(
+        mediaItem: MediaItem,
+        video: Streamable.Media.WithVideo?,
+        subtitle: Streamable.Media.Subtitle?
+    ) = with(mediaItem) {
+        val bundle = mediaMetadata.extras!!
+        bundle.putSerialized("video", video)
         val item = buildUpon()
         item.setSubtitleConfigurations(
-            listOf(
+            if(subtitle == null) listOf()
+            else listOf(
                 MediaItem.SubtitleConfiguration.Builder(subtitle.url.toUri())
                     .setMimeType(subtitle.type.toMimeType())
                     .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
@@ -89,6 +104,7 @@ object MediaItemUtils {
         )
         item.build()
     }
+
 
     private fun Track.toMetaData(
         bundle: Bundle,
@@ -127,9 +143,12 @@ object MediaItemUtils {
                 )
             }
         )
-
+        .setSubtitle(bundle.indexes())
         .setIsPlayable(loaded)
         .build()
+
+
+    fun Bundle.indexes() = "${getInt("audioStream")} ${getInt("videoStream")} ${getInt("subtitle")}"
 
     val MediaMetadata.isLoaded get() = extras?.getBoolean("loaded") ?: false
     val MediaMetadata.track get() = requireNotNull(extras?.getSerialized<Track>("track"))

@@ -94,15 +94,16 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer> = PagedData.Single {
         listOf(
-            createTrack("audio", "Audio", listOf(Streamable.audio(audio, 0))),
-            createTrack("video", "Video", listOf(Streamable.video(video, 0))),
             createTrack(
-                "both", "Both", listOf(
-                    Streamable.audio(audio, 0),
-                    Streamable.video(video, 0),
+                "both", "All", listOf(
+                    Streamable.audioVideo(audio, 0),
+                    Streamable.audioVideo(video, 0),
+                    Streamable.audioVideo(m3u8, 0, Streamable.MimeType.HLS),
                     Streamable.subtitle(subtitle)
                 )
             ),
+            createTrack("audio", "Audio", listOf(Streamable.audio(audio, 0))),
+            createTrack("video", "Video", listOf(Streamable.video(video, 0))),
             createTrack(
                 "audioVideo",
                 "Audio Video",

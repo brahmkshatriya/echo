@@ -37,7 +37,6 @@ class VideoResolver(
         } ?: throw Exception(context.getString(R.string.track_not_found))
 
         val streamableVideo = mediaItem.video!!
-        println("streamableVideo: $streamableVideo")
         return dataSpec.copy(
             uri = streamableVideo.hashCode().toString().toUri(),
             customData = streamableVideo

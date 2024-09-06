@@ -20,6 +20,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
@@ -41,11 +42,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 @OptIn(UnstableApi::class)
 class DelayedSource(
-    private val mediaItem: MediaItem,
+    private var mediaItem: MediaItem,
     private val scope: CoroutineScope,
     private val context: Context,
     private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
@@ -55,14 +58,12 @@ class DelayedSource(
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : CompositeMediaSource<Nothing>() {
 
-    private var resolvedMediaItem: MediaItem? = null
     private lateinit var actualSource: MediaSource
-
     override fun prepareSourceInternal(mediaTransferListener: TransferListener?) {
         super.prepareSourceInternal(mediaTransferListener)
+        println("prepareSourceInternal")
         scope.launch(Dispatchers.IO) {
-            val new = if (mediaItem.isLoaded) mediaItem
-            else runCatching { resolve(mediaItem) }.getOrElse {
+            val new = runCatching { resolve(mediaItem) }.getOrElse {
                 throwableFlow.emit(it)
                 return@launch
             }
@@ -71,7 +72,9 @@ class DelayedSource(
     }
 
     private suspend fun onUrlResolved(new: MediaItem) = withContext(Dispatchers.Main) {
-        resolvedMediaItem = new
+        mediaItem = new
+        mediaItem.run { println("urlResolved : $audioIndex $videoIndex $subtitleIndex") }
+        println("video : ${new.video}")
         val useVideoFactory = when (val video = new.video) {
             is Streamable.Media.WithVideo.WithAudio -> new.videoStreamable == new.audioStreamable
             is Streamable.Media.WithVideo.Only -> if (!video.looping) false else null
@@ -91,11 +94,23 @@ class DelayedSource(
         runCatching { prepareChildSource(null, actualSource) }
     }
 
+    override fun maybeThrowSourceInfoRefreshError() {
+        runCatching {
+            super.maybeThrowSourceInfoRefreshError()
+        }.getOrElse {
+            if (it is IOException) throw it
+            else runBlocking {
+                if(it is NullPointerException) return@runBlocking
+                throwableFlow.emit(it)
+            }
+        }
+    }
+
     override fun onChildSourceInfoRefreshed(
         childSourceId: Nothing?, mediaSource: MediaSource, newTimeline: Timeline
     ) = refreshSourceInfo(newTimeline)
 
-    override fun getMediaItem() = resolvedMediaItem ?: mediaItem
+    override fun getMediaItem() = mediaItem
 
     override fun createPeriod(
         id: MediaSource.MediaPeriodId, allocator: Allocator, startPositionUs: Long
@@ -104,23 +119,32 @@ class DelayedSource(
     override fun releasePeriod(mediaPeriod: MediaPeriod) =
         actualSource.releasePeriod(mediaPeriod)
 
-    override fun canUpdateMediaItem(mediaItem: MediaItem) =
-        actualSource.canUpdateMediaItem(mediaItem)
+    override fun canUpdateMediaItem(mediaItem: MediaItem) = run {
+        this.mediaItem.apply {
+            println("item : $audioIndex $videoIndex $subtitleIndex")
+            mediaItem.run { println("new : $audioIndex $videoIndex $subtitleIndex") }
 
-    override fun updateMediaItem(mediaItem: MediaItem) =
+            if (audioIndex != mediaItem.audioIndex) return@run false
+            if (videoIndex != mediaItem.videoIndex) return@run false
+            if (subtitleIndex != mediaItem.subtitleIndex) return@run false
+        }
+        actualSource.canUpdateMediaItem(mediaItem)
+    }.also { println("canUpdateMediaItem : $it") }
+
+    override fun updateMediaItem(mediaItem: MediaItem) {
+        this.mediaItem = mediaItem
         actualSource.updateMediaItem(mediaItem)
+    }
 
     private suspend fun resolve(mediaItem: MediaItem): MediaItem {
-        val track = mediaItem.track
-        val loadedTrack = if (!mediaItem.isLoaded) loadTrack(mediaItem) else track
-        var newMediaItem = MediaItemUtils.build(settings, mediaItem, loadedTrack)
-        val video = if (mediaItem.videoIndex < 0) return newMediaItem else loadVideo(mediaItem)
-        newMediaItem = MediaItemUtils.build(newMediaItem, video)
-        println("subtitleIndex: ${mediaItem.subtitleIndex}")
+        mediaItem.run { println("resolve : $audioIndex $videoIndex $subtitleIndex") }
+        val new = if (mediaItem.isLoaded) mediaItem
+        else MediaItemUtils.build(settings, mediaItem, loadTrack(mediaItem))
+
+        val video = if (new.videoIndex < 0) null else loadVideo(new)
         val subtitle =
-            if (mediaItem.subtitleIndex < 0) return newMediaItem else loadSubtitle(mediaItem)
-        println("subtitle: $subtitle")
-        return MediaItemUtils.build(newMediaItem, subtitle)
+            if (new.subtitleIndex < 0) null else loadSubtitle(new)
+        return MediaItemUtils.build(new, video, subtitle)
     }
 
     private suspend fun loadTrack(

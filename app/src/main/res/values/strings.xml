@@ -207,6 +207,8 @@
     <string name="subtitle_selection">Subtitle Selection</string>
     <string name="track_total_plays">%1$d Plays</string>
     <string name="off">Off</string>
+    <string name="quality_number">Quality %1$d</string>
+    <string name="unknown">Unknown</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
