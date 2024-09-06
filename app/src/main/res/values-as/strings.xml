@@ -193,4 +193,12 @@
     <string name="video_quality_none">একো নাই</string>
     <string name="cache_size">কেচৰ আকাৰ</string>
     <string name="cache_size_summary">অডিঅ\' আৰু ভিডিঅ\' কেচ কৰিবলৈ MB ত আকাৰ</string>
+    <string name="audio_qualities">অডিঅ’ৰ গুণ</string>
+    <string name="video_qualities">ভিডিঅ\'ৰ গুণ</string>
+    <string name="subtitles">উপশিৰোনামা</string>
+    <string name="audio_selection">অডিঅ\' নিৰ্বাচন</string>
+    <string name="video_selection">ভিডিঅ\' নিৰ্বাচন</string>
+    <string name="track_total_plays">%1$d বাজিছে</string>
+    <string name="subtitle_selection">উপশিৰোনামা নিৰ্বাচন</string>
+    <string name="off">বন্ধ</string>
 </resources>
