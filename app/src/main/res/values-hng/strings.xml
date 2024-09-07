@@ -188,4 +188,17 @@
     <string name="value">Moolya</string>
     <string name="not_set">Set Nahi Hua</string>
     <string name="language_summary">App ki bhasha, System default mein English choose karega</string>
+    <string name="audio_qualities">Audio Ka Quality</string>
+    <string name="audio_selection">Audio Ka Chayan</string>
+    <string name="video_selection">Video Ka Chayan</string>
+    <string name="subtitles">Subtitles</string>
+    <string name="subtitle_selection">Subtitle Ka Chayan</string>
+    <string name="track_total_plays">%1$d Chal Raha He</string>
+    <string name="off">Bandh</string>
+    <string name="video_qualities">Video Ka Quality</string>
+    <string name="video_quality">Video Ka Quality</string>
+    <string name="video_quality_summary">Video Ka Quality, Yahan Se Video Ko Disable Bhi Kiya Ja Sakta Hai</string>
+    <string name="video_quality_none">Kuch Nahi</string>
+    <string name="cache_size">Cache Ka Size</string>
+    <string name="cache_size_summary">Audio Aur Video Ko Cache Karne Ke Liye MB Mein Size</string>
 </resources>
