@@ -201,4 +201,6 @@
     <string name="video_quality_none">Kuch Nahi</string>
     <string name="cache_size">Cache Ka Size</string>
     <string name="cache_size_summary">Audio Aur Video Ko Cache Karne Ke Liye MB Mein Size</string>
+    <string name="unknown">Agnyaat</string>
+    <string name="quality_number">Gunaawatta %1$d</string>
 </resources>
