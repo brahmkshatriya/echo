@@ -201,4 +201,6 @@
     <string name="track_total_plays">%1$d বাজিছে</string>
     <string name="subtitle_selection">উপশিৰোনামা নিৰ্বাচন</string>
     <string name="off">বন্ধ</string>
+    <string name="quality_number">গুণমান %1$d</string>
+    <string name="unknown">অজ্ঞাত</string>
 </resources>
