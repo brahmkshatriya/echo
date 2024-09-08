@@ -201,4 +201,6 @@
     <string name="subtitles">उपशीर्षक</string>
     <string name="audio_selection">ऑडियो चयन</string>
     <string name="subtitle_selection">उपशीर्षक चयन</string>
+    <string name="unknown">अज्ञात</string>
+    <string name="quality_number">गुणवत्ता %1$d</string>
 </resources>
