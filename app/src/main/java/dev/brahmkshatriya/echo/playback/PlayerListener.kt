@@ -7,6 +7,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 
+@UnstableApi
 open class PlayerListener(val player: Player) : Player.Listener {
     open fun onTrackStart(mediaItem: MediaItem) {}
     open fun onTrackEnd(mediaItem: MediaItem) {}
@@ -55,7 +56,6 @@ open class PlayerListener(val player: Player) : Player.Listener {
     }
 
     @CallSuper
-    @UnstableApi
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo,
         newPosition: Player.PositionInfo,

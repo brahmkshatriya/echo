@@ -27,6 +27,7 @@ import dev.brahmkshatriya.echo.plugger.TrackerExtension
 import dev.brahmkshatriya.echo.plugger.TrackerExtensionRepo
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetails
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
+import dev.brahmkshatriya.echo.ui.settings.AboutFragment.AboutPreference.Companion.applyLocale
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.COLOR_KEY
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.CUSTOM_THEME_KEY
@@ -93,6 +94,7 @@ class EchoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         //UI
+        applyLocale(settings)
         applyUiChanges(this, settings)
 
         //Crash Handling

@@ -49,6 +49,7 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override fun bind(item: QuickSearchItem) {
             item as QuickSearchItem.SearchMediaItem
             binding.query.text = item.mediaItem.title
+            transitionView.transitionName = ("quick" + item.mediaItem.id).hashCode().toString()
             item.mediaItem.cover.loadInto(binding.cover, item.mediaItem.placeHolder())
         }
 

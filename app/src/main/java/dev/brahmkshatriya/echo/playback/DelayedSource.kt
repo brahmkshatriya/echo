@@ -61,7 +61,6 @@ class DelayedSource(
     private lateinit var actualSource: MediaSource
     override fun prepareSourceInternal(mediaTransferListener: TransferListener?) {
         super.prepareSourceInternal(mediaTransferListener)
-        println("prepareSourceInternal")
         scope.launch(Dispatchers.IO) {
             val new = runCatching { resolve(mediaItem) }.getOrElse {
                 throwableFlow.emit(it)
@@ -73,8 +72,6 @@ class DelayedSource(
 
     private suspend fun onUrlResolved(new: MediaItem) = withContext(Dispatchers.Main) {
         mediaItem = new
-        mediaItem.run { println("urlResolved : $audioIndex $videoIndex $subtitleIndex") }
-        println("video : ${new.video}")
         val useVideoFactory = when (val video = new.video) {
             is Streamable.Media.WithVideo.WithAudio -> new.videoStreamable == new.audioStreamable
             is Streamable.Media.WithVideo.Only -> if (!video.looping) false else null
@@ -121,23 +118,18 @@ class DelayedSource(
 
     override fun canUpdateMediaItem(mediaItem: MediaItem) = run {
         this.mediaItem.apply {
-            println("item : $audioIndex $videoIndex $subtitleIndex")
-            mediaItem.run { println("new : $audioIndex $videoIndex $subtitleIndex") }
-
             if (audioIndex != mediaItem.audioIndex) return@run false
             if (videoIndex != mediaItem.videoIndex) return@run false
             if (subtitleIndex != mediaItem.subtitleIndex) return@run false
         }
         actualSource.canUpdateMediaItem(mediaItem)
-    }.also { println("canUpdateMediaItem : $it") }
-
+    }
     override fun updateMediaItem(mediaItem: MediaItem) {
         this.mediaItem = mediaItem
         actualSource.updateMediaItem(mediaItem)
     }
 
     private suspend fun resolve(mediaItem: MediaItem): MediaItem {
-        mediaItem.run { println("resolve : $audioIndex $videoIndex $subtitleIndex") }
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.build(settings, mediaItem, loadTrack(mediaItem))
 

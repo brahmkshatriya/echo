@@ -209,6 +209,9 @@
     <string name="off">Off</string>
     <string name="quality_number">Quality %1$d</string>
     <string name="unknown">Unknown</string>
+    <string name="permission_required">Permission Required</string>
+    <string name="permission_denied">Permission Denied</string>
+    <string name="music_permission_required_summary">This permission is required to access your music library</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
