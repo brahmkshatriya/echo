@@ -14,6 +14,7 @@ import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.playback.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.EchoMediaSourceFactory
 import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
@@ -103,6 +104,7 @@ class PlaybackService : MediaLibraryService() {
         setMediaNotificationProvider(notificationProvider)
 
         exoPlayer.addListener(PlayerEventListener(this, session, current, extListFlow))
+        exoPlayer.addListener(AudioFocusListener(this, exoPlayer))
         exoPlayer.addListener(
             Radio(exoPlayer, this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)
         )
@@ -115,10 +117,10 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
-        //TODO: Open .eapk files
-        //TODO: extension updater
         //TODO: Radio Item
         //TODO: Save to Library Client
+        //TODO: Open .eapk files
+        //TODO: extension updater
         //TODO: Spotify
         //TODO: EQ, Pitch, Tempo, Reverb & Sleep Timer(5m, 10m, 15m, 30m, 45m, 1hr, End of track)
 //        val equalizer = Equalizer(1, exoPlayer.audioSessionId)
