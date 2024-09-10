@@ -27,6 +27,7 @@
     <application
         android:name=".EchoApplication"
         android:allowBackup="true"
+        android:requestLegacyExternalStorage="true"
         android:appCategory="audio"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:usesCleartextTraffic="true"
