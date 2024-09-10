@@ -188,4 +188,19 @@
     <string name="language">भाषा</string>
     <string name="system">सिस्टम</string>
     <string name="language_summary">ऐप की भाषा, सिस्टम डिफ़ॉल्ट रूप से अंग्रेज़ी में होगी</string>
+    <string name="video_quality">विडियो की गुणवत्ता</string>
+    <string name="video_quality_summary">वीडियो की गुणवत्ता, वीडियो को यहां से अक्षम भी किया जा सकता है</string>
+    <string name="video_quality_none">कोई नहीं</string>
+    <string name="cache_size">कैचे आकार</string>
+    <string name="cache_size_summary">ऑडियो और वीडियो कैश करने के लिए MB में आकार</string>
+    <string name="off">बंद</string>
+    <string name="video_qualities">वीडियो गुणवत्ता</string>
+    <string name="video_selection">वीडियो चयन</string>
+    <string name="track_total_plays">%1$d चल रहा है</string>
+    <string name="audio_qualities">ऑडियो गुणवत्ता</string>
+    <string name="subtitles">उपशीर्षक</string>
+    <string name="audio_selection">ऑडियो चयन</string>
+    <string name="subtitle_selection">उपशीर्षक चयन</string>
+    <string name="unknown">अज्ञात</string>
+    <string name="quality_number">गुणवत्ता %1$d</string>
 </resources>
