@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Home</string>
-    <string name="library">Library</string>
+    <string name="library">Pustakalay</string>
     <string name="extensions">Extensions</string>
     <string name="settings">Settings</string>
-    <string name="play_pause">Play/Pause</string>
+    <string name="play_pause">Chalaaye/Rokein</string>
     <string name="next">Agla</string>
     <string name="add_extension">Extension Add karo</string>
     <string name="extension_settings">Extension Settings</string>
     <string name="more">Aur</string>
     <string name="retry">Dobara koshish karo</string>
     <string name="failed_loading">Loading me error</string>
-    <string name="repeat">Repeat</string>
+    <string name="repeat">Dobara</string>
     <string name="is_not_supported">%1$s ka support %2$s Extension me nahi hai</string>
     <string name="drag_to_change_playlist_position">Drag karke playlist ki position badlo</string>
     <string name="up_next">Agle</string>
@@ -21,7 +21,7 @@
     <string name="playlist">Playlist</string>
     <string name="loading">Load ho raha hai…</string>
     <string name="number_dot">%1$d.</string>
-    <string name="play">Play</string>
+    <string name="play">Chalaaye</string>
     <string name="songs">Gaane</string>
     <string name="radio">Radio</string>
     <string name="app_name">Echo</string>
@@ -34,10 +34,10 @@
     <string name="stop_player_summary">App ko recents se hataane par player ko band karo</string>
     <string name="error">Error</string>
     <string name="dynamic_player_summary">Track Artwork ke base par player ka color apply karo</string>
-    <string name="custom_colors">Custom Colors</string>
+    <string name="custom_colors">Anukulit Rang</string>
     <string name="saved_to_playlist">%1$s me save kiya</string>
-    <string name="incognito">Incognito</string>
-    <string name="create">Create</string>
+    <string name="incognito">Gupt</string>
+    <string name="create">Banao</string>
     <string name="save">Save karo</string>
     <string name="animations">Animations</string>
     <string name="edit_playlist">Playlist Edit karo</string>
@@ -45,7 +45,7 @@
     <string name="playing_from">Kahan se play kar rahe hain</string>
     <string name="equalizer_summary">Device ke equalizer settings kholna</string>
     <string name="extension_login">%1$s Login</string>
-    <string name="music">Music</string>
+    <string name="music">Sangeet</string>
     <string name="amoled">Amoled</string>
     <string name="track_not_found">Track nahi mila</string>
     <string name="theme">Theme</string>
@@ -70,13 +70,13 @@
     </plurals>
     <string name="auto_start_radio_summary">Track se related gaane playlist me automatically add karo, taaki queue infinite ho</string>
     <string name="track">Track</string>
-    <string name="behavior">Behavior</string>
+    <string name="behavior">Vyavhaar</string>
     <string name="saved_to_playlists">Playlists me save hogaya</string>
     <string name="artist">Artist</string>
     <string name="unfollow">Unfollow</string>
     <string name="follow">Follow</string>
     <string name="version">Version</string>
-    <string name="about">About</string>
+    <string name="about">Jaankari</string>
     <string name="auto_start_radio">Auto Start Radio</string>
     <string name="theme_summary">Blind banna hai?</string>
     <string name="amoled_summary">Pitch Black, Pure Black</string>
@@ -112,14 +112,14 @@
     <string name="not_loading">Loading nahi ho raha</string>
     <string name="login_required">%1$s Login zaroori hai</string>
     <string name="extension_out_of_date">Extension outdated hai</string>
-    <string name="playlist_favourite">Liked Songs</string>
-    <string name="playlist_favourite_desc">Sabhi liked songs ek jagah par.</string>
+    <string name="playlist_favourite">Pasandit Gaane</string>
+    <string name="playlist_favourite_desc">Sabhi liked gaane ek jagah par.</string>
     <string name="add_to_queue">Queue me add karo</string>
     <string name="play_next">Next me play karo</string>
     <string name="save_to_playlist">Playlist me save karo</string>
     <string name="share">Share karo</string>
     <string name="playlist_name">Playlist ka Naam</string>
-    <string name="cancel">Cancel</string>
+    <string name="cancel">Radd Karo</string>
     <string name="playlist_description">Playlist Description</string>
     <string name="nothing_to_show">Dikhane ke liye kuch nahi</string>
     <string name="custom_theme_color">Custom Theme Color</string>
@@ -129,23 +129,23 @@
     <string name="random">Random</string>
     <string name="choose_playlist">Playlist choose karo</string>
     <string name="saving">Saving…</string>
-    <string name="selected_songs">Selected Songs (%1$d)</string>
+    <string name="selected_songs">Chune Hue Gaane (%1$d)</string>
     <string name="skip_silence">Silence Skip karo</string>
-    <string name="skip_silence_summary">Gaanay ke silent part ko skip karo, taaki gapless playback mile.</string>
+    <string name="skip_silence_summary">Gaana ke silent part ko skip karo, taaki gapless playback mile.</string>
     <string name="app_crashed">App crash ho gayi!</string>
     <string name="keep_queue_summary">App dobara kholne par player queue recover karo.</string>
     <string name="more_by_artist">%1$s ke zyada</string>
-    <string name="unknown_amount_songs">\???? Gaaney</string>
+    <string name="unknown_amount_songs">\???? Gaane</string>
     <string name="keep_queue">Player Queue Rakho</string>
     <string name="item_radio">%1$s Radio</string>
     <string name="radio_based_on_item">%1$s ke basis par Radio</string>
     <string name="albums">Albums</string>
-    <string name="artists">Artists</string>
+    <string name="artists">Kalakar</string>
     <string name="recently_added">Recently Added</string>
     <string name="search_extension">%1$s ko search karo</string>
     <string name="no_lyrics">Lyrics nahi hai</string>
     <string name="downloads">Downloads</string>
-    <string name="downloading">Downloading</string>
+    <string name="downloading">Download ho raha hai</string>
     <string name="extension">Extension</string>
     <string name="downloaded_percentage">Downloaded: %1$d%</string>
     <string name="download_started">Download shuru ho gaya</string>
@@ -203,4 +203,7 @@
     <string name="cache_size_summary">Audio Aur Video Ko Cache Karne Ke Liye MB Mein Size</string>
     <string name="unknown">Agnyaat</string>
     <string name="quality_number">Gunaawatta %1$d</string>
+    <string name="music_permission_required_summary">Aapke Sangeet Pustakalay Tak Pahunch Ke Liye Yeh Anumati Zaroori Hai</string>
+    <string name="permission_required">Anumati Chahiye</string>
+    <string name="permission_denied">Anumati Mana Kar Di Gayi</string>
 </resources>
