@@ -203,4 +203,7 @@
     <string name="subtitle_selection">उपशीर्षक चयन</string>
     <string name="unknown">अज्ञात</string>
     <string name="quality_number">गुणवत्ता %1$d</string>
+    <string name="permission_required">अनुमति आवश्यक</string>
+    <string name="permission_denied">अनुमति नहीं मिली</string>
+    <string name="music_permission_required_summary">आपकी संगीत लाइब्रेरी तक पहुंचने के लिए यह अनुमति आवश्यक है</string>
 </resources>
