@@ -89,6 +89,8 @@ dependencies {
 
     implementation("com.github.Kyant0:taglib:1.0.0-alpha17")
 
+    implementation("io.ktor:ktor-utils:2.3.0")
+
     //TODO : use fetch instead of download manager
 //    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")
 

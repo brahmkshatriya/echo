@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.models.Request.Companion.toRequest
+import io.ktor.utils.io.ByteChannel
+import io.ktor.utils.io.ByteReadChannel
 import kotlinx.serialization.Serializable
 import java.io.InputStream
 
@@ -66,6 +68,10 @@ data class Streamable(
 
         data class ByteStream(
             val stream: InputStream, val totalBytes: Long, override val skipSilence: Boolean? = null
+        ) : Audio()
+
+        data class Channel(
+            val channel: ByteReadChannel, val totalBytes: Long, override val skipSilence: Boolean? = null
         ) : Audio()
 
         companion object {
