@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.playback
 
+import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
@@ -11,9 +12,8 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.cancel
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
-import kotlin.math.min
 
-@UnstableApi
+@OptIn(UnstableApi::class)
 class ByteChannelDataSource : BaseDataSource(true) {
 
     class Factory : DataSource.Factory {
