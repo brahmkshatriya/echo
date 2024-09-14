@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.models.Request.Companion.toRequest
-import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.serialization.Serializable
 import java.io.InputStream

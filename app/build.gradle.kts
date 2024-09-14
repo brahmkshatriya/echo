@@ -68,6 +68,8 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer-dash:1.4.1")
     implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
 
+    implementation("io.ktor:ktor-utils:2.3.0")
+
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.palette:palette-ktx:1.0.0")
 
@@ -88,8 +90,6 @@ dependencies {
     implementation("com.github.paramsen:noise:2.0.0")
 
     implementation("com.github.Kyant0:taglib:1.0.0-alpha17")
-
-    implementation("io.ktor:ktor-utils:2.3.0")
 
     //TODO : use fetch instead of download manager
 //    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")

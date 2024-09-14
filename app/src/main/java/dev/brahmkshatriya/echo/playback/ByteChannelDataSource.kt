@@ -35,7 +35,6 @@ class ByteChannelDataSource : BaseDataSource(true) {
         val audio = dataSpec.customData as Streamable.Audio.Channel
         val requestedPosition = dataSpec.position
 
-        // Attempt to seek to the requested position
         channel = audio.channel
         this.audio = audio
 
