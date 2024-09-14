@@ -17,7 +17,7 @@ import kotlin.math.min
 class ByteChannelDataSource : BaseDataSource(true) {
 
     class Factory : DataSource.Factory {
-        override fun createDataSource() = ByteStreamDataSource()
+        override fun createDataSource() = ByteChannelDataSource()
     }
 
     private var audio: Streamable.Audio.Channel? = null

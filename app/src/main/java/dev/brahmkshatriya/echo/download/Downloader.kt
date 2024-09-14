@@ -97,6 +97,7 @@ class Downloader(
 
         val id = when (val audio = media.audio) {
             is Streamable.Audio.ByteStream -> TODO()
+            is Streamable.Audio.Channel -> TODO()
             is Streamable.Audio.Http -> {
                 val request = audio.request
                 val downloadRequest = DownloadManager.Request(request.url.toUri()).apply {
