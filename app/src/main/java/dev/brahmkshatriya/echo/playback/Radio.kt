@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
-import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
@@ -47,7 +47,7 @@ class Radio(
         data object Empty : State()
         data object Loading : State()
         data class Loaded(
-            val clientId: String, val playlist: Playlist, val tracks: List<Track>, val played: Int
+            val clientId: String, val radio: Radio, val tracks: List<Track>, val played: Int
         ) : State()
     }
 
@@ -59,6 +59,7 @@ class Radio(
             extensionListFlow: StateFlow<List<MusicExtension>?>,
             clientId: String,
             item: EchoMediaItem,
+            itemContext: EchoMediaItem?,
             play: Int = -1
         ): State.Loaded? {
             val list = extensionListFlow.first { it != null }
@@ -78,28 +79,29 @@ class Radio(
                             tryWith(throwableFlow, extension.info) { block() }
                         }
 
-                    val playlist = tryIO {
+                    val radio = tryIO {
                         when (item) {
-                            is TrackItem -> client.radio(item.track)
+                            is TrackItem -> client.radio(item.track, itemContext)
                             is Lists.PlaylistItem -> client.radio(item.playlist)
                             is Lists.AlbumItem -> client.radio(item.album)
                             is Profile.ArtistItem -> client.radio(item.artist)
                             is Profile.UserItem -> client.radio(item.user)
+                            is Lists.RadioItem -> throw IllegalStateException("Radio inside radio")
                         }
                     }
 
-                    if (playlist != null) {
-                        val tracks = tryIO { client.loadTracks(playlist).loadFirst() }
+                    if (radio != null) {
+                        val tracks = tryIO { client.loadTracks(radio).loadFirst() }
                         val state = if (!tracks.isNullOrEmpty()) State.Loaded(
                             clientId,
-                            playlist,
+                            radio,
                             tracks,
                             play
                         )
                         else {
                             messageFlow.emit(
                                 SnackBar.Message(
-                                    context.getString(R.string.radio_playlist_empty)
+                                    context.getString(R.string.radio_empty)
                                 )
                             )
                             null
@@ -115,7 +117,7 @@ class Radio(
     private fun play(loaded: State.Loaded, play: Int): Boolean {
         val track = loaded.tracks.getOrNull(play) ?: return false
         val item = MediaItemUtils.build(
-            settings, track, loaded.clientId, loaded.playlist.toMediaItem()
+            settings, track, loaded.clientId, loaded.radio.toMediaItem()
         )
         player.addMediaItem(item)
         player.prepare()
@@ -126,10 +128,12 @@ class Radio(
     private fun loadPlaylist() {
         val mediaItem = player.currentMediaItem ?: return
         val client = mediaItem.clientId
-        val item = mediaItem.context ?: mediaItem.track.toMediaItem()
+        val item = mediaItem.track.toMediaItem()
+        val itemContext = mediaItem.context
         stateFlow.value = State.Loading
         scope.launch {
-            val loaded = start(context, messageFlow, throwFlow, extensionList, client, item, 0)
+            val loaded =
+                start(context, messageFlow, throwFlow, extensionList, client, item, itemContext, 0)
             stateFlow.value = loaded ?: State.Empty
             if (loaded != null) play(loaded, 0)
         }

@@ -186,7 +186,7 @@
     <string name="extension_disabled">%1$s (Disabled)</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-    <string name="radio_playlist_empty">Radio Playlist is Empty</string>
+    <string name="radio_empty">Radio is Empty</string>
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
     <string name="value">Value</string>

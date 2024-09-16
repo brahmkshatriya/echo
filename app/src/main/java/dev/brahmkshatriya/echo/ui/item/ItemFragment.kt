@@ -195,6 +195,8 @@ class ItemFragment : Fragment() {
                 is PlaylistItem ->
                     ConcatAdapter(playlistHeaderAdapter, trackAdapter, itemsAdapter)
 
+                is EchoMediaItem.Lists.RadioItem -> ConcatAdapter(trackAdapter)
+
                 is ArtistItem -> ConcatAdapter(artistHeaderAdapter, itemsAdapter)
                 else -> itemsAdapter
             }
@@ -245,6 +247,10 @@ class ItemFragment : Fragment() {
                     is PlaylistItem -> {
                         playlistHeaderAdapter.submit(it.playlist, isRadioClient)
                         loadPlaylistTracks(it.playlist)
+                    }
+
+                    is EchoMediaItem.Lists.RadioItem -> {
+                        loadRadioTracks(it.radio)
                     }
 
                     is ArtistItem ->
@@ -300,6 +306,9 @@ class ItemFragment : Fragment() {
 
                     is PlaylistItem ->
                         applyAdapter<PlaylistClient>(extension, R.string.playlist, adapter)
+
+                    is EchoMediaItem.Lists.RadioItem ->
+                        applyAdapter<RadioClient>(extension, R.string.radio, adapter)
                 }
             }
         }

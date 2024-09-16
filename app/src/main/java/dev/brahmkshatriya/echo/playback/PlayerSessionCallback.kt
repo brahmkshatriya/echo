@@ -98,12 +98,12 @@ class PlayerSessionCallback(
         val item = args.getSerialized<EchoMediaItem>("item") ?: return@future error
         radioFlow.value = Radio.State.Loading
         val loaded = Radio.start(
-            context, messageFlow, throwableFlow, extensionList, clientId, item, 0
+            context, messageFlow, throwableFlow, extensionList, clientId, item, null, 0
         )
         radioFlow.value = loaded ?: Radio.State.Empty
         if (loaded == null) return@future error
         val mediaItem = MediaItemUtils.build(
-            settings, loaded.tracks[0], loaded.clientId, loaded.playlist.toMediaItem()
+            settings, loaded.tracks[0], loaded.clientId, loaded.radio.toMediaItem()
         )
         player.setMediaItem(mediaItem)
         player.prepare()

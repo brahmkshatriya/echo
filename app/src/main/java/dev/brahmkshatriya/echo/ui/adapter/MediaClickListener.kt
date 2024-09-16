@@ -8,6 +8,7 @@ import androidx.paging.map
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Category
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Container
@@ -95,6 +96,13 @@ class MediaClickListener(
                 clientId,
                 container.title,
                 container.more?.toFlow(),
+                transitionView
+            )
+
+            is MediaItemsContainer.Tracks -> openContainer(
+                clientId,
+                container.title,
+                container.more?.toFlow()?.map { it.map { item -> item.toMediaItem().toMediaItemsContainer() } },
                 transitionView
             )
         }

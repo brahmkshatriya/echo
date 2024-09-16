@@ -146,7 +146,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                             }
                         else null,
                         if (client is RadioClient)
-                            ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                            ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                                 playerViewModel.radio(clientId, item)
                             }
                         else null,
@@ -160,7 +160,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 is EchoMediaItem.Lists.PlaylistItem -> {
                     listOfNotNull(
                         if (client is RadioClient)
-                            ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                            ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                                 playerViewModel.radio(clientId, item)
                             }
                         else null,
@@ -183,13 +183,15 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         }
                     }
                 }
+
+                is EchoMediaItem.Lists.RadioItem -> listOf()
             }
         }
 
         is EchoMediaItem.Profile -> {
             if (item is EchoMediaItem.Profile.ArtistItem) listOfNotNull(
                 if (client is RadioClient)
-                    ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                    ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                         playerViewModel.radio(clientId, item)
                     }
                 else null,
@@ -242,7 +244,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     }
                 else null,
                 if (client is RadioClient)
-                    ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                    ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                         playerViewModel.radio(clientId, item)
                     }
                 else null,

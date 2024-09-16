@@ -65,6 +65,8 @@ class Downloader(
                             context.enqueueDownload(info, client, it, playlist.toMediaItem())
                         }
                     }
+
+                    is EchoMediaItem.Lists.RadioItem -> Unit
                 }
             }
 

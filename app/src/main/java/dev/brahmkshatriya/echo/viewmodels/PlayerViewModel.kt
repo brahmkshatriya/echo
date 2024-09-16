@@ -134,6 +134,10 @@ class PlayerViewModel @Inject constructor(
                     }
                     else null
                 }
+
+                is EchoMediaItem.Lists.RadioItem -> {
+                    TODO()
+                }
             }
         }
 
@@ -206,7 +210,7 @@ class PlayerViewModel @Inject constructor(
             val index = played + subIndex + 1
             val trackList = tracks.take(index + 1).drop(played + 1).ifEmpty { null } ?: return
             radioStateFlow.value = state.copy(played = index)
-            addToQueue(clientId, playlist.toMediaItem(), trackList, true)
+            addToQueue(clientId, radio.toMediaItem(), trackList, true)
             withBrowser { play(it.mediaItemCount - 1) }
         }
     }
@@ -266,13 +270,7 @@ class PlayerViewModel @Inject constructor(
     val shareLink = MutableSharedFlow<String>()
     fun onShare(client: ShareClient, item: EchoMediaItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            val link = when (item) {
-                is EchoMediaItem.Lists.AlbumItem -> client.onShare(item.album)
-                is EchoMediaItem.Lists.PlaylistItem -> client.onShare(item.playlist)
-                is EchoMediaItem.Profile.ArtistItem -> client.onShare(item.artist)
-                is EchoMediaItem.Profile.UserItem -> client.onShare(item.user)
-                is EchoMediaItem.TrackItem -> client.onShare(item.track)
-            }
+            val link = client.onShare(item)
             shareLink.emit(link)
         }
     }

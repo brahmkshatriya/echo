@@ -7,16 +7,17 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Category
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Container
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer.Item
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
-import dev.brahmkshatriya.echo.ui.adapter.MediaItemAdapter
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
@@ -81,6 +82,13 @@ class SearchForPlaylistClickListener(
                 clientId,
                 container.title,
                 container.more?.toFlow(),
+                transitionView
+            )
+
+            is MediaItemsContainer.Tracks -> openContainer(
+                clientId,
+                container.title,
+                container.more?.toFlow()?.map { it.map { item -> item.toMediaItem().toMediaItemsContainer() } },
                 transitionView
             )
         }

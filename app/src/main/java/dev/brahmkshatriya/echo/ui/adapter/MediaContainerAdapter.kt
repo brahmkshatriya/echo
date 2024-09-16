@@ -14,11 +14,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
-import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
 import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Category
 import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Container
 import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Media
+import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.MediaTracks
+import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
+import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
 import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
@@ -126,9 +127,6 @@ class MediaContainerAdapter(
         submitData(pagingData ?: PagingData.empty())
     }
 
-
-    // Binding
-
     override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
         val items = getItem(position) ?: return
         holder.transitionView.transitionName = (transition + items.id).hashCode().toString()
@@ -149,6 +147,7 @@ class MediaContainerAdapter(
             is MediaItemsContainer.Category -> 0
             is MediaItemsContainer.Container -> 1
             is MediaItemsContainer.Item -> 2
+            is MediaItemsContainer.Tracks -> 3
         }
     }
 
@@ -156,7 +155,8 @@ class MediaContainerAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         0 -> Category.create(parent, stateViewModel, sharedPool, extensionInfo.id, listener)
         1 -> Container.create(parent)
-        else -> Media.create(parent, extensionInfo.id, listener)
+        2 -> Media.create(parent, extensionInfo.id, listener)
+        3 -> MediaTracks.create(parent, sharedPool, extensionInfo.id, listener)
+        else -> throw IllegalArgumentException("Unknown viewType: $viewType")
     }
 }
-

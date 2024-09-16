@@ -9,9 +9,11 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Audio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toAudioVideoMedia
@@ -120,12 +122,13 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         )
     }
 
-    private val emptyPlaylist = Playlist("empty", "empty", false)
-    override suspend fun radio(track: Track) = emptyPlaylist
-    override suspend fun radio(album: Album) = emptyPlaylist
-    override suspend fun radio(artist: Artist) = emptyPlaylist
-    override suspend fun radio(user: User) = emptyPlaylist
-    override suspend fun radio(playlist: Playlist) = emptyPlaylist
+    private val radio = Radio("empty", "empty")
+    override fun loadTracks(radio: Radio) = PagedData.Single<Track> { emptyList() }
+    override suspend fun radio(track: Track, context: EchoMediaItem?) = radio
+    override suspend fun radio(album: Album) = radio
+    override suspend fun radio(artist: Artist) = radio
+    override suspend fun radio(user: User) = radio
+    override suspend fun radio(playlist: Playlist) = radio
 
     override suspend fun getLibraryTabs() = emptyList<Tab>()
 
@@ -134,7 +137,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     }
 
     override suspend fun listEditablePlaylists(): List<Playlist> {
-        return listOf(emptyPlaylist)
+        return listOf()
     }
 
     override suspend fun likeTrack(track: Track, liked: Boolean): Boolean {
@@ -143,7 +146,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     }
 
     override suspend fun createPlaylist(title: String, description: String?): Playlist {
-        return emptyPlaylist
+        return Playlist("", title, true)
     }
 
     override suspend fun deletePlaylist(playlist: Playlist) {}

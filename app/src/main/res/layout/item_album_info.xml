@@ -42,7 +42,7 @@
             android:text="@string/radio"
             android:layout_marginHorizontal="8dp"
             android:textColor="@color/button_radio"
-            app:icon="@drawable/ic_radio"
+            app:icon="@drawable/ic_sensors"
             app:iconTint="@color/button_radio" />
 
         <com.google.android.material.button.MaterialButton

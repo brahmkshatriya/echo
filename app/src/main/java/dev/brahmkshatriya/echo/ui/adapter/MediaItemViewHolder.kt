@@ -101,6 +101,7 @@ sealed class MediaItemViewHolder(itemView: View) :
             is EchoMediaItem.Profile.UserItem -> R.drawable.art_user
             is EchoMediaItem.Lists.AlbumItem -> R.drawable.art_album
             is EchoMediaItem.Lists.PlaylistItem -> R.drawable.art_library_music
+            is EchoMediaItem.Lists.RadioItem -> R.drawable.art_sensors
         }
 
         fun EchoMediaItem.icon() = when (this) {
@@ -109,6 +110,7 @@ sealed class MediaItemViewHolder(itemView: View) :
             is EchoMediaItem.Profile.UserItem -> R.drawable.ic_person
             is EchoMediaItem.Lists.AlbumItem -> R.drawable.ic_album
             is EchoMediaItem.Lists.PlaylistItem -> R.drawable.ic_library_music
+            is EchoMediaItem.Lists.RadioItem -> R.drawable.ic_sensors
         }
 
         fun NewItemMediaTitleBinding.bind(item: EchoMediaItem) {

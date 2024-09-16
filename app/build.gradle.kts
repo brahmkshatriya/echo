@@ -44,7 +44,7 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation("com.github.brahmkshatriya:plugger:structure-overhaul-SNAPSHOT")
+    implementation("com.github.JeelPatel231:plugger:structure-overhaul-SNAPSHOT")
 
     implementation("androidx.appcompat:appcompat:1.7.0")
 
@@ -87,7 +87,7 @@ dependencies {
     implementation("com.flaviofaria:kenburnsview:1.0.7")
     implementation("com.github.paramsen:noise:2.0.0")
 
-    implementation("com.github.Kyant0:taglib:1.0.0-alpha17")
+    implementation("com.github.Kyant0:taglib:1.0.0-alpha22")
 
     //TODO : use fetch instead of download manager
 //    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")

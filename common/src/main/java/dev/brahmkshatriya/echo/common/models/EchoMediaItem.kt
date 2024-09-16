@@ -26,11 +26,14 @@ sealed class EchoMediaItem {
         data class AlbumItem(val album: Album) : Lists()
         @Serializable
         data class PlaylistItem(val playlist: Playlist) : Lists()
+        @Serializable
+        data class RadioItem(val radio: Radio) : Lists()
 
         val size
             get() = when (this) {
                 is AlbumItem -> album.tracks
                 is PlaylistItem -> playlist.tracks
+                is RadioItem -> 0
             }
     }
 
@@ -40,6 +43,7 @@ sealed class EchoMediaItem {
         fun Artist.toMediaItem() = Profile.ArtistItem(this)
         fun User.toMediaItem() = Profile.UserItem(this)
         fun Playlist.toMediaItem() = Lists.PlaylistItem(this)
+        fun Radio.toMediaItem() = Lists.RadioItem(this)
     }
 
     fun toMediaItemsContainer() = MediaItemsContainer.Item(
@@ -49,6 +53,7 @@ sealed class EchoMediaItem {
             is Profile.UserItem -> user.toMediaItem()
             is Lists.AlbumItem -> album.toMediaItem()
             is Lists.PlaylistItem -> playlist.toMediaItem()
+            is Lists.RadioItem -> radio.toMediaItem()
         }
     )
 
@@ -58,6 +63,7 @@ sealed class EchoMediaItem {
         is Profile.UserItem -> other is Profile.UserItem && user.id == other.user.id
         is Lists.AlbumItem -> other is Lists.AlbumItem && album.id == other.album.id
         is Lists.PlaylistItem -> other is Lists.PlaylistItem && playlist.id == other.playlist.id
+        is Lists.RadioItem -> other is Lists.RadioItem && radio.id == other.radio.id
     }
 
     val id
@@ -67,6 +73,7 @@ sealed class EchoMediaItem {
             is Profile.UserItem -> user.id
             is Lists.AlbumItem -> album.id
             is Lists.PlaylistItem -> playlist.id
+            is Lists.RadioItem -> radio.id
         }
 
     val title
@@ -76,6 +83,7 @@ sealed class EchoMediaItem {
             is Profile.UserItem -> user.name
             is Lists.AlbumItem -> album.title
             is Lists.PlaylistItem -> playlist.title
+            is Lists.RadioItem -> radio.title
         }
 
     val cover
@@ -85,6 +93,7 @@ sealed class EchoMediaItem {
             is Profile.UserItem -> user.cover
             is Lists.AlbumItem -> album.cover
             is Lists.PlaylistItem -> playlist.cover
+            is Lists.RadioItem -> radio.cover
         }
 
     val subtitle
@@ -94,5 +103,6 @@ sealed class EchoMediaItem {
             is Profile.UserItem -> null
             is Lists.AlbumItem -> album.subtitle ?: album.artists.joinToString(", ") { it.name }
             is Lists.PlaylistItem -> playlist.subtitle
+            is Lists.RadioItem -> null
         }
 }

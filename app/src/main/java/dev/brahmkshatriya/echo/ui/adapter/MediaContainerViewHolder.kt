@@ -5,14 +5,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.NewItemCategoryBinding
 import dev.brahmkshatriya.echo.databinding.NewItemContainerBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaBinding
+import dev.brahmkshatriya.echo.databinding.NewItemTracksBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
+import dev.brahmkshatriya.echo.ui.item.TrackAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 sealed class MediaContainerViewHolder(
@@ -143,6 +151,65 @@ sealed class MediaContainerViewHolder(
                     is EchoMediaItem.Lists -> listsImageContainer.bind(item)
                     is EchoMediaItem.Profile -> profileImageContainer.bind(item)
                 }
+            }
+        }
+    }
+
+    class MediaTracks(
+        val binding: NewItemTracksBinding,
+        private val sharedPool: RecyclerView.RecycledViewPool,
+        private val clientId: String?,
+        val listener: MediaItemAdapter.Listener,
+        val scope: CoroutineScope,
+    ) :
+        MediaContainerViewHolder(binding.root) {
+
+        private val trackListener = object : TrackAdapter.Listener {
+            override fun onClick(list: List<Track>, position: Int, view: View) {
+                listener.onClick(clientId, list[position].toMediaItem(), view)
+            }
+
+            override fun onLongClick(list: List<Track>, position: Int, view: View): Boolean {
+                return listener.onLongClick(clientId, list[position].toMediaItem(), view)
+            }
+        }
+
+        override fun bind(container: MediaItemsContainer) {
+            val tracks = container as MediaItemsContainer.Tracks
+            binding.title.text = tracks.title
+            binding.subtitle.text = tracks.subtitle
+            binding.subtitle.isVisible = tracks.subtitle.isNullOrBlank().not()
+            val adapter = TrackAdapter(
+                transitionView.transitionName + tracks.id,
+                trackListener
+            )
+            binding.recyclerView.adapter = adapter
+            binding.recyclerView.setRecycledViewPool(sharedPool)
+            binding.more.isVisible = tracks.more != null
+            scope.launch { adapter.submit(PagingData.from(tracks.list.take(6))) }
+        }
+
+        val layoutManager get() = binding.recyclerView.layoutManager
+        override val clickView: View = binding.more
+        override val transitionView: View = binding.titleCard
+
+        companion object {
+            fun create(
+                parent: ViewGroup,
+                sharedPool: RecyclerView.RecycledViewPool,
+                clientId: String?,
+                listener: MediaItemAdapter.Listener,
+            ): MediaContainerViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                //TODO
+                val scope = CoroutineScope(Dispatchers.Main)
+                return MediaTracks(
+                    NewItemTracksBinding.inflate(layoutInflater, parent, false),
+                    sharedPool,
+                    clientId,
+                    listener,
+                    scope
+                )
             }
         }
     }

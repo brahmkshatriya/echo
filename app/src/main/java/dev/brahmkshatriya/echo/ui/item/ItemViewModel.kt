@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
@@ -17,6 +18,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.GenericExtension
@@ -68,6 +70,10 @@ class ItemViewModel @Inject constructor(
                 is EchoMediaItem.TrackItem -> getClient<TrackClient, EchoMediaItem> {
                     load(it, item.track, ::loadTrack, ::getMediaItems)?.toMediaItem()
                 }
+
+                is EchoMediaItem.Lists.RadioItem -> getClient<RadioClient, EchoMediaItem> {
+                    load(it, item.radio, null, null)?.toMediaItem()
+                }
             }
             itemFlow.value = mediaItem
         }
@@ -87,12 +93,12 @@ class ItemViewModel @Inject constructor(
     private suspend fun <T> load(
         info: ExtensionInfo,
         item: T,
-        loadItem: suspend (T) -> T,
-        loadRelated: (T) -> PagedData<MediaItemsContainer>
+        loadItem: (suspend (T) -> T)?,
+        loadRelated: ((T) -> PagedData<MediaItemsContainer>)?
     ): T? {
         return tryWith(info) {
-            val loaded = loadItem(item)
-            if(loadRelatedFeed) viewModelScope.launch {
+            val loaded = loadItem?.let { it(item) } ?: item
+            if (loadRelatedFeed && loadRelated != null) viewModelScope.launch {
                 tryWith(info) {
                     loadRelated(loaded).toFlow().map { it }
                 }?.collectTo(relatedFeed)
@@ -119,6 +125,16 @@ class ItemViewModel @Inject constructor(
             getClient<PlaylistClient, Unit> {
                 songsFlow.value = null
                 val tracks = tryWith(it) { loadTracks(playlist) }
+                tracks?.toFlow()?.collectTo(songsFlow)
+            }
+        }
+    }
+
+    fun loadRadioTracks(radio: Radio) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<RadioClient, Unit> {
+                songsFlow.value = null
+                val tracks = tryWith(it) { loadTracks(radio) }
                 tracks?.toFlow()?.collectTo(songsFlow)
             }
         }
