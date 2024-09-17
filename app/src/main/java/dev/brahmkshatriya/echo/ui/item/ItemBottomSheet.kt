@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -31,7 +32,7 @@ import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
@@ -139,12 +140,20 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     listOfNotNull(
                         if (client is LibraryClient)
                             ItemAction.Resource(
-                                R.drawable.ic_bookmark_outline, R.string.save_to_playlist
+                                R.drawable.ic_library_music, R.string.save_to_playlist
                             ) {
                                 AddToPlaylistBottomSheet.newInstance(clientId, item)
                                     .show(parentFragmentManager, null)
                             }
                         else null,
+                        if (client is SaveToLibraryClient) {
+                            if (loaded) ItemAction.Resource(
+                                R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                            ) { viewModel.removeFromLibrary(item) }
+                            else ItemAction.Resource(
+                                R.drawable.ic_bookmark_outline, R.string.save_to_library
+                            ) { viewModel.saveToLibrary(item) }
+                        } else null,
                         if (client is RadioClient)
                             ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                                 playerViewModel.radio(clientId, item)
@@ -166,12 +175,20 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         else null,
                         if (client is LibraryClient)
                             ItemAction.Resource(
-                                R.drawable.ic_bookmark_outline, R.string.save_to_playlist
+                                R.drawable.ic_library_music, R.string.save_to_playlist
                             ) {
                                 AddToPlaylistBottomSheet.newInstance(clientId, item)
                                     .show(parentFragmentManager, null)
                             }
                         else null,
+                        if (client is SaveToLibraryClient) {
+                            if (loaded) ItemAction.Resource(
+                                R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                            ) { viewModel.removeFromLibrary(item) }
+                            else ItemAction.Resource(
+                                R.drawable.ic_bookmark_outline, R.string.save_to_library
+                            ) { viewModel.saveToLibrary(item) }
+                        } else null,
                         if (client is LibraryClient && item.playlist.isEditable)
                             ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
                                 playerViewModel.deletePlaylist(clientId, item.playlist)
@@ -195,6 +212,14 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         playerViewModel.radio(clientId, item)
                     }
                 else null,
+                if (client is SaveToLibraryClient) {
+                    if (loaded) ItemAction.Resource(
+                        R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                    ) { viewModel.removeFromLibrary(item) }
+                    else ItemAction.Resource(
+                        R.drawable.ic_bookmark_outline, R.string.save_to_library
+                    ) { viewModel.saveToLibrary(item) }
+                } else null,
                 if (client is ArtistFollowClient)
                     if (!item.artist.isFollowing)
                         ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
@@ -238,11 +263,19 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     }
                 else null,
                 if (client is LibraryClient)
-                    ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.save_to_playlist) {
+                    ItemAction.Resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
                         AddToPlaylistBottomSheet.newInstance(clientId, item)
                             .show(parentFragmentManager, null)
                     }
                 else null,
+                if (client is SaveToLibraryClient) {
+                    if (loaded) ItemAction.Resource(
+                        R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                    ) { viewModel.removeFromLibrary(item) }
+                    else ItemAction.Resource(
+                        R.drawable.ic_bookmark_outline, R.string.save_to_library
+                    ) { viewModel.saveToLibrary(item) }
+                } else null,
                 if (client is RadioClient)
                     ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                         playerViewModel.radio(clientId, item)
@@ -320,8 +353,12 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
                 is ItemAction.Custom -> {
                     binding.textView.text = action.title
-                    binding.imageView.imageTintList = colorState
-                    action.image.loadInto(binding.imageView, action.placeholder)
+                    action.image.loadWith(binding.root) {
+                        if(it == null) {
+                            binding.imageView.imageTintList = colorState
+                            binding.imageView.setImageResource(action.placeholder)
+                        } else binding.imageView.setImageDrawable(it)
+                    }
                 }
             }
         }

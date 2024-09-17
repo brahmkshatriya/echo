@@ -5,6 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -80,6 +82,10 @@ class MediaContainerAdapter(
         }
     }
 
+    suspend fun submit(pagingData: PagingData<MediaItemsContainer>?) {
+        saveState()
+        submitData(pagingData ?: PagingData.empty())
+    }
 
     //Nested RecyclerView State Management
 
@@ -101,6 +107,13 @@ class MediaContainerAdapter(
         stateViewModel.visibleScrollableViews.clear()
     }
 
+    private fun saveScrollState(holder: Category, block: ((Category) -> Unit)? = null) {
+        val layoutManagerStates = stateViewModel.layoutManagerStates
+        layoutManagerStates[holder.bindingAdapterPosition] =
+            holder.layoutManager?.onSaveInstanceState()
+        block?.invoke(holder)
+    }
+
     private fun saveState() {
         stateViewModel.visibleScrollableViews.values.forEach { item ->
             item.get()?.let { saveScrollState(it) }
@@ -110,24 +123,22 @@ class MediaContainerAdapter(
 
     override fun onViewRecycled(holder: MediaContainerViewHolder) {
         super.onViewRecycled(holder)
+        destroyLifeCycle(holder)
         if (holder is Category) saveScrollState(holder) {
             stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
         }
     }
 
-    private fun saveScrollState(holder: Category, block: ((Category) -> Unit)? = null) {
-        val layoutManagerStates = stateViewModel.layoutManagerStates
-        layoutManagerStates[holder.bindingAdapterPosition] =
-            holder.layoutManager?.onSaveInstanceState()
-        block?.invoke(holder)
-    }
-
-    suspend fun submit(pagingData: PagingData<MediaItemsContainer>?) {
-        saveState()
-        submitData(pagingData ?: PagingData.empty())
+    private fun destroyLifeCycle(holder: MediaContainerViewHolder) {
+        if (holder.isInitialized && holder.lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED))
+            holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 
     override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
+        destroyLifeCycle(holder)
+        holder.lifecycleRegistry = LifecycleRegistry(holder)
+        holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+
         val items = getItem(position) ?: return
         holder.transitionView.transitionName = (transition + items.id).hashCode().toString()
         holder.bind(items)

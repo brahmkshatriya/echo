@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.MusicExtension
@@ -31,7 +32,7 @@ class LibraryViewModel @Inject constructor(
     val playlistCreatedFlow = MutableSharedFlow<Pair<String, Playlist>>()
     fun createPlaylist(title: String) {
         val extension = extensionFlow.value ?: return
-        val client = extension.client as? LibraryClient ?: return
+        val client = extension.client as? PlaylistEditClient ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val playlist = tryWith(extension.info) { client.createPlaylist(title, null) }
                 ?: return@launch

@@ -212,6 +212,8 @@
     <string name="permission_required">Permission Required</string>
     <string name="permission_denied">Permission Denied</string>
     <string name="music_permission_required_summary">This permission is required to access your music library</string>
+    <string name="remove_from_library">Remove from Library</string>
+    <string name="save_to_library">Save to Library</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

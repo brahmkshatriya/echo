@@ -5,9 +5,9 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.EditPlayerListenerClient
-import dev.brahmkshatriya.echo.common.clients.EditPlaylistCoverClient
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
@@ -39,7 +39,7 @@ class EditPlaylistViewModel @Inject constructor(
             loadingFlow.emit(true)
             val extension = extensionListFlow.getExtension(clientId)
             val client = extension?.client
-            if (client !is LibraryClient) return@launch
+            if (client !is PlaylistEditClient) return@launch
             withContext(Dispatchers.IO) {
                 originalList =
                     tryWith(extension.info) { client.loadTracks(playlist).loadAll() } ?: emptyList()
@@ -50,8 +50,8 @@ class EditPlaylistViewModel @Inject constructor(
         }
     }
 
-    private suspend fun libraryClient(
-        clientId: String, block: suspend (client: LibraryClient) -> Unit
+    private suspend fun playlistEditClient(
+        clientId: String, block: suspend (client: PlaylistEditClient) -> Unit
     ) {
         client(clientId, block)
     }
@@ -68,7 +68,7 @@ class EditPlaylistViewModel @Inject constructor(
 
     fun changeMetadata(clientId: String, playlist: Playlist, title: String, description: String?) {
         viewModelScope.launch {
-            libraryClient(clientId) {
+            playlistEditClient(clientId) {
                 it.editPlaylistMetadata(playlist, title, description)
             }
         }
@@ -76,7 +76,7 @@ class EditPlaylistViewModel @Inject constructor(
 
     fun changeCover(clientId: String, playlist: Playlist, file: File?) {
         viewModelScope.launch {
-            client<EditPlaylistCoverClient>(clientId) {
+            client<PlaylistEditCoverClient>(clientId) {
                 it.editPlaylistCover(playlist, file)
             }
         }
@@ -133,10 +133,10 @@ class EditPlaylistViewModel @Inject constructor(
             val tracks = originalList.toMutableList()
             performedActions.emit(tracks to null)
             println("Actions Size : ${newActions.size}")
-            client<EditPlayerListenerClient>(clientId) {
+            client<PlaylistEditorListenerClient>(clientId) {
                 it.onEnterPlaylistEditor(playlist, tracks)
             }
-            libraryClient(clientId) { client ->
+            playlistEditClient(clientId) { client ->
                 newActions.forEach { action ->
                     println("new action : $action")
                     performedActions.emit(tracks to action)
@@ -161,7 +161,7 @@ class EditPlaylistViewModel @Inject constructor(
                 }
             }
             performedActions.emit(tracks to null)
-            client<EditPlayerListenerClient>(clientId) {
+            client<PlaylistEditorListenerClient>(clientId) {
                 it.onExitPlaylistEditor(playlist, tracks)
             }
         }
@@ -193,7 +193,7 @@ class EditPlaylistViewModel @Inject constructor(
         ) {
             val extension = extensionListFlow.getExtension(clientId) ?: return
             val client = extension.client
-            if (client !is LibraryClient) return
+            if (client !is PlaylistEditClient) return
             viewModelScope.launch(Dispatchers.IO) {
                 tryWith(extension.info) {
                     println("deleting playlist : ${playlist.title}")
@@ -214,8 +214,8 @@ class EditPlaylistViewModel @Inject constructor(
         ) = run {
             val extension = extensionListFlow.getExtension(clientId) ?: return
             val client = extension.client
-            if (client !is LibraryClient) return
-            val listener = client as? EditPlayerListenerClient
+            if (client !is PlaylistEditClient) return
+            val listener = client as? PlaylistEditorListenerClient
             withContext(Dispatchers.IO) {
                 playlists.forEach { playlist ->
                     tryWith(extension.info) {

@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
@@ -70,6 +71,9 @@ class LibraryFragment : Fragment() {
             binding.appBarOutline.alpha = 0f
         }
 
+        observe(viewModel.extensionFlow) {
+            binding.fabCreatePlaylist.isVisible = it?.client is PlaylistEditClient
+        }
         binding.fabCreatePlaylist.setOnClickListener {
             parent.openFragment(CreatePlaylistFragment(), it)
         }

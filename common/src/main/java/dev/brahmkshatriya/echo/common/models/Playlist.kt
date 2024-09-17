@@ -14,5 +14,6 @@ data class Playlist(
     val duration: Long? = null,
     val description: String? = null,
     val subtitle: String? = null,
-    val extras: Map<String, String> = mapOf()
+    val extras: Map<String, String> = mapOf(),
+    val isPrivate: Boolean = true,
 )

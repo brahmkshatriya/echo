@@ -136,77 +136,8 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         return PagedData.Single { emptyList() }
     }
 
-    override suspend fun listEditablePlaylists(): List<Playlist> {
-        return listOf()
-    }
-
     override suspend fun likeTrack(track: Track, liked: Boolean): Boolean {
         println("likeTrack: ${track.title}, $liked")
         return liked
-    }
-
-    override suspend fun createPlaylist(title: String, description: String?): Playlist {
-        return Playlist("", title, true)
-    }
-
-    override suspend fun deletePlaylist(playlist: Playlist) {}
-
-    override suspend fun editPlaylistMetadata(
-        playlist: Playlist,
-        title: String,
-        description: String?
-    ) {
-    }
-
-    override suspend fun addTracksToPlaylist(
-        playlist: Playlist,
-        tracks: List<Track>,
-        index: Int,
-        new: List<Track>
-    ) {
-    }
-
-    override suspend fun removeTracksFromPlaylist(
-        playlist: Playlist,
-        tracks: List<Track>,
-        indexes: List<Int>
-    ) {
-    }
-
-    override suspend fun moveTrackInPlaylist(
-        playlist: Playlist,
-        tracks: List<Track>,
-        fromIndex: Int,
-        toIndex: Int
-    ) {
-    }
-
-    override suspend fun loadPlaylist(playlist: Playlist) = playlist
-    override fun loadTracks(playlist: Playlist): PagedData<Track> = PagedData.Single {
-        listOf(
-            Track(
-                "track",
-                "Track",
-                emptyList(),
-                null,
-                null,
-                streamables = listOf(Streamable.audioVideo(video, 0))
-            )
-        )
-    }
-
-    override fun loadTracks(album: Album): PagedData<Track> {
-        return PagedData.Single { emptyList() }
-    }
-
-    override fun getMediaItems(playlist: Playlist): PagedData<MediaItemsContainer> =
-        PagedData.Single { listOf() }
-
-    override fun getMediaItems(album: Album): PagedData<MediaItemsContainer> {
-        return PagedData.Single { emptyList() }
-    }
-
-    override suspend fun loadAlbum(album: Album): Album {
-        return album
     }
 }

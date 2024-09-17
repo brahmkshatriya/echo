@@ -98,7 +98,7 @@ class Downloader(
         val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
 
         val id = when (val audio = media.audio) {
-            is Streamable.Audio.ByteStream -> TODO()
+            is Streamable.Audio.ByteStream -> throw Exception("Not Supported")
             is Streamable.Audio.Channel -> TODO()
             is Streamable.Audio.Http -> {
                 val request = audio.request

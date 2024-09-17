@@ -89,9 +89,6 @@ dependencies {
 
     implementation("com.github.Kyant0:taglib:1.0.0-alpha22")
 
-    //TODO : use fetch instead of download manager
-//    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")
-
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
     testImplementation("junit:junit:4.13.2")
 }

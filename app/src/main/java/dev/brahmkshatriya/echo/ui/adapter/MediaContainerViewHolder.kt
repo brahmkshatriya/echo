@@ -5,6 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,17 +21,19 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaBinding
 import dev.brahmkshatriya.echo.databinding.NewItemTracksBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 sealed class MediaContainerViewHolder(
     itemView: View,
-) : RecyclerView.ViewHolder(itemView) {
+) : RecyclerView.ViewHolder(itemView), LifecycleOwner {
     abstract fun bind(container: MediaItemsContainer)
     open val clickView = itemView
     abstract val transitionView: View
+
+    lateinit var lifecycleRegistry : LifecycleRegistry
+    val isInitialized get() = this::lifecycleRegistry.isInitialized
+    override val lifecycle get() = lifecycleRegistry
 
     class Category(
         val binding: NewItemCategoryBinding,
@@ -159,10 +164,8 @@ sealed class MediaContainerViewHolder(
         val binding: NewItemTracksBinding,
         private val sharedPool: RecyclerView.RecycledViewPool,
         private val clientId: String?,
-        val listener: MediaItemAdapter.Listener,
-        val scope: CoroutineScope,
-    ) :
-        MediaContainerViewHolder(binding.root) {
+        val listener: MediaItemAdapter.Listener
+    ) : MediaContainerViewHolder(binding.root) {
 
         private val trackListener = object : TrackAdapter.Listener {
             override fun onClick(list: List<Track>, position: Int, view: View) {
@@ -186,7 +189,7 @@ sealed class MediaContainerViewHolder(
             binding.recyclerView.adapter = adapter
             binding.recyclerView.setRecycledViewPool(sharedPool)
             binding.more.isVisible = tracks.more != null
-            scope.launch { adapter.submit(PagingData.from(tracks.list.take(6))) }
+            lifecycleScope.launch { adapter.submit(PagingData.from(tracks.list.take(6))) }
         }
 
         val layoutManager get() = binding.recyclerView.layoutManager
@@ -201,14 +204,11 @@ sealed class MediaContainerViewHolder(
                 listener: MediaItemAdapter.Listener,
             ): MediaContainerViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                //TODO
-                val scope = CoroutineScope(Dispatchers.Main)
                 return MediaTracks(
                     NewItemTracksBinding.inflate(layoutInflater, parent, false),
                     sharedPool,
                     clientId,
-                    listener,
-                    scope
+                    listener
                 )
             }
         }

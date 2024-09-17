@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.EditPlaylistCoverClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
@@ -165,7 +165,7 @@ class EditPlaylistFragment : Fragment() {
         observe(viewModel.extensionListFlow) {
             viewModel.load(clientId, playlist)
             val client = viewModel.extensionListFlow.getExtension(clientId)?.client
-            header.showCover(client is EditPlaylistCoverClient)
+            header.showCover(client is PlaylistEditCoverClient)
         }
 
         binding.toolbar.setOnMenuItemClickListener {

@@ -3,7 +3,8 @@ package dev.brahmkshatriya.echo.ui.editplaylist
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
@@ -33,12 +34,14 @@ class AddToPlaylistViewModel @Inject constructor(
     override fun onInitialize() {
         val extension = extensionListFlow.getExtension(clientId) ?: return
         val client = extension.client
-        if (client !is LibraryClient) return
+        if (client !is PlaylistEditClient) return
         viewModelScope.launch(Dispatchers.IO) {
             tryWith(extension.info) {
                 when (val mediaItem = item) {
-                    is EchoMediaItem.Lists.AlbumItem ->
+                    is EchoMediaItem.Lists.AlbumItem -> {
+                        if(client !is AlbumClient) return@tryWith
                         tracks.addAll(client.loadTracks(mediaItem.album).loadAll())
+                    }
                     is EchoMediaItem.Lists.PlaylistItem ->
                         tracks.addAll(client.loadTracks(mediaItem.playlist).loadAll())
                     is EchoMediaItem.TrackItem -> tracks.add(mediaItem.track)

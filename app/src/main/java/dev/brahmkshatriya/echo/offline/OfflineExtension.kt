@@ -5,11 +5,11 @@ import androidx.media3.common.MediaItem
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
-import dev.brahmkshatriya.echo.common.clients.EditPlayerListenerClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -47,7 +47,7 @@ import dev.brahmkshatriya.echo.utils.toJson
 
 class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, TrackClient,
     AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
-    EditPlayerListenerClient {
+    PlaylistEditorListenerClient {
 
     companion object {
         val metadata = ExtensionMetadata(
