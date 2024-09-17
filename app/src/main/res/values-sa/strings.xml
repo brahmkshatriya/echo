@@ -206,4 +206,6 @@
     <string name="permission_required">अनुमति आवश्यकी</string>
     <string name="music_permission_required_summary">भवतः सङ्गीतपुस्तकालयं प्राप्तुं एषा अनुमतिः आवश्यकी अस्ति</string>
     <string name="radio_empty">रेडियो रिक्तम् अस्ति</string>
+    <string name="remove_from_library">पुस्तकालयात् निष्कासयन्तु</string>
+    <string name="save_to_library">पुस्तकालये रक्षतु</string>
 </resources>
