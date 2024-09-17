@@ -188,4 +188,22 @@
     <string name="language">ভাষা</string>
     <string name="system">চিস্টেম</string>
     <string name="language_summary">এপ্‌টোৰ ভাষা, চিস্টেমে প্ৰতিৰূপভাৱে ইংৰাজী বাছনি কৰিব</string>
+    <string name="video_quality">ভিডিঅ\'ৰ গুণমান</string>
+    <string name="video_quality_summary">ভিডিঅ\'ৰ গুণমান, ইয়াৰ পৰা ভিডিঅ\' বন্ধ কৰিব পাৰি</string>
+    <string name="video_quality_none">একো নাই</string>
+    <string name="cache_size">কেচৰ আকাৰ</string>
+    <string name="cache_size_summary">অডিঅ\' আৰু ভিডিঅ\' কেচ কৰিবলৈ MB ত আকাৰ</string>
+    <string name="audio_qualities">অডিঅ’ৰ গুণ</string>
+    <string name="video_qualities">ভিডিঅ\'ৰ গুণ</string>
+    <string name="subtitles">উপশিৰোনামা</string>
+    <string name="audio_selection">অডিঅ\' নিৰ্বাচন</string>
+    <string name="video_selection">ভিডিঅ\' নিৰ্বাচন</string>
+    <string name="track_total_plays">%1$d বাজিছে</string>
+    <string name="subtitle_selection">উপশিৰোনামা নিৰ্বাচন</string>
+    <string name="off">বন্ধ</string>
+    <string name="quality_number">গুণমান %1$d</string>
+    <string name="unknown">অজ্ঞাত</string>
+    <string name="permission_required">অনুমতিৰ প্ৰয়োজন</string>
+    <string name="permission_denied">অনুমতি অস্বীকাৰ কৰা হৈছে</string>
+    <string name="music_permission_required_summary">আপোনাৰ সংগীত লাইব্ৰেৰী অভিগম কৰিবলে এই অনুমতিৰ প্ৰয়োজন</string>
 </resources>
