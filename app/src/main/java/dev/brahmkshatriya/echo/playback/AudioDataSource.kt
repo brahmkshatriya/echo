@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.playback.AudioResolver.Companion.copy
 class AudioDataSource(
     private val defaultDataSourceFactory: DefaultDataSource.Factory,
     private val byteStreamDataSourceFactory: ByteStreamDataSource.Factory,
+    private val byteChannelDataSourceFactory: ByteChannelDataSource.Factory,
 ) : BaseDataSource(true) {
 
     class Factory(
@@ -22,8 +23,9 @@ class AudioDataSource(
 
         private val defaultDataSourceFactory = DefaultDataSource.Factory(context)
         private val byteStreamDataSourceFactory = ByteStreamDataSource.Factory()
+        private val byteChannelDataSourceFactory = ByteChannelDataSource.Factory()
         override fun createDataSource() =
-            AudioDataSource(defaultDataSourceFactory, byteStreamDataSourceFactory)
+            AudioDataSource(defaultDataSourceFactory, byteStreamDataSourceFactory, byteChannelDataSourceFactory)
     }
 
     private var source: DataSource? = null
@@ -44,6 +46,11 @@ class AudioDataSource(
             is Streamable.Audio.ByteStream -> {
                 val spec = dataSpec.copy(customData = audio)
                 byteStreamDataSourceFactory.createDataSource() to spec
+            }
+
+            is Streamable.Audio.Channel -> {
+                val spec = dataSpec.copy(customData = audio)
+                byteChannelDataSourceFactory.createDataSource() to spec
             }
 
             is Streamable.Audio.Http -> {
