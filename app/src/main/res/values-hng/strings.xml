@@ -206,4 +206,5 @@
     <string name="music_permission_required_summary">Aapke Sangeet Pustakalay Tak Pahunch Ke Liye Yeh Anumati Zaroori Hai</string>
     <string name="permission_required">Anumati Chahiye</string>
     <string name="permission_denied">Anumati Mana Kar Di Gayi</string>
+    <string name="radio_empty">Radio Khali He</string>
 </resources>
