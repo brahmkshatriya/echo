@@ -172,7 +172,6 @@
     <string name="unauthorized">$1%s：用户未授权</string>
     <string name="extension_disabled">%1$s （已禁用）</string>
     <string name="enabled">已启用</string>
-    <string name="radio_playlist_empty">电台播放列表是空的</string>
     <string name="manage_extensions">管理扩展</string>
     <string name="disabled">已禁用</string>
     <string name="app_name">Echo</string>

@@ -178,11 +178,10 @@
     <string name="refresh">更新</string>
     <string name="enabled">有効</string>
     <string name="disabled">無効</string>
-    <string name="radio_playlist_empty">ラジオプレイリストは空です</string>
     <string name="navbar_gradient">グラデーションナビゲーションバー</string>
     <string name="navbar_gradient_summary">ナビゲーションバーが少しずつ透明になります</string>
     <string name="value">値</string>
-    <string name="not_set">未設定</string>
+    <string name="str_not_set">未設定</string>
     <string name="language">言語</string>
     <string name="system">システム</string>
     <string name="language_summary">デフォルトでは、アプリの言語は英語になります</string>

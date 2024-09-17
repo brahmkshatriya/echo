@@ -167,7 +167,6 @@
     <string name="extension_disabled">%1$s (Deaktiviert)</string>
     <string name="enabled">Aktiviert</string>
     <string name="disabled">Deaktiviert</string>
-    <string name="radio_playlist_empty">Radio Playlist ist leer</string>
     <string name="create">Erstellen</string>
     <string name="playlist_deleted">Playlist gelöscht</string>
     <string name="nothing_to_show">Nichts zu zeigen</string>
@@ -196,7 +195,7 @@
     <string name="language_summary">Sprache der App, System standardmäßig auf Englisch</string>
     <string name="system">System</string>
     <string name="language">Sprache</string>
-    <string name="not_set" tools:ignore="PrivateResource">Nicht Eingestellt</string>
+    <string name="str_not_set" tools:ignore="PrivateResource">Nicht Eingestellt</string>
     <string name="value">Wert</string>
     <string name="cache_size_summary">Größe in MB zum Cachen von Audio und Video</string>
     <string name="cache_size">Cache Größe</string>

@@ -180,11 +180,10 @@
     <string name="manage_extensions">এক্সটেনশ্যনসমূহ ব্যৱস্থাপনা কৰক</string>
     <string name="unauthorized">$1%s : ব্যৱহাৰকাৰী অনুমতি নাই</string>
     <string name="extension_disabled">%1$s (অক্ষমিত)</string>
-    <string name="radio_playlist_empty">ৰেডিঅ\' প্লেলিষ্ট খালি</string>
     <string name="navbar_gradient">গ্ৰেডিয়েণ্ট নেভবাৰ</string>
     <string name="navbar_gradient_summary">নেভবাৰ অলপ অলপকৈ পৰিস্ফুট হৈ পৰে</string>
     <string name="value">মান</string>
-    <string name="not_set">স্থাপন কৰা হোৱা নাই</string>
+    <string name="str_not_set">স্থাপন কৰা হোৱা নাই</string>
     <string name="language">ভাষা</string>
     <string name="system">চিস্টেম</string>
     <string name="language_summary">এপ্‌টোৰ ভাষা, চিস্টেমে প্ৰতিৰূপভাৱে ইংৰাজী বাছনি কৰিব</string>

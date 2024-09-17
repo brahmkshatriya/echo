@@ -59,7 +59,6 @@
     <string name="manage_extensions">एक्सटेंशनस प्रबंधित करें</string>
     <string name="unauthorized">$1%s : उपयोगकर्ता अनधिकृत है</string>
     <string name="extension_disabled">%1$s (अक्षम)</string>
-    <string name="radio_playlist_empty">रेडियो प्लेलिस्ट खाली है</string>
     <string name="home">होम</string>
     <string name="search">खोज</string>
     <string name="extensions">एक्सटेंशनस</string>
@@ -184,7 +183,7 @@
     <string name="navbar_gradient">ग्रेडिएंट नेवबार</string>
     <string name="navbar_gradient_summary">नेवबार धीरे-धीरे पारदर्शी हो जाता है</string>
     <string name="value">मान</string>
-    <string name="not_set">सेट नहीं किया गया</string>
+    <string name="str_not_set">सेट नहीं किया गया</string>
     <string name="language">भाषा</string>
     <string name="system">सिस्टम</string>
     <string name="language_summary">ऐप की भाषा, सिस्टम डिफ़ॉल्ट रूप से अंग्रेज़ी में होगी</string>

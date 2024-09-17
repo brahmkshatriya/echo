@@ -190,7 +190,7 @@
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
     <string name="value">Value</string>
-    <string name="not_set" tools:ignore="PrivateResource">Not Set</string>
+    <string name="str_not_set" tools:ignore="PrivateResource">Not Set</string>
     <string name="language">Language</string>
     <string name="system">System</string>
     <string name="language_summary">Language of the app, System will default to English</string>

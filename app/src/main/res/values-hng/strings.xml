@@ -63,7 +63,6 @@
     <string name="removing_track">%1$s ko remove kar rahe hain</string>
     <string name="unlike">Unlike</string>
     <string name="logout">Logout</string>
-    <string name="radio_playlist_empty">Radio Playlist khaali hai</string>
     <plurals name="number_followers">
         <item quantity="one">%1$d Follower</item>
         <item quantity="other">%1$d Followers</item>
@@ -186,7 +185,7 @@
     <string name="language">Bhasha</string>
     <string name="system">System</string>
     <string name="value">Moolya</string>
-    <string name="not_set">Set Nahi Hua</string>
+    <string name="str_not_set">Set Nahi Hua</string>
     <string name="language_summary">App ki bhasha, System default mein English choose karega</string>
     <string name="audio_qualities">Audio Ka Quality</string>
     <string name="audio_selection">Audio Ka Chayan</string>

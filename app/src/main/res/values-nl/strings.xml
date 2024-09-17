@@ -127,7 +127,6 @@
     <string name="unauthorized">$1%s : Gebruiker is niet geautoriseerd</string>
     <string name="extension_disabled">%1$s (Uitgeschakeld)</string>
     <string name="disabled">Uitgeschakeld</string>
-    <string name="radio_playlist_empty">Radioplaylist is leeg</string>
     <string name="name_extension">%1$s Extensie</string>
     <string name="manage_extensions">Beheer Extensies</string>
     <string name="by_author">Door %1$s</string>

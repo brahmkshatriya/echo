@@ -165,7 +165,6 @@
     <string name="name_extension">%1$s Extension</string>
     <string name="extension_disabled">%1$s (désactivé)</string>
     <string name="disabled">Désactivé</string>
-    <string name="radio_playlist_empty">La playlist radio est vide</string>
     <string name="saved_to_playlists">Sauvegardé dans les playlists</string>
     <string name="auto_start_radio">Auto Start Radio</string>
     <string name="view">Voir</string>
