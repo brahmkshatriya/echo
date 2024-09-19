@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
 import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerEmptyAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.utils.loadWith
 
 class
@@ -36,7 +36,7 @@ ExtensionAdapter(
         ) = oldItem == newItem
     }
 
-    private val empty = MediaContainerEmptyAdapter()
+    private val empty = ShelfEmptyAdapter()
     fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :

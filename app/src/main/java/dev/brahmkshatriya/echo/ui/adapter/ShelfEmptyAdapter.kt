@@ -7,7 +7,7 @@ import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemNothingToShowBinding
 
-class MediaContainerEmptyAdapter : LoadStateAdapter<MediaContainerEmptyAdapter.ViewHolder>() {
+class ShelfEmptyAdapter : LoadStateAdapter<ShelfEmptyAdapter.ViewHolder>() {
     class ViewHolder(val binding: ItemNothingToShowBinding) : RecyclerView.ViewHolder(binding.root)
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)

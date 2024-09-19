@@ -19,7 +19,6 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
@@ -33,8 +32,6 @@ import dev.brahmkshatriya.echo.plugger.ExtensionInfo.Companion.toExtensionInfo
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
-import dev.brahmkshatriya.echo.utils.getFromCache
-import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.CoroutineScope
@@ -97,7 +94,7 @@ class DelayedSource(
         }.getOrElse {
             if (it is IOException) throw it
             else runBlocking {
-                if(it is NullPointerException) return@runBlocking
+                if (it is NullPointerException) return@runBlocking
                 throwableFlow.emit(it)
             }
         }
@@ -124,6 +121,7 @@ class DelayedSource(
         }
         actualSource.canUpdateMediaItem(mediaItem)
     }
+
     override fun updateMediaItem(mediaItem: MediaItem) {
         this.mediaItem = mediaItem
         actualSource.updateMediaItem(mediaItem)
@@ -132,29 +130,19 @@ class DelayedSource(
     private suspend fun resolve(mediaItem: MediaItem): MediaItem {
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.build(settings, mediaItem, loadTrack(mediaItem))
-
         val video = if (new.videoIndex < 0) null else loadVideo(new)
-        val subtitle =
-            if (new.subtitleIndex < 0) null else loadSubtitle(new)
+        val subtitle = if (new.subtitleIndex < 0) null else loadSubtitle(new)
         return MediaItemUtils.build(new, video, subtitle)
     }
 
-    private suspend fun loadTrack(
-        item: MediaItem
-    ): Track {
-        val id = item.track.id
-        val loaded = getTrackFromCache(id) ?: item.getTrackClient(context, extensionListFlow) {
-            val track = loadTrack(item.track)
-            track.audioStreamables.ifEmpty {
-                track.mediaStreamables.ifEmpty {
+    private suspend fun loadTrack(item: MediaItem) =
+        item.getTrackClient(context, extensionListFlow) {
+            loadTrack(item.track).also {
+                it.audioStreamables.ifEmpty {
                     throw Exception(context.getString(R.string.track_not_found))
                 }
             }
-            track
         }
-        context.saveToCache(id, loaded)
-        return loaded
-    }
 
     private suspend fun loadVideo(mediaItem: MediaItem): Streamable.Media.WithVideo {
         val streams = mediaItem.track.videoStreamables
@@ -173,13 +161,6 @@ class DelayedSource(
             getStreamableMedia(streamable) as Streamable.Media.Subtitle
         }
     }
-
-    private fun getTrackFromCache(id: String): Track? {
-        val track = context.getFromCache<Track>(id) ?: return null
-        return if (!track.isExpired()) track else null
-    }
-
-    private fun Track.isExpired() = System.currentTimeMillis() > expiresAt
 
     companion object {
         suspend fun <T> MediaItem.getTrackClient(

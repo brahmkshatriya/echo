@@ -9,14 +9,17 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemTrackSmallBinding
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.toTimeString
 
 class TrackAdapter(
+    private val clientId: String,
     private val transition: String,
     private val listener: Listener,
+    private val context: EchoMediaItem? = null,
 ) : PagingDataAdapter<Track, TrackAdapter.ViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<Track>() {
@@ -25,8 +28,21 @@ class TrackAdapter(
     }
 
     interface Listener {
-        fun onClick(list: List<Track>, position: Int, view: View)
-        fun onLongClick(list: List<Track>, position: Int, view: View): Boolean
+        fun onClick(
+            clientId: String,
+            context: EchoMediaItem?,
+            list: List<Track>,
+            pos: Int,
+            view: View
+        )
+
+        fun onLongClick(
+            clientId: String,
+            context: EchoMediaItem?,
+            list: List<Track>,
+            pos: Int,
+            view: View
+        ): Boolean
     }
 
     suspend fun submit(pagingData: PagingData<Track>?) {
@@ -61,15 +77,15 @@ class TrackAdapter(
 
         binding.root.setOnClickListener {
             val list = snapshot().items
-            listener.onClick(list, position, binding.root)
+            listener.onClick(clientId, context, list, position, binding.root)
         }
         binding.root.setOnLongClickListener {
             val list = snapshot().items
-            listener.onLongClick(list, position, binding.root)
+            listener.onLongClick(clientId, context, list, position, binding.root)
         }
         binding.itemMore.setOnClickListener {
             val list = snapshot().items
-            listener.onLongClick(list, position, binding.root)
+            listener.onLongClick(clientId, context, list, position, binding.root)
         }
     }
 }

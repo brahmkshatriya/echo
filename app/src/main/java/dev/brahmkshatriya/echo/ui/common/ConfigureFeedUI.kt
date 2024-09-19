@@ -8,7 +8,7 @@ import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.configure
@@ -20,11 +20,11 @@ inline fun <reified T> Fragment.applyClient(
     swipeRefresh: SwipeRefreshLayout,
     id: Int,
     it: MusicExtension?
-): MediaContainerAdapter? {
+): ShelfAdapter? {
     swipeRefresh.isEnabled = it != null
     it ?: return null
     val parent = parentFragment as Fragment
-    val adapter = MediaContainerAdapter(
+    val adapter = ShelfAdapter(
         parent,
         id.toString(),
         it.info
@@ -53,16 +53,16 @@ inline fun <reified T> Fragment.configureFeedUI(
     }
 
     viewModel.initialize()
-    var mediaContainerAdapter: MediaContainerAdapter? = null
+    var shelfAdapter: ShelfAdapter? = null
 
     if (clientId == null)
         collect(viewModel.extensionFlow) {
-            mediaContainerAdapter = applyClient<T>(recyclerView, swipeRefresh, id, it)
+            shelfAdapter = applyClient<T>(recyclerView, swipeRefresh, id, it)
         }
     else
         collect(viewModel.extensionListFlow) {
             val extension = viewModel.extensionListFlow.getExtension(clientId)
-            mediaContainerAdapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)
+            shelfAdapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)
         }
 
     val tabListener = object : TabLayout.OnTabSelectedListener {
@@ -99,6 +99,6 @@ inline fun <reified T> Fragment.configureFeedUI(
     }
 
     observe(viewModel.feed) {
-        mediaContainerAdapter?.submit(it)
+        shelfAdapter?.submit(it)
     }
 }

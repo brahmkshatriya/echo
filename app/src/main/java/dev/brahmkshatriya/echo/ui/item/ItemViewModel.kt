@@ -25,9 +25,9 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.RadioItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.plugger.GenericExtension
@@ -55,28 +55,28 @@ class ItemViewModel @Inject constructor(
 
     val itemFlow = MutableStateFlow<EchoMediaItem?>(null)
     var loadRelatedFeed = true
-    val relatedFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    val relatedFeed = MutableStateFlow<PagingData<Shelf>?>(null)
 
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
             itemFlow.value = null
             val mediaItem = when (val item = item!!) {
                 is AlbumItem -> loadItem<AlbumClient, AlbumItem>(
-                    item, { loadAlbum(it.album).toMediaItem() }, { getMediaItems(it.album) }
+                    item, { loadAlbum(it.album).toMediaItem() }, { getShelves(it.album) }
                 )
 
                 is PlaylistItem -> loadItem<PlaylistClient, PlaylistItem>(
                     item,
                     { loadPlaylist(it.playlist).toMediaItem() },
-                    { getMediaItems(it.playlist) }
+                    { getShelves(it.playlist) }
                 )
 
                 is ArtistItem -> loadItem<ArtistClient, ArtistItem>(
-                    item, { loadArtist(it.artist).toMediaItem() }, { getMediaItems(it.artist) }
+                    item, { loadArtist(it.artist).toMediaItem() }, { getShelves(it.artist) }
                 )
 
                 is UserItem -> loadItem<UserClient, UserItem>(
-                    item, { loadUser(it.user).toMediaItem() }, { getMediaItems(it.user) }
+                    item, { loadUser(it.user).toMediaItem() }, { getShelves(it.user) }
                 )
 
                 is TrackItem -> loadItem<TrackClient, TrackItem>(
@@ -88,12 +88,12 @@ class ItemViewModel @Inject constructor(
                         PagedData.Concat(
                             if (client is AlbumClient && album != null) PagedData.Single {
                                 listOf(
-                                    client.loadAlbum(album).toMediaItem().toMediaItemsContainer()
+                                    client.loadAlbum(album).toMediaItem().toShelf()
                                 )
                             } else PagedData.empty(),
                             if (artists.isNotEmpty()) PagedData.Single {
                                 listOf(
-                                    MediaItemsContainer.Category(
+                                    Shelf.Lists.Items(
                                         app.getString(R.string.artists),
                                         if (client is ArtistClient) artists.map {
                                             val artist = client.loadArtist(it)
@@ -102,7 +102,7 @@ class ItemViewModel @Inject constructor(
                                     )
                                 )
                             } else PagedData.empty(),
-                            client.getMediaItems(track)
+                            client.getShelves(track)
                         )
                     }
                 )
@@ -117,7 +117,7 @@ class ItemViewModel @Inject constructor(
     private suspend inline fun <reified U, reified T : EchoMediaItem> loadItem(
         item: T,
         crossinline loadItem: suspend U.(T) -> T,
-        crossinline loadRelated: U.(T) -> PagedData<MediaItemsContainer>? = { null }
+        crossinline loadRelated: U.(T) -> PagedData<Shelf>? = { null }
     ): T? {
         return getClient<U, T> { info ->
             tryWith(info) {

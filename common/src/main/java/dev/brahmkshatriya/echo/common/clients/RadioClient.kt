@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 
-interface RadioClient {
+interface RadioClient : TrackClient {
     fun loadTracks(radio: Radio): PagedData<Track>
     suspend fun radio(track: Track, context: EchoMediaItem?): Radio
     suspend fun radio(album: Album): Radio

@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.common
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
@@ -23,12 +23,12 @@ abstract class FeedViewModel(
     open val extensionListFlow: MutableStateFlow<List<MusicExtension>?>
 ) : CatchingViewModel(throwableFlow) {
     abstract suspend fun getTabs(client: ExtensionClient): List<Tab>?
-    abstract fun getFeed(client: ExtensionClient): Flow<PagingData<MediaItemsContainer>>?
+    abstract fun getFeed(client: ExtensionClient): Flow<PagingData<Shelf>>?
 
     var recyclerPosition = 0
 
     val loading = MutableSharedFlow<Boolean>()
-    val feed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    val feed = MutableStateFlow<PagingData<Shelf>?>(null)
     val genres = MutableStateFlow<List<Tab>>(emptyList())
     var tab: Tab? = null
 

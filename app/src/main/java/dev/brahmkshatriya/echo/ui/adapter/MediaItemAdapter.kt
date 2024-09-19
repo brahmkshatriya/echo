@@ -6,21 +6,20 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 
 class MediaItemAdapter(
-    val listener: Listener,
+    private val clientId: String,
     private val transition: String,
-    private val clientId: String?,
-    val list: List<EchoMediaItem>
+    private val listener: Listener,
+    private val list: List<EchoMediaItem>
 ) : RecyclerView.Adapter<MediaItemViewHolder>() {
 
     interface Listener {
-        fun onClick(clientId: String?, item: EchoMediaItem, transitionView: View?)
-        fun onLongClick(clientId: String?, item: EchoMediaItem, transitionView: View?): Boolean
+        fun onClick(clientId: String, item: EchoMediaItem, transitionView: View?)
+        fun onLongClick(clientId: String, item: EchoMediaItem, transitionView: View?): Boolean
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
         return when (viewType) {
-            0 -> MediaItemViewHolder.Track.create(parent)
-//            0 -> MediaItemViewHolder.Lists.create(parent)
+            0 -> MediaItemViewHolder.Lists.create(parent)
             1 -> MediaItemViewHolder.Profile.create(parent)
             2 -> MediaItemViewHolder.Track.create(parent)
             else -> throw IllegalArgumentException("Invalid view type")
@@ -28,6 +27,7 @@ class MediaItemAdapter(
     }
 
     override fun getItemViewType(position: Int) = when (list[position]) {
+        is EchoMediaItem.Lists.RadioItem -> 2
         is EchoMediaItem.Lists -> 0
         is EchoMediaItem.Profile -> 1
         is EchoMediaItem.TrackItem -> 2

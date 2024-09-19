@@ -27,7 +27,7 @@ import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.plugger.MusicExtension
@@ -195,7 +195,7 @@ class PlayerSessionCallback(
 
             val tracks = itemsContainers.mapNotNull {
                 when (it) {
-                    is MediaItemsContainer.Category -> {
+                    is Shelf.Lists.Items -> {
                         val items = it.list.mapNotNull { item ->
                             if (item is EchoMediaItem.TrackItem) item.track
                             else null
@@ -203,7 +203,9 @@ class PlayerSessionCallback(
                         items
                     }
 
-                    is MediaItemsContainer.Item -> {
+                    is Shelf.Lists.Tracks -> it.list
+
+                    is Shelf.Item -> {
                         val item = it.media as? EchoMediaItem.TrackItem ?: return@mapNotNull null
                         listOf(item.track)
                     }

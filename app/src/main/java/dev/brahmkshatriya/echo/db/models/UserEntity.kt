@@ -24,7 +24,7 @@ data class UserEntity(
             UserEntity(clientId, id, name, cover?.toEntity(), null, extras)
 
         fun UserEntity.toUser() =
-            User(id, name, cover?.toImageHolder(), extras)
+            User(id, name, cover?.toImageHolder(), subtitle, extras)
 
         fun UserEntity.toCurrentUser() =
             CurrentUser(clientId, id)

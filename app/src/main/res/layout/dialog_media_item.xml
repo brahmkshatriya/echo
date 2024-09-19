@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_margin="8dp"
         android:id="@+id/itemContainer"
-        layout="@layout/new_item_media" />
+        layout="@layout/item_shelf_media" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

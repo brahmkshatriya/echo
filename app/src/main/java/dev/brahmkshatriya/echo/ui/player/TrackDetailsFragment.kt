@@ -31,7 +31,7 @@ import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentTrackDetailsBinding
@@ -45,8 +45,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
 import dev.brahmkshatriya.echo.plugger.MusicExtension
 import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.ui.adapter.MediaClickListener
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfClickListener
+import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
@@ -72,12 +72,12 @@ class TrackDetailsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val mediaClickListener = MediaClickListener(requireActivity().supportFragmentManager) {
+        val shelfClickListener = ShelfClickListener(requireActivity().supportFragmentManager) {
             uiViewModel.collapsePlayer()
         }
 
         val infoAdapter = InfoAdapter(playerViewModel)
-        var mediaAdapter: MediaContainerAdapter? = null
+        var mediaAdapter: ShelfAdapter? = null
         observe(playerViewModel.currentFlow) { current ->
             val (_, item) = current ?: return@observe
             item.takeIf { it.isLoaded } ?: return@observe
@@ -89,7 +89,7 @@ class TrackDetailsFragment : Fragment() {
             val extension =
                 playerViewModel.extensionListFlow.getExtension(item.clientId) ?: return@observe
             val adapter =
-                MediaContainerAdapter(this, "track_details", extension.info, mediaClickListener)
+                ShelfAdapter(this, "track_details", extension.info, shelfClickListener)
             mediaAdapter = adapter
             binding.root.adapter = ConcatAdapter(infoAdapter, adapter.withLoaders())
             viewModel.load(item.clientId, track)
@@ -359,7 +359,7 @@ class TrackDetailsFragment : Fragment() {
     ) : CatchingViewModel(throwableFlow) {
 
         var previous: Track? = null
-        val itemsFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+        val itemsFlow = MutableStateFlow<PagingData<Shelf>?>(null)
 
         fun load(clientId: String, track: Track) {
             previous = track
@@ -374,12 +374,12 @@ class TrackDetailsFragment : Fragment() {
                 val pagedData = PagedData.Concat(
                     if (client is AlbumClient && album != null) PagedData.Single {
                         listOf(
-                            client.loadAlbum(album).toMediaItem().toMediaItemsContainer()
+                            client.loadAlbum(album).toMediaItem().toShelf()
                         )
                     } else PagedData.empty(),
                     if (artists.isNotEmpty()) PagedData.Single {
                         listOf(
-                            MediaItemsContainer.Category(
+                            Shelf.Lists.Items(
                                 app.getString(R.string.artists),
                                 if(client is ArtistClient) artists.map {
                                     val artist = client.loadArtist(it)
@@ -389,7 +389,7 @@ class TrackDetailsFragment : Fragment() {
                         )
                     } else PagedData.empty(),
                     if (client is TrackClient) tryWith(extension.info) {
-                        client.getMediaItems(track)
+                        client.getShelves(track)
                     } ?: PagedData.empty()
                     else PagedData.empty()
                 )

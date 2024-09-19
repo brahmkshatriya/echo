@@ -7,5 +7,6 @@ data class User(
     val id: String,
     val name: String,
     val cover: ImageHolder? = null,
+    val subtitle: String? = null,
     val extras: Map<String, String> = emptyMap(),
 )

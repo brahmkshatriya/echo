@@ -19,11 +19,11 @@ import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
 import dev.brahmkshatriya.echo.ui.exception.openLoginException
 
-class MediaContainerLoadingAdapter(
+class ShelfLoadingAdapter(
     private val extensionInfo: ExtensionInfo,
     val listener: Listener? = null
 ) :
-    LoadStateAdapter<MediaContainerLoadingAdapter.LoadViewHolder>() {
+    LoadStateAdapter<ShelfLoadingAdapter.LoadViewHolder>() {
 
     interface Listener {
         fun onRetry()
@@ -31,11 +31,11 @@ class MediaContainerLoadingAdapter(
         fun onLoginRequired(view: View, error: AppException.LoginRequired)
     }
 
-    class LoadViewHolder(val container: Container) : RecyclerView.ViewHolder(container.root)
+    class LoadViewHolder(val shelf: Shelf) : RecyclerView.ViewHolder(shelf.root)
 
-    sealed class Container(val root: View) {
+    sealed class Shelf(val root: View) {
         data class NotLoading(val binding: ItemNotLoadingBinding, val listener: Listener?) :
-            Container(binding.root) {
+            Shelf(binding.root) {
             override fun bind(loadState: LoadState) {
                 binding.retry.setOnClickListener {
                     listener?.onRetry()
@@ -43,7 +43,7 @@ class MediaContainerLoadingAdapter(
             }
         }
 
-        data class Loading(val binding: SkeletonItemContainerBinding) : Container(binding.root) {
+        data class Loading(val binding: SkeletonItemContainerBinding) : Shelf(binding.root) {
             override fun bind(loadState: LoadState) {}
         }
 
@@ -52,7 +52,7 @@ class MediaContainerLoadingAdapter(
             val binding: ItemErrorBinding,
             val listener: Listener?
         ) :
-            Container(binding.root) {
+            Shelf(binding.root) {
             override fun bind(loadState: LoadState) {
                 loadState as LoadState.Error
                 val appError = loadState.error.toAppException(extensionInfo)
@@ -74,7 +74,7 @@ class MediaContainerLoadingAdapter(
             val binding: ItemLoginRequiredBinding,
             val listener: Listener?
         ) :
-            Container(binding.root) {
+            Shelf(binding.root) {
             override fun bind(loadState: LoadState) {
                 val error = (loadState as LoadState.Error).error
                 val appError = error.toAppException(extensionInfo) as AppException.LoginRequired
@@ -96,21 +96,21 @@ class MediaContainerLoadingAdapter(
         return LoadViewHolder(
             when (getStateViewType(loadState)) {
 
-                0 -> Container.Loading(
+                0 -> Shelf.Loading(
                     SkeletonItemContainerBinding.inflate(inflater, parent, false)
                 )
 
-                1 -> Container.NotLoading(
+                1 -> Shelf.NotLoading(
                     ItemNotLoadingBinding.inflate(inflater, parent, false), listener
                 )
 
-                2 -> Container.Error(
+                2 -> Shelf.Error(
                     extensionInfo,
                     ItemErrorBinding.inflate(inflater, parent, false),
                     listener
                 )
 
-                3 -> Container.LoginRequired(
+                3 -> Shelf.LoginRequired(
                     extensionInfo,
                     ItemLoginRequiredBinding.inflate(inflater, parent, false),
                     listener
@@ -137,7 +137,7 @@ class MediaContainerLoadingAdapter(
     }
 
     override fun onBindViewHolder(holder: LoadViewHolder, loadState: LoadState) {
-        holder.container.bind(loadState)
+        holder.shelf.bind(loadState)
     }
 
     constructor (fragment: Fragment, extensionInfo: ExtensionInfo, retry: () -> Unit) : this(

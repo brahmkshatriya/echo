@@ -4,31 +4,31 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.QuickSearch
 
 class QuickSearchAdapter(val listener: Listener) :
-    ListAdapter<QuickSearchItem, QuickSearchViewHolder>(diff) {
+    ListAdapter<QuickSearch, QuickSearchViewHolder>(diff) {
 
     interface Listener {
-        fun onClick(item: QuickSearchItem, transitionView: View)
-        fun onLongClick(item: QuickSearchItem, transitionView: View): Boolean
-        fun onInsert(item: QuickSearchItem)
+        fun onClick(item: QuickSearch, transitionView: View)
+        fun onLongClick(item: QuickSearch, transitionView: View): Boolean
+        fun onInsert(item: QuickSearch)
     }
 
     companion object {
-        val diff = object : DiffUtil.ItemCallback<QuickSearchItem>() {
-            override fun areItemsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
+        val diff = object : DiffUtil.ItemCallback<QuickSearch>() {
+            override fun areItemsTheSame(oldItem: QuickSearch, newItem: QuickSearch) =
                 oldItem.sameAs(newItem)
 
-            override fun areContentsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
+            override fun areContentsTheSame(oldItem: QuickSearch, newItem: QuickSearch) =
                 oldItem == newItem
 
         }
     }
 
     override fun getItemViewType(position: Int) = when (getItem(position)) {
-        is QuickSearchItem.SearchQueryItem -> 0
-        is QuickSearchItem.SearchMediaItem -> 1
+        is QuickSearch.QueryItem -> 0
+        is QuickSearch.MediaItem -> 1
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {

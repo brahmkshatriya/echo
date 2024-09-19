@@ -11,7 +11,7 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -67,7 +67,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         }
     }
 
-    override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> = PagedData.Single {
+    override fun getShelves(track: Track): PagedData<Shelf> = PagedData.Single {
         emptyList()
     }
 
@@ -92,9 +92,9 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         null,
         null,
         streamables = streamables
-    ).toMediaItem().toMediaItemsContainer()
+    ).toMediaItem().toShelf()
 
-    override fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer> = PagedData.Single {
+    override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
         listOf(
             createTrack(
                 "both", "All", listOf(
@@ -132,7 +132,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override suspend fun getLibraryTabs() = emptyList<Tab>()
 
-    override fun getLibraryFeed(tab: Tab?): PagedData<MediaItemsContainer> {
+    override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
         return PagedData.Single { emptyList() }
     }
 

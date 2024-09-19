@@ -16,6 +16,7 @@ sealed class EchoMediaItem {
     sealed class Profile : EchoMediaItem() {
         @Serializable
         data class ArtistItem(val artist: Artist) : Profile()
+
         @Serializable
         data class UserItem(val user: User) : Profile()
     }
@@ -24,8 +25,10 @@ sealed class EchoMediaItem {
     sealed class Lists : EchoMediaItem() {
         @Serializable
         data class AlbumItem(val album: Album) : Lists()
+
         @Serializable
         data class PlaylistItem(val playlist: Playlist) : Lists()
+
         @Serializable
         data class RadioItem(val radio: Radio) : Lists()
 
@@ -46,7 +49,7 @@ sealed class EchoMediaItem {
         fun Radio.toMediaItem() = Lists.RadioItem(this)
     }
 
-    fun toMediaItemsContainer() = MediaItemsContainer.Item(
+    fun toShelf() = Shelf.Item(
         when (this) {
             is TrackItem -> track.toMediaItem()
             is Profile.ArtistItem -> artist.toMediaItem()
@@ -98,11 +101,13 @@ sealed class EchoMediaItem {
 
     val subtitle
         get() = when (this) {
-            is TrackItem -> track.artists.joinToString(", ") { it.name }
+            is TrackItem -> track.run { subtitle ?: artists.joinToString(", ") { it.name } }
             is Profile.ArtistItem -> artist.subtitle
             is Profile.UserItem -> null
-            is Lists.AlbumItem -> album.subtitle ?: album.artists.joinToString(", ") { it.name }
-            is Lists.PlaylistItem -> playlist.subtitle
-            is Lists.RadioItem -> null
+            is Lists.AlbumItem -> album.run { subtitle ?: artists.joinToString(", ") { it.name } }
+            is Lists.RadioItem -> radio.subtitle
+            is Lists.PlaylistItem -> playlist.run {
+                subtitle ?: authors.joinToString(", ") { it.name }
+            }
         }
 }

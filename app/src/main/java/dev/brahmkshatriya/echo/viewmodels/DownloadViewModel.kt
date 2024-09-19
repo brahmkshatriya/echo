@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.offline.OfflineExtension
@@ -105,7 +105,7 @@ class DownloadViewModel @Inject constructor(
         }
     }
 
-    val offlineFlow = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    val offlineFlow = MutableStateFlow<PagingData<Shelf>?>(null)
     private fun loadOfflineDownloads() {
         viewModelScope.launch {
             val offline =

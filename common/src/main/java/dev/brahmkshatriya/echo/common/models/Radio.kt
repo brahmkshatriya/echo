@@ -8,5 +8,6 @@ data class Radio(
     val title: String,
     val cover: ImageHolder? = null,
     val tabs: List<Tab?> = listOf(),
+    val subtitle: String? = null,
     val extras: Map<String, String> = mapOf()
 )

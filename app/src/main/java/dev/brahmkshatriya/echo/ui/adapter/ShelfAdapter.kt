@@ -14,28 +14,26 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Category
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Container
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Media
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.MediaTracks
+import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Category
+import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Lists
+import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
+import dev.brahmkshatriya.echo.ui.item.TrackAdapter
 import java.lang.ref.WeakReference
 
-class MediaContainerAdapter(
+class ShelfAdapter(
     private val fragment: Fragment,
     private val transition: String,
     private val extensionInfo: ExtensionInfo,
     val listener: Listener = getListener(fragment)
-) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
+) : PagingDataAdapter<Shelf, ShelfViewHolder>(DiffCallback) {
 
-    interface Listener : MediaItemAdapter.Listener {
-        fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View)
-        fun onLongClick(
-            clientId: String?, container: MediaItemsContainer, transitionView: View
-        ): Boolean
+    interface Listener : MediaItemAdapter.Listener, TrackAdapter.Listener {
+        fun onClick(clientId: String, shelf: Shelf, transitionView: View)
+        fun onLongClick(clientId: String, shelf: Shelf, transitionView: View): Boolean
     }
 
     companion object {
@@ -47,15 +45,15 @@ class MediaContainerAdapter(
                     else fragment.parentFragmentManager
                 )
 
-                else -> MediaClickListener(fragment.parentFragmentManager)
+                else -> ShelfClickListener(fragment.parentFragmentManager)
             }
         }
     }
 
     fun withLoaders(): ConcatAdapter {
-        val footer = MediaContainerLoadingAdapter(fragment, extensionInfo) { retry() }
-        val header = MediaContainerLoadingAdapter(fragment, extensionInfo) { retry() }
-        val empty = MediaContainerEmptyAdapter()
+        val footer = ShelfLoadingAdapter(fragment, extensionInfo) { retry() }
+        val header = ShelfLoadingAdapter(fragment, extensionInfo) { retry() }
+        val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
                 LoadState.Loading
@@ -66,23 +64,23 @@ class MediaContainerAdapter(
         return ConcatAdapter(empty, header, this, footer)
     }
 
-    object DiffCallback : DiffUtil.ItemCallback<MediaItemsContainer>() {
+    object DiffCallback : DiffUtil.ItemCallback<Shelf>() {
         override fun areItemsTheSame(
-            oldItem: MediaItemsContainer,
-            newItem: MediaItemsContainer
+            oldItem: Shelf,
+            newItem: Shelf
         ): Boolean {
             return oldItem.sameAs(newItem)
         }
 
         override fun areContentsTheSame(
-            oldItem: MediaItemsContainer,
-            newItem: MediaItemsContainer
+            oldItem: Shelf,
+            newItem: Shelf
         ): Boolean {
             return oldItem == newItem
         }
     }
 
-    suspend fun submit(pagingData: PagingData<MediaItemsContainer>?) {
+    suspend fun submit(pagingData: PagingData<Shelf>?) {
         saveState()
         submitData(pagingData ?: PagingData.empty())
     }
@@ -99,7 +97,7 @@ class MediaContainerAdapter(
 
     class StateViewModel : ViewModel() {
         val layoutManagerStates = hashMapOf<Int, Parcelable?>()
-        val visibleScrollableViews = hashMapOf<Int, WeakReference<Category>>()
+        val visibleScrollableViews = hashMapOf<Int, WeakReference<Lists>>()
     }
 
     private fun clearState() {
@@ -107,7 +105,7 @@ class MediaContainerAdapter(
         stateViewModel.visibleScrollableViews.clear()
     }
 
-    private fun saveScrollState(holder: Category, block: ((Category) -> Unit)? = null) {
+    private fun saveScrollState(holder: Lists, block: ((Lists) -> Unit)? = null) {
         val layoutManagerStates = stateViewModel.layoutManagerStates
         layoutManagerStates[holder.bindingAdapterPosition] =
             holder.layoutManager?.onSaveInstanceState()
@@ -121,20 +119,20 @@ class MediaContainerAdapter(
         stateViewModel.visibleScrollableViews.clear()
     }
 
-    override fun onViewRecycled(holder: MediaContainerViewHolder) {
+    override fun onViewRecycled(holder: ShelfViewHolder) {
         super.onViewRecycled(holder)
         destroyLifeCycle(holder)
-        if (holder is Category) saveScrollState(holder) {
+        if (holder is Lists) saveScrollState(holder) {
             stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
         }
     }
 
-    private fun destroyLifeCycle(holder: MediaContainerViewHolder) {
+    private fun destroyLifeCycle(holder: ShelfViewHolder) {
         if (holder.isInitialized && holder.lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED))
             holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 
-    override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ShelfViewHolder, position: Int) {
         destroyLifeCycle(holder)
         holder.lifecycleRegistry = LifecycleRegistry(holder)
         holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
@@ -155,19 +153,18 @@ class MediaContainerAdapter(
     override fun getItemViewType(position: Int): Int {
         val item = getItem(position) ?: return 0
         return when (item) {
-            is MediaItemsContainer.Category -> 0
-            is MediaItemsContainer.Container -> 1
-            is MediaItemsContainer.Item -> 2
-            is MediaItemsContainer.Tracks -> 3
+            is Shelf.Lists<*> -> 0
+            is Shelf.Item -> 1
+            is Shelf.Category -> 2
         }
     }
 
     private val sharedPool = RecycledViewPool()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        0 -> Category.create(parent, stateViewModel, sharedPool, extensionInfo.id, listener)
-        1 -> Container.create(parent)
-        2 -> Media.create(parent, extensionInfo.id, listener)
-        3 -> MediaTracks.create(parent, sharedPool, extensionInfo.id, listener)
+        0 -> Lists.create(parent, stateViewModel, sharedPool, extensionInfo.id, listener)
+        1 -> Media.create(parent, extensionInfo.id, listener)
+        2 -> Category.create(parent)
         else -> throw IllegalArgumentException("Unknown viewType: $viewType")
     }
+
 }

@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
@@ -78,7 +78,7 @@ class LibraryFragment : Fragment() {
             parent.openFragment(CreatePlaylistFragment(), it)
         }
 
-        val listener = MediaContainerAdapter.getListener(this)
+        val listener = ShelfAdapter.getListener(this)
         observe(viewModel.playlistCreatedFlow) { (clientId, playlist) ->
             createSnack(SnackBar.Message(
                 getString(R.string.playlist_created, playlist.title),

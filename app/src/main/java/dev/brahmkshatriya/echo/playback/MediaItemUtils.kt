@@ -120,7 +120,7 @@ object MediaItemUtils {
         .setTitle(title)
         .setArtist(artists.joinToString(", ") { it.name })
         .setArtworkUri(id.toUri())
-        .setUserRating(ThumbRating(liked))
+        .setUserRating(ThumbRating(isLiked))
         .setIsBrowsable(false)
         .setExtras(
             bundle.apply {

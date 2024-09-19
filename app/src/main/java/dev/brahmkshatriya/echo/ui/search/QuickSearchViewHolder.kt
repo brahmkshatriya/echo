@@ -4,14 +4,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.QuickSearch
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.loadInto
 
 sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    abstract fun bind(item: QuickSearchItem)
+    abstract fun bind(item: QuickSearch)
     abstract val insertView: View
     open val transitionView: View
         get() = this.insertView
@@ -20,8 +20,8 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override val insertView: View
             get() = binding.insert
 
-        override fun bind(item: QuickSearchItem) {
-            item as QuickSearchItem.SearchQueryItem
+        override fun bind(item: QuickSearch) {
+            item as QuickSearch.QueryItem
             binding.history.visibility = if (item.searched) View.VISIBLE else View.INVISIBLE
             binding.query.text = item.query
         }
@@ -46,11 +46,11 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override val transitionView: View
             get() = binding.coverContainer
 
-        override fun bind(item: QuickSearchItem) {
-            item as QuickSearchItem.SearchMediaItem
-            binding.query.text = item.mediaItem.title
-            transitionView.transitionName = ("quick" + item.mediaItem.id).hashCode().toString()
-            item.mediaItem.cover.loadInto(binding.cover, item.mediaItem.placeHolder())
+        override fun bind(item: QuickSearch) {
+            item as QuickSearch.MediaItem
+            binding.query.text = item.media.title
+            transitionView.transitionName = ("quick" + item.media.id).hashCode().toString()
+            item.media.cover.loadInto(binding.cover, item.media.placeHolder())
         }
 
         companion object {

@@ -28,15 +28,14 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.RadioItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
 import dev.brahmkshatriya.echo.common.models.Playlist
-import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
-import dev.brahmkshatriya.echo.ui.adapter.MediaClickListener
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
@@ -87,7 +86,8 @@ class ItemFragment : Fragment() {
         return binding.root
     }
 
-    private var mediaContainerAdapter: MediaContainerAdapter? = null
+    private var shelfAdapter: ShelfAdapter? = null
+    private var trackAdapter: TrackAdapter? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
@@ -137,28 +137,6 @@ class ItemFragment : Fragment() {
 
         val listener = getListener(this)
 
-        val trackAdapter = TrackAdapter(
-            view.transitionName,
-            object : TrackAdapter.Listener {
-                override fun onClick(list: List<Track>, position: Int, view: View) {
-                    if (listener is MediaClickListener) {
-                        when (val item = viewModel.itemFlow.value) {
-                            is EchoMediaItem.Lists -> playerVM.play(clientId, item, list, position)
-                            else -> playerVM.play(clientId, null, list, position)
-                        }
-                    } else {
-                        val track = list[position]
-                        listener.onClick(clientId, track.toMediaItem(), view)
-                    }
-                }
-
-                override fun onLongClick(list: List<Track>, position: Int, view: View): Boolean {
-                    val track = list[position]
-                    return listener.onLongClick(clientId, track.toMediaItem(), view)
-                }
-            }
-        )
-
         val albumHeaderAdapter = AlbumHeaderAdapter(
             object : AlbumHeaderAdapter.Listener {
                 override fun onPlayClicked(album: Album) =
@@ -188,6 +166,7 @@ class ItemFragment : Fragment() {
         })
 
         fun concatAdapter(item: EchoMediaItem, itemsAdapter: ConcatAdapter): ConcatAdapter {
+            trackAdapter = TrackAdapter(clientId, view.transitionName, listener, item)
             return when (item) {
                 is AlbumItem ->
                     ConcatAdapter(albumHeaderAdapter, trackAdapter, itemsAdapter)
@@ -195,7 +174,7 @@ class ItemFragment : Fragment() {
                 is PlaylistItem ->
                     ConcatAdapter(playlistHeaderAdapter, trackAdapter, itemsAdapter)
 
-                is EchoMediaItem.Lists.RadioItem -> ConcatAdapter(trackAdapter)
+                is RadioItem -> ConcatAdapter(trackAdapter)
 
                 is ArtistItem -> ConcatAdapter(artistHeaderAdapter, itemsAdapter)
                 else -> itemsAdapter
@@ -208,7 +187,7 @@ class ItemFragment : Fragment() {
 
         viewModel.songsLiveData.observe(viewLifecycleOwner) { songs ->
             lifecycleScope.launch {
-                trackAdapter.submit(songs)
+                trackAdapter?.submit(songs)
             }
         }
 
@@ -224,7 +203,7 @@ class ItemFragment : Fragment() {
 
 
         collect(viewModel.relatedFeed) {
-            mediaContainerAdapter?.submit(it)
+            shelfAdapter?.submit(it)
         }
 
         collect(viewModel.itemFlow) {
@@ -249,7 +228,7 @@ class ItemFragment : Fragment() {
                         loadPlaylistTracks(it.playlist)
                     }
 
-                    is EchoMediaItem.Lists.RadioItem -> {
+                    is RadioItem -> {
                         loadRadioTracks(it.radio)
                     }
 
@@ -279,8 +258,8 @@ class ItemFragment : Fragment() {
             val client = extension.client
 
             val mediaAdapter =
-                MediaContainerAdapter(this, view.transitionName, extensionInfo, listener)
-            mediaContainerAdapter = mediaAdapter
+                ShelfAdapter(this, view.transitionName, extensionInfo, listener)
+            shelfAdapter = mediaAdapter
             viewModel.isRadioClient = client is RadioClient
             viewModel.isFollowClient = client is ArtistFollowClient
 
@@ -307,7 +286,7 @@ class ItemFragment : Fragment() {
                     is PlaylistItem ->
                         applyAdapter<PlaylistClient>(extension, R.string.playlist, adapter)
 
-                    is EchoMediaItem.Lists.RadioItem ->
+                    is RadioItem ->
                         applyAdapter<RadioClient>(extension, R.string.radio, adapter)
                 }
             }
