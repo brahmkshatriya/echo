@@ -206,4 +206,6 @@
     <string name="permission_denied">अनुमति नहीं मिली</string>
     <string name="music_permission_required_summary">आपकी संगीत लाइब्रेरी तक पहुंचने के लिए यह अनुमति आवश्यक है</string>
     <string name="radio_empty">रेडियो खाली है</string>
+    <string name="remove_from_library">लाइब्रेरी से हटाएँ</string>
+    <string name="save_to_library">लाइब्रेरी में सहेजें</string>
 </resources>

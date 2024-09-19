@@ -206,4 +206,6 @@
     <string name="permission_required">Anumati Chahiye</string>
     <string name="permission_denied">Anumati Mana Kar Di Gayi</string>
     <string name="radio_empty">Radio Khali He</string>
+    <string name="remove_from_library">Library Se Hataye</string>
+    <string name="save_to_library">Library Me Save Kare</string>
 </resources>
