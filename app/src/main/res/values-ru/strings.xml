@@ -64,7 +64,6 @@
     <string name="behavior">Поведение</string>
     <string name="theme">Тема</string>
     <string name="theme_summary">Хотите ослепнуть?</string>
-    <string name="amoled"></string>
     <string name="ui">Интерфейс</string>
     <string name="restart_app">Перезапустите приложение, чтобы изменения вступили в силу</string>
     <string name="amoled_summary">Абсолютно черный, Чисто черный</string>
