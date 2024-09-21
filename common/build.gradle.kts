@@ -16,7 +16,7 @@ kotlin {
 
 dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
-    api("io.ktor:ktor-utils:2.3.0")
+    api("io.ktor:ktor-utils:3.0.0-beta-2")
 }
 
 publishing {
