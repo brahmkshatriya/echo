@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemMediaSelectableBinding
@@ -16,43 +16,50 @@ import kotlin.math.roundToInt
 
 class MediaItemSelectableAdapter(
     val listener: Listener
-) : RecyclerView.Adapter<MediaItemSelectableAdapter.ViewHolder>() {
+) : LifeCycleListAdapter<Pair<EchoMediaItem, Boolean>, MediaItemSelectableAdapter.ViewHolder>(
+    DiffCallback
+) {
+
+    object DiffCallback : DiffUtil.ItemCallback<Pair<EchoMediaItem, Boolean>>() {
+
+        override fun areItemsTheSame(
+            oldItem: Pair<EchoMediaItem, Boolean>, newItem: Pair<EchoMediaItem, Boolean>
+        ) = oldItem.first.id == newItem.first.id
+
+
+        override fun areContentsTheSame(
+            oldItem: Pair<EchoMediaItem, Boolean>, newItem: Pair<EchoMediaItem, Boolean>
+        ) = oldItem == newItem
+
+    }
 
     fun interface Listener {
         fun onItemSelected(selected: Boolean, item: EchoMediaItem)
     }
 
-    class ViewHolder(val binding: ItemMediaSelectableBinding) :
-        RecyclerView.ViewHolder(binding.root)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun createHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemMediaSelectableBinding.inflate(inflater, parent, false)
-        return ViewHolder(binding)
+        return ViewHolder(ItemMediaSelectableBinding.inflate(inflater, parent, false))
     }
 
-    private val items = mutableListOf<EchoMediaItem>()
-    private val selectedItems = mutableListOf<EchoMediaItem>()
-    override fun getItemCount() = items.size
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
-        val binding = holder.binding
-        binding.cover.bind(item)
-        binding.title.text = item.title
-        binding.selected.isVisible = selectedItems.contains(item)
-        binding.root.setOnClickListener {
-            val selected = !binding.selected.isVisible
-            binding.selected.isVisible = selected
-            listener.onItemSelected(selected, item)
+    inner class ViewHolder(val binding: ItemMediaSelectableBinding) :
+        Holder<Pair<EchoMediaItem, Boolean>>(binding.root) {
+        override fun bind(item: Pair<EchoMediaItem, Boolean>) {
+            val mediaItem = item.first
+            binding.cover.bind(mediaItem)
+            binding.title.text = mediaItem.title
+            binding.selected.isVisible = item.second
+            binding.root.setOnClickListener {
+                val selected = !binding.selected.isVisible
+                binding.selected.isVisible = selected
+                listener.onItemSelected(selected, mediaItem)
+            }
         }
     }
 
     @SuppressLint("NotifyDataSetChanged")
     fun setItems(items: List<EchoMediaItem>, selectedItems: List<EchoMediaItem>) {
-        this.items.clear()
-        this.items.addAll(items)
-        this.selectedItems.clear()
-        this.selectedItems.addAll(selectedItems)
+        submitList(items.map { it to selectedItems.contains(it) })
         notifyDataSetChanged()
     }
 
@@ -68,4 +75,5 @@ class MediaItemSelectableAdapter(
                 requestLayout()
             }
     }
+
 }

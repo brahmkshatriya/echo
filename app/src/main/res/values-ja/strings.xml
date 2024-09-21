@@ -28,7 +28,6 @@
     <string name="shared_element_transitions">カバーアートのトランジション</string>
     <string name="by_author">%1$sが作成</string>
     <string name="album">アルバム</string>
-    <string name="number_dot">%1$d。</string>
     <plurals name="number_followers">
         <item quantity="other">%1$d人のフォロワー</item>
     </plurals>

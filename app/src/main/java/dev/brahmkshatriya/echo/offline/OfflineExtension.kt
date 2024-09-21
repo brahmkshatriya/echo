@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -47,7 +48,7 @@ import dev.brahmkshatriya.echo.utils.toJson
 
 class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, TrackClient,
     AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
-    PlaylistEditorListenerClient {
+    TrackLikeClient, PlaylistEditorListenerClient {
 
     companion object {
         val metadata = ExtensionMetadata(
@@ -355,15 +356,14 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
 
     override suspend fun listEditablePlaylists() = library.playlistList.map { it.toPlaylist() }
 
-    override suspend fun likeTrack(track: Track, liked: Boolean): Boolean {
+    override suspend fun likeTrack(track: Track, isLiked: Boolean) {
         val playlist = library.likedPlaylist.id
-        if (liked) context.addSongToPlaylist(playlist, track.id.toLong(), 0)
+        if (isLiked) context.addSongToPlaylist(playlist, track.id.toLong(), 0)
         else {
             val index = library.likedPlaylist.songList.indexOfFirst { it.mediaId == track.id }
             context.removeSongFromPlaylist(playlist, index)
         }
         library = MediaStoreUtils.getAllSongs(context)
-        return liked
     }
 
     override suspend fun createPlaylist(title: String, description: String?): Playlist {

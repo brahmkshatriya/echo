@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemListsCoverBinding
@@ -17,12 +16,31 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 
-sealed class MediaItemViewHolder(itemView: View) :
-    RecyclerView.ViewHolder(itemView) {
+sealed class MediaItemViewHolder(
+    val listener: ShelfAdapter.Listener,
+    val clientId: String,
+    itemView: View
+) : ShelfListItemViewHolder(itemView) {
     abstract fun bind(item: EchoMediaItem)
-    abstract val transitionView: View
 
-    class Lists(val binding: NewItemMediaListsBinding) : MediaItemViewHolder(binding.root) {
+    override fun bind(item: Any) {
+        if (item !is EchoMediaItem) return
+        bind(item)
+        itemView.setOnClickListener {
+            listener.onClick(clientId, item, transitionView)
+        }
+        itemView.setOnLongClickListener {
+            listener.onLongClick(clientId, item, transitionView)
+        }
+    }
+
+    abstract override val transitionView: View
+
+    class Lists(
+        listener: ShelfAdapter.Listener,
+        clientId: String,
+        val binding: NewItemMediaListsBinding
+    ) : MediaItemViewHolder(listener, clientId, binding.root) {
 
         private val titleBinding = NewItemMediaTitleBinding.bind(binding.root)
         override val transitionView: View
@@ -36,17 +54,24 @@ sealed class MediaItemViewHolder(itemView: View) :
 
         companion object {
             fun create(
+                listener: ShelfAdapter.Listener,
+                clientId: String,
                 parent: ViewGroup
             ): MediaItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return Lists(
+                    listener, clientId,
                     NewItemMediaListsBinding.inflate(layoutInflater, parent, false)
                 )
             }
         }
     }
 
-    class Track(val binding: NewItemMediaTrackBinding) : MediaItemViewHolder(binding.root) {
+    class Track(
+        listener: ShelfAdapter.Listener,
+        clientId: String,
+        val binding: NewItemMediaTrackBinding
+    ) : MediaItemViewHolder(listener, clientId, binding.root) {
         private val titleBinding = NewItemMediaTitleBinding.bind(binding.root)
 
         override val transitionView: View
@@ -59,17 +84,24 @@ sealed class MediaItemViewHolder(itemView: View) :
 
         companion object {
             fun create(
+                listener: ShelfAdapter.Listener,
+                clientId: String,
                 parent: ViewGroup
             ): MediaItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return Track(
+                    listener, clientId,
                     NewItemMediaTrackBinding.inflate(layoutInflater, parent, false)
                 )
             }
         }
     }
 
-    class Profile(val binding: NewItemMediaProfileBinding) : MediaItemViewHolder(binding.root) {
+    class Profile(
+        listener: ShelfAdapter.Listener,
+        clientId: String,
+        val binding: NewItemMediaProfileBinding
+    ) : MediaItemViewHolder(listener, clientId, binding.root) {
         override val transitionView: View
             get() = binding.cover.root
 
@@ -83,10 +115,13 @@ sealed class MediaItemViewHolder(itemView: View) :
 
         companion object {
             fun create(
+                listener: ShelfAdapter.Listener,
+                clientId: String,
                 parent: ViewGroup
             ): MediaItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return Profile(
+                    listener, clientId,
                     NewItemMediaProfileBinding.inflate(layoutInflater, parent, false)
                 )
             }
@@ -143,6 +178,26 @@ sealed class MediaItemViewHolder(itemView: View) :
             val tracks = size ?: 3
             view1.isVisible = tracks > 1
             view2.isVisible = tracks > 2
+        }
+
+        fun create(
+            viewType: Int, parent: ViewGroup,
+            listener: ShelfAdapter.Listener,
+            clientId: String,
+        ): ShelfListItemViewHolder {
+            return when (viewType) {
+                0 -> Lists.create(listener, clientId, parent)
+                1 -> Profile.create(listener, clientId, parent)
+                2 -> Track.create(listener, clientId, parent)
+                else -> throw IllegalArgumentException("Invalid view type")
+            }
+        }
+
+        fun getViewType(item: EchoMediaItem) = when (item) {
+            is EchoMediaItem.Lists.RadioItem -> 2
+            is EchoMediaItem.Lists -> 0
+            is EchoMediaItem.Profile -> 1
+            is EchoMediaItem.TrackItem -> 2
         }
     }
 }

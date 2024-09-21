@@ -25,7 +25,7 @@
     <string name="playlist">Playlist</string>
     <string name="loading">Loading…</string>
     <string name="album">Album</string>
-    <string name="number_dot">%1$d.</string>
+    <string name="number_dot" translatable="false">%1$d.</string>
     <string name="play">Play</string>
     <plurals name="number_songs">
         <item quantity="one">%1$d Song</item>
@@ -214,6 +214,8 @@
     <string name="music_permission_required_summary">This permission is required to access your music library</string>
     <string name="remove_from_library">Remove from Library</string>
     <string name="save_to_library">Save to Library</string>
+    <string name="show_all">Show All</string>
+    <string name="show_less">Show Less</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

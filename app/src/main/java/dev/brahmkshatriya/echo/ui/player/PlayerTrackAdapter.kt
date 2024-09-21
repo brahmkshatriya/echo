@@ -36,7 +36,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -52,6 +52,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.VideoResolver
 import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
@@ -76,15 +77,12 @@ import kotlin.math.min
 class PlayerTrackAdapter(
     val fragment: Fragment,
     private val listener: Listener
-) : LifeCycleListAdapter<MediaItem, ItemPlayerTrackBinding>(DiffCallback) {
+) : LifeCycleListAdapter<MediaItem, PlayerTrackAdapter.ViewHolder>(DiffCallback) {
 
     interface Listener {
         fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean)
         fun onItemClicked(clientId: String?, item: EchoMediaItem)
     }
-
-    private val viewModel by fragment.activityViewModels<PlayerViewModel>()
-    private val uiViewModel by fragment.activityViewModels<UiViewModel>()
 
     object DiffCallback : DiffUtil.ItemCallback<MediaItem>() {
         override fun areItemsTheSame(oldItem: MediaItem, newItem: MediaItem) =
@@ -95,11 +93,20 @@ class PlayerTrackAdapter(
 
     }
 
-    override fun inflateCallback(inflater: LayoutInflater, container: ViewGroup?) =
-        ItemPlayerTrackBinding.inflate(inflater, container, false)
+    override fun createHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return ViewHolder(ItemPlayerTrackBinding.inflate(inflater, parent, false))
+    }
+
+    inner class ViewHolder(val binding: ItemPlayerTrackBinding) : Holder<MediaItem>(binding.root) {
+        override fun bind(item: MediaItem) { onBind(bindingAdapterPosition) }
+    }
+
+    private val viewModel by fragment.activityViewModels<PlayerViewModel>()
+    private val uiViewModel by fragment.activityViewModels<UiViewModel>()
 
     @OptIn(UnstableApi::class)
-    override fun Holder<MediaItem, ItemPlayerTrackBinding>.onBind(position: Int) {
+    fun ViewHolder.onBind(position: Int) {
         binding.bgVisualizer.processor = viewModel.fftAudioProcessor
 
         val item = getItem(position) ?: return
@@ -215,7 +222,7 @@ class PlayerTrackAdapter(
 
         binding.playerControls.trackHeart.run {
             val client = viewModel.extensionListFlow.getExtension(clientId)?.client
-            val isLibrary = client is LibraryClient
+            val isLibrary = client is TrackLikeClient
             isVisible = isLibrary
 
             val likeListener = viewModel.likeListener

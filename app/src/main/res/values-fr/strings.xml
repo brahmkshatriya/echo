@@ -104,7 +104,6 @@
     <string name="unauthorized">$1%s : Utilisateur non autorisée</string>
     <string name="enabled">Activé</string>
     <string name="clear_playlist">Vider la playlist</string>
-    <string name="number_dot">%1$d.</string>
     <string name="drag_to_change_playlist_position">Glisser pour changer la position de la playlist</string>
     <string name="loading">Chargement…</string>
     <string name="album">Album</string>

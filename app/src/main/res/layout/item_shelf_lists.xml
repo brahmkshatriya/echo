@@ -8,10 +8,10 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/titleCard"
-        app:cardBackgroundColor="@android:color/transparent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="8dp">
+        android:layout_marginHorizontal="8dp"
+        app:cardBackgroundColor="@android:color/transparent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -51,11 +51,18 @@
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/shuffle"
+                style="@style/IconButton"
+                android:contentDescription="@string/shuffle"
+                app:icon="@drawable/ic_shuffle" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/more"
                 style="@style/IconButton"
                 android:contentDescription="@string/more"
                 android:scaleX="-1"
-                app:icon="@drawable/ic_back" />
+                app:icon="@drawable/ic_back"
+                tools:visibility="gone" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
@@ -65,10 +72,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
         android:paddingBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/new_item_media_track" />
+        tools:listitem="@layout/item_track" />
 
 </LinearLayout>

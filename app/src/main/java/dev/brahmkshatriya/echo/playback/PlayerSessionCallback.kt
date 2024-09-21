@@ -22,9 +22,9 @@ import androidx.media3.session.SessionResult.RESULT_SUCCESS
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -125,16 +125,19 @@ class PlayerSessionCallback(
             val errorIO = SessionResult(SessionError.ERROR_IO)
             val item = session.player.currentMediaItem ?: return@future errorIO
             val client = extensionList.getExtension(item.clientId)?.client ?: return@future errorIO
-            if (client !is LibraryClient) return@future errorIO
+            if (client !is TrackLikeClient) return@future errorIO
             val track = item.track
-            val liked = withContext(Dispatchers.IO) {
-                runCatching { client.likeTrack(track, rating.isThumbsUp) }
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    client.likeTrack(track, rating.isThumbsUp)
+                }
             }.getOrElse {
                 return@future SessionResult(
                     SessionError.ERROR_UNKNOWN,
                     Bundle().apply { putSerialized("error", it.toExceptionDetails(context)) }
                 )
             }
+            val liked = rating.isThumbsUp
             val newItem = item.run {
                 buildUpon().setMediaMetadata(
                     mediaMetadata.buildUpon().setUserRating(ThumbRating(liked)).build()

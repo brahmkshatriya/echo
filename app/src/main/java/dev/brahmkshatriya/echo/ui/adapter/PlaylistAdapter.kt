@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.ui.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.utils.toTimeString
 class PlaylistAdapter(
     private val callback: Callback,
     private val inactive: Boolean = false
-) : LifeCycleListAdapter<Pair<Boolean, MediaItem>, ItemPlaylistItemBinding>(DiffCallback) {
+) : LifeCycleListAdapter<Pair<Boolean, MediaItem>, PlaylistAdapter.ViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<Pair<Boolean, MediaItem>>() {
         override fun areItemsTheSame(
@@ -40,13 +40,20 @@ class PlaylistAdapter(
         open fun onDragHandleTouched(viewHolder: RecyclerView.ViewHolder) {}
     }
 
-    override fun inflateCallback(
-        inflater: LayoutInflater,
-        container: ViewGroup?
-    ) = ItemPlaylistItemBinding.inflate(inflater, container, false)
+    inner class ViewHolder(val binding: ItemPlaylistItemBinding) :
+        Holder<Pair<Boolean, MediaItem>>(binding.root) {
+        override fun bind(item: Pair<Boolean, MediaItem>) {
+            onBind(bindingAdapterPosition)
+        }
+    }
+
+    override fun createHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return ViewHolder(ItemPlaylistItemBinding.inflate(inflater, parent, false))
+    }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun Holder<Pair<Boolean, MediaItem>, ItemPlaylistItemBinding>.onBind(position: Int) {
+    fun ViewHolder.onBind(position: Int) {
         val (isCurrent, item) = getItem(position)
         val track = item.track
 

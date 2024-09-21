@@ -36,6 +36,7 @@ sealed class Shelf {
             list: List<Track>,
             subtitle: String? = null,
             type: Type = Type.Linear,
+            val isNumbered: Boolean = false,
             more: PagedData<Track>? = null
         ) : Lists<Track>(
             title = title,

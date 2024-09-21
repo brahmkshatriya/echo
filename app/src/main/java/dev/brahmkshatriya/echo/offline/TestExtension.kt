@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.offline
 
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -11,9 +10,9 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Audio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toAudioVideoMedia
@@ -29,7 +28,7 @@ import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
 import dev.brahmkshatriya.echo.plugger.ImportType
 
 class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient, HomeFeedClient,
-    RadioClient, LibraryClient {
+    RadioClient {
 
     companion object {
         val metadata = ExtensionMetadata(
@@ -129,15 +128,4 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     override suspend fun radio(artist: Artist) = radio
     override suspend fun radio(user: User) = radio
     override suspend fun radio(playlist: Playlist) = radio
-
-    override suspend fun getLibraryTabs() = emptyList<Tab>()
-
-    override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
-        return PagedData.Single { emptyList() }
-    }
-
-    override suspend fun likeTrack(track: Track, liked: Boolean): Boolean {
-        println("likeTrack: ${track.title}, $liked")
-        return liked
-    }
 }

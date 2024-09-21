@@ -14,11 +14,12 @@ data class Track(
     val releaseDate: String? = null,
     val description: String? = null,
     val isExplicit: Boolean = false,
-    val isLiked: Boolean = false,
     val genre: String? = null,
     val subtitle: String? = null,
     val extras: Map<String, String> = mapOf(),
     val streamables: List<Streamable> = listOf(),
+    val isLiked: Boolean = false,
+    val isHidden: Boolean = false
 ) {
     val subtitleStreamables: List<Streamable> by lazy {
         streamables.filter { it.mediaType == Streamable.MediaType.Subtitle }
@@ -32,7 +33,7 @@ data class Track(
         mediaStreamables + streamables.filter { it.mediaType == Streamable.MediaType.Video }
     }
 
-    val mediaStreamables: List<Streamable> by lazy {
+    private val mediaStreamables: List<Streamable> by lazy {
         streamables.filter { it.mediaType == Streamable.MediaType.AudioVideo }
     }
 }

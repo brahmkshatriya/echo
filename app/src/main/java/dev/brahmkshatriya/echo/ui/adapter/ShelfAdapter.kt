@@ -14,6 +14,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.plugger.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Category
@@ -31,9 +32,12 @@ class ShelfAdapter(
     val listener: Listener = getListener(fragment)
 ) : PagingDataAdapter<Shelf, ShelfViewHolder>(DiffCallback) {
 
-    interface Listener : MediaItemAdapter.Listener, TrackAdapter.Listener {
+    interface Listener : TrackAdapter.Listener {
         fun onClick(clientId: String, shelf: Shelf, transitionView: View)
         fun onLongClick(clientId: String, shelf: Shelf, transitionView: View): Boolean
+        fun onClick(clientId: String, item: EchoMediaItem, transitionView: View?)
+        fun onLongClick(clientId: String, item: EchoMediaItem, transitionView: View?): Boolean
+        fun onShuffleClick(clientId: String, shelf: Shelf.Lists.Tracks)
     }
 
     companion object {
@@ -120,7 +124,6 @@ class ShelfAdapter(
     }
 
     override fun onViewRecycled(holder: ShelfViewHolder) {
-        super.onViewRecycled(holder)
         destroyLifeCycle(holder)
         if (holder is Lists) saveScrollState(holder) {
             stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
@@ -128,7 +131,7 @@ class ShelfAdapter(
     }
 
     private fun destroyLifeCycle(holder: ShelfViewHolder) {
-        if (holder.isInitialized && holder.lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED))
+        if (holder.lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED))
             holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 
@@ -160,11 +163,15 @@ class ShelfAdapter(
     }
 
     private val sharedPool = RecycledViewPool()
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        0 -> Lists.create(parent, stateViewModel, sharedPool, extensionInfo.id, listener)
-        1 -> Media.create(parent, extensionInfo.id, listener)
-        2 -> Category.create(parent)
-        else -> throw IllegalArgumentException("Unknown viewType: $viewType")
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShelfViewHolder {
+        val holder = when (viewType) {
+            0 -> Lists.create(parent, stateViewModel, sharedPool, extensionInfo.id, listener)
+            1 -> Media.create(parent, extensionInfo.id, listener)
+            2 -> Category.create(parent)
+            else -> throw IllegalArgumentException("Unknown viewType: $viewType")
+        }
+        holder.lifecycleRegistry = LifecycleRegistry(holder)
+        return holder
     }
 
 }

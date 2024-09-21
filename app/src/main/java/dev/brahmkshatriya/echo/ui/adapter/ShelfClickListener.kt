@@ -112,6 +112,13 @@ open class ShelfClickListener(
         return onLongClick(clientId, track.toMediaItem(), view)
     }
 
+    override fun onShuffleClick(clientId: String, shelf: Shelf.Lists.Tracks) {
+        withClient<TrackClient>(clientId) {
+            it.play(clientId, null, shelf.list)
+            it.withBrowser { browser -> browser.shuffleModeEnabled = true }
+        }
+    }
+
     override fun onLongClick(
         clientId: String, item: EchoMediaItem, transitionView: View?
     ): Boolean {
