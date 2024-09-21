@@ -10,6 +10,8 @@ import androidx.media3.datasource.DataSpec
 import dev.brahmkshatriya.echo.common.models.Streamable
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.cancel
+import io.ktor.utils.io.discard
+import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
 
