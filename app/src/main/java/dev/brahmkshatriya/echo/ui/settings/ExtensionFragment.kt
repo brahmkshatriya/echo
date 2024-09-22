@@ -159,6 +159,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                     MaterialMultipleChoicePreference(preferenceGroup.context).also {
                         it.title = this.title
                         it.key = this.key
+                        it.summary = this.summary
                         defaultEntryIndices?.let { indices ->
                             it.setDefaultValue(indices.mapNotNull { index ->
                                 entryValues.getOrNull(index)
