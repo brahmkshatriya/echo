@@ -6,8 +6,9 @@
     style="@style/Selectable"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:minHeight="64dp"
+    android:layout_marginEnd="-8dp"
+    app:contentPadding="8dp"
+    app:cardCornerRadius="8dp"
     app:cardBackgroundColor="@android:color/transparent">
 
     <LinearLayout
@@ -19,6 +20,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="64dp"
             android:layout_height="64dp"
+            app:cardCornerRadius="8dp"
             app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
             <ImageView
@@ -64,7 +66,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="16dp"
+            android:layout_marginTop="-8dp"
+            android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:orientation="vertical">
 

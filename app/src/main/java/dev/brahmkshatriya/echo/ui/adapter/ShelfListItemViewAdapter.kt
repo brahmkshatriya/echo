@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 
 class ShelfListItemViewAdapter(
     private val clientId: String,
@@ -15,8 +16,9 @@ class ShelfListItemViewAdapter(
 ) : LifeCycleListAdapter<Any, ShelfListItemViewHolder>(DiffCallback) {
 
     init {
-        if (shelf !is Shelf.Lists.Tracks) submitList(shelf.list)
-        else ShowButtonViewHolder.initialize(this, shelf)
+        shelf.ifShowingButton {
+            ShowButtonViewHolder.initialize(this, it)
+        } ?: submitList(shelf.list)
     }
 
     object DiffCallback : DiffUtil.ItemCallback<Any>() {

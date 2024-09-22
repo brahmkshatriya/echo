@@ -43,7 +43,6 @@ inline fun <reified T> Fragment.configureFeedUI(
     clientId: String? = null
 ) {
 
-
     FastScrollerHelper.applyTo(recyclerView)
     swipeRefresh.configure {
         viewModel.refresh(true)

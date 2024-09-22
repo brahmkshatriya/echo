@@ -8,14 +8,16 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.flexbox.JustifyContent.SPACE_BETWEEN
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfListsBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
+import dev.brahmkshatriya.echo.ui.adapter.GridViewHolder.Companion.ifGrid
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
+import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 import dev.brahmkshatriya.echo.utils.dpToPx
 import java.lang.ref.WeakReference
 
@@ -41,36 +43,27 @@ sealed class ShelfViewHolder(
             binding.subtitle.text = item.subtitle
             binding.subtitle.isVisible = item.subtitle.isNullOrBlank().not()
             binding.more.isVisible = item.more != null
-            binding.shuffle.isVisible = item is Shelf.Lists.Tracks
-
+            binding.shuffle.isVisible = if (item is Shelf.Lists.Tracks) {
+                binding.shuffle.setOnClickListener {
+                    listener.onShuffleClick(clientId, item)
+                }
+                true
+            } else false
             binding.recyclerView.setRecycledViewPool(sharedPool)
             val position = bindingAdapterPosition
             val transition = transitionView.transitionName + item.id
             val context = binding.root.context
-            val layoutManager = when (item.type) {
-                Shelf.Lists.Type.Grid -> {
-                    FlexboxLayoutManager(context).apply {
-                        flexDirection = FlexDirection.COLUMN
-                    }
-                }
+            val (layoutManager, padding) = item.ifGrid {
+                FlexboxLayoutManager(context).apply {
+                    justifyContent = SPACE_BETWEEN
+                } to 16.dpToPx(context)
+            } ?: item.ifShowingButton {
+                LinearLayoutManager(context, RecyclerView.VERTICAL, false) to 0
+            } ?: (LinearLayoutManager(
+                context, RecyclerView.HORIZONTAL, false
+            ) to 16.dpToPx(context))
 
-                Shelf.Lists.Type.Linear -> when (item) {
-                    is Shelf.Lists.Tracks -> {
-                        binding.recyclerView.updatePaddingRelative(start = 0, end = 0)
-                        binding.shuffle.setOnClickListener {
-                            listener.onShuffleClick(clientId, item)
-                        }
-                        LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-                    }
-
-                    else -> {
-                        val padding = 16.dpToPx(context)
-                        binding.recyclerView.updatePaddingRelative(start = padding, end = padding)
-                        LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-                    }
-                }
-            }
-
+            binding.recyclerView.updatePaddingRelative(start = padding, end = padding)
             layoutManager.apply {
                 val state: Parcelable? = viewModel.layoutManagerStates[position]
                 if (state != null) onRestoreInstanceState(state)

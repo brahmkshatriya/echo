@@ -43,5 +43,10 @@ class ShowButtonViewHolder(
                 adapter.submitList(list + false)
             }
         }
+
+        fun <T> Shelf.ifShowingButton(block: (Shelf.Lists.Tracks) -> T): T? {
+            return if (this is Shelf.Lists.Tracks && type == Shelf.Lists.Type.Linear) block(this)
+            else null
+        }
     }
 }

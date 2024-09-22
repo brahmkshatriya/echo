@@ -82,5 +82,10 @@ class GridViewHolder(
                 ItemShelfMediaGridBinding.inflate(inflater, parent, false)
             )
         }
+
+        fun <T> Shelf.Lists<*>.ifGrid(block: (Shelf.Lists<*>) -> T): T? {
+            return if (type == Shelf.Lists.Type.Grid) block(this)
+            else null
+        }
     }
 }
