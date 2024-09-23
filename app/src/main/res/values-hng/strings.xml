@@ -207,4 +207,6 @@
     <string name="radio_empty">Radio Khali He</string>
     <string name="remove_from_library">Library Se Hataye</string>
     <string name="save_to_library">Library Me Save Kare</string>
+    <string name="show_all">Sab dikhaayein</string>
+    <string name="show_less">Kam dikhaayein</string>
 </resources>
