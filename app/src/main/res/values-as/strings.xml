@@ -207,4 +207,6 @@
     <string name="radio_empty">ৰেডিঅ\' খালী হৈ আছে</string>
     <string name="remove_from_library">লাইব্ৰেৰীৰ পৰা আঁতৰাওক</string>
     <string name="save_to_library">লাইব্ৰেৰীত সংৰক্ষণ কৰক</string>
+    <string name="show_all">সকলো দেখুৱাওক</string>
+    <string name="show_less">কম দেখুৱাওক</string>
 </resources>
