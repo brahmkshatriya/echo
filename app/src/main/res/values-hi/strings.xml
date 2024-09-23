@@ -207,4 +207,6 @@
     <string name="radio_empty">रेडियो खाली है</string>
     <string name="remove_from_library">लाइब्रेरी से हटाएँ</string>
     <string name="save_to_library">लाइब्रेरी में सहेजें</string>
+    <string name="show_all">सब दिखाएं</string>
+    <string name="show_less">कम दिखाएं</string>
 </resources>
