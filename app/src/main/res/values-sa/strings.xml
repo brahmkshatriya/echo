@@ -207,4 +207,6 @@
     <string name="radio_empty">रेडियो रिक्तम् अस्ति</string>
     <string name="remove_from_library">पुस्तकालयात् निष्कासयन्तु</string>
     <string name="save_to_library">पुस्तकालये रक्षतु</string>
+    <string name="show_all">सर्वाणि दर्शयतु</string>
+    <string name="show_less">न्यूनं दर्शयतु</string>
 </resources>
