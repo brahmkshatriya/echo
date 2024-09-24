@@ -12,9 +12,9 @@ import dev.brahmkshatriya.echo.db.models.CurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
 import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo.Companion.toExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo.Companion.toExtensionInfo
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment

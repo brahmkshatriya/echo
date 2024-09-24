@@ -26,8 +26,8 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.getExtension
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect

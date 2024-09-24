@@ -1,9 +1,9 @@
-package dev.brahmkshatriya.echo.plugger
+package dev.brahmkshatriya.echo.plugger.echo
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo.Companion.toExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo.Companion.toExtensionInfo
 import kotlinx.coroutines.flow.StateFlow
 import tel.jeelpa.plugger.PluginRepo
 

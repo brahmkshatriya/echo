@@ -39,8 +39,8 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.ImportType
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.echo.ImportType
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.utils.toData

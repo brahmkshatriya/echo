@@ -30,8 +30,8 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.getExtension
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.putSerialized

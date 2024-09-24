@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.plugger
+package dev.brahmkshatriya.echo.plugger.echo
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.TrackerClient

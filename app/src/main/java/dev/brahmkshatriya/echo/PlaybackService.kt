@@ -24,8 +24,8 @@ import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.RenderersFactory
 import dev.brahmkshatriya.echo.playback.TrackingListener
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.TrackerExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar

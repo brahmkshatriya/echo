@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.databinding.ItemErrorBinding
 import dev.brahmkshatriya.echo.databinding.ItemLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemNotLoadingBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemContainerBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle

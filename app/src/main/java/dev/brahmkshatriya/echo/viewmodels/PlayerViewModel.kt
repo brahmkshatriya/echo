@@ -26,8 +26,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.getExtension
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener

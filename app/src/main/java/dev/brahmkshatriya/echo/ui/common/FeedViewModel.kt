@@ -6,8 +6,8 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.db.models.UserEntity
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

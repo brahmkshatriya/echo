@@ -1,8 +1,8 @@
-package dev.brahmkshatriya.echo.plugger.parser
+package dev.brahmkshatriya.echo.plugger.echo.parser
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
 import tel.jeelpa.plugger.ManifestParser
 import tel.jeelpa.plugger.pluginloader.apk.ApkPluginSource
 import java.io.File

@@ -2,8 +2,8 @@ package dev.brahmkshatriya.echo.ui.exception
 
 import dev.brahmkshatriya.echo.common.models.ClientException
 import dev.brahmkshatriya.echo.common.models.ExtensionType
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
 
 sealed class AppException(
     override val cause: Throwable

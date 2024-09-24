@@ -43,8 +43,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.getExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfClickListener
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.paging.toFlow

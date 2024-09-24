@@ -6,7 +6,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.models.QuickSearch
 import dev.brahmkshatriya.echo.db.models.UserEntity
-import dev.brahmkshatriya.echo.plugger.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
 import dev.brahmkshatriya.echo.ui.common.FeedViewModel
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import kotlinx.coroutines.Dispatchers

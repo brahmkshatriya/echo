@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.plugger
+package dev.brahmkshatriya.echo.plugger.echo
 
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 

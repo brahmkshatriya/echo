@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.plugger
+package dev.brahmkshatriya.echo.plugger.echo
 
 import android.os.Build
 import android.os.FileObserver

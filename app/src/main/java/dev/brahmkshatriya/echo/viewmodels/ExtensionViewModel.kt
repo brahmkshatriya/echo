@@ -11,11 +11,11 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.LyricsExtension
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.TrackerExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.echo.LyricsExtension
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.TrackerExtension
+import dev.brahmkshatriya.echo.plugger.echo.getExtension
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.flow.Flow

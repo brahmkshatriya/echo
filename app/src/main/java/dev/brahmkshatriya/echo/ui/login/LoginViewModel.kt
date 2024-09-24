@@ -11,10 +11,10 @@ import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.LyricsExtension
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.LyricsExtension
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.TrackerExtension
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers

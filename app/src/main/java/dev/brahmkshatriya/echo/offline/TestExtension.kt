@@ -24,8 +24,8 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.ImportType
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.echo.ImportType
 
 class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient, HomeFeedClient,
     RadioClient {

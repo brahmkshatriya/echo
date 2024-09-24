@@ -28,9 +28,9 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoStreamable
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo.Companion.toExtensionInfo
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo.Companion.toExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.plugger.echo.getExtension
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported

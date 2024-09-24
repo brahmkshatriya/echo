@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.utils.loadWith
 

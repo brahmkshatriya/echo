@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
+import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Category
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Lists
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media
