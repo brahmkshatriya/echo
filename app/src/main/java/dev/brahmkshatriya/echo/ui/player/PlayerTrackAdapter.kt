@@ -51,7 +51,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.VideoResolver
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
@@ -221,12 +222,12 @@ class PlayerTrackAdapter(
         }
 
         binding.playerControls.trackHeart.run {
-            val client = viewModel.extensionListFlow.getExtension(clientId)?.client
-            val isLibrary = client is TrackLikeClient
-            isVisible = isLibrary
+            val extension = viewModel.extensionListFlow.getExtension(clientId) ?: return
+            val isTrackLikeClient = extension.isClient<TrackLikeClient>()
+            isVisible = isTrackLikeClient
 
             val likeListener = viewModel.likeListener
-            if (isLibrary) {
+            if (isTrackLikeClient) {
                 addOnCheckedStateChangedListener(likeListener)
                 observeCurrent(viewModel.isLiked) {
                     it ?: return@observeCurrent

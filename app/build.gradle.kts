@@ -44,7 +44,7 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    implementation("com.github.JeelPatel231:plugger:structure-overhaul-SNAPSHOT")
+    implementation("com.github.jeelpatel231:plugger:82e00ea5a4")
 
     implementation("androidx.appcompat:appcompat:1.7.0")
 
@@ -53,7 +53,8 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     implementation("androidx.fragment:fragment-ktx:1.6.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.8.0")
     implementation("androidx.paging:paging-common-ktx:3.3.2")
     implementation("androidx.paging:paging-runtime-ktx:3.3.2")
     implementation("androidx.preference:preference-ktx:1.2.1")
@@ -83,7 +84,6 @@ dependencies {
 
     implementation("com.github.madrapps:pikolo:2.0.2")
     implementation("com.github.bosphere.android-fadingedgelayout:fadingedgelayout:1.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
     implementation("me.zhanghai.android.fastscroll:library:1.3.0")
     implementation("com.flaviofaria:kenburnsview:1.0.7")
     implementation("com.github.paramsen:noise:2.0.0")

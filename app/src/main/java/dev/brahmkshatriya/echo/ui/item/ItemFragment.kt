@@ -32,6 +32,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.RadioItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
@@ -254,14 +255,12 @@ class ItemFragment : Fragment() {
         collect(viewModel.extensionListFlow) { list ->
             val extension = list?.find { it.metadata.id == clientId }
             extension ?: return@collect
-            val extensionInfo = extension.info
-            val client = extension.client
 
             val mediaAdapter =
-                ShelfAdapter(this, view.transitionName, extensionInfo, listener)
+                ShelfAdapter(this, view.transitionName, extension, listener)
             shelfAdapter = mediaAdapter
-            viewModel.isRadioClient = client is RadioClient
-            viewModel.isFollowClient = client is ArtistFollowClient
+            viewModel.isRadioClient = extension.isClient<RadioClient>()
+            viewModel.isFollowClient = extension.isClient<ArtistFollowClient>()
 
             val item = item
             viewModel.item = item

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.models
+package dev.brahmkshatriya.echo.common.helpers
 
 sealed class ClientException : Exception() {
     open class LoginRequired : ClientException()

@@ -9,12 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.settings.AboutFragment.AboutPreference.Companion.appVersion
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -93,15 +93,15 @@ class ExceptionFragment : Fragment() {
             is AppException -> throwable.run {
                 when (this) {
                     is AppException.Unauthorized ->
-                        getString(R.string.unauthorized, extensionName)
+                        getString(R.string.unauthorized, extension.name)
 
                     is AppException.LoginRequired ->
-                        getString(R.string.login_required, extensionName)
+                        getString(R.string.login_required, extension.name)
 
                     is AppException.NotSupported ->
-                        getString(R.string.is_not_supported, operation, extensionName)
+                        getString(R.string.is_not_supported, operation, extension.name)
 
-                    is AppException.Other -> getTitle(cause)
+                    is AppException.Other -> "${extension.name} : ${getTitle(cause)}"
                 }
             }
 
@@ -118,10 +118,10 @@ ${throwable.details.causedBy}
 """.trimIndent()
 
             is AppException -> """
-Extension : ${throwable.extensionName}
-Id : ${throwable.extensionId}
-Type : ${throwable.extensionType}
-Version : ${throwable.extensionMetadata.version}
+Extension : ${throwable.extension.name}
+Id : ${throwable.extension.name}
+Type : ${throwable.extension.type}
+Version : ${throwable.extension.version}
 App Version : ${appVersion()}
 
 ${getDetails(throwable.cause)}

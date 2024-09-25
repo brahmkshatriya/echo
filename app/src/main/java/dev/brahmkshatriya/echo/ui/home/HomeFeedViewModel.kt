@@ -4,7 +4,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.db.models.UserEntity
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.ui.common.FeedViewModel
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import kotlinx.coroutines.flow.MutableSharedFlow

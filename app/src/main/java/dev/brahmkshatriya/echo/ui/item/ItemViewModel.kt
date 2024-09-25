@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
@@ -29,9 +31,8 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.echo.GenericExtension
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,7 @@ class ItemViewModel @Inject constructor(
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
-    var extension: GenericExtension? = null
+    var extension: Extension<*>? = null
     var isRadioClient = false
     var isFollowClient = false
 
@@ -119,20 +120,19 @@ class ItemViewModel @Inject constructor(
         crossinline loadItem: suspend U.(T) -> T,
         crossinline loadRelated: U.(T) -> PagedData<Shelf>? = { null }
     ): T? {
-        return getClient<U, T> { info ->
-            tryWith(info) {
-                val loaded = loadItem(item)
-
+        return getClient<U, T> {
+            val loaded = loadItem(item)
+            extension?.run(throwableFlow) {
                 if (this is SaveToLibraryClient)
                     savedState.value = isSavedToLibrary(loaded)
-
-                viewModelScope.launch {
-                    if (loadRelatedFeed) tryWith(info) {
-                        loadRelated(loaded)?.toFlow()?.map { it }
-                    }?.collectTo(relatedFeed)
-                }
-                loaded
             }
+
+            viewModelScope.launch {
+                if (loadRelatedFeed) extension?.run(throwableFlow) {
+                    loadRelated(loaded)?.toFlow()?.map { it }
+                }?.collectTo(relatedFeed)
+            }
+            loaded
         }
     }
 
@@ -140,12 +140,9 @@ class ItemViewModel @Inject constructor(
         load()
     }
 
-    private inline fun <reified T, reified R : Any> getClient(
-        block: T.(info: ExtensionInfo) -> R?
-    ) = extension?.run {
-        val client = client
-        if (client is T) block(client, info) else null
-    }
+    private suspend inline fun <reified T, reified R : Any> getClient(
+        block: T.() -> R
+    ) = extension?.get<T, R>(throwableFlow, block)
 
     private val songsFlow = MutableStateFlow<PagingData<Track>?>(null)
     val songsLiveData = songsFlow.asLiveData()
@@ -154,8 +151,8 @@ class ItemViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getClient<AlbumClient, Unit> {
                 songsFlow.value = null
-                val tracks = tryWith(it) { loadTracks(album) }
-                tracks?.toFlow()?.collectTo(songsFlow)
+                val tracks = loadTracks(album)
+                tracks.toFlow().collectTo(songsFlow)
             }
         }
     }
@@ -164,8 +161,8 @@ class ItemViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getClient<PlaylistClient, Unit> {
                 songsFlow.value = null
-                val tracks = tryWith(it) { loadTracks(playlist) }
-                tracks?.toFlow()?.collectTo(songsFlow)
+                val tracks = loadTracks(playlist)
+                tracks.toFlow().collectTo(songsFlow)
             }
         }
     }
@@ -174,8 +171,8 @@ class ItemViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getClient<RadioClient, Unit> {
                 songsFlow.value = null
-                val tracks = tryWith(it) { loadTracks(radio) }
-                tracks?.toFlow()?.collectTo(songsFlow)
+                val tracks = loadTracks(radio)
+                tracks.toFlow().collectTo(songsFlow)
             }
         }
     }
@@ -183,7 +180,7 @@ class ItemViewModel @Inject constructor(
     fun subscribe(artist: Artist, subscribe: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<ArtistFollowClient, Unit> {
-                tryWith(it) { if (subscribe) followArtist(artist) else unfollowArtist(artist) }
+                if (subscribe) followArtist(artist) else unfollowArtist(artist)
                 load()
             }
         }
@@ -191,17 +188,13 @@ class ItemViewModel @Inject constructor(
 
     fun removeFromLibrary(item: EchoMediaItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            getClient<SaveToLibraryClient, Unit> {
-                tryWith(it) { removeFromLibrary(item) }
-            }
+            getClient<SaveToLibraryClient, Unit> { removeFromLibrary(item) }
         }
     }
 
     fun saveToLibrary(item: EchoMediaItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            getClient<SaveToLibraryClient, Unit> {
-                tryWith(it) { saveToLibrary(item) }
-            }
+            getClient<SaveToLibraryClient, Unit> { saveToLibrary(item) }
         }
     }
 }

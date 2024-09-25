@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.plugger.echo
+package dev.brahmkshatriya.echo.extensions.plugger
 
 import android.os.Build
 import android.os.FileObserver
@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import tel.jeelpa.plugger.PluginSource
 import java.io.File
 
-class FileSystemPluginSource(
+class FilePluginSource(
     private val folder: File,
     private val extension: String,
 ) : PluginSource<File> {

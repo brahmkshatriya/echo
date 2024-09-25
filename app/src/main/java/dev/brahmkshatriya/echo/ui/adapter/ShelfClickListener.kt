@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
+import android.content.Context
 import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
@@ -14,7 +15,8 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Shelf.Category
 import dev.brahmkshatriya.echo.common.models.Shelf.Item
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
@@ -22,8 +24,10 @@ import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -36,15 +40,20 @@ open class ShelfClickListener(
 
     val fragment by lazy { fragmentManager.findFragmentById(fragmentId)!! }
 
-    private fun noClient() = fragment.createSnack(fragment.requireContext().noClient())
-    private fun trackNotSupported(client: String) =
-        fragment.createSnack(fragment.requireContext().trackNotSupported(client))
+    private fun snack(block: Context.() -> SnackBar.Message) =
+        fragment.createSnack(fragment.requireContext().block())
 
     private inline fun <reified T> withClient(clientId: String, block: (PlayerViewModel) -> Unit) {
         val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
         val extension = playerViewModel.extensionListFlow.getExtension(clientId)
-            ?: return noClient()
-        if (extension.client !is T) return trackNotSupported(extension.metadata.name)
+            ?: return snack { noClient() }
+        if (!extension.isClient<T>()) return snack {
+            when (T::class) {
+                TrackClient::class -> trackNotSupported(clientId)
+                RadioClient::class -> radioNotSupported(clientId)
+                else -> noClient()
+            }
+        }
         block(playerViewModel)
     }
 
@@ -92,13 +101,8 @@ open class ShelfClickListener(
         list: List<Track>,
         pos: Int,
         view: View
-    ) {
-        val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
-        val extension = playerViewModel.extensionListFlow.getExtension(clientId)
-            ?: return noClient()
-        if (extension.client !is TrackClient)
-            return trackNotSupported(extension.metadata.name)
-        playerViewModel.play(clientId, context, list, pos)
+    ) = withClient<TrackClient>(clientId) {
+        it.play(clientId, context, list, pos)
     }
 
     override fun onLongClick(

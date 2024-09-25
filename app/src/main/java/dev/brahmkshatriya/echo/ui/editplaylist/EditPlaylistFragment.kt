@@ -20,12 +20,13 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.ui.adapter.PlaylistAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Add
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Move
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Remove
-import dev.brahmkshatriya.echo.ui.adapter.PlaylistAdapter
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -164,8 +165,8 @@ class EditPlaylistFragment : Fragment() {
         })
         observe(viewModel.extensionListFlow) {
             viewModel.load(clientId, playlist)
-            val client = viewModel.extensionListFlow.getExtension(clientId)?.client
-            header.showCover(client is PlaylistEditCoverClient)
+            val extension = viewModel.extensionListFlow.getExtension(clientId) ?: return@observe
+            header.showCover(extension.isClient<PlaylistEditCoverClient>())
         }
 
         binding.toolbar.setOnMenuItemClickListener {

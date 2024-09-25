@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.common.models
+package dev.brahmkshatriya.echo.common.helpers
 
 enum class ExtensionType {
     MUSIC, TRACKER, LYRICS

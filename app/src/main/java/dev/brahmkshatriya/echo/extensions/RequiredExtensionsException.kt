@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.plugger.echo
+package dev.brahmkshatriya.echo.extensions
 
 data class RequiredExtensionsException(
     val requiredExtensions: List<String>

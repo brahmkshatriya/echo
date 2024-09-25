@@ -21,7 +21,7 @@ fun FragmentActivity.openLoginException(
 ) {
     if (throwable is AppException.Unauthorized) {
         val model by viewModels<LoginUserViewModel>()
-        model.logout(throwable.extensionId, throwable.userId)
+        model.logout(throwable.extension.id, throwable.userId)
     }
     openFragment(LoginFragment.newInstance(throwable), view)
 }

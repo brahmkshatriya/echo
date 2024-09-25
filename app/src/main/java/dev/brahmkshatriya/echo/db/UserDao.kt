@@ -18,8 +18,8 @@ interface UserDao {
     fun deleteCurrentUser(clientId: String)
 
 
-    @Query("SELECT * FROM CurrentUser")
-    fun observeCurrentUser() : Flow<List<CurrentUser>>
+    @Query("SELECT * FROM CurrentUser WHERE clientId = :clientId")
+    fun observeCurrentUser(clientId: String?) : Flow<CurrentUser?>
 
     @Query("""
         SELECT UserEntity.* FROM UserEntity

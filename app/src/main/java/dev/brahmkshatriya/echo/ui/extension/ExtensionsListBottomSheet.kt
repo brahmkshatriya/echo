@@ -10,11 +10,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -55,7 +55,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
         }
 
         val listener = object : OnButtonCheckedListener {
-            var map: Map<Int, ExtensionMetadata> = mapOf()
+            var map: Map<Int, Metadata> = mapOf()
             var enabled = false
             override fun onButtonChecked(
                 group: MaterialButtonToggleGroup?,

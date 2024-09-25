@@ -6,6 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
@@ -17,9 +18,8 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.AUTO_START_RADIO
-import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -64,19 +64,19 @@ class Radio(
         ): State.Loaded? {
             val list = extensionListFlow.first { it != null }
             val extension = list?.find { it.metadata.id == clientId }
-            when (val client = extension?.client) {
+            when (val client = extension?.instance?.value?.getOrNull()) {
                 null -> {
                     messageFlow.emit(context.noClient())
                 }
 
                 !is RadioClient -> {
-                    messageFlow.emit(context.radioNotSupported(extension.metadata.name))
+                    messageFlow.emit(context.radioNotSupported(extension.name))
                 }
 
                 else -> {
                     suspend fun <T> tryIO(block: suspend () -> T): T? =
                         withContext(Dispatchers.IO) {
-                            tryWith(throwableFlow, extension.info) { block() }
+                            extension.run(throwableFlow) { block() }
                         }
 
                     val radio = tryIO {

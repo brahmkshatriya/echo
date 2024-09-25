@@ -5,9 +5,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.tabs.TabLayout
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Tab
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.collect
@@ -19,7 +19,7 @@ inline fun <reified T> Fragment.applyClient(
     recyclerView: RecyclerView,
     swipeRefresh: SwipeRefreshLayout,
     id: Int,
-    it: MusicExtension?
+    it: Extension<*>?
 ): ShelfAdapter? {
     swipeRefresh.isEnabled = it != null
     it ?: return null
@@ -27,7 +27,7 @@ inline fun <reified T> Fragment.applyClient(
     val adapter = ShelfAdapter(
         parent,
         id.toString(),
-        it.info
+        it
     )
     val concatAdapter = adapter.withLoaders()
     recyclerView.applyAdapter<T>(it, id, concatAdapter)

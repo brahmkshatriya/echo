@@ -7,13 +7,12 @@ import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadItem
 import dev.brahmkshatriya.echo.ui.download.DownloadItem.Companion.toItem
@@ -26,9 +25,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DownloadViewModel @Inject constructor(
-    private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+    val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val application: Application,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    val offline: OfflineExtension,
     database: EchoDatabase,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
@@ -108,8 +108,6 @@ class DownloadViewModel @Inject constructor(
     val offlineFlow = MutableStateFlow<PagingData<Shelf>?>(null)
     private fun loadOfflineDownloads() {
         viewModelScope.launch {
-            val offline =
-                extensionListFlow.getExtension(OfflineExtension.metadata.id)?.client as OfflineExtension
             offline.getDownloads().toFlow().collectTo(offlineFlow)
         }
     }

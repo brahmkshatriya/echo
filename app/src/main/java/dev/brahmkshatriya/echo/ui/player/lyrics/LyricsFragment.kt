@@ -19,12 +19,13 @@ import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Lyric
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.FragmentLyricsBinding
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -63,24 +64,24 @@ class LyricsFragment : Fragment() {
         val extension = binding.searchBar.findViewById<View>(R.id.menu_lyrics)
         var lyricsItemAdapter: LyricsItemAdapter? = null
         observe(viewModel.currentExtension) { current ->
-            binding.searchBar.hint = current?.metadata?.name
+            binding.searchBar.hint = current?.name
             current?.metadata?.iconUrl?.toImageHolder()
                 .loadWith(extension, R.drawable.ic_extension) {
                     menu.findItem(R.id.menu_lyrics).icon = it
                 }
-            val isSearchable = current?.let { it.client is LyricsSearchClient }
+            val isSearchable = current?.isClient<LyricsSearchClient>() ?: false
             binding.searchBar.setNavigationIcon(
                 when (isSearchable) {
                     true -> R.drawable.ic_search_outline
-                    else -> R.drawable.ic_queue_music
+                    false -> R.drawable.ic_queue_music
                 }
             )
-            binding.searchView.editText.isEnabled = isSearchable ?: false
-            binding.searchView.hint = if (isSearchable == true)
-                getString(R.string.search_extension, current.metadata.name)
-            else current?.metadata?.name
-            lyricsItemAdapter = current?.info?.let { info ->
-                LyricsItemAdapter(this, info) { lyrics ->
+            binding.searchView.editText.isEnabled = isSearchable
+            binding.searchView.hint = if (isSearchable)
+                getString(R.string.search_extension, current?.name)
+            else current?.name
+            lyricsItemAdapter = current?.let {
+                LyricsItemAdapter(this, it) { lyrics ->
                     viewModel.onLyricsSelected(lyrics)
                     binding.searchView.hide()
                 }

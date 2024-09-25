@@ -1,18 +1,22 @@
 package dev.brahmkshatriya.echo.offline
 
-import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
+import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.extensions.plugger.LazyPluginRepo
+import dev.brahmkshatriya.echo.extensions.plugger.lazily
 import kotlinx.coroutines.flow.MutableStateFlow
-import tel.jeelpa.plugger.PluginRepo
 
-class LocalExtensionRepo(val context: Context) : PluginRepo<ExtensionMetadata, ExtensionClient> {
-    private val extension = OfflineExtension(context)
-//    private val test : ExtensionClient = TestExtension()
+class LocalExtensionRepo(
+    private val extension: OfflineExtension
+) : LazyPluginRepo<Metadata, ExtensionClient> {
+
     override fun getAllPlugins() = MutableStateFlow(
         listOf(
-//            Result.success(TestExtension.metadata to test),
-            Result.success(OfflineExtension.metadata to extension),
+//                getLazy(TestExtension.metadata, TestExtension()),
+            getLazy(OfflineExtension.metadata, extension),
         )
     )
+
+    private fun getLazy(metadata: Metadata, extension: ExtensionClient) =
+        Result.success(Pair(metadata, lazily(extension)))
 }

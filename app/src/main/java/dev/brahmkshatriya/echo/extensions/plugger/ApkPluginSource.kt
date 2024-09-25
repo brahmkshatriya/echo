@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.plugger.echo
+package dev.brahmkshatriya.echo.extensions.plugger
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import tel.jeelpa.plugger.PluginSource
-
 
 class ApkPluginSource(
     context: Context,
@@ -41,7 +40,7 @@ class ApkPluginSource(
     companion object {
 
         @Suppress("Deprecation")
-        private val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
+        val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
                 PackageManager.GET_META_DATA or
                 PackageManager.GET_SIGNATURES or
                 (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0)

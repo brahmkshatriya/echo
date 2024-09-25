@@ -14,11 +14,13 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearch
 import dev.brahmkshatriya.echo.common.models.Radio
@@ -39,8 +41,6 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.echo.ImportType
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.utils.toData
@@ -51,10 +51,10 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     TrackLikeClient, PlaylistEditorListenerClient {
 
     companion object {
-        val metadata = ExtensionMetadata(
+        val metadata = Metadata(
             className = "OfflineExtension",
             path = "",
-            importType = ImportType.Inbuilt,
+            importType = ImportType.BuiltIn,
             id = "echo_offline",
             name = "Offline",
             description = "Offline extension",

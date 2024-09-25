@@ -22,6 +22,7 @@ import androidx.media3.session.SessionResult.RESULT_SUCCESS
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
@@ -30,8 +31,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.putSerialized
@@ -124,7 +124,8 @@ class PlayerSessionCallback(
         else scope.future {
             val errorIO = SessionResult(SessionError.ERROR_IO)
             val item = session.player.currentMediaItem ?: return@future errorIO
-            val client = extensionList.getExtension(item.clientId)?.client ?: return@future errorIO
+            val extension = extensionList.getExtension(item.clientId) ?: return@future errorIO
+            val client = extension.instance.value.getOrNull() ?: return@future errorIO
             if (client !is TrackLikeClient) return@future errorIO
             val track = item.track
             withContext(Dispatchers.IO) {
@@ -184,7 +185,7 @@ class PlayerSessionCallback(
         }
 
         val extension = extensionFlow.value
-        val client = extension?.client ?: return default { noClient().message }
+        val client = extension?.instance?.value?.getOrNull() ?: return default { noClient().message }
         val id = extension.metadata.id
         if (client !is SearchClient) return default { searchNotSupported(id).message }
         if (client !is TrackClient) return default { trackNotSupported(id).message }

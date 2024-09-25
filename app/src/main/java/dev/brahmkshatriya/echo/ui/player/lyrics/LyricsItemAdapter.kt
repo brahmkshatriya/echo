@@ -8,15 +8,15 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.adapter.ShelfLoadingAdapter
 
 class LyricsItemAdapter(
     private val fragment: Fragment,
-    private val info: ExtensionInfo,
+    private val info: Extension<*>,
     private val listener: Listener
 ) : PagingDataAdapter<Lyrics, LyricsItemAdapter.ViewHolder>(DiffCallback) {
 

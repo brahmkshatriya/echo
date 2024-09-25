@@ -1,6 +1,6 @@
-package dev.brahmkshatriya.echo.plugger.echo
+package dev.brahmkshatriya.echo.extensions
 
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 
 class ExtensionException(
     val type: ExtensionType,

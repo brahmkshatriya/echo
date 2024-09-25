@@ -7,12 +7,12 @@ import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.common.models.ClientException
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.databinding.ItemErrorBinding
 import dev.brahmkshatriya.echo.databinding.ItemLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemNotLoadingBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemContainerBinding
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
@@ -20,7 +20,7 @@ import dev.brahmkshatriya.echo.ui.exception.openException
 import dev.brahmkshatriya.echo.ui.exception.openLoginException
 
 class ShelfLoadingAdapter(
-    private val extensionInfo: ExtensionInfo,
+    private val extension: Extension<*>,
     val listener: Listener? = null
 ) :
     LoadStateAdapter<ShelfLoadingAdapter.LoadViewHolder>() {
@@ -48,14 +48,14 @@ class ShelfLoadingAdapter(
         }
 
         data class Error(
-            val extensionInfo: ExtensionInfo,
+            val extension: Extension<*>,
             val binding: ItemErrorBinding,
             val listener: Listener?
         ) :
             Shelf(binding.root) {
             override fun bind(loadState: LoadState) {
                 loadState as LoadState.Error
-                val appError = loadState.error.toAppException(extensionInfo)
+                val appError = loadState.error.toAppException(extension)
                 binding.error.run {
                     transitionName = appError.hashCode().toString()
                     text = context.getTitle(appError)
@@ -70,14 +70,14 @@ class ShelfLoadingAdapter(
         }
 
         data class LoginRequired(
-            val extensionInfo: ExtensionInfo,
+            val extension: Extension<*>,
             val binding: ItemLoginRequiredBinding,
             val listener: Listener?
         ) :
             Shelf(binding.root) {
             override fun bind(loadState: LoadState) {
                 val error = (loadState as LoadState.Error).error
-                val appError = error.toAppException(extensionInfo) as AppException.LoginRequired
+                val appError = error.toAppException(extension) as AppException.LoginRequired
                 binding.error.run {
                     text = context.getTitle(appError)
                 }
@@ -105,13 +105,13 @@ class ShelfLoadingAdapter(
                 )
 
                 2 -> Shelf.Error(
-                    extensionInfo,
+                    extension,
                     ItemErrorBinding.inflate(inflater, parent, false),
                     listener
                 )
 
                 3 -> Shelf.LoginRequired(
-                    extensionInfo,
+                    extension,
                     ItemLoginRequiredBinding.inflate(inflater, parent, false),
                     listener
                 )
@@ -140,8 +140,8 @@ class ShelfLoadingAdapter(
         holder.shelf.bind(loadState)
     }
 
-    constructor (fragment: Fragment, extensionInfo: ExtensionInfo, retry: () -> Unit) : this(
-        extensionInfo,
+    constructor (fragment: Fragment, extension: Extension<*>, retry: () -> Unit) : this(
+        extension,
         object : Listener {
             override fun onRetry() {
                 retry()

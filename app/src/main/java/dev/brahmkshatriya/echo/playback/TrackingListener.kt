@@ -3,18 +3,17 @@ package dev.brahmkshatriya.echo.playback
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.TrackerExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.utils.PauseCountDown
-import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,9 +32,6 @@ class TrackingListener(
     private var current: MediaItem? = null
     private var timer: PauseCountDown? = null
 
-    private suspend fun <T> tryIO(info: ExtensionInfo, block: suspend () -> T) =
-        tryWith(throwableFlow, info, block)
-
     private fun trackMedia(
         block: suspend TrackerClient.(clientId: String, context: EchoMediaItem?, track: Track) -> Unit
     ) {
@@ -43,16 +39,18 @@ class TrackingListener(
         val clientId = item.clientId
         val track = item.track
 
-        val extension = extensionList.getExtension(clientId)
+        val extension = extensionList.getExtension(clientId) ?: return
         val trackers = trackerList.value?.filter { it.metadata.enabled } ?: emptyList()
 
         scope.launch(Dispatchers.IO) {
-            val client = extension?.client
-            if (client is TrackerClient)
-                tryIO(extension.info) { client.block(clientId, item.context, track) }
+            extension.get<TrackerClient, Unit>(throwableFlow) {
+                block(clientId, item.context, track)
+            }
             trackers.forEach {
                 launch {
-                    tryIO(it.info) { it.client.block(clientId, item.context, track) }
+                    it.get<TrackerClient, Unit>(throwableFlow) {
+                        block(clientId, item.context, track)
+                    }
                 }
             }
         }

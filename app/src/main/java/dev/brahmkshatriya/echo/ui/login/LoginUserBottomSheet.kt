@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserBinding
 import dev.brahmkshatriya.echo.databinding.ItemLoginUserBinding
 import dev.brahmkshatriya.echo.db.models.CurrentUser
@@ -43,9 +42,7 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
             requireActivity().openFragment(DownloadingFragment())
         }
         val extension = viewModel.extensionFlow.value ?: return
-        viewModel.currentExtension.value = LoginUserViewModel.ExtensionData(
-            ExtensionType.MUSIC, extension.metadata, extension.client
-        )
+        viewModel.currentExtension.value =  extension
         binding.userContainer.bind(this, ::dismiss)
     }
 

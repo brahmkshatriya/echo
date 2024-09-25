@@ -26,6 +26,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -43,10 +44,10 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
-import dev.brahmkshatriya.echo.ui.adapter.ShelfClickListener
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfClickListener
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
@@ -89,7 +90,7 @@ class TrackDetailsFragment : Fragment() {
             val extension =
                 playerViewModel.extensionListFlow.getExtension(item.clientId) ?: return@observe
             val adapter =
-                ShelfAdapter(this, "track_details", extension.info, shelfClickListener)
+                ShelfAdapter(this, "track_details", extension, shelfClickListener)
             mediaAdapter = adapter
             binding.root.adapter = ConcatAdapter(infoAdapter, adapter.withLoaders())
             viewModel.load(item.clientId, track)
@@ -366,7 +367,7 @@ class TrackDetailsFragment : Fragment() {
             itemsFlow.value = null
 
             val extension = extensionListFlow.getExtension(clientId) ?: return
-            val client = extension.client
+            val client = extension.instance.value.getOrNull()
             val album = track.album
             val artists = track.artists
 
@@ -381,21 +382,19 @@ class TrackDetailsFragment : Fragment() {
                         listOf(
                             Shelf.Lists.Items(
                                 app.getString(R.string.artists),
-                                if(client is ArtistClient) artists.map {
+                                if (client is ArtistClient) artists.map {
                                     val artist = client.loadArtist(it)
                                     artist.toMediaItem()
                                 } else artists.map { it.toMediaItem() }
                             )
                         )
                     } else PagedData.empty(),
-                    if (client is TrackClient) tryWith(extension.info) {
+                    if (client is TrackClient) extension.run(throwableFlow) {
                         client.getShelves(track)
                     } ?: PagedData.empty()
                     else PagedData.empty()
                 )
-                tryWith(extension.info) {
-                    pagedData.toFlow().collectTo(itemsFlow)
-                }
+                pagedData.toFlow().collectTo(itemsFlow)
             }
         }
     }

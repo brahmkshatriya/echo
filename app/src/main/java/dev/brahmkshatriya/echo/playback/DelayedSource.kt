@@ -16,8 +16,8 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.upstream.Allocator
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamable
@@ -28,9 +28,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoStreamable
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo.Companion.toExtensionInfo
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -169,13 +167,11 @@ class DelayedSource(
             block: suspend TrackClient.() -> T
         ): T {
             val extension = extensionListFlow.getExtension(clientId)
-            val client = extension?.client
                 ?: throw Exception(context.noClient().message)
-
+            val client = extension.instance.value.getOrNull()
             if (client !is TrackClient)
                 throw Exception(context.trackNotSupported(extension.metadata.name).message)
-            val info = extension.metadata.toExtensionInfo(ExtensionType.MUSIC)
-            return runCatching { block(client) }.getOrElse { throw it.toAppException(info) }
+            return runCatching { block(client) }.getOrElse { throw it.toAppException(extension) }
         }
 
         fun Player.getMediaItemById(id: String): Pair<Int, MediaItem>? {

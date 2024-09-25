@@ -1,41 +1,39 @@
-package dev.brahmkshatriya.echo.plugger.echo
+package dev.brahmkshatriya.echo.extensions
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
-import dev.brahmkshatriya.echo.utils.mapState
 import kotlinx.coroutines.flow.StateFlow
+import tel.jeelpa.plugger.utils.mapState
 
-inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<ExtensionMetadata, T>>>>.injectSettings(
+inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<Metadata, Lazy<Result<T>>>>>>.injectSettings(
     type: ExtensionType,
     context: Context
 ) = mapState { list ->
     list.map {
         runCatching {
-            it.getOrThrow().apply {
-                val settings = toSettings(
-                    context.getSharedPreferences("$type-${first.id}", Context.MODE_PRIVATE)
-                )
-                second.setSettings(settings)
-            }
+            val plugin = it.getOrThrow()
+            val metadata = plugin.first
+            Pair(
+                metadata,
+                lazy {
+                    runCatching {
+                        val name = "$type-${metadata.id}"
+                        val settings =
+                            toSettings(context.getSharedPreferences(name, Context.MODE_PRIVATE))
+                        val instance = plugin.second.value.getOrThrow()
+                        instance.setSettings(settings)
+                        instance
+                    }
+                }
+            )
         }
     }
 }
-
-//inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<ExtensionMetadata, T>>>>.injectContext(
-//    context: Context
-//) = mapState { list ->
-//    list.map {
-//        runCatching {
-//            it.getOrThrow().apply {
-//                (second as? ContextProvider)?.setContext(context)
-//            }
-//        }
-//    }
-//}
 
 fun toSettings(prefs: SharedPreferences) = object : Settings {
     override fun getString(key: String) = prefs.getString(key, null)

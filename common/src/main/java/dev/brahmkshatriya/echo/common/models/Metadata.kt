@@ -1,10 +1,10 @@
-package dev.brahmkshatriya.echo.plugger.echo
+package dev.brahmkshatriya.echo.common.models
 
-import tel.jeelpa.plugger.models.PluginMetadata
+import dev.brahmkshatriya.echo.common.helpers.ImportType
 
-data class ExtensionMetadata(
-    override val className: String,
-    override val path: String,
+data class Metadata(
+    val className: String,
+    val path: String,
     val importType: ImportType,
     val id: String,
     val name: String,
@@ -13,4 +13,4 @@ data class ExtensionMetadata(
     val author: String,
     val iconUrl: String?,
     val enabled: Boolean = true
-) : PluginMetadata
+)

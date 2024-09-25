@@ -25,7 +25,7 @@ import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
@@ -67,7 +67,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
     private val loaded by lazy { args.getBoolean("loaded") }
     private val extension by lazy { playerViewModel.extensionListFlow.getExtension(clientId) }
-    private val client by lazy { extension?.client }
+    private val client by lazy { extension?.instance?.value?.getOrNull() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?

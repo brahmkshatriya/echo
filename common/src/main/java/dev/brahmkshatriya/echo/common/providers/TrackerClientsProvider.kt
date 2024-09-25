@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.common.providers
 
-import dev.brahmkshatriya.echo.common.clients.TrackerClient
+import dev.brahmkshatriya.echo.common.TrackerExtension
 
 interface TrackerClientsProvider {
     val requiredTrackerClients: List<String>
-    fun setTrackerClients(trackerClients: List<Pair<String, TrackerClient>>)
+    fun setTrackerExtensions(trackerClients: List<TrackerExtension>)
 }

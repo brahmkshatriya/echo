@@ -2,12 +2,13 @@ package dev.brahmkshatriya.echo.ui.common
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.db.models.UserEntity
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,17 +40,17 @@ abstract class FeedViewModel(
     }
 
 
-    private suspend fun loadGenres(info: ExtensionInfo, client: ExtensionClient) {
+    private suspend fun loadGenres(extension: Extension<*>) {
         loading.emit(true)
-        val list = tryWith(info) { getTabs(client) } ?: emptyList()
+        val list = extension.run(throwableFlow) { getTabs(this) } ?: emptyList()
         loading.emit(false)
         if (!list.any { it.id == tab?.id }) tab = list.firstOrNull()
         genres.value = list
     }
 
 
-    private suspend fun loadFeed(info: ExtensionInfo, client: ExtensionClient) = tryWith(info) {
-        getFeed(client)?.collectTo(feed)
+    private suspend fun loadFeed(extension: Extension<*>) = extension.run(throwableFlow) {
+        getFeed(this)?.collectTo(feed)
     }
 
     private var job: Job? = null
@@ -57,11 +58,9 @@ abstract class FeedViewModel(
         job?.cancel()
         feed.value = null
         val extension = extensionFlow.value ?: return
-        val client = extension.client
-        val info = extension.info
         job = viewModelScope.launch(Dispatchers.IO) {
-            if (reset) loadGenres(info, client)
-            loadFeed(info, client)
+            if (reset) loadGenres(extension)
+            loadFeed(extension)
         }
     }
 }

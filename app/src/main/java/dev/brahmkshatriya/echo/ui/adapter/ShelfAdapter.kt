@@ -14,9 +14,9 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Category
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Lists
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media
@@ -28,7 +28,7 @@ import java.lang.ref.WeakReference
 class ShelfAdapter(
     private val fragment: Fragment,
     private val transition: String,
-    private val extensionInfo: ExtensionInfo,
+    private val extension: Extension<*>,
     val listener: Listener = getListener(fragment)
 ) : PagingDataAdapter<Shelf, ShelfViewHolder>(DiffCallback) {
 
@@ -55,8 +55,8 @@ class ShelfAdapter(
     }
 
     fun withLoaders(): ConcatAdapter {
-        val footer = ShelfLoadingAdapter(fragment, extensionInfo) { retry() }
-        val header = ShelfLoadingAdapter(fragment, extensionInfo) { retry() }
+        val footer = ShelfLoadingAdapter(fragment, extension) { retry() }
+        val header = ShelfLoadingAdapter(fragment, extension) { retry() }
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
@@ -145,10 +145,10 @@ class ShelfAdapter(
         holder.bind(items)
         val clickView = holder.clickView
         clickView.setOnClickListener {
-            listener.onClick(extensionInfo.id, items, holder.transitionView)
+            listener.onClick(extension.id, items, holder.transitionView)
         }
         clickView.setOnLongClickListener {
-            listener.onLongClick(extensionInfo.id, items, holder.transitionView)
+            listener.onLongClick(extension.id, items, holder.transitionView)
             true
         }
     }
@@ -165,8 +165,8 @@ class ShelfAdapter(
     private val sharedPool = RecycledViewPool()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShelfViewHolder {
         val holder = when (viewType) {
-            0 -> Lists.create(parent, stateViewModel, sharedPool, extensionInfo.id, listener)
-            1 -> Media.create(parent, extensionInfo.id, listener)
+            0 -> Lists.create(parent, stateViewModel, sharedPool, extension.id, listener)
+            1 -> Media.create(parent, extension.id, listener)
             2 -> Category.create(parent)
             else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }

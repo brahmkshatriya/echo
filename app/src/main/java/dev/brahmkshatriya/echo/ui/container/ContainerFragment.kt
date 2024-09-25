@@ -68,8 +68,7 @@ class ContainerFragment : Fragment() {
         observe(activityViewModel.extensionListFlow) { list ->
             val extension = list?.find { it.metadata.id == clientId }
             extension ?: return@observe
-            val extensionInfo = extension.info
-            val adapter = ShelfAdapter(this, view.transitionName, extensionInfo)
+           val adapter = ShelfAdapter(this, view.transitionName, extension)
             val concatAdapter = adapter.withLoaders()
             shelfAdapter = adapter
             binding.recyclerView.adapter = concatAdapter

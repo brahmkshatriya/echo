@@ -5,13 +5,15 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -37,12 +39,11 @@ class EditPlaylistViewModel @Inject constructor(
         loading = true
         viewModelScope.launch {
             loadingFlow.emit(true)
-            val extension = extensionListFlow.getExtension(clientId)
-            val client = extension?.client
-            if (client !is PlaylistEditClient) return@launch
+            val extension = extensionListFlow.getExtension(clientId) ?: return@launch
             withContext(Dispatchers.IO) {
-                originalList =
-                    tryWith(extension.info) { client.loadTracks(playlist).loadAll() } ?: emptyList()
+                originalList = extension.get<PlaylistClient, List<Track>>(throwableFlow) {
+                    loadTracks(playlist).loadAll()
+                } ?: emptyList()
                 currentTracks.value = originalList
                 loading = null
                 loadingFlow.emit(null)
@@ -52,17 +53,14 @@ class EditPlaylistViewModel @Inject constructor(
 
     private suspend fun playlistEditClient(
         clientId: String, block: suspend (client: PlaylistEditClient) -> Unit
-    ) {
-        client(clientId, block)
-    }
+    ) = client(clientId, block)
 
     private suspend inline fun <reified T> client(
         clientId: String, crossinline block: suspend (client: T) -> Unit
     ) {
-        val extension = extensionListFlow.getExtension(clientId)
-        val client = extension?.client ?: return
-        if (client is T) withContext(Dispatchers.IO) {
-            tryWith(extension.info) { block.invoke(client) }
+        val extension = extensionListFlow.getExtension(clientId) ?: return
+        withContext(Dispatchers.IO) {
+            extension.get<T, Unit>(throwableFlow) { block.invoke(this) }
         }
     }
 
@@ -192,12 +190,10 @@ class EditPlaylistViewModel @Inject constructor(
             playlist: Playlist
         ) {
             val extension = extensionListFlow.getExtension(clientId) ?: return
-            val client = extension.client
-            if (client !is PlaylistEditClient) return
             viewModelScope.launch(Dispatchers.IO) {
-                tryWith(extension.info) {
+                extension.get<PlaylistEditClient, Unit>(throwableFlow) {
                     println("deleting playlist : ${playlist.title}")
-                    client.deletePlaylist(playlist)
+                    deletePlaylist(playlist)
                     println("deleted playlist : ${playlist.title}")
                 }
                 mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
@@ -213,17 +209,15 @@ class EditPlaylistViewModel @Inject constructor(
             new: List<Track>
         ) = run {
             val extension = extensionListFlow.getExtension(clientId) ?: return
-            val client = extension.client
-            if (client !is PlaylistEditClient) return
-            val listener = client as? PlaylistEditorListenerClient
             withContext(Dispatchers.IO) {
                 playlists.forEach { playlist ->
-                    tryWith(extension.info) {
-                        val loaded = client.loadPlaylist(playlist)
+                    extension.get<PlaylistEditClient, Unit>(throwableFlow) {
+                        val loaded = loadPlaylist(playlist)
                         check(loaded.isEditable)
-                        val tracks = client.loadTracks(loaded).loadAll()
+                        val tracks = loadTracks(loaded).loadAll()
+                        val listener = this as? PlaylistEditorListenerClient
                         listener?.onEnterPlaylistEditor(loaded, tracks)
-                        client.addTracksToPlaylist(loaded, tracks, tracks.size, new)
+                        addTracksToPlaylist(loaded, tracks, tracks.size, new)
                         listener?.onExitPlaylistEditor(loaded, tracks)
                         Unit
                     } ?: return@withContext

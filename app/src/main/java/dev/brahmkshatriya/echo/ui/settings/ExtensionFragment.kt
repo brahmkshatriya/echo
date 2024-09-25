@@ -3,13 +3,18 @@ package dev.brahmkshatriya.echo.ui.settings
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.LyricsExtension
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingItem
@@ -18,16 +23,14 @@ import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.echo.LyricsExtension
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.TrackerExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialMultipleChoicePreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialTextInputPreference
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import kotlinx.coroutines.launch
 
 class ExtensionFragment : BaseSettingsFragment() {
     private val args by lazy { requireArguments() }
@@ -51,9 +54,9 @@ class ExtensionFragment : BaseSettingsFragment() {
         }
 
         fun newInstance(
-            extensionMetadata: ExtensionMetadata,
+            metadata: Metadata,
             extensionType: ExtensionType
-        ) = newInstance(extensionMetadata.name, extensionMetadata.id, extensionType)
+        ) = newInstance(metadata.name, metadata.id, extensionType)
 
         fun newInstance(extension: MusicExtension) =
             newInstance(extension.metadata, ExtensionType.MUSIC)
@@ -82,17 +85,19 @@ class ExtensionFragment : BaseSettingsFragment() {
             preferenceScreen = screen
 
             val viewModel by activityViewModels<ExtensionViewModel>()
-            val client = viewModel.run {
-                when (extensionType) {
-                    ExtensionType.MUSIC -> extensionListFlow.getExtension(extensionId)?.client
-                    ExtensionType.TRACKER -> trackerListFlow.getExtension(extensionId)?.client
-                    ExtensionType.LYRICS -> lyricsListFlow.getExtension(extensionId)?.client
+            viewModel.run {
+                val client = when (extensionType) {
+                    ExtensionType.MUSIC -> extensionListFlow.getExtension(extensionId)
+                    ExtensionType.TRACKER -> trackerListFlow.getExtension(extensionId)
+                    ExtensionType.LYRICS -> lyricsListFlow.getExtension(extensionId)
                 }
-            }
-
-            client ?: return
-            client.settingItems.forEach { setting ->
-                setting.addPreferenceTo(screen)
+                viewModelScope.launch {
+                    client?.run(throwableFlow) {
+                        settingItems.forEach { setting ->
+                            setting.addPreferenceTo(screen)
+                        }
+                    }
+                }
             }
         }
 

@@ -10,11 +10,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ConcatAdapter
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
 import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo.Companion.toExtensionInfo
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
@@ -74,9 +73,10 @@ class DownloadingFragment : Fragment() {
             }
         })
 
-        val extensionInfo = OfflineExtension.metadata.toExtensionInfo(ExtensionType.MUSIC)
-        val downloadedAdapter = ShelfAdapter(this, "downloads", extensionInfo)
-        val titleAdapter = ShelfAdapter(this, "", extensionInfo)
+        val offline = viewModel.extensionListFlow.getExtension(OfflineExtension.metadata.id)
+            ?: return
+        val downloadedAdapter = ShelfAdapter(this, "downloads", offline)
+        val titleAdapter = ShelfAdapter(this, "", offline)
 
         val concatAdapter = ConcatAdapter(
             adapter.withEmptyAdapter(),

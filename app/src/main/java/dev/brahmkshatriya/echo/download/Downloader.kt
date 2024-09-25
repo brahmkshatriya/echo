@@ -5,21 +5,22 @@ import android.content.Context
 import android.os.Environment
 import androidx.core.net.toUri
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
-import dev.brahmkshatriya.echo.plugger.echo.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectAudioStream
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
-import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,36 +34,28 @@ class Downloader(
 ) {
     val dao = database.downloadDao()
 
-    suspend fun <T> tryWith(info: ExtensionInfo, block: suspend () -> T) =
-        tryWith(throwable, info, block)
-
     suspend fun addToDownload(
         context: Context, clientId: String, item: EchoMediaItem
     ) = withContext(Dispatchers.IO) {
-        val extension = extensionList.getExtension(clientId)
-        val client = extension?.client
-        client as TrackClient
-        val info = extension.info
+        val extension = extensionList.getExtension(clientId) ?: return@withContext
         when (item) {
             is EchoMediaItem.Lists -> {
                 when (item) {
-                    is EchoMediaItem.Lists.AlbumItem -> tryWith(info) {
-                        client as AlbumClient
-                        val album = client.loadAlbum(item.album)
-                        val tracks = client.loadTracks(album)
+                    is EchoMediaItem.Lists.AlbumItem -> extension.get<AlbumClient, Unit>(throwable) {
+                        val album = loadAlbum(item.album)
+                        val tracks = loadTracks(album)
                         tracks.clear()
                         tracks.loadAll().forEach {
-                            context.enqueueDownload(info, client, it, album.toMediaItem())
+                            context.enqueueDownload(extension, it, album.toMediaItem())
                         }
                     }
 
-                    is EchoMediaItem.Lists.PlaylistItem -> tryWith(info) {
-                        client as PlaylistClient
-                        val playlist = client.loadPlaylist(item.playlist)
-                        val tracks = client.loadTracks(playlist)
+                    is EchoMediaItem.Lists.PlaylistItem -> extension.get<PlaylistClient, Unit>(throwable) {
+                        val playlist = loadPlaylist(item.playlist)
+                        val tracks = loadTracks(playlist)
                         tracks.clear()
                         tracks.loadAll().forEach {
-                            context.enqueueDownload(info, client, it, playlist.toMediaItem())
+                            context.enqueueDownload(extension, it, playlist.toMediaItem())
                         }
                     }
 
@@ -71,7 +64,7 @@ class Downloader(
             }
 
             is EchoMediaItem.TrackItem -> {
-                context.enqueueDownload(info, client, item.track)
+                context.enqueueDownload(extension, item.track)
             }
 
             else -> throw IllegalArgumentException("Not Supported")
@@ -79,14 +72,16 @@ class Downloader(
     }
 
     private suspend fun Context.enqueueDownload(
-        info: ExtensionInfo,
-        client: TrackClient,
+        extension: Extension<*>,
         small: Track,
         parent: EchoMediaItem.Lists? = null
     ) = withContext(Dispatchers.IO) {
-        val loaded = tryWith(info) { client.loadTrack(small) } ?: return@withContext
+        val loaded = extension.get<TrackClient, Track>(throwable) { loadTrack(small) }
+            ?: return@withContext
         val album = (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loaded.album?.let {
-            (client as? AlbumClient)?.loadAlbum(it)
+            extension.get<AlbumClient, Album>(throwable) {
+                loadAlbum(it)
+            }
         } ?: loaded.album
         val track = loaded.copy(album = album)
 
@@ -94,12 +89,12 @@ class Downloader(
         val stream = selectAudioStream(settings, track.audioStreamables)
             ?: throw Exception("No Stream Found")
         require(stream.mimeType == Streamable.MimeType.Progressive)
-        val media = client.getStreamableMedia(stream) as Streamable.Media.AudioOnly
-        val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
+        val media = extension.get<TrackClient, Streamable.Media.AudioOnly>(throwable) {
+            getStreamableMedia(stream) as Streamable.Media.AudioOnly
+        } ?: return@withContext
 
+        val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
         val id = when (val audio = media.audio) {
-            is Streamable.Audio.ByteStream -> throw Exception("Not Supported")
-            is Streamable.Audio.Channel -> TODO()
             is Streamable.Audio.Http -> {
                 val request = audio.request
                 val downloadRequest = DownloadManager.Request(request.url.toUri()).apply {
@@ -117,9 +112,12 @@ class Downloader(
                 }
                 downloadManager().enqueue(downloadRequest)
             }
+
+            else -> throw Exception("Not Supported")
+
         }
 
-        dao.insertDownload(DownloadEntity(id, track.id, info.id, parent?.title))
+        dao.insertDownload(DownloadEntity(id, track.id, extension.id, parent?.title))
         saveToCache(track.id, track, "downloads")
     }
 
@@ -144,16 +142,14 @@ class Downloader(
         context.downloadManager().remove(downloadId)
     }
 
-    suspend fun resumeDownload(context: Context, downloadId: Long) = withContext(Dispatchers.IO) {
+    suspend fun resumeDownload(context: Context, downloadId: Long) {
         println("resumeDownload: $downloadId")
-        val download = dao.getDownload(downloadId) ?: return@withContext
-        val extension = extensionList.getExtension(download.clientId)
-        val client = extension?.client
-        client as TrackClient
-        val info = extension.info
+        val download = dao.getDownload(downloadId) ?: return
+        val extension = extensionList.getExtension(download.clientId) ?: return
         val track =
-            context.getFromCache<Track>(download.itemId, "downloads")
-                ?: return@withContext
-        context.enqueueDownload(info, client, track)
+            context.getFromCache<Track>(download.itemId, "downloads") ?: return
+        withContext(Dispatchers.IO) {
+            context.enqueueDownload(extension, track)
+        }
     }
 }

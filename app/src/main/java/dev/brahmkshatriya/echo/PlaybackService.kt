@@ -14,6 +14,8 @@ import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.EchoMediaSourceFactory
@@ -24,13 +26,12 @@ import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.RenderersFactory
 import dev.brahmkshatriya.echo.playback.TrackingListener
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.TrackerExtension
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
@@ -39,13 +40,7 @@ import javax.inject.Inject
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
     @Inject
-    lateinit var extFlow: MutableStateFlow<MusicExtension?>
-
-    @Inject
-    lateinit var extListFlow: MutableStateFlow<List<MusicExtension>?>
-
-    @Inject
-    lateinit var trackerList: MutableStateFlow<List<TrackerExtension>?>
+    lateinit var extensionLoader: ExtensionLoader
 
     @Inject
     lateinit var throwFlow: MutableSharedFlow<Throwable>
@@ -74,11 +69,17 @@ class PlaybackService : MediaLibraryService() {
     private var mediaLibrarySession: MediaLibrarySession? = null
     private val scope = CoroutineScope(Dispatchers.Main)
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
 
-        val exoPlayer = createExoplayer()
+        extensionLoader.initialize()
 
+        val extListFlow = extensionLoader.extensions
+        val extFlow = extensionLoader.current
+        val trackerList = extensionLoader.trackers
+
+        val exoPlayer = createExoplayer(extListFlow)
         exoPlayer.prepare()
 
         val intent = Intent(this, MainActivity::class.java)
@@ -129,7 +130,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
 
-    private fun createExoplayer() = run {
+    private fun createExoplayer(extListFlow: MutableStateFlow<List<MusicExtension>?>) = run {
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)

@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.playback.DelayedSource.Companion.getMediaItemById
 import dev.brahmkshatriya.echo.playback.DelayedSource.Companion.getTrackClient
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking

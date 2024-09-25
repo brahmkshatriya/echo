@@ -13,8 +13,10 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.LibraryResult.RESULT_SUCCESS
 import androidx.media3.session.MediaBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
@@ -26,8 +28,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
 import dev.brahmkshatriya.echo.playback.Radio
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
-import dev.brahmkshatriya.echo.plugger.echo.MusicExtension
-import dev.brahmkshatriya.echo.plugger.echo.getExtension
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
@@ -119,24 +121,23 @@ class PlayerViewModel @Inject constructor(
     private suspend fun getTracks(clientId: String, lists: EchoMediaItem.Lists) =
         withContext(Dispatchers.IO) {
             val extension = extensionListFlow.getExtension(clientId) ?: return@withContext null
-            val client = extension.client
             when (lists) {
                 is EchoMediaItem.Lists.AlbumItem -> {
-                    if (client is AlbumClient) tryWith(extension.info) {
-                        client.loadTracks(lists.album).loadAll()
+                    extension.get<AlbumClient, List<Track>>(throwableFlow){
+                        loadTracks(lists.album).loadAll()
                     }
-                    else null
                 }
 
                 is EchoMediaItem.Lists.PlaylistItem -> {
-                    if (client is PlaylistClient) tryWith(extension.info) {
-                        client.loadTracks(lists.playlist).loadAll()
+                    extension.get<PlaylistClient, List<Track>>(throwableFlow){
+                        loadTracks(lists.playlist).loadAll()
                     }
-                    else null
                 }
 
                 is EchoMediaItem.Lists.RadioItem -> {
-                    TODO()
+                    extension.get<RadioClient, List<Track>>(throwableFlow){
+                        loadTracks(lists.radio).loadAll()
+                    }
                 }
             }
         }

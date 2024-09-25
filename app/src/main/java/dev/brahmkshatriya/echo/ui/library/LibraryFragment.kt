@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
@@ -72,7 +73,7 @@ class LibraryFragment : Fragment() {
         }
 
         observe(viewModel.extensionFlow) {
-            binding.fabCreatePlaylist.isVisible = it?.client is PlaylistEditClient
+            binding.fabCreatePlaylist.isVisible = it?.isClient<PlaylistEditClient>() ?: false
         }
         binding.fabCreatePlaylist.setOnClickListener {
             parent.openFragment(CreatePlaylistFragment(), it)
