@@ -36,15 +36,15 @@ class LoginViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 
-    val loginClient: MutableStateFlow<LoginClient?> = MutableStateFlow(null)
+    val loginClient: MutableStateFlow<Int?> = MutableStateFlow(null)
     private val userDao = database.userDao()
     val loadingOver = MutableSharedFlow<Unit>()
 
     private suspend fun afterLogin(
         extension: Extension<*>,
-        users: List<User>?
+        users: List<User>
     ) {
-        if (users.isNullOrEmpty()) {
+        if (users.isEmpty()) {
             messageFlow.emit(SnackBar.Message(context.getString(R.string.no_user_found)))
             return
         }
@@ -67,7 +67,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.get<LoginClient.WebView, List<User>>(throwableFlow) {
                 onLoginWebviewStop(url, cookie)
-            }
+            } ?: return@launch
             afterLogin(extension, users)
         }
     }
@@ -80,7 +80,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.get<LoginClient.UsernamePassword, List<User>>(throwableFlow) {
                 onLogin(username, password)
-            }
+            } ?: return@launch
             afterLogin(extension, users)
         }
     }
@@ -92,7 +92,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.get<LoginClient.CustomTextInput, List<User>>(throwableFlow) {
                 onLogin(inputs)
-            }
+            } ?: return@launch
             afterLogin(extension, users)
         }
     }

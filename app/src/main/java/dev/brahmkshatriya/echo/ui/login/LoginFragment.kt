@@ -85,11 +85,11 @@ class LoginFragment : Fragment() {
     }
 
     private inline fun <reified T : LoginClient> Extension<*>.getClient(
-        button: MaterialButton
-    ): Pair<T, MaterialButton>? {
+        button: MaterialButton, noinline configure: FragmentLoginBinding.(T) -> Unit
+    ) = run {
         val client = instance.value.getOrNull()
-        if (client !is T) return null
-        return client to button
+        if (client !is T) null
+        else Pair(button) { configure(binding, client) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -135,39 +135,37 @@ class LoginFragment : Fragment() {
         binding.loginContainer.isVisible = true
 
         val clients = listOfNotNull(
-            extension.getClient<LoginClient.UsernamePassword>(binding.loginUserPass),
-            extension.getClient<LoginClient.WebView>(binding.loginWebview),
-            extension.getClient<LoginClient.CustomTextInput>(binding.loginCustomInput),
+            extension.getClient<LoginClient.UsernamePassword>(binding.loginUserPass) {
+                configureUsernamePassword(extension)
+            },
+            extension.getClient<LoginClient.WebView>(binding.loginWebview) {
+                configureWebView(extension, it)
+            },
+            extension.getClient<LoginClient.CustomTextInput>(binding.loginCustomInput) {
+                configureCustomTextInput(extension, it)
+            },
         )
 
         if (clients.isEmpty()) {
             createSnack(requireContext().loginNotSupported(clientName))
             parentFragmentManager.popBackStack()
             return
-        } else if (clients.size == 1) loginViewModel.loginClient.value = clients.first().first
+        } else if (clients.size == 1) loginViewModel.loginClient.value = 0
         else {
             binding.loginToggleGroup.isVisible = true
-            clients.forEach { (loginClient, button) ->
+            clients.forEachIndexed { index, pair ->
+                val (button, _) = pair
                 button.isVisible = true
                 button.setOnClickListener {
-                    loginViewModel.loginClient.value = loginClient
+                    loginViewModel.loginClient.value = index
                     binding.loginToggleGroup.isVisible = false
                 }
             }
         }
-        collect(loginViewModel.loginClient) { loginClient ->
-            loginClient ?: return@collect
+        collect(loginViewModel.loginClient) {
+            it ?: return@collect
             binding.loginToggleGroup.isVisible = false
-            when (loginClient) {
-                is LoginClient.WebView ->
-                    binding.configureWebView(extension, loginClient)
-
-                is LoginClient.CustomTextInput ->
-                    binding.configureCustomTextInput(extension, loginClient)
-
-                is LoginClient.UsernamePassword ->
-                    binding.configureUsernamePassword(extension)
-            }
+            clients[it].second()
         }
 
         observe(loginViewModel.loadingOver) {

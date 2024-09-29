@@ -25,7 +25,6 @@ import dev.brahmkshatriya.echo.ui.paging.toFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.utils.mapState
 import javax.inject.Inject
@@ -51,8 +50,7 @@ class LyricsViewModel @Inject constructor(
         onLyricsClientSelected(lyricsExtensionList.getExtension(clientId))
     }
 
-    private suspend fun update() {
-        extensionListFlow.first { it != null }
+    private fun update() {
         val trackExtension = currentMediaFlow.value?.mediaItem?.clientId?.let { id ->
             extensionListFlow.getExtension(id)?.takeIf { it.isClient<LyricsClient>() }
         }
@@ -60,15 +58,13 @@ class LyricsViewModel @Inject constructor(
             listOfNotNull(trackExtension) + lyricsListFlow.value.orEmpty()
 
         val id = settings.getString(LAST_LYRICS_KEY, null)
-        val extension = lyricsExtensionList.value.find {
-            it.metadata.id == id
-        } ?: trackExtension
+        val extension = lyricsExtensionList.getExtension(id) ?: trackExtension
         onLyricsClientSelected(extension)
     }
 
     override fun onInitialize() {
+        update()
         viewModelScope.launch {
-            update()
             currentMediaFlow.collect {
                 update()
             }
@@ -110,7 +106,7 @@ class LyricsViewModel @Inject constructor(
         mediaItem: MediaItem
     ): PagedData<Lyrics>? {
         val track = mediaItem.track
-        return extension.get<LyricsSearchClient, PagedData<Lyrics>>(throwableFlow) {
+        return extension.get<LyricsClient, PagedData<Lyrics>>(throwableFlow) {
             searchTrackLyrics(mediaItem.clientId, track)
         }
     }

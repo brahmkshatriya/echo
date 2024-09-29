@@ -44,14 +44,14 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
-import dev.brahmkshatriya.echo.extensions.getExtension
-import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.playback.source.MediaResolver
 import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
@@ -100,7 +100,9 @@ class PlayerTrackAdapter(
     }
 
     inner class ViewHolder(val binding: ItemPlayerTrackBinding) : Holder<MediaItem>(binding.root) {
-        override fun bind(item: MediaItem) { onBind(bindingAdapterPosition) }
+        override fun bind(item: MediaItem) {
+            onBind(bindingAdapterPosition)
+        }
     }
 
     private val viewModel by fragment.activityViewModels<PlayerViewModel>()
@@ -214,171 +216,7 @@ class PlayerTrackAdapter(
             binding.collapsedContainer.root.updatePaddingRelative(start = it.start, end = it.end)
         }
 
-        fun <T> observeCurrent(flow: Flow<T>, block: (T?) -> Unit) {
-            observe(flow) {
-                if (viewModel.currentFlow.value?.index == bindingAdapterPosition) block(it)
-                else block(null)
-            }
-        }
-
-        binding.playerControls.trackHeart.run {
-            val extension = viewModel.extensionListFlow.getExtension(clientId) ?: return
-            val isTrackLikeClient = extension.isClient<TrackLikeClient>()
-            isVisible = isTrackLikeClient
-
-            val likeListener = viewModel.likeListener
-            if (isTrackLikeClient) {
-                addOnCheckedStateChangedListener(likeListener)
-                observeCurrent(viewModel.isLiked) {
-                    it ?: return@observeCurrent
-                    likeListener.enabled = false
-                    binding.playerControls.trackHeart.isChecked = it
-                    likeListener.enabled = true
-                }
-            } else removeOnCheckedStateChangedListener(likeListener)
-            viewModel.isLiked.value = item.isLiked
-        }
-
-        binding.playerControls.seekBar.apply {
-            addOnChangeListener { _, value, fromUser ->
-                if (fromUser)
-                    binding.playerControls.trackCurrentTime.text = value.toLong().toTimeString()
-            }
-            addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
-                override fun onStartTrackingTouch(slider: Slider) = Unit
-                override fun onStopTrackingTouch(slider: Slider) =
-                    viewModel.seekTo(slider.value.toLong())
-            })
-        }
-
-        observeCurrent(viewModel.progress) {
-            val (current, buffered) = it ?: (0 to 0)
-            binding.collapsedContainer.run {
-                collapsedBuffer.progress = buffered
-                collapsedSeekBar.progress = current
-            }
-            binding.playerControls.run {
-                if (!seekBar.isPressed) {
-                    bufferBar.progress = buffered
-                    seekBar.value = min(current.toFloat(), seekBar.valueTo)
-                    trackCurrentTime.text = current.toLong().toTimeString()
-                }
-            }
-        }
-
-        observe(viewModel.buffering) { buffering ->
-            binding.collapsedContainer.run {
-                collapsedProgressBar.isVisible = buffering
-                collapsedTrackPlayPause.isEnabled = !buffering
-            }
-            binding.playerControls.run {
-                progressBar.isVisible = buffering
-                seekBar.isEnabled = !buffering
-                trackPlayPause.isEnabled = !buffering
-            }
-        }
-
-        observeCurrent(viewModel.totalDuration) {
-            val duration = it ?: item.track.duration?.toInt() ?: return@observeCurrent
-            binding.collapsedContainer.run {
-                collapsedSeekBar.max = duration
-                collapsedBuffer.max = duration
-            }
-            binding.playerControls.run {
-                bufferBar.max = duration
-                seekBar.apply {
-                    value = min(value, duration.toFloat())
-                    valueTo = 1f + duration
-                }
-                trackTotalTime.text = duration.toLong().toTimeString()
-            }
-        }
-
-
-        val playPauseListener = viewModel.playPauseListener
-
-        binding.collapsedContainer.collapsedTrackPlayPause
-            .addOnCheckedStateChangedListener(playPauseListener)
-        binding.playerControls.trackPlayPause
-            .addOnCheckedStateChangedListener(playPauseListener)
-
-        observe(viewModel.isPlaying) {
-            playPauseListener.enabled = false
-            binding.playerControls.trackPlayPause.isChecked = it
-            binding.collapsedContainer.collapsedTrackPlayPause.isChecked = it
-            playPauseListener.enabled = true
-        }
-
-        observe(viewModel.nextEnabled) {
-            binding.playerControls.trackNext.isEnabled = it
-        }
-        binding.playerControls.trackNext.setOnClickListener {
-            viewModel.seekToNext()
-            it as MaterialButton
-            (it.icon as Animatable).start()
-        }
-        observe(viewModel.previousEnabled) {
-            binding.playerControls.trackPrevious.isEnabled = it
-        }
-        binding.playerControls.trackPrevious.setOnClickListener {
-            viewModel.seekToPrevious()
-            it as MaterialButton
-            (it.icon as Animatable).start()
-        }
-
-        val shuffleListener = viewModel.shuffleListener
-        binding.playerControls.trackShuffle.addOnCheckedStateChangedListener(shuffleListener)
-        observe(viewModel.shuffleMode) {
-            shuffleListener.enabled = false
-            binding.playerControls.trackShuffle.isChecked = it
-            shuffleListener.enabled = true
-        }
-
-        val animatedVectorDrawables = binding.root.context.run {
-            fun asAnimated(id: Int) =
-                AppCompatResources.getDrawable(this, id) as AnimatedVectorDrawable
-            listOf(
-                asAnimated(R.drawable.ic_repeat_one_to_repeat_off_40dp),
-                asAnimated(R.drawable.ic_repeat_off_to_repeat_40dp),
-                asAnimated(R.drawable.ic_repeat_to_repeat_one_40dp)
-            )
-        }
-        val drawables = binding.root.context.run {
-            fun asDrawable(id: Int) = AppCompatResources.getDrawable(this, id)!!
-            listOf(
-                asDrawable(R.drawable.ic_repeat_off_40dp),
-                asDrawable(R.drawable.ic_repeat_40dp),
-                asDrawable(R.drawable.ic_repeat_one_40dp),
-            )
-        }
-
-        val repeatModes = listOf(REPEAT_MODE_OFF, REPEAT_MODE_ALL, REPEAT_MODE_ONE)
-        var currRepeatMode = viewModel.repeatMode.value
-        fun changeRepeatDrawable(repeatMode: Int) = binding.playerControls.trackRepeat.run {
-            if (currRepeatMode == repeatMode) {
-                icon = drawables[repeatModes.indexOf(repeatMode)]
-                return
-            }
-            val index = repeatModes.indexOf(repeatMode)
-            icon = animatedVectorDrawables[index]
-            (icon as Animatable).start()
-        }
-        binding.playerControls.trackRepeat.setOnClickListener {
-            val mode = when (viewModel.repeatMode.value) {
-                REPEAT_MODE_OFF -> REPEAT_MODE_ALL
-                REPEAT_MODE_ALL -> REPEAT_MODE_ONE
-                else -> REPEAT_MODE_OFF
-            }
-            viewModel.onRepeat(mode)
-            changeRepeatDrawable(mode)
-        }
-
-        observe(viewModel.repeatMode) {
-            viewModel.repeatEnabled = false
-            changeRepeatDrawable(it)
-            currRepeatMode = it
-            viewModel.repeatEnabled = true
-        }
+        binding.playerControls.bind(this, item, clientId)
 
         //VIDEO STUFF
         binding.bgVideo.apply {
@@ -400,6 +238,178 @@ class PlayerTrackAdapter(
                 }
                 resizeMode = if (video.crop) RESIZE_MODE_ZOOM else RESIZE_MODE_FIT
             }
+        }
+    }
+
+    private fun ItemPlayerControlsBinding.bind(
+        viewHolder: ViewHolder,
+        item: MediaItem,
+        clientId: String
+    ) {
+
+        fun <T> observe(flow: Flow<T>, block: (T) -> Unit) {
+            viewHolder.observe(flow) { block(it) }
+        }
+        fun <T> observeCurrent(flow: Flow<T>, block: (T?) -> Unit) = with(viewHolder) {
+            observe(flow) {
+                if (viewModel.currentFlow.value?.index == bindingAdapterPosition) block(it)
+                else block(null)
+            }
+        }
+
+        trackHeart.run {
+            val extension = viewModel.extensionListFlow.getExtension(clientId) ?: return
+            val isTrackLikeClient = extension.isClient<TrackLikeClient>()
+            isVisible = isTrackLikeClient
+
+            val likeListener = viewModel.likeListener
+            if (isTrackLikeClient) {
+                addOnCheckedStateChangedListener(likeListener)
+                observeCurrent(viewModel.isLiked) {
+                    it ?: return@observeCurrent
+                    likeListener.enabled = false
+                    trackHeart.isChecked = it
+                    likeListener.enabled = true
+                }
+            } else removeOnCheckedStateChangedListener(likeListener)
+            viewModel.isLiked.value = item.isLiked
+        }
+
+        seekBar.apply {
+            addOnChangeListener { _, value, fromUser ->
+                if (fromUser)
+                    trackCurrentTime.text = value.toLong().toTimeString()
+            }
+            addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+                override fun onStartTrackingTouch(slider: Slider) = Unit
+                override fun onStopTrackingTouch(slider: Slider) =
+                    viewModel.seekTo(slider.value.toLong())
+            })
+        }
+
+        val collapsedContainer = viewHolder.binding.collapsedContainer
+        observeCurrent(viewModel.progress) {
+            val (current, buffered) = it ?: (0 to 0)
+            collapsedContainer.run {
+                collapsedBuffer.progress = buffered
+                collapsedSeekBar.progress = current
+            }
+            if (!seekBar.isPressed) {
+                bufferBar.progress = buffered
+                seekBar.value = min(current.toFloat(), seekBar.valueTo)
+                trackCurrentTime.text = current.toLong().toTimeString()
+            }
+        }
+
+        viewHolder.observe(viewModel.buffering) { buffering ->
+            collapsedContainer.run {
+                collapsedProgressBar.isVisible = buffering
+                collapsedTrackPlayPause.isEnabled = !buffering
+            }
+            progressBar.isVisible = buffering
+            seekBar.isEnabled = !buffering
+            trackPlayPause.isEnabled = !buffering
+
+        }
+
+        observeCurrent(viewModel.totalDuration) {
+            val duration = it ?: item.track.duration?.toInt() ?: return@observeCurrent
+            collapsedContainer.run {
+                collapsedSeekBar.max = duration
+                collapsedBuffer.max = duration
+            }
+            bufferBar.max = duration
+            seekBar.apply {
+                value = min(value, duration.toFloat())
+                valueTo = 1f + duration
+            }
+            trackTotalTime.text = duration.toLong().toTimeString()
+        }
+
+
+        val playPauseListener = viewModel.playPauseListener
+
+        collapsedContainer.collapsedTrackPlayPause
+            .addOnCheckedStateChangedListener(playPauseListener)
+        trackPlayPause
+            .addOnCheckedStateChangedListener(playPauseListener)
+
+        observe(viewModel.isPlaying) {
+            playPauseListener.enabled = false
+            trackPlayPause.isChecked = it
+            collapsedContainer.collapsedTrackPlayPause.isChecked = it
+            playPauseListener.enabled = true
+        }
+
+        observe(viewModel.nextEnabled) {
+            trackNext.isEnabled = it
+        }
+        trackNext.setOnClickListener {
+            viewModel.seekToNext()
+            it as MaterialButton
+            (it.icon as Animatable).start()
+        }
+        observe(viewModel.previousEnabled) {
+            trackPrevious.isEnabled = it
+        }
+        trackPrevious.setOnClickListener {
+            viewModel.seekToPrevious()
+            it as MaterialButton
+            (it.icon as Animatable).start()
+        }
+
+        val shuffleListener = viewModel.shuffleListener
+        trackShuffle.addOnCheckedStateChangedListener(shuffleListener)
+        observe(viewModel.shuffleMode) {
+            shuffleListener.enabled = false
+            trackShuffle.isChecked = it
+            shuffleListener.enabled = true
+        }
+
+        val animatedVectorDrawables = trackRepeat.context.run {
+            fun asAnimated(id: Int) =
+                AppCompatResources.getDrawable(this, id) as AnimatedVectorDrawable
+            listOf(
+                asAnimated(R.drawable.ic_repeat_one_to_repeat_off_40dp),
+                asAnimated(R.drawable.ic_repeat_off_to_repeat_40dp),
+                asAnimated(R.drawable.ic_repeat_to_repeat_one_40dp)
+            )
+        }
+        val drawables = trackRepeat.context.run {
+            fun asDrawable(id: Int) = AppCompatResources.getDrawable(this, id)!!
+            listOf(
+                asDrawable(R.drawable.ic_repeat_off_40dp),
+                asDrawable(R.drawable.ic_repeat_40dp),
+                asDrawable(R.drawable.ic_repeat_one_40dp),
+            )
+        }
+
+        val repeatModes = listOf(REPEAT_MODE_OFF, REPEAT_MODE_ALL, REPEAT_MODE_ONE)
+        var currRepeatMode = viewModel.repeatMode.value
+        fun changeRepeatDrawable(repeatMode: Int) = trackRepeat.run {
+            if (currRepeatMode == repeatMode) {
+                icon = drawables[repeatModes.indexOf(repeatMode)]
+                return
+            }
+            val index = repeatModes.indexOf(repeatMode)
+            icon = animatedVectorDrawables[index]
+            (icon as Animatable).start()
+        }
+        trackRepeat.setOnClickListener {
+            val mode = when (viewModel.repeatMode.value) {
+                REPEAT_MODE_OFF -> REPEAT_MODE_ALL
+                REPEAT_MODE_ALL -> REPEAT_MODE_ONE
+                else -> REPEAT_MODE_OFF
+            }
+            viewModel.onRepeat(mode)
+            changeRepeatDrawable(mode)
+        }
+
+        observe(viewModel.repeatMode) {
+            viewModel.repeatEnabled = false
+            changeRepeatDrawable(it)
+            currRepeatMode = it
+            viewModel.repeatEnabled = true
         }
     }
 

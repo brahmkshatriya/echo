@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import tel.jeelpa.plugger.utils.mapState
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +30,7 @@ class LoginUserViewModel @Inject constructor(
     private val userDao = database.userDao()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentMusicUser = extensionFlow.map { extension ->
+    val currentMusicUser = extensionFlow.mapState { extension ->
         userDao.observeCurrentUser(extension?.id).map {
             withContext(Dispatchers.IO) {
                 extension to userDao.getUser(extension?.id, it?.id)?.toUser()
@@ -39,7 +40,7 @@ class LoginUserViewModel @Inject constructor(
 
     val currentExtension = MutableStateFlow<Extension<*>?>(null)
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentUser = currentExtension.map { extension ->
+    val currentUser = currentExtension.mapState { extension ->
         userDao.observeCurrentUser(extension?.id).map {
             withContext(Dispatchers.IO) {
                 extension to userDao.getUser(extension?.id, it?.id)?.toUser()
