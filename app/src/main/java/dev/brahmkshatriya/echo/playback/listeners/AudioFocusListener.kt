@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.listeners
 
 import android.content.Context
 import android.media.AudioAttributes

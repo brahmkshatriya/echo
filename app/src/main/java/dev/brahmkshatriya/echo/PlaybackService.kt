@@ -16,16 +16,16 @@ import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.playback.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.Current
-import dev.brahmkshatriya.echo.playback.EchoMediaSourceFactory
-import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
-import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
-import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
-import dev.brahmkshatriya.echo.playback.Radio
-import dev.brahmkshatriya.echo.playback.RenderersFactory
-import dev.brahmkshatriya.echo.playback.TrackingListener
+import dev.brahmkshatriya.echo.playback.listeners.AudioFocusListener
+import dev.brahmkshatriya.echo.playback.listeners.PlayerEventListener
+import dev.brahmkshatriya.echo.playback.listeners.Radio
+import dev.brahmkshatriya.echo.playback.listeners.TrackingListener
+import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
+import dev.brahmkshatriya.echo.playback.render.PlayerBitmapLoader
+import dev.brahmkshatriya.echo.playback.render.RenderersFactory
+import dev.brahmkshatriya.echo.playback.source.MediaFactory
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -136,7 +136,7 @@ class PlaybackService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val factory = EchoMediaSourceFactory(
+        val factory = MediaFactory(
             cache, this, scope, extListFlow, settings, throwFlow
         )
 

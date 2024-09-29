@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.render
 
 import android.content.Context
 import androidx.annotation.OptIn

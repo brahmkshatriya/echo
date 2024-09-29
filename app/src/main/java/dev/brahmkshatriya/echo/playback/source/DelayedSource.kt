@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.source
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -19,16 +19,15 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isAudioAndVideoMerged
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoStreamable
-import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -48,8 +47,7 @@ class DelayedSource(
     private val context: Context,
     private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val settings: SharedPreferences,
-    private val audioFactory: MediaFactories,
-    private val videoFactory: MediaFactories,
+    private val mediaFactory: MediaFactory,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : CompositeMediaSource<Nothing>() {
 
@@ -67,20 +65,15 @@ class DelayedSource(
 
     private suspend fun onUrlResolved(new: MediaItem) = withContext(Dispatchers.Main) {
         mediaItem = new
-        val useVideoFactory = when (val video = new.video) {
-            is Streamable.Media.WithVideo.WithAudio -> new.videoStreamable == new.audioStreamable
-            is Streamable.Media.WithVideo.Only -> if (!video.looping) false else null
-            null -> null
-        }
-        actualSource = when (useVideoFactory) {
-            true -> videoFactory.create(new)
-            null -> FilteringMediaSource(audioFactory.create(new), C.TRACK_TYPE_AUDIO)
+        actualSource = when (new.isAudioAndVideoMerged()) {
+            true -> mediaFactory.create(new, true)
+            null -> FilteringMediaSource(mediaFactory.create(new, false), C.TRACK_TYPE_AUDIO)
             false -> MergingMediaSource(
                 FilteringMediaSource(
-                    videoFactory.create(new),
+                    mediaFactory.create(new, true),
                     setOf(C.TRACK_TYPE_VIDEO, C.TRACK_TYPE_TEXT)
                 ),
-                FilteringMediaSource(audioFactory.create(new), C.TRACK_TYPE_AUDIO)
+                FilteringMediaSource(mediaFactory.create(new, false), C.TRACK_TYPE_AUDIO)
             )
         }
         runCatching { prepareChildSource(null, actualSource) }

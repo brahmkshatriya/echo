@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.listeners
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -15,10 +15,11 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.extensions.run
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported

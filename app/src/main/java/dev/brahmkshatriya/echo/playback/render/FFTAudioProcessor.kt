@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.render
 
 import android.media.AudioTrack
 import android.media.AudioTrack.ERROR_BAD_VALUE

@@ -8,7 +8,7 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
-import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
+import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import java.lang.System.arraycopy
 import kotlin.math.cos
 import kotlin.math.floor

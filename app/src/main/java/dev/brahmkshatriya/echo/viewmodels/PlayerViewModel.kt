@@ -23,10 +23,10 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.Current
-import dev.brahmkshatriya.echo.playback.FFTAudioProcessor
+import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
-import dev.brahmkshatriya.echo.playback.Radio
+import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension

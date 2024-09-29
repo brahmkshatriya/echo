@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.listeners
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -8,11 +8,11 @@ import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.extensions.get
-import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.utils.PauseCountDown
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

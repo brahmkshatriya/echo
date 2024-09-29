@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.source
 
 import android.content.Context
 import androidx.annotation.OptIn
@@ -14,36 +14,58 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.playback.AudioResolver.Companion.copy
-import dev.brahmkshatriya.echo.playback.DelayedSource.Companion.getMediaItemById
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIsVideo
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
+import dev.brahmkshatriya.echo.playback.source.DelayedSource.Companion.getMediaItemById
+import dev.brahmkshatriya.echo.playback.source.DelayedSource.Companion.getTrackClient
+import dev.brahmkshatriya.echo.playback.source.MediaDataSource.Companion.copy
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 
-class VideoResolver(
-    private val context: Context
+class MediaResolver(
+    private val context: Context,
+    private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
 ) : Resolver {
 
     lateinit var player: Player
 
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-        val id = dataSpec.uri.toString().takeIf { it.startsWith("id://") }
-            ?.substringAfter("id://") ?: return dataSpec
+        val (id, isVideo) = dataSpec.uri.toIdAndIsVideo() ?: return dataSpec
 
         val (_, mediaItem) = runBlocking(Dispatchers.Main) {
             player.getMediaItemById(id)
         } ?: throw Exception(context.getString(R.string.track_not_found))
 
-        val streamableVideo = mediaItem.video!!
+        val streamable = if (isVideo) mediaItem.video!! else
+            runBlocking(Dispatchers.IO) { runCatching { loadAudio(mediaItem) } }.getOrThrow()
+
         return dataSpec.copy(
-            uri = streamableVideo.hashCode().toString().toUri(),
-            customData = streamableVideo
+            uri = streamable.hashCode().toString().toUri(),
+            customData = streamable
         )
     }
 
+    private suspend fun loadAudio(mediaItem: MediaItem): Streamable.Media {
+        val streams = mediaItem.track.audioStreamables
+        val index = mediaItem.audioIndex
+        val streamable = streams[index]
+        return mediaItem.getTrackClient(context, extensionListFlow) {
+            when (val media = getStreamableMedia(streamable)) {
+                is Streamable.Media.AudioOnly -> media
+                is Streamable.Media.WithVideo.WithAudio -> media
+                else -> throw IllegalStateException("Invalid streamable type : ${media::class}")
+            }
+        }
+    }
+
     companion object {
+
         @OptIn(UnstableApi::class)
         fun getPlayer(
             context: Context, cache: SimpleCache, video: Streamable.Media.WithVideo.Only

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.listeners
 
 import androidx.annotation.CallSuper
 import androidx.media3.common.MediaItem

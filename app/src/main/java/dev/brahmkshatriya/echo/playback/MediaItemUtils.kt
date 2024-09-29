@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.playback
 
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -16,6 +17,8 @@ import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Compani
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectVideoIndex
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.putSerialized
+import dev.brahmkshatriya.echo.utils.toData
+import dev.brahmkshatriya.echo.utils.toJson
 
 object MediaItemUtils {
 
@@ -26,7 +29,7 @@ object MediaItemUtils {
         context: EchoMediaItem?,
     ): MediaItem {
         val item = MediaItem.Builder()
-        item.setUri("id://${track.id}")
+        item.setUri(track.id)
         val metadata = track.toMetaData(bundleOf(), clientId, context, false, settings)
         item.setMediaMetadata(metadata)
         item.setMediaId(track.id)
@@ -50,9 +53,7 @@ object MediaItemUtils {
             putAll(mediaMetadata.extras!!)
             putInt("audioStream", index)
         }
-        build(mediaItem, bundle).apply {
-            println("build audio : $audioIndex $videoIndex $subtitleIndex")
-        }
+        build(this, bundle)
     }
 
     fun buildVideo(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
@@ -60,9 +61,7 @@ object MediaItemUtils {
             putAll(mediaMetadata.extras!!)
             putInt("videoStream", index)
         }
-        build(mediaItem, bundle).apply {
-            println("build video : $audioIndex $videoIndex $subtitleIndex")
-        }
+        build(this, bundle)
     }
 
     fun buildSubtitle(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
@@ -70,10 +69,21 @@ object MediaItemUtils {
             putAll(mediaMetadata.extras!!)
             putInt("subtitle", index)
         }
-        build(mediaItem, bundle).apply {
-            println("build subtitle : $audioIndex $videoIndex $subtitleIndex")
-        }
+        build(this, bundle)
     }
+
+    fun build(mediaItem: MediaItem, isVideo: Boolean) = with(mediaItem) {
+        val item = buildUpon()
+        val data = Pair(mediaId, isVideo).toJson()
+        item.setUri(data)
+        item.build()
+    }
+
+    fun Uri.toIdAndIsVideo() = runCatching {
+        val string = toString()
+        if (string.startsWith('{')) string.toData<Pair<String, Boolean>>()
+        else null
+    }.getOrNull()
 
     fun build(mediaItem: MediaItem, bundle: Bundle) = run {
         val item = mediaItem.buildUpon()
@@ -94,7 +104,7 @@ object MediaItemUtils {
         bundle.putSerialized("video", video)
         val item = buildUpon()
         item.setSubtitleConfigurations(
-            if(subtitle == null) listOf()
+            if (subtitle == null) listOf()
             else listOf(
                 MediaItem.SubtitleConfiguration.Builder(subtitle.url.toUri())
                     .setMimeType(subtitle.type.toMimeType())
@@ -148,7 +158,8 @@ object MediaItemUtils {
         .build()
 
 
-    fun Bundle.indexes() = "${getInt("audioStream")} ${getInt("videoStream")} ${getInt("subtitle")}"
+    private fun Bundle.indexes() =
+        "${getInt("audioStream")} ${getInt("videoStream")} ${getInt("subtitle")}"
 
     val MediaMetadata.isLoaded get() = extras?.getBoolean("loaded") ?: false
     val MediaMetadata.track get() = requireNotNull(extras?.getSerialized<Track>("track"))
@@ -170,12 +181,22 @@ object MediaItemUtils {
     val MediaItem.video get() = mediaMetadata.video
     val MediaItem.isLiked get() = mediaMetadata.isLiked
 
-    val MediaItem.audioStreamable get() = track.audioStreamables[audioIndex]
-    val MediaItem.videoStreamable get() = track.videoStreamables.getOrNull(videoIndex)
-
     private fun Streamable.SubtitleType.toMimeType() = when (this) {
         Streamable.SubtitleType.VTT -> MimeTypes.TEXT_VTT
         Streamable.SubtitleType.SRT -> MimeTypes.APPLICATION_SUBRIP
         Streamable.SubtitleType.ASS -> MimeTypes.TEXT_SSA
     }
+
+    private val MediaItem.audioStreamable get() = track.audioStreamables[audioIndex]
+    private val MediaItem.videoStreamable get() = track.videoStreamables.getOrNull(videoIndex)
+    fun MediaItem.isAudioAndVideoMerged() = when (val video = video) {
+        is Streamable.Media.WithVideo.WithAudio -> videoStreamable == audioStreamable
+        is Streamable.Media.WithVideo.Only -> if (!video.looping) false else null
+        null -> null
+    }
+
+    fun MediaItem.getStreamable(isVideo: Boolean) =
+        if (isVideo) track.videoStreamables[videoIndex]
+        else track.audioStreamables[audioIndex]
+
 }

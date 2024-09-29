@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback
+package dev.brahmkshatriya.echo.playback.listeners
 
 import android.content.Context
 import android.os.Handler
@@ -10,12 +10,14 @@ import androidx.media3.common.Timeline
 import androidx.media3.session.MediaLibraryService
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getLikeButton
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getRepeatButton
-import dev.brahmkshatriya.echo.extensions.getExtension
-import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class PlayerEventListener(

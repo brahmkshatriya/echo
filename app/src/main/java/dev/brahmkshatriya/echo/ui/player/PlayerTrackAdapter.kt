@@ -50,9 +50,9 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
-import dev.brahmkshatriya.echo.playback.VideoResolver
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.playback.source.MediaResolver
 import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
@@ -386,7 +386,7 @@ class PlayerTrackAdapter(
             isVisible = video != null
             if (video != null) {
                 if (video is Streamable.Media.WithVideo.Only && video.looping) {
-                    val player = VideoResolver.getPlayer(context, viewModel.cache, video)
+                    val player = MediaResolver.getPlayer(context, viewModel.cache, video)
                     setPlayer(player)
                 } else {
                     observe(viewModel.currentFlow) {
