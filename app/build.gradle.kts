@@ -23,12 +23,27 @@ android {
         versionName = "1.0.0-$gitHash"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters.add("x86")
+            abiFilters.add("x86_64")
+            abiFilters.add("armeabi-v7a")
+            abiFilters.add("arm64-v8a")
+        }
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    splits.abi {
+        isEnable = true
+        reset()
+        include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+        isUniversalApk = true
+    }
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
@@ -94,8 +109,6 @@ dependencies {
 //    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")
     implementation("io.github.junkfood02.youtubedl-android:library:0.16.1")
     implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.16.1")
-    implementation("io.reactivex.rxjava2:rxjava:2.2.21")
-    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
 
     implementation("com.github.Kyant0:taglib:1.0.0-alpha22")
 
