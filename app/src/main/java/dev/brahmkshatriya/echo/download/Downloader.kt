@@ -121,7 +121,7 @@ class Downloader(
         val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
         val stream = selectAudioStream(settings, track.audioStreamables)
             ?: throw Exception("No Stream Found")
-        require(stream.mimeType == Streamable.MimeType.Progressive)
+        //require(stream.mimeType == Streamable.MimeType.Progressive)
         val media = extension.get<TrackClient, Streamable.Media.AudioOnly>(throwable) {
             getStreamableMedia(stream) as Streamable.Media.AudioOnly
         } ?: return@withContext
@@ -141,9 +141,8 @@ class Downloader(
                     addOption("-o", file.absolutePath + ".%(ext)s")
                     addOption("-x")
                     //addOption("--audio-format", "mp3")
-                    // Options to manage speed and connections
-                    addOption("--limit-rate", "1000M") // Adjust as needed
-                    addOption("--http-chunk-size", "100M") // Adjust as needed
+                    addOption("--limit-rate", "1000M")
+                    addOption("--http-chunk-size", "100M")
                 }
 
                 showStart()
@@ -170,11 +169,15 @@ class Downloader(
                 id
             }
 
+            is Streamable.Audio.Channel -> {
+                TODO("Planned")
+            }
+
             else -> throw Exception("Not Supported")
 
         }
 
-        dao.insertDownload(DownloadEntity(id, track.id, extension.id, parent?.title, file.absolutePath + ".mp3"))
+        dao.insertDownload(DownloadEntity(id, track.id, extension.id, parent?.title, file.absolutePath + ".m4a"))
         saveToCache(track.id, track, "downloads")
     }
 

@@ -61,7 +61,7 @@ class DownloadReceiver : BroadcastReceiver() {
             try {
                 // Set to overwrite existing tags
                 TagOptionSingleton.getInstance().isId3v2Save = false
-                val audioFile: AudioFile = AudioFileIO.readAs(file, "mp3")
+                val audioFile: AudioFile = AudioFileIO.readAs(file, "m4a")
                 //Log.i("FUCK YOU", audioFile.tag.fieldCount.toString())
                 val tag: Tag = audioFile.tagAndConvertOrCreateAndSetDefault
 
