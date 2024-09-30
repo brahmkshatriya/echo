@@ -5,48 +5,48 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.db.models.CurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import tel.jeelpa.plugger.utils.mapState
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginUserViewModel @Inject constructor(
     database: EchoDatabase,
     throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionFlow: MutableStateFlow<MusicExtension?>
+    val extensionFlow: MutableStateFlow<MusicExtension?>,
+    val extensionLoader: ExtensionLoader,
 ) : CatchingViewModel(throwableFlow) {
 
     private val userDao = database.userDao()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val currentMusicUser = extensionFlow.mapState { extension ->
-        userDao.observeCurrentUser(extension?.id).map {
-            withContext(Dispatchers.IO) {
-                extension to userDao.getUser(extension?.id, it?.id)?.toUser()
-            }
-        }
-    }.flattenConcat()
-
     val currentExtension = MutableStateFlow<Extension<*>?>(null)
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val currentUser = currentExtension.mapState { extension ->
-        userDao.observeCurrentUser(extension?.id).map {
-            withContext(Dispatchers.IO) {
-                extension to userDao.getUser(extension?.id, it?.id)?.toUser()
+    val currentUser = MutableStateFlow<Pair<Extension<*>?, User?>>(null to null)
+
+    init {
+        var users = emptyList<UserEntity>()
+        fun update() {
+            val currentExt = currentExtension.value
+            val entities = users
+            val current = entities.find { it.id == currentExt?.id }
+            currentUser.value = currentExt to current?.toUser()
+        }
+        viewModelScope.launch {
+            launch { currentExtension.collect { update() } }
+            userDao.observeCurrentUser().collect {
+                users = it
+                update()
             }
         }
-    }.flattenConcat()
+    }
 
     val allUsers = currentExtension.map { extensionData ->
         val metadata = extensionData?.metadata

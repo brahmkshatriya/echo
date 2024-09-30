@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
@@ -57,6 +56,7 @@ class ExtensionLoader(
     val trackers = trackerListFlow
     val extensions = extensionListFlow
     val current = extensionFlow
+    val currentWithUser = MutableStateFlow<Pair<MusicExtension?, UserEntity?>>(null to null)
 
     @ExperimentalCoroutinesApi
     fun initialize() {
@@ -65,13 +65,28 @@ class ExtensionLoader(
 
             //Inject User to Music Extension
             launch {
-                extensionFlow.map { extension ->
-                    userDao.observeCurrentUser(extension?.id).map {
-                        extension
-                    }
-                }.flattenConcat().collect { extension ->
-                    extension ?: return@collect
-                    setLoginUser(extension, userDao, userFlow, throwableFlow)
+                currentWithUser.collect { (musicExtension, user) ->
+                    musicExtension ?: return@collect
+                    setLoginUser(musicExtension, user, userFlow, throwableFlow)
+                }
+            }
+            var extension: MusicExtension? = null
+            var userEntities: List<UserEntity> = listOf()
+            fun update() {
+                val musicExtension = extension
+                val user = userEntities.find { it.clientId == extension?.id }
+                currentWithUser.value = musicExtension to user
+            }
+            launch {
+                userDao.observeCurrentUser().collect {
+                    userEntities = it
+                    update()
+                }
+            }
+            launch {
+                extensionFlow.collect {
+                    extension = it
+                    update()
                 }
             }
 
@@ -231,16 +246,16 @@ class ExtensionLoader(
             extension.run(throwableFlow) {
                 withTimeout(TIMEOUT) { onExtensionSelected() }
             }
-            setLoginUser(extension, userDao, userFlow, throwableFlow)
+            val user = userDao.getCurrentUser(extension.id)
+            setLoginUser(extension, user, userFlow, throwableFlow)
         }
 
         suspend fun setLoginUser(
             extension: Extension<*>,
-            userDao: UserDao,
+            user: UserEntity?,
             flow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
         ) = withContext(Dispatchers.IO) {
-            val user = userDao.getCurrentUser(extension.id)
             val success = extension.get<LoginClient, Unit>(throwableFlow) {
                 withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
             }

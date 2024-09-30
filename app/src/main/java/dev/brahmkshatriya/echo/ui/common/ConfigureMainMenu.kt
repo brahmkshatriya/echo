@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
@@ -44,7 +45,8 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
         }
     }
 
-    fragment.observe(loginUserViewModel.currentMusicUser) { (extension, user) ->
+    fragment.observe(loginUserViewModel.extensionLoader.currentWithUser) { (extension, u) ->
+        val user = u?.toUser()
         val isLoginClient = extension?.isClient<LoginClient>() ?: false
         if (isLoginClient) {
             user?.cover.loadWith(settings, R.drawable.ic_account_circle_48dp) {
