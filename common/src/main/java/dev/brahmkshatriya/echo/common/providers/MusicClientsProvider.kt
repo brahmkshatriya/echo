@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.common.providers
 
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.MusicExtension
 
 interface MusicClientsProvider {
     val requiredMusicClients: List<String>
-    fun setMusicClients(list: List<Pair<String, ExtensionClient>>)
+    fun setMusicExtensions(list: List<MusicExtension>)
 }

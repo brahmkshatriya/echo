@@ -3,29 +3,39 @@ package dev.brahmkshatriya.echo.viewmodels
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.SharedPreferences
+import androidx.annotation.OptIn
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.ThumbRating
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.LibraryResult.RESULT_SUCCESS
 import androidx.media3.session.MediaBrowser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
-import dev.brahmkshatriya.echo.playback.Radio
+import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.ui.player.PlayerUiListener
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
-import dev.brahmkshatriya.echo.utils.getSerial
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.toJson
 import kotlinx.coroutines.Dispatchers
@@ -37,26 +47,25 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(UnstableApi::class)
 class PlayerViewModel @Inject constructor(
     val settings: SharedPreferences,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     val app: Application,
     val currentFlow: MutableStateFlow<Current?>,
     val radioStateFlow: MutableStateFlow<Radio.State>,
+    val cache: SimpleCache,
+    val fftAudioProcessor: FFTAudioProcessor,
+    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
-    private var browser: MediaBrowser? = null
-    private fun withBrowser(block: (MediaBrowser) -> Unit) {
-        val browser = browser
-        if (browser != null) viewModelScope.launch(Dispatchers.Main) {
-            runCatching { block(browser) }.getOrElse {
-                createException(it)
-            }
+    var browser = MutableStateFlow<MediaBrowser?>(null)
+    fun withBrowser(block: (MediaBrowser) -> Unit) {
+        viewModelScope.launch(Dispatchers.Main) {
+            val browser = browser.first { it != null }!!
+            runCatching { block(browser) }.getOrElse { throwableFlow.emit(it) }
         }
-//        else viewModelScope.launch {
-//            throwableFlow.emit(IllegalStateException("Browser not connected"))
-//        }
     }
 
     val playPauseListener = CheckBoxListener {
@@ -78,7 +87,11 @@ class PlayerViewModel @Inject constructor(
     fun seekToPrevious() = withBrowser { it.seekToPrevious() }
     fun seekToNext() = withBrowser { it.seekToNext() }
 
-    val likeListener = CheckBoxListener { likeTrack(it) }
+    val likeListener = CheckBoxListener {
+        println("sending like $it")
+        likeTrack(it)
+    }
+
     private fun likeTrack(isLiked: Boolean) = withBrowser {
         val old = this.isLiked.value
         this.isLiked.value = isLiked
@@ -86,8 +99,9 @@ class PlayerViewModel @Inject constructor(
         app.listenFuture(future) { sessionResult ->
             val result = sessionResult.getOrThrow()
             if (result.resultCode != RESULT_SUCCESS) {
-                val exception = result.extras.getSerial<Throwable>("error")
-                    ?: Exception("Error : ${result.resultCode}")
+                val exception =
+                    result.extras.getSerialized<ExceptionFragment.ExceptionDetails>("error")
+                        ?: ExceptionFragment.ExceptionDetails("IO Error", "")
                 createException(exception)
                 this.isLiked.value = old
             }
@@ -107,20 +121,23 @@ class PlayerViewModel @Inject constructor(
     private suspend fun getTracks(clientId: String, lists: EchoMediaItem.Lists) =
         withContext(Dispatchers.IO) {
             val extension = extensionListFlow.getExtension(clientId) ?: return@withContext null
-            val client = extension.client
             when (lists) {
                 is EchoMediaItem.Lists.AlbumItem -> {
-                    if (client is AlbumClient) tryWith(extension.info) {
-                        client.loadTracks(lists.album).loadAll()
+                    extension.get<AlbumClient, List<Track>>(throwableFlow){
+                        loadTracks(lists.album).loadAll()
                     }
-                    else null
                 }
 
                 is EchoMediaItem.Lists.PlaylistItem -> {
-                    if (client is PlaylistClient) tryWith(extension.info) {
-                        client.loadTracks(lists.playlist).loadAll()
+                    extension.get<PlaylistClient, List<Track>>(throwableFlow){
+                        loadTracks(lists.playlist).loadAll()
                     }
-                    else null
+                }
+
+                is EchoMediaItem.Lists.RadioItem -> {
+                    extension.get<RadioClient, List<Track>>(throwableFlow){
+                        loadTracks(lists.radio).loadAll()
+                    }
                 }
             }
         }
@@ -180,7 +197,10 @@ class PlayerViewModel @Inject constructor(
 
     fun radio(clientId: String, item: EchoMediaItem) {
         withBrowser {
-            it.sendCustomCommand(radioCommand, bundleOf("clientId" to clientId, "item" to item.toJson()))
+            it.sendCustomCommand(
+                radioCommand,
+                bundleOf("clientId" to clientId, "item" to item.toJson())
+            )
         }
     }
 
@@ -191,7 +211,7 @@ class PlayerViewModel @Inject constructor(
             val index = played + subIndex + 1
             val trackList = tracks.take(index + 1).drop(played + 1).ifEmpty { null } ?: return
             radioStateFlow.value = state.copy(played = index)
-            addToQueue(clientId, playlist.toMediaItem(), trackList, true)
+            addToQueue(clientId, radio.toMediaItem(), trackList, true)
             withBrowser { play(it.mediaItemCount - 1) }
         }
     }
@@ -202,7 +222,7 @@ class PlayerViewModel @Inject constructor(
             browser: MediaBrowser,
             viewModel: PlayerViewModel
         ) {
-            viewModel.browser = browser
+            viewModel.browser.value = browser
             browser.addListener(PlayerUiListener(browser, viewModel))
 
             viewModel.run {
@@ -218,20 +238,18 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun createException(exception: Throwable) {
-        withBrowser {
-            viewModelScope.launch {
-                throwableFlow.emit(
-                    PlayerException(exception.cause ?: exception, it.currentMediaItem)
-                )
-            }
+    fun createException(exceptionDetails: ExceptionFragment.ExceptionDetails) = withBrowser {
+        viewModelScope.launch {
+            throwableFlow.emit(
+                PlayerException(exceptionDetails, it.currentMediaItem)
+            )
         }
     }
 
     data class PlayerException(
-        override val cause: Throwable,
+        val details: ExceptionFragment.ExceptionDetails,
         val mediaItem: MediaItem?
-    ) : Throwable(cause.message)
+    ) : Throwable()
 
     var list: List<MediaItem> = listOf()
 
@@ -239,6 +257,7 @@ class PlayerViewModel @Inject constructor(
 
     val isLiked = MutableStateFlow(false)
     val progress = MutableStateFlow(0 to 0)
+    val discontinuity = MutableStateFlow(0L)
     val totalDuration = MutableStateFlow<Int?>(null)
 
     val buffering = MutableStateFlow(false)
@@ -247,4 +266,16 @@ class PlayerViewModel @Inject constructor(
     val previousEnabled = MutableStateFlow(false)
     val repeatMode = MutableStateFlow(0)
     val shuffleMode = MutableStateFlow(false)
+
+
+    val shareLink = MutableSharedFlow<String>()
+    fun onShare(client: ShareClient, item: EchoMediaItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val link = client.onShare(item)
+            shareLink.emit(link)
+        }
+    }
+
+    fun deletePlaylist(clientId: String, playlist: Playlist) =
+        deletePlaylist(extensionListFlow, mutableMessageFlow, app, clientId, playlist)
 }

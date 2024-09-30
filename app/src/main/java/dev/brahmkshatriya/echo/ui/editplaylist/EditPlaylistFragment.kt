@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.core.view.updatePaddingRelative
@@ -14,17 +15,19 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.EditPlaylistCoverClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.ui.adapter.PlaylistAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Add
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Move
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Remove
-import dev.brahmkshatriya.echo.ui.player.PlaylistAdapter
+import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getSerialized
@@ -162,8 +165,8 @@ class EditPlaylistFragment : Fragment() {
         })
         observe(viewModel.extensionListFlow) {
             viewModel.load(clientId, playlist)
-            val client = viewModel.extensionListFlow.getExtension(clientId)?.client
-            header.showCover(client is EditPlaylistCoverClient)
+            val extension = viewModel.extensionListFlow.getExtension(clientId) ?: return@observe
+            header.showCover(extension.isClient<PlaylistEditCoverClient>())
         }
 
         binding.toolbar.setOnMenuItemClickListener {
@@ -221,6 +224,7 @@ class EditPlaylistFragment : Fragment() {
 
         binding.recyclerView.adapter = ConcatAdapter(header, adapter)
         touchHelper.attachToRecyclerView(binding.recyclerView)
+        FastScrollerHelper.applyTo(binding.recyclerView)
 
         observe(viewModel.currentTracks) { tracks ->
             tracks?.let {
@@ -234,8 +238,6 @@ class EditPlaylistFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        parentFragmentManager.setFragmentResult("reload", Bundle().apply {
-            putString("id", playlist.id)
-        })
+        parentFragmentManager.setFragmentResult("reload", bundleOf("id" to playlist.id))
     }
 }

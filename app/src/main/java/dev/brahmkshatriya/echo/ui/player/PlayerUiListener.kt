@@ -7,6 +7,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import kotlinx.coroutines.launch
 
@@ -88,6 +89,7 @@ class PlayerUiListener(
     ) {
         updateNavigation()
         updateProgress()
+        viewModel.discontinuity.value = newPosition.positionMs
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -106,6 +108,6 @@ class PlayerUiListener(
     }
 
     override fun onPlayerError(error: PlaybackException) {
-        viewModel.createException(error)
+        viewModel.createException(error.toExceptionDetails(viewModel.app))
     }
 }

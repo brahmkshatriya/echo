@@ -104,7 +104,6 @@
     <string name="unauthorized">$1%s : Utilisateur non autorisée</string>
     <string name="enabled">Activé</string>
     <string name="clear_playlist">Vider la playlist</string>
-    <string name="number_dot">%1$d.</string>
     <string name="drag_to_change_playlist_position">Glisser pour changer la position de la playlist</string>
     <string name="loading">Chargement…</string>
     <string name="album">Album</string>
@@ -165,7 +164,6 @@
     <string name="name_extension">%1$s Extension</string>
     <string name="extension_disabled">%1$s (désactivé)</string>
     <string name="disabled">Désactivé</string>
-    <string name="radio_playlist_empty">La playlist radio est vide</string>
     <string name="saved_to_playlists">Sauvegardé dans les playlists</string>
     <string name="auto_start_radio">Auto Start Radio</string>
     <string name="view">Voir</string>

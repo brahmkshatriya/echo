@@ -13,6 +13,7 @@ data class Album(
     val publisher: String? = null,
     val duration: Long? = null,
     val description: String? = null,
+    val isExplicit: Boolean = false,
     val subtitle: String? = null,
     val extras: Map<String, String> = mapOf()
 )

@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 fun FragmentActivity.openException(throwable: Throwable, view: View? = null) {
-    openFragment(ExceptionFragment.newInstance(throwable), view)
+    openFragment(ExceptionFragment.newInstance(this, throwable), view)
     val uiViewModel: UiViewModel by viewModels()
     uiViewModel.collapsePlayer()
 }
@@ -21,7 +21,7 @@ fun FragmentActivity.openLoginException(
 ) {
     if (throwable is AppException.Unauthorized) {
         val model by viewModels<LoginUserViewModel>()
-        model.logout(throwable.extensionId, throwable.userId)
+        model.logout(throwable.extension.id, throwable.userId)
     }
     openFragment(LoginFragment.newInstance(throwable), view)
 }

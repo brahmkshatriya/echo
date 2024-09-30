@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.db.models
 
 import androidx.room.Entity
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 
 @Entity(primaryKeys = ["id", "type"])
 data class ExtensionEntity(

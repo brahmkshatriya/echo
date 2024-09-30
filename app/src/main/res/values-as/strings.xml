@@ -4,7 +4,6 @@
     <string name="home">ঘৰ</string>
     <string name="library">পুথিভঁৰাল</string>
     <string name="album">আলবাম</string>
-    <string name="number_dot">%1$d.</string>
     <string name="songs">গানসমূহ</string>
     <string name="radio">ৰেডিঅ\'</string>
     <string name="view">দৰ্শন</string>
@@ -84,7 +83,7 @@
     <string name="playing_from">বাজি থকা স্থান</string>
     <string name="animations_summary">অতি অলপ নিকাশ বোধ কৰিছা নেকি? এইটো বন্ধ কৰিলে সহায় কৰিব পাৰে</string>
     <string name="seekbar">সিকবৰ</string>
-    <string name="shared_element_transitions">কভার আৰ্ট স্থানান্তৰণসমূহ</string>
+    <string name="shared_element_transitions">কভাৰ আৰ্ট স্থানান্তৰণসমূহ</string>
     <string name="shared_element_transitions_summary">কুল উপাদান স্থানান্তৰণসমূহ, এইটো কিয় বন্ধ কৰিবা?</string>
     <string name="restart">পুনৰ আৰম্ভ কৰক</string>
     <string name="equalizer">ইকুৱালাইজাৰ</string>
@@ -97,7 +96,7 @@
     <string name="password">পাছৱৰ্ড</string>
     <string name="select_an_account">এটা একাউণ্ট বাছনি কৰক</string>
     <string name="confirm">নিশ্চিত কৰক</string>
-    <string name="todo">TODO, এতিয়ালৈকে নিৰ্মাণ কৰা হোৱা নাই।</string>
+    <string name="todo">কৰিবলগীয়া কাম, এতিয়ালৈকে নিৰ্মাণ কৰা হোৱা নাই।</string>
     <string name="stream_quality">স্ট্ৰীম গুণমান</string>
     <string name="stream_quality_summary">স্ট্ৰীমৰ গুণমান বাছনি কৰক</string>
     <string name="no_user_found">কোনো ব্যৱহাৰকাৰী পোৱা নগ’ল</string>
@@ -127,7 +126,7 @@
     <string name="nothing_to_show">দেখুৱাবলৈ একো নাই</string>
     <string name="add_color">ৰং যোগ কৰক</string>
     <string name="custom_theme_color">নিজস্ব থিমৰ ৰং</string>
-    <string name="custom_theme_color_summary">চistem থিমৰ পরিবর্তে নিজস্ব থিমৰ ৰং ব্যৱহাৰ কৰক।</string>
+    <string name="custom_theme_color_summary">চিস্টেম থিমৰ পৰিবর্তে নিজস্ব থিমৰ ৰং ব্যৱহাৰ কৰক।</string>
     <string name="custom_colors">নিজস্ব ৰং</string>
     <string name="random">যিকোনো এটা</string>
     <string name="choose_a_color">এটা ৰং বাচক</string>
@@ -180,7 +179,30 @@
     <string name="manage_extensions">এক্সটেনশ্যনসমূহ ব্যৱস্থাপনা কৰক</string>
     <string name="unauthorized">$1%s : ব্যৱহাৰকাৰী অনুমতি নাই</string>
     <string name="extension_disabled">%1$s (অক্ষমিত)</string>
-    <string name="radio_playlist_empty">ৰেডিঅ\' প্লেলিষ্ট খালি</string>
     <string name="navbar_gradient">গ্ৰেডিয়েণ্ট নেভবাৰ</string>
     <string name="navbar_gradient_summary">নেভবাৰ অলপ অলপকৈ পৰিস্ফুট হৈ পৰে</string>
+    <string name="value">মান</string>
+    <string name="str_not_set">স্থাপন কৰা হোৱা নাই</string>
+    <string name="language">ভাষা</string>
+    <string name="system">চিস্টেম</string>
+    <string name="language_summary">এপ্‌টোৰ ভাষা, চিস্টেমে প্ৰতিৰূপভাৱে ইংৰাজী বাছনি কৰিব</string>
+    <string name="video_quality">ভিডিঅ\'ৰ গুণমান</string>
+    <string name="video_quality_summary">ভিডিঅ\'ৰ গুণমান, ইয়াৰ পৰা ভিডিঅ\' বন্ধ কৰিব পাৰি</string>
+    <string name="video_quality_none">একো নাই</string>
+    <string name="cache_size">কেচৰ আকাৰ</string>
+    <string name="cache_size_summary">অডিঅ\' আৰু ভিডিঅ\' কেচ কৰিবলৈ MB ত আকাৰ</string>
+    <string name="audio_qualities">অডিঅ’ৰ গুণ</string>
+    <string name="video_qualities">ভিডিঅ\'ৰ গুণ</string>
+    <string name="subtitles">উপশিৰোনামা</string>
+    <string name="audio_selection">অডিঅ\' নিৰ্বাচন</string>
+    <string name="video_selection">ভিডিঅ\' নিৰ্বাচন</string>
+    <string name="track_total_plays">%1$d বাজিছে</string>
+    <string name="subtitle_selection">উপশিৰোনামা নিৰ্বাচন</string>
+    <string name="off">বন্ধ</string>
+    <string name="quality_number">গুণমান %1$d</string>
+    <string name="unknown">অজ্ঞাত</string>
+    <string name="permission_required">অনুমতিৰ প্ৰয়োজন</string>
+    <string name="permission_denied">অনুমতি অস্বীকাৰ কৰা হৈছে</string>
+    <string name="music_permission_required_summary">আপোনাৰ সংগীত লাইব্ৰেৰী অভিগম কৰিবলে এই অনুমতিৰ প্ৰয়োজন</string>
+    <string name="radio_empty">ৰেডিঅ\' খালী হৈ আছে</string>
 </resources>

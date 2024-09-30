@@ -6,32 +6,32 @@ import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.ResolvingDataSource
-import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.Current
-import dev.brahmkshatriya.echo.playback.PlayerBitmapLoader
-import dev.brahmkshatriya.echo.playback.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.PlayerSessionCallback
-import dev.brahmkshatriya.echo.playback.Radio
-import dev.brahmkshatriya.echo.playback.RenderersFactory
-import dev.brahmkshatriya.echo.playback.StreamableDataSource
-import dev.brahmkshatriya.echo.playback.TrackResolver
-import dev.brahmkshatriya.echo.playback.TrackingListener
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.playback.listeners.AudioFocusListener
+import dev.brahmkshatriya.echo.playback.listeners.PlayerEventListener
+import dev.brahmkshatriya.echo.playback.listeners.Radio
+import dev.brahmkshatriya.echo.playback.listeners.TrackingListener
+import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
+import dev.brahmkshatriya.echo.playback.render.PlayerBitmapLoader
+import dev.brahmkshatriya.echo.playback.render.RenderersFactory
+import dev.brahmkshatriya.echo.playback.source.MediaFactory
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
@@ -40,13 +40,7 @@ import javax.inject.Inject
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
     @Inject
-    lateinit var extFlow: MutableStateFlow<MusicExtension?>
-
-    @Inject
-    lateinit var extListFlow: MutableStateFlow<List<MusicExtension>?>
-
-    @Inject
-    lateinit var trackerList: MutableStateFlow<List<TrackerExtension>?>
+    lateinit var extensionLoader: ExtensionLoader
 
     @Inject
     lateinit var throwFlow: MutableSharedFlow<Throwable>
@@ -66,14 +60,26 @@ class PlaybackService : MediaLibraryService() {
     @Inject
     lateinit var current: MutableStateFlow<Current?>
 
+    @Inject
+    lateinit var internalCurrent: MutableStateFlow<MediaItem?>
+
+    @Inject
+    lateinit var fftAudioProcessor: FFTAudioProcessor
+
     private var mediaLibrarySession: MediaLibrarySession? = null
     private val scope = CoroutineScope(Dispatchers.Main)
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
 
-        val exoPlayer = createExoplayer()
+        extensionLoader.initialize()
 
+        val extListFlow = extensionLoader.extensions
+        val extFlow = extensionLoader.current
+        val trackerList = extensionLoader.trackers
+
+        val exoPlayer = createExoplayer(extListFlow)
         exoPlayer.prepare()
 
         val intent = Intent(this, MainActivity::class.java)
@@ -99,6 +105,7 @@ class PlaybackService : MediaLibraryService() {
         setMediaNotificationProvider(notificationProvider)
 
         exoPlayer.addListener(PlayerEventListener(this, session, current, extListFlow))
+        exoPlayer.addListener(AudioFocusListener(this, exoPlayer))
         exoPlayer.addListener(
             Radio(exoPlayer, this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)
         )
@@ -111,35 +118,36 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
+        //TODO: Radio Item
+        //TODO: Save to Library Client
+        //TODO: Open .eapk files
+        //TODO: extension updater
+        //TODO: Spotify
+        //TODO: EQ, Pitch, Tempo, Reverb & Sleep Timer(5m, 10m, 15m, 30m, 45m, 1hr, End of track)
+//        val equalizer = Equalizer(1, exoPlayer.audioSessionId)
+
         this.mediaLibrarySession = session
     }
 
 
-    private fun createExoplayer() = run {
+    private fun createExoplayer(extListFlow: MutableStateFlow<List<MusicExtension>?>) = run {
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val streamableFactory = StreamableDataSource.Factory(this)
-        val cacheFactory = CacheDataSource
-            .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(streamableFactory)
-
-        val trackResolver = TrackResolver(this, extListFlow, settings)
-
-        val dataSourceFactory = ResolvingDataSource.Factory(cacheFactory, trackResolver)
-        val factory = DefaultMediaSourceFactory(this)
-            .setDataSourceFactory(dataSourceFactory)
+        val factory = MediaFactory(
+            cache, this, scope, extListFlow, settings, throwFlow
+        )
 
         ExoPlayer.Builder(this, factory)
-            .setRenderersFactory(RenderersFactory(this))
+            .setRenderersFactory(RenderersFactory(this, fftAudioProcessor))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
             .build()
-            .also { trackResolver.player = it }
+            .also { factory.setPlayer(it) }
     }
 
     override fun onDestroy() {

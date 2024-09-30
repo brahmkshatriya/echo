@@ -3,12 +3,18 @@ package dev.brahmkshatriya.echo.ui.editplaylist
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.addToPlaylists
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -32,20 +38,22 @@ class AddToPlaylistViewModel @Inject constructor(
     val tracks = mutableListOf<Track>()
     override fun onInitialize() {
         val extension = extensionListFlow.getExtension(clientId) ?: return
-        val client = extension.client
-        if (client !is LibraryClient) return
         viewModelScope.launch(Dispatchers.IO) {
-            tryWith(extension.info) {
-                when (val mediaItem = item) {
-                    is EchoMediaItem.Lists.AlbumItem ->
-                        tracks.addAll(client.loadTracks(mediaItem.album).loadAll())
-                    is EchoMediaItem.Lists.PlaylistItem ->
-                        tracks.addAll(client.loadTracks(mediaItem.playlist).loadAll())
-                    is EchoMediaItem.TrackItem -> tracks.add(mediaItem.track)
-                    else -> throw IllegalStateException()
+            when (val mediaItem = item) {
+                is AlbumItem -> extension.get<AlbumClient, Unit>(throwableFlow) {
+                    tracks.addAll(loadTracks(mediaItem.album).loadAll())
                 }
+
+                is PlaylistItem -> extension.get<PlaylistClient, Unit>(throwableFlow) {
+                    tracks.addAll(loadTracks(mediaItem.playlist).loadAll())
+                }
+
+                is TrackItem -> tracks.add(mediaItem.track)
+                else -> throw IllegalStateException()
             }
-            playlists.value = tryWith(extension.info) { client.listEditablePlaylists() }
+            playlists.value = extension.get<PlaylistEditClient, List<Playlist>>(throwableFlow) {
+                listEditablePlaylists()
+            }
             if (playlists.value == null) dismiss.emit(Unit)
         }
     }

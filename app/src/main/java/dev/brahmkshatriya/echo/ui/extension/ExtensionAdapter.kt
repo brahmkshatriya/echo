@@ -13,36 +13,36 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerEmptyAdapter
+import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.utils.loadWith
 
 class
 ExtensionAdapter(
     val listener: Listener
-) : PagingDataAdapter<ExtensionMetadata, ExtensionAdapter.ViewHolder>(DiffCallback) {
+) : PagingDataAdapter<Metadata, ExtensionAdapter.ViewHolder>(DiffCallback) {
 
     fun interface Listener {
-        fun onClick(metadata: ExtensionMetadata, view: View)
+        fun onClick(metadata: Metadata, view: View)
     }
 
-    object DiffCallback : DiffUtil.ItemCallback<ExtensionMetadata>() {
+    object DiffCallback : DiffUtil.ItemCallback<Metadata>() {
         override fun areItemsTheSame(
-            oldItem: ExtensionMetadata, newItem: ExtensionMetadata
+            oldItem: Metadata, newItem: Metadata
         ) = oldItem.id == newItem.id
 
         override fun areContentsTheSame(
-            oldItem: ExtensionMetadata, newItem: ExtensionMetadata
+            oldItem: Metadata, newItem: Metadata
         ) = oldItem == newItem
     }
 
-    private val empty = MediaContainerEmptyAdapter()
+    private val empty = ShelfEmptyAdapter()
     fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :
         RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
-        fun bind(metadata: ExtensionMetadata) {
+        fun bind(metadata: Metadata) {
             binding.root.transitionName = metadata.id
             binding.root.setOnClickListener { listener.onClick(metadata, binding.root) }
             binding.extensionName.apply {
@@ -68,7 +68,7 @@ ExtensionAdapter(
         holder.bind(download)
     }
 
-    suspend fun submit(list: List<ExtensionMetadata>) {
+    suspend fun submit(list: List<Metadata>) {
         empty.loadState = if (list.isEmpty()) LoadState.Loading else LoadState.NotLoading(true)
         submitData(PagingData.from(list))
     }

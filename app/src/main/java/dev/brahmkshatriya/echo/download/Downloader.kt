@@ -8,21 +8,22 @@ import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.StreamableAudio
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectStream
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectAudioStream
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
-import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel.Companion.tryWith
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -62,43 +63,37 @@ class Downloader(
         }
     }
 
-    suspend fun <T> tryWith(info: ExtensionInfo, block: suspend () -> T) =
-        tryWith(throwable, info, block)
-
     suspend fun addToDownload(
         context: Context, clientId: String, item: EchoMediaItem
     ) = withContext(Dispatchers.IO) {
-        val extension = extensionList.getExtension(clientId)
-        val client = extension?.client
-        client as TrackClient
-        val info = extension.info
+        val extension = extensionList.getExtension(clientId) ?: return@withContext
         when (item) {
             is EchoMediaItem.Lists -> {
                 when (item) {
-                    is EchoMediaItem.Lists.AlbumItem -> tryWith(info) {
-                        client as AlbumClient
-                        val album = client.loadAlbum(item.album)
-                        val tracks = client.loadTracks(album)
+                    is EchoMediaItem.Lists.AlbumItem -> extension.get<AlbumClient, Unit>(throwable) {
+                        val album = loadAlbum(item.album)
+                        val tracks = loadTracks(album)
                         tracks.clear()
                         tracks.loadAll().forEach {
-                            context.enqueueDownload(info, client, it, album.toMediaItem())
+                            context.enqueueDownload(extension, it, album.toMediaItem())
                         }
                     }
 
-                    is EchoMediaItem.Lists.PlaylistItem -> tryWith(info) {
-                        client as PlaylistClient
-                        val playlist = client.loadPlaylist(item.playlist)
-                        val tracks = client.loadTracks(playlist)
+                    is EchoMediaItem.Lists.PlaylistItem -> extension.get<PlaylistClient, Unit>(throwable) {
+                        val playlist = loadPlaylist(item.playlist)
+                        val tracks = loadTracks(playlist)
                         tracks.clear()
                         tracks.loadAll().forEach {
-                            context.enqueueDownload(info, client, it, playlist.toMediaItem())
+                            context.enqueueDownload(extension, it, playlist.toMediaItem())
                         }
                     }
+
+                    is EchoMediaItem.Lists.RadioItem -> Unit
                 }
             }
 
             is EchoMediaItem.TrackItem -> {
-                context.enqueueDownload(info, client, item.track)
+                context.enqueueDownload(extension, item.track)
             }
 
             else -> throw IllegalArgumentException("Not Supported")
@@ -106,8 +101,7 @@ class Downloader(
     }
 
     private suspend fun Context.enqueueDownload(
-        info: ExtensionInfo,
-        client: TrackClient,
+        extension: Extension<*>,
         small: Track,
         parent: EchoMediaItem.Lists? = null
     ) = withContext(Dispatchers.IO) {
@@ -115,26 +109,28 @@ class Downloader(
             println("Cannot start download. A download is already in progress.")
             return@withContext
         }
-
-        val loaded = tryWith(info) { client.loadTrack(small) } ?: return@withContext
+        val loaded = extension.get<TrackClient, Track>(throwable) { loadTrack(small) }
+            ?: return@withContext
         val album = (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loaded.album?.let {
-            (client as? AlbumClient)?.loadAlbum(it)
+            extension.get<AlbumClient, Album>(throwable) {
+                loadAlbum(it)
+            }
         } ?: loaded.album
         val track = loaded.copy(album = album)
 
         val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
-        val stream = selectStream(settings, track.audioStreamables)
+        val stream = selectAudioStream(settings, track.audioStreamables)
             ?: throw Exception("No Stream Found")
-        val audio = client.getStreamableAudio(stream)
+        require(stream.mimeType == Streamable.MimeType.Progressive)
+        val media = extension.get<TrackClient, Streamable.Media.AudioOnly>(throwable) {
+            getStreamableMedia(stream) as Streamable.Media.AudioOnly
+        } ?: return@withContext
+
         val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "${folder}/${track.title}")
 
-        val id = when (audio) {
-            is StreamableAudio.ByteStreamAudio -> {
-                TODO("inputStream to file")
-            }
-
-            is StreamableAudio.StreamableRequest -> {
+        val id = when (val audio = media.audio) {
+            is Streamable.Audio.Http -> {
                 val request = audio.request
                 val downloadRequest = YoutubeDLRequest(request.url).apply {
                     addOption("--no-mtime")
@@ -173,9 +169,12 @@ class Downloader(
                 compositeDisposable.add(disposable)
                 id
             }
+
+            else -> throw Exception("Not Supported")
+
         }
 
-        dao.insertDownload(DownloadEntity(id, track.id, info.id, parent?.title, file.absolutePath  + ".mp3"))
+        dao.insertDownload(DownloadEntity(id, track.id, extension.id, parent?.title, file.absolutePath + ".mp3"))
         saveToCache(track.id, track, "downloads")
     }
 
@@ -205,16 +204,14 @@ class Downloader(
         // Handle pausing download if supported by YoutubeDL
     }
 
-    suspend fun resumeDownload(context: Context, downloadId: Long) = withContext(Dispatchers.IO) {
+    suspend fun resumeDownload(context: Context, downloadId: Long) {
         println("resumeDownload: $downloadId")
-        val download = dao.getDownload(downloadId) ?: return@withContext
-        val extension = extensionList.getExtension(download.clientId)
-        val client = extension?.client
-        client as TrackClient
-        val info = extension.info
+        val download = dao.getDownload(downloadId) ?: return
+        val extension = extensionList.getExtension(download.clientId) ?: return
         val track =
-            context.getFromCache<Track>(download.itemId, "downloads")
-                ?: return@withContext
-        context.enqueueDownload(info, client, track)
+            context.getFromCache<Track>(download.itemId, "downloads") ?: return
+        withContext(Dispatchers.IO) {
+            context.enqueueDownload(extension, track)
+        }
     }
 }

@@ -5,26 +5,27 @@ import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.EchoApplication
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.LyricsExtension
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.LyricsExtension
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.TrackerExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.setupMusicExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
-import dev.brahmkshatriya.echo.utils.mapState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import tel.jeelpa.plugger.utils.mapState
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,13 +41,13 @@ class ExtensionViewModel @Inject constructor(
     val refresher: MutableSharedFlow<Boolean>
 ) : ClientSelectionViewModel(throwableFlow) {
 
-    override val metadataFlow: StateFlow<List<ExtensionMetadata>?> = extensionListFlow.mapState {
+    override val metadataFlow: StateFlow<List<Metadata>?> = extensionListFlow.mapState {
         it?.map { extension -> extension.metadata }
     }
     override val currentFlow: StateFlow<String?> = extensionFlow.mapState { it?.metadata?.id }
 
     override fun onClientSelected(clientId: String) {
-        setExtension(extensionListFlow.getExtension(clientId))
+        setExtension(extensionListFlow.getExtension(clientId) as MusicExtension?)
     }
 
     val currentExtension
@@ -54,7 +55,7 @@ class ExtensionViewModel @Inject constructor(
 
     private val userDao = database.userDao()
     fun setExtension(extension: MusicExtension?) {
-        EchoApplication.setupMusicExtension(
+        setupMusicExtension(
             viewModelScope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
         )
     }
@@ -91,17 +92,16 @@ class ExtensionViewModel @Inject constructor(
         )
 
         inline fun <reified T> RecyclerView.applyAdapter(
-            extension: MusicExtension?,
+            extension: Extension<*>?,
             name: Int,
-            adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-            block: ((T?) -> Unit) = {}
+            adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>
         ) {
-            block(extension?.client as? T)
+            val client = extension?.instance?.value?.getOrNull()
             setAdapter(
                 if (extension == null)
                     ClientLoadingAdapter()
-                else if (extension.client !is T)
-                    ClientNotSupportedAdapter(name, extension.metadata.name)
+                else if (client !is T)
+                    ClientNotSupportedAdapter(name, extension.name)
                 else adapter
             )
         }

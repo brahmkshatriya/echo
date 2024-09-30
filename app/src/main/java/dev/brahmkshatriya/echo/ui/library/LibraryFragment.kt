@@ -10,15 +10,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
+import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.common.MainFragment
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
 import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -56,7 +58,7 @@ class LibraryFragment : Fragment() {
         }
 
         configureFeedUI<LibraryClient>(
-            R.string.home,
+            R.string.library,
             viewModel,
             binding.recyclerView,
             binding.swipeRefresh,
@@ -70,11 +72,14 @@ class LibraryFragment : Fragment() {
             binding.appBarOutline.alpha = 0f
         }
 
+        observe(viewModel.extensionFlow) {
+            binding.fabCreatePlaylist.isVisible = it?.isClient<PlaylistEditClient>() ?: false
+        }
         binding.fabCreatePlaylist.setOnClickListener {
             parent.openFragment(CreatePlaylistFragment(), it)
         }
 
-        val listener = MediaContainerAdapter.getListener(this)
+        val listener = ShelfAdapter.getListener(this)
         observe(viewModel.playlistCreatedFlow) { (clientId, playlist) ->
             createSnack(SnackBar.Message(
                 getString(R.string.playlist_created, playlist.title),

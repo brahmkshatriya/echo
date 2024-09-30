@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="app_name">Echo</string>
+    <string name="app_name" translatable="false">Echo</string>
     <string name="home">Home</string>
     <string name="library">Library</string>
     <string name="search">Search</string>
@@ -25,7 +25,7 @@
     <string name="playlist">Playlist</string>
     <string name="loading">Loading…</string>
     <string name="album">Album</string>
-    <string name="number_dot">%1$d.</string>
+    <string name="number_dot" translatable="false">%1$d.</string>
     <string name="play">Play</string>
     <plurals name="number_songs">
         <item quantity="one">%1$d Song</item>
@@ -186,14 +186,36 @@
     <string name="extension_disabled">%1$s (Disabled)</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-    <string name="radio_playlist_empty">Radio Playlist is Empty</string>
+    <string name="radio_empty">Radio is Empty</string>
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
     <string name="value">Value</string>
-    <string name="not_set">Not Set</string>
+    <string name="str_not_set" tools:ignore="PrivateResource">Not Set</string>
     <string name="language">Language</string>
     <string name="system">System</string>
     <string name="language_summary">Language of the app, System will default to English</string>
+    <string name="video_quality">Video Quality</string>
+    <string name="video_quality_summary">Quality of the video, Video can also be disabled from here</string>
+    <string name="video_quality_none">None</string>
+    <string name="cache_size">Cache Size</string>
+    <string name="cache_size_summary">Size in MB to cache audio and video</string>
+    <string name="audio_qualities">Audio Qualities</string>
+    <string name="video_qualities">Video Qualities</string>
+    <string name="subtitles">Subtitles</string>
+    <string name="audio_selection">Audio Selection</string>
+    <string name="video_selection">Video Selection</string>
+    <string name="subtitle_selection">Subtitle Selection</string>
+    <string name="track_total_plays">%1$d Plays</string>
+    <string name="off">Off</string>
+    <string name="quality_number">Quality %1$d</string>
+    <string name="unknown">Unknown</string>
+    <string name="permission_required">Permission Required</string>
+    <string name="permission_denied">Permission Denied</string>
+    <string name="music_permission_required_summary">This permission is required to access your music library</string>
+    <string name="remove_from_library">Remove from Library</string>
+    <string name="save_to_library">Save to Library</string>
+    <string name="show_all">Show All</string>
+    <string name="show_less">Show Less</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

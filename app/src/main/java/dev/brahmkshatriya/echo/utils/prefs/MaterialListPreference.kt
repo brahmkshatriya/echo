@@ -31,7 +31,7 @@ class MaterialListPreference(context: Context) : ListPreference(context) {
 
     private fun updateSummary() {
         val value = context.getString(R.string.value)
-        val entry = entry ?: context.getString(R.string.not_set)
+        val entry = entry ?: context.getString(R.string.str_not_set)
         val sum = customSummary?.let { "\n\n$it" } ?: ""
         summary = "$value : $entry$sum"
     }

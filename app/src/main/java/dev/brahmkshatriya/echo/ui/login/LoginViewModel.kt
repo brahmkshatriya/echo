@@ -5,16 +5,17 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.LyricsExtension
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.LyricsExtension
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.TrackerExtension
+import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
@@ -35,68 +36,64 @@ class LoginViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 
-    val loginClient: MutableStateFlow<LoginClient?> = MutableStateFlow(null)
+    val loginClient: MutableStateFlow<Int?> = MutableStateFlow(null)
     private val userDao = database.userDao()
     val loadingOver = MutableSharedFlow<Unit>()
 
     private suspend fun afterLogin(
-        info: ExtensionInfo,
-        client: LoginClient,
-        users: List<User>?
+        extension: Extension<*>,
+        users: List<User>
     ) {
-        if (users.isNullOrEmpty()) {
+        if (users.isEmpty()) {
             messageFlow.emit(SnackBar.Message(context.getString(R.string.no_user_found)))
             return
         }
-        val entities = users.map { it.toEntity(info.id) }
+        val entities = users.map { it.toEntity(extension.id) }
         userDao.setUsers(entities)
         val user = entities.first()
         userDao.setCurrentUser(user.toCurrentUser())
 
-        if (info.extensionType != ExtensionType.MUSIC) withContext(Dispatchers.IO) {
-            tryWith(info) { client.onSetLoginUser(user.toUser()) }
+        if (extension.type != ExtensionType.MUSIC) withContext(Dispatchers.IO) {
+            extension.get<LoginClient, Unit>(throwableFlow) { onSetLoginUser(user.toUser()) }
         }
         loadingOver.emit(Unit)
     }
 
     fun onWebViewStop(
-        extensionInfo: ExtensionInfo,
-        webViewClient: LoginClient.WebView,
+        extension: Extension<*>,
         url: String,
         cookie: String
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = tryWith(extensionInfo) {
-                webViewClient.onLoginWebviewStop(url, cookie)
-            }
-            afterLogin(extensionInfo, webViewClient, users)
+            val users = extension.get<LoginClient.WebView, List<User>>(throwableFlow) {
+                onLoginWebviewStop(url, cookie)
+            } ?: return@launch
+            afterLogin(extension, users)
         }
     }
 
     fun onUsernamePasswordSubmit(
-        extensionInfo: ExtensionInfo,
-        client: LoginClient.UsernamePassword,
+        extension: Extension<*>,
         username: String,
         password: String
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = tryWith(extensionInfo) {
-                client.onLogin(username, password)
-            }
-            afterLogin(extensionInfo, client, users)
+            val users = extension.get<LoginClient.UsernamePassword, List<User>>(throwableFlow) {
+                onLogin(username, password)
+            } ?: return@launch
+            afterLogin(extension, users)
         }
     }
 
     val inputs = mutableMapOf<String, String?>()
     fun onCustomTextInputSubmit(
-        extensionInfo: ExtensionInfo,
-        client: LoginClient.CustomTextInput,
+        extension: Extension<*>
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = tryWith(extensionInfo) {
-                client.onLogin(inputs)
-            }
-            afterLogin(extensionInfo, client, users)
+            val users = extension.get<LoginClient.CustomTextInput, List<User>>(throwableFlow) {
+                onLogin(inputs)
+            } ?: return@launch
+            afterLogin(extension, users)
         }
     }
 }

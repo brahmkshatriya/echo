@@ -10,22 +10,31 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+<!--    <include layout="@layout/item_player_track" />-->
+
     <View
         android:id="@+id/playerOutline"
         style="@style/AppBarOutline"
         android:layout_marginTop="0dp" />
 
+<!--    <include-->
+<!--        layout="@layout/fragment_player_info"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom"-->
+<!--        android:layout_marginBottom="-10dp" />-->
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/playerInfoContainer"
         android:name="dev.brahmkshatriya.echo.ui.player.PlayerInfoFragment"
         style="@style/Widget.Material3.BottomSheet"
-        android:outlineProvider="none"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:backgroundTint="@android:color/transparent"
         android:clipToPadding="false"
+        android:outlineProvider="none"
         app:behavior_hideable="false"
         app:behavior_peekHeight="@dimen/player_info_peek_height"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"/>
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

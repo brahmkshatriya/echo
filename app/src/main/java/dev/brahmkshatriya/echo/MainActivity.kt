@@ -27,10 +27,9 @@ import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
-import dev.brahmkshatriya.echo.ui.settings.AboutFragment.AboutPreference.Companion.applyLocale
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.utils.animateTranslation
-import dev.brahmkshatriya.echo.utils.checkPermissions
+import dev.brahmkshatriya.echo.utils.checkAudioPermissions
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.createNavDrawable
 import dev.brahmkshatriya.echo.utils.emit
@@ -67,8 +66,7 @@ class MainActivity : AppCompatActivity() {
             else SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
         )
 
-        checkPermissions(this)
-        applyLocale(playerViewModel.settings)
+        checkAudioPermissions()
 
         val navView = binding.navView as NavigationBarView
 
@@ -161,7 +159,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             val extensionType = uri.host
-            println(type)
             when (extensionType) {
                 "music" -> {
                     val extensionId = uri.pathSegments.firstOrNull()

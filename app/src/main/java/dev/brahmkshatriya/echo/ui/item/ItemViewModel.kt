@@ -1,32 +1,40 @@
 package dev.brahmkshatriya.echo.ui.item
 
 import android.app.Application
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
+import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
-import dev.brahmkshatriya.echo.common.clients.ShareClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.RadioItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Radio
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.GenericExtension
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,47 +46,93 @@ import javax.inject.Inject
 class ItemViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
-    private val context: Application
+    val app: Application,
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
-    var loaded: EchoMediaItem? = null
-    var extension: GenericExtension? = null
+    var extension: Extension<*>? = null
     var isRadioClient = false
     var isFollowClient = false
 
     val itemFlow = MutableStateFlow<EchoMediaItem?>(null)
-    val relatedFeed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
+    var loadRelatedFeed = true
+    val relatedFeed = MutableStateFlow<PagingData<Shelf>?>(null)
 
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
-            loaded = null
-            itemFlow.emit(null)
+            itemFlow.value = null
             val mediaItem = when (val item = item!!) {
-                is EchoMediaItem.Lists.AlbumItem -> getClient<AlbumClient, EchoMediaItem> {
-                    load(it, item.album, ::loadAlbum, ::getMediaItems)?.toMediaItem()
-                }
+                is AlbumItem -> loadItem<AlbumClient, AlbumItem>(
+                    item, { loadAlbum(it.album).toMediaItem() }, { getShelves(it.album) }
+                )
 
-                is EchoMediaItem.Lists.PlaylistItem -> getClient<PlaylistClient, EchoMediaItem> {
-                    load(it, item.playlist, ::loadPlaylist, ::getMediaItems)?.toMediaItem()
-                }
+                is PlaylistItem -> loadItem<PlaylistClient, PlaylistItem>(
+                    item,
+                    { loadPlaylist(it.playlist).toMediaItem() },
+                    { getShelves(it.playlist) }
+                )
 
-                is EchoMediaItem.Profile.ArtistItem -> getClient<ArtistClient, EchoMediaItem> {
-                    load(it, item.artist, ::loadArtist, ::getMediaItems)?.toMediaItem()
-                }
+                is ArtistItem -> loadItem<ArtistClient, ArtistItem>(
+                    item, { loadArtist(it.artist).toMediaItem() }, { getShelves(it.artist) }
+                )
 
-                is EchoMediaItem.Profile.UserItem -> getClient<UserClient, EchoMediaItem> {
-                    load(it, item.user, ::loadUser, ::getMediaItems)?.toMediaItem()
-                }
+                is UserItem -> loadItem<UserClient, UserItem>(
+                    item, { loadUser(it.user).toMediaItem() }, { getShelves(it.user) }
+                )
 
-                is EchoMediaItem.TrackItem -> getClient<TrackClient, EchoMediaItem> {
-                    load(it, item.track, ::loadTrack, ::getMediaItems)?.toMediaItem()
-                }
+                is TrackItem -> loadItem<TrackClient, TrackItem>(
+                    item, { loadTrack(it.track).toMediaItem() }, { trackItem ->
+                        val client = this
+                        val track = trackItem.track
+                        val album = trackItem.track.album
+                        val artists = trackItem.track.artists
+                        PagedData.Concat(
+                            if (client is AlbumClient && album != null) PagedData.Single {
+                                listOf(
+                                    client.loadAlbum(album).toMediaItem().toShelf()
+                                )
+                            } else PagedData.empty(),
+                            if (artists.isNotEmpty()) PagedData.Single {
+                                listOf(
+                                    Shelf.Lists.Items(
+                                        app.getString(R.string.artists),
+                                        if (client is ArtistClient) artists.map {
+                                            val artist = client.loadArtist(it)
+                                            artist.toMediaItem()
+                                        } else artists.map { it.toMediaItem() }
+                                    )
+                                )
+                            } else PagedData.empty(),
+                            client.getShelves(track)
+                        )
+                    }
+                )
+
+                is RadioItem -> loadItem<RadioClient, RadioItem>(item, { it }, { null })
+            }
+            itemFlow.value = mediaItem
+        }
+    }
+
+    val savedState = MutableStateFlow(false)
+    private suspend inline fun <reified U, reified T : EchoMediaItem> loadItem(
+        item: T,
+        crossinline loadItem: suspend U.(T) -> T,
+        crossinline loadRelated: U.(T) -> PagedData<Shelf>? = { null }
+    ): T? {
+        return getClient<U, T> {
+            val loaded = loadItem(item)
+            extension?.run(throwableFlow) {
+                if (this is SaveToLibraryClient)
+                    savedState.value = isSavedToLibrary(loaded)
             }
 
-            loaded = mediaItem
-            itemFlow.emit(mediaItem)
+            viewModelScope.launch {
+                if (loadRelatedFeed) extension?.run(throwableFlow) {
+                    loadRelated(loaded)?.toFlow()?.map { it }
+                }?.collectTo(relatedFeed)
+            }
+            loaded
         }
     }
 
@@ -86,70 +140,61 @@ class ItemViewModel @Inject constructor(
         load()
     }
 
-    private inline fun <reified T, R> getClient(
-        block: T.(info: ExtensionInfo) -> R?
-    ) = extension?.run {
-        val client = client
-        if (client is T) block(client, info) else null
-    }
-
-    private suspend fun <T> load(
-        info: ExtensionInfo,
-        item: T,
-        loadItem: suspend (T) -> T,
-        loadRelated: (T) -> PagedData<MediaItemsContainer>
-    ): T? {
-        return tryWith(info) {
-            val loaded = loadItem(item)
-            viewModelScope.launch {
-                tryWith(info) {
-                    loadRelated(loaded).toFlow().map { it }
-                }?.collectTo(relatedFeed)
-            }
-            loaded
-        }
-    }
-
-    val shareLink = MutableSharedFlow<String>()
-    fun onShare(client: ShareClient, item: EchoMediaItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val link = when (item) {
-                is EchoMediaItem.Lists.AlbumItem -> client.onShare(item.album)
-                is EchoMediaItem.Lists.PlaylistItem -> client.onShare(item.playlist)
-                is EchoMediaItem.Profile.ArtistItem -> client.onShare(item.artist)
-                is EchoMediaItem.Profile.UserItem -> client.onShare(item.user)
-                is EchoMediaItem.TrackItem -> client.onShare(item.track)
-            }
-            shareLink.emit(link)
-        }
-    }
-
-    fun deletePlaylist(clientId: String, playlist: Playlist) = viewModelScope.launch {
-        deletePlaylist(extensionListFlow, mutableMessageFlow, context, clientId, playlist)
-    }
+    private suspend inline fun <reified T, reified R : Any> getClient(
+        block: T.() -> R
+    ) = extension?.get<T, R>(throwableFlow, block)
 
     private val songsFlow = MutableStateFlow<PagingData<Track>?>(null)
-    val songsLiveData: LiveData<PagingData<Track>?> = liveData {
-        emitSource(songsFlow.asLiveData())
-    }
+    val songsLiveData = songsFlow.asLiveData()
 
-    fun loadAlbum(album: Album) {
+    fun loadAlbumTracks(album: Album) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<AlbumClient, Unit> {
                 songsFlow.value = null
-                val tracks = tryWith(it) { loadTracks(album) }
-                tracks?.toFlow()?.collectTo(songsFlow)
+                val tracks = loadTracks(album)
+                tracks.toFlow().collectTo(songsFlow)
             }
         }
     }
 
-    fun loadPlaylist(playlist: Playlist) {
+    fun loadPlaylistTracks(playlist: Playlist) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<PlaylistClient, Unit> {
                 songsFlow.value = null
-                val tracks = tryWith(it) { loadTracks(playlist) }
-                tracks?.toFlow()?.collectTo(songsFlow)
+                val tracks = loadTracks(playlist)
+                tracks.toFlow().collectTo(songsFlow)
             }
+        }
+    }
+
+    fun loadRadioTracks(radio: Radio) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<RadioClient, Unit> {
+                songsFlow.value = null
+                val tracks = loadTracks(radio)
+                tracks.toFlow().collectTo(songsFlow)
+            }
+        }
+    }
+
+    fun subscribe(artist: Artist, subscribe: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<ArtistFollowClient, Unit> {
+                if (subscribe) followArtist(artist) else unfollowArtist(artist)
+                load()
+            }
+        }
+    }
+
+    fun removeFromLibrary(item: EchoMediaItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<SaveToLibraryClient, Unit> { removeFromLibrary(item) }
+        }
+    }
+
+    fun saveToLibrary(item: EchoMediaItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<SaveToLibraryClient, Unit> { saveToLibrary(item) }
         }
     }
 }

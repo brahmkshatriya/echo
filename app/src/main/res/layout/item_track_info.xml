@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="16dp">
+
+    <TextView
+        android:id="@+id/trackDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="3"
+        android:paddingVertical="8dp"
+        tools:text="@tools:sample/lorem/random" />
+
+    <TextView
+        android:id="@+id/streamableInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="8dp"
+        tools:text="@tools:sample/full_names" />
+
+    <TextView
+        android:id="@+id/streamableAudios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/audio_qualities" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/streamableAudiosGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true" />
+
+    <TextView
+        android:id="@+id/trackAudios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/audio_selection" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/trackAudiosGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true" />
+
+    <TextView
+        android:id="@+id/streamableVideos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/video_qualities" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/streamableVideosGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true" />
+
+    <TextView
+        android:id="@+id/trackVideos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/video_selection" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/trackVideosGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true" />
+
+    <TextView
+        android:id="@+id/streamableSubtitles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/subtitles" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/streamableSubtitleGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true" />
+
+    <TextView
+        android:id="@+id/trackSubtitles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/subtitle_selection" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/trackSubtitlesGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true" />
+
+</LinearLayout>

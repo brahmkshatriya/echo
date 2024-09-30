@@ -6,11 +6,26 @@
     android:layout_height="match_parent"
     android:background="@color/amoled_bg">
 
-    <com.flaviofaria.kenburnsview.KenBurnsView
-        android:id="@+id/bgImage"
+    <FrameLayout
+        android:id="@+id/bgContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:src="@tools:sample/avatars[3]" />
+        android:layout_height="match_parent">
+
+        <com.flaviofaria.kenburnsview.KenBurnsView
+            android:id="@+id/bgImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:src="@tools:sample/avatars[3]" />
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/bgVideo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="false"
+            app:use_controller="false"
+            tools:visibility="gone" />
+
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/bgGradient"
@@ -18,8 +33,91 @@
         android:layout_height="match_parent"
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/gradient_track"
-        app:tint="@color/amoled_bg" />
+        app:tint="@color/amoled_bg"
+        app:tintMode="src_in" />
 
+
+    <LinearLayout
+        android:id="@+id/bgInfoContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        tools:visibility="visible">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <dev.brahmkshatriya.echo.utils.ExoVisualizer
+                android:id="@+id/bgVisualizer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ImageView
+                android:id="@+id/bgInfoGradient"
+                android:layout_width="match_parent"
+                android:layout_height="256sp"
+                android:layout_gravity="bottom"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/gradient_track_info"
+                app:tint="@color/amoled_bg"
+                app:tintMode="src_in" />
+
+            <LinearLayout
+                android:id="@+id/bgInfoContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginEnd="-12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/bgInfoTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="marquee"
+                        android:gravity="bottom"
+                        android:maxLines="1"
+                        android:minHeight="32dp"
+                        android:paddingHorizontal="24dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        tools:text="@tools:sample/lorem/random" />
+
+                    <TextView
+                        android:id="@+id/bgInfoArtist"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:minHeight="32dp"
+                        android:paddingHorizontal="24dp"
+                        android:textColorLink="@color/button_player"
+                        android:textSize="16sp"
+                        tools:text="@tools:sample/lorem/random" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <View
+            android:id="@+id/bgInfoSpace"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/amoled_bg" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/expandedTrackCoverContainer"
@@ -59,7 +157,8 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_max="@dimen/max_cover_size"
                 app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
-                tools:ignore="ImageContrastCheck" />
+                tools:ignore="ImageContrastCheck"
+                tools:src="@tools:sample/avatars[3]" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -98,5 +197,8 @@
 
     <include
         android:id="@+id/collapsedContainer"
-        layout="@layout/item_player_collapsed" />
+        layout="@layout/item_player_collapsed"
+        tools:visibility="gone" />
+
+
 </FrameLayout>

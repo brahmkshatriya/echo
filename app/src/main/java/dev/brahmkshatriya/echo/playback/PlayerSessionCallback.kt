@@ -16,22 +16,26 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionResult.RESULT_SUCCESS
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
+import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.playback.listeners.Radio
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.utils.getSerialized
+import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -88,18 +92,19 @@ class PlayerSessionCallback(
         }
     }
 
+    @OptIn(UnstableApi::class)
     private fun radio(player: Player, args: Bundle) = scope.future {
-        val error = SessionResult(SessionResult.RESULT_ERROR_UNKNOWN)
+        val error = SessionResult(SessionError.ERROR_UNKNOWN)
         val clientId = args.getString("clientId") ?: return@future error
         val item = args.getSerialized<EchoMediaItem>("item") ?: return@future error
         radioFlow.value = Radio.State.Loading
         val loaded = Radio.start(
-            context, messageFlow, throwableFlow, extensionList, clientId, item, 0
+            context, messageFlow, throwableFlow, extensionList, clientId, item, null, 0
         )
         radioFlow.value = loaded ?: Radio.State.Empty
         if (loaded == null) return@future error
         val mediaItem = MediaItemUtils.build(
-            settings, loaded.tracks[0], loaded.clientId, loaded.playlist.toMediaItem()
+            settings, loaded.tracks[0], loaded.clientId, loaded.radio.toMediaItem()
         )
         player.setMediaItem(mediaItem)
         player.prepare()
@@ -112,24 +117,29 @@ class PlayerSessionCallback(
         Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
     }
 
+    @OptIn(UnstableApi::class)
     override fun onSetRating(
         session: MediaSession, controller: MediaSession.ControllerInfo, rating: Rating
     ): ListenableFuture<SessionResult> {
         return if (rating !is ThumbRating) super.onSetRating(session, controller, rating)
         else scope.future {
-            val errorIO = SessionResult(SessionResult.RESULT_ERROR_IO)
+            val errorIO = SessionResult(SessionError.ERROR_IO)
             val item = session.player.currentMediaItem ?: return@future errorIO
-            val client = extensionList.getExtension(item.clientId)?.client ?: return@future errorIO
-            if (client !is LibraryClient) return@future errorIO
+            val extension = extensionList.getExtension(item.clientId) ?: return@future errorIO
+            val client = extension.instance.value.getOrNull() ?: return@future errorIO
+            if (client !is TrackLikeClient) return@future errorIO
             val track = item.track
-            val liked = withContext(Dispatchers.IO) {
-                println("likeTrack : ${track.title} : ${rating.isThumbsUp}")
-                runCatching { client.likeTrack(track, rating.isThumbsUp) }
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    client.likeTrack(track, rating.isThumbsUp)
+                }
             }.getOrElse {
                 return@future SessionResult(
-                    SessionResult.RESULT_ERROR_UNKNOWN, bundleOf("error" to it)
+                    SessionError.ERROR_UNKNOWN,
+                    Bundle().apply { putSerialized("error", it.toExceptionDetails(context)) }
                 )
             }
+            val liked = rating.isThumbsUp
             val newItem = item.run {
                 buildUpon().setMediaMetadata(
                     mediaMetadata.buildUpon().setUserRating(ThumbRating(liked)).build()
@@ -176,7 +186,7 @@ class PlayerSessionCallback(
         }
 
         val extension = extensionFlow.value
-        val client = extension?.client ?: return default { noClient().message }
+        val client = extension?.instance?.value?.getOrNull() ?: return default { noClient().message }
         val id = extension.metadata.id
         if (client !is SearchClient) return default { searchNotSupported(id).message }
         if (client !is TrackClient) return default { trackNotSupported(id).message }
@@ -190,7 +200,7 @@ class PlayerSessionCallback(
 
             val tracks = itemsContainers.mapNotNull {
                 when (it) {
-                    is MediaItemsContainer.Category -> {
+                    is Shelf.Lists.Items -> {
                         val items = it.list.mapNotNull { item ->
                             if (item is EchoMediaItem.TrackItem) item.track
                             else null
@@ -198,7 +208,9 @@ class PlayerSessionCallback(
                         items
                     }
 
-                    is MediaItemsContainer.Item -> {
+                    is Shelf.Lists.Tracks -> it.list
+
+                    is Shelf.Item -> {
                         val item = it.media as? EchoMediaItem.TrackItem ?: return@mapNotNull null
                         listOf(item.track)
                     }

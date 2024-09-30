@@ -31,6 +31,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoB
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 class PlayerFragment : Fragment() {
     private var binding by autoCleared<FragmentPlayerBinding>()
@@ -49,7 +50,6 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         setupPlayerInfoBehavior(uiViewModel, binding.playerInfoContainer)
-
         val adapter = PlayerTrackAdapter(this, object : PlayerTrackAdapter.Listener {
             override fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean) {
                 if (clientId == null) {
@@ -100,7 +100,9 @@ class PlayerFragment : Fragment() {
             adapter.submitList(list)
             val index = viewModel.currentFlow.value?.index ?: -1
             val smooth = abs(index - binding.viewPager.currentItem) <= 1
-            binding.viewPager.setCurrentItem(index, smooth)
+            binding.viewPager.post {
+                runCatching { binding.viewPager.setCurrentItem(index, smooth) }
+            }
         }
 
         observe(viewModel.listUpdateFlow) { update() }
@@ -108,9 +110,11 @@ class PlayerFragment : Fragment() {
 
         observe(uiViewModel.playerSheetState) {
             if (it == STATE_HIDDEN) viewModel.clearQueue()
+            if (it == STATE_COLLAPSED) emit(uiViewModel.playerBgVisibleState) { false }
         }
 
         observe(uiViewModel.playerSheetOffset) {
+            viewModel.browser.value?.volume = 1 + min(0f, it)
             val offset = max(0f, it)
             binding.playerOutline.alpha = 1 - offset
         }

@@ -5,8 +5,8 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
-import dev.brahmkshatriya.echo.plugger.MusicExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.utils.getFromCache
 import kotlinx.coroutines.flow.MutableStateFlow
 

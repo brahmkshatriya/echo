@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Build.BRAND
 import android.os.Build.DEVICE
 import android.os.Build.SUPPORTED_ABIS
@@ -9,9 +8,9 @@ import android.os.Build.VERSION.CODENAME
 import android.os.Build.VERSION.RELEASE
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.preference.PreferenceFragmentCompat
+import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
+import dev.brahmkshatriya.echo.EchoApplication.Companion.applyLocale
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.utils.prefs.LongClickPreference
@@ -32,9 +31,7 @@ class AboutFragment : BaseSettingsFragment() {
             preferenceScreen = screen
 
             LongClickPreference(context).apply {
-                val version = context.packageManager
-                    .getPackageInfo(context.packageName, 0)
-                    .versionName
+                val version = context.appVersion()
                 title = getString(R.string.version)
                 summary = version
                 layoutResource = R.layout.preference
@@ -77,7 +74,6 @@ class AboutFragment : BaseSettingsFragment() {
                 screen.addPreference(this)
             }
             preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener { pref, key ->
-                println(key)
                 if (key == "language") applyLocale(pref)
             }
         }
@@ -94,16 +90,6 @@ class AboutFragment : BaseSettingsFragment() {
             return System.getProperty("os.arch")
                 ?: System.getProperty("os.product.cpu.abi")
                 ?: "Unknown"
-        }
-
-        companion object{
-
-            fun applyLocale(sharedPref: SharedPreferences) {
-                val value = sharedPref.getString("language", "system") ?: "system"
-                val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()
-                else LocaleListCompat.forLanguageTags(value)
-                AppCompatDelegate.setApplicationLocales(locale)
-            }
         }
     }
 }

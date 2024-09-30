@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.LibraryClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -24,14 +25,14 @@ import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.plugger.getExtension
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerViewHolder.Media.Companion.bind
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
@@ -66,7 +67,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
     private val loaded by lazy { args.getBoolean("loaded") }
     private val extension by lazy { playerViewModel.extensionListFlow.getExtension(clientId) }
-    private val client by lazy { extension?.client }
+    private val client by lazy { extension?.instance?.value?.getOrNull() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -94,6 +95,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
             viewModel.item = item
             viewModel.extension = extension
+            viewModel.loadRelatedFeed = false
             viewModel.initialize()
             observe(viewModel.itemFlow) {
                 if (it != null) {
@@ -104,7 +106,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         } else {
             binding.recyclerView.adapter = ActionAdapter(getActions(item, true))
         }
-        observe(viewModel.shareLink) {
+        observe(playerViewModel.shareLink) {
             requireContext().copyToClipboard(it, it)
         }
     }
@@ -138,14 +140,22 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     listOfNotNull(
                         if (client is LibraryClient)
                             ItemAction.Resource(
-                                R.drawable.ic_bookmark_outline, R.string.save_to_playlist
+                                R.drawable.ic_library_music, R.string.save_to_playlist
                             ) {
                                 AddToPlaylistBottomSheet.newInstance(clientId, item)
                                     .show(parentFragmentManager, null)
                             }
                         else null,
+                        if (client is SaveToLibraryClient) {
+                            if (loaded) ItemAction.Resource(
+                                R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                            ) { viewModel.removeFromLibrary(item) }
+                            else ItemAction.Resource(
+                                R.drawable.ic_bookmark_outline, R.string.save_to_library
+                            ) { viewModel.saveToLibrary(item) }
+                        } else null,
                         if (client is RadioClient)
-                            ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                            ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                                 playerViewModel.radio(clientId, item)
                             }
                         else null,
@@ -159,21 +169,29 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 is EchoMediaItem.Lists.PlaylistItem -> {
                     listOfNotNull(
                         if (client is RadioClient)
-                            ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                            ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                                 playerViewModel.radio(clientId, item)
                             }
                         else null,
                         if (client is LibraryClient)
                             ItemAction.Resource(
-                                R.drawable.ic_bookmark_outline, R.string.save_to_playlist
+                                R.drawable.ic_library_music, R.string.save_to_playlist
                             ) {
                                 AddToPlaylistBottomSheet.newInstance(clientId, item)
                                     .show(parentFragmentManager, null)
                             }
                         else null,
+                        if (client is SaveToLibraryClient) {
+                            if (loaded) ItemAction.Resource(
+                                R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                            ) { viewModel.removeFromLibrary(item) }
+                            else ItemAction.Resource(
+                                R.drawable.ic_bookmark_outline, R.string.save_to_library
+                            ) { viewModel.saveToLibrary(item) }
+                        } else null,
                         if (client is LibraryClient && item.playlist.isEditable)
                             ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
-                                viewModel.deletePlaylist(clientId, item.playlist)
+                                playerViewModel.deletePlaylist(clientId, item.playlist)
                             }
                         else null,
                     ) + item.playlist.authors.map {
@@ -182,23 +200,33 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         }
                     }
                 }
+
+                is EchoMediaItem.Lists.RadioItem -> listOf()
             }
         }
 
         is EchoMediaItem.Profile -> {
             if (item is EchoMediaItem.Profile.ArtistItem) listOfNotNull(
                 if (client is RadioClient)
-                    ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                    ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                         playerViewModel.radio(clientId, item)
                     }
                 else null,
+                if (client is SaveToLibraryClient) {
+                    if (loaded) ItemAction.Resource(
+                        R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                    ) { viewModel.removeFromLibrary(item) }
+                    else ItemAction.Resource(
+                        R.drawable.ic_bookmark_outline, R.string.save_to_library
+                    ) { viewModel.saveToLibrary(item) }
+                } else null,
                 if (client is ArtistFollowClient)
                     if (!item.artist.isFollowing)
                         ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
-                            createSnack("Not implemented")
+                            viewModel.subscribe(item.artist, false)
                         }
                     else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unfollow) {
-                        createSnack("Not implemented")
+                        viewModel.subscribe(item.artist, true)
                     }
                 else null
             )
@@ -235,13 +263,21 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                     }
                 else null,
                 if (client is LibraryClient)
-                    ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.save_to_playlist) {
+                    ItemAction.Resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
                         AddToPlaylistBottomSheet.newInstance(clientId, item)
                             .show(parentFragmentManager, null)
                     }
                 else null,
+                if (client is SaveToLibraryClient) {
+                    if (loaded) ItemAction.Resource(
+                        R.drawable.ic_bookmark_filled, R.string.remove_from_library
+                    ) { viewModel.removeFromLibrary(item) }
+                    else ItemAction.Resource(
+                        R.drawable.ic_bookmark_outline, R.string.save_to_library
+                    ) { viewModel.saveToLibrary(item) }
+                } else null,
                 if (client is RadioClient)
-                    ItemAction.Resource(R.drawable.ic_radio, R.string.radio) {
+                    ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
                         playerViewModel.radio(clientId, item)
                     }
                 else null,
@@ -262,7 +298,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             R.string.share
         ) {
             val shareClient = client as ShareClient
-            viewModel.onShare(shareClient, item)
+            playerViewModel.onShare(shareClient, item)
         } else null
     )
 
@@ -317,8 +353,12 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
                 is ItemAction.Custom -> {
                     binding.textView.text = action.title
-                    binding.imageView.imageTintList = colorState
-                    action.image.loadInto(binding.imageView, action.placeholder)
+                    action.image.loadWith(binding.root) {
+                        if(it == null) {
+                            binding.imageView.imageTintList = colorState
+                            binding.imageView.setImageResource(action.placeholder)
+                        } else binding.imageView.setImageDrawable(it)
+                    }
                 }
             }
         }

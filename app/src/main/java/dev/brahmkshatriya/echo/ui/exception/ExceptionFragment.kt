@@ -9,26 +9,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import dev.brahmkshatriya.echo.ExceptionActivity
+import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioStreamIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.getSerial
+import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.serialization.Serializable
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 
 class ExceptionFragment : Fragment() {
     private var binding by autoCleared<FragmentExceptionBinding>()
-    private val throwable by lazy { requireArguments().getSerial<Throwable>("exception")!! }
+    private val throwable by lazy {
+        requireArguments().getSerialized<ExceptionDetails>("exception")!!
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,14 +62,14 @@ class ExceptionFragment : Fragment() {
             }
         }
 
-        binding.exceptionMessage.title = requireContext().getTitle(throwable)
-        binding.exceptionDetails.text = requireContext().getDetails(throwable)
+        binding.exceptionMessage.title = throwable.title
+        binding.exceptionDetails.text = throwable.causedBy
 
         binding.exceptionMessage.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.exception_copy -> {
                     with(requireContext()) {
-                        copyToClipboard(throwable.message, "```\n${getDetails(throwable)}\n```")
+                        copyToClipboard(throwable.title, "```\n${throwable.causedBy}\n```")
                     }
                     true
                 }
@@ -84,53 +88,65 @@ class ExceptionFragment : Fragment() {
 
         fun Context.getTitle(throwable: Throwable): String = when (throwable) {
             is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
-            is ExceptionActivity.AppCrashException -> getString(R.string.app_crashed)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
-            is PlayerViewModel.PlayerException -> getTitle(throwable.cause)
+            is PlayerViewModel.PlayerException -> throwable.details.title
             is AppException -> throwable.run {
                 when (this) {
                     is AppException.Unauthorized ->
-                        getString(R.string.unauthorized, extensionName)
+                        getString(R.string.unauthorized, extension.name)
 
                     is AppException.LoginRequired ->
-                        getString(R.string.login_required, extensionName)
+                        getString(R.string.login_required, extension.name)
 
                     is AppException.NotSupported ->
-                        getString(R.string.is_not_supported, operation, extensionName)
+                        getString(R.string.is_not_supported, operation, extension.name)
 
-                    is AppException.Other -> cause.message ?: getString(R.string.error)
+                    is AppException.Other -> "${extension.name} : ${getTitle(cause)}"
                 }
             }
 
             else -> throwable.message ?: getString(R.string.error)
         }
 
-        @Suppress("UnusedReceiverParameter")
-        fun Context.getDetails(throwable: Throwable) = when (throwable) {
+        fun Context.getDetails(throwable: Throwable): String = when (throwable) {
             is PlayerViewModel.PlayerException -> """
 Client Id : ${throwable.mediaItem?.clientId}
 Track : ${throwable.mediaItem?.track}
-Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioStreamIndex) }}
+Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioIndex) }}
 
-${throwable.cause.stackTraceToString()}
+${throwable.details.causedBy}
 """.trimIndent()
 
             is AppException -> """
-Extension : ${throwable.extensionName}
-Id : ${throwable.extensionId}
-Type : ${throwable.extensionType}
+Extension : ${throwable.extension.name}
+Id : ${throwable.extension.name}
+Type : ${throwable.extension.type}
+Version : ${throwable.extension.version}
+App Version : ${appVersion()}
 
-${throwable.cause.stackTraceToString()}
+${getDetails(throwable.cause)}
 """.trimIndent()
 
-            is ExceptionActivity.AppCrashException -> throwable.causedBy
             else -> throwable.stackTraceToString()
         }
 
-        fun newInstance(throwable: Throwable) = ExceptionFragment().apply {
+
+        fun newInstance(details: ExceptionDetails) = ExceptionFragment().apply {
             arguments = Bundle().apply {
-                putSerializable("exception", throwable)
+                putSerialized("exception", details)
             }
         }
+
+        fun newInstance(context: Context, throwable: Throwable): ExceptionFragment {
+            val details =
+                ExceptionDetails(context.getTitle(throwable), context.getDetails(throwable))
+            return newInstance(details)
+        }
+
+        fun Throwable.toExceptionDetails(context: Context) =
+            ExceptionDetails(context.getTitle(this), context.getDetails(this))
     }
+
+    @Serializable
+    class ExceptionDetails(val title: String, val causedBy: String)
 }

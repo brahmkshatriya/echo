@@ -10,9 +10,10 @@ data class Playlist(
     val cover: ImageHolder? = null,
     val authors: List<User> = listOf(),
     val tracks: Int? = null,
-    val creationDate: String? = null,
     val duration: Long? = null,
+    val creationDate: String? = null,
     val description: String? = null,
     val subtitle: String? = null,
-    val extras: Map<String, String> = mapOf()
+    val isPrivate: Boolean = true,
+    val extras: Map<String, String> = mapOf(),
 )

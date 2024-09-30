@@ -20,14 +20,13 @@ class ArtistHeaderAdapter(private val listener: Listener) :
             val binding: ItemArtistInfoBinding,
             val artist: Artist,
             listener: Listener,
-            adapter: ArtistHeaderAdapter,
         ) : ViewHolder(binding.root) {
             init {
                 binding.artistSubscribe.setOnClickListener {
-                    artist.let { it1 -> listener.onSubscribeClicked(it1, true, adapter) }
+                    artist.let { it1 -> listener.onSubscribeClicked(it1, true) }
                 }
                 binding.artistUnsubscribe.setOnClickListener {
-                    artist.let { it1 -> listener.onSubscribeClicked(it1, false, adapter) }
+                    artist.let { it1 -> listener.onSubscribeClicked(it1, false) }
                 }
                 binding.artistRadio.setOnClickListener {
                     artist.let { it1 -> listener.onRadioClicked(it1) }
@@ -39,44 +38,39 @@ class ArtistHeaderAdapter(private val listener: Listener) :
     }
 
     interface Listener {
-        fun onSubscribeClicked(artist: Artist, subscribe: Boolean, adapter: ArtistHeaderAdapter)
+        fun onSubscribeClicked(artist: Artist, subscribe: Boolean)
         fun onRadioClicked(artist: Artist)
     }
 
     override fun getItemViewType(position: Int) = if (_artist == null) 0 else 1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return if (viewType == 0) {
-            ViewHolder.ShimmerViewHolder(
-                SkeletonItemArtistInfoBinding.inflate(
-                    LayoutInflater.from(
-                        parent.context
-                    ), parent, false
-                )
-            )
-        } else {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == 0) ViewHolder.ShimmerViewHolder(
+            SkeletonItemArtistInfoBinding.inflate(inflater, parent, false)
+        )
+        else {
             val artist = _artist!!
             ViewHolder.Info(
-                ItemArtistInfoBinding.inflate(
-                    LayoutInflater.from(parent.context), parent, false
-                ), artist, listener, this
+                ItemArtistInfoBinding.inflate(inflater, parent, false),
+                artist,
+                listener
             )
         }
     }
 
     private var _artist: Artist? = null
     private var isSubscribed = false
-    private var _subscribe = false
-    private var _radio = false
+    private var _hasSubscribe = false
+    private var _hasRadio = false
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
         val artist = holder.artist
 
         binding.artistSubtitle.isVisible = artist.followers?.let {
-            binding.artistSubtitle.text = binding.artistSubtitle.resources.getQuantityString(
-                R.plurals.number_followers, it, it
-            )
+            binding.artistSubtitle.text = binding.artistSubtitle.resources.
+                getQuantityString(R.plurals.number_followers, it, it)
             true
         } ?: false
 
@@ -93,25 +87,21 @@ class ArtistHeaderAdapter(private val listener: Listener) :
             }
         }
 
-        if (_subscribe) {
+        if (_hasSubscribe) {
             binding.artistSubscribe.isVisible = !isSubscribed
             binding.artistUnsubscribe.isVisible = isSubscribed
         } else {
             binding.artistSubscribe.isVisible = false
             binding.artistUnsubscribe.isVisible = false
         }
-        binding.artistRadio.isVisible = _radio
+        binding.artistRadio.isVisible = _hasRadio
     }
 
-    fun submit(artist: Artist, subscribe: Boolean, radio: Boolean) {
+    fun submit(artist: Artist, hasSubscribe: Boolean, hasRadio: Boolean) {
         _artist = artist
-        _subscribe = subscribe
-        _radio = radio
+        _hasSubscribe = hasSubscribe
+        _hasRadio = hasRadio
         notifyItemChanged(0)
     }
 
-    fun submitSubscribe(subscribe: Boolean) {
-        isSubscribed = subscribe
-        notifyItemChanged(0)
-    }
 }

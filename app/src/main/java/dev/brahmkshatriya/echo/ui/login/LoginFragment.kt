@@ -18,16 +18,17 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
-import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
@@ -44,6 +45,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInse
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.collections.set
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -60,7 +62,7 @@ class LoginFragment : Fragment() {
             }
 
         fun newInstance(error: AppException.LoginRequired) =
-            newInstance(error.extensionId, error.extensionName, error.extensionType)
+            newInstance(error.extension.id, error.extension.name, error.extension.type)
 
     }
 
@@ -82,49 +84,13 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    private fun createUsernamePasswordClient(client: LoginClient) =
-        if (client is LoginClient.UsernamePassword) object : LoginClient.UsernamePassword {
-            override suspend fun onLogin(username: String, password: String) =
-                client.onLogin(username, password)
-
-            override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
-            override suspend fun getCurrentUser() = client.getCurrentUser()
-        } to binding.loginUserPass
-        else null
-
-    private fun createWebViewClient(client: LoginClient) =
-        if (client is LoginClient.WebView) when (client) {
-            is LoginClient.WebView.Cookie -> object : LoginClient.WebView.Cookie {
-                override val loginWebViewInitialUrl = client.loginWebViewInitialUrl
-                override val loginWebViewStopUrlRegex = client.loginWebViewStopUrlRegex
-                override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
-                override suspend fun getCurrentUser() = client.getCurrentUser()
-                override suspend fun onLoginWebviewStop(url: String, data: String) =
-                    client.onLoginWebviewStop(url, data)
-            }
-
-            is LoginClient.WebView.Evaluate -> object : LoginClient.WebView.Evaluate {
-                override val loginWebViewInitialUrl = client.loginWebViewInitialUrl
-                override val loginWebViewStopUrlRegex = client.loginWebViewStopUrlRegex
-                override val javascriptToEvaluate = client.javascriptToEvaluate
-                override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
-                override suspend fun getCurrentUser() = client.getCurrentUser()
-                override suspend fun onLoginWebviewStop(url: String, data: String) =
-                    client.onLoginWebviewStop(url, data)
-            }
-
-            else -> null
-        } to binding.loginWebview
-        else null
-
-    private fun createCustomTextInputClient(client: LoginClient) =
-        if (client is LoginClient.CustomTextInput) object : LoginClient.CustomTextInput {
-            override val loginInputFields = client.loginInputFields
-            override suspend fun onSetLoginUser(user: User?) = client.onSetLoginUser(user)
-            override suspend fun getCurrentUser() = client.getCurrentUser()
-            override suspend fun onLogin(data: Map<String, String?>) = client.onLogin(data)
-        } to binding.loginCustomInput
-        else null
+    private inline fun <reified T : LoginClient> Extension<*>.getClient(
+        button: MaterialButton, noinline configure: FragmentLoginBinding.(T) -> Unit
+    ) = run {
+        val client = instance.value.getOrNull()
+        if (client !is T) null
+        else Pair(button) { configure(binding, client) }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
@@ -142,31 +108,21 @@ class LoginFragment : Fragment() {
         }
         binding.toolbar.title = getString(R.string.extension_login, clientName)
 
-        val pair = when (clientType) {
-            ExtensionType.MUSIC -> {
-                val extension = loginViewModel.extensionList.getExtension(clientId)
-                if (extension == null) null else extension.metadata to extension.client
-            }
-
-            ExtensionType.TRACKER -> {
-                val extension = loginViewModel.trackerList.getExtension(clientId)
-                if (extension == null) null else extension.metadata to extension.client
-            }
-
-            ExtensionType.LYRICS -> {
-                val extension = loginViewModel.lyricsList.getExtension(clientId)
-                if (extension == null) null else extension.metadata to extension.client
-            }
+        val extension = when (clientType) {
+            ExtensionType.MUSIC -> loginViewModel.extensionList.getExtension(clientId)
+            ExtensionType.TRACKER -> loginViewModel.trackerList.getExtension(clientId)
+            ExtensionType.LYRICS -> loginViewModel.lyricsList.getExtension(clientId)
         }
 
-        if (pair == null) {
+        if (extension == null) {
             createSnack(requireContext().noClient())
             parentFragmentManager.popBackStack()
             return
         }
-        val (metadata, client) = pair
 
-        if (client as? LoginClient == null) {
+        val metadata = extension.metadata
+
+        if (!extension.isClient<LoginClient>()) {
             createSnack(requireContext().loginNotSupported(clientName))
             parentFragmentManager.popBackStack()
             return
@@ -178,41 +134,38 @@ class LoginFragment : Fragment() {
 
         binding.loginContainer.isVisible = true
 
-        val info = ExtensionInfo(metadata, clientType)
         val clients = listOfNotNull(
-            createUsernamePasswordClient(client),
-            createWebViewClient(client),
-            createCustomTextInputClient(client)
+            extension.getClient<LoginClient.UsernamePassword>(binding.loginUserPass) {
+                configureUsernamePassword(extension)
+            },
+            extension.getClient<LoginClient.WebView>(binding.loginWebview) {
+                configureWebView(extension, it)
+            },
+            extension.getClient<LoginClient.CustomTextInput>(binding.loginCustomInput) {
+                configureCustomTextInput(extension, it)
+            },
         )
 
         if (clients.isEmpty()) {
             createSnack(requireContext().loginNotSupported(clientName))
             parentFragmentManager.popBackStack()
             return
-        } else if (clients.size == 1) loginViewModel.loginClient.value = clients.first().first
+        } else if (clients.size == 1) loginViewModel.loginClient.value = 0
         else {
             binding.loginToggleGroup.isVisible = true
-            clients.forEach { (loginClient, button) ->
+            clients.forEachIndexed { index, pair ->
+                val (button, _) = pair
                 button.isVisible = true
                 button.setOnClickListener {
-                    loginViewModel.loginClient.value = loginClient
+                    loginViewModel.loginClient.value = index
                     binding.loginToggleGroup.isVisible = false
                 }
             }
         }
-        collect(loginViewModel.loginClient) { loginClient ->
-            loginClient ?: return@collect
+        collect(loginViewModel.loginClient) {
+            it ?: return@collect
             binding.loginToggleGroup.isVisible = false
-            when (loginClient) {
-                is LoginClient.WebView ->
-                    binding.configureWebView(info, loginClient)
-
-                is LoginClient.CustomTextInput ->
-                    binding.configureCustomTextInput(info, loginClient)
-
-                is LoginClient.UsernamePassword ->
-                    binding.configureUsernamePassword(info, loginClient)
-            }
+            clients[it].second()
         }
 
         observe(loginViewModel.loadingOver) {
@@ -220,10 +173,8 @@ class LoginFragment : Fragment() {
         }
     }
 
-
-    @SuppressLint("SetJavaScriptEnabled")
     private fun FragmentLoginBinding.configureWebView(
-        info: ExtensionInfo,
+        extension: Extension<*>,
         client: LoginClient.WebView
     ) = with(client) {
         webViewContainer.isVisible = true
@@ -243,7 +194,7 @@ class LoginFragment : Fragment() {
                     if (loginWebViewStopUrlRegex.matches(url)) {
                         webView.stopLoading()
                         val data = webView.loadData(url, client)
-                        loginViewModel.onWebViewStop(info, client, url, data)
+                        loginViewModel.onWebViewStop(extension, url, data)
                         CookieManager.getInstance().run {
                             removeAllCookies(null)
                             flush()
@@ -257,7 +208,9 @@ class LoginFragment : Fragment() {
         }
         webView.settings.apply {
             domStorageEnabled = true
+            @SuppressLint("SetJavaScriptEnabled")
             javaScriptEnabled = true
+            @Suppress("DEPRECATION")
             databaseEnabled = true
             userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
         }
@@ -285,7 +238,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun FragmentLoginBinding.configureCustomTextInput(
-        info: ExtensionInfo,
+        extension: Extension<*>,
         client: LoginClient.CustomTextInput
     ) {
         customInputContainer.isVisible = true
@@ -326,15 +279,14 @@ class LoginFragment : Fragment() {
                     return@setOnClickListener
                 }
             }
-            loginViewModel.onCustomTextInputSubmit(info, client)
+            loginViewModel.onCustomTextInputSubmit(extension)
             customInputContainer.isVisible = false
             loadingContainer.root.isVisible = true
         }
     }
 
     private fun FragmentLoginBinding.configureUsernamePassword(
-        info: ExtensionInfo,
-        client: LoginClient.UsernamePassword
+        extension: Extension<*>
     ) {
         usernamePasswordContainer.isVisible = true
         loginUsername.requestFocus()
@@ -359,7 +311,7 @@ class LoginFragment : Fragment() {
                 }
                 return@setOnClickListener
             }
-            loginViewModel.onUsernamePasswordSubmit(info, client, username, password)
+            loginViewModel.onUsernamePasswordSubmit(extension, username, password)
             usernamePasswordContainer.isVisible = false
             loadingContainer.root.isVisible = true
         }

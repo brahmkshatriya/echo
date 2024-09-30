@@ -5,8 +5,10 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.appbar.MaterialToolbar
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
@@ -43,20 +45,18 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
         }
     }
 
-    fragment.observe(loginUserViewModel.currentMusicUser) { (extension, user) ->
-        val client = extension?.client
-        if (client is LoginClient) {
-
+    fragment.observe(loginUserViewModel.extensionLoader.currentWithUser) { (extension, u) ->
+        val user = u?.toUser()
+        val isLoginClient = extension?.isClient<LoginClient>() ?: false
+        if (isLoginClient) {
             user?.cover.loadWith(settings, R.drawable.ic_account_circle_48dp) {
                 menu.findItem(R.id.menu_settings).icon = it
             }
         } else menu.findItem(R.id.menu_settings).setIcon(R.drawable.ic_settings_outline)
 
         settings.setOnClickListener {
-            if (client is LoginClient) {
-                val metadata = extension.metadata
-                loginUserViewModel.currentExtension.value =
-                    LoginUserViewModel.ExtensionData(ExtensionType.MUSIC, metadata, client)
+            if (isLoginClient) {
+                loginUserViewModel.currentExtension.value = extension
                 LoginUserBottomSheet()
                     .show(fragment.parentFragmentManager, null)
             } else fragment.openFragment(SettingsFragment(), settings)

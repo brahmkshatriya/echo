@@ -8,15 +8,15 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionInfo
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerEmptyAdapter
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerLoadingAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfLoadingAdapter
 
 class LyricsItemAdapter(
     private val fragment: Fragment,
-    private val info: ExtensionInfo,
+    private val info: Extension<*>,
     private val listener: Listener
 ) : PagingDataAdapter<Lyrics, LyricsItemAdapter.ViewHolder>(DiffCallback) {
 
@@ -47,9 +47,9 @@ class LyricsItemAdapter(
     }
 
     fun withLoaders(): ConcatAdapter {
-        val footer = MediaContainerLoadingAdapter(fragment, info) { retry() }
-        val header = MediaContainerLoadingAdapter(fragment, info) { retry() }
-        val empty = MediaContainerEmptyAdapter()
+        val footer = ShelfLoadingAdapter(fragment, info) { retry() }
+        val header = ShelfLoadingAdapter(fragment, info) { retry() }
+        val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
                 LoadState.Loading

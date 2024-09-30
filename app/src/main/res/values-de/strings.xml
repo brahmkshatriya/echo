@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="settings">Einstellungen</string>
     <string name="home">Start</string>
     <string name="library">Bibliothek</string>
@@ -18,7 +18,6 @@
     <string name="playlist">Playliste</string>
     <string name="loading">Lädt…</string>
     <string name="album">Album</string>
-    <string name="number_dot">%1$d.</string>
     <string name="play">Abspielen</string>
     <plurals name="number_songs">
         <item quantity="one">%1$d Song</item>
@@ -167,7 +166,6 @@
     <string name="extension_disabled">%1$s (Deaktiviert)</string>
     <string name="enabled">Aktiviert</string>
     <string name="disabled">Deaktiviert</string>
-    <string name="radio_playlist_empty">Radio Playlist ist leer</string>
     <string name="create">Erstellen</string>
     <string name="playlist_deleted">Playlist gelöscht</string>
     <string name="nothing_to_show">Nichts zu zeigen</string>
@@ -180,4 +178,28 @@
     <string name="keep_queue_summary">Stellt die Player Wiedergabeliste wieder her, wenn du die App wieder öffnest.</string>
     <string name="unknown_amount_songs">\??? Songs</string>
     <string name="music">Musik</string>
+    <string name="video_qualities">Video Qualitäten</string>
+    <string name="audio_qualities">Audio Qualitäten</string>
+    <string name="off">Aus</string>
+    <string name="track_total_plays">%1$d Wiedergaben</string>
+    <string name="subtitle_selection">Untertitel Auswahl</string>
+    <string name="video_selection">Video Auswahl</string>
+    <string name="audio_selection">Audio Auswahl</string>
+    <string name="unknown">Unbekannt</string>
+    <string name="quality_number">Qualität %1$d</string>
+    <string name="permission_required">Genehmigung Erforderlich</string>
+    <string name="permission_denied">Genehmigung Verweigert</string>
+    <string name="subtitles">Untertitel</string>
+    <string name="music_permission_required_summary">Diese Erlaubnis ist für den Zugriff auf ihre Musikbibliothek benötigt</string>
+    <string name="language_summary">Sprache der App, System standardmäßig auf Englisch</string>
+    <string name="system">System</string>
+    <string name="language">Sprache</string>
+    <string name="str_not_set" tools:ignore="PrivateResource">Nicht Eingestellt</string>
+    <string name="value">Wert</string>
+    <string name="cache_size_summary">Größe in MB zum Cachen von Audio und Video</string>
+    <string name="cache_size">Cache Größe</string>
+    <string name="video_quality_none">Keine</string>
+    <string name="video_quality_summary">Qualität des Videos, Videos können auch von hier deaktiviert werden</string>
+    <string name="video_quality">Video Qualität</string>
+    <string name="navbar_gradient_summary">Navbar wird allmählich transparent</string>
 </resources>

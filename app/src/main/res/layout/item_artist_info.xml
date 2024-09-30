@@ -28,7 +28,6 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="1"
-            android:enabled="false"
             android:text="@string/follow"
             android:layout_margin="8dp"
             app:icon="@drawable/ic_artist" />
@@ -53,7 +52,7 @@
             android:layout_margin="8dp"
             android:text="@string/radio"
             android:textColor="@color/button_radio"
-            app:icon="@drawable/ic_radio"
+            app:icon="@drawable/ic_sensors"
             app:iconTint="@color/button_radio" />
 
     </LinearLayout>
@@ -72,6 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
+            android:maxLines="3"
             tools:text="@tools:sample/lorem/random" />
 
     </com.google.android.material.card.MaterialCardView>

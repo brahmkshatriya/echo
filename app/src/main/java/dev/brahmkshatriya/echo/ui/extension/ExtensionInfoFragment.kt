@@ -11,11 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.databinding.FragmentExtensionBinding
-import dev.brahmkshatriya.echo.plugger.ExtensionMetadata
-import dev.brahmkshatriya.echo.plugger.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
@@ -43,7 +44,7 @@ class ExtensionInfoFragment : Fragment() {
             }
         }
 
-        fun newInstance(metadata: ExtensionMetadata, extensionType: Int) =
+        fun newInstance(metadata: Metadata, extensionType: Int) =
             newInstance(metadata.id, metadata.name, ExtensionType.entries[extensionType])
     }
 
@@ -80,30 +81,19 @@ class ExtensionInfoFragment : Fragment() {
         }
         binding.toolBar.title = clientName
 
-        val pair = when (extensionType) {
-            ExtensionType.MUSIC -> {
-                val extension = viewModel.extensionListFlow.getExtension(clientId)
-                if (extension == null) null else extension.metadata to extension.client
-            }
-
-            ExtensionType.TRACKER -> {
-                val extension = viewModel.trackerListFlow.getExtension(clientId)
-                if (extension == null) null else extension.metadata to extension.client
-            }
-
-            ExtensionType.LYRICS -> {
-                val extension = viewModel.lyricsListFlow.getExtension(clientId)
-                if (extension == null) null else extension.metadata to extension.client
-            }
+        val extension = when (extensionType) {
+            ExtensionType.MUSIC -> viewModel.extensionListFlow.getExtension(clientId)
+            ExtensionType.TRACKER ->  viewModel.trackerListFlow.getExtension(clientId)
+            ExtensionType.LYRICS -> viewModel.lyricsListFlow.getExtension(clientId)
         }
 
-        if (pair == null) {
+        if (extension == null) {
             createSnack(requireContext().noClient())
             parentFragmentManager.popBackStack()
             return
         }
 
-        val (metadata, client) = pair
+        val metadata = extension.metadata
 
         metadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon, R.drawable.ic_extension) {
             binding.extensionIcon.setImageDrawable(it)
@@ -135,11 +125,9 @@ class ExtensionInfoFragment : Fragment() {
             binding.enabledCont.setOnClickListener { toggle() }
         }
 
-        if (client is LoginClient) {
+        if (extension.isClient<LoginClient>()) {
             val loginViewModel by activityViewModels<LoginUserViewModel>()
-            loginViewModel.currentExtension.value = LoginUserViewModel.ExtensionData(
-                extensionType, metadata, client
-            )
+            loginViewModel.currentExtension.value = extension
             binding.extensionLoginUser.bind(this) {}
         } else binding.extensionLoginUser.root.isVisible = false
 

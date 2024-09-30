@@ -66,12 +66,21 @@ fun NavigationBarView.animateTranslation(
     }
 }
 
-//fun View.animateVisibility(isVisible: Boolean) {
-//    if (animations) startAnimation(this,
-//        animate().alpha(if (isVisible) 1f else 0f)
-//            .withEndAction { alpha = if (isVisible) 1f else 0f })
-//    else alpha = if (isVisible) 1f else 0f
-//}
+fun View.animateVisibility(visible: Boolean, animate: Boolean) {
+    if (animations && animate && isVisible != visible) {
+        isVisible = true
+        startAnimation(
+            this,
+            animate().alpha(if (visible) 1f else 0f).withEndAction {
+                alpha = if (visible) 1f else 0f
+                isVisible = visible
+            }
+        )
+    } else {
+        alpha = if (visible) 1f else 0f
+        isVisible = visible
+    }
+}
 
 fun animateTranslation(view: View, old: Int, newHeight: Int) = view.run {
     if (view.animations) {

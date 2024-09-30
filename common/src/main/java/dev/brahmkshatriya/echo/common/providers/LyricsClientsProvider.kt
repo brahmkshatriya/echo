@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.common.providers
 
-import dev.brahmkshatriya.echo.common.clients.LyricsClient
+import dev.brahmkshatriya.echo.common.LyricsExtension
 
 interface LyricsClientsProvider {
     val requiredLyricsClients: List<String>
-    fun setLyricsClients(list: List<Pair<String, LyricsClient>>)
+    fun setLyricsExtensions(list: List<LyricsExtension>)
 }

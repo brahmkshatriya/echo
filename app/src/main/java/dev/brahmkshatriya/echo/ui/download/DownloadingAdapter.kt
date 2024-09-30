@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemDownloadBinding
 import dev.brahmkshatriya.echo.databinding.ItemDownloadGroupBinding
-import dev.brahmkshatriya.echo.ui.adapter.MediaContainerEmptyAdapter
+import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -43,7 +43,7 @@ class DownloadingAdapter(
         }
     }
 
-    private val empty = MediaContainerEmptyAdapter()
+    private val empty = ShelfEmptyAdapter()
     fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
     sealed class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
