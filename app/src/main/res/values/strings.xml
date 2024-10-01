@@ -216,6 +216,16 @@
     <string name="save_to_library">Save to Library</string>
     <string name="show_all">Show All</string>
     <string name="show_less">Show Less</string>
+    <string name="composer">Composer: %1$s</string>
+    <string name="writer">Writer: %1$s</string>
+    <string name="author">Author: %1$s</string>
+    <string name="refresh_library_on_reload">Refresh Library on Reload</string>
+    <string name="refresh_library_on_reload_summary">Scan the device every time the feed is loaded</string>
+    <string name="duration_filter">Duration Filter</string>
+    <string name="duration_filter_summary">Filter out audio files with duration(in seconds) less than the value</string>
+    <string name="blacklist_folders">Blacklist Folders</string>
+    <string name="blacklist_folders_summary">Folders to exclude from the library</string>
+    <string name="number_items">%1$d Items</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.offline
 
 import android.content.Context
-import androidx.media3.common.MediaItem
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
@@ -12,6 +11,7 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.helpers.ImportType
@@ -32,6 +32,8 @@ import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
+import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
+import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
@@ -48,7 +50,7 @@ import dev.brahmkshatriya.echo.utils.toJson
 
 class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, TrackClient,
     AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
-    TrackLikeClient, PlaylistEditorListenerClient {
+    TrackLikeClient, PlaylistEditorListenerClient, SettingsChangeListenerClient {
 
     companion object {
         val metadata = Metadata(
@@ -64,14 +66,37 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         )
     }
 
-    override val settingItems: List<Setting> = listOf(
-        SettingSwitch(
-            "Refresh Library on Reload",
-            "refresh_library",
-            "Scan the device every time the feed is loaded",
-            false
+    override suspend fun onSettingsChanged(settings: Settings, key: String?) = when (key) {
+        "blacklist_folders", "refresh_library" -> refreshLibrary()
+        else -> Unit
+    }
+
+
+    override val settingItems: List<Setting>
+        get() = listOf(
+            SettingSwitch(
+                context.getString(R.string.refresh_library_on_reload),
+                "refresh_library",
+                context.getString(R.string.refresh_library_on_reload_summary),
+                false
+            ),
+            SettingSlider(
+                context.getString(R.string.duration_filter),
+                "limit_value",
+                context.getString(R.string.duration_filter_summary),
+                10,
+                0,
+                120,
+                10
+            ),
+            SettingMultipleChoice(
+                context.getString(R.string.blacklist_folders),
+                "blacklist_folders",
+                context.getString(R.string.blacklist_folders_summary),
+                library.folders.toList(),
+                library.folders.toList()
+            )
         )
-    )
 
     private val refreshLibrary
         get() = setting.getBoolean("refresh_library") ?: true
@@ -91,8 +116,13 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     private fun find(playlist: Playlist) =
         library.playlistList.find { it.id == playlist.id.toLong() }
 
+
+    private fun refreshLibrary() {
+        library = MediaStoreUtils.getAllSongs(context, setting)
+    }
+
     override suspend fun onExtensionSelected() {
-        library = MediaStoreUtils.getAllSongs(context)
+        refreshLibrary()
     }
 
     override suspend fun getHomeTabs() = listOf(
@@ -102,41 +132,47 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     private fun List<Shelf>.toPaged() = PagedData.Single { this }
 
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> {
-        if (refreshLibrary) library = MediaStoreUtils.getAllSongs(context)
+        if (refreshLibrary) refreshLibrary()
         fun List<EchoMediaItem>.sorted() = sortedBy { it.title.lowercase() }
             .map { it.toShelf() }.toPaged()
         return when (tab?.id) {
-            "Songs" -> library.songList.map { it.toTrack().toMediaItem() }.sorted()
+            "Songs" -> library.songList.map { it.toMediaItem() }.sorted()
             "Albums" -> library.albumList.map { it.toAlbum().toMediaItem() }.sorted()
             "Artists" -> library.artistMap.values.map { it.toArtist().toMediaItem() }.sorted()
             "Genres" -> library.genreList.map { it.toShelf() }.toPaged()
             else -> run {
                 val recentlyAdded = library.songList.sortedByDescending {
-                    it.mediaMetadata.extras!!.getLong("ModifiedDate")
-                }.map { it.toTrack() }
+                    it.extras["addDate"]?.toLongOrNull()
+                }.map { it }
                 val albums = library.albumList.map {
                     it.toAlbum().toMediaItem()
                 }.shuffled()
                 val artists = library.artistMap.values.map {
                     it.toArtist().toMediaItem()
                 }.shuffled()
-                listOf(
-                    Shelf.Lists.Tracks(
-                        context.getString(R.string.recently_added),
-                        recentlyAdded.take(6),
-                        more = PagedData.Single { recentlyAdded }.takeIf { albums.size > 6 }),
-                    Shelf.Lists.Items(
-                        context.getString(R.string.albums),
-                        albums.take(10),
-                        more =
-                        PagedData.Single<EchoMediaItem> { albums }.takeIf { albums.size > 10 }),
-                    Shelf.Lists.Items(
-                        context.getString(R.string.artists),
-                        artists.take(10),
-                        more =
-                        PagedData.Single<EchoMediaItem> { artists }.takeIf { albums.size > 10 })
-                ) + library.songList.map {
-                    it.toTrack().toMediaItem().toShelf()
+
+                val recent = if(recentlyAdded.isNotEmpty()) Shelf.Lists.Tracks(
+                    context.getString(R.string.recently_added),
+                    recentlyAdded.take(6),
+                    more = PagedData.Single { recentlyAdded }.takeIf { albums.size > 6 }
+                ) else null
+
+                val albumShelf = if (albums.isNotEmpty()) Shelf.Lists.Items(
+                    context.getString(R.string.albums),
+                    albums.take(10),
+                    more =
+                    PagedData.Single<EchoMediaItem> { albums }.takeIf { albums.size > 10 }
+                ) else null
+
+                val artistsShelf = if (artists.isNotEmpty()) Shelf.Lists.Items(
+                    context.getString(R.string.artists),
+                    artists.take(10),
+                    more =
+                    PagedData.Single<EchoMediaItem> { artists }.takeIf { albums.size > 10 }
+                ) else null
+
+                listOfNotNull(recent, albumShelf, artistsShelf) + library.songList.map {
+                    it.toMediaItem().toShelf()
                 }
             }.toPaged()
         }
@@ -154,16 +190,16 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         find(album)!!.toAlbum()
 
     override fun loadTracks(album: Album): PagedData<Track> = PagedData.Single {
-        find(album)!!.songList.sortedBy { it.mediaMetadata.trackNumber }.map { it.toTrack() }
+        find(album)!!.songList.sortedBy { it.extras["trackNumber"]?.toLongOrNull() }.map { it }
     }
 
     private fun getArtistsWithCategories(
-        artists: List<Artist>, filter: (MediaItem) -> Boolean
+        artists: List<Artist>, filter: (Track) -> Boolean
     ) = artists.map { small ->
         val artist = find(small)
         val category = artist?.songList?.filter {
             filter(it)
-        }?.map { it.toTrack().toMediaItem() }?.ifEmpty { null }?.let { tracks ->
+        }?.map { it.toMediaItem() }?.ifEmpty { null }?.let { tracks ->
             val items = tracks as List<EchoMediaItem>
             Shelf.Lists.Items(
                 context.getString(R.string.more_by_artist, small.name), items,
@@ -174,9 +210,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     }.flatten()
 
     override fun getShelves(album: Album): PagedData<Shelf> = PagedData.Single {
-        getArtistsWithCategories(album.artists) {
-            it.mediaMetadata.extras?.getLong("AlbumId") != album.id.toLong()
-        }
+        getArtistsWithCategories(album.artists) { it.album?.id != album.id }
     }
 
     override suspend fun loadArtist(small: Artist) =
@@ -184,7 +218,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
 
     override fun getShelves(artist: Artist) = PagedData.Single<Shelf> {
         find(artist)?.run {
-            val tracks = songList.map { it.toTrack().toMediaItem() }.ifEmpty { null }
+            val tracks = songList.map { it.toMediaItem() }.ifEmpty { null }
             val albums = albumList.map { it.toAlbum().toMediaItem() }.ifEmpty { null }
             listOfNotNull(
                 tracks?.let {
@@ -205,7 +239,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         find(playlist)!!.toPlaylist()
 
     override fun loadTracks(playlist: Playlist): PagedData<Track> = PagedData.Single {
-        find(playlist)!!.songList.map { it.toTrack() }
+        find(playlist)!!.songList.map { it }
     }
 
     override fun getShelves(playlist: Playlist) = PagedData.Single<Shelf> {
@@ -229,24 +263,24 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
                 val album = mediaItem.album
                 val tracks = loadTracks(album).loadAll().asSequence()
                     .map { it.artists }.flatten()
-                    .map { artist -> find(artist)?.songList?.map { it.toTrack() }!! }.flatten()
+                    .map { artist -> find(artist)?.songList?.map { it }!! }.flatten()
                     .filter { it.album?.id != album.id }.take(25)
 
-                val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
+                val randomTracks = library.songList.shuffled().take(25).map { it }
                 (tracks + randomTracks).distinctBy { it.id }.toMutableList()
             }
 
             is EchoMediaItem.Lists.PlaylistItem -> {
                 val playlist = mediaItem.playlist
                 val tracks = loadTracks(playlist).loadAll()
-                val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
+                val randomTracks = library.songList.shuffled().take(25).map { it }
                 (tracks + randomTracks).distinctBy { it.id }.toMutableList()
             }
 
             is EchoMediaItem.Profile.ArtistItem -> {
                 val artist = mediaItem.artist
-                val tracks = find(artist)?.songList?.map { it.toTrack() } ?: emptyList()
-                val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
+                val tracks = find(artist)?.songList?.map { it } ?: emptyList()
+                val randomTracks = library.songList.shuffled().take(25).map { it }
                 (tracks + randomTracks).distinctBy { it.id }.toMutableList()
             }
 
@@ -255,8 +289,8 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
                 val albumTracks = track.album?.let { loadTracks(loadAlbum(it)).loadAll() }
                 val artistTracks = track.artists.map { artist ->
                     find(artist)?.songList ?: emptyList()
-                }.flatten().map { it.toTrack() }
-                val randomTracks = library.songList.shuffled().take(25).map { it.toTrack() }
+                }.flatten().map { it }
+                val randomTracks = library.songList.shuffled().take(25).map { it }
                 val allTracks =
                     listOfNotNull(albumTracks, artistTracks, randomTracks).flatten()
                         .distinctBy { it.id }
@@ -305,7 +339,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     override fun searchFeed(query: String?, tab: Tab?) = run {
         query ?: return@run emptyList()
         saveInHistory(query)
-        val tracks = library.songList.map { it.toTrack() }.searchBy(query) {
+        val tracks = library.songList.map { it }.searchBy(query) {
             listOf(it.title, it.album?.title) + it.artists.map { artist -> artist.name }
         }.map { it.first to it.second.toMediaItem() }
         val albums = library.albumList.map { it.toAlbum() }.searchBy(query) {
@@ -344,9 +378,11 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     ).map { Tab(it, it) }
 
     override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
-        if (refreshLibrary) library = MediaStoreUtils.getAllSongs(context)
+        if (refreshLibrary) refreshLibrary()
         return when (tab?.id) {
-            "Folders" -> library.folderStructure.folderList.entries.first().value.toShelf(null).items!!
+            "Folders" -> library.folderStructure.folderList.entries.first().value
+                .toShelf(context, null).items!!
+
             else -> {
                 library.playlistList.map { it.toPlaylist().toMediaItem().toShelf() }
                     .toPaged()
@@ -360,21 +396,21 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         val playlist = library.likedPlaylist.id
         if (isLiked) context.addSongToPlaylist(playlist, track.id.toLong(), 0)
         else {
-            val index = library.likedPlaylist.songList.indexOfFirst { it.mediaId == track.id }
+            val index = library.likedPlaylist.songList.indexOfFirst { it.id == track.id }
             context.removeSongFromPlaylist(playlist, index)
         }
-        library = MediaStoreUtils.getAllSongs(context)
+        refreshLibrary()
     }
 
     override suspend fun createPlaylist(title: String, description: String?): Playlist {
         val id = context.createPlaylist(title)
-        library = MediaStoreUtils.getAllSongs(context)
+        refreshLibrary()
         return library.playlistList.find { it.id == id }!!.toPlaylist()
     }
 
     override suspend fun deletePlaylist(playlist: Playlist) {
         context.deletePlaylist(playlist.id.toLong())
-        library = MediaStoreUtils.getAllSongs(context)
+        refreshLibrary()
     }
 
     override suspend fun editPlaylistMetadata(
@@ -407,16 +443,16 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
 
     override suspend fun onEnterPlaylistEditor(playlist: Playlist, tracks: List<Track>) {}
     override suspend fun onExitPlaylistEditor(playlist: Playlist, tracks: List<Track>) {
-        library = MediaStoreUtils.getAllSongs(context)
+        refreshLibrary()
     }
 
     fun getDownloads(): PagedData<Shelf> {
-        library = MediaStoreUtils.getAllSongs(context)
+        refreshLibrary()
         return library.folderStructure.folderList["storage"]
             ?.folderList?.get("emulated")
             ?.folderList?.get("0")
             ?.folderList?.get("Download")
-            ?.folderList?.get("Echo")?.toShelf(null)?.items
+            ?.folderList?.get("Echo")?.toShelf(context, null)?.items
             ?: PagedData.Single { listOf() }
     }
 }
