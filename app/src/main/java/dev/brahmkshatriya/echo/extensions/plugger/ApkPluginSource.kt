@@ -36,7 +36,7 @@ class ApkPluginSource(
         val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
                 PackageManager.GET_META_DATA or
                 PackageManager.GET_SIGNATURES or
-                (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0
     }
 
     override fun onPackageChanged() {

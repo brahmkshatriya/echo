@@ -73,13 +73,13 @@ sealed class PagedData<T : Any> {
             val source = sources.getOrNull(index) ?: return Page(emptyList(), null)
 
             val page: Page<T, Pair<Int, String?>?> = when (source) {
-                is Single -> Page(source.loadList(), (index + 1) to null)
+                is Single -> Page(source.loadList(), index + 1 to null)
 
                 is Continuous -> {
                     val page = source.loadList(token)
                     if (page.continuation != null)
                         Page(page.data, index to page.continuation)
-                    else Page(page.data, (index + 1) to null)
+                    else Page(page.data, index + 1 to null)
                 }
 
                 is Concat -> error("Nested Concat not supported")

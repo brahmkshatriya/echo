@@ -73,7 +73,7 @@ class ExoVisualizer @JvmOverloads constructor(
 //                1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000,
 //                12500, 16000, 20000
 //            )
-            private val FREQUENCY_BAND_LIMITS = (0..31).map{
+            private val FREQUENCY_BAND_LIMITS = (0..31).map {
                 (20 * 1.25.pow(it)).roundToInt().coerceAtMost(20000)
             }
         }
@@ -135,7 +135,7 @@ class ExoVisualizer @JvmOverloads constructor(
 
                 synchronized(fft) {
                     // Here we iterate within this single band
-                    for (j in 0 until (nextLimitAtPosition - currentFftPosition) step 2) {
+                    for (j in 0 until nextLimitAtPosition - currentFftPosition step 2) {
                         // Convert real and imaginary part to get energy
                         val raw = (fft[currentFftPosition + j].toDouble().pow(2.0) +
                                 fft.getOrElse(currentFftPosition + j + 1) {
@@ -151,11 +151,9 @@ class ExoVisualizer @JvmOverloads constructor(
                     }
                 }
                 // A window might be empty which would result in a 0 division
-                if (nextLimitAtPosition - currentFftPosition != 0) {
-                    accum /= (nextLimitAtPosition - currentFftPosition)
-                } else {
-                    accum = 0.0f
-                }
+                if (nextLimitAtPosition - currentFftPosition != 0)
+                    accum /= nextLimitAtPosition - currentFftPosition
+                else accum = 0.0f
                 currentFftPosition = nextLimitAtPosition
 
                 // Here we do the smoothing
@@ -171,13 +169,12 @@ class ExoVisualizer @JvmOverloads constructor(
                         previousValues[i * bands + currentFrequencyBandLimitIndex] = accum
                     }
                 }
-                smoothedAccum /= (smoothingFactor + 1) // +1 because it also includes the current value
+                smoothedAccum /= smoothingFactor + 1 // +1 because it also includes the current value
 
                 val leftX = width * (currentFrequencyBandLimitIndex / bands.toFloat())
                 val rightX = leftX + width / bands.toFloat()
 
-                val fillBarHeight =
-                    (height * (smoothedAccum / maxConst).coerceAtMost(1f))
+                val fillBarHeight = height * (smoothedAccum / maxConst).coerceAtMost(1f)
                 val fillTop = height - fillBarHeight
                 canvas.drawRect(
                     leftX,
@@ -187,8 +184,7 @@ class ExoVisualizer @JvmOverloads constructor(
                     paintBandsFill
                 )
                 fftPath.forEachIndexed { index, path ->
-                    val barHeight =
-                        (height * (smoothedAccum / maxConst).coerceAtMost(1f))
+                    val barHeight = height * (smoothedAccum / maxConst).coerceAtMost(1f)
                     val top = height - (barHeight * (index + 1) / paintPaths.size.toFloat())
                     if (top > 1) path.lineTo((leftX + rightX) / 2, top)
                 }

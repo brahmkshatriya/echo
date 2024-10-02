@@ -168,9 +168,9 @@ class DelayedSource(
         }
 
         fun Player.getMediaItemById(id: String): Pair<Int, MediaItem>? {
-            (0 until mediaItemCount).forEach { index ->
-                val mediaItem = getMediaItemAt(index)
-                if (mediaItem.mediaId == id) return index to mediaItem
+            for (i in 0 until mediaItemCount) {
+                val mediaItem = getMediaItemAt(i)
+                if (mediaItem.mediaId == id) return i to mediaItem
             }
             return null
         }

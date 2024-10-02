@@ -386,7 +386,7 @@ object MediaStoreUtils {
         albumMap.getOrPut(id) {
             val cover = if (haveImgPerm) null else ContentUris.withAppendedId(coverUri, id)
             val artists = album.artists.map {
-                MArtist(it.id.toLong(), it.name, mutableSetOf(), mutableListOf())
+                MArtist(it.id.toLongOrNull(), it.name, mutableSetOf(), mutableListOf())
             }
 
             AlbumImpl(id, album.title, artists, year, cover, mutableSetOf()).apply {
@@ -490,7 +490,7 @@ object MediaStoreUtils {
             idMap, likedAudios
         ) { song ->
             song.artists.map {
-                val id = it.id.toLong()
+                val id = it.id.toLongOrNull()
                 val mArtist = artistMap.getOrPut(id) {
                     MArtist(id, it.name, mutableSetOf(), mutableListOf())
                 }
@@ -722,7 +722,7 @@ object MediaStoreUtils {
         return d[m][n]
     }
 
-    fun String?.splitArtists() = this?.split(",", "&", " and ")
+    private fun String?.splitArtists() = this?.split(",", "&", " and ")
         ?.mapNotNull { it.trim().takeIf { s -> s.isNotBlank() } }
         ?: listOf(null)
 
