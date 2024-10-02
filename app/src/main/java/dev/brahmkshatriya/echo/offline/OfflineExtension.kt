@@ -57,7 +57,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
             className = "OfflineExtension",
             path = "",
             importType = ImportType.BuiltIn,
-            id = "echo_offline",
+            id = "echo-offline",
             name = "Offline",
             description = "Offline extension",
             version = "1.0.0",
@@ -101,12 +101,17 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     private val refreshLibrary
         get() = setting.getBoolean("refresh_library") ?: true
 
+    private lateinit var library: MediaStoreUtils.LibraryStoreClass
+    private fun refreshLibrary() {
+        library = MediaStoreUtils.getAllSongs(context, setting)
+    }
+
     private lateinit var setting: Settings
     override fun setSettings(settings: Settings) {
         this.setting = settings
+        refreshLibrary()
     }
 
-    lateinit var library: MediaStoreUtils.LibraryStoreClass
     private fun find(artist: Artist) =
         library.artistMap[artist.id.toLongOrNull()]
 
@@ -117,13 +122,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         library.playlistList.find { it.id == playlist.id.toLong() }
 
 
-    private fun refreshLibrary() {
-        library = MediaStoreUtils.getAllSongs(context, setting)
-    }
-
-    override suspend fun onExtensionSelected() {
-        refreshLibrary()
-    }
+    override suspend fun onExtensionSelected() {}
 
     override suspend fun getHomeTabs() = listOf(
         "All", "Songs", "Albums", "Artists", "Genres"
@@ -151,7 +150,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
                     it.toArtist().toMediaItem()
                 }.shuffled()
 
-                val recent = if(recentlyAdded.isNotEmpty()) Shelf.Lists.Tracks(
+                val recent = if (recentlyAdded.isNotEmpty()) Shelf.Lists.Tracks(
                     context.getString(R.string.recently_added),
                     recentlyAdded.take(6),
                     more = PagedData.Single { recentlyAdded }.takeIf { albums.size > 6 }

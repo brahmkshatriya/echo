@@ -54,7 +54,7 @@ class TrackerExtensionRepo(
     private val pluginRepo: LazyPluginRepo<Metadata, TrackerClient>
 ) : LazyPluginRepo<Metadata, TrackerClient> {
     override fun getAllPlugins() = pluginRepo.getAllPlugins()
-        .injectSettings(ExtensionType.MUSIC, context)
+        .injectSettings(ExtensionType.TRACKER, context)
 }
 
 class LyricsExtensionRepo(
@@ -62,5 +62,5 @@ class LyricsExtensionRepo(
     private val pluginRepo: LazyPluginRepo<Metadata, LyricsClient>
 ) : LazyPluginRepo<Metadata, LyricsClient> {
     override fun getAllPlugins() = pluginRepo.getAllPlugins()
-        .injectSettings(ExtensionType.MUSIC, context)
+        .injectSettings(ExtensionType.LYRICS, context)
 }

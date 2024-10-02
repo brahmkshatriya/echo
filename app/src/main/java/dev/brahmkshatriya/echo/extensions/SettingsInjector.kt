@@ -23,6 +23,7 @@ inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<Metadata, La
                 lazy {
                     runCatching {
                         val name = "$type-${metadata.id}"
+                        println("Settings : $name")
                         val settings =
                             toSettings(context.getSharedPreferences(name, Context.MODE_PRIVATE))
                         val instance = plugin.second.value.getOrThrow()
@@ -55,7 +56,9 @@ fun toSettings(prefs: SharedPreferences) = object : Settings {
         prefs.edit { putBoolean(key, value) }
     }
 
-    override fun getStringSet(key: String) = prefs.getStringSet(key, null)
+    override fun getStringSet(key: String) = prefs.getStringSet(key, null).also {
+        println("$key: $it")
+    }
     override fun putStringSet(key: String, value: Set<String>?) {
         prefs.edit { putStringSet(key, value) }
     }
