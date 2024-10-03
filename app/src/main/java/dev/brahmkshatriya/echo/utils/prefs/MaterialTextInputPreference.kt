@@ -29,7 +29,7 @@ class MaterialTextInputPreference(context: Context) : EditTextPreference(context
         dialog.setOnShowListener {
             val editText = dialog.findViewById<EditText>(R.id.edit_text)
             editText?.setText(text)
-            editText?.hint = summary
+            editText?.hint = customSummary
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val newText = editText?.text?.toString()

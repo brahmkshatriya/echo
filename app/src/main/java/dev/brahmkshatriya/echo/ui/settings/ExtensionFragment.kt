@@ -111,9 +111,10 @@ class ExtensionFragment : BaseSettingsFragment() {
         }
 
         private fun Setting.addPreferenceTo(preferenceGroup: PreferenceGroup) {
+            val context = preferenceGroup.context
             when (this) {
                 is SettingCategory -> {
-                    PreferenceCategory(preferenceGroup.context).also {
+                    PreferenceCategory(context).also {
                         it.title = this.title
                         it.key = this.key
 
@@ -128,7 +129,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingItem -> {
-                    Preference(preferenceGroup.context).also {
+                    Preference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -140,7 +141,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingSwitch -> {
-                    SwitchPreferenceCompat(preferenceGroup.context).also {
+                    SwitchPreferenceCompat(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -153,7 +154,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingList -> {
-                    MaterialListPreference(preferenceGroup.context).also {
+                    MaterialListPreference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -170,7 +171,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingMultipleChoice -> {
-                    MaterialMultipleChoicePreference(preferenceGroup.context).also {
+                    MaterialMultipleChoicePreference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -189,7 +190,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingTextInput -> {
-                    MaterialTextInputPreference(preferenceGroup.context).also {
+                    MaterialTextInputPreference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -202,7 +203,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingSlider -> {
-                    MaterialSliderPreference(preferenceGroup.context, from, to, steps).also {
+                    MaterialSliderPreference(context, from, to, steps, allowOverride).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary

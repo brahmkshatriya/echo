@@ -108,12 +108,12 @@ class AudioFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-                MaterialSliderPreference(context, 100, 1000, 100).apply {
+                MaterialSliderPreference(context, 200, 1000, allowOverride = true).apply {
                     key = CACHE_SIZE
                     title = getString(R.string.cache_size)
                     summary = getString(R.string.cache_size_summary)
                     isIconSpaceReserved = false
-                    setDefaultValue(200)
+                    setDefaultValue(250)
                     addPreference(this)
                 }
 
