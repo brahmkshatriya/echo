@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -36,6 +37,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.extensions.getSettings
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.deletePlaylist
@@ -98,19 +100,16 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
             )
         )
 
+    private val settings = getSettings(context, ExtensionType.MUSIC, metadata)
     private val refreshLibrary
-        get() = setting.getBoolean("refresh_library") ?: true
+        get() = settings.getBoolean("refresh_library") ?: true
 
-    private lateinit var library: MediaStoreUtils.LibraryStoreClass
+    var library = MediaStoreUtils.getAllSongs(context, settings)
     private fun refreshLibrary() {
-        library = MediaStoreUtils.getAllSongs(context, setting)
+        library = MediaStoreUtils.getAllSongs(context, settings)
     }
 
-    private lateinit var setting: Settings
-    override fun setSettings(settings: Settings) {
-        this.setting = settings
-        refreshLibrary()
-    }
+    override fun setSettings(settings: Settings) {}
 
     private fun find(artist: Artist) =
         library.artistMap[artist.id.toLongOrNull()]

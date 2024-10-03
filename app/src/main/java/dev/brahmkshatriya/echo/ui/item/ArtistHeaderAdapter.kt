@@ -69,14 +69,13 @@ class ArtistHeaderAdapter(private val listener: Listener) :
 
         var description = artist.followers?.let {
             binding.root.resources.getQuantityString(R.plurals.number_followers, it, it)
+        } ?: ""
+
+        description += artist.description?.let { if (description.isBlank()) it else "\n\n$it" }
+        binding.artistDescriptionContainer.isVisible = if (description.isBlank()) false else {
+            binding.artistDescription.text = description
+            true
         }
-        description += artist.description?.let { "\n\n$description" }
-        binding.artistDescriptionContainer.isVisible = description?.let {
-            if (it.isBlank()) false else {
-                binding.artistDescription.text = it
-                true
-            }
-        } ?: false
 
         binding.artistDescription.apply {
             setOnClickListener {

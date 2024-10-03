@@ -22,18 +22,20 @@ inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<Metadata, La
                 metadata,
                 lazy {
                     runCatching {
-                        val name = "$type-${metadata.id}"
-                        println("Settings : $name")
-                        val settings =
-                            toSettings(context.getSharedPreferences(name, Context.MODE_PRIVATE))
                         val instance = plugin.second.value.getOrThrow()
-                        instance.setSettings(settings)
+                        instance.setSettings(getSettings(context, type, metadata))
                         instance
                     }
                 }
             )
         }
     }
+}
+
+fun getSettings(context: Context, type: ExtensionType, metadata: Metadata): Settings {
+    val name = "$type-${metadata.id}"
+    val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+    return toSettings(prefs)
 }
 
 fun toSettings(prefs: SharedPreferences) = object : Settings {
