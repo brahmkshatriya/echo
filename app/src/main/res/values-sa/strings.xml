@@ -209,4 +209,14 @@
     <string name="save_to_library">पुस्तकालये रक्षतु</string>
     <string name="show_all">सर्वाणि दर्शयतु</string>
     <string name="show_less">न्यूनं दर्शयतु</string>
+    <string name="composer">रचनाकारः %1$s</string>
+    <string name="writer">लेखकः %1$s</string>
+    <string name="refresh_library_on_reload">पुनः लोड् इत्यत्र पुस्तकालयः ताजगः कुर्वन्तु</string>
+    <string name="duration_filter_summary">मूल्यात् न्यूनावधि(सेकेण्ड्-मात्रेषु) युक्तानि श्रव्यसञ्चिकाः छानन्तु</string>
+    <string name="refresh_library_on_reload_summary">प्रत्येकं फीड् लोड् भवति तदा यन्त्रं स्कैन् कुर्वन्तु</string>
+    <string name="duration_filter">अवधि फ़िल्टर</string>
+    <string name="author">लेखकः %1$s</string>
+    <string name="blacklist_folders">कालीसूची पुट</string>
+    <string name="blacklist_folders_summary">पुस्तकालयात् बहिष्कृत्य पुटं</string>
+    <string name="number_items">%1$d द्रव्यम्</string>
 </resources>
