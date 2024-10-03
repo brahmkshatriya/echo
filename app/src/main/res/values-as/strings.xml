@@ -211,7 +211,7 @@
     <string name="show_less">কম দেখুৱাওক</string>
     <string name="composer">সুৰকাৰ: %1$s</string>
     <string name="writer">লেখক: %1$s</string>
-    <string name="author">লেখক: %1$s</string>
+    <string name="author">ৰচনাকাৰ: %1$s</string>
     <string name="refresh_library_on_reload">পুনৰ লোডত লাইব্ৰেৰী সতেজ কৰক</string>
     <string name="refresh_library_on_reload_summary">প্ৰতিবাৰ ফিড লোড কৰাৰ সময়ত ডিভাইচটো স্কেন কৰক</string>
     <string name="duration_filter">সময়সীমা ফিল্টাৰ</string>
@@ -219,4 +219,8 @@
     <string name="blacklist_folders">ব্লেকলিষ্ট ফোল্ডাৰসমূহ</string>
     <string name="blacklist_folders_summary">লাইব্ৰেৰীৰ পৰা বাদ দিবলগীয়া ফোল্ডাৰসমূহ</string>
     <string name="number_items">%1$d বস্তুসমূহ</string>
+    <string name="removed_item_from_library">লাইব্ৰেৰীৰ পৰা %1$s আঁতৰোৱা হৈছে</string>
+    <string name="saved_item_to_library">%1$s লাইব্ৰেৰীত সংৰক্ষণ কৰা হৈছে</string>
+    <string name="following_artist">%1$s ক অনুসৰণ কৰিছে</string>
+    <string name="unfollowed_artist">%1$s ক অনুসৰণ কৰা এৰিলে</string>
 </resources>
