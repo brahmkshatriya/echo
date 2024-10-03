@@ -8,14 +8,6 @@
     android:layout_marginHorizontal="24dp"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/artistSubtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="8dp"
-        android:ellipsize="end"
-        android:textSize="16sp" />
-
     <LinearLayout
         android:layout_marginStart="-8dp"
         android:layout_marginEnd="-8dp"
@@ -27,21 +19,22 @@
             android:id="@+id/artistSubscribe"
             android:layout_width="0dp"
             android:layout_height="56dp"
+            android:layout_margin="8dp"
             android:layout_weight="1"
             android:text="@string/follow"
-            android:layout_margin="8dp"
-            app:icon="@drawable/ic_artist" />
+            android:visibility="gone"
+            app:icon="@drawable/ic_heart_outline" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/artistUnsubscribe"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="0dp"
             android:layout_height="56dp"
+            android:layout_margin="8dp"
             android:layout_weight="1"
             android:text="@string/unfollow"
-            android:visibility="gone"
-            android:layout_margin="8dp"
-            app:icon="@drawable/ic_artist" />
+            android:visibility="visible"
+            app:icon="@drawable/ic_heart_filled" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/artistRadio"

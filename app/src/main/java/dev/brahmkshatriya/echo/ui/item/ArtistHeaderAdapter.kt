@@ -60,7 +60,6 @@ class ArtistHeaderAdapter(private val listener: Listener) :
     }
 
     private var _artist: Artist? = null
-    private var isSubscribed = false
     private var _hasSubscribe = false
     private var _hasRadio = false
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -68,17 +67,15 @@ class ArtistHeaderAdapter(private val listener: Listener) :
         val binding = holder.binding
         val artist = holder.artist
 
-        binding.artistSubtitle.isVisible = artist.followers?.let {
-            binding.artistSubtitle.text = binding.artistSubtitle.resources.
-                getQuantityString(R.plurals.number_followers, it, it)
-            true
-        } ?: false
-
-        binding.artistDescriptionContainer.isVisible = artist.description?.let {
-            if (it.isNotBlank()) {
+        var description = artist.followers?.let {
+            binding.root.resources.getQuantityString(R.plurals.number_followers, it, it)
+        }
+        description += artist.description?.let { "\n\n$description" }
+        binding.artistDescriptionContainer.isVisible = description?.let {
+            if (it.isBlank()) false else {
                 binding.artistDescription.text = it
                 true
-            } else false
+            }
         } ?: false
 
         binding.artistDescription.apply {
@@ -88,8 +85,8 @@ class ArtistHeaderAdapter(private val listener: Listener) :
         }
 
         if (_hasSubscribe) {
-            binding.artistSubscribe.isVisible = !isSubscribed
-            binding.artistUnsubscribe.isVisible = isSubscribed
+            binding.artistSubscribe.isVisible = !artist.isFollowing
+            binding.artistUnsubscribe.isVisible = artist.isFollowing
         } else {
             binding.artistSubscribe.isVisible = false
             binding.artistUnsubscribe.isVisible = false

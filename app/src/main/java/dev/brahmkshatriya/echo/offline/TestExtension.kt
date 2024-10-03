@@ -1,9 +1,11 @@
 package dev.brahmkshatriya.echo.offline
 
+import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.PagedData
@@ -28,7 +30,7 @@ import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 
 class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient, HomeFeedClient,
-    RadioClient {
+    ArtistFollowClient, RadioClient, SaveToLibraryClient {
 
     companion object {
         val metadata = Metadata(
@@ -95,6 +97,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
         listOf(
+            Artist("bruh","Bruh").toMediaItem().toShelf(),
             createTrack(
                 "both", "All", listOf(
                     Streamable.audioVideo(audio, 0),
@@ -128,4 +131,44 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     override suspend fun radio(artist: Artist) = radio
     override suspend fun radio(user: User) = radio
     override suspend fun radio(playlist: Playlist) = radio
+
+    private var isFollowing = false
+    override suspend fun followArtist(artist: Artist): Boolean {
+        isFollowing = true
+        println("follow")
+        return true
+    }
+
+    override suspend fun unfollowArtist(artist: Artist): Boolean {
+        isFollowing = false
+        println("unfollow")
+        return true
+    }
+
+    override suspend fun loadArtist(small: Artist): Artist {
+        println("isFollowing : $isFollowing")
+        return small.copy(isFollowing = isFollowing)
+    }
+
+    override fun getShelves(artist: Artist) = PagedData.Single<Shelf> {
+        listOf(
+            createTrack("audio", "Audio", listOf(Streamable.audio(audio, 0))),
+        )
+    }
+
+    private var isSaved = false
+    override suspend fun saveToLibrary(mediaItem: EchoMediaItem) {
+        isSaved = true
+        println("save")
+    }
+
+    override suspend fun removeFromLibrary(mediaItem: EchoMediaItem) {
+        isSaved = false
+        println("remove")
+    }
+
+    override suspend fun isSavedToLibrary(mediaItem: EchoMediaItem): Boolean {
+        println("isSaved : $isSaved")
+        return isSaved
+    }
 }

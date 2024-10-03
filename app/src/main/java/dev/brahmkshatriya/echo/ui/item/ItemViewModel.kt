@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +47,8 @@ import javax.inject.Inject
 class ItemViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    val app: Application,
+    private val app: Application,
+    private val snackBar: MutableSharedFlow<SnackBar.Message>
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
@@ -177,10 +179,16 @@ class ItemViewModel @Inject constructor(
         }
     }
 
+    private fun createSnack(message: String) =
+        viewModelScope.launch { snackBar.emit(SnackBar.Message(message)) }
+
     fun subscribe(artist: Artist, subscribe: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<ArtistFollowClient, Unit> {
                 if (subscribe) followArtist(artist) else unfollowArtist(artist)
+                val message = if (subscribe) app.getString(R.string.following_artist, artist.name)
+                else app.getString(R.string.unfollowed_artist, artist.name)
+                createSnack(message)
                 load()
             }
         }
@@ -188,13 +196,19 @@ class ItemViewModel @Inject constructor(
 
     fun removeFromLibrary(item: EchoMediaItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            getClient<SaveToLibraryClient, Unit> { removeFromLibrary(item) }
+            getClient<SaveToLibraryClient, Unit> {
+                removeFromLibrary(item)
+                createSnack(app.getString(R.string.removed_item_from_library, item.title))
+            }
         }
     }
 
     fun saveToLibrary(item: EchoMediaItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            getClient<SaveToLibraryClient, Unit> { saveToLibrary(item) }
+            getClient<SaveToLibraryClient, Unit> {
+                saveToLibrary(item)
+                createSnack(app.getString(R.string.saved_item_to_library, item.title))
+            }
         }
     }
 }
