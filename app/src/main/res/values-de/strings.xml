@@ -131,7 +131,6 @@
     <string name="selected_songs">Songs Ausgewählt (%1$d)</string>
     <string name="add_tracks">Track Hinzufügen</string>
     <string name="adding_tracks">Füge %1$s Hinzu</string>
-    <string name="unlike"></string>
     <string name="skip_silence">Stille Überspringen</string>
     <string name="app_crashed">App ist abgestürzt!</string>
     <string name="keep_queue">Player Warteschlange Behalten</string>
