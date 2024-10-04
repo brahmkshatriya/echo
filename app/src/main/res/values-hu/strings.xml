@@ -208,4 +208,18 @@
     <string name="unknown">Ismeretlen</string>
     <string name="music_permission_required_summary">Ez az engedély szükséges a zenei könyvtárad eléréséhez</string>
     <string name="save_to_library">Mentés a könyvtárba</string>
+    <string name="composer">Zeneszerző: %1$s</string>
+    <string name="writer">Írta: %1$s</string>
+    <string name="author">Szerző: %1$s</string>
+    <string name="refresh_library_on_reload">Könyvtár frissítése újratöltéskor</string>
+    <string name="refresh_library_on_reload_summary">A készülék átfésülése minden betöltéskor</string>
+    <string name="blacklist_folders">Feketelistás mappák</string>
+    <string name="number_items">%1$d Elem</string>
+    <string name="following_artist">%1$s követése</string>
+    <string name="unfollowed_artist">%1$s kikövetve</string>
+    <string name="removed_item_from_library">%1$s eltávolítva a könyvtárból</string>
+    <string name="duration_filter">Időtartam szűrő</string>
+    <string name="duration_filter_summary">Szűrje ki azokat a hangfájlokat, amelyek hossza (másodpercben) rövidebb az értéknél</string>
+    <string name="blacklist_folders_summary">A könyvtárból kizárandó mappák</string>
+    <string name="saved_item_to_library">%1$s elmentve a könyvtárba</string>
 </resources>
