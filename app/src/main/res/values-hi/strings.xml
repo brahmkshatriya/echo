@@ -213,10 +213,14 @@
     <string name="writer">लेखक: %1$s</string>
     <string name="refresh_library_on_reload">पुनः लोड करने पर लाइब्रेरी को रिफ्रेश करें</string>
     <string name="duration_filter_summary">मान से कम अवधि (सेकंड में) वाली ऑडियो फ़ाइलों को फ़िल्टर करें</string>
-    <string name="author">लेखक: %1$s</string>
+    <string name="author">रचनाकार: %1$s</string>
     <string name="refresh_library_on_reload_summary">हर बार फ़ीड लोड होने पर डिवाइस को स्कैन करें</string>
     <string name="duration_filter">अवधि फ़िल्टर</string>
     <string name="blacklist_folders">ब्लैकलिस्ट फ़ोल्डर्स</string>
     <string name="blacklist_folders_summary">लाइब्रेरी से बाहर रखे जाने वाले फ़ोल्डर</string>
     <string name="number_items">%1$d आइटम</string>
+    <string name="unfollowed_artist">%1$s को अनफ़ॉलो किया गया</string>
+    <string name="following_artist">%1$s का अनुसरण कर रहे हूँ</string>
+    <string name="removed_item_from_library">%1$s को लाइब्रेरी से हटाया गया</string>
+    <string name="saved_item_to_library">%1$s को लाइब्रेरी में सहेजा गया</string>
 </resources>
