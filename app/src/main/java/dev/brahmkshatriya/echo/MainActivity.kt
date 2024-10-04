@@ -10,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -36,7 +37,7 @@ import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
-import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectBrowserToUI
+import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private val uiViewModel by viewModels<UiViewModel>()
     private val playerViewModel by viewModels<PlayerViewModel>()
 
-    private var controllerFuture: ListenableFuture<MediaBrowser>? = null
+    private var controllerFuture: ListenableFuture<MediaController>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,17 +125,17 @@ class MainActivity : AppCompatActivity() {
         configureSnackBar(binding.navView)
 
         val sessionToken =
-            SessionToken(application, ComponentName(application, PlaybackService::class.java))
-        val browserFuture = MediaBrowser.Builder(application, sessionToken).buildAsync()
-        listenFuture(browserFuture) {
-            val browser = it.getOrElse { e ->
+            SessionToken(application, ComponentName(application, PlayerService::class.java))
+        val playerFuture = MediaController.Builder(application, sessionToken).buildAsync()
+        listenFuture(playerFuture) {
+            val player = it.getOrElse { e ->
                 e.printStackTrace()
                 return@listenFuture
             }
-            connectBrowserToUI(browser, playerViewModel)
+            connectPlayerToUI(player, playerViewModel)
         }
 
-        controllerFuture = browserFuture
+        controllerFuture = playerFuture
 
         intent?.onIntent()
     }

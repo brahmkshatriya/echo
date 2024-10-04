@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.playback.listeners
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
@@ -22,12 +22,12 @@ import kotlinx.coroutines.launch
 
 @UnstableApi
 class TrackingListener(
-    session: MediaLibrarySession,
+    player:Player,
     private val scope: CoroutineScope,
     private val extensionList: MutableStateFlow<List<MusicExtension>?>,
     private val trackerList: MutableStateFlow<List<TrackerExtension>?>,
     private val throwableFlow: MutableSharedFlow<Throwable>
-) : PlayerListener(session.player) {
+) : PlayerListener(player) {
 
     private var current: MediaItem? = null
     private var timer: PauseCountDown? = null

@@ -13,14 +13,16 @@ import androidx.media3.common.Player
 import androidx.media3.common.Rating
 import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionResult.RESULT_SUCCESS
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.SettableFuture
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.SearchClient
@@ -49,7 +51,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.withContext
 
-class PlayerSessionCallback(
+@UnstableApi
+class PlayerCallback(
     private val context: Context,
     private val settings: SharedPreferences,
     private val scope: CoroutineScope,
@@ -58,9 +61,8 @@ class PlayerSessionCallback(
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val radioFlow: MutableStateFlow<Radio.State>
-) : MediaLibraryService.MediaLibrarySession.Callback {
+) : MediaLibrarySession.Callback {
 
-    @OptIn(UnstableApi::class)
     override fun onConnect(
         session: MediaSession, controller: MediaSession.ControllerInfo
     ): MediaSession.ConnectionResult {
@@ -73,7 +75,6 @@ class PlayerSessionCallback(
             .setAvailableSessionCommands(sessionCommands).build()
     }
 
-    @OptIn(UnstableApi::class)
     override fun onCustomCommand(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
@@ -90,6 +91,11 @@ class PlayerSessionCallback(
             radioCommand -> radio(player, args)
             else -> super.onCustomCommand(session, controller, customCommand, args)
         }
+    }
+
+    private fun setRepeat(player: Player, repeat: Int) = run {
+        player.repeatMode = repeat
+        Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
     }
 
     @OptIn(UnstableApi::class)
@@ -112,12 +118,6 @@ class PlayerSessionCallback(
         SessionResult(RESULT_SUCCESS)
     }
 
-    private fun setRepeat(player: Player, repeat: Int) = run {
-        player.repeatMode = repeat
-        Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
-    }
-
-    @OptIn(UnstableApi::class)
     override fun onSetRating(
         session: MediaSession, controller: MediaSession.ControllerInfo, rating: Rating
     ): ListenableFuture<SessionResult> {
@@ -125,6 +125,7 @@ class PlayerSessionCallback(
         else scope.future {
             val errorIO = SessionResult(SessionError.ERROR_IO)
             val item = session.player.currentMediaItem ?: return@future errorIO
+            extensionList.first { it != null }
             val extension = extensionList.getExtension(item.clientId) ?: return@future errorIO
             val client = extension.instance.value.getOrNull() ?: return@future errorIO
             if (client !is TrackLikeClient) return@future errorIO
@@ -150,17 +151,30 @@ class PlayerSessionCallback(
         }
     }
 
-
-    @UnstableApi
     override fun onPlaybackResumption(
-        mediaSession: MediaSession, controller: MediaSession.ControllerInfo
-    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = scope.future {
-        extensionList.first { it != null }
-        return@future ResumptionUtils.recoverPlaylist(context)
+        mediaSession: MediaSession,
+        controller: MediaSession.ControllerInfo
+    ): ListenableFuture<MediaItemsWithStartPosition> {
+        val settable = SettableFuture.create<MediaItemsWithStartPosition>()
+        val resumptionPlaylist = ResumptionUtils.recoverPlaylist(context)
+        settable.set(resumptionPlaylist)
+        return settable
+    }
+
+    override fun onSetMediaItems(
+        mediaSession: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        mediaItems: MutableList<MediaItem>,
+        startIndex: Int,
+        startPositionMs: Long
+    ): ListenableFuture<MediaItemsWithStartPosition> {
+        radioFlow.value = Radio.State.Empty
+        return super.onSetMediaItems(
+            mediaSession, controller, mediaItems, startIndex, startPositionMs
+        )
     }
 
     // Google Assistant Stuff
-
     private val handler = Handler(Looper.getMainLooper())
     private fun toast(message: String) {
         handler.post { Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
@@ -186,7 +200,8 @@ class PlayerSessionCallback(
         }
 
         val extension = extensionFlow.value
-        val client = extension?.instance?.value?.getOrNull() ?: return default { noClient().message }
+        val client =
+            extension?.instance?.value?.getOrNull() ?: return default { noClient().message }
         val id = extension.metadata.id
         if (client !is SearchClient) return default { searchNotSupported(id).message }
         if (client !is TrackClient) return default { trackNotSupported(id).message }
@@ -221,19 +236,5 @@ class PlayerSessionCallback(
             if (tracks.isEmpty()) default { getString(R.string.could_not_find_anything, query) }
             tracks.map { MediaItemUtils.build(settings, it, id, null) }.toMutableList()
         }
-    }
-
-    @UnstableApi
-    override fun onSetMediaItems(
-        mediaSession: MediaSession,
-        controller: MediaSession.ControllerInfo,
-        mediaItems: MutableList<MediaItem>,
-        startIndex: Int,
-        startPositionMs: Long
-    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        radioFlow.value = Radio.State.Empty
-        return super.onSetMediaItems(
-            mediaSession, controller, mediaItems, startIndex, startPositionMs
-        )
     }
 }

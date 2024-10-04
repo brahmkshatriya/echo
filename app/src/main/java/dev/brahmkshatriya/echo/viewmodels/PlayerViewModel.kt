@@ -11,7 +11,7 @@ import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.LibraryResult.RESULT_SUCCESS
-import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
@@ -22,14 +22,14 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.playback.Current
-import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
-import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
-import dev.brahmkshatriya.echo.playback.listeners.Radio
-import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
+import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
+import dev.brahmkshatriya.echo.playback.ResumptionUtils
+import dev.brahmkshatriya.echo.playback.listeners.Radio
+import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
@@ -60,8 +60,8 @@ class PlayerViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
-    var browser = MutableStateFlow<MediaBrowser?>(null)
-    fun withBrowser(block: (MediaBrowser) -> Unit) {
+    var browser = MutableStateFlow<MediaController?>(null)
+    fun withBrowser(block: (MediaController) -> Unit) {
         viewModelScope.launch(Dispatchers.Main) {
             val browser = browser.first { it != null }!!
             runCatching { block(browser) }.getOrElse { throwableFlow.emit(it) }
@@ -218,20 +218,20 @@ class PlayerViewModel @Inject constructor(
 
     companion object {
         @SuppressLint("UnsafeOptInUsageError")
-        fun connectBrowserToUI(
-            browser: MediaBrowser,
+        fun connectPlayerToUI(
+            player: MediaController,
             viewModel: PlayerViewModel
         ) {
-            viewModel.browser.value = browser
-            browser.addListener(PlayerUiListener(browser, viewModel))
+            viewModel.browser.value = player
+            player.addListener(PlayerUiListener(player, viewModel))
 
             viewModel.run {
                 val keepQueue = settings.getBoolean(KEEP_QUEUE, true)
-                if (keepQueue && !browser.isPlaying) viewModelScope.launch {
+                if (keepQueue && !player.isPlaying) viewModelScope.launch {
                     extensionListFlow.first { it != null }
                     ResumptionUtils.recoverPlaylist(app).apply {
-                        browser.setMediaItems(mediaItems, startIndex, startPositionMs)
-                        browser.prepare()
+                        player.setMediaItems(mediaItems, startIndex, startPositionMs)
+                        player.prepare()
                     }
                 }
             }

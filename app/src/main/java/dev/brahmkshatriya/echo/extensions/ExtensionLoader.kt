@@ -32,7 +32,6 @@ import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -104,7 +103,6 @@ class ExtensionLoader(
     val current = extensionFlow
     val currentWithUser = MutableStateFlow<Pair<MusicExtension?, UserEntity?>>(null to null)
 
-    @ExperimentalCoroutinesApi
     fun initialize() {
         scope.launch {
             getAllPlugins(scope)

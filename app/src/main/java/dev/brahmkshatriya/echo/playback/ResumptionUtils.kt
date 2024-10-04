@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -15,7 +16,11 @@ import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 
 object ResumptionUtils {
-    fun saveQueue(context: Context, currentIndex: Int, list: List<MediaItem>) = runCatching {
+
+    private fun Player.mediaItems() = (0 until mediaItemCount).map { getMediaItemAt(it) }
+    fun saveQueue(context: Context, player: Player) = runCatching {
+        val list = player.mediaItems()
+        val currentIndex = player.currentMediaItemIndex
         val tracks = list.map { it.track }
         val clients = list.map { it.clientId }
         val contexts = list.map { it.context }

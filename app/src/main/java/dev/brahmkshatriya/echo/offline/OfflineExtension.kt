@@ -176,7 +176,10 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         }
     }
 
-    override suspend fun loadTrack(track: Track) = track
+    override suspend fun loadTrack(track: Track) = track.copy(
+        isLiked = library.likedPlaylist.songList.any { it.id == track.id }
+    )
+
     override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
         return streamable.id.toAudio().toMedia()
     }

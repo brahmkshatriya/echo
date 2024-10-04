@@ -129,7 +129,7 @@ object MediaItemUtils {
     ) = MediaMetadata.Builder()
         .setTitle(title)
         .setArtist(artists.joinToString(", ") { it.name })
-        .setArtworkUri(id.toUri())
+        .setArtworkUri(cover?.toJson()?.toUri())
         .setUserRating(ThumbRating(isLiked))
         .setIsBrowsable(false)
         .setExtras(

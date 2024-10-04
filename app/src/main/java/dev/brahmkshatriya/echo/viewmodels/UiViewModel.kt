@@ -252,6 +252,7 @@ class UiViewModel @Inject constructor(
             observe(viewModel.changePlayerState) {
                 if (it == STATE_HIDDEN) behavior.isHideable = true
                 viewModel.playerSheetState.value = it
+                viewModel.playerSheetOffset.value = if(it == STATE_EXPANDED) 1f else 0f
                 behavior.state = it
             }
             viewModel.playerBackPressCallback = behavior.backPressCallback()

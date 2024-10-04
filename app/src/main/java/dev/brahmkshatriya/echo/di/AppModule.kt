@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
@@ -16,8 +15,8 @@ import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.playback.Current
-import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.listeners.Radio
+import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CACHE_SIZE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -77,8 +76,4 @@ class AppModule {
     @Provides
     @Singleton
     fun providesAudioProcessor() = FFTAudioProcessor()
-
-    @Provides
-    @Singleton
-    fun providesCurrentMediaItem() = MutableStateFlow<MediaItem?>(null)
 }

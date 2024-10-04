@@ -58,9 +58,7 @@ fun toSettings(prefs: SharedPreferences) = object : Settings {
         prefs.edit { putBoolean(key, value) }
     }
 
-    override fun getStringSet(key: String) = prefs.getStringSet(key, null).also {
-        println("$key: $it")
-    }
+    override fun getStringSet(key: String) = prefs.getStringSet(key, null)
     override fun putStringSet(key: String, value: Set<String>?) {
         prefs.edit { putStringSet(key, value) }
     }

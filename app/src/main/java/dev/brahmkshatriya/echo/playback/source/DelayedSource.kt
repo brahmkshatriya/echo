@@ -35,6 +35,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -119,6 +120,7 @@ class DelayedSource(
     }
 
     private suspend fun resolve(mediaItem: MediaItem): MediaItem {
+        extensionListFlow.first { it != null }
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.build(settings, mediaItem, loadTrack(mediaItem))
         val video = if (new.videoIndex < 0) null else loadVideo(new)

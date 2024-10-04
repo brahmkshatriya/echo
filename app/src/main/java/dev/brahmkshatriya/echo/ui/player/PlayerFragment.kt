@@ -88,6 +88,11 @@ class PlayerFragment : Fragment() {
 
         fun update() {
             val list = viewModel.list
+            adapter.submitList(list) {
+                val index = viewModel.currentFlow.value?.index ?: -1
+                val smooth = abs(index - binding.viewPager.currentItem) <= 1
+                binding.viewPager.setCurrentItem(index, smooth)
+            }
             if (list.isEmpty()) {
                 emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
                 emit(uiViewModel.changePlayerState) { STATE_HIDDEN }
@@ -96,12 +101,6 @@ class PlayerFragment : Fragment() {
                     emit(uiViewModel.changePlayerState) { STATE_COLLAPSED }
                     emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
                 }
-            }
-            adapter.submitList(list)
-            val index = viewModel.currentFlow.value?.index ?: -1
-            val smooth = abs(index - binding.viewPager.currentItem) <= 1
-            binding.viewPager.post {
-                runCatching { binding.viewPager.setCurrentItem(index, smooth) }
             }
         }
 
