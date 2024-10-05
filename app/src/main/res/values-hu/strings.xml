@@ -222,4 +222,10 @@
     <string name="duration_filter_summary">Szűrje ki azokat a hangfájlokat, amelyek hossza (másodpercben) rövidebb az értéknél</string>
     <string name="blacklist_folders_summary">A könyvtárból kizárandó mappák</string>
     <string name="saved_item_to_library">%1$s elmentve a könyvtárba</string>
+    <string name="liked_track">%1$s tetszik</string>
+    <string name="unliked_track">%1$s tetszik törölve</string>
+    <string name="hide">Elrejtés</string>
+    <string name="hidden_track">%1$s rejtett</string>
+    <string name="unhide">Megmutat</string>
+    <string name="unhidden_track">%1$s megmutatva</string>
 </resources>
