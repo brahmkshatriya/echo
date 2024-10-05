@@ -15,6 +15,8 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.TrackHideClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -182,6 +184,29 @@ class ItemViewModel @Inject constructor(
     private fun createSnack(message: String) =
         viewModelScope.launch { snackBar.emit(SnackBar.Message(message)) }
 
+    fun like(track: Track, isLiked: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<TrackLikeClient, Unit> {
+                likeTrack(track, isLiked)
+                val message = if (isLiked) app.getString(R.string.liked_track, track.title)
+                else app.getString(R.string.unliked_track, track.title)
+                createSnack(message)
+            }
+        }
+    }
+
+
+    fun hide(track: Track, isHidden: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<TrackHideClient, Unit> {
+                hideTrack(track, isHidden)
+                val message = if (isHidden) app.getString(R.string.hidden_track, track.title)
+                else app.getString(R.string.unhidden_track, track.title)
+                createSnack(message)
+            }
+        }
+    }
+
     fun subscribe(artist: Artist, subscribe: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<ArtistFollowClient, Unit> {
@@ -189,26 +214,22 @@ class ItemViewModel @Inject constructor(
                 val message = if (subscribe) app.getString(R.string.following_artist, artist.name)
                 else app.getString(R.string.unfollowed_artist, artist.name)
                 createSnack(message)
-                load()
             }
         }
     }
 
-    fun removeFromLibrary(item: EchoMediaItem) {
+    fun saveToLibrary(item: EchoMediaItem, save: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<SaveToLibraryClient, Unit> {
-                removeFromLibrary(item)
-                createSnack(app.getString(R.string.removed_item_from_library, item.title))
+                if (save) {
+                    saveToLibrary(item)
+                    createSnack(app.getString(R.string.saved_item_to_library, item.title))
+                } else {
+                    removeFromLibrary(item)
+                    createSnack(app.getString(R.string.removed_item_from_library, item.title))
+                }
             }
         }
     }
 
-    fun saveToLibrary(item: EchoMediaItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            getClient<SaveToLibraryClient, Unit> {
-                saveToLibrary(item)
-                createSnack(app.getString(R.string.saved_item_to_library, item.title))
-            }
-        }
-    }
 }
