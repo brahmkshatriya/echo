@@ -1,10 +1,14 @@
 package dev.brahmkshatriya.echo.offline
 
+import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.TrackHideClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -26,9 +30,10 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
+import kotlin.random.Random
 
 class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient, HomeFeedClient,
-    RadioClient {
+    ArtistFollowClient, RadioClient, SaveToLibraryClient, TrackLikeClient, TrackHideClient {
 
     companion object {
         val metadata = Metadata(
@@ -56,7 +61,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     }
 
     override suspend fun getCurrentUser(): User? = null
-    override suspend fun loadTrack(track: Track) = track
+
     override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
         return when (streamable.mediaType) {
             Streamable.MediaType.Audio -> streamable.id.toAudio().toMedia()
@@ -87,14 +92,13 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     private fun createTrack(id: String, title: String, streamables: List<Streamable>) = Track(
         id,
         title,
-        emptyList(),
-        null,
-        null,
+        isExplicit = Random.nextBoolean(),
         streamables = streamables
     ).toMediaItem().toShelf()
 
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
         listOf(
+            Artist("bruh", "Bruh").toMediaItem().toShelf(),
             createTrack(
                 "both", "All", listOf(
                     Streamable.audioVideo(audio, 0),
@@ -128,4 +132,61 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     override suspend fun radio(artist: Artist) = radio
     override suspend fun radio(user: User) = radio
     override suspend fun radio(playlist: Playlist) = radio
+
+    private var isFollowing = false
+    override suspend fun followArtist(artist: Artist): Boolean {
+        isFollowing = true
+        println("follow")
+        return true
+    }
+
+    override suspend fun unfollowArtist(artist: Artist): Boolean {
+        isFollowing = false
+        println("unfollow")
+        return true
+    }
+
+    override suspend fun loadArtist(small: Artist): Artist {
+        println("isFollowing : $isFollowing")
+        return small.copy(isFollowing = isFollowing)
+    }
+
+    override fun getShelves(artist: Artist) = PagedData.Single<Shelf> {
+        listOf(
+            createTrack("audio", "Audio", listOf(Streamable.audio(audio, 0))),
+        )
+    }
+
+    private var isSaved = false
+    override suspend fun saveToLibrary(mediaItem: EchoMediaItem) {
+        isSaved = true
+        println("save")
+    }
+
+    override suspend fun removeFromLibrary(mediaItem: EchoMediaItem) {
+        isSaved = false
+        println("remove")
+    }
+
+    override suspend fun isSavedToLibrary(mediaItem: EchoMediaItem): Boolean {
+        println("isSaved : $isSaved")
+        return isSaved
+    }
+
+    private var isLiked = false
+    override suspend fun likeTrack(track: Track, isLiked: Boolean) {
+        this.isLiked = isLiked
+        println("like")
+    }
+
+    private var isHidden = false
+    override suspend fun hideTrack(track: Track, isHidden: Boolean) {
+        println("hide")
+        this.isHidden = isHidden
+    }
+
+    override suspend fun loadTrack(track: Track) = track.copy(
+        isLiked = isLiked,
+        isHidden = isHidden
+    )
 }

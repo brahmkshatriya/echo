@@ -36,7 +36,7 @@ class LoginUserViewModel @Inject constructor(
         fun update() {
             val currentExt = currentExtension.value
             val entities = users
-            val current = entities.find { it.id == currentExt?.id }
+            val current = entities.find { it.clientId == currentExt?.id }
             currentUser.value = currentExt to current?.toUser()
         }
         viewModelScope.launch {

@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Setting
@@ -25,6 +26,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.run
+import dev.brahmkshatriya.echo.extensions.toSettings
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialMultipleChoicePreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
@@ -85,7 +87,7 @@ class ExtensionFragment : BaseSettingsFragment() {
             preferenceScreen = screen
 
             val viewModel by activityViewModels<ExtensionViewModel>()
-            viewModel.run {
+            viewModel.apply {
                 val client = when (extensionType) {
                     ExtensionType.MUSIC -> extensionListFlow.getExtension(extensionId)
                     ExtensionType.TRACKER -> trackerListFlow.getExtension(extensionId)
@@ -96,15 +98,23 @@ class ExtensionFragment : BaseSettingsFragment() {
                         settingItems.forEach { setting ->
                             setting.addPreferenceTo(screen)
                         }
+                        val prefs = preferenceManager.sharedPreferences ?: return@run
+                        val settings = toSettings(prefs)
+                        if (this is SettingsChangeListenerClient) {
+                            prefs.registerOnSharedPreferenceChangeListener { _, key ->
+                                onSettingsChanged(client, settings, key)
+                            }
+                        }
                     }
                 }
             }
         }
 
         private fun Setting.addPreferenceTo(preferenceGroup: PreferenceGroup) {
+            val context = preferenceGroup.context
             when (this) {
                 is SettingCategory -> {
-                    PreferenceCategory(preferenceGroup.context).also {
+                    PreferenceCategory(context).also {
                         it.title = this.title
                         it.key = this.key
 
@@ -119,7 +129,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingItem -> {
-                    Preference(preferenceGroup.context).also {
+                    Preference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -131,7 +141,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingSwitch -> {
-                    SwitchPreferenceCompat(preferenceGroup.context).also {
+                    SwitchPreferenceCompat(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -144,7 +154,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingList -> {
-                    MaterialListPreference(preferenceGroup.context).also {
+                    MaterialListPreference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -161,7 +171,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingMultipleChoice -> {
-                    MaterialMultipleChoicePreference(preferenceGroup.context).also {
+                    MaterialMultipleChoicePreference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -180,7 +190,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingTextInput -> {
-                    MaterialTextInputPreference(preferenceGroup.context).also {
+                    MaterialTextInputPreference(context).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary
@@ -193,7 +203,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                 }
 
                 is SettingSlider -> {
-                    MaterialSliderPreference(preferenceGroup.context, from, to, steps).also {
+                    MaterialSliderPreference(context, from, to, steps, allowOverride).also {
                         it.title = this.title
                         it.key = this.key
                         it.summary = this.summary

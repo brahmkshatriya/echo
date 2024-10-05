@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.extensions
 
+import android.content.Context
 import android.content.SharedPreferences
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
@@ -7,6 +8,7 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.providers.LyricsClientsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicClientsProvider
@@ -15,12 +17,21 @@ import dev.brahmkshatriya.echo.db.ExtensionDao
 import dev.brahmkshatriya.echo.db.UserDao
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
+import dev.brahmkshatriya.echo.extensions.plugger.AndroidPluginLoader
+import dev.brahmkshatriya.echo.extensions.plugger.ApkFileManifestParser
+import dev.brahmkshatriya.echo.extensions.plugger.ApkManifestParser
+import dev.brahmkshatriya.echo.extensions.plugger.ApkPluginSource
+import dev.brahmkshatriya.echo.extensions.plugger.FilePluginSource
 import dev.brahmkshatriya.echo.extensions.plugger.LazyPluginRepo
+import dev.brahmkshatriya.echo.extensions.plugger.LazyPluginRepoImpl
+import dev.brahmkshatriya.echo.extensions.plugger.LazyRepoComposer
+import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
+import dev.brahmkshatriya.echo.offline.LocalExtensionRepo
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -35,17 +46,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import java.io.File
 
 class ExtensionLoader(
+    context: Context,
+    offlineExtension: OfflineExtension,
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val extensionDao: ExtensionDao,
     private val userDao: UserDao,
     private val settings: SharedPreferences,
     private val refresher: MutableSharedFlow<Boolean>,
     private val userFlow: MutableSharedFlow<UserEntity?>,
-    private val musicExtensionRepo: MusicExtensionRepo,
-    private val trackerExtensionRepo: TrackerExtensionRepo,
-    private val lyricsExtensionRepo: LyricsExtensionRepo,
     private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     private val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
@@ -53,12 +64,45 @@ class ExtensionLoader(
 ) {
     private val scope = MainScope() + CoroutineName("ExtensionLoader")
 
+    private fun Context.getPluginFileDir() = File(filesDir, "extensions").apply { mkdirs() }
+    private val listener = PackageChangeListener(context)
+    private fun <T : Any> getComposed(
+        context: Context,
+        suffix: String,
+        vararg repo: LazyPluginRepo<Metadata, T>
+    ): LazyPluginRepo<Metadata, T> {
+        val loader = AndroidPluginLoader<T>(context)
+        val apkFilePluginRepo = LazyPluginRepoImpl(
+            FilePluginSource(context.getPluginFileDir(), ".eapk"),
+            ApkFileManifestParser(context.packageManager, ApkManifestParser(ImportType.Apk)),
+            loader,
+        )
+        val appPluginRepo = LazyPluginRepoImpl(
+            ApkPluginSource(listener, context, "dev.brahmkshatriya.echo.$suffix"),
+            ApkManifestParser(ImportType.App),
+            loader
+        )
+        return LazyRepoComposer(appPluginRepo, apkFilePluginRepo, *repo)
+    }
+
+    private val musicExtensionRepo = MusicExtensionRepo(
+        context,
+        getComposed(context, "music", LocalExtensionRepo(offlineExtension))
+    )
+
+    private val trackerExtensionRepo = TrackerExtensionRepo(
+        context, getComposed(context, "tracker")
+    )
+
+    private val lyricsExtensionRepo = LyricsExtensionRepo(
+        context, getComposed(context, "lyrics")
+    )
+
     val trackers = trackerListFlow
     val extensions = extensionListFlow
     val current = extensionFlow
     val currentWithUser = MutableStateFlow<Pair<MusicExtension?, UserEntity?>>(null to null)
 
-    @ExperimentalCoroutinesApi
     fun initialize() {
         scope.launch {
             getAllPlugins(scope)

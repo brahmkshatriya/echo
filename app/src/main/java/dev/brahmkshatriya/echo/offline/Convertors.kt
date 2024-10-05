@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.offline
 
-import androidx.media3.common.MediaItem
+import android.content.Context
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -8,30 +9,6 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toUriImageHolder
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Shelf
-import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.id
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.splitArtists
-
-fun MediaItem.toTrack() = mediaMetadata.run {
-    val artists = artist.toString().takeIf { it != "null" }.splitArtists().map {
-        Artist(it?.id().toString(), it ?: "Unknown")
-    }
-    val album = Album(extras?.getLong("AlbumId").toString(), albumTitle.toString())
-    val liked = extras?.getBoolean("Liked") ?: false
-    Track(
-        id = mediaId,
-        title = title.toString(),
-        artists = artists,
-        album = album,
-        cover = artworkUri.toString().toUriImageHolder(),
-        duration = extras?.getLong("Duration"),
-        releaseDate = releaseYear?.toString(),
-        isLiked = liked,
-        genre = genre?.toString(),
-        streamables = listOf(Streamable.audio(localConfiguration!!.uri.toString(), 0))
-    )
-}
 
 fun MediaStoreUtils.MAlbum.toAlbum() = Album(
     id.toString(),
@@ -45,17 +22,17 @@ fun MediaStoreUtils.MAlbum.toAlbum() = Album(
 fun MediaStoreUtils.MArtist?.toArtist() = Artist(
     this?.id.toString(),
     this?.title ?: "Unknown",
-    this?.songList?.firstOrNull()?.toTrack()?.cover
+    this?.songList?.firstOrNull()?.cover
 )
 
 fun MediaStoreUtils.MPlaylist.toPlaylist() = Playlist(
     id.toString(),
     title ?: "Unknown",
     true,
-    songList.firstOrNull()?.toTrack()?.cover,
+    songList.firstOrNull()?.cover,
     listOf(),
     songList.size,
-    songList.sumOf { it.mediaMetadata.extras?.getLong("Duration") ?: 0 },
+    songList.sumOf { it.duration ?: 0 },
     "Modified " + modifiedDate.toTimeAgo(),
     description
 )
@@ -69,28 +46,31 @@ private fun Long.toTimeAgo() = when (val diff = System.currentTimeMillis() / 100
     else -> "${diff / 31536000}y ago"
 }
 
-fun MediaStoreUtils.FileNode.toShelf(title: String?): Shelf.Category = run {
+fun MediaStoreUtils.FileNode.toShelf(
+    context: Context,
+    title: String?
+): Shelf.Category = run {
     if (folderList.size == 1 && songList.isEmpty())
         return@run folderList.entries.first()
-            .run { value.toShelf("${title ?: folderName}/$key") }
+            .run { value.toShelf(context, "${title ?: folderName}/$key") }
     val itemSize = folderList.size + songList.size
     Shelf.Category(
         title ?: folderName,
         PagedData.Single {
             folderList.map {
-                it.value.toShelf(it.key)
+                it.value.toShelf(context, it.key)
             } + songList.map {
-                it.toTrack().toMediaItem().toShelf()
+                it.toMediaItem().toShelf()
             }
         },
-        "$itemSize Items",
+        context.getString(R.string.number_items, itemSize),
     )
 }
 
 fun MediaStoreUtils.Genre.toShelf(): Shelf = Shelf.Lists.Items(
     title ?: "Unknown",
-    songList.map { it.toTrack().toMediaItem() }.take(10),
+    songList.map { it.toMediaItem() }.take(10),
     more = PagedData.Single {
-        songList.map { it.toTrack().toMediaItem() }
+        songList.map { it.toMediaItem() }
     }
 )

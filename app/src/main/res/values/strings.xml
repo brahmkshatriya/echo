@@ -216,6 +216,26 @@
     <string name="save_to_library">Save to Library</string>
     <string name="show_all">Show All</string>
     <string name="show_less">Show Less</string>
+    <string name="composer">Composer: %1$s</string>
+    <string name="writer">Writer: %1$s</string>
+    <string name="author">Author: %1$s</string>
+    <string name="refresh_library_on_reload">Refresh Library on Reload</string>
+    <string name="refresh_library_on_reload_summary">Scan the device every time the feed is loaded</string>
+    <string name="duration_filter">Duration Filter</string>
+    <string name="duration_filter_summary">Filter out audio files with duration(in seconds) less than the value</string>
+    <string name="blacklist_folders">Blacklist Folders</string>
+    <string name="blacklist_folders_summary">Folders to exclude from the library</string>
+    <string name="number_items">%1$d Items</string>
+    <string name="following_artist">Following %1$s</string>
+    <string name="unfollowed_artist">Unfollowed %1$s</string>
+    <string name="removed_item_from_library">Removed %1$s from library</string>
+    <string name="saved_item_to_library">Saved %1$s to library</string>
+    <string name="liked_track">Liked %1$s</string>
+    <string name="unliked_track">Unliked %1$s</string>
+    <string name="hide">Hide</string>
+    <string name="unhide">Unhide</string>
+    <string name="hidden_track">Hidden %1$s</string>
+    <string name="unhidden_track">Unhidden %1$s</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

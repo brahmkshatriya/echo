@@ -15,6 +15,8 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.TrackHideClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -35,6 +37,7 @@ import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +49,8 @@ import javax.inject.Inject
 class ItemViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    val app: Application,
+    private val app: Application,
+    private val snackBar: MutableSharedFlow<SnackBar.Message>
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
@@ -177,24 +181,55 @@ class ItemViewModel @Inject constructor(
         }
     }
 
-    fun subscribe(artist: Artist, subscribe: Boolean) {
+    private fun createSnack(message: String) =
+        viewModelScope.launch { snackBar.emit(SnackBar.Message(message)) }
+
+    fun like(track: Track, isLiked: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            getClient<ArtistFollowClient, Unit> {
-                if (subscribe) followArtist(artist) else unfollowArtist(artist)
-                load()
+            getClient<TrackLikeClient, Unit> {
+                likeTrack(track, isLiked)
+                val message = if (isLiked) app.getString(R.string.liked_track, track.title)
+                else app.getString(R.string.unliked_track, track.title)
+                createSnack(message)
             }
         }
     }
 
-    fun removeFromLibrary(item: EchoMediaItem) {
+
+    fun hide(track: Track, isHidden: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            getClient<SaveToLibraryClient, Unit> { removeFromLibrary(item) }
+            getClient<TrackHideClient, Unit> {
+                hideTrack(track, isHidden)
+                val message = if (isHidden) app.getString(R.string.hidden_track, track.title)
+                else app.getString(R.string.unhidden_track, track.title)
+                createSnack(message)
+            }
         }
     }
 
-    fun saveToLibrary(item: EchoMediaItem) {
+    fun subscribe(artist: Artist, subscribe: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            getClient<SaveToLibraryClient, Unit> { saveToLibrary(item) }
+            getClient<ArtistFollowClient, Unit> {
+                if (subscribe) followArtist(artist) else unfollowArtist(artist)
+                val message = if (subscribe) app.getString(R.string.following_artist, artist.name)
+                else app.getString(R.string.unfollowed_artist, artist.name)
+                createSnack(message)
+            }
         }
     }
+
+    fun saveToLibrary(item: EchoMediaItem, save: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClient<SaveToLibraryClient, Unit> {
+                if (save) {
+                    saveToLibrary(item)
+                    createSnack(app.getString(R.string.saved_item_to_library, item.title))
+                } else {
+                    removeFromLibrary(item)
+                    createSnack(app.getString(R.string.removed_item_from_library, item.title))
+                }
+            }
+        }
+    }
+
 }

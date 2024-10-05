@@ -11,11 +11,14 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.setupMusicExtension
+import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
@@ -67,6 +70,14 @@ class ExtensionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             extensionDao.setExtension(ExtensionEntity(id, extensionType, checked))
             refresher.emit(true)
+        }
+    }
+
+    fun onSettingsChanged(extension: Extension<*>, settings: Settings, key: String?) {
+        viewModelScope.launch {
+            extension.get<SettingsChangeListenerClient, Unit>(throwableFlow) {
+                onSettingsChanged(settings, key)
+            }
         }
     }
 

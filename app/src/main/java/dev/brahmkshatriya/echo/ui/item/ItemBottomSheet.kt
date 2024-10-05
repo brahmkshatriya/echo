@@ -18,14 +18,18 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.clients.TrackHideClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
-import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
@@ -116,183 +120,157 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         uiViewModel.collapsePlayer()
     }
 
-    private fun getActions(item: EchoMediaItem, loaded: Boolean): List<ItemAction> = when (item) {
-        is EchoMediaItem.Lists -> {
-            (if (client is TrackClient)
-                listOfNotNull(
-                    ItemAction.Resource(R.drawable.ic_play, R.string.play) {
-                        playerViewModel.play(clientId, item, 0)
-                    },
-                    ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
-                        playerViewModel.addToQueue(clientId, item, false)
-                    },
-                    ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
-                        playerViewModel.addToQueue(clientId, item, true)
-                    },
-                    if (client !is OfflineExtension)
-                        ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
-                            downloadViewModel.addToDownload(requireActivity(), clientId, item)
-                        }
-                    else null
-                ) else listOf()
-                    ) + when (item) {
-                is EchoMediaItem.Lists.AlbumItem -> {
-                    listOfNotNull(
-                        if (client is LibraryClient)
-                            ItemAction.Resource(
-                                R.drawable.ic_library_music, R.string.save_to_playlist
-                            ) {
-                                AddToPlaylistBottomSheet.newInstance(clientId, item)
-                                    .show(parentFragmentManager, null)
-                            }
-                        else null,
-                        if (client is SaveToLibraryClient) {
-                            if (loaded) ItemAction.Resource(
-                                R.drawable.ic_bookmark_filled, R.string.remove_from_library
-                            ) { viewModel.removeFromLibrary(item) }
-                            else ItemAction.Resource(
-                                R.drawable.ic_bookmark_outline, R.string.save_to_library
-                            ) { viewModel.saveToLibrary(item) }
-                        } else null,
-                        if (client is RadioClient)
-                            ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
-                                playerViewModel.radio(clientId, item)
-                            }
-                        else null,
-                    ) + item.album.artists.map {
-                        ItemAction.Custom(it.cover, R.drawable.ic_artist, it.name) {
-                            openItemFragment(it.toMediaItem())
-                        }
-                    }
-                }
-
-                is EchoMediaItem.Lists.PlaylistItem -> {
-                    listOfNotNull(
-                        if (client is RadioClient)
-                            ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
-                                playerViewModel.radio(clientId, item)
-                            }
-                        else null,
-                        if (client is LibraryClient)
-                            ItemAction.Resource(
-                                R.drawable.ic_library_music, R.string.save_to_playlist
-                            ) {
-                                AddToPlaylistBottomSheet.newInstance(clientId, item)
-                                    .show(parentFragmentManager, null)
-                            }
-                        else null,
-                        if (client is SaveToLibraryClient) {
-                            if (loaded) ItemAction.Resource(
-                                R.drawable.ic_bookmark_filled, R.string.remove_from_library
-                            ) { viewModel.removeFromLibrary(item) }
-                            else ItemAction.Resource(
-                                R.drawable.ic_bookmark_outline, R.string.save_to_library
-                            ) { viewModel.saveToLibrary(item) }
-                        } else null,
-                        if (client is LibraryClient && item.playlist.isEditable)
-                            ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
-                                playerViewModel.deletePlaylist(clientId, item.playlist)
-                            }
-                        else null,
-                    ) + item.playlist.authors.map {
-                        ItemAction.Custom(it.cover, R.drawable.ic_artist, it.name) {
-                            openItemFragment(it.toMediaItem())
-                        }
-                    }
-                }
-
-                is EchoMediaItem.Lists.RadioItem -> listOf()
-            }
-        }
-
-        is EchoMediaItem.Profile -> {
-            if (item is EchoMediaItem.Profile.ArtistItem) listOfNotNull(
-                if (client is RadioClient)
-                    ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
-                        playerViewModel.radio(clientId, item)
-                    }
-                else null,
-                if (client is SaveToLibraryClient) {
-                    if (loaded) ItemAction.Resource(
-                        R.drawable.ic_bookmark_filled, R.string.remove_from_library
-                    ) { viewModel.removeFromLibrary(item) }
-                    else ItemAction.Resource(
-                        R.drawable.ic_bookmark_outline, R.string.save_to_library
-                    ) { viewModel.saveToLibrary(item) }
-                } else null,
-                if (client is ArtistFollowClient)
-                    if (!item.artist.isFollowing)
-                        ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
-                            viewModel.subscribe(item.artist, false)
-                        }
-                    else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unfollow) {
-                        viewModel.subscribe(item.artist, true)
-                    }
-                else null
-            )
-            else listOf()
-        }
-
-        is EchoMediaItem.TrackItem -> {
-            (if (client is TrackClient && !fromPlayer)
-                listOf(
-                    ItemAction.Resource(R.drawable.ic_play, R.string.play) {
-                        playerViewModel.play(clientId, item.track)
-                    },
-                    ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
-                        playerViewModel.addToQueue(clientId, item.track, false)
-                    },
-                    ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
-                        playerViewModel.addToQueue(clientId, item.track, true)
-                    }
-                )
-            else listOf()) + listOfNotNull(
-                if (fromPlayer)
-                    ItemAction.Resource(R.drawable.ic_equalizer, R.string.equalizer) {
-                        createSnack("Not implemented")
-                    }
-                else null,
-                if (fromPlayer)
-                    ItemAction.Resource(R.drawable.ic_snooze, R.string.sleep_timer) {
-                        createSnack("Not implemented")
-                    }
-                else null,
-                if (client !is OfflineExtension && client is TrackClient)
-                    ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
-                        downloadViewModel.addToDownload(requireActivity(), clientId, item)
-                    }
-                else null,
-                if (client is LibraryClient)
-                    ItemAction.Resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
-                        AddToPlaylistBottomSheet.newInstance(clientId, item)
-                            .show(parentFragmentManager, null)
-                    }
-                else null,
-                if (client is SaveToLibraryClient) {
-                    if (loaded) ItemAction.Resource(
-                        R.drawable.ic_bookmark_filled, R.string.remove_from_library
-                    ) { viewModel.removeFromLibrary(item) }
-                    else ItemAction.Resource(
-                        R.drawable.ic_bookmark_outline, R.string.save_to_library
-                    ) { viewModel.saveToLibrary(item) }
-                } else null,
-                if (client is RadioClient)
-                    ItemAction.Resource(R.drawable.ic_sensors, R.string.radio) {
-                        playerViewModel.radio(clientId, item)
-                    }
-                else null,
-                item.track.album?.let {
-                    ItemAction.Custom(it.cover, R.drawable.ic_album, it.title) {
-                        openItemFragment(it.toMediaItem())
-                    }
-                }
-            ) + item.track.artists.map {
+    private fun getActions(item: EchoMediaItem, loaded: Boolean) = when (item) {
+        is EchoMediaItem.Lists -> getListButtons(item) + when (item) {
+            is EchoMediaItem.Lists.AlbumItem -> listOfNotNull(
+                radioButton(item, loaded),
+                saveToPlaylist(item),
+                saveToLibraryButton(item, loaded),
+                downloadButton(item),
+            ) + item.album.artists.map {
                 ItemAction.Custom(it.cover, R.drawable.ic_artist, it.name) {
                     openItemFragment(it.toMediaItem())
                 }
             }
+
+            is EchoMediaItem.Lists.PlaylistItem -> listOfNotNull(
+                radioButton(item, loaded),
+                saveToPlaylist(item),
+                saveToLibraryButton(item, loaded),
+                downloadButton(item),
+                if (client is LibraryClient && item.playlist.isEditable)
+                    ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
+                        playerViewModel.deletePlaylist(clientId, item.playlist)
+                    }
+                else null,
+            ) + item.playlist.authors.map {
+                ItemAction.Custom(it.cover, R.drawable.ic_artist, it.name) {
+                    openItemFragment(it.toMediaItem())
+                }
+            }
+
+            is EchoMediaItem.Lists.RadioItem -> listOfNotNull(saveToLibraryButton(item, loaded))
         }
-    } + listOfNotNull(
+
+        is EchoMediaItem.Profile -> when (item) {
+            is EchoMediaItem.Profile.ArtistItem -> listOfNotNull(
+                radioButton(item, loaded),
+                saveToLibraryButton(item, loaded),
+                followButton(item.artist, loaded)
+            )
+
+            is EchoMediaItem.Profile.UserItem -> listOf()
+        }
+
+        is EchoMediaItem.TrackItem -> getTrackButtons(item.track) + listOfNotNull(
+            likeButton(item.track, loaded),
+            hideButton(item.track, loaded),
+            radioButton(item, loaded),
+            saveToPlaylist(item),
+            saveToLibraryButton(item, loaded),
+            downloadButton(item),
+            item.track.album?.let {
+                ItemAction.Custom(it.cover, R.drawable.ic_album, it.title) {
+                    openItemFragment(it.toMediaItem())
+                }
+            }
+        ) + item.track.artists.map {
+            ItemAction.Custom(it.cover, R.drawable.ic_artist, it.name) {
+                openItemFragment(it.toMediaItem())
+            }
+        }
+
+    } + listOfNotNull(shareButton(item, loaded))
+
+    private fun getListButtons(item: EchoMediaItem.Lists) = if (client is TrackClient) listOf(
+        ItemAction.Resource(R.drawable.ic_play, R.string.play) {
+            playerViewModel.play(clientId, item, 0)
+        },
+        ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
+            playerViewModel.addToQueue(clientId, item, false)
+        },
+        ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
+            playerViewModel.addToQueue(clientId, item, true)
+        }
+    ) else listOf()
+
+    private fun getTrackButtons(track: Track) =
+        if (client is TrackClient && !fromPlayer) listOfNotNull(
+            ItemAction.Resource(R.drawable.ic_play, R.string.play) {
+                playerViewModel.play(clientId, track)
+            },
+            if (playerViewModel.list.isNotEmpty())
+                ItemAction.Resource(R.drawable.ic_playlist_play, R.string.play_next) {
+                    playerViewModel.addToQueue(clientId, track, false)
+                }
+            else null,
+            if (playerViewModel.list.size > 1)
+                ItemAction.Resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
+                    playerViewModel.addToQueue(clientId, track, true)
+                }
+            else null
+        )
+        else listOf(
+            ItemAction.Resource(R.drawable.ic_equalizer, R.string.equalizer) {
+                createSnack("Not implemented")
+            },
+            ItemAction.Resource(R.drawable.ic_snooze, R.string.sleep_timer) {
+                createSnack("Not implemented")
+            }
+        )
+
+    private fun likeButton(track: Track, loaded: Boolean) = if (client is TrackLikeClient && loaded)
+        if (!track.isLiked)
+            ItemAction.Resource(R.drawable.ic_heart_outline, R.string.like) {
+                viewModel.like(track, true)
+            }
+        else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unlike) {
+            viewModel.like(track, false)
+        }
+    else null
+
+    private fun hideButton(track: Track, loaded: Boolean) = if (client is TrackHideClient && loaded)
+        if (!track.isHidden)
+            ItemAction.Resource(R.drawable.ic_hide_outline, R.string.hide) {
+                viewModel.hide(track, true)
+            }
+        else ItemAction.Resource(R.drawable.ic_hide_filled, R.string.unhide) {
+            viewModel.hide(track, false)
+        }
+    else null
+
+    private fun followButton(artist: Artist, loaded: Boolean) =
+        if (client is ArtistFollowClient && loaded)
+            if (!artist.isFollowing)
+                ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
+                    viewModel.subscribe(artist, true)
+                }
+            else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unfollow) {
+                viewModel.subscribe(artist, false)
+            }
+        else null
+
+    private fun saveToPlaylist(item: EchoMediaItem) = if (client is LibraryClient)
+        ItemAction.Resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
+            AddToPlaylistBottomSheet.newInstance(clientId, item)
+                .show(parentFragmentManager, null)
+        }
+    else null
+
+    private fun downloadButton(item: EchoMediaItem) =
+        if (client !is OfflineExtension && client is TrackClient)
+            ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
+                downloadViewModel.addToDownload(requireActivity(), clientId, item)
+            }
+        else null
+
+    private fun radioButton(item: EchoMediaItem, loaded: Boolean) =
+        if (client is RadioClient && loaded) ItemAction.Resource(
+            R.drawable.ic_sensors, R.string.radio
+        ) { playerViewModel.radio(clientId, item) }
+        else null
+
+    private fun shareButton(item: EchoMediaItem, loaded: Boolean) =
         if (client is ShareClient && loaded) ItemAction.Resource(
             R.drawable.ic_forward,
             R.string.share
@@ -300,7 +278,16 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             val shareClient = client as ShareClient
             playerViewModel.onShare(shareClient, item)
         } else null
-    )
+
+    private fun saveToLibraryButton(item: EchoMediaItem, loaded: Boolean) =
+        if (client is SaveToLibraryClient && loaded) {
+            if (viewModel.savedState.value) ItemAction.Resource(
+                R.drawable.ic_bookmark_filled, R.string.remove_from_library
+            ) { viewModel.saveToLibrary(item, false) }
+            else ItemAction.Resource(
+                R.drawable.ic_bookmark_outline, R.string.save_to_library
+            ) { viewModel.saveToLibrary(item, true) }
+        } else null
 
     sealed class ItemAction {
         abstract val action: () -> Unit
@@ -354,7 +341,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 is ItemAction.Custom -> {
                     binding.textView.text = action.title
                     action.image.loadWith(binding.root) {
-                        if(it == null) {
+                        if (it == null) {
                             binding.imageView.imageTintList = colorState
                             binding.imageView.setImageResource(action.placeholder)
                         } else binding.imageView.setImageDrawable(it)

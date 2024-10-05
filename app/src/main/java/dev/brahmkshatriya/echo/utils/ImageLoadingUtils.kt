@@ -11,7 +11,6 @@ import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 private fun <T> tryWith(print: Boolean = false, block: () -> T): T? {
@@ -27,7 +26,7 @@ private suspend fun <T> tryWithSuspend(print: Boolean = true, block: suspend () 
     return try {
         block()
     } catch (e: Throwable) {
-        if(print) e.printStackTrace()
+        if (print) e.printStackTrace()
         null
     }
 }
@@ -71,10 +70,8 @@ suspend fun ImageHolder?.loadBitmap(
 ) = tryWithSuspend {
     val builder = Glide.with(context).asBitmap()
     val request = createRequest(builder, placeholder)
-    coroutineScope {
-        withContext(Dispatchers.IO) {
-            tryWithSuspend(false) { request.submit().get() }
-        }
+    withContext(Dispatchers.IO) {
+        tryWithSuspend(false) { request.submit().get() }
     }
 }
 

@@ -7,5 +7,6 @@ data class SettingSlider (
     val defaultValue: Int? = null,
     val from: Int,
     val to: Int,
-    val steps: Int? = null
+    val steps: Int? = null,
+    val allowOverride: Boolean = false
 ) : Setting

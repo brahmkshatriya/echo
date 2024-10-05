@@ -7,9 +7,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
-import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaSession
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.playback.Current
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class PlayerEventListener(
     private val context: Context,
-    private val session: MediaLibraryService.MediaLibrarySession,
+    private val session: MediaSession,
     private val currentFlow: MutableStateFlow<Current?>,
     private val extensionList: MutableStateFlow<List<MusicExtension>?>,
 ) : Player.Listener {
@@ -40,7 +40,7 @@ class PlayerEventListener(
 
     private fun updateCustomLayout() {
         val item = player.currentMediaItem ?: return
-        val supportsLike = extensionList.getExtension(item.clientId)?.isClient<LibraryClient>()
+        val supportsLike = extensionList.getExtension(item.clientId)?.isClient<TrackLikeClient>()
             ?: false
 
         val commandButtons = listOfNotNull(
@@ -69,10 +69,8 @@ class PlayerEventListener(
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         updateCurrentFlow()
-        ResumptionUtils.saveQueue(context, player.currentMediaItemIndex, player.mediaItems)
+        ResumptionUtils.saveQueue(context, player)
     }
-
-    private val Player.mediaItems get() = (0 until mediaItemCount).map { getMediaItemAt(it) }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateCustomLayout()
