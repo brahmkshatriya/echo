@@ -141,12 +141,10 @@ class Downloader(
                     request.headers.forEach {
                         addOption("--add-header", "${it.key}:${it.value}.")
                     }
-                    // Simplified file name to avoid long filename error
                     addOption("-o", file.absolutePath + ".%(ext)s")
                     addOption("-x")
-                    // addOption("--audio-format", "mp3")
-                    addOption("--limit-rate", "1000M")
-                    addOption("--http-chunk-size", "100M")
+                    addOption("--limit-rate", "1000M") // Adjust as needed
+                    addOption("--http-chunk-size", "100M") // Adjust as needed
                 }
 
                 showStart()
@@ -182,15 +180,7 @@ class Downloader(
             else -> throw Exception("Not Supported")
         }
 
-        dao.insertDownload(
-            DownloadEntity(
-                id,
-                track.id,
-                extension.id,
-                parent?.title,
-                file.absolutePath + ".m4a"
-            )
-        )
+        dao.insertDownload(DownloadEntity(id, track.id, extension.id, parent?.title, file.absolutePath  + ".m4a"))
         saveToCache(track.id, track, "downloads")
     }
 

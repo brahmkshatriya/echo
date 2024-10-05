@@ -32,6 +32,16 @@ android {
         }
     }
 
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -108,7 +118,6 @@ dependencies {
     //TODO : use fetch instead of download manager
 //    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")
     implementation("io.github.junkfood02.youtubedl-android:library:0.16.1")
-    implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.16.1")
 
     implementation("com.github.Kyant0:taglib:1.0.0-alpha22")
 

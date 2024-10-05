@@ -62,14 +62,13 @@ class DownloadReceiver : BroadcastReceiver() {
                 // Set to overwrite existing tags
                 TagOptionSingleton.getInstance().isId3v2Save = false
                 val audioFile: AudioFile = AudioFileIO.readAs(file, "m4a")
-                //Log.i("FUCK YOU", audioFile.tag.fieldCount.toString())
                 val tag: Tag = audioFile.tagAndConvertOrCreateAndSetDefault
 
                 // Set the tags
                 tag.addField(FieldKey.TITLE, track.title)
                 tag.addField(FieldKey.ARTIST, track.artists.joinToString(", ") { it.name })
                 tag.addField(FieldKey.ALBUM, track.album?.title ?: "")
-                //tag.setField(FieldKey.YEAR, track.album?.releaseDate?.substring(0, 4) ?: "")
+                tag.setField(FieldKey.YEAR, track.album?.releaseDate?.substring(0, 4) ?: "")
 
                 // Set the album cover
                 val coverBitmap = runBlocking { track.cover.loadBitmap(this@writeID3v2Tag) }
