@@ -23,6 +23,23 @@ android {
         versionName = "1.0.0-$gitHash"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters.add("x86")
+            abiFilters.add("x86_64")
+            abiFilters.add("armeabi-v7a")
+            abiFilters.add("arm64-v8a")
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
 
     compileOptions {
@@ -88,7 +105,7 @@ dependencies {
     implementation("com.flaviofaria:kenburnsview:1.0.7")
     implementation("com.github.paramsen:noise:2.0.0")
 
-    implementation("com.github.Kyant0:taglib:1.0.0-alpha22")
+    implementation("com.arthenica:ffmpeg-kit-https:6.0-2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
     testImplementation("junit:junit:4.13.2")

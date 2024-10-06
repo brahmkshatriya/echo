@@ -1,29 +1,22 @@
 package dev.brahmkshatriya.echo.download
 
-import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.media.MediaScannerConnection
-import android.net.Uri
-import android.os.ParcelFileDescriptor
-import android.webkit.MimeTypeMap
-import com.kyant.taglib.Metadata
-import com.kyant.taglib.Picture
-import com.kyant.taglib.PropertyMap
-import com.kyant.taglib.TagLib
+import com.arthenica.ffmpegkit.FFmpegKit
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.DownloadDao
-import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.loadBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -36,69 +29,114 @@ class DownloadReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
         val action = intent?.action ?: return
-        if (DownloadManager.ACTION_DOWNLOAD_COMPLETE == action) {
-            val downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+        if (action == "dev.brahmkshatriya.echo.DOWNLOAD_COMPLETE") {
+            val downloadId = intent.getLongExtra("downloadId", -1)
+
             val download = runBlocking {
                 withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) }
             } ?: return
-            val track =
-                context.getFromCache<Track>(download.itemId, "downloads") ?: return
+            val trackString = download.track
+            val track = Track(
+                id = trackString.substringAfter("id=").substringBefore(","),
+                title = trackString.substringAfter("title=").substringBefore(","),
+                cover = trackString.substringAfter("cover=UrlRequestImageHolder(request=Request(url=").substringAfter("cover=UrlRequestImageHolder(request=Request(url=").substringBefore(",").toImageHolder(),
+            )
 
-            val downloadManager =
-                context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val query = DownloadManager.Query().setFilterById(downloadId)
-            val cursor = downloadManager.query(query)
-            if (cursor.moveToFirst()) {
-                val columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
-                val fileUri = cursor.getString(columnIndex)
-                if (fileUri != null) {
-                    val mediaTypeIndex = cursor.getColumnIndex(DownloadManager.COLUMN_MEDIA_TYPE)
-                    val mimeType = cursor.getString(mediaTypeIndex)
-                    val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-                    val file = File(Uri.parse(fileUri).path!!)
-                    val newFile = File("${file.absolutePath}.$extension")
-                    file.renameTo(newFile)
-                    context.applyTags(newFile, track)
-                    MediaScannerConnection.scanFile(
-                        context, arrayOf(newFile.toString()), null, null
-                    )
-                }
-            }
-            cursor.close()
-            runBlocking {
-                withContext(Dispatchers.IO) { downloadDao.deleteDownload(downloadId) }
+            println(download.downloadPath)
+
+            val file = File(download.downloadPath)
+
+            if (file.exists()) {
+                context.writeM4ATag(file, track)
+                MediaScannerConnection.scanFile(context, arrayOf(file.toString()), null, null)
+                runBlocking { withContext(Dispatchers.IO) { downloadDao.deleteDownload(downloadId) } }
             }
         }
     }
 
     companion object {
-        fun Context.applyTags(
-            newFile: File, track
-            : Track
-        ) {
-            val fd = ParcelFileDescriptor.open(
-                newFile, ParcelFileDescriptor.MODE_READ_WRITE
-            )
 
-            val metadata = TagLib.getMetadata(fd = fd.dup().detachFd(), readPictures = true)
-                ?: Metadata(PropertyMap(), arrayOf())
-            val artwork = runBlocking { track.cover.loadBitmap(this@applyTags) }?.let {
-                val stream = ByteArrayOutputStream()
-                it.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                Picture(stream.toByteArray(), "Back Cover", "Back Cover", "image/png")
-            }
+        private fun Context.saveCoverBitmap(file: File, track: Track): File? {
+            return try {
+                val coverBitmap: Bitmap? = runBlocking { track.cover.loadBitmap(this@saveCoverBitmap) }
 
-            artwork?.let { TagLib.savePictures(fd.dup().detachFd(), arrayOf(it)) }
-            val props = metadata.propertyMap.apply {
-                set("TITLE", arrayOf(track.title))
-                set("ARTIST", arrayOf(track.artists.joinToString(", ") { it.name }))
-                track.album?.run {
-                    set("ALBUM", arrayOf(title))
-                    set("ALBUMARTIST", arrayOf(artists.joinToString(", ") { it.name }))
-                    releaseDate?.let { set("DATE", arrayOf(it)) }
+                if (coverBitmap != null) {
+                    val coverFile = File(file.parent, "cover_temp.jpeg")
+                    FileOutputStream(coverFile).use { fos ->
+                        coverBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                    }
+                    coverFile
+                } else {
+                    null
                 }
+            } catch (e: Exception) {
+                println("Error saving cover bitmap: ${e.message}")
+                null
             }
-            TagLib.savePropertyMap(fd.dup().detachFd(), props)
+        }
+
+        fun Context.writeM4ATag(file: File, track: Track) {
+            try {
+                val coverFile = saveCoverBitmap(file, track)
+
+                val outputFile = File(file.parent, "temp_${file.name}")
+
+                val metadataTitle = "title=\"${track.title}\""
+                val metadataArtist = "artist=${track.artists.joinToString(", ") { it.name }}"
+                val metadataAlbum = "album=${track.album?.title ?: ""}"
+
+                val metadataCoverTitle = "title=\"Album cover\""
+                val metadataCoverComment = "comment=\"Cover (front)\""
+
+                val cmd = when (val fileExtension = file.extension.lowercase()) {
+                    "m4a", "flac" -> {
+                        arrayOf(
+                            "-i", "\"${file.absolutePath}\"",
+                            "-i", "\"${coverFile?.absolutePath}\"",
+                            "-c", "copy",
+                            "-c:v", "mjpeg",
+                            "-metadata", metadataTitle,
+                            "-metadata", metadataArtist,
+                            "-metadata", metadataAlbum,
+                            "-metadata:s:v", metadataCoverTitle,
+                            "-metadata:s:v", metadataCoverComment,
+                            "-disposition:v", "attached_pic",
+                            "\"${outputFile.absolutePath}\""
+                        )
+                    }
+                    "mp3" -> {
+                        arrayOf(
+                            "-i", "\"${file.absolutePath}\"",
+                            "-i", "\"${coverFile?.absolutePath}\"",
+                            "-map", "0:0",
+                            "-map", "1:0",
+                            "-c", "copy",
+                            "-id3v2_version", "4",
+                            "-metadata", metadataTitle,
+                            "-metadata", metadataArtist,
+                            "-metadata", metadataAlbum,
+                            "-metadata:s:v", metadataCoverTitle,
+                            "-metadata:s:v", metadataCoverComment,
+                            "\"${outputFile.absolutePath}\""
+                        )
+                    }
+                    else -> throw IllegalArgumentException("Unsupported file format: .$fileExtension")
+                }
+
+                val rc = FFmpegKit.execute(cmd.joinToString(" ")).returnCode.value
+
+                if (rc == 0) {
+                    if (file.delete()) {
+                        outputFile.renameTo(file)
+
+                    }
+                }
+
+                coverFile?.delete()
+
+            } catch (e: Exception) {
+                println("Error writing M4A tags with artwork: ${e.message}")
+            }
         }
     }
 }

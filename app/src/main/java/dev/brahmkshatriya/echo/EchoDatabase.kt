@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
         DownloadEntity::class,
         ExtensionEntity::class
     ],
-    version = 3
+    version = 4
 )
 abstract class EchoDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
