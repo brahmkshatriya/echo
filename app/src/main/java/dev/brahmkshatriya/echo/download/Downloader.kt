@@ -100,7 +100,7 @@ class Downloader(
                 (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loadedTrack.album?.let {
                     extension.get<AlbumClient, Album>(throwable) { loadAlbum(it) }
                 } ?: loadedTrack.album
-            val completeTrack = loadedTrack.copy(album = album)
+            val completeTrack = loadedTrack.copy(album = album, cover = track.cover)
             val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
             val stream = selectAudioStream(settings, completeTrack.audioStreamables)
                 ?: throw Exception("No Stream Found")
@@ -108,7 +108,7 @@ class Downloader(
                 getStreamableMedia(stream) as Streamable.Media.AudioOnly
             } ?: return@coroutineScope
             val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
-            var file: File? = null
+            var file: File
             val downloadId: Long
             when (val audio = media.audio) {
                 is Streamable.Audio.Http -> {
@@ -131,7 +131,7 @@ class Downloader(
                         append("-i \"${request.url}\" ")
                         append("-c copy ")
                         append("-bsf:a aac_adtstoasc ")
-                        append("\"${file?.absolutePath}\"")
+                        append("\"${file.absolutePath}\"")
                     }
 
                     downloadId = audio.toString().id()
@@ -145,6 +145,24 @@ class Downloader(
                                     val session = FFmpegKit.execute(ffmpegCommand)
 
                                     if (ReturnCode.isSuccess(session.returnCode)) {
+
+                                        dao.insertDownload(
+                                            DownloadEntity(
+                                                id = downloadId,
+                                                itemId = completeTrack.id,
+                                                clientId = extension.id,
+                                                groupName = parent?.title,
+                                                downloadPath = file.absolutePath.orEmpty(),
+                                                track = track.toString()
+                                            )
+                                        )
+
+                                        applicationContext.saveToCache(
+                                            completeTrack.id,
+                                            completeTrack,
+                                            "downloads"
+                                        )
+
                                         sendDownloadCompleteBroadcast(downloadId)
                                         println("Download complete: ${completeTrack.title}")
                                     } else if (ReturnCode.isCancel(session.returnCode)) {
@@ -170,9 +188,10 @@ class Downloader(
                 }
 
                 is Streamable.Audio.Channel -> {
-                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    val tempFile = File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
-
+                    val downloadsDir =
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val tempFile =
+                        File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
                     val byteReadChannel = audio.channel
 
                     downloadId = audio.toString().id()
@@ -190,7 +209,9 @@ class Downloader(
                                         var bytesRead: Int
                                         val totalBytesRead = audio.totalBytes
 
-                                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                        while (inputStream.read(buffer)
+                                                .also { bytesRead = it } != -1
+                                        ) {
                                             outputStream.write(buffer, 0, bytesRead)
                                             received += bytesRead
                                             if (received == totalBytesRead) {
@@ -210,6 +231,23 @@ class Downloader(
 
                                 file = finalFile
 
+                                dao.insertDownload(
+                                    DownloadEntity(
+                                        id = downloadId,
+                                        itemId = completeTrack.id,
+                                        clientId = extension.id,
+                                        groupName = parent?.title,
+                                        downloadPath = file.absolutePath.orEmpty(),
+                                        track = track.toString()
+                                    )
+                                )
+
+                                applicationContext.saveToCache(
+                                    completeTrack.id,
+                                    completeTrack,
+                                    "downloads"
+                                )
+
                                 sendDownloadCompleteBroadcast(downloadId)
                                 println("Download complete: ${completeTrack.title}")
                             } catch (e: Exception) {
@@ -225,8 +263,10 @@ class Downloader(
                 }
 
                 is Streamable.Audio.ByteStream -> {
-                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    val tempFile = File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
+                    val downloadsDir =
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val tempFile =
+                        File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
 
                     val inputStream = audio.stream
 
@@ -245,7 +285,9 @@ class Downloader(
                                         var bytesRead: Int
                                         val totalBytesRead = audio.totalBytes
 
-                                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                        while (inputStream.read(buffer)
+                                                .also { bytesRead = it } != -1
+                                        ) {
                                             outputStream.write(buffer, 0, bytesRead)
                                             received += bytesRead
                                             if (received == totalBytesRead) {
@@ -265,6 +307,23 @@ class Downloader(
 
                                 file = finalFile
 
+                                dao.insertDownload(
+                                    DownloadEntity(
+                                        id = downloadId,
+                                        itemId = completeTrack.id,
+                                        clientId = extension.id,
+                                        groupName = parent?.title,
+                                        downloadPath = file.absolutePath.orEmpty(),
+                                        track = track.toString()
+                                    )
+                                )
+
+                                applicationContext.saveToCache(
+                                    completeTrack.id,
+                                    completeTrack,
+                                    "downloads"
+                                )
+
                                 sendDownloadCompleteBroadcast(downloadId)
                                 println("Download complete: ${completeTrack.title}")
                             } catch (e: Exception) {
@@ -281,17 +340,6 @@ class Downloader(
 
                 else -> throw Exception("Unsupported audio stream type")
             }
-            dao.insertDownload(
-                DownloadEntity(
-                    id = downloadId,
-                    itemId = completeTrack.id,
-                    clientId = extension.id,
-                    groupName = parent?.title,
-                    downloadPath = file?.absolutePath.orEmpty(),
-                    track = track.toString()
-                )
-            )
-            saveToCache(completeTrack.id, completeTrack, "downloads")
         }
     }
 
