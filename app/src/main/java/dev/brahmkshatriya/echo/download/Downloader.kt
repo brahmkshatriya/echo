@@ -192,7 +192,6 @@ class Downloader(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                     val tempFile =
                         File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
-
                     val byteReadChannel = audio.channel
 
                     downloadId = audio.toString().id()
