@@ -89,9 +89,9 @@ class DownloadViewModel @Inject constructor(
         applyDownloadItems()
     }
 
-    fun toggleDownloading(download: DownloadItem.Single, isDownloading: Boolean) {
+    fun toggleDownloading(download: DownloadItem.Single, downloading: Boolean) {
         viewModelScope.launch {
-            if (isDownloading) {
+            if (downloading) {
                 downloader.resumeDownload(application, download.id)
             } else {
                 downloader.pauseDownload(application, download.id)
