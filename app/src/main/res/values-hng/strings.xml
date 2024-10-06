@@ -205,4 +205,22 @@
     <string name="permission_required">Anumati Chahiye</string>
     <string name="permission_denied">Anumati Mana Kar Di Gayi</string>
     <string name="radio_empty">Radio Khali He</string>
+    <string name="remove_from_library">Library Se Hataye</string>
+    <string name="save_to_library">Library Me Save Kare</string>
+    <string name="show_all">Sab dikhaayein</string>
+    <string name="show_less">Kam dikhaayein</string>
+    <string name="composer">Sangeetkaar: %1$s</string>
+    <string name="writer">Lekhak: %1$s</string>
+    <string name="author">Rachnakaar: %1$s</string>
+    <string name="duration_filter">Avadhi filter</string>
+    <string name="blacklist_folders">Folders ko blacklist karein</string>
+    <string name="number_items">%1$d vastuyein</string>
+    <string name="following_artist">%1$s ka anusaran kar rahe he</string>
+    <string name="unfollowed_artist">%1$s ko unfollow kiya gaya</string>
+    <string name="removed_item_from_library">%1$s ko library se hataya gaya</string>
+    <string name="saved_item_to_library">%1$s ko library mein saheja gaya</string>
+    <string name="refresh_library_on_reload_summary">Har baar feed load hone par device ko scan karein</string>
+    <string name="refresh_library_on_reload">Reload par library ko taaza karein</string>
+    <string name="duration_filter_summary">Us maan se kam avadhi waali audio files ko filter karein (seconds mein)</string>
+    <string name="blacklist_folders_summary">Library se baahar rakhne waale folders</string>
 </resources>

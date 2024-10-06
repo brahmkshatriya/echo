@@ -51,7 +51,7 @@
     <string name="version">Version</string>
     <string name="saved_to_playlist">In %1$s gespeichert</string>
     <string name="stop_player">Wiedergabe abbrechen</string>
-    <string name="unfollow">Unfollow</string>
+    <string name="unfollow">Nicht mehr folgen</string>
     <string name="track">Track</string>
     <string name="extension_settings_summary">Einstellungen der gewählten Erweiterung</string>
     <string name="theme">Farbschema</string>
@@ -93,7 +93,7 @@
     <string name="confirm">Bestätigen</string>
     <string name="todo">Todo, noch nicht gemacht.</string>
     <string name="stream_quality">Wiedergabequalität</string>
-    <string name="stream_quality_summary">Wähle die Qualität der Wiedergabe</string>
+    <string name="stream_quality_summary">Wähle die Qualität der Streaming-Qualität</string>
     <string name="no_user_found">Keinen Benutzer gefunden</string>
     <string name="logout">Abmelden</string>
     <string name="switch_account">Konto wechseln</string>
@@ -131,7 +131,6 @@
     <string name="selected_songs">Songs Ausgewählt (%1$d)</string>
     <string name="add_tracks">Track Hinzufügen</string>
     <string name="adding_tracks">Füge %1$s Hinzu</string>
-    <string name="unlike">Nicht wie</string>
     <string name="skip_silence">Stille Überspringen</string>
     <string name="app_crashed">App ist abgestürzt!</string>
     <string name="keep_queue">Player Warteschlange Behalten</string>
@@ -202,4 +201,22 @@
     <string name="video_quality_summary">Qualität des Videos, Videos können auch von hier deaktiviert werden</string>
     <string name="video_quality">Video Qualität</string>
     <string name="navbar_gradient_summary">Navbar wird allmählich transparent</string>
+    <string name="show_all">Alles zeigen</string>
+    <string name="show_less">Weniger zeigen</string>
+    <string name="composer">Komponist: %1$s</string>
+    <string name="writer">Autor: %1$s</string>
+    <string name="author">Autor: %1$s</string>
+    <string name="refresh_library_on_reload">Bibliothek beim Neuladen aktualisieren</string>
+    <string name="refresh_library_on_reload_summary">Scannen Sie das Gerät jedes Mal, wenn der Feed geladen wird</string>
+    <string name="duration_filter">Dauerfilter</string>
+    <string name="duration_filter_summary">Audiodateien mit einer Dauer (in Sekunden) herausfiltern, die kürzer als der Wert ist</string>
+    <string name="blacklist_folders">Blacklist-Ordner</string>
+    <string name="blacklist_folders_summary">Aus der Bibliothek auszuschließende Ordner</string>
+    <string name="number_items">%1$d Artikel</string>
+    <string name="removed_item_from_library">%1$s aus der Bibliothek entfernt</string>
+    <string name="saved_item_to_library">%1$s in der Bibliothek gespeichert</string>
+    <string name="radio_empty">Das Radio ist leer</string>
+    <string name="remove_from_library">Aus der Bibliothek entfernen</string>
+    <string name="save_to_library">In der Mediathek speichern</string>
+    <string name="navbar_gradient">Navigationsleiste mit Farbverlauf</string>
 </resources>
