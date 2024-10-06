@@ -3,9 +3,9 @@ package dev.brahmkshatriya.echo.download
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
-import com.yausername.youtubedl_android.YoutubeDL
-import com.yausername.youtubedl_android.YoutubeDLException
-import com.yausername.youtubedl_android.YoutubeDLRequest
+import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.FFprobeKit
+import com.arthenica.ffmpegkit.ReturnCode
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
@@ -20,49 +20,36 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.offline.MediaStoreUtils.id
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectAudioStream
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
+import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.BufferedInputStream
 import java.io.File
+import java.io.FileOutputStream
 import kotlin.coroutines.CoroutineContext
 
 class Downloader(
     private val extensionList: MutableStateFlow<List<MusicExtension>?>,
     private val throwable: MutableSharedFlow<Throwable>,
     database: EchoDatabase,
-    private val context: Context
 ) : CoroutineScope {
     val dao = database.downloadDao()
-    private var downloading = false
-    private val processId = "MyDlProcess"
 
-    // Coroutine scope for managing coroutines
     private val job = Job()
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
+        get() = Dispatchers.IO + job
 
-    init {
-        // Pre-initialize YoutubeDL
-        try {
-            YoutubeDL.getInstance().init(context)
-        } catch (e: YoutubeDLException) {
-            e.printStackTrace()
-        }
-    }
-
-    private val callback = object : Function3<Float, Long, String, Unit> {
-        override fun invoke(p1: Float, p2: Long, p3: String): Unit {
-            // You can update the UI here if needed
-            return Unit
-        }
-    }
+    private val activeDownloads = mutableMapOf<Long, Job>()
 
     suspend fun addToDownload(
         context: Context, clientId: String, item: EchoMediaItem
@@ -103,113 +90,236 @@ class Downloader(
 
     private suspend fun Context.enqueueDownload(
         extension: Extension<*>,
-        small: Track,
+        track: Track,
         parent: EchoMediaItem.Lists? = null
-    ) = withContext(Dispatchers.IO) {
-        if (downloading) {
-            println("Cannot start download. A download is already in progress.")
-            return@withContext
-        }
-        val loaded = extension.get<TrackClient, Track>(throwable) { loadTrack(small) }
-            ?: return@withContext
-        val album = (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loaded.album?.let {
-            extension.get<AlbumClient, Album>(throwable) {
-                loadAlbum(it)
-            }
-        } ?: loaded.album
-        val track = loaded.copy(album = album)
+    ) {
+        coroutineScope {
+            val loadedTrack = extension.get<TrackClient, Track>(throwable) { loadTrack(track) }
+                ?: return@coroutineScope
+            val album =
+                (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loadedTrack.album?.let {
+                    extension.get<AlbumClient, Album>(throwable) { loadAlbum(it) }
+                } ?: loadedTrack.album
+            val completeTrack = loadedTrack.copy(album = album)
+            val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
+            val stream = selectAudioStream(settings, completeTrack.audioStreamables)
+                ?: throw Exception("No Stream Found")
+            val media = extension.get<TrackClient, Streamable.Media.AudioOnly>(throwable) {
+                getStreamableMedia(stream) as Streamable.Media.AudioOnly
+            } ?: return@coroutineScope
+            val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
+            var file: File? = null
+            val downloadId: Long
+            when (val audio = media.audio) {
+                is Streamable.Audio.Http -> {
+                    file = File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                        "${folder}/${completeTrack.title}.m4a"
+                    ).normalize()
 
-        val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
-        val stream = selectAudioStream(settings, track.audioStreamables)
-            ?: throw Exception("No Stream Found")
-        require(stream.mimeType == Streamable.MimeType.Progressive)
-        val media = extension.get<TrackClient, Streamable.Media.AudioOnly>(throwable) {
-            getStreamableMedia(stream) as Streamable.Media.AudioOnly
-        } ?: return@withContext
+                    val request = audio.request
 
-        val folder = "Echo${parent?.title?.let { "/$it" } ?: ""}"
-        val file = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            "${folder}/${track.title}"
-        )
-
-        val id = when (val audio = media.audio) {
-            is Streamable.Audio.Http -> {
-                val request = audio.request
-                val downloadRequest = YoutubeDLRequest(request.url).apply {
-                    addOption("--no-mtime")
-                    request.headers.forEach {
-                        addOption("--add-header", "${it.key}:${it.value}.")
+                    val headers = StringBuilder()
+                    request.headers.forEach { header ->
+                        headers.append("${header.key}: ${header.value}\r\n")
                     }
-                    addOption("-o", file.absolutePath + ".%(ext)s")
-                    addOption("-x")
-                    addOption("--limit-rate", "1000M") // Adjust as needed
-                    addOption("--http-chunk-size", "100M") // Adjust as needed
-                }
 
-                showStart()
-
-                downloading = true
-
-                val id = downloadRequest.hashCode().toLong()
-
-                // Launch a coroutine for the download task
-                launch {
-                    try {
-                        val response = withContext(Dispatchers.IO) {
-                            YoutubeDL.getInstance()
-                                .execute(downloadRequest, processId, callback)
+                    val ffmpegCommand = buildString {
+                        if (headers.isNotEmpty()) {
+                            append("-headers \"${headers}\" ")
                         }
-                        sendDownloadCompleteBroadcast(id)
-                        println("Download complete")
-                        println(response.out)
-                    } catch (e: Exception) {
-                        println("Failed to download: ${e.message}")
-                    } finally {
-                        downloading = false
+                        append("-i \"${request.url}\" ")
+                        append("-c copy ")
+                        append("-bsf:a aac_adtstoasc ")
+                        append("\"${file?.absolutePath}\"")
                     }
+
+                    downloadId = audio.toString().id()
+
+                    showStart(completeTrack.title)
+
+                    val job = coroutineScope {
+                        launch {
+                            try {
+                                withContext(Dispatchers.IO) {
+                                    val session = FFmpegKit.execute(ffmpegCommand)
+
+                                    if (ReturnCode.isSuccess(session.returnCode)) {
+                                        sendDownloadCompleteBroadcast(downloadId)
+                                        println("Download complete: ${completeTrack.title}")
+                                    } else if (ReturnCode.isCancel(session.returnCode)) {
+                                        println("Download cancelled: ${completeTrack.title}")
+                                    } else {
+                                        // Download failed
+                                        val failureMessage =
+                                            session.failStackTrace ?: "Unknown error"
+                                        println("Failed to download: $failureMessage")
+                                        throwable.emit(Exception("FFmpeg failed with code ${session.returnCode}"))
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                println("Failed to download: ${e.message}")
+                                throwable.emit(e)
+                            } finally {
+                                activeDownloads.remove(downloadId)
+                            }
+                        }
+                    }
+
+                    activeDownloads[downloadId] = job
                 }
 
-                id
-            }
+                is Streamable.Audio.Channel -> {
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val tempFile = File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
 
-            is Streamable.Audio.Channel -> {
-                TODO("Planned")
-            }
+                    val byteReadChannel = audio.channel
 
-            else -> throw Exception("Not Supported")
+                    downloadId = audio.toString().id()
+
+                    showStart(completeTrack.title)
+
+                    val job = coroutineScope {
+                        launch {
+                            try {
+                                BufferedInputStream(byteReadChannel.toInputStream()).use { inputStream ->
+                                    FileOutputStream(tempFile.path, true).use { outputStream ->
+
+                                        val buffer = ByteArray(4096)
+                                        var received: Long = 0
+                                        var bytesRead: Int
+                                        val totalBytesRead = audio.totalBytes
+
+                                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                            outputStream.write(buffer, 0, bytesRead)
+                                            received += bytesRead
+                                            if (received == totalBytesRead) {
+                                                break
+                                            }
+                                        }
+                                    }
+                                }
+
+                                val detectedExtension = probeFileFormat(tempFile) ?: "mp3"
+                                val finalFile = File(
+                                    tempFile.parent,
+                                    "${tempFile.nameWithoutExtension}.$detectedExtension"
+                                )
+
+                                tempFile.renameTo(finalFile)
+
+                                file = finalFile
+
+                                sendDownloadCompleteBroadcast(downloadId)
+                                println("Download complete: ${completeTrack.title}")
+                            } catch (e: Exception) {
+                                println("Failed to download Channel variant: ${e.message}")
+                                throwable.emit(e)
+                            } finally {
+                                activeDownloads.remove(downloadId)
+                            }
+                        }
+                    }
+
+                    activeDownloads[downloadId] = job
+                }
+
+                is Streamable.Audio.ByteStream -> {
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val tempFile = File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
+
+                    val inputStream = audio.stream
+
+                    downloadId = audio.toString().id()
+
+                    showStart(completeTrack.title)
+
+                    val job = coroutineScope {
+                        launch {
+                            try {
+                                BufferedInputStream(inputStream).use { inputStream ->
+                                    FileOutputStream(tempFile.path, true).use { outputStream ->
+
+                                        val buffer = ByteArray(4096)
+                                        var received: Long = 0
+                                        var bytesRead: Int
+                                        val totalBytesRead = audio.totalBytes
+
+                                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                            outputStream.write(buffer, 0, bytesRead)
+                                            received += bytesRead
+                                            if (received == totalBytesRead) {
+                                                break
+                                            }
+                                        }
+                                    }
+                                }
+
+                                val detectedExtension = probeFileFormat(tempFile) ?: "mp3"
+                                val finalFile = File(
+                                    tempFile.parent,
+                                    "${tempFile.nameWithoutExtension}.$detectedExtension"
+                                )
+
+                                tempFile.renameTo(finalFile)
+
+                                file = finalFile
+
+                                sendDownloadCompleteBroadcast(downloadId)
+                                println("Download complete: ${completeTrack.title}")
+                            } catch (e: Exception) {
+                                println("Failed to download Channel variant: ${e.message}")
+                                throwable.emit(e)
+                            } finally {
+                                activeDownloads.remove(downloadId)
+                            }
+                        }
+                    }
+
+                    activeDownloads[downloadId] = job
+                }
+
+                else -> throw Exception("Unsupported audio stream type")
+            }
+            dao.insertDownload(
+                DownloadEntity(
+                    id = downloadId,
+                    itemId = completeTrack.id,
+                    clientId = extension.id,
+                    groupName = parent?.title,
+                    downloadPath = file?.absolutePath.orEmpty(),
+                    track = track.toString()
+                )
+            )
+            saveToCache(completeTrack.id, completeTrack, "downloads")
         }
-
-        dao.insertDownload(DownloadEntity(id, track.id, extension.id, parent?.title, file.absolutePath  + ".m4a"))
-        saveToCache(track.id, track, "downloads")
     }
 
-    private fun sendDownloadCompleteBroadcast(downloadId: Long) {
-        val intent = Intent(context, DownloadReceiver::class.java).apply {
+    private fun Context.sendDownloadCompleteBroadcast(downloadId: Long) {
+        val intent = Intent(this, DownloadReceiver::class.java).apply {
             action = "dev.brahmkshatriya.echo.DOWNLOAD_COMPLETE"
             putExtra("downloadId", downloadId)
         }
-        context.sendBroadcast(intent)
+        sendBroadcast(intent)
     }
 
-    private fun showStart() {
-        // Update UI to show download start
-        println("Download started")
+    private fun showStart(title: String) {
+        println("Download started: $title")
     }
 
-    suspend fun removeDownload(downloadId: Long) {
+    suspend fun removeDownload(context: Context, downloadId: Long) {
         withContext(Dispatchers.IO) {
+            activeDownloads[downloadId]?.cancel()
+            activeDownloads.remove(downloadId)
             dao.deleteDownload(downloadId)
         }
     }
 
-    fun pauseDownload(downloadId: Long) {
+    fun pauseDownload(context: Context, downloadId: Long) {
         println("pauseDownload: $downloadId")
-        // Handle pausing download if supported by YoutubeDL
     }
 
     suspend fun resumeDownload(context: Context, downloadId: Long) {
-        println("resumeDownload: $downloadId")
         val download = dao.getDownload(downloadId) ?: return
         val extension = extensionList.getExtension(download.clientId) ?: return
         val track =
@@ -217,5 +327,19 @@ class Downloader(
         withContext(Dispatchers.IO) {
             context.enqueueDownload(extension, track)
         }
+    }
+}
+
+suspend fun probeFileFormat(file: File): String? = withContext(Dispatchers.IO) {
+    val ffprobeCommand = "-v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 \"${file.absolutePath}\""
+
+    val session = FFprobeKit.execute(ffprobeCommand)
+    val returnCode = session.returnCode
+
+    if (ReturnCode.isSuccess(returnCode)) {
+        val output = session.output?.trim()
+        output?.split(",")?.firstOrNull()
+    } else {
+        null
     }
 }

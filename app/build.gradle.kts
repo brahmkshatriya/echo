@@ -34,7 +34,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro"
@@ -46,14 +46,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    splits.abi {
-        isEnable = true
-        reset()
-        include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
-        isUniversalApk = true
-    }
-
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
@@ -113,13 +105,7 @@ dependencies {
     implementation("com.flaviofaria:kenburnsview:1.0.7")
     implementation("com.github.paramsen:noise:2.0.0")
 
-    implementation("net.jthink:jaudiotagger:3.0.1")
-
-    //TODO : use fetch instead of download manager
-//    implementation("com.github.tonyofrancis.Fetch:xfetch2:3.1.6")
-    implementation("io.github.junkfood02.youtubedl-android:library:0.16.1")
-
-    implementation("com.github.Kyant0:taglib:1.0.0-alpha22")
+    implementation("com.arthenica:ffmpeg-kit-https:6.0-2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
     testImplementation("junit:junit:4.13.2")

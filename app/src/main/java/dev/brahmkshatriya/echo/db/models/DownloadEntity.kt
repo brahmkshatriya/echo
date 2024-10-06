@@ -9,4 +9,5 @@ data class DownloadEntity(
     val clientId: String,
     val groupName: String? = null,
     val downloadPath: String,
+    val track: String
 )
