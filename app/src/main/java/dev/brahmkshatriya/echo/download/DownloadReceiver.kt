@@ -8,9 +8,9 @@ import android.media.MediaScannerConnection
 import com.arthenica.ffmpegkit.FFmpegKit
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.EchoDatabase
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.DownloadDao
+import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.loadBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -35,14 +35,7 @@ class DownloadReceiver : BroadcastReceiver() {
             val download = runBlocking {
                 withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) }
             } ?: return
-            val trackString = download.track
-            val track = Track(
-                id = trackString.substringAfter("id=").substringBefore(","),
-                title = trackString.substringAfter("title=").substringBefore(","),
-                cover = trackString.substringAfter("cover=UrlRequestImageHolder(request=Request(url=").substringAfter("cover=UrlRequestImageHolder(request=Request(url=").substringBefore(",").toImageHolder(),
-            )
-
-            println(download.downloadPath)
+            val track = context.applicationContext.getFromCache<Track>(download.itemId, "downloads") ?: return
 
             val file = File(download.downloadPath)
 
@@ -82,8 +75,8 @@ class DownloadReceiver : BroadcastReceiver() {
                 val outputFile = File(file.parent, "temp_${file.name}")
 
                 val metadataTitle = "title=\"${track.title}\""
-                val metadataArtist = "artist=${track.artists.joinToString(", ") { it.name }}"
-                val metadataAlbum = "album=${track.album?.title ?: ""}"
+                val metadataArtist = "artist=\"${track.artists.joinToString(", ") { it.name }}\""
+                val metadataAlbum = "album=\"${track.album?.title ?: ""}\""
 
                 val metadataCoverTitle = "title=\"Album cover\""
                 val metadataCoverComment = "comment=\"Cover (front)\""
