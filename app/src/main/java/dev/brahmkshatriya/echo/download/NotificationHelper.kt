@@ -30,7 +30,7 @@ object NotificationHelper {
         indeterminate: Boolean = false
     ): NotificationCompat.Builder {
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_downloading) // Replace with your app's download icon
+            .setSmallIcon(R.drawable.ic_downloading)
             .setContentTitle(title)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOnlyAlertOnce(true)
@@ -49,7 +49,7 @@ object NotificationHelper {
 
     fun completeNotification(context: Context, downloadId: Int, title: String) {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_download_for_offline) // Replace with your app's complete icon
+            .setSmallIcon(R.drawable.ic_download_for_offline)
             .setContentTitle(title)
             .setContentText("Download complete")
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -61,7 +61,7 @@ object NotificationHelper {
 
     fun errorNotification(context: Context, downloadId: Int, title: String, error: String) {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_download_for_offline) // Replace with your app's error icon
+            .setSmallIcon(R.drawable.ic_download_for_offline)
             .setContentTitle(title)
             .setContentText("Download failed: $error")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

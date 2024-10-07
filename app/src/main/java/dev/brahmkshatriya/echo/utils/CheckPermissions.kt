@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import dev.brahmkshatriya.echo.R
 
@@ -32,17 +33,17 @@ fun AppCompatActivity.checkAudioPermissions() {
 }
 
 fun AppCompatActivity.checkNotificationPermissions() {
-    val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-        Manifest.permission.POST_NOTIFICATIONS
-    else
-        ""
-    checkPermissions(
-        this,
-        perm,
-        R.string.permission_required,
-        R.string.notification_permission_required_summar,
-        { finish() }
-    )
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        checkPermissions(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS,
+            R.string.permission_required,
+            R.string.notification_permission_required_summar,
+            { finish() }
+        )
+    } else {
+        NotificationManagerCompat.from(this).areNotificationsEnabled()
+    }
 }
 
 fun ActivityResultCaller.checkPermissions(
