@@ -31,6 +31,20 @@ fun AppCompatActivity.checkAudioPermissions() {
     )?.launch(perm)
 }
 
+fun AppCompatActivity.checkNotificationPermissions() {
+    val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        Manifest.permission.POST_NOTIFICATIONS
+    else
+        ""
+    checkPermissions(
+        this,
+        perm,
+        R.string.permission_required,
+        R.string.notification_permission_required_summar,
+        { finish() }
+    )
+}
+
 fun ActivityResultCaller.checkPermissions(
     context: Context,
     perm: String,

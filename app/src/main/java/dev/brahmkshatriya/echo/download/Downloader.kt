@@ -136,7 +136,15 @@ class Downloader(
 
                     downloadId = audio.toString().id()
 
-                    showStart(completeTrack.title)
+                    val notificationId = downloadId.toInt()
+                    val notificationBuilder = NotificationHelper.buildNotification(
+                        applicationContext,
+                        "Downloading: ${completeTrack.title}",
+                        indeterminate = true
+                    )
+                    NotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+
+                    //showStart(completeTrack.title)
 
                     val job = coroutineScope {
                         launch {
@@ -152,8 +160,7 @@ class Downloader(
                                                 itemId = completeTrack.id,
                                                 clientId = extension.id,
                                                 groupName = parent?.title,
-                                                downloadPath = file.absolutePath.orEmpty(),
-                                                track = track.toString()
+                                                downloadPath = file.absolutePath.orEmpty()
                                             )
                                         )
 
@@ -165,19 +172,46 @@ class Downloader(
 
                                         sendDownloadCompleteBroadcast(downloadId)
                                         println("Download complete: ${completeTrack.title}")
+
+                                        NotificationHelper.completeNotification(
+                                            applicationContext,
+                                            notificationId,
+                                            completeTrack.title
+                                        )
                                     } else if (ReturnCode.isCancel(session.returnCode)) {
                                         println("Download cancelled: ${completeTrack.title}")
+
+                                        NotificationHelper.errorNotification(
+                                            applicationContext,
+                                            notificationId,
+                                            completeTrack.title,
+                                            "Cancelled"
+                                        )
                                     } else {
                                         // Download failed
                                         val failureMessage =
                                             session.failStackTrace ?: "Unknown error"
                                         println("Failed to download: $failureMessage")
                                         throwable.emit(Exception("FFmpeg failed with code ${session.returnCode}"))
+
+                                        NotificationHelper.errorNotification(
+                                            applicationContext,
+                                            notificationId,
+                                            completeTrack.title,
+                                            failureMessage
+                                        )
                                     }
                                 }
                             } catch (e: Exception) {
                                 println("Failed to download: ${e.message}")
                                 throwable.emit(e)
+
+                                NotificationHelper.errorNotification(
+                                    applicationContext,
+                                    notificationId,
+                                    completeTrack.title,
+                                    e.message ?: "Unknown error"
+                                )
                             } finally {
                                 activeDownloads.remove(downloadId)
                             }
@@ -196,7 +230,16 @@ class Downloader(
 
                     downloadId = audio.toString().id()
 
-                    showStart(completeTrack.title)
+                    val notificationId = downloadId.toInt()
+                    val notificationBuilder = NotificationHelper.buildNotification(
+                        applicationContext,
+                        "Downloading: ${completeTrack.title}",
+                        indeterminate = false
+                    )
+                    NotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+
+
+                    //showStart(completeTrack.title)
 
                     val job = coroutineScope {
                         launch {
@@ -237,8 +280,7 @@ class Downloader(
                                         itemId = completeTrack.id,
                                         clientId = extension.id,
                                         groupName = parent?.title,
-                                        downloadPath = file.absolutePath.orEmpty(),
-                                        track = track.toString()
+                                        downloadPath = file.absolutePath.orEmpty()
                                     )
                                 )
 
@@ -250,9 +292,22 @@ class Downloader(
 
                                 sendDownloadCompleteBroadcast(downloadId)
                                 println("Download complete: ${completeTrack.title}")
+
+                                NotificationHelper.completeNotification(
+                                    applicationContext,
+                                    notificationId,
+                                    completeTrack.title
+                                )
                             } catch (e: Exception) {
                                 println("Failed to download Channel variant: ${e.message}")
                                 throwable.emit(e)
+
+                                NotificationHelper.errorNotification(
+                                    applicationContext,
+                                    notificationId,
+                                    completeTrack.title,
+                                    e.message ?: "Unknown error"
+                                )
                             } finally {
                                 activeDownloads.remove(downloadId)
                             }
@@ -272,7 +327,16 @@ class Downloader(
 
                     downloadId = audio.toString().id()
 
-                    showStart(completeTrack.title)
+                    val notificationId = downloadId.toInt()
+                    val notificationBuilder = NotificationHelper.buildNotification(
+                        applicationContext,
+                        "Downloading: ${completeTrack.title}",
+                        indeterminate = false
+                    )
+                    NotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+
+
+                    //showStart(completeTrack.title)
 
                     val job = coroutineScope {
                         launch {
@@ -313,8 +377,7 @@ class Downloader(
                                         itemId = completeTrack.id,
                                         clientId = extension.id,
                                         groupName = parent?.title,
-                                        downloadPath = file.absolutePath.orEmpty(),
-                                        track = track.toString()
+                                        downloadPath = file.absolutePath.orEmpty()
                                     )
                                 )
 
@@ -326,9 +389,22 @@ class Downloader(
 
                                 sendDownloadCompleteBroadcast(downloadId)
                                 println("Download complete: ${completeTrack.title}")
+
+                                NotificationHelper.completeNotification(
+                                    applicationContext,
+                                    notificationId,
+                                    completeTrack.title
+                                )
                             } catch (e: Exception) {
                                 println("Failed to download Channel variant: ${e.message}")
                                 throwable.emit(e)
+
+                                NotificationHelper.errorNotification(
+                                    applicationContext,
+                                    notificationId,
+                                    completeTrack.title,
+                                    e.message ?: "Unknown error"
+                                )
                             } finally {
                                 activeDownloads.remove(downloadId)
                             }
@@ -351,15 +427,17 @@ class Downloader(
         sendBroadcast(intent)
     }
 
-    private fun showStart(title: String) {
+    /*private fun showStart(title: String) {
         println("Download started: $title")
-    }
+    }*/
 
     suspend fun removeDownload(context: Context, downloadId: Long) {
         withContext(Dispatchers.IO) {
             activeDownloads[downloadId]?.cancel()
             activeDownloads.remove(downloadId)
             dao.deleteDownload(downloadId)
+
+            NotificationHelper.completeNotification(context, downloadId.toInt(), "Download Removed")
         }
     }
 

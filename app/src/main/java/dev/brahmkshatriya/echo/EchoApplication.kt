@@ -10,6 +10,7 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
+import dev.brahmkshatriya.echo.download.NotificationHelper
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetails
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
@@ -36,6 +37,7 @@ class EchoApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        NotificationHelper.createNotificationChannel(this)
         //UI
         applyLocale(settings)
         applyUiChanges(this, settings)

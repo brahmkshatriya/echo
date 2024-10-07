@@ -31,6 +31,7 @@ import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.checkAudioPermissions
+import dev.brahmkshatriya.echo.utils.checkNotificationPermissions
 import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.createNavDrawable
 import dev.brahmkshatriya.echo.utils.emit
@@ -68,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         checkAudioPermissions()
+        checkNotificationPermissions()
 
         val navView = binding.navView as NavigationBarView
 
