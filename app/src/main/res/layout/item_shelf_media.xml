@@ -75,13 +75,5 @@
             android:contentDescription="@string/more"
             app:icon="@drawable/ic_more_horiz" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/isPlaying"
-            android:visibility="gone"
-            android:layout_gravity="bottom"
-            style="@style/IconButton"
-            android:contentDescription="@string/currently_playing"
-            app:icon="@drawable/ic_equalizer" />
-
     </FrameLayout>
 </LinearLayout>

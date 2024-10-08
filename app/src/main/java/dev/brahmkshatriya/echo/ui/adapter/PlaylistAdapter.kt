@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -89,6 +90,8 @@ class PlaylistAdapter(
 
         binding.playlistCurrentItem.isVisible = isCurrent
         binding.playlistProgressBar.isVisible = isCurrent && !item.isLoaded
+        binding.playlistItemNowPlaying.isVisible = isCurrent && item.isLoaded
+        (binding.playlistItemNowPlaying.drawable as Animatable).start()
     }
 
     class Loader : RecyclerView.Adapter<Loader.ViewHolder>() {

@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
+import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,8 +14,10 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaListsBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaProfileBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.observe
 
 sealed class MediaItemViewHolder(
     val listener: ShelfAdapter.Listener,
@@ -49,7 +52,10 @@ sealed class MediaItemViewHolder(
         override fun bind(item: EchoMediaItem) {
             item as EchoMediaItem.Lists
             titleBinding.bind(item)
-            binding.cover.bind(item)
+            val isPlaying = binding.cover.bind(item)
+            observe(listener.current) {
+                isPlaying(it?.mediaItem?.context?.id == item.id)
+            }
         }
 
         companion object {
@@ -79,7 +85,11 @@ sealed class MediaItemViewHolder(
 
         override fun bind(item: EchoMediaItem) {
             titleBinding.bind(item)
-            binding.cover.bind(item)
+            val isPlaying = binding.cover.bind(item)
+            observe(listener.current) {
+                val media = it?.mediaItem
+                isPlaying(media?.mediaId == item.id)
+            }
         }
 
         companion object {
@@ -154,17 +164,27 @@ sealed class MediaItemViewHolder(
             subtitle.text = item.subtitle
         }
 
-        fun ItemTrackCoverBinding.bind(item: EchoMediaItem) {
+        fun View.toolTipOnClick() {
+            setOnClickListener { performLongClick() }
+        }
+
+        fun ItemTrackCoverBinding.bind(item: EchoMediaItem): (Boolean) -> Unit {
             item.cover.loadInto(trackImageView, item.placeHolder())
             this.iconContainer.isVisible = item !is EchoMediaItem.TrackItem
             this.icon.setImageResource(item.icon())
+            isPlaying.toolTipOnClick()
+            return { playing: Boolean ->
+                isPlaying.isVisible = playing
+                if (playing) (isPlaying.icon as Animatable).start()
+            }
         }
 
-        fun ItemProfileCoverBinding.bind(item: EchoMediaItem) {
+        fun ItemProfileCoverBinding.bind(item: EchoMediaItem): (Boolean) -> Unit {
             item.cover.loadInto(profileImageView, item.placeHolder())
+            return { }
         }
 
-        fun ItemListsCoverBinding.bind(item: EchoMediaItem.Lists) {
+        fun ItemListsCoverBinding.bind(item: EchoMediaItem.Lists): (Boolean) -> Unit {
             playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
             val cover = item.cover
             cover.loadWith(listImageView) {
@@ -172,6 +192,11 @@ sealed class MediaItemViewHolder(
                 cover.loadInto(listImageView2)
             }
             albumImage(item.size, listImageContainer1, listImageContainer2)
+            isPlaying.toolTipOnClick()
+            return { playing: Boolean ->
+                isPlaying.isVisible = playing
+                if (playing) (isPlaying.icon as Animatable).start()
+            }
         }
 
         private fun albumImage(size: Int?, view1: View, view2: View) {

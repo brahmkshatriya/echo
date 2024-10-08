@@ -63,7 +63,8 @@ sealed class Shelf {
 
 
     data class Item(
-        val media: EchoMediaItem
+        val media: EchoMediaItem,
+        val loadTracks: Boolean = false
     ) : Shelf()
 
     data class Category(
