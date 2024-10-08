@@ -3,14 +3,12 @@ package dev.brahmkshatriya.echo.playback.source
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.OptIn
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.TransferListener
 import androidx.media3.exoplayer.source.CompositeMediaSource
-import androidx.media3.exoplayer.source.FilteringMediaSource
 import androidx.media3.exoplayer.source.MediaPeriod
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -68,13 +66,10 @@ class DelayedSource(
         mediaItem = new
         actualSource = when (new.isAudioAndVideoMerged()) {
             true -> mediaFactory.create(new, true)
-            null -> FilteringMediaSource(mediaFactory.create(new, false), C.TRACK_TYPE_AUDIO)
+            null -> mediaFactory.create(new, false)
             false -> MergingMediaSource(
-                FilteringMediaSource(
-                    mediaFactory.create(new, true),
-                    setOf(C.TRACK_TYPE_VIDEO, C.TRACK_TYPE_TEXT)
-                ),
-                FilteringMediaSource(mediaFactory.create(new, false), C.TRACK_TYPE_AUDIO)
+                mediaFactory.create(new, true),
+                mediaFactory.create(new, false)
             )
         }
         runCatching { prepareChildSource(null, actualSource) }

@@ -36,14 +36,32 @@
                 app:srcCompat="@drawable/ic_drag_20dp"
                 app:tint="@color/button_player" />
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/playlistItemImageView"
-                android:layout_width="@dimen/collapsed_cover_size"
-                android:layout_height="@dimen/collapsed_cover_size"
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
-                android:background="?attr/colorSurfaceContainerHigh"
-                android:scaleType="fitCenter"
-                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraSmall" />
+                app:cardCornerRadius="8dp">
+
+                <ImageView
+                    android:id="@+id/playlistItemImageView"
+                    android:layout_width="@dimen/collapsed_cover_size"
+                    android:layout_height="@dimen/collapsed_cover_size"
+                    android:background="?attr/colorSurfaceContainerHigh"
+                    android:contentDescription="@string/track"
+                    android:scaleType="fitCenter"
+                    tools:src="@tools:sample/avatars" />
+
+                <ImageView
+                    android:id="@+id/playlistItemNowPlaying"
+                    android:layout_width="@dimen/collapsed_cover_size"
+                    android:layout_height="@dimen/collapsed_cover_size"
+                    android:alpha="0.66"
+                    android:background="@color/amoled_bg"
+                    android:contentDescription="@string/currently_playing"
+                    android:scaleType="center"
+                    app:srcCompat="@drawable/anim_now_playing"
+                    app:tint="@color/amoled_fg" />
+            </androidx.cardview.widget.CardView>
 
         </FrameLayout>
 
@@ -60,12 +78,12 @@
                 android:layout_marginStart="16dp"
                 android:layout_weight="1"
                 android:baselineAligned="false"
-                android:gravity="center"
+                android:gravity="center_vertical"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/playlistItemTitle"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxLines="1"
                     android:textStyle="bold"
@@ -73,7 +91,7 @@
 
                 <TextView
                     android:id="@+id/playlistItemAuthor"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxLines="1"
                     tools:text="Author" />

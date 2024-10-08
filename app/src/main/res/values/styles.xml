@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:width">56dp</item>
@@ -27,7 +27,7 @@
     <style name="PlayerToolBarTheme">
         <item name="colorControlNormal">@color/amoled_fg</item>
     </style>
-    
+
     <style name="PlayerToolbarStyle">
         <item name="android:theme">@style/PlayerToolBarTheme</item>
         <item name="android:layout_width">match_parent</item>
@@ -197,5 +197,20 @@
         <item name="iconPadding">24dp</item>
     </style>
 
-    <string name="back">Back</string>
+    <style name="NowPlayingButton" parent="IconButton">
+        <item name="android:tooltipText" tools:ignore="NewApi">@string/currently_playing</item>
+        <item name="android:contentDescription">@string/currently_playing</item>
+        <item name="icon">@drawable/anim_now_playing</item>
+    </style>
+
+    <style name="SmallNowPlayingButton" parent="NowPlayingButton">
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:alpha">0.66</item>
+        <item name="android:padding">3dp</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="backgroundTint">@color/amoled_bg</item>
+    </style>
 </resources>
