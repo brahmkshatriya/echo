@@ -20,6 +20,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Category
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Lists
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media
+import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.MediaLists
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
@@ -157,7 +158,7 @@ class ShelfAdapter(
         val item = getItem(position) ?: return 0
         return when (item) {
             is Shelf.Lists<*> -> 0
-            is Shelf.Item -> 1
+            is Shelf.Item -> if (item.media is EchoMediaItem.Lists && item.loadTracks) 3 else 1
             is Shelf.Category -> 2
         }
     }
@@ -168,6 +169,7 @@ class ShelfAdapter(
             0 -> Lists.create(parent, stateViewModel, sharedPool, extension.id, listener)
             1 -> Media.create(parent, extension.id, listener)
             2 -> Category.create(parent)
+            3 -> MediaLists.create(parent, extension.id, listener, fragment)
             else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }
         holder.lifecycleRegistry = LifecycleRegistry(holder)
