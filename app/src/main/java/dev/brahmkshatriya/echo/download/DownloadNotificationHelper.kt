@@ -6,8 +6,10 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import dev.brahmkshatriya.echo.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-object NotificationHelper {
+object DownloadNotificationHelper {
     private const val CHANNEL_ID = "download_channel"
     private const val CHANNEL_NAME = "Downloads"
     private const val CHANNEL_DESCRIPTION = "Notifications for download status"
@@ -34,7 +36,7 @@ object NotificationHelper {
             .setContentTitle(title)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOnlyAlertOnce(true)
-            .setOngoing(true)
+            .setOngoing(!indeterminate)
             .setProgress(100, progress, indeterminate)
     }
 
@@ -47,27 +49,33 @@ object NotificationHelper {
         manager.notify(downloadId, builder.build())
     }
 
-    fun completeNotification(context: Context, downloadId: Int, title: String) {
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_download_for_offline)
-            .setContentTitle(title)
-            .setContentText("Download complete")
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setAutoCancel(true)
+    suspend fun completeNotification(context: Context, downloadId: Int, title: String) {
+        withContext(Dispatchers.Main) {
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_download_for_offline)
+                .setContentTitle(title)
+                .setContentText("Download complete")
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setAutoCancel(true)
+                .setProgress(0, 0 , false)
 
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(downloadId, builder.build())
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.notify(downloadId, builder.build())
+        }
     }
 
-    fun errorNotification(context: Context, downloadId: Int, title: String, error: String) {
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_download_for_offline)
-            .setContentTitle(title)
-            .setContentText("Download failed: $error")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
+    suspend fun errorNotification(context: Context, downloadId: Int, title: String, error: String) {
+        withContext(Dispatchers.Main) {
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_download_for_offline)
+                .setContentTitle(title)
+                .setContentText("Download failed: $error")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setProgress(0, 0, false)
 
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(downloadId, builder.build())
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.notify(downloadId, builder.build())
+        }
     }
 }

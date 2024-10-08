@@ -40,7 +40,7 @@ fun AppCompatActivity.checkNotificationPermissions() {
             R.string.permission_required,
             R.string.notification_permission_required_summar,
             { finish() }
-        )
+        )?.launch(Manifest.permission.POST_NOTIFICATIONS)
     } else {
         NotificationManagerCompat.from(this).areNotificationsEnabled()
     }
