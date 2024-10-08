@@ -15,10 +15,12 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfListsBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.ui.adapter.GridViewHolder.Companion.ifGrid
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.observe
 import java.lang.ref.WeakReference
 
 sealed class ShelfViewHolder(
@@ -129,7 +131,11 @@ sealed class ShelfViewHolder(
     ) : ShelfViewHolder(binding.root) {
         override fun bind(item: Shelf) {
             val media = (item as? Shelf.Item)?.media ?: return
-            binding.bind(media)
+            val isPlaying = binding.bind(media)
+            observe(listener.current) {
+                val mediaItem = it?.mediaItem
+                isPlaying(mediaItem?.mediaId == media.id || mediaItem?.context?.id == media.id)
+            }
             binding.more.setOnClickListener {
                 listener.onLongClick(clientId, media, transitionView)
             }
@@ -151,7 +157,7 @@ sealed class ShelfViewHolder(
                 )
             }
 
-            fun ItemShelfMediaBinding.bind(item: EchoMediaItem) {
+            fun ItemShelfMediaBinding.bind(item: EchoMediaItem): (Boolean) -> Unit {
                 title.text = item.title
                 subtitle.text = item.subtitle
                 subtitle.isVisible = item.subtitle.isNullOrBlank().not()
@@ -160,7 +166,7 @@ sealed class ShelfViewHolder(
                 listsImageContainer.root.isVisible = item is EchoMediaItem.Lists
                 profileImageContainer.root.isVisible = item is EchoMediaItem.Profile
 
-                when (item) {
+                return when (item) {
                     is EchoMediaItem.TrackItem -> trackImageContainer.bind(item)
                     is EchoMediaItem.Lists -> listsImageContainer.bind(item)
                     is EchoMediaItem.Profile -> profileImageContainer.bind(item)

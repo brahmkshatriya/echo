@@ -30,6 +30,7 @@ import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
@@ -81,13 +82,18 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        var isPlaying: (Boolean) -> Unit = {}
+        observe(playerViewModel.currentFlow) {
+            val mediaItem = it?.mediaItem
+            isPlaying(mediaItem?.mediaId == item.id || mediaItem?.context?.id == item.id)
+        }
         binding.itemContainer.run {
             more.run {
                 setOnClickListener { dismiss() }
                 setIconResource(R.drawable.ic_close)
                 contentDescription = context.getString(R.string.close)
             }
-            bind(item)
+            isPlaying = bind(item)
             if (!loaded) root.setOnClickListener {
                 openItemFragment(item)
                 dismiss()
@@ -103,7 +109,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             viewModel.initialize()
             observe(viewModel.itemFlow) {
                 if (it != null) {
-                    binding.itemContainer.bind(it)
+                    isPlaying = binding.itemContainer.bind(it)
                     binding.recyclerView.adapter = ActionAdapter(getActions(it, true))
                 }
             }

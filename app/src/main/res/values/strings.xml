@@ -232,6 +232,7 @@
     <string name="saved_item_to_library">Saved %1$s to library</string>
     <string name="liked_track">Liked %1$s</string>
     <string name="unliked_track">Unliked %1$s</string>
+    <string name="back">Back</string>
     <string name="hide">Hide</string>
     <string name="unhide">Unhide</string>
     <string name="hidden_track">Hidden %1$s</string>
