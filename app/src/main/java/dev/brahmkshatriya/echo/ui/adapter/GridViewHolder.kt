@@ -11,6 +11,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaGridBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
+import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
@@ -62,7 +63,7 @@ class GridViewHolder(
                 }
                 binding.isPlaying.toolTipOnClick()
                 observe(listener.current) {
-                    val playing = it?.mediaItem?.mediaId == media.id
+                    val playing = it.isPlaying(media.id)
                     binding.isPlaying.isVisible = playing
                     if (playing) (binding.isPlaying.icon as Animatable).start()
                 }

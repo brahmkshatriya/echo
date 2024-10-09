@@ -32,7 +32,7 @@ class PlayerEventListener(
 
     private fun updateCurrent() {
         handler.removeCallbacks(runnable)
-        if (player.isPlaying) ResumptionUtils.saveCurrentPos(context, player.currentPosition)
+        ResumptionUtils.saveCurrentPos(context, player.currentPosition)
         handler.postDelayed(runnable, 1000)
     }
 
@@ -52,14 +52,13 @@ class PlayerEventListener(
 
     private fun updateCurrentFlow() {
         currentFlow.value = player.currentMediaItem?.let {
-            Current(player.currentMediaItemIndex, it, it.isLoaded)
+            Current(player.currentMediaItemIndex, it, it.isLoaded, player.isPlaying)
         }
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         updateCurrentFlow()
         updateCustomLayout()
-        updateCurrent()
     }
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -74,6 +73,11 @@ class PlayerEventListener(
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateCustomLayout()
+    }
+
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        updateCurrentFlow()
+        updateCurrent()
     }
 
 }
