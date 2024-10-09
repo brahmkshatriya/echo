@@ -30,7 +30,7 @@ import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
+import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
@@ -84,8 +84,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         var isPlaying: (Boolean) -> Unit = {}
         observe(playerViewModel.currentFlow) {
-            val mediaItem = it?.mediaItem
-            isPlaying(mediaItem?.mediaId == item.id || mediaItem?.context?.id == item.id)
+            isPlaying(it.isPlaying(item.id))
         }
         binding.itemContainer.run {
             more.run {
