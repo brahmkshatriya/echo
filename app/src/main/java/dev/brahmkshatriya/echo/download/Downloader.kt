@@ -112,6 +112,7 @@ class Downloader(
             val downloadId: Long
             when (val audio = media.audio) {
                 is Streamable.Audio.Http -> {
+                    downloadDirectoryFor(folder)
                     file = File(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                         "${folder}/${completeTrack.title}.m4a"
@@ -171,11 +172,13 @@ class Downloader(
 
                                         sendDownloadCompleteBroadcast(downloadId)
 
-                                        DownloadNotificationHelper.completeNotification(
-                                            applicationContext,
-                                            notificationId,
-                                            completeTrack.title
-                                        )
+                                        withContext(Dispatchers.Main) {
+                                            DownloadNotificationHelper.completeNotification(
+                                                applicationContext,
+                                                notificationId,
+                                                completeTrack.title
+                                            )
+                                        }
                                     } else if (ReturnCode.isCancel(session.returnCode)) {
                                         DownloadNotificationHelper.errorNotification(
                                             applicationContext,
@@ -217,10 +220,13 @@ class Downloader(
                 }
 
                 is Streamable.Audio.Channel -> {
+                    downloadDirectoryFor(folder)
                     val downloadsDir =
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
                     val tempFile =
                         File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
+
                     val byteReadChannel = audio.channel
 
                     downloadId = audio.toString().id()
@@ -239,7 +245,7 @@ class Downloader(
                         launch(Dispatchers.IO) {
                             try {
                                 BufferedInputStream(byteReadChannel.toInputStream()).use { inputStream ->
-                                    FileOutputStream(tempFile.path, true).use { outputStream ->
+                                    FileOutputStream(tempFile, true).use { outputStream ->
 
                                         val buffer = ByteArray(4096)
                                         var received: Long = 0
@@ -267,7 +273,7 @@ class Downloader(
                                                 val progress = ((received * 100) / totalBytesRead).toInt().coerceIn(0, 100)
                                                 val currentTime = System.currentTimeMillis()
 
-                                                if (progress > lastProgress || currentTime - lastUpdateTime >= 2000) {
+                                                if ((progress >= lastProgress + 5) || (currentTime - lastUpdateTime >= 5000L)) {
                                                     lastProgress = progress
                                                     lastUpdateTime = currentTime
 
@@ -314,11 +320,13 @@ class Downloader(
 
                                 sendDownloadCompleteBroadcast(downloadId)
 
-                                DownloadNotificationHelper.completeNotification(
-                                    applicationContext,
-                                    notificationId,
-                                    completeTrack.title
-                                )
+                                withContext(Dispatchers.Main) {
+                                    DownloadNotificationHelper.completeNotification(
+                                        applicationContext,
+                                        notificationId,
+                                        completeTrack.title
+                                    )
+                                }
                             } catch (e: Exception) {
                                 throwable.emit(e)
 
@@ -338,6 +346,7 @@ class Downloader(
                 }
 
                 is Streamable.Audio.ByteStream -> {
+                    downloadDirectoryFor(folder)
                     val downloadsDir =
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                     val tempFile =
@@ -360,7 +369,7 @@ class Downloader(
                         launch(Dispatchers.IO) {
                             try {
                                 BufferedInputStream(inputStream).use { inputStream ->
-                                    FileOutputStream(tempFile.path, true).use { outputStream ->
+                                    FileOutputStream(tempFile, true).use { outputStream ->
 
                                         val buffer = ByteArray(4096)
                                         var received: Long = 0
@@ -388,7 +397,7 @@ class Downloader(
                                                 val progress = ((received * 100) / totalBytesRead).toInt().coerceIn(0, 100)
                                                 val currentTime = System.currentTimeMillis()
 
-                                                if (progress > lastProgress || currentTime - lastUpdateTime >= 2000) {
+                                                if ((progress >= lastProgress + 5) || (currentTime - lastUpdateTime >= 5000L)) {
                                                     lastProgress = progress
                                                     lastUpdateTime = currentTime
 
@@ -435,11 +444,13 @@ class Downloader(
 
                                 sendDownloadCompleteBroadcast(downloadId)
 
-                                DownloadNotificationHelper.completeNotification(
-                                    applicationContext,
-                                    notificationId,
-                                    completeTrack.title
-                                )
+                                withContext(Dispatchers.Main) {
+                                    DownloadNotificationHelper.completeNotification(
+                                        applicationContext,
+                                        notificationId,
+                                        completeTrack.title
+                                    )
+                                }
                             } catch (e: Exception) {
                                 throwable.emit(e)
 
@@ -485,13 +496,24 @@ class Downloader(
         }
     }
 
+    private fun downloadDirectoryFor(folder: String?): File {
+        val directory = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/$folder")
+        if (!directory.exists()) directory.mkdirs()
+        return directory
+    }
+
     suspend fun removeDownload(context: Context, downloadId: Long) {
         withContext(Dispatchers.IO) {
             activeDownloads[downloadId]?.cancel()
             activeDownloads.remove(downloadId)
             dao.deleteDownload(downloadId)
-
-            DownloadNotificationHelper.completeNotification(context, (downloadId and 0x7FFFFFFF).toInt(), "Download Removed")
+            withContext(Dispatchers.Main) {
+                DownloadNotificationHelper.completeNotification(
+                    context,
+                    (downloadId and 0x7FFFFFFF).toInt(),
+                    "Download Removed"
+                )
+            }
         }
     }
 

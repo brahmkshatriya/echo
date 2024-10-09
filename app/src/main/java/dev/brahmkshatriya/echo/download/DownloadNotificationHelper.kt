@@ -40,13 +40,15 @@ object DownloadNotificationHelper {
             .setProgress(100, progress, indeterminate)
     }
 
-    fun updateNotification(
+    suspend fun updateNotification(
         context: Context,
         downloadId: Int,
         builder: NotificationCompat.Builder
     ) {
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(downloadId, builder.build())
+        withContext(Dispatchers.Main) {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.notify(downloadId, builder.build())
+        }
     }
 
     suspend fun completeNotification(context: Context, downloadId: Int, title: String) {
@@ -56,7 +58,7 @@ object DownloadNotificationHelper {
                 .setContentTitle(title)
                 .setContentText("Download complete")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setAutoCancel(true)
+                .setAutoCancel(false)
                 .setProgress(0, 0 , false)
 
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
