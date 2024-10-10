@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.download
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -34,21 +35,21 @@ object DownloadNotificationHelper {
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_downloading)
             .setContentTitle(title)
+            .setContentText("Downloading...")
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOnlyAlertOnce(true)
-            .setOngoing(!indeterminate)
+            .setOngoing(true)
             .setProgress(100, progress, indeterminate)
+            .setShowWhen(false)
     }
 
-    suspend fun updateNotification(
+    fun updateNotification(
         context: Context,
         downloadId: Int,
-        builder: NotificationCompat.Builder
+        notification: Notification
     ) {
-        withContext(Dispatchers.Main) {
-            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.notify(downloadId, builder.build())
-        }
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(downloadId, notification)
     }
 
     suspend fun completeNotification(context: Context, downloadId: Int, title: String) {
@@ -58,11 +59,13 @@ object DownloadNotificationHelper {
                 .setContentTitle(title)
                 .setContentText("Download complete")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setAutoCancel(false)
+                .setAutoCancel(true)
                 .setProgress(0, 0 , false)
+                .setShowWhen(false)
+                .build()
 
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.notify(downloadId, builder.build())
+            manager.notify(downloadId, builder)
         }
     }
 
@@ -75,9 +78,11 @@ object DownloadNotificationHelper {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setProgress(0, 0, false)
+                .setShowWhen(false)
+                .build()
 
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.notify(downloadId, builder.build())
+            manager.notify(downloadId, builder)
         }
     }
 }

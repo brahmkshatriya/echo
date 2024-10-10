@@ -3,7 +3,9 @@ package dev.brahmkshatriya.echo.download
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
+import androidx.core.app.NotificationCompat
 import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.FFmpegSession
 import com.arthenica.ffmpegkit.FFprobeKit
 import com.arthenica.ffmpegkit.ReturnCode
 import dev.brahmkshatriya.echo.EchoDatabase
@@ -50,6 +52,7 @@ class Downloader(
         get() = Dispatchers.IO + job
 
     private val activeDownloads = mutableMapOf<Long, Job>()
+    private val notificationBuilders = mutableMapOf<Int, NotificationCompat.Builder>()
 
     suspend fun addToDownload(
         context: Context, clientId: String, item: EchoMediaItem
@@ -113,9 +116,12 @@ class Downloader(
             when (val audio = media.audio) {
                 is Streamable.Audio.Http -> {
                     downloadDirectoryFor(folder)
+
+                    val illegalChars = "[/\\\\:*?\"<>|]".toRegex()
+                    val sanitizedTitle = illegalChars.replace(completeTrack.title, "_")
                     file = File(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                        "${folder}/${completeTrack.title}.m4a"
+                        "${folder}/$sanitizedTitle.m4a"
                     ).normalize()
 
                     val request = audio.request
@@ -136,22 +142,26 @@ class Downloader(
                     }
 
                     downloadId = audio.toString().id()
-
                     val notificationId = (downloadId and 0x7FFFFFFF).toInt()
+
                     val notificationBuilder = DownloadNotificationHelper.buildNotification(
                         applicationContext,
                         "Downloading: ${completeTrack.title}",
                         indeterminate = true
                     )
+                    notificationBuilders[notificationId] = notificationBuilder
 
-                    DownloadNotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+                    DownloadNotificationHelper.updateNotification(
+                        applicationContext,
+                        notificationId,
+                        notificationBuilder.build()
+                    )
 
                     val job = coroutineScope {
                         launch {
                             try {
                                 withContext(Dispatchers.IO) {
                                     val session = FFmpegKit.execute(ffmpegCommand)
-
                                     if (ReturnCode.isSuccess(session.returnCode)) {
 
                                         dao.insertDownload(
@@ -173,10 +183,13 @@ class Downloader(
                                         sendDownloadCompleteBroadcast(downloadId)
 
                                         withContext(Dispatchers.Main) {
-                                            DownloadNotificationHelper.completeNotification(
+                                            notificationBuilder.setContentText("Download complete")
+                                                .setProgress(0, 0, false)
+                                                .setOngoing(false)
+                                            DownloadNotificationHelper.updateNotification(
                                                 applicationContext,
                                                 notificationId,
-                                                completeTrack.title
+                                                notificationBuilder.build()
                                             )
                                         }
                                     } else if (ReturnCode.isCancel(session.returnCode)) {
@@ -212,6 +225,7 @@ class Downloader(
                                 )
                             } finally {
                                 activeDownloads.remove(downloadId)
+                                notificationBuilders.remove(notificationId)
                             }
                         }
                     }
@@ -224,13 +238,14 @@ class Downloader(
                     val downloadsDir =
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
+                    val illegalChars = "[/\\\\:*?\"<>|]".toRegex()
+                    val sanitizedTitle = illegalChars.replace(completeTrack.title, "_")
                     val tempFile =
-                        File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
+                        File(downloadsDir, "$folder/$sanitizedTitle.tmp").normalize()
 
                     val byteReadChannel = audio.channel
 
                     downloadId = audio.toString().id()
-
                     val notificationId = (downloadId and 0x7FFFFFFF).toInt()
 
                     val notificationBuilder = DownloadNotificationHelper.buildNotification(
@@ -239,7 +254,13 @@ class Downloader(
                         progress = 0,
                         indeterminate = false
                     )
-                    DownloadNotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+                    notificationBuilders[notificationId] = notificationBuilder
+
+                    DownloadNotificationHelper.updateNotification(
+                        applicationContext,
+                        notificationId,
+                        notificationBuilder.build()
+                    )
 
                     val job = coroutineScope {
                         launch(Dispatchers.IO) {
@@ -252,16 +273,6 @@ class Downloader(
                                         var bytesRead: Int
                                         val totalBytesRead = audio.totalBytes
 
-                                        if (totalBytesRead <= 0) {
-                                            val updatedNotification = DownloadNotificationHelper.buildNotification(
-                                                applicationContext,
-                                                "Downloading: ${completeTrack.title}",
-                                                progress = 0,
-                                                indeterminate = true
-                                            )
-                                            DownloadNotificationHelper.updateNotification(applicationContext, notificationId, updatedNotification)
-                                        }
-
                                         var lastProgress = 0
                                         var lastUpdateTime = System.currentTimeMillis()
 
@@ -273,14 +284,18 @@ class Downloader(
                                                 val progress = ((received * 100) / totalBytesRead).toInt().coerceIn(0, 100)
                                                 val currentTime = System.currentTimeMillis()
 
-                                                if ((progress >= lastProgress + 5) || (currentTime - lastUpdateTime >= 5000L)) {
+                                                if ((progress >= lastProgress + 10) && (currentTime - lastUpdateTime >= 500L)) {
                                                     lastProgress = progress
                                                     lastUpdateTime = currentTime
 
                                                     withContext(Dispatchers.Main) {
                                                         notificationBuilder.setProgress(100, progress, false)
                                                             .setContentText("Downloading: $progress%")
-                                                        DownloadNotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+                                                        DownloadNotificationHelper.updateNotification(
+                                                            applicationContext,
+                                                            notificationId,
+                                                            notificationBuilder.build()
+                                                        )
                                                     }
                                                 }
                                             }
@@ -321,10 +336,13 @@ class Downloader(
                                 sendDownloadCompleteBroadcast(downloadId)
 
                                 withContext(Dispatchers.Main) {
-                                    DownloadNotificationHelper.completeNotification(
+                                    notificationBuilder.setContentText("Download complete")
+                                        .setProgress(0, 0, false)
+                                        .setOngoing(false)
+                                    DownloadNotificationHelper.updateNotification(
                                         applicationContext,
                                         notificationId,
-                                        completeTrack.title
+                                        notificationBuilder.build()
                                     )
                                 }
                             } catch (e: Exception) {
@@ -338,6 +356,7 @@ class Downloader(
                                 )
                             } finally {
                                 activeDownloads.remove(downloadId)
+                                notificationBuilders.remove(notificationId)
                             }
                         }
                     }
@@ -349,21 +368,30 @@ class Downloader(
                     downloadDirectoryFor(folder)
                     val downloadsDir =
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+                    val illegalChars = "[/\\\\:*?\"<>|]".toRegex()
+                    val sanitizedTitle = illegalChars.replace(completeTrack.title, "_")
                     val tempFile =
-                        File(downloadsDir, "$folder/${completeTrack.title}.tmp").normalize()
+                        File(downloadsDir, "$folder/$sanitizedTitle.tmp").normalize()
 
                     val inputStream = audio.stream
 
                     downloadId = audio.toString().id()
-
                     val notificationId = (downloadId and 0x7FFFFFFF).toInt()
+
                     val notificationBuilder = DownloadNotificationHelper.buildNotification(
                         applicationContext,
                         "Downloading: ${completeTrack.title}",
                         progress = 0,
                         indeterminate = false
                     )
-                    DownloadNotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+                    notificationBuilders[notificationId] = notificationBuilder
+
+                    DownloadNotificationHelper.updateNotification(
+                        applicationContext,
+                        notificationId,
+                        notificationBuilder.build()
+                    )
 
                     val job = coroutineScope {
                         launch(Dispatchers.IO) {
@@ -376,16 +404,6 @@ class Downloader(
                                         var bytesRead: Int
                                         val totalBytesRead = audio.totalBytes
 
-                                        if (totalBytesRead <= 0) {
-                                            val updatedNotification = DownloadNotificationHelper.buildNotification(
-                                                applicationContext,
-                                                "Downloading: ${completeTrack.title}",
-                                                progress = 0,
-                                                indeterminate = true
-                                            )
-                                            DownloadNotificationHelper.updateNotification(applicationContext, notificationId, updatedNotification)
-                                        }
-
                                         var lastProgress = 0
                                         var lastUpdateTime = System.currentTimeMillis()
 
@@ -397,14 +415,18 @@ class Downloader(
                                                 val progress = ((received * 100) / totalBytesRead).toInt().coerceIn(0, 100)
                                                 val currentTime = System.currentTimeMillis()
 
-                                                if ((progress >= lastProgress + 5) || (currentTime - lastUpdateTime >= 5000L)) {
+                                                if ((progress >= lastProgress + 10) && (currentTime - lastUpdateTime >= 500L)) {
                                                     lastProgress = progress
                                                     lastUpdateTime = currentTime
 
                                                     withContext(Dispatchers.Main) {
                                                         notificationBuilder.setProgress(100, progress, false)
                                                             .setContentText("Downloading: $progress%")
-                                                        DownloadNotificationHelper.updateNotification(applicationContext, notificationId, notificationBuilder)
+                                                        DownloadNotificationHelper.updateNotification(
+                                                            applicationContext,
+                                                            notificationId,
+                                                            notificationBuilder.build()
+                                                        )
                                                     }
                                                 }
                                             }
@@ -445,10 +467,13 @@ class Downloader(
                                 sendDownloadCompleteBroadcast(downloadId)
 
                                 withContext(Dispatchers.Main) {
-                                    DownloadNotificationHelper.completeNotification(
+                                    notificationBuilder.setContentText("Download complete")
+                                        .setProgress(0, 0, false)
+                                        .setOngoing(false)
+                                    DownloadNotificationHelper.updateNotification(
                                         applicationContext,
                                         notificationId,
-                                        completeTrack.title
+                                        notificationBuilder.build()
                                     )
                                 }
                             } catch (e: Exception) {
@@ -462,6 +487,7 @@ class Downloader(
                                 )
                             } finally {
                                 activeDownloads.remove(downloadId)
+                                notificationBuilders.remove(notificationId)
                             }
                         }
                     }
