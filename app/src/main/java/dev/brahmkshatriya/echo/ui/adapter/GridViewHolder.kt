@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -13,7 +14,9 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.toolTipOnClick
 import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.observe
 
 class GridViewHolder(
     val listener: ShelfAdapter.Listener,
@@ -22,7 +25,7 @@ class GridViewHolder(
 ) : ShelfListItemViewHolder(binding.root) {
 
     @SuppressLint("SetTextI18n")
-    override fun bind(item:Any) {
+    override fun bind(item: Any) {
         val media = when (item) {
             is EchoMediaItem -> {
                 binding.iconContainer.isVisible = true
@@ -56,6 +59,12 @@ class GridViewHolder(
                 binding.root.setOnLongClickListener {
                     if (isNumbered) listener.onLongClick(clientId, null, tracks, pos, it)
                     else listener.onLongClick(clientId, media, it)
+                }
+                binding.isPlaying.toolTipOnClick()
+                observe(listener.current) {
+                    val playing = it?.mediaItem?.mediaId == media.id
+                    binding.isPlaying.isVisible = playing
+                    if (playing) (binding.isPlaying.icon as Animatable).start()
                 }
                 media
             }

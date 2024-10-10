@@ -190,7 +190,10 @@ class PlayerViewModel @Inject constructor(
         val mediaItems = tracks.map { track ->
             MediaItemUtils.build(settings, track, clientId, context)
         }
-        val index = if (end) it.mediaItemCount else 1
+        val index = if (end) it.mediaItemCount else {
+            val curr = currentFlow.value?.index ?: 0
+            curr + 1
+        }
         it.addMediaItems(index, mediaItems)
         it.prepare()
     }

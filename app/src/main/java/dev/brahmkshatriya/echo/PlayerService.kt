@@ -137,7 +137,6 @@ class PlayerService : MediaLibraryService() {
             }
         }
 
-        //TODO: Radio Item
         //TODO: Open .eapk files
         //TODO: extension updater
         //TODO: Spotify

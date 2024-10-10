@@ -49,7 +49,7 @@ sealed class EchoMediaItem {
         fun Radio.toMediaItem() = Lists.RadioItem(this)
     }
 
-    fun toShelf() = Shelf.Item(
+    fun toShelf(loadTrack: Boolean = false) = Shelf.Item(
         when (this) {
             is TrackItem -> track.toMediaItem()
             is Profile.ArtistItem -> artist.toMediaItem()
@@ -57,7 +57,8 @@ sealed class EchoMediaItem {
             is Lists.AlbumItem -> album.toMediaItem()
             is Lists.PlaylistItem -> playlist.toMediaItem()
             is Lists.RadioItem -> radio.toMediaItem()
-        }
+        },
+        loadTrack
     )
 
     fun sameAs(other: EchoMediaItem) = when (this) {
