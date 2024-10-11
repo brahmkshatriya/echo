@@ -8,8 +8,10 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
+import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.toolTipOnClick
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
+import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.toTimeString
@@ -53,8 +55,8 @@ class TrackViewHolder(
         }
         binding.isPlaying.toolTipOnClick()
         observe(listener.current) {
-            val playing = it?.mediaItem?.mediaId == track.id
-            binding.isPlaying.isVisible = playing
+            val playing = it.isPlaying(track.id)
+            binding.isPlaying.animateVisibility(playing)
             if(playing) (binding.isPlaying.icon as Animatable).start()
         }
     }

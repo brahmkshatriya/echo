@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaProfileBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
 import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
+import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
@@ -173,7 +174,7 @@ sealed class MediaItemViewHolder(
             this.icon.setImageResource(item.icon())
             isPlaying.toolTipOnClick()
             return { playing: Boolean ->
-                isPlaying.isVisible = playing
+                isPlaying.animateVisibility(playing)
                 if (playing) (isPlaying.icon as Animatable).start()
             }
         }
@@ -193,7 +194,7 @@ sealed class MediaItemViewHolder(
             albumImage(item.size, listImageContainer1, listImageContainer2)
             isPlaying.toolTipOnClick()
             return { playing: Boolean ->
-                isPlaying.isVisible = playing
+                isPlaying.animateVisibility(playing)
                 if (playing) (isPlaying.icon as Animatable).start()
             }
         }

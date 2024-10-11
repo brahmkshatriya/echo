@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.toolTipOnClick
+import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 
@@ -64,7 +65,7 @@ class GridViewHolder(
                 binding.isPlaying.toolTipOnClick()
                 observe(listener.current) {
                     val playing = it.isPlaying(media.id)
-                    binding.isPlaying.isVisible = playing
+                    binding.isPlaying.animateVisibility(playing)
                     if (playing) (binding.isPlaying.icon as Animatable).start()
                 }
                 media
