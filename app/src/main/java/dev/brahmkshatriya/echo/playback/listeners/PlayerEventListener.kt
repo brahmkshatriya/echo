@@ -52,7 +52,8 @@ class PlayerEventListener(
 
     private fun updateCurrentFlow() {
         currentFlow.value = player.currentMediaItem?.let {
-            Current(player.currentMediaItemIndex, it, it.isLoaded, player.isPlaying)
+            val isPlaying = player.isPlaying && player.playbackState == Player.STATE_READY
+            Current(player.currentMediaItemIndex, it, it.isLoaded, isPlaying)
         }
     }
 
@@ -72,6 +73,11 @@ class PlayerEventListener(
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
+        updateCustomLayout()
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        updateCurrentFlow()
         updateCustomLayout()
     }
 

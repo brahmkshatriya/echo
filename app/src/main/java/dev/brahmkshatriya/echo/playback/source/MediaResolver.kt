@@ -16,13 +16,16 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIsVideo
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
 import dev.brahmkshatriya.echo.playback.source.DelayedSource.Companion.getMediaItemById
 import dev.brahmkshatriya.echo.playback.source.DelayedSource.Companion.getTrackClient
 import dev.brahmkshatriya.echo.playback.source.MediaDataSource.Companion.copy
+import dev.brahmkshatriya.echo.utils.saveToCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
@@ -36,7 +39,7 @@ class MediaResolver(
 
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-        val (id, isVideo) = dataSpec.uri.toIdAndIsVideo() ?: return dataSpec
+        val (id, isVideo) = dataSpec.uri.toString().toIdAndIsVideo() ?: return dataSpec
 
         val (_, mediaItem) = runBlocking(Dispatchers.Main) {
             player.getMediaItemById(id)
@@ -45,8 +48,16 @@ class MediaResolver(
         val streamable = if (isVideo) mediaItem.video!! else
             runBlocking(Dispatchers.IO) { runCatching { loadAudio(mediaItem) } }.getOrThrow()
 
+        val uri = if (mediaItem.clientId == OfflineExtension.metadata.id) LOCAL
+        else {
+            if(!isVideo) {
+                val track = mediaItem.track
+                context.saveToCache(track.id, mediaItem.clientId to track, "track")
+            }
+            dataSpec.uri
+        }
         return dataSpec.copy(
-            uri = streamable.hashCode().toString().toUri(),
+            uri = uri,
             customData = streamable
         )
     }
@@ -65,6 +76,8 @@ class MediaResolver(
     }
 
     companion object {
+
+        val LOCAL = "local".toUri()
 
         @OptIn(UnstableApi::class)
         fun getPlayer(
