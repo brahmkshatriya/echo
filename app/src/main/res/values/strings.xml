@@ -238,6 +238,8 @@
     <string name="unhide">Unhide</string>
     <string name="hidden_track">Hidden %1$s</string>
     <string name="unhidden_track">Unhidden %1$s</string>
+    <string name="cache_playlist_warning">Experimental Feature.\nAnything except listening to them is not supported.</string>
+    <string name="cached_songs">Cached Songs</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

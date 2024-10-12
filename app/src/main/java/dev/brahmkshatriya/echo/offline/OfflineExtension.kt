@@ -1,6 +1,9 @@
 package dev.brahmkshatriya.echo.offline
 
 import android.content.Context
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
@@ -45,14 +48,19 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIsVideo
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.utils.toData
 import dev.brahmkshatriya.echo.utils.toJson
 
-class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, TrackClient,
-    AlbumClient, ArtistClient, PlaylistClient, RadioClient, SearchClient, LibraryClient,
-    TrackLikeClient, PlaylistEditorListenerClient, SettingsChangeListenerClient {
+@OptIn(UnstableApi::class)
+class OfflineExtension(
+    val context: Context,
+    val cache: SimpleCache
+) : ExtensionClient, HomeFeedClient, TrackClient, AlbumClient, ArtistClient, PlaylistClient,
+    RadioClient, SearchClient, LibraryClient, TrackLikeClient, PlaylistEditorListenerClient,
+    SettingsChangeListenerClient {
 
     companion object {
         val metadata = Metadata(
@@ -107,7 +115,14 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     var library = MediaStoreUtils.getAllSongs(context, settings)
     private fun refreshLibrary() {
         library = MediaStoreUtils.getAllSongs(context, settings)
+        cachedTracks = getCachedTracks()
     }
+
+    @OptIn(UnstableApi::class)
+    private fun getCachedTracks() = cache.keys.mapNotNull { key ->
+        val (id, _) = key.toIdAndIsVideo() ?: return@mapNotNull null
+        context.getFromCache<Pair<String, Track>>(id, "track")
+    }.reversed()
 
     override fun setSettings(settings: Settings) {}
 
@@ -237,10 +252,11 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
     }
 
     override suspend fun loadPlaylist(playlist: Playlist) =
-        find(playlist)!!.toPlaylist()
+        if (playlist.id == "cached") playlist else find(playlist)!!.toPlaylist()
 
     override fun loadTracks(playlist: Playlist): PagedData<Track> = PagedData.Single {
-        find(playlist)!!.songList.map { it }
+        if (playlist.id == "cached") cachedTracks.map { it.second }
+        else find(playlist)!!.songList.map { it }
     }
 
     override fun getShelves(playlist: Playlist) = PagedData.Single<Shelf> {
@@ -378,6 +394,7 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
         "Playlists", "Folders"
     ).map { Tab(it, it) }
 
+    private var cachedTracks = listOf<Pair<String, Track>>()
     override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
         if (refreshLibrary) refreshLibrary()
         return when (tab?.id) {
@@ -385,8 +402,16 @@ class OfflineExtension(val context: Context) : ExtensionClient, HomeFeedClient, 
                 .toShelf(context, null).items!!
 
             else -> {
-                library.playlistList.map { it.toPlaylist().toMediaItem().toShelf() }
-                    .toPaged()
+                val cached = if (cachedTracks.isNotEmpty()) Playlist(
+                    id = "cached",
+                    title = context.getString(R.string.cached_songs),
+                    isEditable = false,
+                    cover = cachedTracks.first().second.cover,
+                    description = context.getString(R.string.cache_playlist_warning),
+                    tracks = cachedTracks.size
+                ).toMediaItem().toShelf() else null
+                val playlists = library.playlistList.map { it.toPlaylist().toMediaItem().toShelf() }
+                (listOfNotNull(cached) + playlists).toPaged()
             }
         }
     }

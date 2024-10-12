@@ -2,6 +2,9 @@ package dev.brahmkshatriya.echo.di
 
 import android.app.Application
 import android.content.SharedPreferences
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.SimpleCache
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,9 +24,11 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class ExtensionModule {
 
+    @OptIn(UnstableApi::class)
     @Provides
     @Singleton
-    fun provideOfflineExtension(context: Application) = OfflineExtension(context)
+    fun provideOfflineExtension(context: Application, cache: SimpleCache) =
+        OfflineExtension(context, cache)
 
     @Provides
     @Singleton

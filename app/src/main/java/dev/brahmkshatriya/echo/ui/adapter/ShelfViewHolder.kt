@@ -29,7 +29,7 @@ import dev.brahmkshatriya.echo.databinding.ItemShelfListsBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaListsBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
+import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.adapter.GridViewHolder.Companion.ifGrid
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
@@ -153,8 +153,7 @@ sealed class ShelfViewHolder(
             val media = (item as? Shelf.Item)?.media ?: return
             val isPlaying = binding.bind(media)
             observe(listener.current) {
-                val mediaItem = it?.mediaItem
-                isPlaying(mediaItem?.mediaId == media.id || mediaItem?.context?.id == media.id)
+                isPlaying(it.isPlaying(media.id))
             }
             binding.more.setOnClickListener {
                 listener.onLongClick(clientId, media, transitionView)
@@ -209,8 +208,7 @@ sealed class ShelfViewHolder(
             if (media !is EchoMediaItem.Lists) return
             val isPlaying = binding.listsInfo.bind(media)
             observe(listener.current) {
-                val mediaItem = it?.mediaItem
-                isPlaying(mediaItem?.mediaId == media.id || mediaItem?.context?.id == media.id)
+                isPlaying(it.isPlaying(media.id))
             }
             binding.listsInfo.more.setOnClickListener {
                 listener.onLongClick(clientId, media, transitionView)

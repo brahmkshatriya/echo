@@ -18,16 +18,9 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
-import dev.brahmkshatriya.echo.common.models.Album
-import dev.brahmkshatriya.echo.common.models.Artist
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.Playlist
-import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.common.models.User
+import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
-import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.item.ItemFragment
+import dev.brahmkshatriya.echo.ui.common.openItemFragmentFromUri
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.checkAudioPermissions
@@ -39,7 +32,6 @@ import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
@@ -85,9 +77,9 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             uiViewModel.setSystemInsets(this, insets)
-            val navBarSize =  uiViewModel.systemInsets.value.bottom
+            val navBarSize = uiViewModel.systemInsets.value.bottom
             val full = playerViewModel.settings.getBoolean(NAVBAR_GRADIENT, true)
-            navView.createNavDrawable(isRail,navBarSize, !full)
+            navView.createNavDrawable(isRail, navBarSize, !full)
             insets
         }
 
@@ -154,47 +146,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
         val uri = data
-        if (uri != null) {
-            fun createSnack(id: Int) {
-                val snackbar by viewModels<SnackBar>()
-                val message = getString(id)
-                snackbar.create(SnackBar.Message(message))
-            }
-
-            val extensionType = uri.host
-            when (extensionType) {
-                "music" -> {
-                    val extensionId = uri.pathSegments.firstOrNull()
-                    if (extensionId == null) {
-                        createSnack(R.string.error_no_client)
-                        return
-                    }
-                    val type = uri.pathSegments.getOrNull(1)
-                    val id = uri.pathSegments.getOrNull(2)
-                    if (id == null) {
-                        createSnack(R.string.error_no_id)
-                        return
-                    }
-                    val name = uri.getQueryParameter("name").orEmpty()
-                    val item: EchoMediaItem? = when (type) {
-                        "user" -> User(id, name).toMediaItem()
-                        "artist" -> Artist(id, name).toMediaItem()
-                        "track" -> Track(id, name).toMediaItem()
-                        "album" -> Album(id, name).toMediaItem()
-                        "playlist" -> Playlist(id, name, false).toMediaItem()
-                        else -> null
-                    }
-                    if (item == null) {
-                        createSnack(R.string.error_invalid_type)
-                        return
-                    }
-                    openFragment(ItemFragment.newInstance(extensionId, item))
-                }
-
-                else -> {
-                    createSnack(R.string.invalid_extension_host)
-                }
-            }
+        println("URI: $uri")
+        when (uri?.scheme) {
+            "echo" -> openItemFragmentFromUri(uri)
+            "file" -> openExtensionInstaller(uri)
         }
     }
 
