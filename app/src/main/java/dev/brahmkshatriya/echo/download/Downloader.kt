@@ -99,7 +99,9 @@ class Downloader(
                         }
                     }
 
-                    is EchoMediaItem.Lists.PlaylistItem -> extension.get<PlaylistClient, Unit>(throwable) {
+                    is EchoMediaItem.Lists.PlaylistItem -> extension.get<PlaylistClient, Unit>(
+                        throwable
+                    ) {
                         val playlist = loadPlaylist(item.playlist)
                         val tracks = loadTracks(playlist)
                         tracks.clear()
@@ -152,350 +154,357 @@ class Downloader(
         parent: EchoMediaItem.Lists? = null,
         group: DownloadGroup? = null
     ) = launch {
-            val loadedTrack = extension.get<TrackClient, Track>(throwable) { loadTrack(track) }
-                ?: return@launch
-            val album =
-                (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loadedTrack.album?.let {
-                    extension.get<AlbumClient, Album>(throwable) { loadAlbum(it) }
-                } ?: loadedTrack.album
-            val completeTrack = loadedTrack.copy(album = album, cover = track.cover)
-            val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
-            val stream = selectAudioStream(settings, completeTrack.audioStreamables)
-                ?: throw Exception("No Stream Found")
-            val media = extension.get<TrackClient, Streamable.Media.AudioOnly>(throwable) {
-                getStreamableMedia(stream) as Streamable.Media.AudioOnly
-            } ?: return@launch
-            val sanitizedParent = illegalChars.replace(parent?.title.orEmpty(), "_")
-            val folder = "Echo${sanitizedParent.let { "/$it" }}"
-            var file: File
-            val downloadId: Long
-            when (val audio = media.audio) {
-                is Streamable.Audio.Http -> {
-                    downloadDirectoryFor(folder)
-                    val sanitizedTitle = illegalChars.replace(completeTrack.title, "_")
-                    file = File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                        "${folder}/$sanitizedTitle.m4a"
-                    ).normalize()
+        val loadedTrack = extension.get<TrackClient, Track>(throwable) { loadTrack(track) }
+            ?: return@launch
+        val album =
+            (parent as? EchoMediaItem.Lists.AlbumItem)?.album ?: loadedTrack.album?.let {
+                extension.get<AlbumClient, Album>(throwable) { loadAlbum(it) }
+            } ?: loadedTrack.album
+        val completeTrack = loadedTrack.copy(album = album, cover = track.cover)
+        val settings = getSharedPreferences(packageName, Context.MODE_PRIVATE)
+        val stream = selectAudioStream(settings, completeTrack.audioStreamables)
+            ?: throw Exception("No Stream Found")
+        val media = extension.get<TrackClient, Streamable.Media.AudioOnly>(throwable) {
+            getStreamableMedia(stream) as Streamable.Media.AudioOnly
+        } ?: return@launch
+        val sanitizedParent = illegalChars.replace(parent?.title.orEmpty(), "_")
+        val folder = "Echo${sanitizedParent.let { "/$it" }}"
+        var file: File
+        val downloadId: Long
+        when (val audio = media.audio) {
+            is Streamable.Audio.Http -> {
+                downloadDirectoryFor(folder)
+                val sanitizedTitle = illegalChars.replace(completeTrack.title, "_")
+                file = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "${folder}/$sanitizedTitle.m4a"
+                ).normalize()
 
-                    val request = audio.request
+                val request = audio.request
 
-                    val headers = StringBuilder()
-                    request.headers.forEach { header ->
-                        headers.append("${header.key}: ${header.value}\r\n")
-                    }
-
-                    val ffmpegCommand = buildString {
-                        if (headers.isNotEmpty()) {
-                            append("-headers \"${headers}\" ")
-                        }
-                        append("-i \"${request.url}\" ")
-                        append("-c copy ")
-                        append("-bsf:a aac_adtstoasc ")
-                        append("\"${file.absolutePath}\"")
-                    }
-
-                    downloadId = audio.toString().id()
-                    val notificationId: Int
-                    val notificationBuilder: NotificationCompat.Builder
-
-                    if (group != null) {
-                        notificationId = group.notificationId
-                        notificationBuilder = group.notificationBuilder
-                    } else {
-                        notificationId = (downloadId and 0x7FFFFFFF).toInt()
-
-                        notificationBuilder = DownloadNotificationHelper.buildNotification(
-                            applicationContext,
-                            "Downloading: ${completeTrack.title}",
-                            indeterminate = true
-                        )
-                        notificationBuilders[notificationId] = notificationBuilder
-
-                        DownloadNotificationHelper.updateNotification(
-                            applicationContext,
-                            notificationId,
-                            notificationBuilder.build()
-                        )
-                    }
-
-                    val job = launch {
-                            try {
-                                    val session = FFmpegKit.execute(ffmpegCommand)
-                                    if (ReturnCode.isSuccess(session.returnCode)) {
-
-                                        dao.insertDownload(
-                                            DownloadEntity(
-                                                id = downloadId,
-                                                itemId = completeTrack.id,
-                                                clientId = extension.id,
-                                                groupName = parent?.title,
-                                                downloadPath = file.absolutePath.orEmpty()
-                                            )
-                                        )
-
-                                        applicationContext.saveToCache(
-                                            completeTrack.id,
-                                            completeTrack,
-                                            "downloads"
-                                        )
-
-                                        sendDownloadCompleteBroadcast(downloadId)
-
-                                        if (group != null) {
-                                            group.downloadedTracks += 1
-
-                                            withContext(Dispatchers.Main) {
-                                                notificationBuilder.setContentText("Downloaded ${group.downloadedTracks}/${group.totalTracks} Songs")
-                                                    .setProgress(group.totalTracks, group.downloadedTracks, false)
-                                                if (group.downloadedTracks == group.totalTracks) {
-                                                    notificationBuilder.setContentText("Download complete")
-                                                        .setProgress(0, 0, false)
-                                                        .setOngoing(false)
-                                                    activeDownloadGroups.remove(group.id)
-                                                }
-                                                DownloadNotificationHelper.updateNotification(
-                                                    applicationContext,
-                                                    notificationId,
-                                                    notificationBuilder.build()
-                                                )
-                                            }
-                                        } else {
-                                            withContext(Dispatchers.Main) {
-                                                notificationBuilder.setContentText("Download complete")
-                                                    .setProgress(0, 0, false)
-                                                    .setOngoing(false)
-                                                DownloadNotificationHelper.updateNotification(
-                                                    applicationContext,
-                                                    notificationId,
-                                                    notificationBuilder.build()
-                                                )
-                                            }
-                                        }
-                                    } else if (ReturnCode.isCancel(session.returnCode)) {
-                                        DownloadNotificationHelper.errorNotification(
-                                            applicationContext,
-                                            notificationId,
-                                            completeTrack.title,
-                                            "Cancelled"
-                                        )
-                                    } else {
-                                        val failureMessage =
-                                            session.failStackTrace ?: "Unknown error"
-                                        println("Failed to download: $failureMessage")
-                                        throwable.emit(Exception("FFmpeg failed with code ${session.returnCode}"))
-
-                                        DownloadNotificationHelper.errorNotification(
-                                            applicationContext,
-                                            notificationId,
-                                            completeTrack.title,
-                                            failureMessage
-                                        )
-                                    }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    throwable.emit(e)
-                                }
-
-                                DownloadNotificationHelper.errorNotification(
-                                    applicationContext,
-                                    notificationId,
-                                    completeTrack.title,
-                                    e.message ?: "Unknown error"
-                                )
-                            } finally {
-                                activeDownloads.remove(downloadId)
-                                notificationBuilders.remove(notificationId)
-                            }
-                        }
-
-                    activeDownloads[downloadId] = job
+                val headers = StringBuilder()
+                request.headers.forEach { header ->
+                    headers.append("${header.key}: ${header.value}\r\n")
                 }
 
-                is Streamable.Audio.Channel, is Streamable.Audio.ByteStream -> {
-                    downloadDirectoryFor(folder)
-                    val downloadsDir =
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-
-                    val sanitizedTitle = illegalChars.replace(completeTrack.title, "_")
-                    val tempFile =
-                        File(downloadsDir, "$folder/$sanitizedTitle.tmp").normalize()
-
-                    var totalBytes = 0L
-                    val inputStream = when(audio) {
-                        is Streamable.Audio.Channel -> {
-                            totalBytes = audio.totalBytes
-                            audio.channel.toInputStream()
-                        }
-                        is Streamable.Audio.ByteStream -> {
-                            totalBytes = audio.totalBytes
-                            audio.stream
-                        }
-                        else -> {
-                            null
-                        }
+                val ffmpegCommand = buildString {
+                    if (headers.isNotEmpty()) {
+                        append("-headers \"${headers}\" ")
                     }
+                    append("-i \"${request.url}\" ")
+                    append("-c copy ")
+                    append("-bsf:a aac_adtstoasc ")
+                    append("\"${file.absolutePath}\"")
+                }
 
-                    downloadId = audio.toString().id()
-                    val notificationId: Int
-                    val notificationBuilder: NotificationCompat.Builder
+                downloadId = audio.toString().id()
+                val notificationId: Int
+                val notificationBuilder: NotificationCompat.Builder
 
-                    if (group != null) {
-                        notificationId = group.notificationId
-                        notificationBuilder = group.notificationBuilder
-                    } else {
-                        notificationId = (downloadId and 0x7FFFFFFF).toInt()
-                        notificationBuilder = DownloadNotificationHelper.buildNotification(
-                            applicationContext,
-                            "Downloading: ${completeTrack.title}",
-                            indeterminate = true
-                        )
-                        notificationBuilders[notificationId] = notificationBuilder
+                if (group != null) {
+                    notificationId = group.notificationId
+                    notificationBuilder = group.notificationBuilder
+                } else {
+                    notificationId = (downloadId and 0x7FFFFFFF).toInt()
 
-                        DownloadNotificationHelper.updateNotification(
-                            applicationContext,
-                            notificationId,
-                            notificationBuilder.build()
-                        )
-                    }
+                    notificationBuilder = DownloadNotificationHelper.buildNotification(
+                        applicationContext,
+                        "Downloading: ${completeTrack.title}",
+                        indeterminate = true
+                    )
+                    notificationBuilders[notificationId] = notificationBuilder
 
-                    val job = launch {
-                            try {
-                                BufferedInputStream(inputStream).use { inputStream ->
-                                    FileOutputStream(tempFile, true).use { outputStream ->
+                    DownloadNotificationHelper.updateNotification(
+                        applicationContext,
+                        notificationId,
+                        notificationBuilder.build()
+                    )
+                }
 
-                                        val buffer = ByteArray(4096)
-                                        var received: Long = 0
-                                        var bytesRead: Int
-                                        val totalBytesRead = totalBytes
+                val job = launch {
+                    try {
+                        val session = FFmpegKit.execute(ffmpegCommand)
+                        if (ReturnCode.isSuccess(session.returnCode)) {
 
-                                        var lastProgress = 0
-                                        var lastUpdateTime = System.currentTimeMillis()
-
-                                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                                            outputStream.write(buffer, 0, bytesRead)
-                                            received += bytesRead
-
-                                            if (totalBytesRead > 0 && group == null) {
-                                                val progress = ((received * 100) / totalBytesRead).toInt().coerceIn(0, 100)
-                                                val currentTime = System.currentTimeMillis()
-
-                                                if ((progress >= lastProgress + 10) && (currentTime - lastUpdateTime >= 500L)) {
-                                                    lastProgress = progress
-                                                    lastUpdateTime = currentTime
-
-
-                                                    withContext(Dispatchers.Main) {
-                                                        notificationBuilder.setProgress(
-                                                            100,
-                                                            progress,
-                                                            false
-                                                        )
-                                                            .setContentText("Downloading: $progress%")
-                                                        DownloadNotificationHelper.updateNotification(
-                                                            applicationContext,
-                                                            notificationId,
-                                                            notificationBuilder.build()
-                                                        )
-                                                    }
-                                                }
-                                            }
-
-                                            if (received >= totalBytesRead) {
-                                                break
-                                            }
-                                        }
-                                    }
-                                }
-
-                                val detectedExtension = probeFileFormat(tempFile) ?: "mp3"
-                                val finalFile = File(
-                                    tempFile.parent,
-                                    "${tempFile.nameWithoutExtension}.$detectedExtension"
+                            dao.insertDownload(
+                                DownloadEntity(
+                                    id = downloadId,
+                                    itemId = completeTrack.id,
+                                    clientId = extension.id,
+                                    groupName = parent?.title,
+                                    downloadPath = file.absolutePath.orEmpty()
                                 )
+                            )
 
-                                tempFile.renameTo(finalFile)
+                            applicationContext.saveToCache(
+                                completeTrack.id,
+                                completeTrack,
+                                "downloads"
+                            )
 
-                                file = finalFile
+                            sendDownloadCompleteBroadcast(downloadId)
 
-                                dao.insertDownload(
-                                    DownloadEntity(
-                                        id = downloadId,
-                                        itemId = completeTrack.id,
-                                        clientId = extension.id,
-                                        groupName = parent?.title,
-                                        downloadPath = file.absolutePath.orEmpty()
-                                    )
-                                )
+                            if (group != null) {
+                                group.downloadedTracks += 1
 
-                                applicationContext.saveToCache(
-                                    completeTrack.id,
-                                    completeTrack,
-                                    "downloads"
-                                )
-
-                                sendDownloadCompleteBroadcast(downloadId)
-
-                                if (group != null) {
-                                    group.downloadedTracks += 1
-
-                                    withContext(Dispatchers.Main) {
-                                        notificationBuilder.setContentText("Downloaded ${group.downloadedTracks}/${group.totalTracks} Songs")
-                                            .setProgress(group.totalTracks, group.downloadedTracks, false)
-                                        if (group.downloadedTracks == group.totalTracks) {
-                                            notificationBuilder.setContentText("Download complete")
-                                                .setProgress(0, 0, false)
-                                                .setOngoing(false)
-                                            activeDownloadGroups.remove(group.id)
-                                        }
-                                        DownloadNotificationHelper.updateNotification(
-                                            applicationContext,
-                                            notificationId,
-                                            notificationBuilder.build()
+                                withContext(Dispatchers.Main) {
+                                    notificationBuilder.setContentText("Downloaded ${group.downloadedTracks}/${group.totalTracks} Songs")
+                                        .setProgress(
+                                            group.totalTracks,
+                                            group.downloadedTracks,
+                                            false
                                         )
-                                    }
-                                } else {
-                                    withContext(Dispatchers.Main) {
+                                    if (group.downloadedTracks == group.totalTracks) {
                                         notificationBuilder.setContentText("Download complete")
                                             .setProgress(0, 0, false)
                                             .setOngoing(false)
-                                        DownloadNotificationHelper.updateNotification(
-                                            applicationContext,
-                                            notificationId,
-                                            notificationBuilder.build()
-                                        )
+                                        activeDownloadGroups.remove(group.id)
+                                    }
+                                    DownloadNotificationHelper.updateNotification(
+                                        applicationContext,
+                                        notificationId,
+                                        notificationBuilder.build()
+                                    )
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    notificationBuilder.setContentText("Download complete")
+                                        .setProgress(0, 0, false)
+                                        .setOngoing(false)
+                                    DownloadNotificationHelper.updateNotification(
+                                        applicationContext,
+                                        notificationId,
+                                        notificationBuilder.build()
+                                    )
+                                }
+                            }
+                        } else if (ReturnCode.isCancel(session.returnCode)) {
+                            DownloadNotificationHelper.errorNotification(
+                                applicationContext,
+                                notificationId,
+                                completeTrack.title,
+                                "Cancelled"
+                            )
+                        } else {
+                            val failureMessage =
+                                session.failStackTrace ?: "Unknown error"
+                            println("Failed to download: $failureMessage")
+                            throwable.emit(Exception("FFmpeg failed with code ${session.returnCode}"))
+
+                            DownloadNotificationHelper.errorNotification(
+                                applicationContext,
+                                notificationId,
+                                completeTrack.title,
+                                failureMessage
+                            )
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            throwable.emit(e)
+                        }
+
+                        DownloadNotificationHelper.errorNotification(
+                            applicationContext,
+                            notificationId,
+                            completeTrack.title,
+                            e.message ?: "Unknown error"
+                        )
+                    } finally {
+                        activeDownloads.remove(downloadId)
+                        notificationBuilders.remove(notificationId)
+                    }
+                }
+
+                activeDownloads[downloadId] = job
+            }
+
+            is Streamable.Audio.Channel, is Streamable.Audio.ByteStream -> {
+                downloadDirectoryFor(folder)
+                val downloadsDir =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+                val sanitizedTitle = illegalChars.replace(completeTrack.title, "_")
+                val tempFile =
+                    File(downloadsDir, "$folder/$sanitizedTitle.tmp").normalize()
+
+                var totalBytes = 0L
+                val inputStream = when (audio) {
+                    is Streamable.Audio.Channel -> {
+                        totalBytes = audio.totalBytes
+                        audio.channel.toInputStream()
+                    }
+
+                    is Streamable.Audio.ByteStream -> {
+                        totalBytes = audio.totalBytes
+                        audio.stream
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
+
+                downloadId = audio.toString().id()
+                val notificationId: Int
+                val notificationBuilder: NotificationCompat.Builder
+
+                if (group != null) {
+                    notificationId = group.notificationId
+                    notificationBuilder = group.notificationBuilder
+                } else {
+                    notificationId = (downloadId and 0x7FFFFFFF).toInt()
+                    notificationBuilder = DownloadNotificationHelper.buildNotification(
+                        applicationContext,
+                        "Downloading: ${completeTrack.title}",
+                        indeterminate = true
+                    )
+                    notificationBuilders[notificationId] = notificationBuilder
+
+                    DownloadNotificationHelper.updateNotification(
+                        applicationContext,
+                        notificationId,
+                        notificationBuilder.build()
+                    )
+                }
+
+                val job = launch {
+                    try {
+                        BufferedInputStream(inputStream).use { inputStream ->
+                            FileOutputStream(tempFile, true).use { outputStream ->
+
+                                val buffer = ByteArray(4096)
+                                var received: Long = 0
+                                var bytesRead: Int
+                                val totalBytesRead = totalBytes
+
+                                var lastProgress = 0
+                                var lastUpdateTime = System.currentTimeMillis()
+
+                                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                    outputStream.write(buffer, 0, bytesRead)
+                                    received += bytesRead
+
+                                    if (totalBytesRead > 0 && group == null) {
+                                        val progress = ((received * 100) / totalBytesRead).toInt()
+                                            .coerceIn(0, 100)
+                                        val currentTime = System.currentTimeMillis()
+
+                                        if ((progress >= lastProgress + 10) && (currentTime - lastUpdateTime >= 500L)) {
+                                            lastProgress = progress
+                                            lastUpdateTime = currentTime
+
+
+                                            withContext(Dispatchers.Main) {
+                                                notificationBuilder.setProgress(
+                                                    100,
+                                                    progress,
+                                                    false
+                                                )
+                                                    .setContentText("Downloading: $progress%")
+                                                DownloadNotificationHelper.updateNotification(
+                                                    applicationContext,
+                                                    notificationId,
+                                                    notificationBuilder.build()
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    if (received >= totalBytesRead) {
+                                        break
                                     }
                                 }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    throwable.emit(e)
-                                }
-
-                                if (tempFile.exists()) {
-                                    tempFile.delete()
-                                }
-
-                                DownloadNotificationHelper.errorNotification(
-                                    applicationContext,
-                                    notificationId,
-                                    completeTrack.title,
-                                    e.message ?: "Unknown error"
-                                )
-                            } finally {
-                                if (tempFile.exists()) {
-                                    tempFile.delete()
-                                }
-
-                                activeDownloads.remove(downloadId)
-                                notificationBuilders.remove(notificationId)
                             }
                         }
 
-                    activeDownloads[downloadId] = job
+                        val detectedExtension = probeFileFormat(tempFile) ?: "mp3"
+                        val finalFile = File(
+                            tempFile.parent,
+                            "${tempFile.nameWithoutExtension}.$detectedExtension"
+                        )
+
+                        tempFile.renameTo(finalFile)
+
+                        file = finalFile
+
+                        dao.insertDownload(
+                            DownloadEntity(
+                                id = downloadId,
+                                itemId = completeTrack.id,
+                                clientId = extension.id,
+                                groupName = parent?.title,
+                                downloadPath = file.absolutePath.orEmpty()
+                            )
+                        )
+
+                        applicationContext.saveToCache(
+                            completeTrack.id,
+                            completeTrack,
+                            "downloads"
+                        )
+
+                        sendDownloadCompleteBroadcast(downloadId)
+
+                        if (group != null) {
+                            group.downloadedTracks += 1
+
+                            withContext(Dispatchers.Main) {
+                                notificationBuilder.setContentText("Downloaded ${group.downloadedTracks}/${group.totalTracks} Songs")
+                                    .setProgress(group.totalTracks, group.downloadedTracks, false)
+                                if (group.downloadedTracks == group.totalTracks) {
+                                    notificationBuilder.setContentText("Download complete")
+                                        .setProgress(0, 0, false)
+                                        .setOngoing(false)
+                                    activeDownloadGroups.remove(group.id)
+                                }
+                                DownloadNotificationHelper.updateNotification(
+                                    applicationContext,
+                                    notificationId,
+                                    notificationBuilder.build()
+                                )
+                            }
+                        } else {
+                            withContext(Dispatchers.Main) {
+                                notificationBuilder.setContentText("Download complete")
+                                    .setProgress(0, 0, false)
+                                    .setOngoing(false)
+                                DownloadNotificationHelper.updateNotification(
+                                    applicationContext,
+                                    notificationId,
+                                    notificationBuilder.build()
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            throwable.emit(e)
+                        }
+
+                        if (tempFile.exists()) {
+                            tempFile.delete()
+                        }
+
+                        DownloadNotificationHelper.errorNotification(
+                            applicationContext,
+                            notificationId,
+                            completeTrack.title,
+                            e.message ?: "Unknown error"
+                        )
+                    } finally {
+                        if (tempFile.exists()) {
+                            tempFile.delete()
+                        }
+
+                        activeDownloads.remove(downloadId)
+                        notificationBuilders.remove(notificationId)
+                    }
                 }
 
-                else -> throw Exception("Unsupported audio stream type")
+                activeDownloads[downloadId] = job
             }
+
+            else -> throw Exception("Unsupported audio stream type")
+        }
     }
 
     private fun Context.sendDownloadCompleteBroadcast(downloadId: Long) {
@@ -507,7 +516,8 @@ class Downloader(
     }
 
     private suspend fun probeFileFormat(file: File): String? = withContext(Dispatchers.IO) {
-        val ffprobeCommand = "-v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 \"${file.absolutePath}\""
+        val ffprobeCommand =
+            "-v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 \"${file.absolutePath}\""
 
         val session = FFprobeKit.execute(ffprobeCommand)
         val returnCode = session.returnCode
@@ -521,7 +531,8 @@ class Downloader(
     }
 
     private fun downloadDirectoryFor(folder: String?): File {
-        val directory = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/$folder")
+        val directory =
+            File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/$folder")
         if (!directory.exists()) directory.mkdirs()
         return directory
     }
