@@ -212,6 +212,7 @@
     <string name="permission_required">Permission Required</string>
     <string name="permission_denied">Permission Denied</string>
     <string name="music_permission_required_summary">This permission is required to access your music library</string>
+    <string name="notification_permission_required_summary">This permission is required to show download notifications</string>
     <string name="remove_from_library">Remove from Library</string>
     <string name="save_to_library">Save to Library</string>
     <string name="show_all">Show All</string>
@@ -232,10 +233,13 @@
     <string name="saved_item_to_library">Saved %1$s to library</string>
     <string name="liked_track">Liked %1$s</string>
     <string name="unliked_track">Unliked %1$s</string>
+    <string name="back">Back</string>
     <string name="hide">Hide</string>
     <string name="unhide">Unhide</string>
     <string name="hidden_track">Hidden %1$s</string>
     <string name="unhidden_track">Unhidden %1$s</string>
+    <string name="cache_playlist_warning">Experimental Feature.\nAnything except listening to them is not supported.</string>
+    <string name="cached_songs">Cached Songs</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

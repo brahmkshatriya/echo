@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf.Item
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerFragment
 import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
@@ -30,6 +31,7 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
 open class ShelfClickListener(
@@ -130,6 +132,9 @@ open class ShelfClickListener(
             .show(fragmentManager, null)
         return true
     }
+
+    override val current: StateFlow<Current?>
+        get() = fragment.activityViewModels<PlayerViewModel>().value.currentFlow
 
 
     override fun onClick(clientId: String, shelf: Shelf, transitionView: View) {

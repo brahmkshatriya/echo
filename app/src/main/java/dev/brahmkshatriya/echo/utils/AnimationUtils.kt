@@ -66,7 +66,7 @@ fun NavigationBarView.animateTranslation(
     }
 }
 
-fun View.animateVisibility(visible: Boolean, animate: Boolean) {
+fun View.animateVisibility(visible: Boolean, animate: Boolean = true) {
     if (animations && animate && isVisible != visible) {
         isVisible = true
         startAnimation(

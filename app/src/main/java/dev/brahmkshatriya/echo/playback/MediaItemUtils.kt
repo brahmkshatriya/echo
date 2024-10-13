@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.playback
 
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -79,9 +78,8 @@ object MediaItemUtils {
         item.build()
     }
 
-    fun Uri.toIdAndIsVideo() = runCatching {
-        val string = toString()
-        if (string.startsWith('{')) string.toData<Pair<String, Boolean>>()
+    fun String.toIdAndIsVideo() = runCatching {
+        if (startsWith('{')) toData<Pair<String, Boolean>>()
         else null
     }.getOrNull()
 

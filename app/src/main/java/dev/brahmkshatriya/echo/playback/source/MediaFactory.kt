@@ -7,7 +7,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.ResolvingDataSource
-import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
@@ -50,9 +49,7 @@ class MediaFactory(
 
     private val mediaResolver = MediaResolver(context, extListFlow)
     private val dataSource = ResolvingDataSource.Factory(
-        CacheDataSource
-            .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(MediaDataSource.Factory(context)),
+        CustomCacheDataSource.Factory(cache, MediaDataSource.Factory(context)),
         mediaResolver
     )
     private val default = lazily { DefaultMediaSourceFactory(dataSource) }

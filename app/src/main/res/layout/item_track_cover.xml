@@ -35,4 +35,7 @@
 
     </androidx.cardview.widget.CardView>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/isPlaying"
+        style="@style/SmallNowPlayingButton" />
 </androidx.cardview.widget.CardView>
