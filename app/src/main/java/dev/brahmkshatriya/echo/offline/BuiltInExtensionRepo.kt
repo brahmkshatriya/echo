@@ -6,7 +6,7 @@ import dev.brahmkshatriya.echo.extensions.plugger.LazyPluginRepo
 import dev.brahmkshatriya.echo.extensions.plugger.lazily
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class LocalExtensionRepo(
+class BuiltInExtensionRepo(
     private val extension: OfflineExtension
 ) : LazyPluginRepo<Metadata, ExtensionClient> {
 
@@ -18,5 +18,5 @@ class LocalExtensionRepo(
     )
 
     private fun getLazy(metadata: Metadata, extension: ExtensionClient) =
-        Result.success(Pair(metadata, lazily(extension)))
+        Result.success(Pair(metadata, lazily { extension }))
 }

@@ -137,7 +137,6 @@ class PlayerService : MediaLibraryService() {
             }
         }
 
-        //TODO: Open .eapk files
         //TODO: extension updater
         //TODO: Spotify
         //TODO: EQ, Pitch, Tempo, Reverb & Sleep Timer(5m, 10m, 15m, 30m, 45m, 1hr, End of track)
@@ -157,7 +156,7 @@ class PlayerService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        val stopPlayer = settings.getBoolean(CLOSE_PLAYER, false)
+        val stopPlayer = settings.getBoolean(CLOSE_PLAYER, true)
         val player = mediaSession?.player ?: return stopSelf()
         if (stopPlayer || !player.isPlaying) stopSelf()
     }
