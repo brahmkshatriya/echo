@@ -1,7 +1,10 @@
 package dev.brahmkshatriya.echo.viewmodels
 
+import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,9 +20,13 @@ import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.priorityKey
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.setupMusicExtension
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.installExtension
+import dev.brahmkshatriya.echo.extensions.uninstallExtension
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
@@ -29,11 +36,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.utils.mapState
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
+    val app: Application,
+    val extensionLoader: ExtensionLoader,
+    val messageFlow: MutableSharedFlow<SnackBar.Message>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
@@ -80,6 +91,42 @@ class ExtensionViewModel @Inject constructor(
             }
         }
     }
+
+    suspend fun install(context: FragmentActivity, file: File, installAsApk: Boolean) {
+        val result = installExtension(context, file, installAsApk).getOrElse {
+            throwableFlow.emit(it)
+            false
+        }
+        if (result) messageFlow.emit(SnackBar.Message(app.getString(R.string.extension_installed_successfully)))
+    }
+
+    suspend fun uninstall(
+        context: FragmentActivity, extension: Extension<*>, function: (Boolean) -> Unit
+    ) {
+        val result = uninstallExtension(context, extension).getOrElse {
+            throwableFlow.emit(it)
+            false
+        }
+        if (result) messageFlow.emit(SnackBar.Message(app.getString(R.string.extension_uninstalled_successfully)))
+        function(result)
+    }
+
+    fun moveExtensionItem(type: ExtensionType, toPos: Int, fromPos: Int) {
+        settings.edit {
+            val flow = extensionLoader.priorityMap[type]!!
+            val list = flow.value.toMutableList()
+            list.add(toPos, list.removeAt(fromPos))
+            flow.value = list
+            putString(type.priorityKey(), list.joinToString(","))
+        }
+    }
+
+    fun getExtensionListFlow(type: ExtensionType) = when (type) {
+        ExtensionType.MUSIC -> extensionListFlow
+        ExtensionType.TRACKER -> trackerListFlow
+        ExtensionType.LYRICS -> lyricsListFlow
+    }
+
 
     companion object {
         fun Context.noClient() = SnackBar.Message(

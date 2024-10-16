@@ -26,7 +26,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.run
-import dev.brahmkshatriya.echo.extensions.toSettings
+import dev.brahmkshatriya.echo.utils.toSettings
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialMultipleChoicePreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference

@@ -18,7 +18,7 @@ data class LazyPluginRepoImpl<TSourceInput, TMetadata, TPlugin : Any>(
     }.mapState { metadata ->
         metadata.map { resultMetadata ->
             resultMetadata.mapCatching {
-                 it to lazily { pluginLoader.loadPlugin(it) }
+                 it to catchLazy { pluginLoader.loadPlugin(it) }
             }
         }
     }

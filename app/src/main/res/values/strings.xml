@@ -247,8 +247,10 @@
     <string name="installation_type_warning">Not available if you install the extension as a File.</string>
     <string name="could_not_find_the_file">Could not find the file.</string>
     <string name="extension_installer">Extension Installer</string>
-    <string name="extension_installed_successfully">Extension installed successfully.</string>
+    <string name="uninstall">Uninstall</string>
     <string name="invalid_extension">Invalid Extension</string>
+    <string name="extension_installed_successfully">Extension installed successfully.</string>
+    <string name="extension_uninstalled_successfully">Extension uninstalled successfully.</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
