@@ -32,6 +32,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -67,6 +68,12 @@ class ExtensionLoader(
     val extensions = extensionListFlow
     val current = extensionFlow
     val currentWithUser = MutableStateFlow<Pair<MusicExtension?, UserEntity?>>(null to null)
+
+    val priorityMap = ExtensionType.entries.associateWith {
+        val key = it.priorityKey()
+        val list = settings.getString(key, null).orEmpty().split(',')
+        MutableStateFlow(list)
+    }
 
     fun initialize() {
         scope.launch {
@@ -199,17 +206,23 @@ class ExtensionLoader(
 
     private suspend fun <T : ExtensionClient> ExtensionRepo<T>.getPlugins(
         collector: FlowCollector<List<Pair<Metadata, Lazy<Result<T>>>>>
-    ) = getAllPlugins().catchWith(throwableFlow).map { list ->
-        list.mapNotNull { result ->
-            val (metadata, client) = result.getOrElse {
-                val error = it.cause ?: it
-                throwableFlow.emit(ExtensionException(type, error))
-                null
-            } ?: return@mapNotNull null
-            val metadataEnabled = isExtensionEnabled(type, metadata)
-            Pair(metadataEnabled, client)
+    ) {
+        val pluginFlow = getAllPlugins().catchWith(throwableFlow).map { list ->
+            list.mapNotNull { result ->
+                val (metadata, client) = result.getOrElse {
+                    val error = it.cause ?: it
+                    throwableFlow.emit(ExtensionLoadingException(type, error))
+                    null
+                } ?: return@mapNotNull null
+                val metadataEnabled = isExtensionEnabled(type, metadata)
+                Pair(metadataEnabled, client)
+            }
         }
-    }.collect(collector)
+        val priorityFlow = priorityMap[type]!!
+        pluginFlow.combine(priorityFlow) { list, set ->
+            list.sortedBy { set.indexOf(it.first.id) }
+        }.collect(collector)
+    }
 
     private suspend fun List<Extension<*>>.setExtensions() = coroutineScope {
         map {
@@ -228,6 +241,8 @@ class ExtensionLoader(
     companion object {
         const val LAST_EXTENSION_KEY = "last_extension"
         private const val TIMEOUT = 5000L
+
+        fun ExtensionType.priorityKey() = "priority_$this"
 
         fun setupMusicExtension(
             scope: CoroutineScope,

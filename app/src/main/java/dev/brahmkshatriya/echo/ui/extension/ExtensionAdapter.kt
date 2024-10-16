@@ -11,29 +11,28 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
-import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.utils.loadWith
 
 class
 ExtensionAdapter(
     val listener: Listener
-) : PagingDataAdapter<Metadata, ExtensionAdapter.ViewHolder>(DiffCallback) {
+) : PagingDataAdapter<Extension<*>, ExtensionAdapter.ViewHolder>(DiffCallback) {
 
-    fun interface Listener {
-        fun onClick(metadata: Metadata, view: View)
+    interface Listener {
+        fun onClick(extension: Extension<*>, view: View)
+        fun onDragHandleTouched(viewHolder: ViewHolder)
     }
 
-    object DiffCallback : DiffUtil.ItemCallback<Metadata>() {
-        override fun areItemsTheSame(
-            oldItem: Metadata, newItem: Metadata
-        ) = oldItem.id == newItem.id
+    object DiffCallback : DiffUtil.ItemCallback<Extension<*>>() {
+        override fun areItemsTheSame(oldItem: Extension<*>, newItem: Extension<*>) =
+            oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-            oldItem: Metadata, newItem: Metadata
-        ) = oldItem == newItem
+        override fun areContentsTheSame(oldItem: Extension<*>, newItem: Extension<*>) =
+            oldItem == newItem
     }
 
     private val empty = ShelfEmptyAdapter()
@@ -42,9 +41,11 @@ ExtensionAdapter(
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :
         RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
-        fun bind(metadata: Metadata) {
+        fun bind(extension: Extension<*>) {
+            val metadata = extension.metadata
             binding.root.transitionName = metadata.id
-            binding.root.setOnClickListener { listener.onClick(metadata, binding.root) }
+            binding.root.alpha = if (extension.instance.value.isSuccess) 1f else 0.5f
+            binding.root.setOnClickListener { listener.onClick(extension, binding.root) }
             binding.extensionName.apply {
                 text = if (metadata.enabled) metadata.name
                 else context.getString(R.string.extension_disabled, metadata.name)
@@ -54,6 +55,9 @@ ExtensionAdapter(
                 metadata.iconUrl?.toImageHolder().loadWith(this, R.drawable.ic_extension) {
                     setImageDrawable(it)
                 }
+            }
+            binding.extensionDrag.setOnClickListener {
+                listener.onDragHandleTouched(this)
             }
         }
     }
@@ -68,7 +72,7 @@ ExtensionAdapter(
         holder.bind(download)
     }
 
-    suspend fun submit(list: List<Metadata>) {
+    suspend fun submit(list: List<Extension<*>>) {
         empty.loadState = if (list.isEmpty()) LoadState.Loading else LoadState.NotLoading(true)
         submitData(PagingData.from(list))
     }

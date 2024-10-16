@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.extensions
+package dev.brahmkshatriya.echo.utils
 
 import android.content.Context
 import android.content.SharedPreferences

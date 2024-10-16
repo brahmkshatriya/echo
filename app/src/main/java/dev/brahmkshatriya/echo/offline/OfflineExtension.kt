@@ -40,7 +40,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
-import dev.brahmkshatriya.echo.extensions.getSettings
+import dev.brahmkshatriya.echo.utils.getSettings
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.deletePlaylist

@@ -17,7 +17,8 @@ import dev.brahmkshatriya.echo.extensions.plugger.LazyPluginRepo
 import dev.brahmkshatriya.echo.extensions.plugger.LazyPluginRepoImpl
 import dev.brahmkshatriya.echo.extensions.plugger.LazyRepoComposer
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
-import dev.brahmkshatriya.echo.extensions.plugger.lazily
+import dev.brahmkshatriya.echo.extensions.plugger.catchLazy
+import dev.brahmkshatriya.echo.utils.getSettings
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
 
@@ -49,9 +50,9 @@ sealed class ExtensionRepo<T : ExtensionClient>(
         list.map {
             runCatching {
                 val plugin = it.getOrThrow()
-                val metadata = plugin.first
-                metadata to lazily {
-                    val instance = plugin.second.value.getOrThrow()
+                val (metadata, resultLazy) = plugin
+                metadata to catchLazy {
+                    val instance = resultLazy.value.getOrThrow()
                     //Injection
                     instance.setSettings(getSettings(context, type, metadata))
 

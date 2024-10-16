@@ -12,4 +12,4 @@ class LazyRepoComposer<TMetadata, TPlugin>(
         .reduce { a, b -> combineStates(a, b) { x, y -> x + y } }
 }
 
-fun <T> lazily(function: () -> T) = lazy { runCatching { function() } }
+fun <T> catchLazy(function: () -> T) = lazy { runCatching { function() } }
