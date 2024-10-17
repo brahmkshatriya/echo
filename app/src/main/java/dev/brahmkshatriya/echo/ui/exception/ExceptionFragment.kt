@@ -12,6 +12,8 @@ import androidx.fragment.app.Fragment
 import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
+import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
+import dev.brahmkshatriya.echo.extensions.RequiredExtensionsException
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -90,6 +92,12 @@ class ExceptionFragment : Fragment() {
             is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
             is PlayerViewModel.PlayerException -> throwable.details.title
+            is ExtensionLoadingException -> getString(R.string.invalid_extension)
+            is RequiredExtensionsException -> getString(
+                R.string.extension_requires_following_extensions,
+                throwable.name,
+                throwable.requiredExtensions.joinToString(", ")
+            )
             is AppException -> throwable.run {
                 when (this) {
                     is AppException.Unauthorized ->
@@ -115,6 +123,11 @@ Track : ${throwable.mediaItem?.track}
 Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioIndex) }}
 
 ${throwable.details.causedBy}
+""".trimIndent()
+
+            is RequiredExtensionsException -> """
+Extension : ${throwable.name}
+Required Extensions : ${throwable.requiredExtensions.joinToString(", ")}
 """.trimIndent()
 
             is AppException -> """

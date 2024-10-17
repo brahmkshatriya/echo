@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.EXTENSION_INSTALLER
 import dev.brahmkshatriya.echo.R
@@ -16,13 +18,15 @@ import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.DialogExtensionInstallerBinding
+import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
 import dev.brahmkshatriya.echo.extensions.getType
 import dev.brahmkshatriya.echo.extensions.plugger.ApkManifestParser
 import dev.brahmkshatriya.echo.extensions.plugger.ApkPluginSource
 import dev.brahmkshatriya.echo.utils.ApkLinkParser
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadWith
-import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import kotlinx.coroutines.launch
 
 class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
 
@@ -62,12 +66,19 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
-        val value = pair.getOrNull()
-        if (value == null) {
-            createSnack(R.string.invalid_extension)
+        val value = pair.getOrElse {
+            val viewModel by activityViewModels<ExtensionViewModel>()
+            lifecycleScope.launch {
+                viewModel.throwableFlow.emit(ExtensionLoadingException(ExtensionType.MUSIC, it))
+            }
             dismiss()
             return
         }
+//        if (value == null) {
+//            createSnack(R.string.invalid_extension)
+//            dismiss()
+//            return
+//        }
         val (extensionType, metadata) = value
 
         binding.extensionTitle.text = metadata.name
