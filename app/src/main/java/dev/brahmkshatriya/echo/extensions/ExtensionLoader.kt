@@ -117,17 +117,17 @@ class ExtensionLoader(
                     val musicExtensions = extensionListFlow.value.orEmpty()
                     list?.forEach { extension ->
                         extension.get<TrackerClientsProvider, Unit>(throwableFlow) {
-                            inject(requiredTrackerClients, trackerExtensions) {
+                            inject(extension.name, requiredTrackerClients, trackerExtensions) {
                                 setTrackerExtensions(it)
                             }
                         }
                         extension.get<LyricsClientsProvider, Unit>(throwableFlow) {
-                            inject(requiredLyricsClients, lyricsExtensions) {
+                            inject(extension.name, requiredLyricsClients, lyricsExtensions) {
                                 setLyricsExtensions(it)
                             }
                         }
                         extension.get<MusicClientsProvider, Unit>(throwableFlow) {
-                            inject(requiredMusicClients, musicExtensions) {
+                            inject(extension.name, requiredMusicClients, musicExtensions) {
                                 setMusicExtensions(it)
                             }
                         }
@@ -147,6 +147,7 @@ class ExtensionLoader(
     }
 
     private fun <T, R : Extension<*>> T.inject(
+        name: String,
         required: List<String>,
         extensions: List<R>,
         set: T.(List<R>) -> Unit
@@ -155,7 +156,7 @@ class ExtensionLoader(
         else {
             val filtered = extensions.filter { it.metadata.id in required }
             if (filtered.size == required.size) set(filtered)
-            else throw RequiredExtensionsException(required)
+            else throw RequiredExtensionsException(name, required)
         }
     }
 
