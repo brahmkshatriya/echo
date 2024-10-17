@@ -10,7 +10,7 @@
     <string name="str_copy">কপি কৰক</string>
     <string name="artist">শিল্পী</string>
     <string name="unfollow">অনুসৰণ বন্ধ কৰক</string>
-    <string name="track">সংগীত</string>
+    <string name="track">ট্ৰেক</string>
     <string name="about_summary">Echo বিষয়ে অধিক জানক</string>
     <string name="look_and_feel">দৰ্শন আৰু অনুভৱ</string>
     <string name="audio">অডিঅ\'</string>
@@ -223,4 +223,10 @@
     <string name="saved_item_to_library">%1$s লাইব্ৰেৰীত সংৰক্ষণ কৰা হৈছে</string>
     <string name="following_artist">%1$s ক অনুসৰণ কৰিছে</string>
     <string name="unfollowed_artist">%1$s ক অনুসৰণ কৰা এৰিলে</string>
+    <string name="liked_track">%1$s পছন্দ কৰিলে</string>
+    <string name="unliked_track">%1$s পছন্দ নকৰিলে</string>
+    <string name="hide">লুকুৱাওক</string>
+    <string name="unhide">উলিয়াওক</string>
+    <string name="hidden_track">%1$s লুকোৱা হৈছে</string>
+    <string name="unhidden_track">%1$s উলিয়োৱা হৈছে</string>
 </resources>

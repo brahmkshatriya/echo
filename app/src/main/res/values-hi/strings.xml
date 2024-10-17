@@ -223,4 +223,10 @@
     <string name="following_artist">%1$s का अनुसरण कर रहे हूँ</string>
     <string name="removed_item_from_library">%1$s को लाइब्रेरी से हटाया गया</string>
     <string name="saved_item_to_library">%1$s को लाइब्रेरी में सहेजा गया</string>
+    <string name="liked_track">%1$s को पसंद किया</string>
+    <string name="unliked_track">%1$s को नापसंद किया</string>
+    <string name="hide">छिपाएं</string>
+    <string name="hidden_track">%1$s छिपाया गया है</string>
+    <string name="unhidden_track">%1$s को प्रकट किया</string>
+    <string name="unhide">प्रकट करें</string>
 </resources>

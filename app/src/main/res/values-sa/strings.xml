@@ -223,4 +223,10 @@
     <string name="unfollowed_artist">अनुसृतं %1$s</string>
     <string name="saved_item_to_library">%1$s पुस्तकालये रक्षितम्</string>
     <string name="removed_item_from_library">पुस्तकालयात् %1$s निष्कासितम्</string>
+    <string name="liked_track">प्रियं कृतवान् %1$s</string>
+    <string name="unliked_track">अप्रियम् कृतवान् %1$s</string>
+    <string name="hide">छादय</string>
+    <string name="unhide">अप्रच्छादय</string>
+    <string name="hidden_track">छन्नं %1$s</string>
+    <string name="unhidden_track">अप्रच्छन्नं %1$s</string>
 </resources>
