@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
 import dev.brahmkshatriya.echo.extensions.getType
 import dev.brahmkshatriya.echo.extensions.plugger.ApkManifestParser
 import dev.brahmkshatriya.echo.extensions.plugger.ApkPluginSource
+import dev.brahmkshatriya.echo.extensions.plugger.AppInfo
 import dev.brahmkshatriya.echo.utils.ApkLinkParser
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadWith
@@ -49,8 +50,9 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
             val packageInfo = requireActivity().packageManager
                 .getPackageArchiveInfo(file.path, ApkPluginSource.PACKAGE_FLAGS)!!
             val type = getType(packageInfo)
-            val metadata =
-                ApkManifestParser(ImportType.App).parseManifest(packageInfo.applicationInfo!!)
+            val metadata = ApkManifestParser(ImportType.App).parseManifest(
+                AppInfo(file.path, packageInfo.applicationInfo!!)
+            )
             type to metadata
         }
     }

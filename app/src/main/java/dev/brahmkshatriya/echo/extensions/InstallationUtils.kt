@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionRepo.Companion.FEATURE
 import dev.brahmkshatriya.echo.extensions.ExtensionRepo.Companion.getPluginFileDir
 import dev.brahmkshatriya.echo.extensions.plugger.ApkManifestParser
 import dev.brahmkshatriya.echo.extensions.plugger.ApkPluginSource
+import dev.brahmkshatriya.echo.extensions.plugger.AppInfo
 import dev.brahmkshatriya.echo.utils.registerActivityResultLauncher
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import java.io.File
@@ -44,7 +45,7 @@ suspend fun installExtension(context: FragmentActivity, file: File, apk: Boolean
         )
         val type = getType(packageInfo!!)
         val metadata = ApkManifestParser(ImportType.File)
-            .parseManifest(packageInfo.applicationInfo!!)
+            .parseManifest(AppInfo(file.path, packageInfo.applicationInfo!!))
         val flow = fileChangeListener.getFlow(type)
         val dir = context.getPluginFileDir(type)
         val newFile = File(dir, "${metadata.id}.apk")
