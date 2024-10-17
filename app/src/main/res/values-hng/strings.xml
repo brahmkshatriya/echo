@@ -148,7 +148,7 @@
     <string name="downloaded_percentage">Downloaded: %1$d%</string>
     <string name="download_started">Download shuru ho gaya</string>
     <string name="download">Download</string>
-    <string name="username_password">Username &amp; Password</string>
+    <string name="username_password"><![CDATA[Username & Password]]></string>
     <string name="webview">Webview</string>
     <string name="manual">Manual</string>
     <string name="required_field">%1$s zaroori hai.</string>
@@ -229,4 +229,22 @@
     <string name="hidden_track">Chhupaaya gaya %1$s</string>
     <string name="unhidden_track">Dikhlaaya gaya %1$s</string>
     <string name="unhide">Dikhlaao</string>
+    <string name="back">Vaapas</string>
+    <string name="cached_songs">Sangrahit geet</string>
+    <string name="app">App</string>
+    <string name="file">File</string>
+    <string name="installation_type">Sthaapna prakar</string>
+    <string name="installation_type_summary">App sthaapna nimnlikhit link ko echo mein kholne ki anumati degi:</string>
+    <string name="installation_type_warning">Agar aap extension ko file ke roop mein sthaapit karte hain, to yeh upalabdh nahi hoga.</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="invalid_extension">Amanya extension</string>
+    <string name="open_links_instruction">In links ko kholne ki anumati dene ke liye, aapko:\n- Neeche scroll karein aur \"default roop se kholne\" par click karein.\n- \"+ link jodein\" par click karein.</string>
+    <string name="install">Sthaapit karein</string>
+    <string name="cache_playlist_warning">Prayogaatmak suvidha. \nInhe sunne ke alawa kuch bhi samarthit nahi hai.</string>
+    <string name="could_not_find_the_file">File nahi mili.</string>
+    <string name="extension_uninstalled_successfully">Extension safalta se hataaya gaya.</string>
+    <string name="extension_installer">Extension Installer</string>
+    <string name="extension_installed_successfully">Extension safalta se sthaapit kiya gaya.</string>
+    <string name="allow_opening_links">Link kholne ki anumati dein</string>
+    <string name="extension_requires_following_extensions">%1$s ko %2$s ki aavashyakta hai.</string>
 </resources>
