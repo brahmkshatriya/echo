@@ -4,12 +4,15 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dev.brahmkshatriya.echo.extensions.getPackageName
 import dev.brahmkshatriya.echo.ui.extension.ExtensionInstallerBottomSheet
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import kotlinx.coroutines.launch
@@ -62,14 +65,36 @@ class ExtensionOpenerActivity : Activity() {
                 val file = b.getString("file")?.toUri()?.toFile()
                 val install = b.getBoolean("install")
                 val installAsApk = b.getBoolean("installAsApk")
+                val links = b.getStringArrayList("links").orEmpty()
                 val context = this
                 if (install && file != null) {
                     val extensionViewModel by viewModels<ExtensionViewModel>()
                     lifecycleScope.launch {
-                        extensionViewModel.install(context, file, installAsApk)
+                        val result = extensionViewModel.install(context, file, installAsApk)
+                        if (result && installAsApk) {
+                            context.createLinksDialog(file, links)
+                        }
                     }
                 }
             }
         }
+
+        private fun Context.createLinksDialog(
+            file: File, links: List<String>
+        ) = MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.allow_opening_links))
+            .setMessage(
+                links.joinToString("\n") + "\n" +
+                        getString(R.string.open_links_instruction)
+            )
+            .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val packageName = getPackageName(file.path)
+                intent.setData(Uri.parse("package:$packageName"))
+                startActivity(intent)
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 }

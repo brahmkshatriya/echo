@@ -92,12 +92,13 @@ class ExtensionViewModel @Inject constructor(
         }
     }
 
-    suspend fun install(context: FragmentActivity, file: File, installAsApk: Boolean) {
+    suspend fun install(context: FragmentActivity, file: File, installAsApk: Boolean): Boolean {
         val result = installExtension(context, file, installAsApk).getOrElse {
             throwableFlow.emit(it)
             false
         }
         if (result) messageFlow.emit(SnackBar.Message(app.getString(R.string.extension_installed_successfully)))
+        return result
     }
 
     suspend fun uninstall(
@@ -114,7 +115,7 @@ class ExtensionViewModel @Inject constructor(
     fun moveExtensionItem(type: ExtensionType, toPos: Int, fromPos: Int) {
         settings.edit {
             val flow = extensionLoader.priorityMap[type]!!
-            val list = flow.value.toMutableList()
+            val list = getExtensionListFlow(type).value.orEmpty().map { it.id }.toMutableList()
             list.add(toPos, list.removeAt(fromPos))
             flow.value = list
             putString(type.priorityKey(), list.joinToString(","))

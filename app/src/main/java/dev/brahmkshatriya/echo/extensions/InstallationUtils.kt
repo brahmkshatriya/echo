@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extensions
 
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import androidx.activity.result.contract.ActivityResultContracts
@@ -75,10 +76,7 @@ suspend fun uninstallExtension(context: FragmentActivity, extension: Extension<*
         }
 
         ImportType.App -> {
-            val packageInfo = context.packageManager.getPackageArchiveInfo(
-                extension.metadata.path, ApkPluginSource.PACKAGE_FLAGS
-            )!!
-            val packageName = packageInfo.packageName
+            val packageName = context.getPackageName(extension.metadata.path)
             val intent = Intent(Intent.ACTION_DELETE).apply {
                 data = "package:$packageName".toUri()
                 putExtra(Intent.EXTRA_RETURN_RESULT, true)
@@ -87,6 +85,10 @@ suspend fun uninstallExtension(context: FragmentActivity, extension: Extension<*
         }
     }
 }
+
+fun Context.getPackageName(path: String) = packageManager.getPackageArchiveInfo(
+    path, ApkPluginSource.PACKAGE_FLAGS
+)!!.packageName
 
 private suspend fun FragmentActivity.waitForResult(intent: Intent) = suspendCoroutine { cont ->
     val contract = ActivityResultContracts.StartActivityForResult()

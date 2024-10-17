@@ -25,10 +25,10 @@ class ApkPluginSource(
 
     private fun Context.getStaticPackages(featureName: String): List<ApplicationInfo> {
         return packageManager.getInstalledPackages(PACKAGE_FLAGS).filter {
-                it.reqFeatures.orEmpty().any { featureInfo ->
-                    featureInfo.name == featureName
-                }
-            }.mapNotNull { it.applicationInfo }
+            it.reqFeatures.orEmpty().any { featureInfo ->
+                featureInfo.name == featureName
+            }
+        }.mapNotNull { it.applicationInfo }
     }
 
     companion object {
@@ -40,6 +40,6 @@ class ApkPluginSource(
     }
 
     override fun onPackageChanged() {
-        context.getStaticPackages(featureName)
+        loadedPlugins.value = context.getStaticPackages(featureName)
     }
 }
