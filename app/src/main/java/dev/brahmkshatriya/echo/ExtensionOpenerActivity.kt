@@ -23,8 +23,11 @@ class ExtensionOpenerActivity : Activity() {
         super.onStart()
         val uri = intent.data
 
-        val file = when (uri?.scheme) {
+        println("uri : $uri")
+        println("mime : ${contentResolver.getType(uri!!)}")
+        val file = when (uri.scheme) {
             "content" -> getTempFile(uri)
+            "file" -> getTempFile(uri.toFile())
             else -> null
         }
 
@@ -39,12 +42,21 @@ class ExtensionOpenerActivity : Activity() {
         startActivity(startIntent)
     }
 
-    private fun getTempFile(uri: Uri): File? {
-        val stream = contentResolver.openInputStream(uri) ?: return null
-        val bytes = stream.readBytes()
+    private fun getTempFile(bytes:ByteArray) : File {
         val tempFile = File.createTempFile("temp", ".apk", getTempApkDir())
         tempFile.writeBytes(bytes)
         return tempFile
+    }
+
+    private fun getTempFile(uri: Uri): File? {
+        val stream = contentResolver.openInputStream(uri) ?: return null
+        val bytes = stream.readBytes()
+        return getTempFile(bytes)
+    }
+
+    private fun getTempFile(file:File) : File {
+        val bytes = file.readBytes()
+        return getTempFile(bytes)
     }
 
     companion object {
