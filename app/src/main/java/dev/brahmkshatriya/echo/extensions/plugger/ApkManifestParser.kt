@@ -13,7 +13,7 @@ class ApkManifestParser(
             ?: error("$key not found in Metadata for ${data.packageName}")
 
         Metadata(
-            path = data.sourceDir,
+            path = data.sourceDir.orEmpty(),
             className = get("class"),
             importType = importType,
             id = get("id") + importType.name,
