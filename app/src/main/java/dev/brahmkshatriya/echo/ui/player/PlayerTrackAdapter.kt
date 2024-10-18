@@ -28,8 +28,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import androidx.recyclerview.widget.DiffUtil
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
@@ -62,14 +60,14 @@ import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadBlurred
+import dev.brahmkshatriya.echo.utils.loadWithThumb
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
-import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -134,11 +132,7 @@ class PlayerTrackAdapter(
 
             binding.bgInfoTitle.setTextColor(colors.text)
             binding.bgInfoArtist.setTextColor(colors.text)
-            runCatching {
-                Glide.with(binding.bgImage).load(bitmap)
-                    .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 4)))
-                    .into(binding.bgImage)
-            }
+            binding.bgImage.loadBlurred(bitmap, 12f)
         }
 
         binding.collapsedContainer.root.setOnClickListener {
@@ -418,7 +412,7 @@ class PlayerTrackAdapter(
         item: MediaItem,
     ) {
         val track = item.track
-        track.cover.loadWith(expandedTrackCover) {
+        track.cover.loadWithThumb(expandedTrackCover) {
             collapsedContainer.collapsedTrackCover.load(it)
         }
 

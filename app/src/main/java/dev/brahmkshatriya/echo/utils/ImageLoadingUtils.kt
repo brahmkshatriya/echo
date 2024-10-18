@@ -4,14 +4,24 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.RequestBuilder
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.request.target.CustomViewTarget
-import com.bumptech.glide.request.transition.Transition
+import coil3.Bitmap
+import coil3.Image
+import coil3.asDrawable
+import coil3.imageLoader
+import coil3.load
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.request.target
+import coil3.request.transformations
+import coil3.target.GenericViewTarget
+import coil3.toBitmap
+import coil3.transform.CircleCropTransformation
+import coil3.transform.Transformation
 import dev.brahmkshatriya.echo.common.models.ImageHolder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 private fun <T> tryWith(print: Boolean = false, block: () -> T): T? {
     return try {
@@ -31,102 +41,131 @@ private suspend fun <T> tryWithSuspend(print: Boolean = true, block: suspend () 
     }
 }
 
+fun View.enqueue(builder: ImageRequest.Builder) = context.imageLoader.enqueue(builder.build())
+
 fun ImageHolder?.loadInto(
     imageView: ImageView, placeholder: Int? = null, errorDrawable: Int? = null
 ) = tryWith {
-    val builder = Glide.with(imageView).asDrawable()
-    val request = createRequest(builder, placeholder, errorDrawable)
-    request.into(imageView)
+    val request = createRequest(imageView.context, placeholder, errorDrawable)
+    request.target(imageView)
+    imageView.enqueue(request)
 }
 
-fun ImageHolder?.loadWith(
+fun ImageHolder?.loadWithThumb(
     imageView: ImageView, thumbnail: ImageHolder? = null,
     error: Int? = null, onDrawable: (Drawable?) -> Unit = {}
 ) = tryWith {
-    val builder = Glide.with(imageView).asDrawable()
     if (this == null) {
-        thumbnail.loadInto(imageView, error)
+        thumbnail.loadWith(imageView, null, error, onDrawable)
         return@tryWith
     }
-    val request = createRequest(builder, error)
-    request.into(ViewTarget(imageView) {
-        imageView.setImageDrawable(it)
+    val request = createRequest(imageView.context, null, error)
+    request.target(ViewTarget(imageView) {
+        imageView.load(it)
         tryWith(false) { onDrawable(it) }
     })
+    imageView.enqueue(request)
 }
 
-fun <T : View> ImageHolder?.loadWith(
-    view: T, placeholder: Int? = null, errorDrawable: Int? = null, onDrawable: (Drawable?) -> Unit
+fun ImageHolder?.loadWith(
+    imageView: ImageView, placeholder: Int? = null,
+    error: Int? = null, onDrawable: (Drawable?) -> Unit = {}
 ) = tryWith {
-    val builder = Glide.with(view).asDrawable()
-    val request = createRequest(builder, placeholder, errorDrawable)
-    request.circleCrop().into(ViewTarget(view) {
+    val request = createRequest(imageView.context, placeholder, error)
+    request.target(ViewTarget(imageView) {
+        imageView.load(it)
         tryWith(false) { onDrawable(it) }
     })
+    imageView.enqueue(request)
+}
+
+class ViewTarget(
+    override val view: View,
+    val onDrawable: (Drawable?) -> Unit,
+) : GenericViewTarget<View>() {
+    private var mDrawable: Drawable? = null
+    override var drawable: Drawable?
+        get() = mDrawable
+        set(value) {
+            mDrawable = value
+            onDrawable(value)
+        }
+}
+
+val circleCrop = CircleCropTransformation()
+val squareCrop = SquareCropTransformation()
+fun <T : View> ImageHolder?.loadAsCircle(
+    view: T, placeholder: Int? = null, errorDrawable: Int? = null, onDrawable: (Drawable?) -> Unit
+) = tryWith {
+    val request = createRequest(view.context, placeholder, errorDrawable, circleCrop)
+    fun setDrawable(image: Image?) {
+        val drawable = image?.asDrawable(view.resources)
+        tryWith(false) { onDrawable(drawable) }
+    }
+    request.target(::setDrawable, ::setDrawable, ::setDrawable)
+    view.enqueue(request)
 }
 
 suspend fun ImageHolder?.loadBitmap(
     context: Context, placeholder: Int? = null
 ) = tryWithSuspend {
-    val builder = Glide.with(context).asBitmap()
-    val request = createRequest(builder, placeholder)
-    withContext(Dispatchers.IO) {
-        tryWithSuspend(false) { request.submit().get() }
-    }
+    val request = createRequest(context, null, placeholder)
+    context.imageLoader.execute(request.build()).image?.toBitmap()
 }
 
 fun ImageView.load(placeHolder: Int) = tryWith {
-    Glide.with(this).load(placeHolder).into(this)
+    load(placeHolder)
 }
 
 fun ImageView.load(drawable: Drawable?) = tryWith {
-    Glide.with(this).load(drawable).into(this)
+    load(drawable)
 }
 
 fun ImageView.load(drawable: Drawable?, size: Int) = tryWith {
-    Glide.with(this).load(drawable).override(size).into(this)
+    load(drawable) { size(size) }
 }
 
-fun Context.loadBitmap(placeHolder: Int) = tryWith {
-    Glide.with(this).asBitmap().load(placeHolder).submit().get()
-}
-
-private fun <T> createRequest(
-    imageHolder: ImageHolder,
-    requestBuilder: RequestBuilder<T>,
-) = imageHolder.run {
-    when (this) {
-        is ImageHolder.UriImageHolder -> requestBuilder.load(uri)
-        is ImageHolder.UrlRequestImageHolder ->
-            requestBuilder.load(GlideUrl(request.url) { request.headers })
+fun ImageView.loadBlurred(bitmap: Bitmap?, radius: Float) = tryWith {
+    load(bitmap) {
+        transformations(BlurTransformation(context, radius))
+        crossfade(false)
     }
 }
 
-fun <T> ImageHolder?.createRequest(
-    requestBuilder: RequestBuilder<T>, placeholder: Int? = null, errorDrawable: Int? = null
-): RequestBuilder<T> {
+private fun createRequest(
+    imageHolder: ImageHolder,
+    builder: ImageRequest.Builder,
+) = imageHolder.run {
+    when (this) {
+        is ImageHolder.UriImageHolder -> builder.data(uri)
+        is ImageHolder.UrlRequestImageHolder -> {
+            if (request.headers.isNotEmpty())
+                builder.httpHeaders(NetworkHeaders.Builder().apply {
+                    request.headers.forEach { (t, u) -> add(t, u) }
+                }.build())
+            builder.data(request.url)
+        }
+    }
+}
+
+private fun ImageHolder?.createRequest(
+    context: Context,
+    placeholder: Int?,
+    errorDrawable: Int?,
+    vararg transformations: Transformation
+): ImageRequest.Builder {
+    val builder = ImageRequest.Builder(context)
     var error = errorDrawable
     if (error == null) error = placeholder
 
-    if (this == null) return requestBuilder.load(error)
-
-    var request = createRequest(this, requestBuilder)
-    request = placeholder?.let { request.placeholder(it) } ?: request
-    request = error?.let { request.error(it) } ?: request
-    return if (crop) request.transform(SquareBitmapTransformation()) else request
-}
-
-class ViewTarget<T : View>(val target: T, private val onDrawable: (Drawable?) -> Unit) :
-    CustomViewTarget<View, Drawable>(target) {
-    override fun onLoadFailed(errorDrawable: Drawable?) {
-        onDrawable(errorDrawable)
+    if (this == null) {
+        if (error != null) builder.data(error)
+        return builder
     }
-
-    override fun onResourceCleared(placeholder: Drawable?) {
-        onDrawable(placeholder)
-    }
-
-    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-        onDrawable(resource)
-    }
+    createRequest(this, builder)
+    placeholder?.let { builder.placeholder(it) }
+    error?.let { builder.error(it) }
+    val list = if (crop) listOf(squareCrop, *transformations) else transformations.toList()
+    if (list.isNotEmpty()) builder.transformations(list)
+    return builder
 }

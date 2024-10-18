@@ -28,7 +28,7 @@ import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
@@ -66,7 +66,7 @@ class LyricsFragment : Fragment() {
         observe(viewModel.currentExtension) { current ->
             binding.searchBar.hint = current?.name
             current?.metadata?.iconUrl?.toImageHolder()
-                .loadWith(extension, R.drawable.ic_extension) {
+                .loadAsCircle(extension, R.drawable.ic_extension) {
                     menu.findItem(R.id.menu_lyrics).icon = it
                 }
             val isSearchable = current?.isClient<LyricsSearchClient>() ?: false

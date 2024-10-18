@@ -23,7 +23,7 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
@@ -116,7 +116,7 @@ class ExtensionInfoFragment : Fragment() {
             }
         }
 
-        metadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon, R.drawable.ic_extension) {
+        metadata.iconUrl?.toImageHolder().loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
             binding.extensionIcon.setImageDrawable(it)
         }
         binding.extensionDetails.text =

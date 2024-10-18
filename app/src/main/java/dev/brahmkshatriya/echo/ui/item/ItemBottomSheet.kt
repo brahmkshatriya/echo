@@ -37,7 +37,7 @@ import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
@@ -345,7 +345,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
                 is ItemAction.Custom -> {
                     binding.textView.text = action.title
-                    action.image.loadWith(binding.root) {
+                    action.image.loadAsCircle(binding.root) {
                         if (it == null) {
                             binding.imageView.imageTintList = colorState
                             binding.imageView.setImageResource(action.placeholder)

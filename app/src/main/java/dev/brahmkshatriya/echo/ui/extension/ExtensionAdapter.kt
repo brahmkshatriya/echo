@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 
 class
 ExtensionAdapter(
@@ -52,7 +52,7 @@ ExtensionAdapter(
             }
             binding.extensionVersion.text = "${metadata.version} • ${metadata.importType.name}"
             binding.itemExtension.apply {
-                metadata.iconUrl?.toImageHolder().loadWith(this, R.drawable.ic_extension) {
+                metadata.iconUrl?.toImageHolder().loadAsCircle(this, R.drawable.ic_extension) {
                     setImageDrawable(it)
                 }
             }

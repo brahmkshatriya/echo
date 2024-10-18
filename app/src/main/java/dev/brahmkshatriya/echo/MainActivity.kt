@@ -129,7 +129,8 @@ class MainActivity : AppCompatActivity() {
 
         controllerFuture = playerFuture
 
-        intent?.onIntent()
+        addOnNewIntentListener { onIntent(it) }
+        onIntent(intent)
     }
 
     override fun onDestroy() {
@@ -137,23 +138,17 @@ class MainActivity : AppCompatActivity() {
         controllerFuture?.let { MediaBrowser.releaseFuture(it) }
     }
 
-    private fun Intent.onIntent() {
-        val fromNotif = hasExtra("fromNotification")
-        if (fromNotif) {
-            uiViewModel.fromNotification.value = true
-            return
-        }
-        val uri = data
-        println("URI: $uri")
-        when (uri?.scheme) {
-            "echo" -> openItemFragmentFromUri(uri)
-            "file" -> openExtensionInstaller(uri)
+    private fun onIntent(intent: Intent?) {
+        this.intent = null
+        intent ?: return
+        val fromNotif = intent.hasExtra("fromNotification")
+        if (fromNotif) uiViewModel.fromNotification.value = true
+        else {
+            val uri = intent.data
+            when (uri?.scheme) {
+                "echo" -> openItemFragmentFromUri(uri)
+                "file" -> openExtensionInstaller(uri)
+            }
         }
     }
-
-    override fun onNewIntent(intent: Intent?) {
-        intent?.onIntent()
-        super.onNewIntent(intent)
-    }
-
 }

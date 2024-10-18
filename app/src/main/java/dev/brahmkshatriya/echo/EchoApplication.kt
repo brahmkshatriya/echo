@@ -6,6 +6,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.disk.DiskCache
+import coil3.disk.directory
+import coil3.memory.MemoryCache
+import coil3.request.allowHardware
+import coil3.request.crossfade
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
@@ -25,7 +33,7 @@ import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @HiltAndroidApp
-class EchoApplication : Application() {
+class EchoApplication : Application(), SingletonImageLoader.Factory {
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -99,5 +107,23 @@ class EchoApplication : Application() {
         fun Context.appVersion(): String = packageManager
             .getPackageInfo(packageName, 0)
             .versionName!!
+    }
+
+    override fun newImageLoader(context: PlatformContext): ImageLoader {
+        return ImageLoader.Builder(context)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache"))
+                    .maxSizeBytes(1024 * 1024 * 100) // 100MB
+                    .build()
+            }
+            .allowHardware(false)
+            .crossfade(true)
+            .build()
     }
 }

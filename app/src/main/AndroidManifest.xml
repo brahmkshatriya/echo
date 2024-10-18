@@ -79,7 +79,7 @@
                 <data android:mimeType="application/octet-stream" />
                 <data android:scheme="file"/>
                 <data android:pathPattern=".*\\.eapk"/>
-                <data android:mimeType="*/*"/>
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
 

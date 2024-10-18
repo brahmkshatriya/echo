@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
@@ -26,7 +26,7 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
     extensions.transitionName = "extensions"
 
     fragment.observe(extensionViewModel.extensionFlow) { client ->
-        client?.metadata?.iconUrl?.toImageHolder().loadWith(extensions, R.drawable.ic_extension) {
+        client?.metadata?.iconUrl?.toImageHolder().loadAsCircle(extensions, R.drawable.ic_extension) {
             menu.findItem(R.id.menu_extensions).icon = it
         }
     }
@@ -49,7 +49,7 @@ fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
         val user = u?.toUser()
         val isLoginClient = extension?.isClient<LoginClient>() ?: false
         if (isLoginClient) {
-            user?.cover.loadWith(settings, R.drawable.ic_account_circle_48dp) {
+            user?.cover.loadAsCircle(settings, R.drawable.ic_account_circle_48dp) {
                 menu.findItem(R.id.menu_settings).icon = it
             }
         } else menu.findItem(R.id.menu_settings).setIcon(R.drawable.ic_settings_outline)

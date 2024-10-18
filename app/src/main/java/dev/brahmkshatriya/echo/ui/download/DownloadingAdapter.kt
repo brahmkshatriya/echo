@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.databinding.ItemDownloadGroupBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 
 class DownloadingAdapter(
     val listener: Listener
@@ -56,7 +56,7 @@ class DownloadingAdapter(
                 binding.downloadTitle.text = download.item.title
                 download.item.cover?.loadInto(binding.itemImageView, download.item.placeHolder())
                 binding.itemExtension.apply {
-                    download.clientIcon?.toImageHolder().loadWith(this, R.drawable.ic_extension) {
+                    download.clientIcon?.toImageHolder().loadAsCircle(this, R.drawable.ic_extension) {
                         setImageDrawable(it)
                     }
                 }

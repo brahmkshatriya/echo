@@ -36,6 +36,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
+import dev.brahmkshatriya.echo.utils.future
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
@@ -48,7 +49,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.withContext
 
 @UnstableApi

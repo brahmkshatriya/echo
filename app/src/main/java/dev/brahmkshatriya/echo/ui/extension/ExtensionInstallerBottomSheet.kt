@@ -25,7 +25,7 @@ import dev.brahmkshatriya.echo.extensions.plugger.ApkPluginSource
 import dev.brahmkshatriya.echo.extensions.plugger.AppInfo
 import dev.brahmkshatriya.echo.utils.ApkLinkParser
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import kotlinx.coroutines.launch
 
@@ -84,7 +84,7 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
         val (extensionType, metadata) = value
 
         binding.extensionTitle.text = metadata.name
-        metadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon, R.drawable.ic_extension) {
+        metadata.iconUrl?.toImageHolder().loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
             binding.extensionIcon.setImageDrawable(it)
         }
         binding.extensionDetails.text = metadata.version
