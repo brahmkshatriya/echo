@@ -78,7 +78,6 @@ dependencies {
     ksp("com.google.dagger:hilt-android-compiler:2.48.1")
 
     implementation("io.coil-kt.coil3:coil:3.0.0-rc01")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc01")
 
     implementation("com.github.madrapps:pikolo:2.0.2")

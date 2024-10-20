@@ -16,6 +16,7 @@ kotlin {
 
 dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    api("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
     api("io.ktor:ktor-utils:3.0.0-beta-2")
 }
 

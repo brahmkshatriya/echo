@@ -254,6 +254,10 @@
     <string name="allow_opening_links">Allow opening links</string>
     <string name="open_links_instruction">To allow opening these links, you need to:\n- Scroll down and click on \"Open by Default\"\n- Click on \"+ Add Link\"</string>
     <string name="extension_requires_following_extensions">%1$s requires %2$s</string>
+    <string name="downloading_update_for_extension">Downloading update for %1$s</string>
+    <string name="extension_updated_successfully">%1$s updated successfully</string>
+    <string name="check_for_extension_updates">Check for Extension Updates</string>
+    <string name="check_for_extension_updates_summary">Look for new updates of extensions, when you open the app.</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

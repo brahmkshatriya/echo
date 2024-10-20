@@ -9,6 +9,7 @@ import android.os.Build.VERSION.RELEASE
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
 import dev.brahmkshatriya.echo.EchoApplication.Companion.applyLocale
 import dev.brahmkshatriya.echo.R
@@ -47,25 +48,7 @@ class AboutFragment : BaseSettingsFragment() {
                 screen.addPreference(this)
             }
 
-            val languages = mapOf(
-                "system" to getString(R.string.system),
-                "as" to "Assamese",
-                "de" to "Deutsch",
-                "fr" to "Français",
-                "hi" to "हिन्दी",
-                "hng" to "Hinglish",
-                "hu" to "Magyar",
-                "ja" to "日本語",
-                "nb-rNO" to "Norsk bokmål",
-                "nl" to "Nederlands",
-                "pl" to "Polski",
-                "pt" to "Português",
-                "ru" to "Русский",
-                "sa" to "संस्कृतम्",
-                "sr" to "Српски",
-                "tr" to "Türkçe",
-                "zh-rCN" to "中文 (简体)",
-            )
+            val languages = mapOf("system" to getString(R.string.system)) + languages
             MaterialListPreference(context).apply {
                 title = getString(R.string.language)
                 summary = getString(R.string.language_summary)
@@ -76,6 +59,17 @@ class AboutFragment : BaseSettingsFragment() {
                 isIconSpaceReserved = false
                 screen.addPreference(this)
             }
+
+            SwitchPreferenceCompat(context).apply {
+                title = getString(R.string.check_for_extension_updates)
+                summary = getString(R.string.check_for_extension_updates_summary)
+                key = "check_for_extension_updates"
+                layoutResource = R.layout.preference_switch
+                isIconSpaceReserved = false
+                setDefaultValue(true)
+                screen.addPreference(this)
+            }
+
             preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener { pref, key ->
                 if (key == "language") applyLocale(pref)
             }
@@ -94,5 +88,26 @@ class AboutFragment : BaseSettingsFragment() {
                 ?: System.getProperty("os.product.cpu.abi")
                 ?: "Unknown"
         }
+    }
+
+    companion object {
+        val languages = mapOf(
+            "as" to "Assamese",
+            "de" to "Deutsch",
+            "fr" to "Français",
+            "hi" to "हिन्दी",
+            "hng" to "Hinglish",
+            "hu" to "Magyar",
+            "ja" to "日本語",
+            "nb-rNO" to "Norsk bokmål",
+            "nl" to "Nederlands",
+            "pl" to "Polski",
+            "pt" to "Português",
+            "ru" to "Русский",
+            "sa" to "संस्कृतम्",
+            "sr" to "Српски",
+            "tr" to "Türkçe",
+            "zh-rCN" to "中文 (简体)",
+        )
     }
 }

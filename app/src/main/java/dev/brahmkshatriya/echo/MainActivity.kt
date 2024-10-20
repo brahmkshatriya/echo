@@ -29,6 +29,7 @@ import dev.brahmkshatriya.echo.utils.createNavDrawable
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.configureSnackBar
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
     private val uiViewModel by viewModels<UiViewModel>()
     private val playerViewModel by viewModels<PlayerViewModel>()
+    private val extensionViewModel by viewModels<ExtensionViewModel>()
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
 
@@ -128,6 +130,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         controllerFuture = playerFuture
+
+        extensionViewModel.updateExtensions(this)
 
         addOnNewIntentListener { onIntent(it) }
         onIntent(intent)

@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.extensions
 
-import android.app.Activity.RESULT_OK
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
@@ -23,7 +23,9 @@ import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-suspend fun installExtension(context: FragmentActivity, file: File, apk: Boolean) = runCatching {
+suspend fun installExtension(
+    context: FragmentActivity, file: File, apk: Boolean
+): Result<Boolean> = runCatching {
     if (apk) {
         val contentUri = FileProvider.getUriForFile(
             context, context.packageName + ".provider", file
@@ -35,7 +37,10 @@ suspend fun installExtension(context: FragmentActivity, file: File, apk: Boolean
             putExtra(Intent.EXTRA_RETURN_RESULT, true)
             data = contentUri
         }
-        context.waitForResult(installIntent)
+        val it = context.waitForResult(installIntent)
+        if (it.resultCode == Activity.RESULT_OK) return@runCatching true
+        val result = it.data?.extras?.getInt("android.intent.extra.INSTALL_RESULT")
+        throw Exception(installStatusToString(result))
     } else {
         val viewModel by context.viewModels<ExtensionViewModel>()
         val extensionLoader = viewModel.extensionLoader
@@ -60,7 +65,9 @@ suspend fun installExtension(context: FragmentActivity, file: File, apk: Boolean
     }
 }
 
-suspend fun uninstallExtension(context: FragmentActivity, extension: Extension<*>) = runCatching {
+suspend fun uninstallExtension(
+    context: FragmentActivity, extension: Extension<*>
+): Result<Boolean> = runCatching {
     when (extension.metadata.importType) {
         ImportType.BuiltIn -> throw UnsupportedOperationException()
         ImportType.File -> {
@@ -82,7 +89,7 @@ suspend fun uninstallExtension(context: FragmentActivity, extension: Extension<*
                 data = "package:$packageName".toUri()
                 putExtra(Intent.EXTRA_RETURN_RESULT, true)
             }
-            context.waitForResult(intent)
+            context.waitForResult(intent).resultCode == Activity.RESULT_OK
         }
     }
 }
@@ -94,9 +101,21 @@ fun Context.getPackageName(path: String) = packageManager.getPackageArchiveInfo(
 private suspend fun FragmentActivity.waitForResult(intent: Intent) = suspendCoroutine { cont ->
     val contract = ActivityResultContracts.StartActivityForResult()
     val activityResultLauncher = registerActivityResultLauncher(contract) {
-        cont.resume(it.resultCode == RESULT_OK)
+        cont.resume(it)
     }
     activityResultLauncher.launch(intent)
+}
+
+private fun installStatusToString(status: Int?) = when (status) {
+    -1 -> "INSTALL_FAILED_ALREADY_EXISTS"
+    -2 -> "INSTALL_FAILED_INVALID_APK"
+    -3 -> "INSTALL_FAILED_INVALID_URI"
+    -4 -> "INSTALL_FAILED_INSUFFICIENT_STORAGE"
+    -5 -> "INSTALL_FAILED_DUPLICATE_PACKAGE"
+    -6 -> "INSTALL_FAILED_NO_SHARED_USER"
+    -7 -> "INSTALL_FAILED_UPDATE_INCOMPATIBLE"
+    -8 -> "INSTALL_FAILED_SHARED_USER_INCOMPATIBLE"
+    else -> "INSTALL_FAILED : $status"
 }
 
 

@@ -11,6 +11,9 @@ data class Metadata(
     val version: String,
     val description: String,
     val author: String,
-    val iconUrl: String?,
+    val authorUrl: String? = null,
+    val iconUrl: String? = null,
+    val repoUrl: String? = null,
+    val updateUrl: String? = null,
     val enabled: Boolean = true
 )

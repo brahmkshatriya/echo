@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
@@ -23,8 +24,10 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.priorityKey
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.setupMusicExtension
+import dev.brahmkshatriya.echo.extensions.downloadUpdate
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.getUpdateFileUrl
 import dev.brahmkshatriya.echo.extensions.installExtension
 import dev.brahmkshatriya.echo.extensions.uninstallExtension
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
@@ -34,7 +37,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
 import javax.inject.Inject
@@ -113,13 +118,63 @@ class ExtensionViewModel @Inject constructor(
     }
 
     fun moveExtensionItem(type: ExtensionType, toPos: Int, fromPos: Int) {
+        val flow = extensionLoader.priorityMap[type]!!
+        val list = getExtensionListFlow(type).value.orEmpty().map { it.id }.toMutableList()
+        list.add(toPos, list.removeAt(fromPos))
+        flow.value = list
         settings.edit {
-            val flow = extensionLoader.priorityMap[type]!!
-            val list = getExtensionListFlow(type).value.orEmpty().map { it.id }.toMutableList()
-            list.add(toPos, list.removeAt(fromPos))
-            flow.value = list
             putString(type.priorityKey(), list.joinToString(","))
         }
+    }
+
+    private var checkedForUpdates = false
+    fun updateExtensions(context: FragmentActivity) {
+        if (checkedForUpdates) return
+        checkedForUpdates = true
+        val check = settings.getBoolean("check_for_extension_updates", true)
+        if (check) viewModelScope.launch {
+            ExtensionType.entries.map { type ->
+                val flow = getExtensionListFlow(type)
+                flow.first { it != null }!!
+            }.flatten().forEach {
+                updateExtension(context, it)
+            }
+        }
+    }
+
+
+    val client = OkHttpClient()
+    private suspend fun updateExtension(
+        context: FragmentActivity,
+        extension: Extension<*>
+    ) {
+        val currentVersion = extension.version
+        val updateUrl = extension.metadata.updateUrl ?: return
+
+        val url = getUpdateFileUrl(currentVersion, updateUrl, client).getOrElse {
+            throwableFlow.emit(it)
+            null
+        } ?: return
+
+        messageFlow.emit(
+            SnackBar.Message(
+                app.getString(R.string.downloading_update_for_extension, extension.name)
+            )
+        )
+        val file = downloadUpdate(context, url, client).getOrElse {
+            throwableFlow.emit(it)
+            null
+        } ?: return
+        val installAsApk = extension.metadata.importType == ImportType.App
+        val result = installExtension(context, file, installAsApk).getOrElse {
+            throwableFlow.emit(it)
+            false
+        }
+        if (result) messageFlow.emit(
+            SnackBar.Message(
+                app.getString(R.string.extension_updated_successfully, extension.name)
+            )
+        )
     }
 
     fun getExtensionListFlow(type: ExtensionType) = when (type) {
@@ -164,6 +219,5 @@ class ExtensionViewModel @Inject constructor(
                 else adapter
             )
         }
-
     }
 }

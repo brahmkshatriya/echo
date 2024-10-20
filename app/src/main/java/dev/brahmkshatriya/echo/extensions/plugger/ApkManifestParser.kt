@@ -7,7 +7,7 @@ import tel.jeelpa.plugger.ManifestParser
 class ApkManifestParser(
     private val importType: ImportType
 ) : ManifestParser<AppInfo, Metadata> {
-    override fun parseManifest(data: AppInfo) = with(data.appInfo.metaData) {
+    override fun parseManifest(data: AppInfo): Metadata = with(data.appInfo.metaData) {
         fun get(key: String): String = getString(key)
             ?: error("$key not found in Metadata for ${data.appInfo.packageName}")
 
@@ -20,7 +20,10 @@ class ApkManifestParser(
             version = get("version"),
             description = get("description"),
             author = get("author"),
+            authorUrl = getString("author_url"),
             iconUrl = getString("icon_url"),
+            repoUrl = getString("repo_url"),
+            updateUrl = getString("update_url"),
             enabled = getBoolean("enabled", true)
         )
     }
