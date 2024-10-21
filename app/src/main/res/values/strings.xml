@@ -258,6 +258,12 @@
     <string name="extension_updated_successfully">%1$s updated successfully</string>
     <string name="check_for_extension_updates">Check for Extension Updates</string>
     <string name="check_for_extension_updates_summary">Look for new updates of extensions, when you open the app.</string>
+    <string name="link">Link</string>
+    <string name="link_or_code">Link or Code</string>
+    <string name="list_is_empty">List is empty</string>
+    <string name="extension_installed">%1$s (Installed)</string>
+    <string name="add_extensions">Add Extensions</string>
+    <string name="invalid_extension_list">Invalid extensions list</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

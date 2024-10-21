@@ -17,15 +17,15 @@ import dev.brahmkshatriya.echo.ui.extension.ExtensionInstallerBottomSheet
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class ExtensionOpenerActivity : Activity() {
     override fun onStart() {
         super.onStart()
         val uri = intent.data
 
-        println("uri : $uri")
-        println("mime : ${contentResolver.getType(uri!!)}")
-        val file = when (uri.scheme) {
+        val file = when (uri?.scheme) {
             "content" -> getTempFile(uri)
             "file" -> getTempFile(uri.toFile())
             else -> null
@@ -42,7 +42,7 @@ class ExtensionOpenerActivity : Activity() {
         startActivity(startIntent)
     }
 
-    private fun getTempFile(bytes:ByteArray) : File {
+    private fun getTempFile(bytes: ByteArray): File {
         val tempFile = File.createTempFile("temp", ".apk", getTempApkDir())
         tempFile.writeBytes(bytes)
         return tempFile
@@ -54,7 +54,7 @@ class ExtensionOpenerActivity : Activity() {
         return getTempFile(bytes)
     }
 
-    private fun getTempFile(file:File) : File {
+    private fun getTempFile(file: File): File {
         val bytes = file.readBytes()
         return getTempFile(bytes)
     }
@@ -69,8 +69,13 @@ class ExtensionOpenerActivity : Activity() {
         }
 
         fun FragmentActivity.openExtensionInstaller(uri: Uri) {
+            lifecycleScope.launch {
+                installExtension(uri.toString())
+            }
+        }
 
-            ExtensionInstallerBottomSheet.newInstance(uri.toString())
+        suspend fun FragmentActivity.installExtension(fileString: String) = suspendCoroutine {
+            ExtensionInstallerBottomSheet.newInstance(fileString)
                 .show(supportFragmentManager, null)
 
             supportFragmentManager.setFragmentResultListener(EXTENSION_INSTALLER, this) { _, b ->
@@ -86,27 +91,34 @@ class ExtensionOpenerActivity : Activity() {
                         if (result && installAsApk) {
                             context.createLinksDialog(file, links)
                         }
+                        it.resume(result)
                     }
                 }
             }
+
         }
 
-        private fun Context.createLinksDialog(
+        private suspend fun Context.createLinksDialog(
             file: File, links: List<String>
-        ) = MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.allow_opening_links))
-            .setMessage(
-                links.joinToString("\n") + "\n" +
-                        getString(R.string.open_links_instruction)
-            )
-            .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                val packageName = getPackageName(file.path)
-                intent.setData(Uri.parse("package:$packageName"))
-                startActivity(intent)
-                dialog.dismiss()
-            }
-            .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
-            .show()
+        ) = suspendCoroutine { cont ->
+            MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.allow_opening_links))
+                .setMessage(
+                    links.joinToString("\n") + "\n" +
+                            getString(R.string.open_links_instruction)
+                )
+                .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    val packageName = getPackageName(file.path)
+                    intent.setData(Uri.parse("package:$packageName"))
+                    startActivity(intent)
+                    dialog.dismiss()
+                }
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+                .setOnDismissListener {
+                    cont.resume(Unit)
+                }
+                .show()
+        }
     }
 }

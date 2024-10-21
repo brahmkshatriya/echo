@@ -23,6 +23,7 @@ import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 import kotlinx.coroutines.Job
 
@@ -39,7 +40,9 @@ class ManageExtensionsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsetsMain(binding.appBarLayout, binding.recyclerView)
+        applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
+            binding.fabContainer.applyContentInsets(it)
+        }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.appBarOutline.alpha = offset
@@ -53,6 +56,10 @@ class ManageExtensionsFragment : Fragment() {
         val refresh = binding.toolBar.findViewById<View>(R.id.menu_refresh)
         refresh.setOnClickListener { viewModel.refresh() }
         binding.swipeRefresh.configure { viewModel.refresh() }
+
+        binding.fabAddExtensions.setOnClickListener {
+            ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
+        }
 
         var type = ExtensionType.entries[binding.tabLayout.selectedTabPosition]
         val callback = object : ItemTouchHelper.SimpleCallback(

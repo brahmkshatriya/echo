@@ -43,7 +43,7 @@ sealed class ExtensionRepo<T : ExtensionClient>(
             ApkManifestParser(ImportType.App),
             loader
         )
-        LazyRepoComposer(appPluginRepo, apkFilePluginRepo, *repo)
+        LazyRepoComposer(*repo, appPluginRepo, apkFilePluginRepo)
     }
 
     private fun injected() = composed.getAllPlugins().mapState { list ->

@@ -43,7 +43,10 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
-        binding.addExtension.isEnabled = false
+        binding.addExtension.setOnClickListener {
+            dismiss()
+            ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
+        }
         binding.manageExtensions.setOnClickListener {
             dismiss()
             requireActivity().openFragment(ManageExtensionsFragment())

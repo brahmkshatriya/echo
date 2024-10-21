@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
+import dev.brahmkshatriya.echo.extensions.InvalidExtensionListException
 import dev.brahmkshatriya.echo.extensions.RequiredExtensionsException
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
@@ -98,6 +99,7 @@ class ExceptionFragment : Fragment() {
                 throwable.name,
                 throwable.requiredExtensions.joinToString(", ")
             )
+            is InvalidExtensionListException -> getString(R.string.invalid_extension_list)
             is AppException -> throwable.run {
                 when (this) {
                     is AppException.Unauthorized ->

@@ -98,7 +98,7 @@ fun Context.getPackageName(path: String) = packageManager.getPackageArchiveInfo(
     path, ApkPluginSource.PACKAGE_FLAGS
 )!!.packageName
 
-private suspend fun FragmentActivity.waitForResult(intent: Intent) = suspendCoroutine { cont ->
+suspend fun FragmentActivity.waitForResult(intent: Intent) = suspendCoroutine { cont ->
     val contract = ActivityResultContracts.StartActivityForResult()
     val activityResultLauncher = registerActivityResultLauncher(contract) {
         cont.resume(it)

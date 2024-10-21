@@ -88,3 +88,24 @@ data class Asset(
     @SerialName("browser_download_url")
     val browserDownloadUrl: String
 )
+
+suspend fun getExtensionList(
+    link: String,
+    client: OkHttpClient
+) = runIOCatching {
+    val request = Request.Builder()
+        .addHeader("Cookie", "preview=1")
+        .url(link).build()
+    client.newCall(request).await().body.string().toData<List<ExtensionAssetResponse>>()
+}.getOrElse {
+    throw InvalidExtensionListException(it)
+}
+
+@Serializable
+data class ExtensionAssetResponse(
+    val id: String,
+    val name: String,
+    val subtitle: String? = null,
+    val iconUrl: String? = null,
+    val updateUrl: String
+)
