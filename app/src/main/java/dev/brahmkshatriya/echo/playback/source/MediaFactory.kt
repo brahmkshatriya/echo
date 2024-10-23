@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.dash.DashMediaSource
+import androidx.media3.exoplayer.drm.DefaultDrmSessionManagerProvider
 import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -32,7 +33,20 @@ class MediaFactory(
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : MediaSource.Factory {
 
-    private var drmSessionManagerProvider: DrmSessionManagerProvider? = null
+    private val mediaResolver = MediaResolver(context, extListFlow)
+    private val dataSource = ResolvingDataSource.Factory(
+        CustomCacheDataSource.Factory(cache, MediaDataSource.Factory(context)),
+        mediaResolver
+    )
+    private val default = lazily { DefaultMediaSourceFactory(dataSource) }
+    private val hls = lazily { HlsMediaSource.Factory(dataSource) }
+    private val dash = lazily { DashMediaSource.Factory(dataSource) }
+
+    private val provider = DefaultDrmSessionManagerProvider().apply {
+        setDrmHttpDataSourceFactory(dataSource)
+    }
+
+    private var drmSessionManagerProvider: DrmSessionManagerProvider? = provider
     private var loadErrorHandlingPolicy: LoadErrorHandlingPolicy? = null
     private fun lazily(factory: () -> MediaSource.Factory) = lazy {
         factory().apply {
@@ -47,14 +61,6 @@ class MediaFactory(
         mediaResolver.player = player
     }
 
-    private val mediaResolver = MediaResolver(context, extListFlow)
-    private val dataSource = ResolvingDataSource.Factory(
-        CustomCacheDataSource.Factory(cache, MediaDataSource.Factory(context)),
-        mediaResolver
-    )
-    private val default = lazily { DefaultMediaSourceFactory(dataSource) }
-    private val hls = lazily { HlsMediaSource.Factory(dataSource) }
-    private val dash = lazily { DashMediaSource.Factory(dataSource) }
 
     override fun getSupportedTypes() = intArrayOf(
         C.CONTENT_TYPE_OTHER, C.CONTENT_TYPE_HLS, C.CONTENT_TYPE_DASH
