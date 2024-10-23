@@ -40,7 +40,6 @@ import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
-import dev.brahmkshatriya.echo.extensions.getSettings
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.deletePlaylist
@@ -50,6 +49,7 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIsVideo
 import dev.brahmkshatriya.echo.utils.getFromCache
+import dev.brahmkshatriya.echo.utils.getSettings
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.utils.toData
 import dev.brahmkshatriya.echo.utils.toJson
@@ -72,7 +72,6 @@ class OfflineExtension(
             description = "Offline extension",
             version = "1.0.0",
             author = "Echo",
-            iconUrl = null
         )
     }
 

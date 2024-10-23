@@ -22,7 +22,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
-import dev.brahmkshatriya.echo.ui.adapter.PlaylistAdapter
+import dev.brahmkshatriya.echo.ui.player.PlaylistAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Add
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Move

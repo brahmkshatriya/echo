@@ -240,6 +240,31 @@
     <string name="unhidden_track">Unhidden %1$s</string>
     <string name="cache_playlist_warning">Experimental Feature.\nAnything except listening to them is not supported.</string>
     <string name="cached_songs">Cached Songs</string>
+    <string name="install">Install</string>
+    <string name="app">App</string>
+    <string name="file">File</string>
+    <string name="installation_type">Installation Type</string>
+    <string name="installation_type_summary">App installation will allow the following links to open in Echo:</string>
+    <string name="installation_type_warning">Not available if you install the extension as a File.</string>
+    <string name="could_not_find_the_file">Could not find the file.</string>
+    <string name="extension_installer">Extension Installer</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="invalid_extension">Invalid Extension</string>
+    <string name="extension_installed_successfully">Extension installed successfully.</string>
+    <string name="extension_uninstalled_successfully">Extension uninstalled successfully.</string>
+    <string name="allow_opening_links">Allow opening links</string>
+    <string name="open_links_instruction">To allow opening these links, you need to:\n- Scroll down and click on \"Open by Default\"\n- Click on \"+ Add Link\"</string>
+    <string name="extension_requires_following_extensions">%1$s requires %2$s</string>
+    <string name="downloading_update_for_extension">Downloading update for %1$s</string>
+    <string name="extension_updated_successfully">%1$s updated successfully</string>
+    <string name="check_for_extension_updates">Check for Extension Updates</string>
+    <string name="check_for_extension_updates_summary">Look for new updates of extensions, when you open the app.</string>
+    <string name="link">Link</string>
+    <string name="link_or_code">Link or Code</string>
+    <string name="list_is_empty">List is empty</string>
+    <string name="extension_installed">%1$s (Installed)</string>
+    <string name="add_extensions">Add Extensions</string>
+    <string name="invalid_extension_list">Invalid extensions list</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

@@ -41,6 +41,19 @@ object MediaItemUtils {
         track: Track
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
+        val drmType = track.streamables.firstNotNullOfOrNull { it.decryptionType }
+        when (drmType) {
+            null -> {}
+            is Streamable.DecryptionType.Widevine -> {
+                val drmRequest = drmType.license
+                val config = MediaItem.DrmConfiguration.Builder(C.WIDEVINE_UUID)
+                    .setLicenseUri(drmRequest.url)
+                    .setMultiSession(drmType.isMultiSession)
+                    .setLicenseRequestHeaders(drmRequest.headers)
+                    .build()
+                item.setDrmConfiguration(config)
+            }
+        }
         val metadata =
             track.toMetaData(mediaMetadata.extras!!, clientId, context, true, settings)
         item.setMediaMetadata(metadata)

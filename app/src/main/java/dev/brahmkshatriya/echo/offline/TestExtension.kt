@@ -45,7 +45,6 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
             "1.0.0",
             "Test extension for offline testing",
             "Test",
-            null,
         )
     }
 

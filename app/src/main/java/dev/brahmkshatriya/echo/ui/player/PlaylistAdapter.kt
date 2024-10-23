@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.adapter
+package dev.brahmkshatriya.echo.ui.player
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Animatable
@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemQueueBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.toTimeString
 

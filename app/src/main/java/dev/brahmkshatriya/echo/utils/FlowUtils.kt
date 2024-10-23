@@ -11,14 +11,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-fun <T> Fragment.observe(flow: Flow<T>, callback: suspend (T) -> Unit) {
+fun <T> Fragment.observe(flow: Flow<T>, callback: suspend (T) -> Unit) =
     viewLifecycleOwner.observe(flow, callback)
-}
 
-fun <T> LifecycleOwner.observe(flow: Flow<T>, block: suspend (T) -> Unit) {
-    lifecycleScope.launch {
-        flow.flowWithLifecycle(lifecycle).collectLatest(block)
-    }
+
+fun <T> LifecycleOwner.observe(flow: Flow<T>, block: suspend (T) -> Unit) = lifecycleScope.launch {
+    flow.flowWithLifecycle(lifecycle).collectLatest(block)
 }
 
 fun <T> LifecycleOwner.collect(flow: Flow<T>, block: suspend (T) -> Unit) {

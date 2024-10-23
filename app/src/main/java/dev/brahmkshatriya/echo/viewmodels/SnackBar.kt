@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,17 +20,14 @@ import dev.brahmkshatriya.echo.ui.exception.openException
 import dev.brahmkshatriya.echo.ui.exception.openLoginException
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SnackBar @Inject constructor(
-    mutableThrowableFlow: MutableSharedFlow<Throwable>,
+    val throwableFlow: MutableSharedFlow<Throwable>,
     val mutableMessageFlow: MutableSharedFlow<Message>
 ) : ViewModel() {
-
-    val throwableFlow = mutableThrowableFlow.asSharedFlow()
 
     data class Message(
         val message: String,
@@ -112,6 +110,15 @@ class SnackBar @Inject constructor(
 
         fun Fragment.createSnack(message: Int) {
             createSnack(getString(message))
+        }
+
+        fun FragmentActivity.createSnack(message: Message) {
+            val viewModel by viewModels<SnackBar>()
+            viewModel.create(message)
+        }
+
+        fun FragmentActivity.createSnack(message: String) {
+            createSnack(Message(message))
         }
     }
 }

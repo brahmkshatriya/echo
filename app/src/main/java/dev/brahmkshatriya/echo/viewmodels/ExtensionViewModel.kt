@@ -1,11 +1,18 @@
 package dev.brahmkshatriya.echo.viewmodels
 
+import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import androidx.core.content.edit
+import androidx.core.net.toUri
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.ExtensionOpenerActivity
+import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.installExtension
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
@@ -13,27 +20,44 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity
+import dev.brahmkshatriya.echo.extensions.ExtensionAssetResponse
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.priorityKey
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.setupMusicExtension
+import dev.brahmkshatriya.echo.extensions.downloadUpdate
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.getExtensionList
+import dev.brahmkshatriya.echo.extensions.getUpdateFileUrl
+import dev.brahmkshatriya.echo.extensions.installExtension
+import dev.brahmkshatriya.echo.extensions.uninstallExtension
+import dev.brahmkshatriya.echo.extensions.waitForResult
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
+import dev.brahmkshatriya.echo.ui.extension.ExtensionsAddListBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import tel.jeelpa.plugger.utils.mapState
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
+    val app: Application,
+    val extensionLoader: ExtensionLoader,
+    val messageFlow: MutableSharedFlow<SnackBar.Message>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
@@ -81,6 +105,94 @@ class ExtensionViewModel @Inject constructor(
         }
     }
 
+    suspend fun install(context: FragmentActivity, file: File, installAsApk: Boolean): Boolean {
+        val result = installExtension(context, file, installAsApk).getOrElse {
+            throwableFlow.emit(it)
+            false
+        }
+        if (result) messageFlow.emit(SnackBar.Message(app.getString(R.string.extension_installed_successfully)))
+        return result
+    }
+
+    suspend fun uninstall(
+        context: FragmentActivity, extension: Extension<*>, function: (Boolean) -> Unit
+    ) {
+        val result = uninstallExtension(context, extension).getOrElse {
+            throwableFlow.emit(it)
+            false
+        }
+        if (result) messageFlow.emit(SnackBar.Message(app.getString(R.string.extension_uninstalled_successfully)))
+        function(result)
+    }
+
+    fun getExtensionListFlow(type: ExtensionType) = when (type) {
+        ExtensionType.MUSIC -> extensionListFlow
+        ExtensionType.TRACKER -> trackerListFlow
+        ExtensionType.LYRICS -> lyricsListFlow
+    }
+
+    fun moveExtensionItem(type: ExtensionType, toPos: Int, fromPos: Int) {
+        val flow = extensionLoader.priorityMap[type]!!
+        val list = getExtensionListFlow(type).value.orEmpty().map { it.id }.toMutableList()
+        list.add(toPos, list.removeAt(fromPos))
+        flow.value = list
+        settings.edit {
+            putString(type.priorityKey(), list.joinToString(","))
+        }
+    }
+
+    suspend fun allExtensions() = ExtensionType.entries.map { type ->
+        val flow = getExtensionListFlow(type)
+        flow.first { it != null }!!
+    }.flatten()
+
+    private var checkedForUpdates = false
+    fun updateExtensions(context: FragmentActivity) {
+        if (checkedForUpdates) return
+        checkedForUpdates = true
+        val check = settings.getBoolean("check_for_extension_updates", true)
+        if (check) viewModelScope.launch {
+            allExtensions().forEach {
+                updateExtension(context, it)
+            }
+        }
+    }
+
+    val client = OkHttpClient()
+    private suspend fun updateExtension(
+        context: FragmentActivity,
+        extension: Extension<*>
+    ) {
+        val currentVersion = extension.version
+        val updateUrl = extension.metadata.updateUrl ?: return
+
+        val url = getUpdateFileUrl(currentVersion, updateUrl, client).getOrElse {
+            throwableFlow.emit(it)
+            null
+        } ?: return
+
+        messageFlow.emit(
+            SnackBar.Message(
+                app.getString(R.string.downloading_update_for_extension, extension.name)
+            )
+        )
+        val file = downloadUpdate(context, url, client).getOrElse {
+            throwableFlow.emit(it)
+            null
+        } ?: return
+        val installAsApk = extension.metadata.importType == ImportType.App
+        val result = installExtension(context, file, installAsApk).getOrElse {
+            throwableFlow.emit(it)
+            false
+        }
+        if (result) messageFlow.emit(
+            SnackBar.Message(
+                app.getString(R.string.extension_updated_successfully, extension.name)
+            )
+        )
+    }
+
+
     companion object {
         fun Context.noClient() = SnackBar.Message(
             getString(R.string.error_no_client)
@@ -116,6 +228,62 @@ class ExtensionViewModel @Inject constructor(
                 else adapter
             )
         }
-
     }
+
+    fun addFromLinkOrCode(context: FragmentActivity, link: String) {
+        viewModelScope.launch {
+            val actualLink = when {
+                link.startsWith("http://") or link.startsWith("https://") -> link
+                else -> "https://v.gd/$link"
+            }
+
+            val list = runCatching { getExtensionList(actualLink, client) }.getOrElse {
+                throwableFlow.emit(it)
+                return@launch
+            }
+            if (list.isEmpty()) {
+                messageFlow.emit(SnackBar.Message(app.getString(R.string.list_is_empty)))
+                return@launch
+            }
+            ExtensionsAddListBottomSheet.newInstance(list)
+                .show(context.supportFragmentManager, null)
+        }
+    }
+
+    fun addFromFile(context: FragmentActivity) {
+        viewModelScope.launch {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "application/octet-stream"
+                addCategory(Intent.CATEGORY_OPENABLE)
+            }
+            val result = context.waitForResult(intent)
+            val file = result.data?.data ?: return@launch
+            val newIntent = Intent(context, ExtensionOpenerActivity::class.java).apply {
+                setData(file)
+            }
+            context.startActivity(newIntent)
+        }
+    }
+
+    fun addExtensions(context: FragmentActivity, extensions: List<ExtensionAssetResponse>) {
+        viewModelScope.launch {
+            extensions.forEach { extension ->
+                val url = getUpdateFileUrl("", extension.updateUrl, client).getOrElse {
+                    throwableFlow.emit(it)
+                    null
+                } ?: return@forEach
+                messageFlow.emit(
+                    SnackBar.Message(
+                        app.getString(R.string.downloading_update_for_extension, extension.name)
+                    )
+                )
+                val file = downloadUpdate(context, url, client).getOrElse {
+                    throwableFlow.emit(it)
+                    return@forEach
+                }
+                context.installExtension(file.toUri().toString())
+            }
+        }
+    }
+
 }

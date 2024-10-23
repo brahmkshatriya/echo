@@ -32,7 +32,7 @@ import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
@@ -128,7 +128,7 @@ class LoginFragment : Fragment() {
             return
         }
 
-        metadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon, R.drawable.ic_extension) {
+        metadata.iconUrl?.toImageHolder().loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
             binding.extensionIcon.setImageDrawable(it)
         }
 

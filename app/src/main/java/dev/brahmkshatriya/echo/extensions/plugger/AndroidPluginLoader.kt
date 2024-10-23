@@ -10,7 +10,6 @@ class AndroidPluginLoader<TPlugin>(
 ) : PluginLoader<Metadata, TPlugin> {
     constructor(context: Context): this(GetClassLoaderWithPathUseCase(context.classLoader))
 
-    // for loading classes.dex from dex, jar or apk
     @Suppress("UNCHECKED_CAST")
     override fun loadPlugin(pluginMetadata: Metadata): TPlugin {
         return getClassLoader.getWithPath(pluginMetadata.path)

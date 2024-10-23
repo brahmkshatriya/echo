@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Selectable"
+    android:background="?echoBackground"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
@@ -56,23 +57,15 @@
                 tools:text="@tools:sample/cities" />
         </LinearLayout>
 
-        <LinearLayout
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/extensionDrag"
+            style="?attr/materialIconButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/close"
             android:padding="8dp"
-            android:visibility="gone">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/extensionRemove"
-                style="?attr/materialIconButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/close"
-                android:padding="8dp"
-                app:icon="@drawable/ic_close"
-                app:iconSize="24dp"
-                app:iconTint="@color/button_player"
-                tools:ignore="DuplicateClickableBoundsCheck" />
-        </LinearLayout>
+            app:icon="@drawable/ic_drag_20dp"
+            app:iconSize="24dp"
+            app:iconTint="@color/button_player" />
     </LinearLayout>
 </LinearLayout>

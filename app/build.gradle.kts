@@ -71,7 +71,6 @@ dependencies {
 
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.8.0")
     implementation("androidx.paging:paging-common-ktx:3.3.2")
     implementation("androidx.paging:paging-runtime-ktx:3.3.2")
     implementation("androidx.preference:preference-ktx:1.2.1")
@@ -95,9 +94,8 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48.1")
     ksp("com.google.dagger:hilt-android-compiler:2.48.1")
 
-    ksp("com.github.bumptech.glide:ksp:4.14.2")
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("jp.wasabeef:glide-transformations:4.3.0")
+    implementation("io.coil-kt.coil3:coil:3.0.0-rc01")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc01")
 
     implementation("com.github.madrapps:pikolo:2.0.2")
     implementation("com.github.bosphere.android-fadingedgelayout:fadingedgelayout:1.0.0")

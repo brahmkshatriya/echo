@@ -187,7 +187,7 @@ sealed class MediaItemViewHolder(
         fun ItemListsCoverBinding.bind(item: EchoMediaItem.Lists): (Boolean) -> Unit {
             playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
             val cover = item.cover
-            cover.loadWith(listImageView) {
+            cover.loadWith(listImageView, null, item.placeHolder()) {
                 cover.loadInto(listImageView1)
                 cover.loadInto(listImageView2)
             }

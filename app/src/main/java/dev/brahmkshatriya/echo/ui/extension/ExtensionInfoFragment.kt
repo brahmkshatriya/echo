@@ -9,11 +9,13 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
-import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.databinding.FragmentExtensionBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
@@ -21,7 +23,7 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
@@ -31,6 +33,7 @@ import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.coroutines.launch
 
 class ExtensionInfoFragment : Fragment() {
     companion object {
@@ -44,8 +47,8 @@ class ExtensionInfoFragment : Fragment() {
             }
         }
 
-        fun newInstance(metadata: Metadata, extensionType: Int) =
-            newInstance(metadata.id, metadata.name, ExtensionType.entries[extensionType])
+        fun newInstance(extension: Extension<*>) =
+            newInstance(extension.id, extension.name, extension.type)
     }
 
     private var binding by autoCleared<FragmentExtensionBinding>()
@@ -83,7 +86,7 @@ class ExtensionInfoFragment : Fragment() {
 
         val extension = when (extensionType) {
             ExtensionType.MUSIC -> viewModel.extensionListFlow.getExtension(clientId)
-            ExtensionType.TRACKER ->  viewModel.trackerListFlow.getExtension(clientId)
+            ExtensionType.TRACKER -> viewModel.trackerListFlow.getExtension(clientId)
             ExtensionType.LYRICS -> viewModel.lyricsListFlow.getExtension(clientId)
         }
 
@@ -95,7 +98,25 @@ class ExtensionInfoFragment : Fragment() {
 
         val metadata = extension.metadata
 
-        metadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon, R.drawable.ic_extension) {
+        if (metadata.importType != ImportType.BuiltIn) {
+            binding.toolBar.inflateMenu(R.menu.extensions_menu)
+            binding.toolBar.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.menu_uninstall -> {
+                        lifecycleScope.launch {
+                            viewModel.uninstall(requireActivity(), extension) {
+                                parentFragmentManager.popBackStack()
+                            }
+                        }
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }
+
+        metadata.iconUrl?.toImageHolder().loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
             binding.extensionIcon.setImageDrawable(it)
         }
         binding.extensionDetails.text =

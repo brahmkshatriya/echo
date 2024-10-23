@@ -1,36 +1,11 @@
-package dev.brahmkshatriya.echo.extensions
+package dev.brahmkshatriya.echo.utils
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
-import kotlinx.coroutines.flow.StateFlow
-import tel.jeelpa.plugger.utils.mapState
-
-inline fun <reified T : ExtensionClient> StateFlow<List<Result<Pair<Metadata, Lazy<Result<T>>>>>>.injectSettings(
-    type: ExtensionType,
-    context: Context
-) = mapState { list ->
-    list.map {
-        runCatching {
-            val plugin = it.getOrThrow()
-            val metadata = plugin.first
-            Pair(
-                metadata,
-                lazy {
-                    runCatching {
-                        val instance = plugin.second.value.getOrThrow()
-                        instance.setSettings(getSettings(context, type, metadata))
-                        instance
-                    }
-                }
-            )
-        }
-    }
-}
 
 fun getSettings(context: Context, type: ExtensionType, metadata: Metadata): Settings {
     val name = "$type-${metadata.id}"

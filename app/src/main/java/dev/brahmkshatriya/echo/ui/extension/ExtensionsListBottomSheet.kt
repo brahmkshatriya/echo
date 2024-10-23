@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
@@ -43,7 +43,10 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
-        binding.addExtension.isEnabled = false
+        binding.addExtension.setOnClickListener {
+            dismiss()
+            ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
+        }
         binding.manageExtensions.setOnClickListener {
             dismiss()
             requireActivity().openFragment(ManageExtensionsFragment())
@@ -85,7 +88,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
                 button.isChecked = metadata.id == viewModel.currentFlow.value
-                metadata.iconUrl?.toImageHolder().loadWith(button, R.drawable.ic_extension) {
+                metadata.iconUrl?.toImageHolder().loadAsCircle(button, R.drawable.ic_extension) {
                     button.icon = it
                 }
                 button.id = index

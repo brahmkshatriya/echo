@@ -1,5 +1,5 @@
 package dev.brahmkshatriya.echo.common.helpers
 
 enum class ImportType {
-    App, Apk, BuiltIn, Jar
+    BuiltIn, App, File,
 }

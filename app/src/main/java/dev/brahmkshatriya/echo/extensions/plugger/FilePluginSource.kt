@@ -1,27 +1,32 @@
 package dev.brahmkshatriya.echo.extensions.plugger
 
-import android.os.Build
-import android.os.FileObserver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.PluginSource
 import java.io.File
 
 class FilePluginSource(
     private val folder: File,
-    private val extension: String,
+    scope: CoroutineScope,
+    fileIgnoreFlow: MutableSharedFlow<File?>
 ) : PluginSource<File> {
-    private fun loadAllPlugins() = folder.listFiles()!!.filter { it.path.endsWith(extension) }
+
+    private var ignoreFile : File? = null
+    private fun loadAllPlugins() = run {
+        folder.setReadOnly()
+        folder.listFiles()!!.filter { it != ignoreFile }.onEach { it.setWritable(false) }
+    }
     private val pluginStateFlow = MutableStateFlow(loadAllPlugins())
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val fsEventsListener = object : FileObserver(folder) {
-                override fun onEvent(event: Int, path: String?) {
-                    pluginStateFlow.value = loadAllPlugins()
-                }
+        scope.launch {
+            fileIgnoreFlow.collect {
+                ignoreFile = it
+                pluginStateFlow.value = loadAllPlugins()
             }
-            fsEventsListener.startWatching()
         }
     }
 

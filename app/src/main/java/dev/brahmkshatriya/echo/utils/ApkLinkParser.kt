@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.extension
+package dev.brahmkshatriya.echo.utils
 
 import org.w3c.dom.Document
 import org.w3c.dom.Node

@@ -7,8 +7,12 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
@@ -19,8 +23,9 @@ import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Job
 
 class ManageExtensionsFragment : Fragment() {
     var binding by autoCleared<FragmentManageExtensionsBinding>()
@@ -35,7 +40,9 @@ class ManageExtensionsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsetsMain(binding.appBarLayout, binding.recyclerView)
+        applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
+            binding.fabContainer.applyContentInsets(it)
+        }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.appBarOutline.alpha = offset
@@ -50,35 +57,66 @@ class ManageExtensionsFragment : Fragment() {
         refresh.setOnClickListener { viewModel.refresh() }
         binding.swipeRefresh.configure { viewModel.refresh() }
 
-        val flow = MutableStateFlow(
-            viewModel.extensionListFlow.value?.map { it.metadata }
-        )
+        binding.fabAddExtensions.setOnClickListener {
+            ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
+        }
 
-        fun change(pos: Int) {
-            when (pos) {
-                0 -> flow.value = viewModel.extensionListFlow.value?.map { it.metadata }
-                1 -> flow.value = viewModel.trackerListFlow.value?.map { it.metadata }
-                2 -> flow.value = viewModel.lyricsListFlow.value?.map { it.metadata }
+        var type = ExtensionType.entries[binding.tabLayout.selectedTabPosition]
+        val callback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPos = viewHolder.bindingAdapterPosition
+                val toPos = target.bindingAdapterPosition
+                viewModel.moveExtensionItem(type, toPos, fromPos)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+            override fun getMovementFlags(
+                recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
+            ) = makeMovementFlags(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0)
+
+        }
+
+        val touchHelper = ItemTouchHelper(callback)
+        val extensionAdapter = ExtensionAdapter(object : ExtensionAdapter.Listener {
+            override fun onClick(extension: Extension<*>, view: View) {
+                openFragment(ExtensionInfoFragment.newInstance(extension), view)
+            }
+
+            override fun onDragHandleTouched(viewHolder: ExtensionAdapter.ViewHolder) {
+                touchHelper.startDrag(viewHolder)
+            }
+        })
+
+        fun change(pos: Int): Job {
+            type = ExtensionType.entries[pos]
+            val flow = viewModel.getExtensionListFlow(type)
+            return observe(flow) { list ->
+                extensionAdapter.submit(list ?: emptyList())
             }
         }
 
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            var job: Job? = null
             override fun onTabSelected(tab: TabLayout.Tab) {
-                change(tab.position)
+                job?.cancel()
+                job = change(tab.position)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
 
-        val extensionAdapter = ExtensionAdapter { metadata, view1 ->
-            openFragment(
-                ExtensionInfoFragment.newInstance(metadata, binding.tabLayout.selectedTabPosition),
-                view1
-            )
-        }
         binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
-        observe(flow) { extensionAdapter.submit(it ?: emptyList()) }
+        touchHelper.attachToRecyclerView(binding.recyclerView)
+
         observe(viewModel.refresher) {
             change(binding.tabLayout.selectedTabPosition)
             binding.swipeRefresh.isRefreshing = it

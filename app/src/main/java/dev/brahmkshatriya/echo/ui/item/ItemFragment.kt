@@ -47,7 +47,7 @@ import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.loadWithThumb
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.utils.setupTransition
@@ -216,7 +216,7 @@ class ItemFragment : Fragment() {
                 binding.toolBar.title = it.title.trim()
             }
 
-            it.cover.loadWith(binding.cover, item.cover, it.placeHolder())
+            it.cover.loadWithThumb(binding.cover, item.cover, it.placeHolder())
             with(viewModel) {
                 when (it) {
                     is AlbumItem -> {

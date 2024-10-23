@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.common.helpers
 
-enum class ExtensionType {
-    MUSIC, TRACKER, LYRICS
+enum class ExtensionType(val feature: String) {
+    MUSIC("music"),
+    TRACKER("tracker"),
+    LYRICS("lyrics")
 }

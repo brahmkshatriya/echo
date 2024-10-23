@@ -1,11 +1,9 @@
 package dev.brahmkshatriya.echo.extensions.plugger
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import tel.jeelpa.plugger.PluginSource
 
@@ -13,22 +11,26 @@ class ApkPluginSource(
     packageChangeListener: PackageChangeListener,
     private val context: Context,
     private val featureName: String,
-) : PluginSource<ApplicationInfo>, PackageChangeListener.Listener {
+) : PluginSource<AppInfo>, PackageChangeListener.Listener {
 
     init {
         packageChangeListener.add(this)
     }
 
-    override fun getSourceFiles(): StateFlow<List<ApplicationInfo>> = loadedPlugins.asStateFlow()
+    override fun getSourceFiles() = loadedPlugins.asStateFlow()
 
     private val loadedPlugins = MutableStateFlow(context.getStaticPackages(featureName))
 
-    private fun Context.getStaticPackages(featureName: String): List<ApplicationInfo> {
+    private fun Context.getStaticPackages(featureName: String): List<AppInfo> {
         return packageManager.getInstalledPackages(PACKAGE_FLAGS).filter {
-                it.reqFeatures.orEmpty().any { featureInfo ->
-                    featureInfo.name == featureName
-                }
-            }.mapNotNull { it.applicationInfo }
+            it.reqFeatures.orEmpty().any { featureInfo ->
+                featureInfo.name == featureName
+            }
+        }.mapNotNull { info ->
+            info.applicationInfo?.let {
+                AppInfo(it.sourceDir, it)
+            }
+        }
     }
 
     companion object {
@@ -40,6 +42,6 @@ class ApkPluginSource(
     }
 
     override fun onPackageChanged() {
-        context.getStaticPackages(featureName)
+        loadedPlugins.value = context.getStaticPackages(featureName)
     }
 }
