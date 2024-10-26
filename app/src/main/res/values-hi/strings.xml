@@ -247,4 +247,14 @@
     <string name="allow_opening_links">लिंक खोलने की अनुमति दें</string>
     <string name="open_links_instruction">इन लिंक को खोलने की अनुमति देने के लिए, आपको:\n- नीचे स्क्रॉल करें और \"डिफ़ॉल्ट रूप से खोलें\" पर क्लिक करें।\n- \"+ लिंक जोड़ें\" पर क्लिक करें।</string>
     <string name="extension_requires_following_extensions">%1$s को %2$s की आवश्यकता है।</string>
+    <string name="extension_installed">%1$s (स्थापित)</string>
+    <string name="add_extensions">एक्सटेंशन जोड़ें</string>
+    <string name="extension_updated_successfully">%1$s सफलतापूर्वक अद्यतन किया गया</string>
+    <string name="check_for_extension_updates_summary">ऐप खोलने पर एक्सटेंशनों के नए अद्यतन देखें।</string>
+    <string name="downloading_update_for_extension">%1$s के लिए अद्यतन डाउनलोड कर रहे हैं</string>
+    <string name="check_for_extension_updates">एक्सटेंशन अद्यतन जांचें</string>
+    <string name="link">लिंक</string>
+    <string name="link_or_code">लिंक या कोड</string>
+    <string name="list_is_empty">सूची खाली है</string>
+    <string name="invalid_extension_list">अमान्य एक्सटेंशन सूची</string>
 </resources>
