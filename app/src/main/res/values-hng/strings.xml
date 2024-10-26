@@ -247,4 +247,14 @@
     <string name="extension_installed_successfully">Extension safalta se sthaapit kiya gaya.</string>
     <string name="allow_opening_links">Link kholne ki anumati dein</string>
     <string name="extension_requires_following_extensions">%1$s ko %2$s ki aavashyakta hai.</string>
+    <string name="link">Link</string>
+    <string name="downloading_update_for_extension">%1$s ke liye update download kar rahe hain</string>
+    <string name="extension_updated_successfully">%1$s safalta se update kiya gaya</string>
+    <string name="check_for_extension_updates">Extension update jaanch karen</string>
+    <string name="check_for_extension_updates_summary">App kholne par extension ke naye update dekhen.</string>
+    <string name="link_or_code">Link ya code</string>
+    <string name="list_is_empty">List khaalee hai</string>
+    <string name="extension_installed">%1$s (sthaapit)</string>
+    <string name="add_extensions">Extension joden</string>
+    <string name="invalid_extension_list">Amanya extension list</string>
 </resources>
