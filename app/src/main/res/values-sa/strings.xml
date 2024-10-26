@@ -247,4 +247,14 @@
     <string name="extension_uninstalled_successfully">विस्तारः सफलतया अपाकृतः।</string>
     <string name="uninstall">अपाक्रियताम्</string>
     <string name="open_links_instruction">एतान् सम्पर्कान् उद्घाटनाय निम्नलिखितं करणीयम् अस्ति:\n– अधः स्क्रोल् कृत्वा \"स्वयमेव उद्घाटनं\" इत्यस्मिन्हि क्लिक् क्रियताम्।\n– \"+ सम्पर्कं योजय\" इत्यत्र क्लिक् क्रियताम्।</string>
+    <string name="link">सूत्रम्</string>
+    <string name="extension_updated_successfully">%1$s यथावत् सफलतया अद्यतनं कृतम्</string>
+    <string name="check_for_extension_updates">विस्तारक-अद्यतनेषु परीक्षां कुरु</string>
+    <string name="downloading_update_for_extension">%1$s हेतु अद्यतनं अधःस्रवणं क्रियते</string>
+    <string name="check_for_extension_updates_summary">यदा त्वं अनुप्रयोगं उद्घाटयसि, तदा नूतन-विस्तारक-अद्यतनेषु अन्विष्यताम्।</string>
+    <string name="list_is_empty">सूची रिक्तम् अस्ति</string>
+    <string name="extension_installed">%1$s (स्थापितम्)</string>
+    <string name="link_or_code">सूत्रं वा कोड</string>
+    <string name="add_extensions">विस्तारकान् योजयतु</string>
+    <string name="invalid_extension_list">अमङ्गल-प्रायः विस्तारक-सूची</string>
 </resources>
