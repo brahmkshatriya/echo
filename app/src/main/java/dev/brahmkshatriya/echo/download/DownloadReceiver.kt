@@ -4,17 +4,20 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import com.arthenica.ffmpegkit.FFmpegKit
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.DownloadDao
 import dev.brahmkshatriya.echo.utils.getFromCache
-import dev.brahmkshatriya.echo.utils.loadBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -40,7 +43,7 @@ class DownloadReceiver : BroadcastReceiver() {
             val file = File(download.downloadPath)
 
             if (file.exists()) {
-                context.writeM4ATag(file, track)
+                writeM4ATag(file, track)
                 MediaScannerConnection.scanFile(context, arrayOf(file.toString()), null, null)
                 runBlocking { withContext(Dispatchers.IO) { downloadDao.deleteDownload(downloadId) } }
             }
@@ -49,26 +52,44 @@ class DownloadReceiver : BroadcastReceiver() {
 
     companion object {
 
-        private fun Context.saveCoverBitmap(file: File, track: Track): File? {
-            return try {
-                val coverBitmap: Bitmap? = runBlocking { track.cover.loadBitmap(this@saveCoverBitmap) }
+        private val client = OkHttpClient.Builder().build()
 
-                if (coverBitmap != null) {
-                    val coverFile = File(file.parent, "cover_temp.jpeg")
-                    FileOutputStream(coverFile).use { fos ->
-                        coverBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+        private fun saveCoverBitmap(file: File, track: Track): File? {
+            return try {
+                runBlocking {
+                    withContext(Dispatchers.IO) {
+                        val holder = track.cover as? ImageHolder.UrlRequestImageHolder
+                            ?: throw IllegalArgumentException("Invalid ImageHolder type")
+
+                        val request = Request.Builder()
+                            .url(holder.request.url)
+                            .build()
+
+                        client.newCall(request).execute().use { response ->
+
+                            val responseBody = response.body
+                            val bytes = responseBody.bytes()
+
+                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                            val coverFile = File(file.parent, "cover_temp.jpeg")
+
+                            FileOutputStream(coverFile).use { fos ->
+                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                            }
+
+                            coverFile
+                        }
                     }
-                    coverFile
-                } else {
-                    null
                 }
             } catch (e: Exception) {
-                println("Error saving cover bitmap: ${e.message}")
+                println("Error saving cover bitmap: $e")
                 null
             }
         }
 
-        fun Context.writeM4ATag(file: File, track: Track) {
+
+        fun writeM4ATag(file: File, track: Track) {
             try {
                 val coverFile = saveCoverBitmap(file, track)
 
