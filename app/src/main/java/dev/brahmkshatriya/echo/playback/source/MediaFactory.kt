@@ -61,7 +61,6 @@ class MediaFactory(
         mediaResolver.player = player
     }
 
-
     override fun getSupportedTypes() = intArrayOf(
         C.CONTENT_TYPE_OTHER, C.CONTENT_TYPE_HLS, C.CONTENT_TYPE_DASH
     )
