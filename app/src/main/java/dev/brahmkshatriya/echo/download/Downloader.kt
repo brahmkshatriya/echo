@@ -15,7 +15,6 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
@@ -66,23 +65,27 @@ class Downloader(
         val extension = extensionList.getExtension(clientId) ?: return
         when (item) {
             is EchoMediaItem.Lists -> handleListItem(context, extension, item)
-            is EchoMediaItem.TrackItem -> enqueueDownload(context, extension, item.track)
+            is EchoMediaItem.TrackItem -> enqueueDownload(context, extension, item.track, 0)
             else -> throw IllegalArgumentException("Not Supported")
         }
     }
 
     private suspend fun handleListItem(
-        context: Context, extension: Extension<*>, item: EchoMediaItem.Lists
+        context: Context,
+        extension: Extension<*>,
+        item: EchoMediaItem.Lists
     ) {
         when (item) {
             is EchoMediaItem.Lists.AlbumItem -> handleAlbumDownload(context, extension, item)
             is EchoMediaItem.Lists.PlaylistItem -> handlePlaylistDownload(context, extension, item)
-            is EchoMediaItem.Lists.RadioItem -> Unit // No action for RadioItem
+            is EchoMediaItem.Lists.RadioItem -> Unit
         }
     }
 
     private suspend fun handleAlbumDownload(
-        context: Context, extension: Extension<*>, item: EchoMediaItem.Lists.AlbumItem
+        context: Context,
+        extension: Extension<*>,
+        item: EchoMediaItem.Lists.AlbumItem
     ) {
         extension.get<AlbumClient, Unit>(throwable) {
             val album = loadAlbum(item.album)
@@ -115,14 +118,16 @@ class Downloader(
                 notificationBuilder.build()
             )
 
-            allTracks.forEach { track ->
-                enqueueDownload(context, extension, track, parent = item, group = group)
+            allTracks.forEachIndexed { index, track ->
+                enqueueDownload(context, extension, track, order = index + 1, parent = item, group = group)
             }
         }
     }
 
     private suspend fun handlePlaylistDownload(
-        context: Context, extension: Extension<*>, item: EchoMediaItem.Lists.PlaylistItem
+        context: Context,
+        extension: Extension<*>,
+        item: EchoMediaItem.Lists.PlaylistItem
     ) {
         extension.get<PlaylistClient, Unit>(throwable) {
             val playlist = loadPlaylist(item.playlist)
@@ -155,8 +160,8 @@ class Downloader(
                 notificationBuilder.build()
             )
 
-            allTracks.forEach { track ->
-                enqueueDownload(context, extension, track, parent = item, group = group)
+            allTracks.forEachIndexed { index, track ->
+                enqueueDownload(context, extension, track, order = index + 1, parent = item, group = group)
             }
         }
     }
@@ -165,6 +170,7 @@ class Downloader(
         context: Context,
         extension: Extension<*>,
         track: Track,
+        order: Int,
         parent: EchoMediaItem.Lists? = null,
         group: DownloadGroup? = null
     ) {
@@ -239,7 +245,8 @@ class Downloader(
                         uniqueFile,
                         downloadId,
                         notificationId,
-                        group
+                        group,
+                        order
                     )
 
                     is Streamable.Audio.Channel, is Streamable.Audio.ByteStream -> handleStreamDownload(
@@ -253,7 +260,8 @@ class Downloader(
                         downloadId,
                         notificationId,
                         notificationBuilder,
-                        group
+                        group,
+                        order
                     )
 
                     else -> throw Exception("Unsupported audio stream type")
@@ -270,7 +278,6 @@ class Downloader(
                     e.message ?: "Unknown error"
                 )
             }
-
         }
     }
 
@@ -282,7 +289,8 @@ class Downloader(
         file: File,
         downloadId: Long,
         notificationId: Int,
-        group: DownloadGroup?
+        group: DownloadGroup?,
+        order: Int
     ): Job = launch {
         downloadSemaphore.withPermit {
             val headers =
@@ -310,7 +318,7 @@ class Downloader(
                     )
 
                     context.saveToCache(completeTrack.id, completeTrack, "downloads")
-                    sendDownloadCompleteBroadcast(context, downloadId)
+                    sendDownloadCompleteBroadcast(context, downloadId, order)
 
                     updateGroupProgress(context, group, notificationId)
                 } else if (ReturnCode.isCancel(session.returnCode)) {
@@ -356,7 +364,8 @@ class Downloader(
         downloadId: Long,
         notificationId: Int,
         notificationBuilder: NotificationCompat.Builder,
-        group: DownloadGroup?
+        group: DownloadGroup?,
+        order: Int
     ): Job = launch {
         downloadSemaphore.withPermit {
             val tempFile = File(targetDirectory, "$sanitizedTitle.tmp").apply { createNewFile() }
@@ -378,7 +387,7 @@ class Downloader(
                     FileOutputStream(tempFile, false).use { fos ->
                         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                         var bytesRead: Int
-                        val progressUpdateInterval = 500L // milliseconds
+                        val progressUpdateInterval = 500L
                         var lastUpdateTime = System.currentTimeMillis()
                         var lastProgress = 0
 
@@ -417,7 +426,7 @@ class Downloader(
                                 }
                             }
 
-                            if (received >= totalBytes && totalBytes > 0) {
+                            if (totalBytes in 1..received) {
                                 break
                             }
                         }
@@ -439,9 +448,22 @@ class Downloader(
                     )
 
                     context.saveToCache(completeTrack.id, completeTrack, "downloads")
-                    sendDownloadCompleteBroadcast(context, downloadId)
+                    sendDownloadCompleteBroadcast(context, downloadId, order)
 
                     updateGroupProgress(context, group, notificationId)
+
+                    if (group == null) {
+                        withContext(Dispatchers.Main) {
+                            notificationBuilder.setContentText("Download complete")
+                                .setProgress(0, 0, false)
+                                .setOngoing(false)
+                            DownloadNotificationHelper.updateNotification(
+                                context,
+                                notificationId,
+                                notificationBuilder.build()
+                            )
+                        }
+                    }
                 } else {
                     throw Exception("Failed to rename temporary file")
                 }
@@ -461,10 +483,11 @@ class Downloader(
         }
     }
 
-    private fun sendDownloadCompleteBroadcast(context: Context, downloadId: Long) {
+    private fun sendDownloadCompleteBroadcast(context: Context, downloadId: Long, order: Int) {
         Intent(context, DownloadReceiver::class.java).also { intent ->
             intent.action = "dev.brahmkshatriya.echo.DOWNLOAD_COMPLETE"
             intent.putExtra("downloadId", downloadId)
+            intent.putExtra("order", order)
             context.sendBroadcast(intent)
         }
     }
@@ -510,13 +533,6 @@ class Downloader(
         }
     }
 
-    private fun downloadDirectoryFor(folder: String?): File {
-        val directory =
-            File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/$folder")
-        if (!directory.exists()) directory.mkdirs()
-        return directory
-    }
-
     private fun getUniqueFile(directory: File, baseName: String, extension: String): File {
         var uniqueName = "$baseName.$extension"
         var file = File(directory, uniqueName)
@@ -532,17 +548,16 @@ class Downloader(
     }
 
     suspend fun removeDownload(context: Context, downloadId: Long) {
-            activeDownloads[downloadId]?.cancel()
-            activeDownloads.remove(downloadId)
-            dao.deleteDownload(downloadId)
-            withContext(Dispatchers.Main) {
-                DownloadNotificationHelper.completeNotification(
-                    context,
-                    (downloadId and 0x7FFFFFFF).toInt(),
-                    "Download Removed"
-                )
-            }
-
+        activeDownloads[downloadId]?.cancel()
+        activeDownloads.remove(downloadId)
+        dao.deleteDownload(downloadId)
+        withContext(Dispatchers.Main) {
+            DownloadNotificationHelper.completeNotification(
+                context,
+                (downloadId and 0x7FFFFFFF).toInt(),
+                "Download Removed"
+            )
+        }
     }
 
     fun pauseDownload(context: Context, downloadId: Long) {
@@ -551,11 +566,11 @@ class Downloader(
     }
 
 
-    fun resumeDownload(context: Context, downloadId: Long) {
+    suspend fun resumeDownload(context: Context, downloadId: Long) {
         val download = dao.getDownload(downloadId) ?: return
         val extension = extensionList.getExtension(download.clientId) ?: return
         val track = context.getFromCache<Track>(download.itemId, "downloads") ?: return
-        enqueueDownload(context, extension, track)
+        enqueueDownload(context, extension, track, 0)
     }
 
     companion object {

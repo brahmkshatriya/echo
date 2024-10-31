@@ -38,20 +38,21 @@ class DownloadReceiver : BroadcastReceiver() {
         val action = intent?.action ?: return
         if (action == "dev.brahmkshatriya.echo.DOWNLOAD_COMPLETE") {
             val downloadId = intent.getLongExtra("downloadId", -1)
+            val order = intent.getIntExtra("order", 0)
             if (downloadId == -1L) return
 
-            handleDownloadComplete(context, downloadId)
+            handleDownloadComplete(context, downloadId, order)
 
         }
     }
 
-    private fun handleDownloadComplete(context: Context, downloadId: Long) {
+    private fun handleDownloadComplete(context: Context, downloadId: Long, order: Int) {
         val download = runBlocking { withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) } }
         val track = context.applicationContext.getFromCache<Track>(download?.itemId.orEmpty(), "downloads") ?: return
 
         val file = File(download?.downloadPath.orEmpty())
         if (file.exists()) {
-            writeM4ATag(file, track)
+            writeM4ATag(file, track, order)
             MediaScannerConnection.scanFile(context, arrayOf(file.toString()), null, null)
             runBlocking { withContext(Dispatchers.IO) { downloadDao.deleteDownload(downloadId) } }
         }
@@ -85,57 +86,63 @@ class DownloadReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun writeM4ATag(file: File, track: Track) {
+    private val illegalChars = "[/\\\\:*?\"<>|]".toRegex()
+
+    private fun writeM4ATag(file: File, track: Track, order: Int) {
         try {
             val coverFile = runBlocking { saveCoverBitmap(file, track) }
 
             val outputFile = File(file.parent, "temp_${file.name}")
 
-            val metadata = listOf(
-                "title=\"${track.title}\"",
-                "artist=\"${track.artists.joinToString(", ") { it.name }}\"",
-                "album=\"${track.album?.title ?: ""}\"",
-                "title=\"Album cover\"",
-                "comment=\"Cover (front)\""
-            )
+            val metadataOrder = "track=\"$order\""
+            val metadataTitle = "title=\"${illegalChars.replace(track.title, "_")}\""
+            val metadataArtist = "artist=\"${track.artists.joinToString(", ") { it.name }}\""
+            val metadataAlbum = "album=\"${illegalChars.replace(track.album?.title.orEmpty(), "_")}\""
+
+            val metadataCoverTitle = "title=\"Album cover\""
+            val metadataCoverComment = "comment=\"Cover (front)\""
 
             val cmd = when (file.extension.lowercase()) {
-                "m4a", "flac" -> listOf(
-                    "-i", "\"${file.absolutePath}\"",
-                    "-i", "\"${coverFile?.absolutePath}\"",
-                    "-c", "copy",
-                    "-c:v", "mjpeg",
-                    "-metadata", metadata[0],
-                    "-metadata", metadata[1],
-                    "-metadata", metadata[2],
-                    "-metadata:s:v", metadata[3],
-                    "-metadata:s:v", metadata[4],
-                    "-disposition:v", "attached_pic",
-                    "\"${outputFile.absolutePath}\""
-                )
-                "mp3" -> listOf(
-                    "-i", "\"${file.absolutePath}\"",
-                    "-i", "\"${coverFile?.absolutePath}\"",
-                    "-map", "0:0",
-                    "-map", "1:0",
-                    "-c", "copy",
-                    "-id3v2_version", "4",
-                    "-metadata", metadata[0],
-                    "-metadata", metadata[1],
-                    "-metadata", metadata[2],
-                    "-metadata:s:v", metadata[3],
-                    "-metadata:s:v", metadata[4],
-                    "\"${outputFile.absolutePath}\""
-                )
+                "m4a", "flac" ->
+                    arrayOf(
+                        "-i", "\"${file.absolutePath}\"",
+                        "-i", "\"${coverFile?.absolutePath}\"",
+                        "-c", "copy",
+                        "-c:v", "mjpeg",
+                        "-metadata", metadataOrder,
+                        "-metadata", metadataTitle,
+                        "-metadata", metadataArtist,
+                        "-metadata", metadataAlbum,
+                        "-metadata:s:v", metadataCoverTitle,
+                        "-metadata:s:v", metadataCoverComment,
+                        "-disposition:v", "attached_pic",
+                        "\"${outputFile.absolutePath}\""
+                    )
+
+                "mp3" ->
+                    arrayOf(
+                        "-i", "\"${file.absolutePath}\"",
+                        "-i", "\"${coverFile?.absolutePath}\"",
+                        "-map", "0:0",
+                        "-map", "1:0",
+                        "-c", "copy",
+                        "-id3v2_version", "4",
+                        "-metadata", metadataOrder,
+                        "-metadata", metadataTitle,
+                        "-metadata", metadataArtist,
+                        "-metadata", metadataAlbum,
+                        "-metadata:s:v", metadataCoverTitle,
+                        "-metadata:s:v", metadataCoverComment,
+                        "\"${outputFile.absolutePath}\""
+                    )
+
                 else -> throw IllegalArgumentException("Unsupported file format: .${file.extension}")
             }
 
-            val ffmpegCommand = cmd.joinToString(" ")
+            val rc = FFmpegKit.execute(cmd.joinToString(" ")).returnCode
 
-            val session = FFmpegKit.execute(ffmpegCommand)
-            val returnCode = session.returnCode
 
-            if (ReturnCode.isSuccess(returnCode)) {
+            if (ReturnCode.isSuccess(rc)) {
                 if (file.delete()) {
                     outputFile.renameTo(file)
                 }
