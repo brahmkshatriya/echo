@@ -60,7 +60,7 @@ object DownloadNotificationHelper {
                 .setContentText("Download complete")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
-                .setProgress(0, 0 , false)
+                .setProgress(0, 0, false)
                 .setShowWhen(false)
                 .build()
 

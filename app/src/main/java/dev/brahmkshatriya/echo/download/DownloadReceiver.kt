@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.ReturnCode
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.models.ImageHolder
@@ -29,128 +30,121 @@ class DownloadReceiver : BroadcastReceiver() {
     lateinit var database: EchoDatabase
 
     private val downloadDao: DownloadDao by lazy { database.downloadDao() }
+
+    private val client = OkHttpClient.Builder().build()
+
     override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
         val action = intent?.action ?: return
         if (action == "dev.brahmkshatriya.echo.DOWNLOAD_COMPLETE") {
             val downloadId = intent.getLongExtra("downloadId", -1)
+            if (downloadId == -1L) return
 
-            val download = runBlocking {
-                withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) }
-            } ?: return
-            val track = context.applicationContext.getFromCache<Track>(download.itemId, "downloads") ?: return
+            handleDownloadComplete(context, downloadId)
 
-            val file = File(download.downloadPath)
-
-            if (file.exists()) {
-                writeM4ATag(file, track)
-                MediaScannerConnection.scanFile(context, arrayOf(file.toString()), null, null)
-                runBlocking { withContext(Dispatchers.IO) { downloadDao.deleteDownload(downloadId) } }
-            }
         }
     }
 
-    companion object {
+    private fun handleDownloadComplete(context: Context, downloadId: Long) {
+        val download = runBlocking { withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) } }
+        val track = context.applicationContext.getFromCache<Track>(download?.itemId.orEmpty(), "downloads") ?: return
 
-        private val client = OkHttpClient.Builder().build()
-
-        private fun saveCoverBitmap(file: File, track: Track): File? {
-            return try {
-                runBlocking {
-                    withContext(Dispatchers.IO) {
-                        val holder = track.cover as? ImageHolder.UrlRequestImageHolder
-                            ?: throw IllegalArgumentException("Invalid ImageHolder type")
-
-                        val request = Request.Builder()
-                            .url(holder.request.url)
-                            .build()
-
-                        client.newCall(request).execute().use { response ->
-
-                            val responseBody = response.body
-                            val bytes = responseBody.bytes()
-
-                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
-                            val coverFile = File(file.parent, "cover_temp.jpeg")
-
-                            FileOutputStream(coverFile).use { fos ->
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-                            }
-
-                            coverFile
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                println("Error saving cover bitmap: $e")
-                null
-            }
+        val file = File(download?.downloadPath.orEmpty())
+        if (file.exists()) {
+            writeM4ATag(file, track)
+            MediaScannerConnection.scanFile(context, arrayOf(file.toString()), null, null)
+            runBlocking { withContext(Dispatchers.IO) { downloadDao.deleteDownload(downloadId) } }
         }
+    }
 
+    private suspend fun saveCoverBitmap(file: File, track: Track): File? = withContext(Dispatchers.IO) {
+        try {
+            val holder = track.cover as? ImageHolder.UrlRequestImageHolder
+                ?: throw IllegalArgumentException("Invalid ImageHolder type")
 
-        fun writeM4ATag(file: File, track: Track) {
-            try {
-                val coverFile = saveCoverBitmap(file, track)
+            val request = Request.Builder()
+                .url(holder.request.url)
+                .build()
 
-                val outputFile = File(file.parent, "temp_${file.name}")
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw Exception("Failed to download cover image")
 
-                val metadataTitle = "title=\"${track.title}\""
-                val metadataArtist = "artist=\"${track.artists.joinToString(", ") { it.name }}\""
-                val metadataAlbum = "album=\"${track.album?.title ?: ""}\""
+                val bytes = response.body.bytes()
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    ?: throw Exception("Failed to decode bitmap")
 
-                val metadataCoverTitle = "title=\"Album cover\""
-                val metadataCoverComment = "comment=\"Cover (front)\""
-
-                val cmd = when (val fileExtension = file.extension.lowercase()) {
-                    "m4a", "flac" -> {
-                        arrayOf(
-                            "-i", "\"${file.absolutePath}\"",
-                            "-i", "\"${coverFile?.absolutePath}\"",
-                            "-c", "copy",
-                            "-c:v", "mjpeg",
-                            "-metadata", metadataTitle,
-                            "-metadata", metadataArtist,
-                            "-metadata", metadataAlbum,
-                            "-metadata:s:v", metadataCoverTitle,
-                            "-metadata:s:v", metadataCoverComment,
-                            "-disposition:v", "attached_pic",
-                            "\"${outputFile.absolutePath}\""
-                        )
-                    }
-                    "mp3" -> {
-                        arrayOf(
-                            "-i", "\"${file.absolutePath}\"",
-                            "-i", "\"${coverFile?.absolutePath}\"",
-                            "-map", "0:0",
-                            "-map", "1:0",
-                            "-c", "copy",
-                            "-id3v2_version", "4",
-                            "-metadata", metadataTitle,
-                            "-metadata", metadataArtist,
-                            "-metadata", metadataAlbum,
-                            "-metadata:s:v", metadataCoverTitle,
-                            "-metadata:s:v", metadataCoverComment,
-                            "\"${outputFile.absolutePath}\""
-                        )
-                    }
-                    else -> throw IllegalArgumentException("Unsupported file format: .$fileExtension")
+                val coverFile = File(file.parent, "cover_temp.jpeg")
+                FileOutputStream(coverFile).use { fos ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
                 }
-
-                val rc = FFmpegKit.execute(cmd.joinToString(" ")).returnCode.value
-
-                if (rc == 0) {
-                    if (file.delete()) {
-                        outputFile.renameTo(file)
-
-                    }
-                }
-
-                coverFile?.delete()
-
-            } catch (e: Exception) {
-                println("Error writing M4A tags with artwork: ${e.message}")
+                coverFile
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun writeM4ATag(file: File, track: Track) {
+        try {
+            val coverFile = runBlocking { saveCoverBitmap(file, track) }
+
+            val outputFile = File(file.parent, "temp_${file.name}")
+
+            val metadata = listOf(
+                "title=\"${track.title}\"",
+                "artist=\"${track.artists.joinToString(", ") { it.name }}\"",
+                "album=\"${track.album?.title ?: ""}\"",
+                "title=\"Album cover\"",
+                "comment=\"Cover (front)\""
+            )
+
+            val cmd = when (file.extension.lowercase()) {
+                "m4a", "flac" -> listOf(
+                    "-i", "\"${file.absolutePath}\"",
+                    "-i", "\"${coverFile?.absolutePath}\"",
+                    "-c", "copy",
+                    "-c:v", "mjpeg",
+                    "-metadata", metadata[0],
+                    "-metadata", metadata[1],
+                    "-metadata", metadata[2],
+                    "-metadata:s:v", metadata[3],
+                    "-metadata:s:v", metadata[4],
+                    "-disposition:v", "attached_pic",
+                    "\"${outputFile.absolutePath}\""
+                )
+                "mp3" -> listOf(
+                    "-i", "\"${file.absolutePath}\"",
+                    "-i", "\"${coverFile?.absolutePath}\"",
+                    "-map", "0:0",
+                    "-map", "1:0",
+                    "-c", "copy",
+                    "-id3v2_version", "4",
+                    "-metadata", metadata[0],
+                    "-metadata", metadata[1],
+                    "-metadata", metadata[2],
+                    "-metadata:s:v", metadata[3],
+                    "-metadata:s:v", metadata[4],
+                    "\"${outputFile.absolutePath}\""
+                )
+                else -> throw IllegalArgumentException("Unsupported file format: .${file.extension}")
+            }
+
+            val ffmpegCommand = cmd.joinToString(" ")
+
+            val session = FFmpegKit.execute(ffmpegCommand)
+            val returnCode = session.returnCode
+
+            if (ReturnCode.isSuccess(returnCode)) {
+                if (file.delete()) {
+                    outputFile.renameTo(file)
+                }
+            }
+
+            coverFile?.delete()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }
