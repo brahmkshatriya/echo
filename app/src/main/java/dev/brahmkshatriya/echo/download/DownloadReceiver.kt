@@ -127,7 +127,7 @@ class DownloadReceiver : BroadcastReceiver() {
 
     private suspend fun writeM4ATag(file: File, track: Track, order: Int) = withContext(Dispatchers.IO) {
         try {
-            val coverFile = runBlocking { saveCoverBitmap(file, track) }
+            val coverFile = saveCoverBitmap(file, track)
 
             val outputFile = File(file.parent, "temp_${file.name}")
 
