@@ -521,12 +521,12 @@ class Downloader(
         }
     }
 
-    private suspend fun probeFileFormat(file: File): String? = withContext(Dispatchers.IO) {
+    private fun probeFileFormat(file: File): String?  {
         val ffprobeCommand =
             "-v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 \"${file.absolutePath}\""
 
         val session = FFprobeKit.execute(ffprobeCommand)
-        if (ReturnCode.isSuccess(session.returnCode)) {
+        return if (ReturnCode.isSuccess(session.returnCode)) {
             session.output?.trim()?.split(",")?.firstOrNull()
         } else {
             null
@@ -566,7 +566,7 @@ class Downloader(
     }
 
 
-    suspend fun resumeDownload(context: Context, downloadId: Long) {
+    fun resumeDownload(context: Context, downloadId: Long) {
         val download = dao.getDownload(downloadId) ?: return
         val extension = extensionList.getExtension(download.clientId) ?: return
         val track = context.getFromCache<Track>(download.itemId, "downloads") ?: return

@@ -58,14 +58,14 @@ class MediaDataSource(
 
                 is Streamable.Audio.Http -> {
                     val spec = audio.request.run {
-                        dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
+                        dataSpec.copy(uri = Uri.encode(url).toUri(), httpRequestHeaders = headers)
                     }
                     defaultDataSourceFactory to spec
                 }
             }
             is Streamable.Media.WithVideo -> {
                 val spec = streamable.request.run {
-                    dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
+                    dataSpec.copy(uri = Uri.encode(url).toUri(), httpRequestHeaders = headers)
                 }
                 defaultDataSourceFactory to spec
             }
