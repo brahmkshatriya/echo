@@ -162,6 +162,7 @@
     <string name="search_extension">Search %1$s</string>
     <string name="no_lyrics">No Lyrics</string>
     <string name="downloads">Downloads</string>
+    <string name="downloads_summary">Downloader Settings</string>
     <string name="downloading">Downloading</string>
     <string name="extension">Extension</string>
     <string name="downloaded_percentage">Downloaded: %1$d\%</string>
@@ -270,4 +271,6 @@
         <item>Medium</item>
         <item>Lowest</item>
     </string-array>
+    <string name="download_num">Concurrent Downloads</string>
+    <string name="download_num_summary">Number of concurrent downloads</string>
 </resources>

@@ -43,6 +43,7 @@ import kotlin.coroutines.CoroutineContext
 class Downloader(
     private val extensionList: MutableStateFlow<List<MusicExtension>?>,
     private val throwable: MutableSharedFlow<Throwable>,
+    context: Context,
     database: EchoDatabase,
 ) : CoroutineScope {
     val dao = database.downloadDao()
@@ -55,9 +56,14 @@ class Downloader(
     private val activeDownloadGroups = mutableMapOf<Long, DownloadGroup>()
     private val notificationBuilders = mutableMapOf<Int, NotificationCompat.Builder>()
 
+    private val settings = context.getSharedPreferences(
+        context.packageName,
+        Context.MODE_PRIVATE
+    )
+
     private val illegalChars = "[/\\\\:*?\"<>|]".toRegex()
 
-    private val downloadSemaphore = Semaphore(2)
+    private val downloadSemaphore = Semaphore(settings.getInt("download_num", 2))
 
     suspend fun addToDownload(
         context: Context, clientId: String, item: EchoMediaItem
@@ -187,10 +193,6 @@ class Downloader(
                         } ?: loadedTrack.album
 
                 val completeTrack = loadedTrack.copy(album = album, cover = track.cover)
-                val settings = context.getSharedPreferences(
-                    context.packageName,
-                    Context.MODE_PRIVATE
-                )
                 val stream = selectAudioStream(settings, completeTrack.audioStreamables)
                     ?: throw Exception("No audio stream available for download")
 

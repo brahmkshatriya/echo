@@ -36,7 +36,7 @@ class DownloadViewModel @Inject constructor(
     val downloads = MutableStateFlow<List<DownloadItem>>(emptyList())
     private val visibleGroups = mutableSetOf<String>()
     private val downloadEntities = MutableStateFlow<List<DownloadEntity>>(emptyList())
-    private val downloader = Downloader(extensionListFlow, throwableFlow, database)
+    private val downloader = Downloader(extensionListFlow, throwableFlow, application, database)
 
     init {
         viewModelScope.launch {

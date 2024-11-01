@@ -46,6 +46,13 @@ class SettingsFragment : BaseSettingsFragment() {
             }
 
             TransitionPreference(context).add {
+                title = getString(R.string.downloads)
+                key = "downloads"
+                summary = getString(R.string.downloads_summary)
+                icon = AppCompatResources.getDrawable(context, R.drawable.ic_download_for_offline)
+            }
+
+            TransitionPreference(context).add {
                 title = getString(R.string.extensions)
                 key = "manage_extensions"
                 summary = getString(R.string.extensions_summary)
@@ -74,6 +81,7 @@ class SettingsFragment : BaseSettingsFragment() {
             val fragment = when (preference.key) {
                 "about" -> AboutFragment()
                 "audio" -> AudioFragment()
+                "downloads" -> DownloadFragment()
                 "manage_extensions" -> ManageExtensionsFragment()
                 "look" -> LookFragment()
                 else -> return false

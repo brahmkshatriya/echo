@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
+import android.util.Log
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,7 +15,10 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.db.DownloadDao
 import dev.brahmkshatriya.echo.utils.getFromCache
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -33,6 +37,8 @@ class DownloadReceiver : BroadcastReceiver() {
 
     private val client = OkHttpClient.Builder().build()
 
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
         val action = intent?.action ?: return
@@ -41,20 +47,51 @@ class DownloadReceiver : BroadcastReceiver() {
             val order = intent.getIntExtra("order", 0)
             if (downloadId == -1L) return
 
-            handleDownloadComplete(context, downloadId, order)
-
+            val pendingResult = goAsync()
+            coroutineScope.launch {
+                try {
+                    handleDownloadComplete(context, downloadId, order)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    pendingResult.finish()
+                }
+            }
         }
     }
 
-    private fun handleDownloadComplete(context: Context, downloadId: Long, order: Int) {
-        val download = runBlocking { withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) } }
-        val track = context.applicationContext.getFromCache<Track>(download?.itemId.orEmpty(), "downloads") ?: return
+    private suspend fun handleDownloadComplete(context: Context, downloadId: Long, order: Int) {
+        val download = withContext(Dispatchers.IO) { downloadDao.getDownload(downloadId) }
+        if (download == null) {
+            Log.e("DownloadReceiver", "Download record not found for ID: $downloadId")
+            return
+        }
 
-        val file = File(download?.downloadPath.orEmpty())
+        val track = withContext(Dispatchers.IO) {
+            context.applicationContext.getFromCache<Track>(download.itemId, "downloads")
+        } ?: run {
+            Log.e("DownloadReceiver", "Track not found in cache for ID: ${download.itemId}")
+            return
+        }
+
+        val file = File(download.downloadPath)
         if (file.exists()) {
             writeM4ATag(file, track, order)
-            MediaScannerConnection.scanFile(context, arrayOf(file.toString()), null, null)
-            runBlocking { withContext(Dispatchers.IO) { downloadDao.deleteDownload(downloadId) } }
+
+            withContext(Dispatchers.Main) {
+                MediaScannerConnection.scanFile(
+                    context,
+                    arrayOf(file.absolutePath),
+                    null,
+                    null
+                )
+            }
+
+            withContext(Dispatchers.IO) {
+                downloadDao.deleteDownload(downloadId)
+            }
+        } else {
+            Log.e("DownloadReceiver", "Downloaded file does not exist: ${file.absolutePath}")
         }
     }
 
@@ -88,7 +125,7 @@ class DownloadReceiver : BroadcastReceiver() {
 
     private val illegalChars = "[/\\\\:*?\"<>|]".toRegex()
 
-    private fun writeM4ATag(file: File, track: Track, order: Int) {
+    private suspend fun writeM4ATag(file: File, track: Track, order: Int) = withContext(Dispatchers.IO) {
         try {
             val coverFile = runBlocking { saveCoverBitmap(file, track) }
 
