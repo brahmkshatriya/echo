@@ -22,6 +22,7 @@ data class Streamable(
 
     @Serializable
     sealed class DecryptionType {
+        @Serializable
         data class Widevine(val license: Request, val isMultiSession: Boolean) : DecryptionType()
     }
 
