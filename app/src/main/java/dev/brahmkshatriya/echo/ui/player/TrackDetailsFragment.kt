@@ -37,15 +37,16 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentTrackDetailsBinding
 import dev.brahmkshatriya.echo.databinding.ItemTrackInfoBinding
-import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.run
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.adapter.ShelfClickListener
 import dev.brahmkshatriya.echo.ui.paging.toFlow
@@ -100,6 +101,10 @@ class TrackDetailsFragment : Fragment() {
             mediaAdapter?.submit(it)
         }
 
+        observe(playerViewModel.currentSources) {
+            infoAdapter.applySources(it)
+        }
+
         observe(playerViewModel.browser) { player ->
             player ?: return@observe
             infoAdapter.applyTracks(player, player.currentTracks)
@@ -117,6 +122,7 @@ class TrackDetailsFragment : Fragment() {
         private val playerViewModel: PlayerViewModel
     ) : RecyclerView.Adapter<InfoAdapter.ViewHolder>() {
 
+        private var sources: Streamable.Media.Sources? = null
         private var item: MediaItem? = null
         private var tracks: Tracks? = null
         private var player: Player? = null
@@ -136,6 +142,7 @@ class TrackDetailsFragment : Fragment() {
             val binding = holder.binding
             item?.let { binding.applyCurrent(it) }
             player?.let { binding.applyTracks(it, tracks ?: Tracks.EMPTY) }
+            sources?.let { binding.applySources(it) }
         }
 
         fun applyCurrent(item: MediaItem) {
@@ -146,6 +153,11 @@ class TrackDetailsFragment : Fragment() {
         fun applyTracks(player: Player, tracks: Tracks) {
             this.player = player
             this.tracks = tracks
+            notifyDataSetChanged()
+        }
+
+        fun applySources(sources: Streamable.Media.Sources?) {
+            this.sources = sources
             notifyDataSetChanged()
         }
 
@@ -162,39 +174,39 @@ class TrackDetailsFragment : Fragment() {
             }
 
             applyChips(
-                track.audioStreamables,
-                streamableAudios,
-                streamableAudiosGroup,
-                item.audioIndex
+                track.sources,
+                streamableSources,
+                streamableSourcesGroup,
+                item.sourcesIndex
             ) {
                 it ?: return@applyChips
-                val index = track.audioStreamables.indexOf(it)
-                val newItem = MediaItemUtils.buildAudio(item, index)
+                val index = track.sources.indexOf(it)
+                val newItem = MediaItemUtils.buildSources(item, index)
                 playerViewModel.withBrowser { player ->
                     player.replaceMediaItem(player.currentMediaItemIndex, newItem)
                 }
             }
 
             applyChips(
-                listOf(null, *track.videoStreamables.toTypedArray()),
-                streamableVideos,
-                streamableVideosGroup,
-                item.videoIndex + 1
+                listOf(null, *track.backgrounds.toTypedArray()),
+                streamableBackgrounds,
+                streamableBackgroundGroup,
+                item.backgroundIndex + 1
             ) {
-                val index = track.videoStreamables.indexOf(it)
-                val newItem = MediaItemUtils.buildVideo(item, index)
+                val index = track.backgrounds.indexOf(it)
+                val newItem = MediaItemUtils.buildBackground(item, index)
                 playerViewModel.withBrowser { player ->
                     player.replaceMediaItem(player.currentMediaItemIndex, newItem)
                 }
             }
 
             applyChips(
-                listOf(null, *track.subtitleStreamables.toTypedArray()),
+                listOf(null, *track.subtitles.toTypedArray()),
                 streamableSubtitles,
                 streamableSubtitleGroup,
                 item.subtitleIndex + 1
             ) {
-                val index = track.subtitleStreamables.indexOf(it)
+                val index = track.subtitles.indexOf(it)
                 val newItem = MediaItemUtils.buildSubtitle(item, index)
                 playerViewModel.withBrowser { player ->
                     player.replaceMediaItem(player.currentMediaItemIndex, newItem)
@@ -249,7 +261,7 @@ class TrackDetailsFragment : Fragment() {
 
         @OptIn(UnstableApi::class)
         private fun Format.getBitrate() =
-            (bitrate / 1000).takeIf { it > 0 }?.let { " • ${it}kbps" } ?: ""
+            (bitrate / 1024).takeIf { it > 0 }?.let { " • $it kbps" } ?: ""
 
         private fun Format.getFrameRate() =
             frameRate.toInt().takeIf { it > 0 }?.let { " • $it fps" } ?: ""
@@ -291,7 +303,7 @@ class TrackDetailsFragment : Fragment() {
             val select = trackGroups.indexOf(selected).takeIf { it != -1 }
             applyChips(
                 trackGroups, textView, chipGroup, select, {
-                    val format = it!!.first.getTrackFormat(it.second)
+                    val format = it.first.getTrackFormat(it.second)
                     text(format)
                 }, onClick
             )
@@ -313,7 +325,7 @@ class TrackDetailsFragment : Fragment() {
                 selected,
                 {
                     it?.let {
-                        it.title ?: when (it.mediaType) {
+                        it.title ?: when (it.type) {
                             Streamable.MediaType.Subtitle -> context.getString(R.string.unknown)
                             else -> context.getString(R.string.quality_number, it.quality)
                         }
@@ -323,13 +335,32 @@ class TrackDetailsFragment : Fragment() {
             )
         }
 
+        private fun ItemTrackInfoBinding.applySources(sources: Streamable.Media.Sources?) {
+            val list = if(sources != null && !sources.merged) sources.sources else listOf()
+            val context = root.context
+            applyChips(
+                list,
+                streamableSource,
+                streamableSourceGroup,
+                item?.sourceIndex,
+                { it.title ?: context.getString(R.string.quality_number, it.quality) },
+                {
+                    val index = list.indexOf(it)
+                    val newItem = MediaItemUtils.buildSource(item!!, index)
+                    playerViewModel.withBrowser { player ->
+                        player.replaceMediaItem(player.currentMediaItemIndex, newItem)
+                    }
+                }
+            )
+        }
+
         private fun <T> applyChips(
-            list: List<T?>,
+            list: List<T>,
             textView: TextView,
             chipGroup: ChipGroup,
             selected: Int?,
-            text: (T?) -> String,
-            onClick: Chip.(T?) -> Unit
+            text: (T) -> String,
+            onClick: Chip.(T) -> Unit
         ) {
             val visible = list.size > 1
             textView.isVisible = visible

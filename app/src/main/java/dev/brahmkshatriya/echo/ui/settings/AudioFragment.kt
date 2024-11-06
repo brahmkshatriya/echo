@@ -154,7 +154,7 @@ class AudioFragment : BaseSettingsFragment() {
             val streamQualities = arrayOf("highest", "medium", "lowest")
             val videoQualities = arrayOf("highest", "medium", "lowest", "none")
 
-            fun selectAudioIndex(settings: SharedPreferences?, streamables: List<Streamable>) =
+            fun selectSourceIndex(settings: SharedPreferences?, streamables: List<Streamable>) =
                 streamables.indexOf(selectAudioStream(settings, streamables))
 
             fun selectAudioStream(settings: SharedPreferences?, streamables: List<Streamable>) =
@@ -164,19 +164,6 @@ class AudioFragment : BaseSettingsFragment() {
                     "lowest" -> streamables.minByOrNull { it.quality }
                     else -> streamables.firstOrNull()
                 }
-
-            fun selectVideoIndex(settings: SharedPreferences?, streamables: List<Streamable>) =
-                streamables.indexOf(selectVideoStream(settings, streamables))
-
-            private fun selectVideoStream(
-                settings: SharedPreferences?, streamables: List<Streamable>
-            ) = when (settings?.getString(VIDEO_STREAM_QUALITY, "medium")) {
-                "highest" -> streamables.maxByOrNull { it.quality }
-                "medium" -> streamables.sortedBy { it.quality }.getOrNull(streamables.size / 2)
-                "lowest" -> streamables.minByOrNull { it.quality }
-                "none" -> null
-                else -> streamables.firstOrNull()
-            }
         }
     }
 }

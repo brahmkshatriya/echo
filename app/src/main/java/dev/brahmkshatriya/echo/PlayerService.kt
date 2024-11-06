@@ -7,6 +7,8 @@ import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.TrackSelectionParameters
+import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
@@ -15,6 +17,7 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.PlayerCallback
@@ -64,6 +67,9 @@ class PlayerService : MediaLibraryService() {
     lateinit var current: MutableStateFlow<Current?>
 
     @Inject
+    lateinit var currentSources: MutableStateFlow<Streamable.Media.Sources?>
+
+    @Inject
     lateinit var fftAudioProcessor: FFTAudioProcessor
 
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -75,8 +81,15 @@ class PlayerService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
+        val audioOffloadPreferences = TrackSelectionParameters.AudioOffloadPreferences.Builder()
+            .setAudioOffloadMode(AUDIO_OFFLOAD_MODE_ENABLED)
+            // Add additional options as needed
+            .setIsGaplessSupportRequired(true)
+            .setIsSpeedChangeSupportRequired(true)
+            .build()
+
         val factory = MediaFactory(
-            cache, this, scope, extListFlow, settings, throwFlow
+            cache, currentSources, this, scope, extListFlow, settings, throwFlow
         )
 
         ExoPlayer.Builder(this, factory)
@@ -86,7 +99,12 @@ class PlayerService : MediaLibraryService() {
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
             .build()
-            .also { factory.setPlayer(it) }
+            .also {
+                it.trackSelectionParameters = it.trackSelectionParameters
+                    .buildUpon()
+                    .setAudioOffloadPreferences(audioOffloadPreferences)
+                    .build()
+            }
     }
 
     @OptIn(UnstableApi::class)
@@ -137,7 +155,6 @@ class PlayerService : MediaLibraryService() {
             }
         }
 
-        //TODO: Spotify
         //TODO: EQ, Pitch, Tempo, Reverb & Sleep Timer(5m, 10m, 15m, 30m, 45m, 1hr, End of track)
 //        val equalizer = Equalizer(1, exoPlayer.audioSessionId)
 

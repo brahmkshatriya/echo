@@ -14,17 +14,26 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import androidx.recyclerview.widget.DiffUtil
@@ -44,13 +53,12 @@ import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.video
-import dev.brahmkshatriya.echo.playback.source.MediaResolver
 import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
@@ -214,26 +222,36 @@ class PlayerTrackAdapter(
 
         //VIDEO STUFF
         binding.bgVideo.apply {
-            val video = item.video
-            isVisible = video != null
-            if (video != null) {
-                if (video is Streamable.Media.WithVideo.Only && video.looping) {
-                    val player = MediaResolver.getPlayer(context, viewModel.cache, video)
-                    setPlayer(player)
-                } else {
-                    observe(viewModel.currentFlow) {
-                        val isCurrent = it?.index == bindingAdapterPosition
-                        if (!isCurrent) return@observe
-                        post {
-                            setPlayer(null)
-                            setPlayer(viewModel.browser.value)
-                        }
+            isVisible = false
+            val background = item.background
+            if (background != null) {
+                isVisible = true
+                val player = getPlayer(context, viewModel.cache, background)
+                setPlayer(player)
+                resizeMode = RESIZE_MODE_ZOOM
+            } else {
+                observe(viewModel.currentFlow) {
+                    val isCurrent = it?.index == bindingAdapterPosition
+                    if (!isCurrent) return@observe
+                    post {
+                        setPlayer(null)
+                        val player = viewModel.browser.value
+                        isVisible = player != null && player.hasVideo()
+                        setPlayer(player)
+                        player?.addListener(object : Player.Listener {
+                            override fun onTracksChanged(tracks: Tracks) {
+                                isVisible = player.hasVideo()
+                            }
+                        })
                     }
                 }
-                resizeMode = if (video.crop) RESIZE_MODE_ZOOM else RESIZE_MODE_FIT
+                resizeMode = RESIZE_MODE_FIT
             }
         }
     }
+
+    private fun Player.hasVideo() =
+        currentTracks.groups.any { it.type == C.TRACK_TYPE_VIDEO }
 
     private fun ItemPlayerControlsBinding.bind(
         viewHolder: ViewHolder,
@@ -244,6 +262,7 @@ class PlayerTrackAdapter(
         fun <T> observe(flow: Flow<T>, block: (T) -> Unit) {
             viewHolder.observe(flow) { block(it) }
         }
+
         fun <T> observeCurrent(flow: Flow<T>, block: (T?) -> Unit) = with(viewHolder) {
             observe(flow) {
                 if (viewModel.currentFlow.value?.index == bindingAdapterPosition) block(it)
@@ -504,4 +523,24 @@ class PlayerTrackAdapter(
         trackArtist.setTextColor(colors.text)
     }
 
+    @OptIn(UnstableApi::class)
+    fun getPlayer(
+        context: Context, cache: SimpleCache, video: Streamable.Media.Background
+    ): ExoPlayer {
+        val cacheFactory = CacheDataSource
+            .Factory().setCache(cache)
+            .setUpstreamDataSourceFactory(
+                DefaultHttpDataSource.Factory()
+                    .setDefaultRequestProperties(video.request.headers)
+            )
+        val factory = DefaultMediaSourceFactory(context)
+            .setDataSourceFactory(cacheFactory)
+        val player = ExoPlayer.Builder(context).setMediaSourceFactory(factory).build()
+        player.setMediaItem(MediaItem.fromUri(video.request.url.toUri()))
+        player.repeatMode = ExoPlayer.REPEAT_MODE_ONE
+        player.volume = 0f
+        player.prepare()
+        player.play()
+        return player
+    }
 }

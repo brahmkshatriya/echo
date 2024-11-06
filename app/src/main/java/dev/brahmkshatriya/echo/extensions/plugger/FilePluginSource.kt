@@ -17,7 +17,9 @@ class FilePluginSource(
     private var ignoreFile : File? = null
     private fun loadAllPlugins() = run {
         folder.setReadOnly()
-        folder.listFiles()!!.filter { it != ignoreFile }.onEach { it.setWritable(false) }
+        folder.listFiles()!!.filter {
+            it != ignoreFile && it.extension == "apk"
+        }.onEach { it.setWritable(false) }
     }
     private val pluginStateFlow = MutableStateFlow(loadAllPlugins())
 

@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.getExtensionList
 import dev.brahmkshatriya.echo.extensions.getUpdateFileUrl
 import dev.brahmkshatriya.echo.extensions.installExtension
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.extensions.uninstallExtension
 import dev.brahmkshatriya.echo.extensions.waitForResult
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
@@ -166,9 +167,8 @@ class ExtensionViewModel @Inject constructor(
         val currentVersion = extension.version
         val updateUrl = extension.metadata.updateUrl ?: return
 
-        val url = getUpdateFileUrl(currentVersion, updateUrl, client).getOrElse {
-            throwableFlow.emit(it)
-            null
+        val url = extension.run(throwableFlow) {
+            getUpdateFileUrl(currentVersion, updateUrl, client).getOrThrow()
         } ?: return
 
         messageFlow.emit(
@@ -176,9 +176,8 @@ class ExtensionViewModel @Inject constructor(
                 app.getString(R.string.downloading_update_for_extension, extension.name)
             )
         )
-        val file = downloadUpdate(context, url, client).getOrElse {
-            throwableFlow.emit(it)
-            null
+        val file = extension.run(throwableFlow) {
+            downloadUpdate(context, url, client).getOrThrow()
         } ?: return
         val installAsApk = extension.metadata.importType == ImportType.App
         val result = installExtension(context, file, installAsApk).getOrElse {

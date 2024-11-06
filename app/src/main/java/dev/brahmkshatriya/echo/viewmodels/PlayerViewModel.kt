@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
@@ -54,6 +55,7 @@ class PlayerViewModel @Inject constructor(
     val app: Application,
     val currentFlow: MutableStateFlow<Current?>,
     val radioStateFlow: MutableStateFlow<Radio.State>,
+    val currentSources: MutableStateFlow<Streamable.Media.Sources?>,
     val cache: SimpleCache,
     val fftAudioProcessor: FFTAudioProcessor,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,

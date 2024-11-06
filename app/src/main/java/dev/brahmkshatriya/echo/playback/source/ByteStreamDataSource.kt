@@ -16,23 +16,23 @@ class ByteStreamDataSource : BaseDataSource(true) {
         override fun createDataSource() = ByteStreamDataSource()
     }
 
-    private var audio: Streamable.Audio.ByteStream? = null
+    private var source: Streamable.Source.ByteStream? = null
 
     override fun read(buffer: ByteArray, offset: Int, length: Int) =
-        audio!!.stream.read(buffer, offset, length)
+        source!!.stream.read(buffer, offset, length)
 
     override fun open(dataSpec: DataSpec): Long {
-        val audio = dataSpec.customData as Streamable.Audio.ByteStream
+        val source = dataSpec.customData as Streamable.Source.ByteStream
         val requestedPosition = dataSpec.position
-        audio.stream.seek(requestedPosition)
-        this.audio = audio
-        return audio.totalBytes
+        source.stream.seek(requestedPosition)
+        this.source = source
+        return source.totalBytes
     }
 
-    override fun getUri() = audio?.hashCode().toString().toUri()
+    override fun getUri() = source?.hashCode().toString().toUri()
     override fun close() {
-        audio?.stream?.close()
-        audio = null
+        source?.stream?.close()
+        source = null
     }
 
     private fun InputStream.seek(requestedPosition: Long) {

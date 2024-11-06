@@ -21,19 +21,15 @@ data class Track(
     val isLiked: Boolean = false,
     val isHidden: Boolean = false
 ) {
-    val subtitleStreamables: List<Streamable> by lazy {
-        streamables.filter { it.mediaType == Streamable.MediaType.Subtitle }
+    val subtitles: List<Streamable> by lazy {
+        streamables.filter { it.type == Streamable.MediaType.Subtitle }
     }
 
-    val audioStreamables: List<Streamable> by lazy {
-        mediaStreamables + streamables.filter { it.mediaType == Streamable.MediaType.Audio }
+    val sources: List<Streamable> by lazy {
+        streamables.filter { it.type == Streamable.MediaType.Source }
     }
 
-    val videoStreamables: List<Streamable> by lazy {
-        mediaStreamables + streamables.filter { it.mediaType == Streamable.MediaType.Video }
-    }
-
-    private val mediaStreamables: List<Streamable> by lazy {
-        streamables.filter { it.mediaType == Streamable.MediaType.AudioVideo }
+    val backgrounds: List<Streamable> by lazy {
+        streamables.filter { it.type == Streamable.MediaType.Background }
     }
 }

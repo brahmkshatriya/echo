@@ -13,6 +13,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.listeners.Radio
@@ -64,6 +65,10 @@ class AppModule {
             databaseProvider
         )
     }
+
+    @Provides
+    @Singleton
+    fun provideCurrentSourcesFlow() = MutableStateFlow<Streamable.Media.Sources?>(null)
 
     @Provides
     @Singleton

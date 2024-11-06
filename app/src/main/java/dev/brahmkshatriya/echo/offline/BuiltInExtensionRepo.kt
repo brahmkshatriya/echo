@@ -12,7 +12,7 @@ class BuiltInExtensionRepo(
 
     override fun getAllPlugins() = MutableStateFlow(
         listOf(
-//            getLazy(TestExtension.metadata, TestExtension()),
+            getLazy(TestExtension.metadata, TestExtension()),
             getLazy(OfflineExtension.metadata, extension),
         )
     )

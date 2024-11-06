@@ -8,24 +8,25 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
-import dev.brahmkshatriya.echo.playback.source.MediaResolver.Companion.LOCAL
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 
 @OptIn(UnstableApi::class)
 class CustomCacheDataSource(
-    cache: SimpleCache,
+    private val cacheFactory: CacheDataSource.Factory,
     private val upstream: DataSource.Factory
 ) : BaseDataSource(true) {
 
     class Factory(
-        private val cache: SimpleCache,
+        cache: SimpleCache,
         private val upstream: DataSource.Factory
     ) : DataSource.Factory {
-        override fun createDataSource() = CustomCacheDataSource(cache, upstream)
-    }
 
-    private val cacheFactory = CacheDataSource
-        .Factory().setCache(cache)
-        .setUpstreamDataSourceFactory(upstream)
+        private val cacheFactory = CacheDataSource
+            .Factory().setCache(cache)
+            .setUpstreamDataSourceFactory(upstream)
+
+        override fun createDataSource() = CustomCacheDataSource(cacheFactory, upstream)
+    }
 
     var source: DataSource? = null
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
@@ -33,7 +34,8 @@ class CustomCacheDataSource(
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        val source = if (dataSpec.uri == LOCAL) upstream.createDataSource()
+        val (id, _, _) = dataSpec.uri.toString().toIdAndIndex() ?: Triple("", 0, 0)
+        val source = if (id.startsWith("offline:")) upstream.createDataSource()
         else cacheFactory.createDataSource()
         this.source = source
         return source.open(dataSpec)

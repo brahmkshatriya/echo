@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.SimpleCache
@@ -18,7 +17,6 @@ import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.getStreamable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,14 +24,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @UnstableApi
 class MediaFactory(
     cache: SimpleCache,
-    private val context: Context,
-    private val scope: CoroutineScope,
-    private val extListFlow: MutableStateFlow<List<MusicExtension>?>,
-    private val settings: SharedPreferences,
-    private val throwableFlow: MutableSharedFlow<Throwable>
+    val current : MutableStateFlow<Streamable.Media.Sources?>,
+    val context: Context,
+    val scope: CoroutineScope,
+    val extListFlow: MutableStateFlow<List<MusicExtension>?>,
+    val settings: SharedPreferences,
+    val throwableFlow: MutableSharedFlow<Throwable>
 ) : MediaSource.Factory {
 
-    private val mediaResolver = MediaResolver(context, extListFlow)
+    private val mediaResolver = MediaResolver(current)
     private val dataSource = ResolvingDataSource.Factory(
         CustomCacheDataSource.Factory(cache, MediaDataSource.Factory(context)),
         mediaResolver
@@ -55,13 +54,6 @@ class MediaFactory(
         }
     }
 
-    private lateinit var player: Player
-    fun setPlayer(player: Player) {
-        this.player = player
-        mediaResolver.player = player
-    }
-
-
     override fun getSupportedTypes() = intArrayOf(
         C.CONTENT_TYPE_OTHER, C.CONTENT_TYPE_HLS, C.CONTENT_TYPE_DASH
     )
@@ -80,17 +72,16 @@ class MediaFactory(
         return this
     }
 
-    override fun createMediaSource(mediaItem: MediaItem) = DelayedSource(
-        mediaItem, scope, context, extListFlow, settings, this, throwableFlow
-    )
+    override fun createMediaSource(mediaItem: MediaItem) = DelayedSource(mediaItem, this)
 
-    fun create(mediaItem: MediaItem, isVideo: Boolean): MediaSource {
-        val new = MediaItemUtils.build(mediaItem, isVideo)
-        val factory = when (new.getStreamable(isVideo).mimeType) {
-            Streamable.MimeType.Progressive -> default
-            Streamable.MimeType.HLS -> hls
-            Streamable.MimeType.DASH -> dash
+    fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source): MediaSource {
+        val type = (source as? Streamable.Source.Http)?.type
+        val factory = when (type) {
+            Streamable.SourceType.DASH -> dash
+            Streamable.SourceType.HLS -> hls
+            Streamable.SourceType.Progressive, null -> default
         }
+        val new = MediaItemUtils.buildForSource(mediaItem, index, source)
         return factory.value.createMediaSource(new)
     }
 }

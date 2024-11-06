@@ -10,13 +10,13 @@ class ApkFileManifestParser(
     private val apkManifestParser: ManifestParser<AppInfo, Metadata>
 ) : ManifestParser<File, Metadata> {
     override fun parseManifest(data: File): Metadata {
-        return apkManifestParser.parseManifest(
-            AppInfo(
-                data.path,
-                packageManager
-                    .getPackageArchiveInfo(data.path, ApkPluginSource.PACKAGE_FLAGS)!!
-                    .applicationInfo!!
-            )
-        )
+        val info = runCatching {
+            packageManager
+                .getPackageArchiveInfo(data.path, ApkPluginSource.PACKAGE_FLAGS)!!
+                .applicationInfo!!
+        }.getOrElse {
+            throw Exception("Failed to parse APK file: ${data.path}")
+        }
+        return apkManifestParser.parseManifest(AppInfo(data.path, info))
     }
 }

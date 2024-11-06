@@ -20,11 +20,10 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Streamable.Audio.Companion.toAudio
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toAudioVideoMedia
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toBackgroundMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSourceMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtitleMedia
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toVideoMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
@@ -46,6 +45,25 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
             "Test extension for offline testing",
             "Test",
         )
+
+        const val FUN =
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+
+        const val BUNNY =
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+
+        const val M3U8 =
+            "https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8"
+
+        const val SUBTITLE =
+            "https://raw.githubusercontent.com/brenopolanski/html5-video-webvtt-example/master/MIB2-subtitles-pt-BR.vtt"
+
+        private fun createTrack(id: String, title: String, streamables: List<Streamable>) = Track(
+            id,
+            title,
+            isExplicit = Random.nextBoolean(),
+            streamables = streamables
+        ).toMediaItem().toShelf()
     }
 
     override suspend fun onExtensionSelected() {}
@@ -61,11 +79,25 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override suspend fun getCurrentUser(): User? = null
 
+
     override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
-        return when (streamable.mediaType) {
-            Streamable.MediaType.Audio -> streamable.id.toAudio().toMedia()
-            Streamable.MediaType.Video -> streamable.id.toVideoMedia()
-            Streamable.MediaType.AudioVideo -> streamable.id.toAudioVideoMedia()
+        return when (streamable.type) {
+            Streamable.MediaType.Background -> streamable.id.toBackgroundMedia()
+            Streamable.MediaType.Source -> {
+                val srcs = Srcs.valueOf(streamable.id)
+                when (srcs) {
+                    Srcs.Single -> FUN.toSourceMedia()
+                    Srcs.Merged -> Streamable.Media.Sources(
+                        listOf(
+                            BUNNY.toSource(),
+                            FUN.toSource(),
+                        ), false
+                    )
+
+                    Srcs.M3U8 -> M3U8.toSourceMedia(type = Streamable.SourceType.HLS)
+                }
+            }
+
             Streamable.MediaType.Subtitle -> streamable.id.toSubtitleMedia(Streamable.SubtitleType.VTT)
         }
     }
@@ -76,51 +108,29 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override suspend fun getHomeTabs() = listOf<Tab>()
 
-    private val audio =
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
 
-    private val video =
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    enum class Srcs {
+        Single, Merged, M3U8;
 
-    private val m3u8 =
-        "https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8"
-
-    private val subtitle =
-        "https://raw.githubusercontent.com/brenopolanski/html5-video-webvtt-example/master/MIB2-subtitles-pt-BR.vtt"
-
-    private fun createTrack(id: String, title: String, streamables: List<Streamable>) = Track(
-        id,
-        title,
-        isExplicit = Random.nextBoolean(),
-        streamables = streamables
-    ).toMediaItem().toShelf()
+        fun createTrack() = createTrack(
+            name, name, listOf(Streamable.source(this.name, 0), Streamable.subtitle(SUBTITLE))
+        )
+    }
 
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
         listOf(
             Artist("bruh", "Bruh").toMediaItem().toShelf(),
             createTrack(
-                "both", "All", listOf(
-                    Streamable.audioVideo(audio, 0),
-                    Streamable.audioVideo(video, 0),
-                    Streamable.audioVideo(m3u8, 0, Streamable.MimeType.HLS),
-                    Streamable.subtitle(subtitle)
+                "all", "All", listOf(
+                    Streamable.source(Srcs.Single.name, 0),
+                    Streamable.source(Srcs.Merged.name, 0),
+                    Streamable.source(Srcs.M3U8.name, 0),
+                    Streamable.subtitle(SUBTITLE)
                 )
             ),
-            createTrack("audio", "Audio", listOf(Streamable.audio(audio, 0))),
-            createTrack("video", "Video", listOf(Streamable.video(video, 0))),
-            createTrack(
-                "audioVideo",
-                "Audio Video",
-                listOf(Streamable.audioVideo(audio, 0), Streamable.subtitle(subtitle))
-            ),
-            createTrack(
-                "m3u8",
-                "M3U8",
-                listOf(
-                    Streamable.audioVideo(m3u8, 0, Streamable.MimeType.HLS),
-                    Streamable.subtitle(subtitle)
-                )
-            )
+            Srcs.Single.createTrack(),
+            Srcs.Merged.createTrack(),
+            Srcs.M3U8.createTrack()
         )
     }
 
@@ -152,7 +162,8 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override fun getShelves(artist: Artist) = PagedData.Single<Shelf> {
         listOf(
-            createTrack("audio", "Audio", listOf(Streamable.audio(audio, 0))),
+            Srcs.Single.createTrack(),
+            artist.toMediaItem().toShelf(),
         )
     }
 

@@ -1,10 +1,8 @@
 package dev.brahmkshatriya.echo.playback.source
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.TransferListener
@@ -18,20 +16,22 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.isAudioAndVideoMerged
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.videoIndex
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
+import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -42,35 +42,54 @@ import java.io.IOException
 @OptIn(UnstableApi::class)
 class DelayedSource(
     private var mediaItem: MediaItem,
-    private val scope: CoroutineScope,
-    private val context: Context,
-    private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    private val settings: SharedPreferences,
     private val mediaFactory: MediaFactory,
-    private val throwableFlow: MutableSharedFlow<Throwable>
 ) : CompositeMediaSource<Nothing>() {
+
+    private val scope = mediaFactory.scope
+    private val context = mediaFactory.context
+    private val currentSources = mediaFactory.current
+    private val extensionListFlow = mediaFactory.extListFlow
+    private val settings = mediaFactory.settings
+    private val throwableFlow = mediaFactory.throwableFlow
 
     private lateinit var actualSource: MediaSource
     override fun prepareSourceInternal(mediaTransferListener: TransferListener?) {
         super.prepareSourceInternal(mediaTransferListener)
         scope.launch(Dispatchers.IO) {
-            val new = runCatching { resolve(mediaItem) }.getOrElse {
+            val (new, streamable) = runCatching { resolve(mediaItem) }.getOrElse {
                 throwableFlow.emit(it)
                 return@launch
             }
-            onUrlResolved(new)
+            currentSources.value = streamable
+            onUrlResolved(new, streamable)
         }
     }
 
-    private suspend fun onUrlResolved(new: MediaItem) = withContext(Dispatchers.Main) {
+    private suspend fun onUrlResolved(
+        new: MediaItem, streamable: Streamable.Media.Sources,
+    ) = withContext(Dispatchers.Main) {
         mediaItem = new
-        actualSource = when (new.isAudioAndVideoMerged()) {
-            true -> mediaFactory.create(new, true)
-            null -> mediaFactory.create(new, false)
-            false -> MergingMediaSource(
-                mediaFactory.create(new, true),
-                mediaFactory.create(new, false)
-            )
+
+        if(new.clientId != OfflineExtension.metadata.id) {
+            val track = mediaItem.track
+            context.saveToCache(track.id, new.clientId to track, "track")
+        }
+
+        val sources = streamable.sources
+        actualSource = when (sources.size) {
+            0 -> throw Exception(context.getString(R.string.streamable_not_found))
+            1 -> mediaFactory.create(new, 0, sources.first())
+            else -> {
+                if(streamable.merged) MergingMediaSource(
+                    *sources.mapIndexed { index, source ->
+                        mediaFactory.create(new, index, source)
+                    }.toTypedArray()
+                ) else {
+                    val index = mediaItem.sourceIndex
+                    val source = sources[index]
+                    mediaFactory.create(new, index, source)
+                }
+            }
         }
         runCatching { prepareChildSource(null, actualSource) }
     }
@@ -102,8 +121,9 @@ class DelayedSource(
 
     override fun canUpdateMediaItem(mediaItem: MediaItem) = run {
         this.mediaItem.apply {
-            if (audioIndex != mediaItem.audioIndex) return@run false
-            if (videoIndex != mediaItem.videoIndex) return@run false
+            if (sourcesIndex != mediaItem.sourcesIndex) return@run false
+            if (sourceIndex != mediaItem.sourceIndex) return@run false
+            if (backgroundIndex != mediaItem.backgroundIndex) return@run false
             if (subtitleIndex != mediaItem.subtitleIndex) return@run false
         }
         actualSource.canUpdateMediaItem(mediaItem)
@@ -114,35 +134,45 @@ class DelayedSource(
         actualSource.updateMediaItem(mediaItem)
     }
 
-    private suspend fun resolve(mediaItem: MediaItem): MediaItem {
+    private suspend fun resolve(mediaItem: MediaItem) = coroutineScope {
         extensionListFlow.first { it != null }
         val new = if (mediaItem.isLoaded) mediaItem
-        else MediaItemUtils.build(settings, mediaItem, loadTrack(mediaItem))
-        val video = if (new.videoIndex < 0) null else loadVideo(new)
-        val subtitle = if (new.subtitleIndex < 0) null else loadSubtitle(new)
-        return MediaItemUtils.build(new, video, subtitle)
+        else MediaItemUtils.buildLoaded(settings, mediaItem, loadTrack(mediaItem))
+        val sources = async { loadSources(new) }
+        val background = async { if (new.backgroundIndex < 0) null else loadVideo(new) }
+        val subtitle = async { if (new.subtitleIndex < 0) null else loadSubtitle(new) }
+        MediaItemUtils.buildExternal(new, background.await(), subtitle.await()) to sources.await()
     }
 
     private suspend fun loadTrack(item: MediaItem) =
         item.getTrackClient(context, extensionListFlow) {
             loadTrack(item.track).also {
-                it.audioStreamables.ifEmpty {
-                    throw Exception(context.getString(R.string.track_not_found))
+                it.sources.ifEmpty {
+                    throw Exception(context.getString(R.string.no_streams_found))
                 }
             }
         }
 
-    private suspend fun loadVideo(mediaItem: MediaItem): Streamable.Media.WithVideo {
-        val streams = mediaItem.track.videoStreamables
-        val index = mediaItem.videoIndex
+    private suspend fun loadSources(mediaItem: MediaItem): Streamable.Media.Sources {
+        val streams = mediaItem.track.sources
+        val index = mediaItem.sourcesIndex
         val streamable = streams[index]
         return mediaItem.getTrackClient(context, extensionListFlow) {
-            getStreamableMedia(streamable) as Streamable.Media.WithVideo
+            getStreamableMedia(streamable) as Streamable.Media.Sources
+        }
+    }
+
+    private suspend fun loadVideo(mediaItem: MediaItem): Streamable.Media.Background {
+        val streams = mediaItem.track.backgrounds
+        val index = mediaItem.backgroundIndex
+        val streamable = streams[index]
+        return mediaItem.getTrackClient(context, extensionListFlow) {
+            getStreamableMedia(streamable) as Streamable.Media.Background
         }
     }
 
     private suspend fun loadSubtitle(mediaItem: MediaItem): Streamable.Media.Subtitle {
-        val streams = mediaItem.track.subtitleStreamables
+        val streams = mediaItem.track.subtitles
         val index = mediaItem.subtitleIndex
         val streamable = streams[index]
         return mediaItem.getTrackClient(context, extensionListFlow) {
@@ -163,14 +193,5 @@ class DelayedSource(
                 throw Exception(context.trackNotSupported(extension.metadata.name).message)
             return runCatching { block(client) }.getOrElse { throw it.toAppException(extension) }
         }
-
-        fun Player.getMediaItemById(id: String): Pair<Int, MediaItem>? {
-            for (i in 0 until mediaItemCount) {
-                val mediaItem = getMediaItemAt(i)
-                if (mediaItem.mediaId == id) return i to mediaItem
-            }
-            return null
-        }
-
     }
 }

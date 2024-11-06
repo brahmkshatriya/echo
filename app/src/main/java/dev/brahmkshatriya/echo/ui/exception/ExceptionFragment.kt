@@ -15,8 +15,8 @@ import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
 import dev.brahmkshatriya.echo.extensions.InvalidExtensionListException
 import dev.brahmkshatriya.echo.extensions.RequiredExtensionsException
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.audioIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
@@ -93,7 +93,7 @@ class ExceptionFragment : Fragment() {
             is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
             is PlayerViewModel.PlayerException -> throwable.details.title
-            is ExtensionLoadingException -> getString(R.string.invalid_extension)
+            is ExtensionLoadingException -> "${getString(R.string.invalid_extension)} : ${throwable.type}"
             is RequiredExtensionsException -> getString(
                 R.string.extension_requires_following_extensions,
                 throwable.name,
@@ -122,7 +122,7 @@ class ExceptionFragment : Fragment() {
             is PlayerViewModel.PlayerException -> """
 Client Id : ${throwable.mediaItem?.clientId}
 Track : ${throwable.mediaItem?.track}
-Stream : ${throwable.mediaItem?.run { track.audioStreamables.getOrNull(audioIndex) }}
+Stream : ${throwable.mediaItem?.run { track.sources.getOrNull(sourcesIndex) }}
 
 ${throwable.details.causedBy}
 """.trimIndent()

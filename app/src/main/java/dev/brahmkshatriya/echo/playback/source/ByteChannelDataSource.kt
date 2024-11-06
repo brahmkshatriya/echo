@@ -22,10 +22,10 @@ class ByteChannelDataSource : BaseDataSource(true) {
         override fun createDataSource() = ByteChannelDataSource()
     }
 
-    private var audio: Streamable.Audio.Channel? = null
+    private var source: Streamable.Source.Channel? = null
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-        val channel = audio!!.channel
+        val channel = source!!.channel
         return runBlocking {
             val bytesRead = channel.readAvailable(buffer, offset, length)
             if (bytesRead == -1) C.RESULT_END_OF_INPUT else bytesRead
@@ -33,22 +33,20 @@ class ByteChannelDataSource : BaseDataSource(true) {
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        val audio = dataSpec.customData as Streamable.Audio.Channel
+        val source = dataSpec.customData as Streamable.Source.Channel
         val requestedPosition = dataSpec.position
         runBlocking {
-            audio.channel.seek(requestedPosition)
+            source.channel.seek(requestedPosition)
         }
-        this.audio = audio
-        return audio.totalBytes
+        this.source = source
+        return source.totalBytes
     }
 
-    override fun getUri() = audio?.hashCode().toString().toUri()
+    override fun getUri() = source?.hashCode().toString().toUri()
 
     override fun close() {
-        runBlocking {
-            audio?.channel?.cancel()
-        }
-        audio = null
+        source?.channel?.cancel()
+        source = null
     }
 
     private suspend fun ByteReadChannel.seek(requestedPosition: Long) {

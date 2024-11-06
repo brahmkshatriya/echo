@@ -30,8 +30,8 @@ import dev.brahmkshatriya.echo.common.models.QuickSearch
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Streamable.Audio.Companion.toAudio
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
@@ -47,7 +47,7 @@ import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIsVideo
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.getSettings
 import dev.brahmkshatriya.echo.utils.saveToCache
@@ -119,7 +119,7 @@ class OfflineExtension(
 
     @OptIn(UnstableApi::class)
     private fun getCachedTracks() = cache.keys.mapNotNull { key ->
-        val (id, _) = key.toIdAndIsVideo() ?: return@mapNotNull null
+        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
         context.getFromCache<Pair<String, Track>>(id, "track")
     }.reversed()
 
@@ -195,7 +195,7 @@ class OfflineExtension(
     )
 
     override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
-        return streamable.id.toAudio().toMedia()
+        return streamable.id.toSource().toMedia()
     }
 
     override fun getShelves(track: Track): PagedData<Shelf> =

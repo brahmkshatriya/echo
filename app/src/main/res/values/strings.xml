@@ -264,6 +264,9 @@
     <string name="extension_installed">%1$s (Installed)</string>
     <string name="add_extensions">Add Extensions</string>
     <string name="invalid_extension_list">Invalid extensions list</string>
+    <string name="sources">Sources</string>
+    <string name="backgrounds">Backgrounds</string>
+    <string name="source_selection">Source Selection</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
