@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback.source
+package dev.brahmkshatriya.echo.playback.loading
 
 import android.content.Context
 import androidx.core.net.toUri
@@ -8,10 +8,10 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.playback.source.MediaResolver.Companion.copy
+import dev.brahmkshatriya.echo.playback.loading.StreamableResolver.Companion.copy
 
 @UnstableApi
-class MediaDataSource(
+class StreamableDataSource(
     private val defaultDataSourceFactory: Lazy<DefaultDataSource.Factory>,
     private val byteStreamDataSourceFactory: Lazy<ByteStreamDataSource.Factory>,
     private val byteChannelDataSourceFactory: Lazy<ByteChannelDataSource.Factory>,
@@ -23,7 +23,7 @@ class MediaDataSource(
         private val defaultDataSourceFactory = lazy { DefaultDataSource.Factory(context) }
         private val byteStreamDataSourceFactory = lazy { ByteStreamDataSource.Factory() }
         private val byteChannelDataSourceFactory = lazy { ByteChannelDataSource.Factory() }
-        override fun createDataSource() = MediaDataSource(
+        override fun createDataSource() = StreamableDataSource(
             defaultDataSourceFactory, byteStreamDataSourceFactory, byteChannelDataSourceFactory
         )
     }

@@ -26,10 +26,10 @@ import dev.brahmkshatriya.echo.playback.listeners.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.listeners.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.playback.listeners.TrackingListener
+import dev.brahmkshatriya.echo.playback.loading.StreamableMediaSource
 import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.render.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.render.RenderersFactory
-import dev.brahmkshatriya.echo.playback.source.MediaFactory
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -88,8 +88,8 @@ class PlayerService : MediaLibraryService() {
             .setIsSpeedChangeSupportRequired(true)
             .build()
 
-        val factory = MediaFactory(
-            cache, currentSources, this, scope, extListFlow, settings, throwFlow
+        val factory = StreamableMediaSource.Factory(
+            this, scope, currentSources, extListFlow, cache, settings
         )
 
         ExoPlayer.Builder(this, factory)

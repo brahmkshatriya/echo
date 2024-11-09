@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback.source
+package dev.brahmkshatriya.echo.playback.loading
 
 import androidx.annotation.OptIn
 import androidx.core.net.toUri

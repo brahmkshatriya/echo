@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.playback.source
+package dev.brahmkshatriya.echo.playback.loading
 
 import android.net.Uri
 import androidx.annotation.OptIn
@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class MediaResolver(
+class StreamableResolver(
     private val current: MutableStateFlow<Streamable.Media.Sources?>
 ) : Resolver {
 
