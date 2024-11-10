@@ -346,7 +346,7 @@ object MediaStoreUtils {
             }.toString().ifEmpty { null }
             val liked = likedAudios.contains(id)
             val song = Track(
-                id = "offline:$id",
+                id = id.toString(),
                 title = title,
                 artists = artists,
                 album = album,

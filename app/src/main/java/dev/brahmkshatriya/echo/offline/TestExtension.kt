@@ -135,7 +135,12 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     }
 
     private val radio = Radio("empty", "empty")
-    override fun loadTracks(radio: Radio) = PagedData.Single<Track> { emptyList() }
+    override fun loadTracks(radio: Radio) = PagedData.Single {
+        listOf(
+            (Srcs.Merged.createTrack().media as EchoMediaItem.TrackItem).track,
+        )
+    }
+
     override suspend fun radio(track: Track, context: EchoMediaItem?) = radio
     override suspend fun radio(album: Album) = radio
     override suspend fun radio(artist: Artist) = radio

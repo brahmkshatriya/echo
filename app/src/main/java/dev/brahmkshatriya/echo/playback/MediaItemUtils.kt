@@ -107,7 +107,7 @@ object MediaItemUtils {
         item.build()
     }
 
-    fun buildExternal(
+    fun buildWithBackgroundAndSubtitle(
         mediaItem: MediaItem,
         background: Streamable.Media.Background?,
         subtitle: Streamable.Media.Subtitle?

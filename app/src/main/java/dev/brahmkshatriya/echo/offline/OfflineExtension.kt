@@ -419,8 +419,7 @@ class OfflineExtension(
 
     override suspend fun likeTrack(track: Track, isLiked: Boolean) {
         val playlist = library.likedPlaylist.id
-        val id = track.id.substringAfter("offline:").toLong()
-        if (isLiked) context.addSongToPlaylist(playlist, id, 0)
+        if (isLiked) context.addSongToPlaylist(playlist, track.id.toLong(), 0)
         else {
             val index = library.likedPlaylist.songList.indexOfFirst { it.id == track.id }
             context.removeSongFromPlaylist(playlist, index)
@@ -449,8 +448,7 @@ class OfflineExtension(
         playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>
     ) {
         new.forEach {
-            val id = it.id.substringAfter("offline:").toLong()
-            context.addSongToPlaylist(playlist.id.toLong(), id, index)
+            context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong(), index)
         }
     }
 

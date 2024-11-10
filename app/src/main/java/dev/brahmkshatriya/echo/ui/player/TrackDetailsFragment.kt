@@ -122,7 +122,7 @@ class TrackDetailsFragment : Fragment() {
         private val playerViewModel: PlayerViewModel
     ) : RecyclerView.Adapter<InfoAdapter.ViewHolder>() {
 
-        private var sources: Streamable.Media.Sources? = null
+        private var sources = mapOf<String, Streamable.Media.Sources>()
         private var item: MediaItem? = null
         private var tracks: Tracks? = null
         private var player: Player? = null
@@ -140,9 +140,12 @@ class TrackDetailsFragment : Fragment() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val binding = holder.binding
-            item?.let { binding.applyCurrent(it) }
+            item?.let {
+                binding.applyCurrent(it)
+                val source = sources[it.mediaId]
+                binding.applySources(source)
+            }
             player?.let { binding.applyTracks(it, tracks ?: Tracks.EMPTY) }
-            sources?.let { binding.applySources(it) }
         }
 
         fun applyCurrent(item: MediaItem) {
@@ -156,7 +159,7 @@ class TrackDetailsFragment : Fragment() {
             notifyDataSetChanged()
         }
 
-        fun applySources(sources: Streamable.Media.Sources?) {
+        fun applySources(sources: Map<String, Streamable.Media.Sources>) {
             this.sources = sources
             notifyDataSetChanged()
         }
@@ -336,7 +339,7 @@ class TrackDetailsFragment : Fragment() {
         }
 
         private fun ItemTrackInfoBinding.applySources(sources: Streamable.Media.Sources?) {
-            val list = if(sources != null && !sources.merged) sources.sources else listOf()
+            val list = if (sources != null && !sources.merged) sources.sources else listOf()
             val context = root.context
             applyChips(
                 list,

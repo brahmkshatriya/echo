@@ -10,17 +10,15 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class StreamableResolver(
-    private val current: MutableStateFlow<Streamable.Media.Sources?>
+    private val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>
 ) : Resolver {
 
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-        val (_, _, index) = dataSpec.uri.toString().toIdAndIndex() ?: return dataSpec
-
-        val current = current.value ?: return dataSpec
-        val source = current.sources[index]
+        val (id, _, index) = dataSpec.uri.toString().toIdAndIndex() ?: return dataSpec
+        val streamable = current.value[id]!!
         return dataSpec.copy(
-            customData = source
+            customData = streamable.sources[index]
         )
     }
 

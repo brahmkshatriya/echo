@@ -55,7 +55,7 @@ class PlayerViewModel @Inject constructor(
     val app: Application,
     val currentFlow: MutableStateFlow<Current?>,
     val radioStateFlow: MutableStateFlow<Radio.State>,
-    val currentSources: MutableStateFlow<Streamable.Media.Sources?>,
+    val currentSources: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
     val cache: SimpleCache,
     val fftAudioProcessor: FFTAudioProcessor,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
@@ -125,19 +125,19 @@ class PlayerViewModel @Inject constructor(
             val extension = extensionListFlow.getExtension(clientId) ?: return@withContext null
             when (lists) {
                 is EchoMediaItem.Lists.AlbumItem -> {
-                    extension.get<AlbumClient, List<Track>>(throwableFlow){
+                    extension.get<AlbumClient, List<Track>>(throwableFlow) {
                         loadTracks(lists.album).loadAll()
                     }
                 }
 
                 is EchoMediaItem.Lists.PlaylistItem -> {
-                    extension.get<PlaylistClient, List<Track>>(throwableFlow){
+                    extension.get<PlaylistClient, List<Track>>(throwableFlow) {
                         loadTracks(lists.playlist).loadAll()
                     }
                 }
 
                 is EchoMediaItem.Lists.RadioItem -> {
-                    extension.get<RadioClient, List<Track>>(throwableFlow){
+                    extension.get<RadioClient, List<Track>>(throwableFlow) {
                         loadTracks(lists.radio).loadAll()
                     }
                 }

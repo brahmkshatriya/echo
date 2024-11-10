@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.TransferListener
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.drm.DefaultDrmSessionManagerProvider
@@ -39,9 +40,26 @@ import kotlinx.coroutines.launch
 
 @UnstableApi
 class StreamableMediaSource(
-    private var mediaItem: MediaItem,
-    private val factory: Factory,
+    private val context: Context,
+    private val scope: CoroutineScope,
+    private val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
+    private val loader: StreamableLoader,
+    private val dash: Lazy<MediaSource.Factory>,
+    private val hls: Lazy<MediaSource.Factory>,
+    private val default: Lazy<MediaSource.Factory>,
+    private var mediaItem: MediaItem
 ) : CompositeMediaSource<Nothing>() {
+
+    fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source): MediaSource {
+        val type = (source as? Streamable.Source.Http)?.type
+        val factory = when (type) {
+            Streamable.SourceType.DASH -> dash
+            Streamable.SourceType.HLS -> hls
+            Streamable.SourceType.Progressive, null -> default
+        }
+        val new = MediaItemUtils.buildForSource(mediaItem, index, source)
+        return factory.value.createMediaSource(new)
+    }
 
     private var error: Throwable? = null
     override fun maybeThrowSourceInfoRefreshError() {
@@ -49,48 +67,43 @@ class StreamableMediaSource(
         super.maybeThrowSourceInfoRefreshError()
     }
 
-    private val context = factory.context
-    private val scope = factory.scope
-    private val current = factory.current
-    private val loader = factory.loader
-
+    private lateinit var actualSource: MediaSource
     override fun prepareSourceInternal(mediaTransferListener: TransferListener?) {
         super.prepareSourceInternal(mediaTransferListener)
         val handler = Util.createHandlerForCurrentLooper()
         scope.launch {
-            val (item, sources) = runCatching { loader.load(mediaItem) }.getOrElse {
+            val (new, streamable) = runCatching { loader.load(mediaItem) }.getOrElse {
                 error = it
                 return@launch
             }
-            onResolved(item, sources)
-            handler.post { prepareChildSource(null, actualSource) }
-        }
-    }
+            mediaItem = new
+            current.apply {
+                value = value.toMutableMap().apply { set(new.mediaId, streamable) }
+            }
 
-    private lateinit var actualSource: MediaSource
-    private fun onResolved(
-        new: MediaItem, streamable: Streamable.Media.Sources,
-    ) {
-        mediaItem = new
-        current.value = streamable
-        if (new.clientId != OfflineExtension.metadata.id) {
-            val track = mediaItem.track
-            context.saveToCache(track.id, new.clientId to track, "track")
-        }
-        val sources = streamable.sources
-        actualSource = when (sources.size) {
-            0 -> throw Exception(context.getString(R.string.streamable_not_found))
-            1 -> factory.create(new, 0, sources.first())
-            else -> {
-                if (streamable.merged) MergingMediaSource(
-                    *sources.mapIndexed { index, source ->
-                        factory.create(new, index, source)
-                    }.toTypedArray()
-                ) else {
-                    val index = mediaItem.sourceIndex
-                    val source = sources[index]
-                    factory.create(new, index, source)
+            if (new.clientId != OfflineExtension.metadata.id) {
+                val track = mediaItem.track
+                context.saveToCache(track.id, new.clientId to track, "track")
+            }
+
+            val sources = streamable.sources
+            actualSource = when (sources.size) {
+                0 -> throw Exception(context.getString(R.string.streamable_not_found))
+                1 -> create(new, 0, sources.first())
+                else -> {
+                    if (streamable.merged) MergingMediaSource(
+                        *sources.mapIndexed { index, source ->
+                            create(new, index, source)
+                        }.toTypedArray()
+                    ) else {
+                        val index = mediaItem.sourceIndex
+                        val source = sources[index]
+                        create(new, index, source)
+                    }
                 }
+            }
+            handler.post {
+                runCatching { prepareChildSource(null, actualSource) }
             }
         }
     }
@@ -123,25 +136,22 @@ class StreamableMediaSource(
         actualSource.updateMediaItem(mediaItem)
     }
 
-
     @UnstableApi
     class Factory(
         val context: Context,
         val scope: CoroutineScope,
-        val current: MutableStateFlow<Streamable.Media.Sources?>,
+        val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
         extListFlow: MutableStateFlow<List<MusicExtension>?>,
         cache: SimpleCache,
         settings: SharedPreferences,
     ) : MediaSource.Factory {
 
         private val dataSource = ResolvingDataSource.Factory(
-            CustomCacheDataSource.Factory(cache, StreamableDataSource.Factory(context)),
+            CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(StreamableDataSource.Factory(context)),
             StreamableResolver(current)
         )
-
-        private val default = lazily { DefaultMediaSourceFactory(dataSource) }
-        private val hls = lazily { HlsMediaSource.Factory(dataSource) }
-        private val dash = lazily { DashMediaSource.Factory(dataSource) }
 
         private val provider = DefaultDrmSessionManagerProvider().apply {
             setDrmHttpDataSourceFactory(dataSource)
@@ -174,19 +184,13 @@ class StreamableMediaSource(
             return this
         }
 
-        fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source): MediaSource {
-            val type = (source as? Streamable.Source.Http)?.type
-            val factory = when (type) {
-                Streamable.SourceType.DASH -> dash
-                Streamable.SourceType.HLS -> hls
-                Streamable.SourceType.Progressive, null -> default
-            }
-            val new = MediaItemUtils.buildForSource(mediaItem, index, source)
-            return factory.value.createMediaSource(new)
-        }
+        private val default = lazily { DefaultMediaSourceFactory(dataSource) }
+        private val hls = lazily { HlsMediaSource.Factory(dataSource) }
+        private val dash = lazily { DashMediaSource.Factory(dataSource) }
+        private val loader = StreamableLoader(context, settings, extListFlow)
 
-        val loader = StreamableLoader(context, settings, extListFlow)
-        override fun createMediaSource(mediaItem: MediaItem) =
-            StreamableMediaSource(mediaItem, this)
+        override fun createMediaSource(mediaItem: MediaItem) = StreamableMediaSource(
+            context, scope, current, loader, dash, hls, default, mediaItem
+        )
     }
 }

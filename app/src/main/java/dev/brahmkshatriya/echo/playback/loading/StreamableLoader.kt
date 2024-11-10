@@ -16,7 +16,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.Dispatchers
@@ -33,14 +32,16 @@ class StreamableLoader(
 ) {
     suspend fun load(mediaItem: MediaItem) = withContext(Dispatchers.IO) {
         extensionListFlow.first { it != null }
-        val new = if (!mediaItem.isLoaded) mediaItem
+        val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.buildLoaded(settings, mediaItem, loadTrack(mediaItem))
 
         val srcs = async { loadSources(new) }
         val background = async { if (new.backgroundIndex < 0) null else loadBackground(new) }
         val subtitle = async { if (new.subtitleIndex < 0) null else loadSubtitle(new) }
 
-        MediaItemUtils.buildExternal(new, background.await(), subtitle.await()) to srcs.await()
+        MediaItemUtils.buildWithBackgroundAndSubtitle(
+            new, background.await(), subtitle.await()
+        ) to srcs.await()
     }
 
     private suspend fun <T> withClient(
@@ -52,7 +53,7 @@ class StreamableLoader(
         val client = extension.instance.value.getOrNull()
         if (client !is TrackClient)
             throw Exception(context.trackNotSupported(extension.metadata.name).message)
-        return runCatching { block(client) }.getOrElse { throw it.toAppException(extension) }
+        return block(client)
     }
 
     private suspend fun loadTrack(item: MediaItem) = withClient(item) {

@@ -67,7 +67,7 @@ class PlayerService : MediaLibraryService() {
     lateinit var current: MutableStateFlow<Current?>
 
     @Inject
-    lateinit var currentSources: MutableStateFlow<Streamable.Media.Sources?>
+    lateinit var currentSources: MutableStateFlow<Map<String, Streamable.Media.Sources>>
 
     @Inject
     lateinit var fftAudioProcessor: FFTAudioProcessor
