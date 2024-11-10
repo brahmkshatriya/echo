@@ -12,13 +12,12 @@ An Extension-based Music Player for Android, designed with a clean and intuitive
     <img src="https://img.shields.io/github/last-commit/brahmkshatriya/echo?label=Latest Commit&style=flat-square" alt="GitHub Last Commit">
 </a>
 </p>
-
-## Downloads
+<!--## Downloads
 <p>
    <a href="https://github.com/brahmkshatriya/echo/releases/latest"><img src="https://img.shields.io/github/v/release/brahmkshatriya/echo?display_name=tag&style=flat-square&logoColor=06599d&label=Stable&labelColor=06599d&color=043b69" alt="Latest Stable Release"/></a>
    <a href="https://github.com/brahmkshatriya/echo/releases/latest/"><img src="https://img.shields.io/github/v/release/brahmkshatriya/echo?include_prereleases&logoColor=2c2c47&label=Beta&color=818cf8&style=flat-square" alt="Latest Pre-release"/></a>
    <a href="https://github.com/itsmechinmoy/echo-updater/releases/latest"><img src="https://img.shields.io/github/v/release/itsmechinmoy/echo-updater?display_name=tag&style=flat-square&label=Nightly&color=e23629" alt="Latest Alpha release"/></a>
-</p>
+</p>-->
 
 ## Disclaimer
 - The developer of this application is not liable for any misuse or legal issues arising from its use and is not affiliated with any content providers. This application hosts zero content.
