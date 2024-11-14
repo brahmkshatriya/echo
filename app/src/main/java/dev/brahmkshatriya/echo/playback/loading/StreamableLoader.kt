@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +54,9 @@ class StreamableLoader(
         val client = extension.instance.value.getOrNull()
         if (client !is TrackClient)
             throw Exception(context.trackNotSupported(extension.metadata.name).message)
-        return block(client)
+        return runCatching { block(client) }.getOrElse {
+            throw it.toAppException(extension)
+        }
     }
 
     private suspend fun loadTrack(item: MediaItem) = withClient(item) {

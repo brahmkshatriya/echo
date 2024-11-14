@@ -167,7 +167,7 @@ class ItemFragment : Fragment() {
         })
 
         fun concatAdapter(item: EchoMediaItem, itemsAdapter: ConcatAdapter): ConcatAdapter {
-            trackAdapter = TrackAdapter(clientId, view.transitionName, listener, item)
+            trackAdapter = TrackAdapter(clientId, view.transitionName, listener, item, true)
             return when (item) {
                 is AlbumItem ->
                     ConcatAdapter(albumHeaderAdapter, trackAdapter, itemsAdapter)

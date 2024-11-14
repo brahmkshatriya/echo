@@ -7,9 +7,11 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
+import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 class PlayerUiListener(
     val player: Player,
@@ -36,7 +38,7 @@ class PlayerUiListener(
 
     private fun updateNavigation() {
         viewModel.nextEnabled.value = player.hasNextMediaItem()
-        viewModel.previousEnabled.value =  player.currentMediaItemIndex >= 0
+        viewModel.previousEnabled.value = player.currentMediaItemIndex >= 0
     }
 
     private val delay = 500L
@@ -45,6 +47,7 @@ class PlayerUiListener(
     private val handler = Handler(Looper.getMainLooper()).also {
         it.post(updateProgressRunnable)
     }
+
     private fun updateProgress() {
         viewModel.progress.value =
             player.currentPosition.toInt() to player.bufferedPosition.toInt()
@@ -108,6 +111,12 @@ class PlayerUiListener(
     }
 
     override fun onPlayerError(error: PlaybackException) {
-        viewModel.createException(error.toExceptionDetails(viewModel.app))
+        var cause = error.cause ?: error
+        if (cause is IOException) {
+            cause = cause.cause ?: cause
+        }
+        if (cause is AppException) {
+            viewModel.apply { viewModelScope.launch { throwableFlow.emit(cause) } }
+        } else viewModel.createException(cause.toExceptionDetails(viewModel.app))
     }
 }

@@ -37,6 +37,7 @@ import dev.brahmkshatriya.echo.utils.saveToCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 @UnstableApi
 class StreamableMediaSource(
@@ -63,7 +64,7 @@ class StreamableMediaSource(
 
     private var error: Throwable? = null
     override fun maybeThrowSourceInfoRefreshError() {
-        error?.let { throw it }
+        error?.let { throw IOException(it) }
         super.maybeThrowSourceInfoRefreshError()
     }
 
@@ -88,7 +89,11 @@ class StreamableMediaSource(
 
             val sources = streamable.sources
             actualSource = when (sources.size) {
-                0 -> throw Exception(context.getString(R.string.streamable_not_found))
+                0 -> {
+                    error = Exception(context.getString(R.string.streamable_not_found))
+                    return@launch
+                }
+
                 1 -> create(new, 0, sources.first())
                 else -> {
                     if (streamable.merged) MergingMediaSource(
