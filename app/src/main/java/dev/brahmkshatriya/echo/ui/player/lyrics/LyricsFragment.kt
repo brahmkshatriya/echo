@@ -21,7 +21,6 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
-import dev.brahmkshatriya.echo.common.models.Lyric
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.FragmentLyricsBinding
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
@@ -100,17 +99,19 @@ class LyricsFragment : Fragment() {
             lyricsItemAdapter?.submitData(it ?: PagingData.empty())
         }
 
-        var currentLyric: Lyric? = null
+        var currentItem: Lyrics.Item? = null
+        var currentLyrics: Lyrics.Lyric? = null
         var lyricAdapter: LyricAdapter? = null
 
         val layoutManager = binding.lyricsRecyclerView.layoutManager as LinearLayoutManager
         fun updateLyrics(current: Long) {
-            if ((currentLyric?.endTime ?: 0) < current || current <= 0) {
-                val list = viewModel.currentLyrics.value?.lyrics?.map { lyric ->
+            val lyrics = currentLyrics as? Lyrics.Timed ?: return
+            if ((currentItem?.endTime ?: 0) < current || current <= 0) {
+                val list = lyrics.list.map { lyric ->
                     val isCurrent = lyric.startTime <= current
-                    if (isCurrent) currentLyric = lyric
+                    if (isCurrent) currentItem = lyric
                     isCurrent to lyric
-                } ?: emptyList()
+                }
                 lyricAdapter?.submitList(list)
                 val currentIndex = list.indexOfLast { it.first }
                     .takeIf { it != -1 } ?: return
@@ -124,7 +125,7 @@ class LyricsFragment : Fragment() {
             }
         }
         lyricAdapter = LyricAdapter { lyric ->
-            currentLyric = null
+            currentItem = null
             playerVM.seekTo(lyric.startTime)
             updateLyrics(lyric.startTime)
         }
@@ -132,9 +133,26 @@ class LyricsFragment : Fragment() {
         binding.lyricsRecyclerView.itemAnimator = null
         observe(viewModel.currentLyrics) {
             binding.lyricsItem.bind(it)
-            currentLyric = null
-            lyricAdapter.submitList(it?.lyrics?.map { lyric -> false to lyric })
-            binding.noLyrics.isVisible = it?.lyrics.isNullOrEmpty()
+            currentItem = null
+            currentLyrics = it?.lyrics
+            binding.noLyrics.isVisible = when (val lyrics = it?.lyrics) {
+                is Lyrics.Simple -> {
+                    lyricAdapter.submitList(
+                        listOf(true to Lyrics.Item(lyrics.text, 0, 0))
+                    )
+                    lyrics.text.isBlank()
+                }
+
+                is Lyrics.Timed -> {
+                    lyricAdapter.submitList(
+                        lyrics.list.map { lyric -> false to lyric }
+                    )
+                    lyrics.list.isEmpty()
+                }
+
+                null -> true
+            }
+
         }
 
         observe(playerVM.progress) { updateLyrics(it.first.toLong()) }

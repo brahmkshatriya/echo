@@ -11,7 +11,6 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.models.Lyric
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
@@ -134,18 +133,18 @@ class LyricsViewModel @Inject constructor(
     }
 
     private fun Lyrics.fillGaps(): Lyrics {
-        val lyrics = this.lyrics
-        return if (fillTimeGaps && lyrics != null) {
-            val new = mutableListOf<Lyric>()
+        val lyrics = this.lyrics as? Lyrics.Timed
+        return if (lyrics != null && lyrics.fillTimeGaps) {
+            val new = mutableListOf<Lyrics.Item>()
             var last = 0L
-            lyrics.forEach {
+            lyrics.list.forEach {
                 if (it.startTime > last) {
-                    new.add(Lyric("", last, it.startTime))
+                    new.add(Lyrics.Item("", last, it.startTime))
                 }
                 new.add(it)
                 last = it.endTime
             }
-            this.copy(lyrics = new)
+            this.copy(lyrics = Lyrics.Timed(new))
         } else this
     }
 }

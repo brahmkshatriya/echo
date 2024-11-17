@@ -5,21 +5,21 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.common.models.Lyric
+import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricBinding
 
 class LyricAdapter(
     val listener: Listener
-) : ListAdapter<Pair<Boolean, Lyric>, LyricAdapter.ViewHolder>(DiffCallback) {
+) : ListAdapter<Pair<Boolean, Lyrics.Item>, LyricAdapter.ViewHolder>(DiffCallback) {
     fun interface Listener {
-        fun onLyricSelected(lyric: Lyric)
+        fun onLyricSelected(lyric: Lyrics.Item)
     }
-    object DiffCallback : DiffUtil.ItemCallback<Pair<Boolean, Lyric>>() {
+    object DiffCallback : DiffUtil.ItemCallback<Pair<Boolean, Lyrics.Item>>() {
         override fun areItemsTheSame(
-            oldItem: Pair<Boolean, Lyric>, newItem: Pair<Boolean, Lyric>
+            oldItem: Pair<Boolean, Lyrics.Item>, newItem: Pair<Boolean, Lyrics.Item>
         ) = oldItem.second.text == newItem.second.text
         override fun areContentsTheSame(
-            oldItem: Pair<Boolean, Lyric>, newItem: Pair<Boolean, Lyric>
+            oldItem: Pair<Boolean, Lyrics.Item>, newItem: Pair<Boolean, Lyrics.Item>
         ) = oldItem == newItem
     }
     class ViewHolder(val binding: ItemLyricBinding) : RecyclerView.ViewHolder(binding.root)

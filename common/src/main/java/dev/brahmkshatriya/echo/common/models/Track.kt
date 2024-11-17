@@ -10,7 +10,7 @@ data class Track(
     val album: Album? = null,
     val cover: ImageHolder? = null,
     val duration: Long? = null,
-    val plays: Int? = null,
+    val plays: Long? = null,
     val releaseDate: String? = null,
     val description: String? = null,
     val isExplicit: Boolean = false,

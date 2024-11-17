@@ -6,5 +6,5 @@ import dev.brahmkshatriya.echo.common.models.Track
 
 interface LyricsClient : ExtensionClient {
     fun searchTrackLyrics(clientId: String, track: Track): PagedData<Lyrics>
-    suspend fun loadLyrics(small: Lyrics): Lyrics
+    suspend fun loadLyrics(lyrics: Lyrics): Lyrics
 }
