@@ -150,7 +150,10 @@ class LyricsFragment : Fragment() {
                     lyrics.list.isEmpty()
                 }
 
-                null -> true
+                null -> {
+                    lyricAdapter.submitList(emptyList())
+                    true
+                }
             }
 
         }

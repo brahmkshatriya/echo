@@ -40,6 +40,12 @@ class GridViewHolder(
                 binding.root.setOnLongClickListener {
                     listener.onLongClick(clientId, item, it)
                 }
+                binding.isPlaying.toolTipOnClick()
+                observe(listener.current) {
+                    val playing = it.isPlaying(item.id)
+                    binding.isPlaying.animateVisibility(playing)
+                    if (playing) (binding.isPlaying.icon as Animatable).start()
+                }
                 item
             }
 
