@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.playback.listeners
 
+import android.media.AudioManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -19,6 +20,7 @@ import kotlinx.coroutines.withContext
 @UnstableApi
 class ControllerListener(
     player: Player,
+    private val audioManager: AudioManager,
     private val scope: CoroutineScope,
     private val controllerExtensions: MutableStateFlow<List<ControllerExtension>?>,
     private val throwableFlow: MutableSharedFlow<Throwable>
@@ -39,53 +41,55 @@ class ControllerListener(
     private suspend fun registerController(extension: ControllerExtension) {
         extension.get<ControllerClient, Unit>(throwableFlow) {
             onPlayRequest = {
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.play()
                 }
             }
             onPauseRequest = {
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.pause()
                 }
             }
             onNextRequest = {
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.seekToNextMediaItem()
                 }
             }
             onPreviousRequest = {
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.seekToPreviousMediaItem()
                 }
             }
             onSeekRequest = { position ->
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.seekTo(position.toLong())
                 }
             }
             onMovePlaylistItemRequest = { fromIndex, toIndex ->
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.moveMediaItem(fromIndex, toIndex)
                 }
             }
             onRemovePlaylistItemRequest = { index ->
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.removeMediaItem(index)
                 }
             }
             onShuffleModeRequest = { enabled ->
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.shuffleModeEnabled = enabled
                 }
             }
             onRepeatModeRequest = { repeatMode ->
-                tryOnMain(throwableFlow) {
+                tryOnMain {
                     player.repeatMode = repeatMode
                 }
             }
             onVolumeRequest = { volume ->
-                tryOnMain(throwableFlow) {
-                    player.volume = volume.toFloat()
+                tryOnMain {
+                    val denormalized =
+                        volume * audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, denormalized.toInt(), 0)
                 }
             }
         }
@@ -93,14 +97,18 @@ class ControllerListener(
     }
 
     private suspend fun ControllerClient.tryOnMain(
-        flow: MutableSharedFlow<Throwable>,
         block: suspend ControllerClient.() -> Unit
     ) {
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Main.immediate) {
             try {
+                if (player.playbackState == Player.STATE_IDLE ||
+                    player.playbackState == Player.STATE_ENDED ||
+                    player.isPlaying.not()) {
+                    return@withContext
+                }
                 block()
             } catch (e: Exception) {
-                flow.emit(e)
+                throwableFlow.emit(e)
             }
         }
     }
@@ -193,8 +201,10 @@ class ControllerListener(
 
     override fun onDeviceVolumeChanged(volume: Int, muted: Boolean) {
         super.onDeviceVolumeChanged(volume, muted)
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val normalized = volume.toDouble() / maxVolume.toDouble()
         notifyControllers {
-            onVolumeChanged(volume.toDouble())
+            onVolumeChanged(normalized)
         }
     }
 }

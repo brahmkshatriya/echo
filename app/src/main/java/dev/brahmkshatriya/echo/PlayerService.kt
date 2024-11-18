@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
+import android.media.AudioManager
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -153,7 +154,13 @@ class PlayerService : MediaLibraryService() {
             TrackingListener(exoPlayer, scope, extListFlow, trackerList, throwFlow)
         )
         exoPlayer.addListener(
-            ControllerListener(exoPlayer, scope, controllerList, throwFlow)
+            ControllerListener(
+                exoPlayer,
+                getSystemService(AUDIO_SERVICE) as AudioManager,
+                scope,
+                controllerList,
+                throwFlow
+            )
         )
         settings.registerOnSharedPreferenceChangeListener { prefs, key ->
             when (key) {
