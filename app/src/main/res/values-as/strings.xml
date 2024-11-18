@@ -257,4 +257,7 @@
     <string name="link_or_code">লিংক বা ক\'ড</string>
     <string name="check_for_extension_updates_summary">এক্সটেনশ্যনৰ নতুন আপডেট বিচাৰক, যেতিয়া আপুনি এপটো খুলিব।</string>
     <string name="invalid_extension_list">অবৈধ এক্সটেনশ্যন তালিকা</string>
+    <string name="sources">উৎসসমূহ</string>
+    <string name="backgrounds">পটভূমি</string>
+    <string name="source_selection">উৎস নিৰ্বাচন</string>
 </resources>
