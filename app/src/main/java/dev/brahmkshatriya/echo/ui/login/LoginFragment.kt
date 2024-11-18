@@ -112,6 +112,7 @@ class LoginFragment : Fragment() {
             ExtensionType.MUSIC -> loginViewModel.extensionList.getExtension(clientId)
             ExtensionType.TRACKER -> loginViewModel.trackerList.getExtension(clientId)
             ExtensionType.LYRICS -> loginViewModel.lyricsList.getExtension(clientId)
+            ExtensionType.CONTROLLER -> loginViewModel.controllerList.getExtension(clientId)
         }
 
         if (extension == null) {

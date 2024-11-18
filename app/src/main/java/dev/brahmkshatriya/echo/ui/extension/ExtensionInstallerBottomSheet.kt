@@ -94,6 +94,7 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
             ExtensionType.MUSIC -> R.string.music
             ExtensionType.TRACKER -> R.string.tracker
             ExtensionType.LYRICS -> R.string.lyrics
+            ExtensionType.CONTROLLER -> R.string.controller
         }
         val typeString = getString(R.string.name_extension, getString(type))
         binding.extensionDescription.text = "$typeString\n\n${metadata.description}\n\n$byAuthor"

@@ -267,6 +267,7 @@
     <string name="sources">Sources</string>
     <string name="backgrounds">Backgrounds</string>
     <string name="source_selection">Source Selection</string>
+    <string name="controller">Controller</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

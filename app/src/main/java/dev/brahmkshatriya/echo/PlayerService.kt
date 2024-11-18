@@ -23,6 +23,7 @@ import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.PlayerCallback
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.listeners.AudioFocusListener
+import dev.brahmkshatriya.echo.playback.listeners.ControllerListener
 import dev.brahmkshatriya.echo.playback.listeners.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.playback.listeners.TrackingListener
@@ -115,6 +116,7 @@ class PlayerService : MediaLibraryService() {
         val extListFlow = extensionLoader.extensions
         val extFlow = extensionLoader.current
         val trackerList = extensionLoader.trackers
+        val controllerList = extensionLoader.controllers
 
         val exoPlayer = createExoplayer(extListFlow)
         exoPlayer.prepare()
@@ -148,6 +150,9 @@ class PlayerService : MediaLibraryService() {
         )
         exoPlayer.addListener(
             TrackingListener(exoPlayer, scope, extListFlow, trackerList, throwFlow)
+        )
+        exoPlayer.addListener(
+            ControllerListener(exoPlayer, scope, controllerList, throwFlow)
         )
         settings.registerOnSharedPreferenceChangeListener { prefs, key ->
             when (key) {

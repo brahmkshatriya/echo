@@ -92,6 +92,7 @@ class ExtensionFragment : BaseSettingsFragment() {
                     ExtensionType.MUSIC -> extensionListFlow.getExtension(extensionId)
                     ExtensionType.TRACKER -> trackerListFlow.getExtension(extensionId)
                     ExtensionType.LYRICS -> lyricsListFlow.getExtension(extensionId)
+                    ExtensionType.CONTROLLER -> controllerListFlow.getExtension(extensionId)
                 }
                 viewModelScope.launch {
                     client?.run(throwableFlow) {

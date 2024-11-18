@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extensions
 
 import android.content.Context
+import dev.brahmkshatriya.echo.common.clients.ControllerClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
@@ -87,6 +88,15 @@ class TrackerExtensionRepo(
     vararg repo: LazyPluginRepo<Metadata, TrackerClient>
 ) : ExtensionRepo<TrackerClient>(context, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.TRACKER
+}
+
+class ControllerExtensionRepo(
+    context: Context,
+    listener: PackageChangeListener,
+    fileChangeListener: FileChangeListener,
+    vararg repo: LazyPluginRepo<Metadata, ControllerClient>
+) : ExtensionRepo<ControllerClient>(context, listener, fileChangeListener, *repo) {
+    override val type = ExtensionType.CONTROLLER
 }
 
 class LyricsExtensionRepo(

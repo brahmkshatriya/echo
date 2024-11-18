@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.extensions
 
 import android.content.Context
 import android.content.SharedPreferences
+import dev.brahmkshatriya.echo.common.ControllerExtension
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
@@ -10,6 +11,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.common.providers.ControllerClientsProvider
 import dev.brahmkshatriya.echo.common.providers.LyricsClientsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicClientsProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerClientsProvider
@@ -52,6 +54,7 @@ class ExtensionLoader(
     private val userFlow: MutableSharedFlow<UserEntity?>,
     private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
+    private val controllerListFlow: MutableStateFlow<List<ControllerExtension>?>,
     private val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
     private val extensionFlow: MutableStateFlow<MusicExtension?>,
 ) {
@@ -62,9 +65,11 @@ class ExtensionLoader(
 
     private val musicExtensionRepo = MusicExtensionRepo(context, listener, fileListener, builtIn)
     private val trackerExtensionRepo = TrackerExtensionRepo(context, listener, fileListener)
+    private val controllerExtensionRepo = ControllerExtensionRepo(context, listener, fileListener)
     private val lyricsExtensionRepo = LyricsExtensionRepo(context, listener, fileListener)
 
     val trackers = trackerListFlow
+    val controllers = controllerListFlow
     val extensions = extensionListFlow
     val current = extensionFlow
     val currentWithUser = MutableStateFlow<Pair<MusicExtension?, UserEntity?>>(null to null)
@@ -113,12 +118,18 @@ class ExtensionLoader(
                 )
                 combined.collect { list ->
                     val trackerExtensions = trackerListFlow.value.orEmpty()
+                    val controllerExtensions = controllerListFlow.value.orEmpty()
                     val lyricsExtensions = lyricsListFlow.value.orEmpty()
                     val musicExtensions = extensionListFlow.value.orEmpty()
                     list?.forEach { extension ->
                         extension.get<TrackerClientsProvider, Unit>(throwableFlow) {
                             inject(extension.name, requiredTrackerClients, trackerExtensions) {
                                 setTrackerExtensions(it)
+                            }
+                        }
+                        extension.get<ControllerClientsProvider, Unit>(throwableFlow) {
+                            inject(extension.name, requiredControllerClients, controllerExtensions) {
+                                setControllerExtensions(it)
                             }
                         }
                         extension.get<LyricsClientsProvider, Unit>(throwableFlow) {
@@ -162,6 +173,7 @@ class ExtensionLoader(
 
     private suspend fun getAllPlugins(scope: CoroutineScope) {
         val trackers = MutableStateFlow<Unit?>(null)
+        val controllers = MutableStateFlow<Unit?>(null)
         val lyrics = MutableStateFlow<Unit?>(null)
         val music = MutableStateFlow<Unit?>(null)
         scope.launch {
@@ -172,6 +184,16 @@ class ExtensionLoader(
                 trackerListFlow.value = trackerExtensions
                 trackerExtensions.setExtensions()
                 trackers.emit(Unit)
+            }
+        }
+        scope.launch {
+            controllerExtensionRepo.getPlugins { list ->
+                val controllerExtensions = list.map { (metadata, client) ->
+                    ControllerExtension(metadata, client)
+                }
+                controllerListFlow.value = controllerExtensions
+                controllerExtensions.setExtensions()
+                controllers.emit(Unit)
             }
         }
         scope.launch {
@@ -186,6 +208,7 @@ class ExtensionLoader(
         }
         lyrics.first { it != null }
         trackers.first { it != null }
+        controllers.first { it != null }
 
         scope.launch {
             musicExtensionRepo.getPlugins { list ->

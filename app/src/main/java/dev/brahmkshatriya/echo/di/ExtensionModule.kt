@@ -10,6 +10,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.ControllerExtension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
@@ -52,6 +53,10 @@ class ExtensionModule {
 
     @Provides
     @Singleton
+    fun provideControllerListFlow() = MutableStateFlow<List<ControllerExtension>?>(null)
+
+    @Provides
+    @Singleton
     fun provideExtensionLoader(
         context: Application,
         throwableFlow: MutableSharedFlow<Throwable>,
@@ -62,6 +67,7 @@ class ExtensionModule {
         offlineExtension: OfflineExtension,
         extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
         trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
+        controllerListFlow: MutableStateFlow<List<ControllerExtension>?>,
         lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
         extensionFlow: MutableStateFlow<MusicExtension?>,
     ) = run {
@@ -78,6 +84,7 @@ class ExtensionModule {
             userFlow,
             extensionListFlow,
             trackerListFlow,
+            controllerListFlow,
             lyricsListFlow,
             extensionFlow,
         )
