@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.playback.listeners
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.ControllerExtension
@@ -9,9 +10,11 @@ import dev.brahmkshatriya.echo.common.clients.ControllerClient
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @UnstableApi
 class ControllerListener(
@@ -36,77 +39,70 @@ class ControllerListener(
     private suspend fun registerController(extension: ControllerExtension) {
         extension.get<ControllerClient, Unit>(throwableFlow) {
             onPlayRequest = {
-                try {
+                tryOnMain(throwableFlow) {
                     player.play()
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onPauseRequest = {
-                try {
+                tryOnMain(throwableFlow) {
                     player.pause()
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onNextRequest = {
-                try {
+                tryOnMain(throwableFlow) {
                     player.seekToNextMediaItem()
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onPreviousRequest = {
-                try {
+                tryOnMain(throwableFlow) {
                     player.seekToPreviousMediaItem()
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onSeekRequest = { position ->
-                try {
+                tryOnMain(throwableFlow) {
                     player.seekTo(position.toLong())
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onMovePlaylistItemRequest = { fromIndex, toIndex ->
-                try {
+                tryOnMain(throwableFlow) {
                     player.moveMediaItem(fromIndex, toIndex)
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onRemovePlaylistItemRequest = { index ->
-                try {
+                tryOnMain(throwableFlow) {
                     player.removeMediaItem(index)
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onShuffleModeRequest = { enabled ->
-                try {
+                tryOnMain(throwableFlow) {
                     player.shuffleModeEnabled = enabled
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onRepeatModeRequest = { repeatMode ->
-                try {
+                tryOnMain(throwableFlow) {
                     player.repeatMode = repeatMode
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
             onVolumeRequest = { volume ->
-                try {
+                tryOnMain(throwableFlow) {
                     player.volume = volume.toFloat()
-                } catch (e: Exception) {
-                    throwableFlow.emit(e)
                 }
             }
         }
 
+    }
+
+    private suspend fun ControllerClient.tryOnMain(
+        flow: MutableSharedFlow<Throwable>,
+        block: suspend ControllerClient.() -> Unit
+    ) {
+        withContext(Dispatchers.Main) {
+            try {
+                block()
+            } catch (e: Exception) {
+                flow.emit(e)
+            }
+        }
     }
 
     private fun notifyControllers(block: suspend ControllerClient.() -> Unit) {
@@ -132,6 +128,15 @@ class ControllerListener(
 
     override fun onTracksChanged(tracks: Tracks) {
         super.onTracksChanged(tracks)
+        updatePlaylist()
+    }
+
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        super.onTimelineChanged(timeline, reason)
+        updatePlaylist()
+    }
+
+    private fun updatePlaylist() {
         val playlist = List(player.mediaItemCount) { index ->
             player.getMediaItemAt(index).track
         }
@@ -139,6 +144,10 @@ class ControllerListener(
         notifyControllers {
             onPlaylistChanged(playlist)
         }
+    }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        super.onMediaItemTransition(mediaItem, reason)
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -182,10 +191,10 @@ class ControllerListener(
         }
     }
 
-    override fun onVolumeChanged(volume: Float) {
-        super.onVolumeChanged(volume)
+    override fun onDeviceVolumeChanged(volume: Int, muted: Boolean) {
+        super.onDeviceVolumeChanged(volume, muted)
         notifyControllers {
-            onVolumeChanged(player.volume.toDouble())
+            onVolumeChanged(volume.toDouble())
         }
     }
 }

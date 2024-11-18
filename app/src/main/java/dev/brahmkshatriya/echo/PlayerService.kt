@@ -99,6 +99,7 @@ class PlayerService : MediaLibraryService() {
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
+            .setDeviceVolumeControlEnabled(true)
             .build()
             .also {
                 it.trackSelectionParameters = it.trackSelectionParameters
