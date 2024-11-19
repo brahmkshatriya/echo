@@ -165,7 +165,7 @@ object MediaItemUtils {
     val MediaMetadata.clientId get() = requireNotNull(extras?.getString("clientId"))
     val MediaMetadata.context get() = extras?.getSerialized<EchoMediaItem?>("context")
     val MediaMetadata.sourcesIndex get() = extras?.getInt("sourcesIndex") ?: -1
-    val MediaMetadata.sourceIndex get() = extras?.getInt("sourceIndex") ?: 0
+    val MediaMetadata.sourceIndex get() = extras?.getInt("sourceIndex") ?: -1
     val MediaMetadata.backgroundIndex get() = extras?.getInt("backgroundIndex") ?: -1
     val MediaMetadata.subtitleIndex get() = extras?.getInt("subtitleIndex") ?: -1
     val MediaMetadata.isLiked get() = (userRating as? ThumbRating)?.isThumbsUp == true

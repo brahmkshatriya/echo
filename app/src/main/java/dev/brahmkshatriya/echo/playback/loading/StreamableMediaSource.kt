@@ -33,6 +33,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.select
 import dev.brahmkshatriya.echo.utils.saveToCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +44,7 @@ import java.io.IOException
 class StreamableMediaSource(
     private val context: Context,
     private val scope: CoroutineScope,
+    private val settings: SharedPreferences,
     private val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
     private val loader: StreamableLoader,
     private val dash: Lazy<MediaSource.Factory>,
@@ -102,7 +104,7 @@ class StreamableMediaSource(
                         }.toTypedArray()
                     ) else {
                         val index = mediaItem.sourceIndex
-                        val source = sources[index]
+                        val source = sources.getOrNull(index) ?: sources.select(settings)
                         create(new, index, source)
                     }
                 }
@@ -145,10 +147,10 @@ class StreamableMediaSource(
     class Factory(
         val context: Context,
         val scope: CoroutineScope,
+        val settings: SharedPreferences,
         val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
         extListFlow: MutableStateFlow<List<MusicExtension>?>,
         cache: SimpleCache,
-        settings: SharedPreferences,
     ) : MediaSource.Factory {
 
         private val dataSource = ResolvingDataSource.Factory(
@@ -195,7 +197,7 @@ class StreamableMediaSource(
         private val loader = StreamableLoader(context, settings, extListFlow)
 
         override fun createMediaSource(mediaItem: MediaItem) = StreamableMediaSource(
-            context, scope, current, loader, dash, hls, default, mediaItem
+            context, scope, settings, current, loader, dash, hls, default, mediaItem
         )
     }
 }

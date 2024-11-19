@@ -264,7 +264,7 @@ class TrackDetailsFragment : Fragment() {
 
         @OptIn(UnstableApi::class)
         private fun Format.getBitrate() =
-            (bitrate / 1024).takeIf { it > 0 }?.let { " • $it kbps" } ?: ""
+            (bitrate / 1000).takeIf { it > 0 }?.let { " • $it kbps" } ?: ""
 
         private fun Format.getFrameRate() =
             frameRate.toInt().takeIf { it > 0 }?.let { " • $it fps" } ?: ""

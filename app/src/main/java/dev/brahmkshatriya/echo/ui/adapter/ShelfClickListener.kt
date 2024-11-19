@@ -40,7 +40,7 @@ open class ShelfClickListener(
     private val afterOpening: (() -> Unit)? = null,
 ) : ShelfAdapter.Listener {
 
-    val fragment by lazy { fragmentManager.findFragmentById(fragmentId)!! }
+    val fragment get() = fragmentManager.findFragmentById(fragmentId)!!
 
     private fun snack(block: Context.() -> SnackBar.Message) =
         fragment.createSnack(fragment.requireContext().block())

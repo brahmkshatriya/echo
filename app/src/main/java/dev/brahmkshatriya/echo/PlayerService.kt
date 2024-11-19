@@ -89,7 +89,7 @@ class PlayerService : MediaLibraryService() {
             .build()
 
         val factory = StreamableMediaSource.Factory(
-            this, scope, currentSources, extListFlow, cache, settings
+            this, scope, settings, currentSources, extListFlow, cache
         )
 
         ExoPlayer.Builder(this, factory)
