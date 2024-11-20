@@ -63,6 +63,7 @@ jobs:
           regex='s/[\_\*\[\]\(\)\~\`\>\#\+\-\=\|\{\}\.\!]/\\&/g'
           message=$(printf "*Nightly Release*\n${{ env.COMMIT }}" | sed -E "$regex")
           curl -F "chat_id=${{ env.CHANNEL_ID }}" \
+          -F "message_thread_id=2587" \
           -F "document=@app/build/${{ env.VERSION }}.apk" \
           -F "caption=${message}" \
           -F "parse_mode=MarkdownV2" \
