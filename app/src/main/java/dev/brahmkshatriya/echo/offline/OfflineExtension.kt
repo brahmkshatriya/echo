@@ -26,7 +26,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
-import dev.brahmkshatriya.echo.common.models.QuickSearch
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -327,15 +327,15 @@ class OfflineExtension(
     override suspend fun radio(playlist: Playlist) = createRadioPlaylist(playlist.toMediaItem())
     override suspend fun radio(user: User): Radio = throw IllegalAccessException()
 
-    override suspend fun quickSearch(query: String?): List<QuickSearch> {
+    override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
         return if (query.isNullOrBlank()) {
-            getHistory().map { QuickSearch.QueryItem(it, true) }
+            getHistory().map { QuickSearchItem.Query(it, true) }
         } else listOf()
     }
 
-    override suspend fun deleteSearchHistory(query: QuickSearch.QueryItem) {
+    override suspend fun deleteQuickSearch(item: QuickSearchItem) {
         val history = getHistory().toMutableList()
-        history.remove(query.query)
+        history.remove(item.title)
         context.saveToCache("search_history", history, "offline")
     }
 

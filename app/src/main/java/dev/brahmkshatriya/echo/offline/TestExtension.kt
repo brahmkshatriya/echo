@@ -162,7 +162,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override suspend fun loadArtist(small: Artist): Artist {
         println("isFollowing : $isFollowing")
-        return small.copy(isFollowing = isFollowing)
+        return small.copy(isFollowing = isFollowing, extras = mapOf("loaded" to "Loaded bro"))
     }
 
     override fun getShelves(artist: Artist) = PagedData.Single<Shelf> {
@@ -174,16 +174,19 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     private var isSaved = false
     override suspend fun saveToLibrary(mediaItem: EchoMediaItem) {
+        println(mediaItem.extras["loaded"])
         isSaved = true
         println("save")
     }
 
     override suspend fun removeFromLibrary(mediaItem: EchoMediaItem) {
+        println(mediaItem.extras["loaded"])
         isSaved = false
         println("remove")
     }
 
     override suspend fun isSavedToLibrary(mediaItem: EchoMediaItem): Boolean {
+        println(mediaItem.extras["loaded"])
         println("isSaved : $isSaved")
         return isSaved
     }
@@ -202,6 +205,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override suspend fun loadTrack(track: Track) = track.copy(
         isLiked = isLiked,
-        isHidden = isHidden
+        isHidden = isHidden,
+        extras = mapOf("loaded" to "Loaded bro")
     )
 }

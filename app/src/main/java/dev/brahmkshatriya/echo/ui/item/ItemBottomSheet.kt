@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ConcatAdapter
@@ -98,13 +99,13 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 dismiss()
             }
         }
+
+        viewModel.item = item
+        viewModel.extension = extension
+        viewModel.loadRelatedFeed = false
         if (!loaded) {
             binding.recyclerView.adapter =
                 ConcatAdapter(ActionAdapter(getActions(item, false)), LoadingAdapter())
-
-            viewModel.item = item
-            viewModel.extension = extension
-            viewModel.loadRelatedFeed = false
             viewModel.initialize()
             observe(viewModel.itemFlow) {
                 if (it != null) {
@@ -349,7 +350,10 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                         if (it == null) {
                             binding.imageView.imageTintList = colorState
                             binding.imageView.setImageResource(action.placeholder)
-                        } else binding.imageView.setImageDrawable(it)
+                        } else {
+                            binding.imageView.imageTintList = null
+                            binding.imageView.setImageDrawable(it)
+                        }
                     }
                 }
             }
@@ -369,5 +373,10 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
         override fun getItemCount() = 1
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {}
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        parentFragmentManager.setFragmentResult("reload", bundleOf("id" to item.id))
     }
 }

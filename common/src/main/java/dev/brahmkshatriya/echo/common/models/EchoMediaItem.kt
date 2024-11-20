@@ -111,4 +111,14 @@ sealed class EchoMediaItem {
                 subtitle ?: authors.joinToString(", ") { it.name }
             }
         }
+
+    val extras
+        get() = when (this) {
+            is TrackItem -> track.extras
+            is Profile.ArtistItem -> artist.extras
+            is Profile.UserItem -> user.extras
+            is Lists.AlbumItem -> album.extras
+            is Lists.PlaylistItem -> playlist.extras
+            is Lists.RadioItem -> radio.extras
+        }
 }

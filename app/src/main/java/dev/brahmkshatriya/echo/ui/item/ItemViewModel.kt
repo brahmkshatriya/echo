@@ -207,7 +207,7 @@ class ItemViewModel @Inject constructor(
         }
     }
 
-    fun subscribe(artist: Artist, subscribe: Boolean) {
+    fun subscribe(artist: Artist, subscribe: Boolean, reload: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<ArtistFollowClient, Unit> {
                 if (subscribe) followArtist(artist) else unfollowArtist(artist)
@@ -215,6 +215,7 @@ class ItemViewModel @Inject constructor(
                 else app.getString(R.string.unfollowed_artist, artist.name)
                 createSnack(message)
             }
+            if (reload) load()
         }
     }
 

@@ -3,16 +3,18 @@ package dev.brahmkshatriya.echo.ui.search
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.common.models.QuickSearch
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.loadInto
 
 sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    abstract fun bind(item: QuickSearch)
+    abstract fun bind(item: QuickSearchItem)
     abstract val insertView: View
+    abstract val deleteView: View
     open val transitionView: View
         get() = this.insertView
 
@@ -20,9 +22,12 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override val insertView: View
             get() = binding.insert
 
-        override fun bind(item: QuickSearch) {
-            item as QuickSearch.QueryItem
-            binding.history.visibility = if (item.searched) View.VISIBLE else View.INVISIBLE
+        override val deleteView: View
+            get() = binding.delete
+
+        override fun bind(item: QuickSearchItem) {
+            item as QuickSearchItem.Query
+            binding.history.isVisible = item.searched
             binding.query.text = item.query
         }
 
@@ -39,15 +44,17 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
     }
 
     class Media(val binding: ItemQuickSearchMediaBinding) : QuickSearchViewHolder(binding.root) {
-
         override val insertView: View
             get() = binding.insert
+
+        override val deleteView: View
+            get() = binding.delete
 
         override val transitionView: View
             get() = binding.coverContainer
 
-        override fun bind(item: QuickSearch) {
-            item as QuickSearch.MediaItem
+        override fun bind(item: QuickSearchItem) {
+            item as QuickSearchItem.Media
             binding.query.text = item.media.title
             transitionView.transitionName = ("quick" + item.media.id).hashCode().toString()
             item.media.cover.loadInto(binding.cover, item.media.placeHolder())

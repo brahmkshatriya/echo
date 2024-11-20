@@ -17,7 +17,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.SearchClient
-import dev.brahmkshatriya.echo.common.models.QuickSearch
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.ui.common.MainFragment
@@ -108,31 +108,34 @@ class SearchFragment : Fragment() {
 
         val mediaClickListener = getListener(parent)
         val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
-            override fun onClick(item: QuickSearch, transitionView: View) {
+            override fun onClick(item: QuickSearchItem, transitionView: View) {
                 when (item) {
-                    is QuickSearch.QueryItem -> {
+                    is QuickSearchItem.Query -> {
                         binding.quickSearchView.editText.run {
                             setText(item.query)
                             onEditorAction(imeOptions)
                         }
                     }
 
-                    is QuickSearch.MediaItem -> {
+                    is QuickSearchItem.Media -> {
                         val client = viewModel.extensionFlow.value?.metadata?.id ?: return
                         mediaClickListener.onClick(client, item.media, transitionView)
                     }
                 }
             }
 
-            override fun onLongClick(item: QuickSearch, transitionView: View): Boolean {
+            override fun onDeleteClick(item: QuickSearchItem) {
+                viewModel.deleteSearch(item, binding.quickSearchView.editText.text.toString())
+            }
+
+            override fun onLongClick(item: QuickSearchItem, transitionView: View): Boolean {
                 return when (item) {
-                    is QuickSearch.QueryItem -> {
-                        viewModel.deleteSearchQuery(item)
-                        viewModel.quickSearch(binding.quickSearchView.editText.text.toString())
+                    is QuickSearchItem.Query -> {
+                        onDeleteClick(item)
                         true
                     }
 
-                    is QuickSearch.MediaItem -> {
+                    is QuickSearchItem.Media -> {
                         val client = viewModel.extensionFlow.value?.metadata?.id ?: return false
                         mediaClickListener.onLongClick(client, item.media, transitionView)
                         true
@@ -140,7 +143,7 @@ class SearchFragment : Fragment() {
                 }
             }
 
-            override fun onInsert(item: QuickSearch) {
+            override fun onInsert(item: QuickSearchItem) {
                 binding.quickSearchView.editText.run {
                     setText(item.title)
                     setSelection(length())

@@ -2,33 +2,35 @@ package dev.brahmkshatriya.echo.ui.search
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import dev.brahmkshatriya.echo.common.models.QuickSearch
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 
 class QuickSearchAdapter(val listener: Listener) :
-    ListAdapter<QuickSearch, QuickSearchViewHolder>(diff) {
+    ListAdapter<QuickSearchItem, QuickSearchViewHolder>(diff) {
 
     interface Listener {
-        fun onClick(item: QuickSearch, transitionView: View)
-        fun onLongClick(item: QuickSearch, transitionView: View): Boolean
-        fun onInsert(item: QuickSearch)
+        fun onClick(item: QuickSearchItem, transitionView: View)
+        fun onLongClick(item: QuickSearchItem, transitionView: View): Boolean
+        fun onInsert(item: QuickSearchItem)
+        fun onDeleteClick(item: QuickSearchItem)
     }
 
     companion object {
-        val diff = object : DiffUtil.ItemCallback<QuickSearch>() {
-            override fun areItemsTheSame(oldItem: QuickSearch, newItem: QuickSearch) =
+        val diff = object : DiffUtil.ItemCallback<QuickSearchItem>() {
+            override fun areItemsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
                 oldItem.sameAs(newItem)
 
-            override fun areContentsTheSame(oldItem: QuickSearch, newItem: QuickSearch) =
+            override fun areContentsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
                 oldItem == newItem
 
         }
     }
 
     override fun getItemViewType(position: Int) = when (getItem(position)) {
-        is QuickSearch.QueryItem -> 0
-        is QuickSearch.MediaItem -> 1
+        is QuickSearchItem.Query -> 0
+        is QuickSearchItem.Media -> 1
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
@@ -48,6 +50,11 @@ class QuickSearchAdapter(val listener: Listener) :
         }
         holder.insertView.setOnClickListener {
             listener.onInsert(item)
+        }
+
+        holder.deleteView.isVisible = item.searched
+        holder.deleteView.setOnClickListener {
+            listener.onDeleteClick(item)
         }
     }
 }

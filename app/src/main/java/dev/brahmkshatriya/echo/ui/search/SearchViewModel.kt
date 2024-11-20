@@ -5,7 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.SearchClient
-import dev.brahmkshatriya.echo.common.models.QuickSearch
+import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.ui.common.FeedViewModel
@@ -31,23 +31,24 @@ class SearchViewModel @Inject constructor(
     override fun getFeed(client: ExtensionClient) =
         (client as? SearchClient)?.searchFeed(query, tab)?.toFlow()
 
-    val quickFeed = MutableStateFlow<List<QuickSearch>>(emptyList())
+    val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
     fun quickSearch(query: String) {
         val extension = extensionFlow.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val list = extension.get<SearchClient, List<QuickSearch>>(throwableFlow) {
+            val list = extension.get<SearchClient, List<QuickSearchItem>>(throwableFlow) {
                 quickSearch(query)
             } ?: emptyList()
             quickFeed.value = list
         }
     }
 
-    fun deleteSearchQuery(query: QuickSearch.QueryItem) {
+    fun deleteSearch(item: QuickSearchItem, query: String) {
         val extension = extensionFlow.value ?: return
         viewModelScope.launch {
             extension.get<SearchClient, Unit>(throwableFlow) {
-                deleteSearchQuery(query)
+                deleteQuickSearch(item)
             }
+            quickSearch(query)
         }
     }
 
