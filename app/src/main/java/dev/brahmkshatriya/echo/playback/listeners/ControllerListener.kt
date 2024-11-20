@@ -2,9 +2,7 @@ package dev.brahmkshatriya.echo.playback.listeners
 
 import android.app.Service
 import android.content.Context
-import android.content.pm.ServiceInfo
 import android.media.AudioManager
-import android.os.Build
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -12,6 +10,7 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.ControllerExtension
 import dev.brahmkshatriya.echo.common.clients.ControllerClient
+import dev.brahmkshatriya.echo.extensions.ControllerServiceHelper
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import kotlinx.coroutines.CoroutineScope
@@ -20,16 +19,19 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 
 @UnstableApi
 class ControllerListener(
     player: Player,
-    private val service: Service,
+    service: Service,
     private val scope: CoroutineScope,
     private val controllerExtensions: MutableStateFlow<List<ControllerExtension>?>,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : PlayerListener(player) {
     private var audioManager: AudioManager = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private val serviceHelper = ControllerServiceHelper(service)
+    private val needsService: AtomicBoolean = AtomicBoolean(false)
 
     init {
         scope.launch {
@@ -43,55 +45,110 @@ class ControllerListener(
         }
     }
 
+    fun onDestroy() {
+        serviceHelper.stopService()
+    }
+
     private suspend fun registerController(extension: ControllerExtension) {
         extension.get<ControllerClient, Unit>(throwableFlow) {
+            if (runsDuringPause) {
+                if (!needsService.get()) {
+                    serviceHelper.startService(player)
+                }
+                needsService.set(true)
+            }
             onPlayRequest = {
-                tryOnMain {
-                    player.play()
+                tryOnMain(Player.COMMAND_PLAY_PAUSE) {
+                    if (needsService.get()) {
+                        serviceHelper.play()
+                    } else {
+                        player.play()
+                    }
                 }
             }
             onPauseRequest = {
-                tryOnMain {
-                    player.pause()
+                tryOnMain(Player.COMMAND_PLAY_PAUSE) {
+                    if (needsService.get()) {
+                        serviceHelper.pause()
+                    } else {
+                        player.pause()
+                    }
                 }
             }
             onNextRequest = {
-                tryOnMain {
-                    player.seekToNextMediaItem()
+                tryOnMain(Player.COMMAND_SEEK_TO_NEXT) {
+                    if (needsService.get()) {
+                        serviceHelper.seekToNext()
+                    } else {
+                        player.seekToNextMediaItem()
+                    }
                 }
             }
             onPreviousRequest = {
-                tryOnMain {
-                    player.seekToPreviousMediaItem()
+                tryOnMain(Player.COMMAND_SEEK_TO_PREVIOUS) {
+                    if (needsService.get()) {
+                        serviceHelper.seekToPrevious()
+                    } else {
+                        player.seekToPreviousMediaItem()
+                    }
                 }
             }
             onSeekRequest = { position ->
-                tryOnMain {
-                    player.seekTo(position.toLong())
+                tryOnMain(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) {
+                    if (needsService.get()) {
+                        serviceHelper.seekTo(position.toLong())
+                    } else {
+                        player.seekTo(position.toLong())
+                    }
+                }
+            }
+            onSeekToMediaItemRequest = { index ->
+                tryOnMain(Player.COMMAND_SEEK_TO_MEDIA_ITEM) {
+                    if (needsService.get()) {
+                        serviceHelper.seekToMediaItem(index)
+                    } else {
+                        player.seekTo(index, 0)
+                    }
                 }
             }
             onMovePlaylistItemRequest = { fromIndex, toIndex ->
-                tryOnMain {
-                    player.moveMediaItem(fromIndex, toIndex)
+                tryOnMain(Player.COMMAND_CHANGE_MEDIA_ITEMS) {
+                    if (needsService.get()) {
+                        serviceHelper.moveMediaItem(fromIndex, toIndex)
+                    } else {
+                        player.moveMediaItem(fromIndex, toIndex)
+                    }
                 }
             }
             onRemovePlaylistItemRequest = { index ->
-                tryOnMain {
-                    player.removeMediaItem(index)
+                tryOnMain(Player.COMMAND_CHANGE_MEDIA_ITEMS) {
+                    if (needsService.get()) {
+                        serviceHelper.removeMediaItem(index)
+                    } else {
+                        player.removeMediaItem(index)
+                    }
                 }
             }
             onShuffleModeRequest = { enabled ->
-                tryOnMain {
-                    player.shuffleModeEnabled = enabled
+                tryOnMain(Player.COMMAND_SET_SHUFFLE_MODE) {
+                    if (needsService.get()) {
+                        serviceHelper.setShuffleMode(enabled)
+                    } else {
+                        player.shuffleModeEnabled = enabled
+                    }
                 }
             }
             onRepeatModeRequest = { repeatMode ->
-                tryOnMain {
-                    player.repeatMode = repeatMode
+                tryOnMain(Player.COMMAND_SET_REPEAT_MODE) {
+                    if (needsService.get()) {
+                        serviceHelper.setRepeatMode(repeatMode)
+                    } else {
+                        player.repeatMode = repeatMode
+                    }
                 }
             }
             onVolumeRequest = { volume ->
-                tryOnMain {
+                tryOnMain(-1) { // not an exoplayer command
                     val denormalized =
                         volume * audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                     audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, denormalized.toInt(), 0)
@@ -100,30 +157,15 @@ class ControllerListener(
         }
     }
 
-    @Suppress("DEPRECATION") // not being used in startForeground
-    private fun canRunCommand(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            return true
-        }
-
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            service.foregroundServiceType != ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
-        } else {
-            true //if we are on Android 12 or lower, we can assume it's foreground or can be started as foreground
-        }
-    }
-
     private suspend fun ControllerClient.tryOnMain(
+        command: Int,
         block: suspend ControllerClient.() -> Unit
     ) {
         withContext(Dispatchers.Main.immediate) {
             try {
-                if (player.playbackState == Player.STATE_IDLE ||
-                    player.playbackState == Player.STATE_ENDED ||
-                    (!canRunCommand() && !player.isPlaying)) {
-                    return@withContext
+                if (command == -1 || player.isCommandAvailable(command) == true) {
+                    block()
                 }
-                block()
             } catch (e: Exception) {
                 throwableFlow.emit(e)
             }

@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.annotation.OptIn
@@ -42,6 +41,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @AndroidEntryPoint
+@UnstableApi
 class PlayerService : MediaLibraryService() {
     private var mediaSession: MediaLibrarySession? = null
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaSession
@@ -73,6 +73,8 @@ class PlayerService : MediaLibraryService() {
 
     @Inject
     lateinit var fftAudioProcessor: FFTAudioProcessor
+
+    lateinit var controllerListener: ControllerListener
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
@@ -153,15 +155,14 @@ class PlayerService : MediaLibraryService() {
         exoPlayer.addListener(
             TrackingListener(exoPlayer, scope, extListFlow, trackerList, throwFlow)
         )
-        exoPlayer.addListener(
-            ControllerListener(
-                exoPlayer,
-                this,
-                scope,
-                controllerList,
-                throwFlow
-            )
+        controllerListener = ControllerListener(
+            exoPlayer,
+            this,
+            scope,
+            controllerList,
+            throwFlow
         )
+        exoPlayer.addListener(controllerListener)
         settings.registerOnSharedPreferenceChangeListener { prefs, key ->
             when (key) {
                 SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, true)
@@ -181,6 +182,7 @@ class PlayerService : MediaLibraryService() {
             release()
             mediaSession = null
         }
+        if (::controllerListener.isInitialized) controllerListener.onDestroy()
         super.onDestroy()
     }
 

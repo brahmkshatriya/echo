@@ -268,6 +268,9 @@
     <string name="backgrounds">Backgrounds</string>
     <string name="source_selection">Source Selection</string>
     <string name="controller">Controller</string>
+    <string name="media_playback_controller">Media Playback Controller</string>
+    <string name="media_playback_controller_description">Control media playback from controller extensions</string>
+    <string name="media_playback_controller_running">Media playback controller is running</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
