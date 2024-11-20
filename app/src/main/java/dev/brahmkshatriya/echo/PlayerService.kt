@@ -2,9 +2,9 @@ package dev.brahmkshatriya.echo
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Intent
 import android.content.SharedPreferences
-import android.media.AudioManager
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -156,7 +156,7 @@ class PlayerService : MediaLibraryService() {
         exoPlayer.addListener(
             ControllerListener(
                 exoPlayer,
-                getSystemService(AUDIO_SERVICE) as AudioManager,
+                this,
                 scope,
                 controllerList,
                 throwFlow
