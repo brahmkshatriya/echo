@@ -58,10 +58,11 @@ jobs:
         shell: bash
         env:
           BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
+          CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
         run: |
           regex='s/[\_\*\[\]\(\)\~\`\>\#\+\-\=\|\{\}\.\!]/\\&/g'
           message=$(printf "*Nightly Release*\n${{ env.COMMIT }}" | sed -E "$regex")
-          curl -F "chat_id=-1002055272388" \
+          curl -F "chat_id=${{ env.CHANNEL_ID }}" \
           -F "message_thread_id=2587" \
           -F "document=@app/build/${{ env.VERSION }}.apk" \
           -F "caption=${message}" \
