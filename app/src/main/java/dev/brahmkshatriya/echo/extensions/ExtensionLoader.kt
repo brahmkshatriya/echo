@@ -323,8 +323,8 @@ class ExtensionLoader(
             scope: CoroutineScope,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>
         ) {
-            client.postMessage = { message ->
-                scope.launch(Dispatchers.Main) {
+            client.setMessageHandler { message ->
+                scope.launch(Dispatchers.Main.immediate) {
                     mutableMessageFlow.emit(SnackBar.Message(message))
                 }
             }

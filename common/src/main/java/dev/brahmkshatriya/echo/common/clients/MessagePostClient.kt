@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.common.clients
 
 interface MessagePostClient {
-    var postMessage: (String) -> Unit
+    fun postMessage(message: String)
+    fun setMessageHandler(handler: (String) -> Unit)
 }
