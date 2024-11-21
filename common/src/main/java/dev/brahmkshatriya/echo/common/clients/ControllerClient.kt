@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.common.clients
 import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.serialization.Serializable
 
-interface ControllerClient : ExtensionClient {
+abstract class ControllerClient : ExtensionClient {
     @Serializable
     enum class RepeatMode {
         OFF,
@@ -39,7 +39,7 @@ interface ControllerClient : ExtensionClient {
      * Whether the the extension can perform actions when the player is paused.
      * Only set this to false if you are sure that the extension does not need to perform any actions when the player is paused.
      */
-    var runsDuringPause: Boolean
+    abstract var runsDuringPause: Boolean
 
     // app -> controller
     /**
@@ -48,14 +48,14 @@ interface ControllerClient : ExtensionClient {
      * @param position The current position of the track.
      * @param track The current track in the player.
      */
-    suspend fun onPlaybackStateChanged(isPlaying: Boolean, position: Long, track: Track?)
+    abstract suspend fun onPlaybackStateChanged(isPlaying: Boolean, position: Long, track: Track?)
 
     /**
      * Called when the playlist changes.
      * @param playlist The new playlist.
      * The first track is not necessarily the current track.
      */
-    suspend fun onPlaylistChanged(playlist: List<Track>)
+    abstract suspend fun onPlaylistChanged(playlist: List<Track>)
 
     /**
      * Called when the playback mode changes.
@@ -63,87 +63,87 @@ interface ControllerClient : ExtensionClient {
      * @param repeatMode The repeat mode.
      * @see RepeatMode
      */
-    suspend fun onPlaybackModeChanged(isShuffle: Boolean, repeatMode: RepeatMode)
+    abstract suspend fun onPlaybackModeChanged(isShuffle: Boolean, repeatMode: RepeatMode)
 
     /**
      * Called when the position of the track changes.
      * @param position The new position of the track.
      */
-    suspend fun onPositionChanged(position: Long)
+    abstract suspend fun onPositionChanged(position: Long)
 
     /**
      * Called when the volume of the player changes.
      * @param volume The new volume of the player.
      */
-    suspend fun onVolumeChanged(volume: Double)
+    abstract suspend fun onVolumeChanged(volume: Double)
 
     // controller -> app
     /**
      * Called when the controller requests the current state of the player.
      * @return The current state of the player.
      */
-    var onRequestState: (suspend () -> PlayerState)?
+    var onRequestState: (suspend () -> PlayerState)? = null
 
     /**
      * Called when the controller requests to play the player.
      */
-    var onPlayRequest: (suspend () -> Unit)?
+    var onPlayRequest: (suspend () -> Unit)? = null
 
     /**
      * Called when the controller requests to pause the player.
      */
-    var onPauseRequest: (suspend () -> Unit)?
+    var onPauseRequest: (suspend () -> Unit)? = null
 
     /**
      * Called when the controller requests to play the next track.
      */
-    var onNextRequest: (suspend () -> Unit)?
+    var onNextRequest: (suspend () -> Unit)? = null
 
     /**
      * Called when the controller requests to play the previous track.
      */
-    var onPreviousRequest: (suspend () -> Unit)?
+    var onPreviousRequest: (suspend () -> Unit)? = null
 
     /**
      * Called when the controller requests to seek to a position in the track.
      * passes the position in milliseconds.
      */
-    var onSeekRequest: (suspend (position: Long) -> Unit)?
+    var onSeekRequest: (suspend (position: Long) -> Unit)? = null
 
     /**
      * Called when the controller requests to seek to a track in the playlist.
      * passes the index of the track.
      */
-    var onSeekToMediaItemRequest: (suspend (index: Int) -> Unit)?
+    var onSeekToMediaItemRequest: (suspend (index: Int) -> Unit)? = null
 
     /**
      * Called when the controller requests to move a track in the playlist.
      * passes the index of the track to move and the new index.
      */
-    var onMovePlaylistItemRequest: (suspend (fromIndex: Int, toIndex: Int) -> Unit)?
+    var onMovePlaylistItemRequest: (suspend (fromIndex: Int, toIndex: Int) -> Unit)? = null
 
     /**
      * Called when the controller requests to remove a track from the playlist.
      * passes the index of the track to remove.
      */
-    var onRemovePlaylistItemRequest: (suspend (index: Int) -> Unit)?
+    var onRemovePlaylistItemRequest: (suspend (index: Int) -> Unit)? = null
 
     /**
      * Called when the controller requests to enable or disable shuffle mode.
      * passes whether shuffle mode should be enabled.
      */
-    var onShuffleModeRequest: (suspend (enabled: Boolean) -> Unit)?
+    var onShuffleModeRequest: (suspend (enabled: Boolean) -> Unit)? = null
 
     /**
      * Called when the controller requests to change the repeat mode.
      * passes the new repeat mode.
      * @see RepeatMode
      */
-    var onRepeatModeRequest: (suspend (repeatMode: RepeatMode) -> Unit)?
+    var onRepeatModeRequest: (suspend (repeatMode: RepeatMode) -> Unit)? = null
 
     /**
      * Called when the controller requests to change the volume of the player.
      * passes the new volume of the player.
      */
-    var onVolumeRequest: (suspend (volume: Double) -> Unit)?
+    var onVolumeRequest: (suspend (volume: Double) -> Unit)? = null
 }
