@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.clients.MessagePostClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.providers.ControllerClientsProvider
@@ -24,6 +25,7 @@ import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
 import dev.brahmkshatriya.echo.offline.BuiltInExtensionRepo
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.catchWith
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +49,7 @@ class ExtensionLoader(
     context: Context,
     offlineExtension: OfflineExtension,
     private val throwableFlow: MutableSharedFlow<Throwable>,
+    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     private val extensionDao: ExtensionDao,
     private val userDao: UserDao,
     private val settings: SharedPreferences,
@@ -114,7 +117,7 @@ class ExtensionLoader(
             //Inject other extensions
             launch {
                 val combined = merge(
-                    extensionFlow.map { listOfNotNull(it) }, trackerListFlow, lyricsListFlow
+                    extensionFlow.map { listOfNotNull(it) }, trackerListFlow, lyricsListFlow, controllerListFlow
                 )
                 combined.collect { list ->
                     val trackerExtensions = trackerListFlow.value.orEmpty()
@@ -141,6 +144,9 @@ class ExtensionLoader(
                             inject(extension.name, requiredMusicClients, musicExtensions) {
                                 setMusicExtensions(it)
                             }
+                        }
+                        extension.get<MessagePostClient, Unit>(throwableFlow) {
+                            registerMessagePostClient(this)
                         }
                     }
                 }
@@ -261,6 +267,14 @@ class ExtensionLoader(
             extensionDao.getExtension(type, metadata.id)?.enabled
                 ?.let { metadata.copy(enabled = it) } ?: metadata
         }
+
+    private fun registerMessagePostClient(client: MessagePostClient) {
+        client.postMessage = { message ->
+            scope.launch {
+                mutableMessageFlow.emit(SnackBar.Message(message))
+            }
+        }
+    }
 
     companion object {
         const val LAST_EXTENSION_KEY = "last_extension"
