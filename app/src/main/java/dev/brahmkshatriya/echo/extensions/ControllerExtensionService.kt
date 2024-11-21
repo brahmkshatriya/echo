@@ -107,6 +107,7 @@ class ControllerExtensionService : Service() {
     }
 
     override fun onDestroy() {
+        stopForeground(STOP_FOREGROUND_DETACH)
         player = null
         super.onDestroy()
     }

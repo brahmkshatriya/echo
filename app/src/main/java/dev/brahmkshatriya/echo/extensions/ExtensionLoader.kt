@@ -269,6 +269,8 @@ class ExtensionLoader(
         const val LAST_EXTENSION_KEY = "last_extension"
         private const val TIMEOUT = 5000L
 
+        private val messageScope = MainScope() + CoroutineName("MessageHandler")
+
         fun ExtensionType.priorityKey() = "priority_$this"
 
         fun setupMusicExtension(
@@ -296,8 +298,9 @@ class ExtensionLoader(
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
             extension: Extension<*>,
         ) = withContext(Dispatchers.IO) {
+            extension.takeIf { it.metadata.enabled } ?: return@withContext
             extension.get<MessagePostClient, Unit>(throwableFlow){
-                registerMessagePostClient(this, this@withContext, mutableMessageFlow)
+                registerMessagePostClient(this, extension.name, mutableMessageFlow)
             }
             extension.run(throwableFlow) {
                 withTimeout(TIMEOUT) { onExtensionSelected() }
@@ -320,12 +323,16 @@ class ExtensionLoader(
 
         private fun registerMessagePostClient(
             client: MessagePostClient,
-            scope: CoroutineScope,
+            name: String,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>
         ) {
             client.setMessageHandler { message ->
-                scope.launch(Dispatchers.Main.immediate) {
-                    mutableMessageFlow.emit(SnackBar.Message(message))
+                messageScope.launch(Dispatchers.Main) {
+                    mutableMessageFlow.emit(
+                        SnackBar.Message(
+                            "$name: $message",
+                        )
+                    )
                 }
             }
         }
