@@ -103,9 +103,9 @@ class ControllerListener(
             onSeekRequest = { position ->
                 tryOnMain(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) {
                     if (needsService.get()) {
-                        serviceHelper.seekTo(position.toLong())
+                        serviceHelper.seekTo(position)
                     } else {
-                        player.seekTo(position.toLong())
+                        player.seekTo(position)
                     }
                 }
             }
@@ -186,7 +186,7 @@ class ControllerListener(
     ): T? {
         return withContext(Dispatchers.Main.immediate) {
             try {
-                if (command == -1 || player.isCommandAvailable(command) == true) {
+                if (command == -1 || player.isCommandAvailable(command)) {
                     block()
                 } else {
                     null
@@ -255,10 +255,6 @@ class ControllerListener(
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         super.onTimelineChanged(timeline, reason)
         updatePlaylist()
-    }
-
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        super.onMediaItemTransition(mediaItem, reason)
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
