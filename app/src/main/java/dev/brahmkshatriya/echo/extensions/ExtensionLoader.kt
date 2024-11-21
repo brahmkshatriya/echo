@@ -145,9 +145,6 @@ class ExtensionLoader(
                                 setMusicExtensions(it)
                             }
                         }
-                        extension.get<MessagePostClient, Unit>(throwableFlow) {
-                            registerMessagePostClient(this)
-                        }
                     }
                 }
             }
@@ -225,7 +222,7 @@ class ExtensionLoader(
                 val id = settings.getString(LAST_EXTENSION_KEY, null)
                 val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
                 setupMusicExtension(
-                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
+                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, mutableMessageFlow, extension
                 )
                 refresher.emit(false)
                 music.emit(Unit)
@@ -257,7 +254,7 @@ class ExtensionLoader(
     private suspend fun List<Extension<*>>.setExtensions() = coroutineScope {
         map {
             async {
-                setExtension(userDao, userFlow, throwableFlow, it)
+                setExtension(userDao, userFlow, throwableFlow, mutableMessageFlow, it)
             }
         }.awaitAll()
     }
@@ -267,14 +264,6 @@ class ExtensionLoader(
             extensionDao.getExtension(type, metadata.id)?.enabled
                 ?.let { metadata.copy(enabled = it) } ?: metadata
         }
-
-    private fun registerMessagePostClient(client: MessagePostClient) {
-        client.postMessage = { message ->
-            scope.launch {
-                mutableMessageFlow.emit(SnackBar.Message(message))
-            }
-        }
-    }
 
     companion object {
         const val LAST_EXTENSION_KEY = "last_extension"
@@ -289,12 +278,13 @@ class ExtensionLoader(
             userDao: UserDao,
             userFlow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
+            mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
             extension: MusicExtension?
         ) {
             settings.edit().putString(LAST_EXTENSION_KEY, extension?.id).apply()
             extension?.takeIf { it.metadata.enabled } ?: return
             scope.launch {
-                setExtension(userDao, userFlow, throwableFlow, extension)
+                setExtension(userDao, userFlow, throwableFlow, mutableMessageFlow, extension)
                 extensionFlow.value = extension
             }
         }
@@ -303,8 +293,12 @@ class ExtensionLoader(
             userDao: UserDao,
             userFlow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
+            mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
             extension: Extension<*>,
         ) = withContext(Dispatchers.IO) {
+            extension.get<MessagePostClient, Unit>(throwableFlow){
+                registerMessagePostClient(this, this@withContext, mutableMessageFlow)
+            }
             extension.run(throwableFlow) {
                 withTimeout(TIMEOUT) { onExtensionSelected() }
             }
@@ -322,6 +316,18 @@ class ExtensionLoader(
                 withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
             }
             if (success != null) flow.emit(user)
+        }
+
+        private fun registerMessagePostClient(
+            client: MessagePostClient,
+            scope: CoroutineScope,
+            mutableMessageFlow: MutableSharedFlow<SnackBar.Message>
+        ) {
+            client.postMessage = { message ->
+                scope.launch(Dispatchers.Main) {
+                    mutableMessageFlow.emit(SnackBar.Message(message))
+                }
+            }
         }
     }
 }
