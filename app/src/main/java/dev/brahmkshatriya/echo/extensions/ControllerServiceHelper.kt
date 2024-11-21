@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import dev.brahmkshatriya.echo.common.clients.ControllerClient.RepeatMode
 
 
 @UnstableApi
@@ -69,5 +70,5 @@ class ControllerServiceHelper(private val parentService: Service) {
         mediaService?.moveMediaItem(fromIndex, toIndex)
     fun removeMediaItem(index: Int) = mediaService?.removeMediaItem(index)
     fun setShuffleMode(enabled: Boolean) = mediaService?.setShuffleMode(enabled)
-    fun setRepeatMode(repeatMode: Int) = mediaService?.setRepeatMode(repeatMode)
+    fun setRepeatMode(repeatMode: RepeatMode) = mediaService?.setRepeatMode(repeatMode)
 }

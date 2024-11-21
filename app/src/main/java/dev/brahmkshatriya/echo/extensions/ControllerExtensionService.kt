@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.Player
+import dev.brahmkshatriya.echo.common.clients.ControllerClient.RepeatMode
 
 @UnstableApi
 class ControllerExtensionService : Service() {
@@ -101,8 +102,8 @@ class ControllerExtensionService : Service() {
         player?.shuffleModeEnabled = enabled
     }
 
-    fun setRepeatMode(repeatMode: Int) {
-        player?.repeatMode = repeatMode
+    fun setRepeatMode(repeatMode: RepeatMode) {
+        player?.repeatMode = repeatMode.ordinal
     }
 
     override fun onDestroy() {

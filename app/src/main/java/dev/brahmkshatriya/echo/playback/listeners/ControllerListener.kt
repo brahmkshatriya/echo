@@ -10,6 +10,9 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.ControllerExtension
 import dev.brahmkshatriya.echo.common.clients.ControllerClient
+import dev.brahmkshatriya.echo.common.clients.ControllerClient.PlayerState
+import dev.brahmkshatriya.echo.common.clients.ControllerClient.RepeatMode
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.ControllerServiceHelper
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -29,7 +32,8 @@ class ControllerListener(
     private val controllerExtensions: MutableStateFlow<List<ControllerExtension>?>,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : PlayerListener(player) {
-    private var audioManager: AudioManager = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var audioManager: AudioManager =
+        service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private val serviceHelper = ControllerServiceHelper(service)
     private val needsService: AtomicBoolean = AtomicBoolean(false)
 
@@ -46,6 +50,9 @@ class ControllerListener(
     }
 
     fun onDestroy() {
+        notifyControllers {
+            onPlaybackStateChanged(false, 0, null)
+        }
         serviceHelper.stopService()
     }
 
@@ -143,7 +150,7 @@ class ControllerListener(
                     if (needsService.get()) {
                         serviceHelper.setRepeatMode(repeatMode)
                     } else {
-                        player.repeatMode = repeatMode
+                        player.repeatMode = repeatMode.ordinal
                     }
                 }
             }
@@ -154,20 +161,39 @@ class ControllerListener(
                     audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, denormalized.toInt(), 0)
                 }
             }
+            onRequestState = {
+                 tryOnMain(-1) {
+                     val playlist = getPlaylist()
+                     val currentTrack = player.currentMediaItem?.track
+                    PlayerState(
+                        player.isPlaying,
+                        currentTrack,
+                        player.currentPosition,
+                        playlist,
+                        playlist.indexOf(currentTrack),
+                        player.shuffleModeEnabled,
+                        RepeatMode.entries[player.repeatMode],
+                        getVolume()
+                    )
+                } ?: PlayerState()
+            }
         }
     }
 
-    private suspend fun ControllerClient.tryOnMain(
+    private suspend fun <T> ControllerClient.tryOnMain(
         command: Int,
-        block: suspend ControllerClient.() -> Unit
-    ) {
-        withContext(Dispatchers.Main.immediate) {
+        block: suspend ControllerClient.() -> T?
+    ): T? {
+        return withContext(Dispatchers.Main.immediate) {
             try {
                 if (command == -1 || player.isCommandAvailable(command) == true) {
                     block()
+                } else {
+                    null
                 }
             } catch (e: Exception) {
                 throwableFlow.emit(e)
+                null
             }
         }
     }
@@ -183,20 +209,24 @@ class ControllerListener(
         }
     }
 
-    private fun updatePlaylist() {
+    private fun getPlaylist(): List<Track> {
         val playlist = List(player.mediaItemCount) { index ->
             player.getMediaItemAt(index).track
         }
 
+        return playlist
+    }
+
+    private fun updatePlaylist() {
         notifyControllers {
-            onPlaylistChanged(playlist)
+            onPlaylistChanged(getPlaylist())
         }
     }
 
     private fun getVolume(): Double {
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         val volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        return volume.toDouble() / maxVolume.toDouble()
+        return (volume.toDouble() / maxVolume.toDouble())
     }
 
 
@@ -209,7 +239,7 @@ class ControllerListener(
 
     override fun onTrackStart(mediaItem: MediaItem) {
         val isPlaying = player.isPlaying
-        val position = player.currentPosition.toDouble()
+        val position = player.currentPosition
         val track = mediaItem.track
 
         notifyControllers {
@@ -233,7 +263,7 @@ class ControllerListener(
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         super.onIsPlayingChanged(isPlaying)
-        val position = player.currentPosition.toDouble()
+        val position = player.currentPosition
         val track = player.currentMediaItem?.track ?: return
 
         notifyControllers {
@@ -246,7 +276,7 @@ class ControllerListener(
         val repeatMode = player.repeatMode
 
         notifyControllers {
-            onPlaybackModeChanged(shuffleModeEnabled, repeatMode)
+            onPlaybackModeChanged(shuffleModeEnabled, RepeatMode.entries[repeatMode])
         }
     }
 
@@ -255,7 +285,7 @@ class ControllerListener(
         val shuffleModeEnabled = player.shuffleModeEnabled
 
         notifyControllers {
-            onPlaybackModeChanged(shuffleModeEnabled, repeatMode)
+            onPlaybackModeChanged(shuffleModeEnabled, RepeatMode.entries[repeatMode])
         }
     }
 
@@ -265,10 +295,8 @@ class ControllerListener(
         reason: Int
     ) {
         super.onPositionDiscontinuity(oldPosition, newPosition, reason)
-        val position = newPosition.positionMs.toDouble()
-
         notifyControllers {
-            onPositionChanged(position)
+            onPositionChanged(newPosition.positionMs)
         }
     }
 
