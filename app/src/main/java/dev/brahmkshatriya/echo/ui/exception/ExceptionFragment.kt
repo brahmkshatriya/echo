@@ -9,8 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
 import dev.brahmkshatriya.echo.extensions.InvalidExtensionListException
@@ -27,7 +29,13 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 
@@ -71,8 +79,11 @@ class ExceptionFragment : Fragment() {
         binding.exceptionMessage.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.exception_copy -> {
-                    with(requireContext()) {
-                        copyToClipboard(throwable.title, "```\n${throwable.causedBy}\n```")
+                    lifecycleScope.launch {
+                        val pasteLink = getPasteLink(throwable).getOrElse {
+                            throwable.causedBy
+                        }
+                        requireContext().copyToClipboard("Error", pasteLink)
                     }
                     true
                 }
@@ -83,6 +94,17 @@ class ExceptionFragment : Fragment() {
     }
 
     companion object {
+
+        private val client = OkHttpClient()
+        suspend fun getPasteLink(throwable: ExceptionDetails) = withContext(Dispatchers.IO) {
+            val details = throwable.causedBy
+            val request = Request.Builder()
+                .url("https://paste.rs")
+                .post(details.toRequestBody())
+                .build()
+            runCatching { client.newCall(request).await().body.string() }
+        }
+
         fun Context.copyToClipboard(label: String?, string: String) {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(label, string)
@@ -99,6 +121,7 @@ class ExceptionFragment : Fragment() {
                 throwable.name,
                 throwable.requiredExtensions.joinToString(", ")
             )
+
             is InvalidExtensionListException -> getString(R.string.invalid_extension_list)
             is AppException -> throwable.run {
                 when (this) {

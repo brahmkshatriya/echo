@@ -213,7 +213,7 @@ class ItemFragment : Fragment() {
 
             //I have no idea why this doesn't update, if title already exists
             binding.toolBar.post {
-                binding.toolBar.title = it.title.trim()
+                runCatching { binding.toolBar.title = it.title.trim() }
             }
 
             it.cover.loadWithThumb(binding.cover, item.cover, it.placeHolder())
