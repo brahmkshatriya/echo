@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.clients.CloseableClient
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
@@ -64,6 +65,7 @@ class ExtensionViewModel @Inject constructor(
     val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
     val controllerListFlow: MutableStateFlow<List<ControllerExtension>?>,
+    private val closeableFlow: MutableStateFlow<List<CloseableClient>?>,
     val extensionFlow: MutableStateFlow<MusicExtension?>,
     val settings: SharedPreferences,
     val database: EchoDatabase,
@@ -86,7 +88,7 @@ class ExtensionViewModel @Inject constructor(
     private val userDao = database.userDao()
     fun setExtension(extension: MusicExtension?) {
         setupMusicExtension(
-            viewModelScope, settings, extensionFlow, userDao, userFlow, throwableFlow, messageFlow, extension
+            viewModelScope, settings, extensionFlow, userDao, userFlow, throwableFlow, messageFlow, closeableFlow, extension
         )
     }
 

@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.clients.CloseableClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.MessagePostClient
@@ -60,6 +61,7 @@ class ExtensionLoader(
     private val controllerListFlow: MutableStateFlow<List<ControllerExtension>?>,
     private val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
     private val extensionFlow: MutableStateFlow<MusicExtension?>,
+    private val closeableFLow: MutableStateFlow<List<CloseableClient>?>,
 ) {
     private val scope = MainScope() + CoroutineName("ExtensionLoader")
     private val listener = PackageChangeListener(context)
@@ -222,7 +224,7 @@ class ExtensionLoader(
                 val id = settings.getString(LAST_EXTENSION_KEY, null)
                 val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
                 setupMusicExtension(
-                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, mutableMessageFlow, extension
+                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, mutableMessageFlow, closeableFLow, extension
                 )
                 refresher.emit(false)
                 music.emit(Unit)
@@ -254,7 +256,7 @@ class ExtensionLoader(
     private suspend fun List<Extension<*>>.setExtensions() = coroutineScope {
         map {
             async {
-                setExtension(userDao, userFlow, throwableFlow, mutableMessageFlow, it)
+                setExtension(userDao, userFlow, throwableFlow, mutableMessageFlow, closeableFLow, it)
             }
         }.awaitAll()
     }
@@ -281,12 +283,13 @@ class ExtensionLoader(
             userFlow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
+            closeableFlow: MutableStateFlow<List<CloseableClient>?>,
             extension: MusicExtension?
         ) {
             settings.edit().putString(LAST_EXTENSION_KEY, extension?.id).apply()
             extension?.takeIf { it.metadata.enabled } ?: return
             scope.launch {
-                setExtension(userDao, userFlow, throwableFlow, mutableMessageFlow, extension)
+                setExtension(userDao, userFlow, throwableFlow, mutableMessageFlow, closeableFlow, extension)
                 extensionFlow.value = extension
             }
         }
@@ -296,11 +299,15 @@ class ExtensionLoader(
             userFlow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
+            closeableFlow: MutableStateFlow<List<CloseableClient>?>,
             extension: Extension<*>,
         ) = withContext(Dispatchers.IO) {
             extension.takeIf { it.metadata.enabled } ?: return@withContext
             extension.get<MessagePostClient, Unit>(throwableFlow){
                 registerMessagePostClient(this, extension.name, mutableMessageFlow)
+            }
+            extension.get<CloseableClient, Unit>(throwableFlow) {
+                closeableFlow.value = closeableFlow.value.orEmpty() + this
             }
             extension.run(throwableFlow) {
                 withTimeout(TIMEOUT) { onExtensionSelected() }

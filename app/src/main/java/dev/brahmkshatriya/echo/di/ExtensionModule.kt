@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.common.ControllerExtension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.clients.CloseableClient
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.offline.OfflineExtension
@@ -58,6 +59,10 @@ class ExtensionModule {
 
     @Provides
     @Singleton
+    fun provideCloseableClientListFlow() = MutableStateFlow<List<CloseableClient>?>(null)
+
+    @Provides
+    @Singleton
     fun provideExtensionLoader(
         context: Application,
         throwableFlow: MutableSharedFlow<Throwable>,
@@ -72,6 +77,7 @@ class ExtensionModule {
         controllerListFlow: MutableStateFlow<List<ControllerExtension>?>,
         lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
         extensionFlow: MutableStateFlow<MusicExtension?>,
+        closeableClientListFlow: MutableStateFlow<List<CloseableClient>?>,
     ) = run {
         val extensionDao = database.extensionDao()
         val userDao = database.userDao()
@@ -90,6 +96,7 @@ class ExtensionModule {
             controllerListFlow,
             lyricsListFlow,
             extensionFlow,
+            closeableClientListFlow
         )
     }
 }

@@ -17,6 +17,7 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.clients.CloseableClient
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.Current
@@ -57,6 +58,9 @@ class PlayerService : MediaLibraryService() {
 
     @Inject
     lateinit var stateFlow: MutableStateFlow<Radio.State>
+
+    @Inject
+    lateinit var closeableFlow: MutableStateFlow<List<CloseableClient>?>
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -181,6 +185,13 @@ class PlayerService : MediaLibraryService() {
             player.release()
             release()
             mediaSession = null
+        }
+        closeableFlow.value?.forEach {
+            try {
+                it.close()
+            } catch (e: Exception) {
+                throwFlow.tryEmit(e)
+            }
         }
         if (::controllerListener.isInitialized) controllerListener.onDestroy()
         super.onDestroy()
