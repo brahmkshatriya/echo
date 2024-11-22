@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.atomic.AtomicBoolean
 
 @UnstableApi
 class ControllerListener(
@@ -35,7 +34,7 @@ class ControllerListener(
     private var audioManager: AudioManager =
         service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private val serviceHelper = ControllerServiceHelper(service)
-    private val needsService: AtomicBoolean = AtomicBoolean(false)
+    private var needsService: Boolean = false
 
     init {
         scope.launch {
@@ -59,14 +58,14 @@ class ControllerListener(
     private suspend fun registerController(extension: ControllerExtension) {
         extension.get<ControllerClient, Unit>(throwableFlow) {
             if (runsDuringPause) {
-                if (!needsService.get()) {
+                if (!needsService) {
                     serviceHelper.startService(player)
                 }
-                needsService.set(true)
+                needsService = true
             }
             onPlayRequest = {
                 tryOnMain(Player.COMMAND_PLAY_PAUSE) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.play()
                     } else {
                         player.play()
@@ -75,7 +74,7 @@ class ControllerListener(
             }
             onPauseRequest = {
                 tryOnMain(Player.COMMAND_PLAY_PAUSE) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.pause()
                     } else {
                         player.pause()
@@ -84,7 +83,7 @@ class ControllerListener(
             }
             onNextRequest = {
                 tryOnMain(Player.COMMAND_SEEK_TO_NEXT) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.seekToNext()
                     } else {
                         player.seekToNextMediaItem()
@@ -93,7 +92,7 @@ class ControllerListener(
             }
             onPreviousRequest = {
                 tryOnMain(Player.COMMAND_SEEK_TO_PREVIOUS) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.seekToPrevious()
                     } else {
                         player.seekToPreviousMediaItem()
@@ -102,7 +101,7 @@ class ControllerListener(
             }
             onSeekRequest = { position ->
                 tryOnMain(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.seekTo(position)
                     } else {
                         player.seekTo(position)
@@ -111,7 +110,7 @@ class ControllerListener(
             }
             onSeekToMediaItemRequest = { index ->
                 tryOnMain(Player.COMMAND_SEEK_TO_MEDIA_ITEM) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.seekToMediaItem(index)
                     } else {
                         player.seekTo(index, 0)
@@ -120,7 +119,7 @@ class ControllerListener(
             }
             onMovePlaylistItemRequest = { fromIndex, toIndex ->
                 tryOnMain(Player.COMMAND_CHANGE_MEDIA_ITEMS) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.moveMediaItem(fromIndex, toIndex)
                     } else {
                         player.moveMediaItem(fromIndex, toIndex)
@@ -129,7 +128,7 @@ class ControllerListener(
             }
             onRemovePlaylistItemRequest = { index ->
                 tryOnMain(Player.COMMAND_CHANGE_MEDIA_ITEMS) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.removeMediaItem(index)
                     } else {
                         player.removeMediaItem(index)
@@ -138,7 +137,7 @@ class ControllerListener(
             }
             onShuffleModeRequest = { enabled ->
                 tryOnMain(Player.COMMAND_SET_SHUFFLE_MODE) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.setShuffleMode(enabled)
                     } else {
                         player.shuffleModeEnabled = enabled
@@ -147,7 +146,7 @@ class ControllerListener(
             }
             onRepeatModeRequest = { repeatMode ->
                 tryOnMain(Player.COMMAND_SET_REPEAT_MODE) {
-                    if (needsService.get()) {
+                    if (needsService) {
                         serviceHelper.setRepeatMode(repeatMode)
                     } else {
                         player.repeatMode = repeatMode.ordinal
