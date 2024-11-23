@@ -35,6 +35,7 @@ class MaterialTextInputPreference(context: Context) : EditTextPreference(context
                 val newText = editText?.text?.toString()
                 if (callChangeListener(newText)) {
                     text = newText
+                    updateSummary()
                     dialog.dismiss()
                 }
             }
