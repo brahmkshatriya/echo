@@ -225,7 +225,7 @@ class ControllerListener(
     private fun getVolume(): Double {
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         val volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        return (volume.toDouble() / maxVolume.toDouble())
+        return volume.toDouble() / maxVolume.toDouble()
     }
 
 
