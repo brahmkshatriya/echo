@@ -39,7 +39,7 @@ class ControllerListener(
     init {
         scope.launch {
             controllerExtensions.collect { extensions ->
-                extensions?.forEach {
+                extensions?.filter { it.metadata.enabled }?.forEach {
                     launch {
                         registerController(it)
                     }
