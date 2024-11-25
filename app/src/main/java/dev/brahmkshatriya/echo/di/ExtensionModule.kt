@@ -10,12 +10,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.ControllerExtension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.clients.CloseableClient
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Singleton
@@ -52,9 +55,18 @@ class ExtensionModule {
 
     @Provides
     @Singleton
+    fun provideControllerListFlow() = MutableStateFlow<List<ControllerExtension>?>(null)
+
+    @Provides
+    @Singleton
+    fun provideCloseableClientListFlow() = MutableStateFlow<List<CloseableClient>?>(null)
+
+    @Provides
+    @Singleton
     fun provideExtensionLoader(
         context: Application,
         throwableFlow: MutableSharedFlow<Throwable>,
+        mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
         database: EchoDatabase,
         settings: SharedPreferences,
         refresher: MutableSharedFlow<Boolean>,
@@ -62,8 +74,10 @@ class ExtensionModule {
         offlineExtension: OfflineExtension,
         extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
         trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
+        controllerListFlow: MutableStateFlow<List<ControllerExtension>?>,
         lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
         extensionFlow: MutableStateFlow<MusicExtension?>,
+        closeableClientListFlow: MutableStateFlow<List<CloseableClient>?>,
     ) = run {
         val extensionDao = database.extensionDao()
         val userDao = database.userDao()
@@ -71,6 +85,7 @@ class ExtensionModule {
             context,
             offlineExtension,
             throwableFlow,
+            mutableMessageFlow,
             extensionDao,
             userDao,
             settings,
@@ -78,8 +93,10 @@ class ExtensionModule {
             userFlow,
             extensionListFlow,
             trackerListFlow,
+            controllerListFlow,
             lyricsListFlow,
             extensionFlow,
+            closeableClientListFlow
         )
     }
 }

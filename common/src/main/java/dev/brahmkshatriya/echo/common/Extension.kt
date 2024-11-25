@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.common
 
+import dev.brahmkshatriya.echo.common.clients.ControllerClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
@@ -30,3 +31,8 @@ data class LyricsExtension(
     override val metadata: Metadata,
     override val instance: Lazy<Result<LyricsClient>>,
 ) : Extension<LyricsClient>(ExtensionType.LYRICS, metadata, instance)
+
+data class ControllerExtension(
+    override val metadata: Metadata,
+    override val instance: Lazy<Result<ControllerClient>>,
+) : Extension<ControllerClient>(ExtensionType.CONTROLLER, metadata, instance)

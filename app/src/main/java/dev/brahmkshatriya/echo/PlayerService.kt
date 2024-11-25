@@ -17,12 +17,14 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.clients.CloseableClient
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.PlayerCallback
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.listeners.AudioFocusListener
+import dev.brahmkshatriya.echo.playback.listeners.ControllerListener
 import dev.brahmkshatriya.echo.playback.listeners.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.playback.listeners.TrackingListener
@@ -40,6 +42,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @AndroidEntryPoint
+@UnstableApi
 class PlayerService : MediaLibraryService() {
     private var mediaSession: MediaLibrarySession? = null
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaSession
@@ -57,6 +60,9 @@ class PlayerService : MediaLibraryService() {
     lateinit var stateFlow: MutableStateFlow<Radio.State>
 
     @Inject
+    lateinit var closeableFlow: MutableStateFlow<List<CloseableClient>?>
+
+    @Inject
     lateinit var settings: SharedPreferences
 
     @Inject
@@ -71,6 +77,8 @@ class PlayerService : MediaLibraryService() {
 
     @Inject
     lateinit var fftAudioProcessor: FFTAudioProcessor
+
+    lateinit var controllerListener: ControllerListener
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
@@ -98,6 +106,7 @@ class PlayerService : MediaLibraryService() {
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
+            .setDeviceVolumeControlEnabled(true)
             .build()
             .also {
                 it.trackSelectionParameters = it.trackSelectionParameters
@@ -115,6 +124,7 @@ class PlayerService : MediaLibraryService() {
         val extListFlow = extensionLoader.extensions
         val extFlow = extensionLoader.current
         val trackerList = extensionLoader.trackers
+        val controllerList = extensionLoader.controllers
 
         val exoPlayer = createExoplayer(extListFlow)
         exoPlayer.prepare()
@@ -149,6 +159,14 @@ class PlayerService : MediaLibraryService() {
         exoPlayer.addListener(
             TrackingListener(exoPlayer, scope, extListFlow, trackerList, throwFlow)
         )
+        controllerListener = ControllerListener(
+            exoPlayer,
+            this,
+            scope,
+            controllerList,
+            throwFlow
+        )
+        exoPlayer.addListener(controllerListener)
         settings.registerOnSharedPreferenceChangeListener { prefs, key ->
             when (key) {
                 SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, true)
@@ -168,6 +186,14 @@ class PlayerService : MediaLibraryService() {
             release()
             mediaSession = null
         }
+        closeableFlow.value?.forEach {
+            try {
+                it.close()
+            } catch (e: Exception) {
+                throwFlow.tryEmit(e)
+            }
+        }
+        if (::controllerListener.isInitialized) controllerListener.onDestroy()
         super.onDestroy()
     }
 
