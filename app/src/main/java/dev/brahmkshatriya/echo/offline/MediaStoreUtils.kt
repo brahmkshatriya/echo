@@ -105,12 +105,11 @@ object MediaStoreUtils {
     class LibraryStoreClass(
         val songList: MutableList<Track>,
         val albumList: MutableList<MAlbum>,
-        val albumArtistList: MutableList<MArtist>,
         val artistMap: MutableMap<Long?, MArtist>,
         val genreList: MutableList<Genre>,
         val dateList: MutableList<Date>,
         val playlistList: MutableList<MPlaylist>,
-        val likedPlaylist: MPlaylist,
+        val likedPlaylist: MPlaylist?,
         val folderStructure: FileNode,
         val shallowFolder: FileNode,
         val folders: Set<String>
@@ -267,6 +266,7 @@ object MediaStoreUtils {
     private fun Cursor.parseSongQuery(
         limitValue: Int,
         folderFilter: Set<String>,
+        blacklistKeywords: List<String>,
         context: Context,
         songs: MutableList<Track>,
         foundPlaylistContent: Boolean,
@@ -301,6 +301,7 @@ object MediaStoreUtils {
             val fldPath = File(path).parentFile?.absolutePath
             val skip = (duration != null && duration < limitValue * 1000)
                     || folderFilter.contains(fldPath)
+                    || blacklistKeywords.any { fldPath?.contains(it, true) == true }
             // We need to add blacklisted songs to idMap as they can be referenced by playlist
             if (skip && !foundPlaylistContent) continue
             val id = cursor.getLongOrNull(idColumn)!!
@@ -323,10 +324,7 @@ object MediaStoreUtils {
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id
             ).appendPath("albumart").build()
 
-            val artists = artist.toString().takeIf { it != "null" }.splitArtists().map {
-                Artist(it?.id().toString(), it ?: "Unknown")
-            }
-
+            val artists = artist.toArtists()
             val album = albumName?.let {
                 Album(albumId.toString(), it, null, albumArtist.toArtists())
             }
@@ -378,7 +376,7 @@ object MediaStoreUtils {
         song: Track,
         year: Int?,
         albumMap: MutableMap<Long?, AlbumImpl>,
-        albumArtistMap: MutableMap<MArtist?, Pair<MutableSet<MAlbum>, MutableSet<Track>>>,
+        artistMap: MutableMap<Long?, MArtist>,
         haveImgPerm: Boolean,
     ) {
         val album = song.album ?: return
@@ -391,9 +389,10 @@ object MediaStoreUtils {
 
             AlbumImpl(id, album.title, artists, year, cover, mutableSetOf()).apply {
                 artists.forEach {
-                    albumArtistMap.getOrPut(it) {
-                        Pair(mutableSetOf(), mutableSetOf())
-                    }.first.add(this)
+                    val mArtist = artistMap.getOrPut(it.id) {
+                        MArtist(it.id, it.title, mutableSetOf(), mutableListOf())
+                    }
+                    mArtist.albumList.add(this)
                 }
             }
         }.songList.add(song)
@@ -458,7 +457,8 @@ object MediaStoreUtils {
         val limitValueSeconds = settings.getInt("limit_value") ?: 10
         val haveImgPerm = if (hasScopedStorage()) context.hasImagePermission() else false
         val folderFilter = settings.getStringSet("blacklist_folders") ?: setOf()
-
+        val blacklistKeywords = settings.getString("blacklist_keywords")?.split(',')
+            ?.mapNotNull { it.trim().takeIf { s -> s.isNotBlank() } }.orEmpty()
         // Initialize list and maps.
         val coverCache = if (haveImgPerm) hashMapOf<Long, Pair<File, FileNode>>() else null
         val folders = hashSetOf<String>()
@@ -486,7 +486,7 @@ object MediaStoreUtils {
         )
 
         cursor?.parseSongQuery(
-            limitValueSeconds, folderFilter, context, songs, foundPlaylistContent,
+            limitValueSeconds, folderFilter, blacklistKeywords, context, songs, foundPlaylistContent,
             idMap, likedAudios
         ) { song ->
             song.artists.map {
@@ -499,7 +499,7 @@ object MediaStoreUtils {
             }
 
             val year = song.releaseDate?.toIntOrNull()
-            songAlbumMap(song, year, albumMap, albumArtistMap, haveImgPerm)
+            songAlbumMap(song, year, albumMap, artistMap, haveImgPerm)
 
             val albumId = song.album?.id?.toLong()
             val path = song.streamables.first().id
@@ -525,11 +525,11 @@ object MediaStoreUtils {
 
         // Parse all the lists.
         val albumList = albumMapToAlbumList(albumMap, coverCache)
-        val albumArtistList = albumArtistMap.entries.map { (artist, pair) ->
+        albumArtistMap.entries.forEach { (artist, pair) ->
             val albums = pair.first
             val song = pair.second
             MArtist(artist?.id, artist?.title, song, albums.toMutableList())
-        }.toMutableList()
+        }
         val genreList = genreMap.values.toMutableList()
         val dateList = dateMap.values.toMutableList()
 
@@ -542,11 +542,11 @@ object MediaStoreUtils {
         }.toMutableList()
 
         val likedPlaylist = getLikedPlaylist(context, playlistsFinal)
-        playlistsFinal.add(0, likedPlaylist)
+        likedPlaylist?.let { playlistsFinal.add(0, it) }
 
         folders.addAll(folderFilter)
         return LibraryStoreClass(
-            songs, albumList, albumArtistList, artistMap, genreList, dateList, playlistsFinal,
+            songs, albumList, artistMap, genreList, dateList, playlistsFinal,
             likedPlaylist, root, shallowRoot, folders
         )
     }
@@ -559,7 +559,7 @@ object MediaStoreUtils {
         val id = liked?.id ?: context.createPlaylist("Liked")
         liked?.let { playlistsFinal.remove(it) }
         MPlaylist(
-            id,
+            id ?: return@run null,
             context.getString(R.string.playlist_favourite),
             liked?.songList ?: mutableSetOf(),
             context.getString(R.string.playlist_favourite_desc),
@@ -582,7 +582,7 @@ object MediaStoreUtils {
     private fun hasScopedStorage(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
-    fun Context.createPlaylist(title: String): Long {
+    fun Context.createPlaylist(title: String): Long? {
         val values = ContentValues()
         values.put(
             @Suppress("DEPRECATION") MediaStore.Audio.Playlists.NAME,
@@ -592,7 +592,7 @@ object MediaStoreUtils {
             @Suppress("DEPRECATION")
             MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
             values
-        )?.lastPathSegment!!.toLong()
+        )?.lastPathSegment?.toLong()
     }
 
     fun Context.editPlaylist(id: Long, title: String) {

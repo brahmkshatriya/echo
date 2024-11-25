@@ -35,6 +35,7 @@ class MaterialTextInputPreference(context: Context) : EditTextPreference(context
                 val newText = editText?.text?.toString()
                 if (callChangeListener(newText)) {
                     text = newText
+                    updateSummary()
                     dialog.dismiss()
                 }
             }
@@ -49,7 +50,7 @@ class MaterialTextInputPreference(context: Context) : EditTextPreference(context
 
     private fun updateSummary() {
         val value = context.getString(R.string.value)
-        val entry = text ?: context.getString(R.string.str_not_set)
+        val entry = text.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.str_not_set)
         val sum = customSummary?.let { "\n\n$it" } ?: ""
         summary = "$value : $entry$sum"
     }

@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.clients.SearchClient
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.PagedData
@@ -39,6 +40,7 @@ import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
+import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
@@ -75,11 +77,9 @@ class OfflineExtension(
         )
     }
 
-    override suspend fun onSettingsChanged(settings: Settings, key: String?) = when (key) {
-        "blacklist_folders", "refresh_library" -> refreshLibrary()
-        else -> Unit
+    override suspend fun onSettingsChanged(settings: Settings, key: String?) {
+        refreshLibrary()
     }
-
 
     override val settingItems: List<Setting>
         get() = listOf(
@@ -104,6 +104,11 @@ class OfflineExtension(
                 context.getString(R.string.blacklist_folders_summary),
                 library.folders.toList(),
                 library.folders.toList()
+            ),
+            SettingTextInput(
+                context.getString(R.string.blacklist_folder_keywords),
+                "blacklist_keywords",
+                context.getString(R.string.blacklist_folder_keywords_summary)
             )
         )
 
@@ -191,7 +196,7 @@ class OfflineExtension(
     }
 
     override suspend fun loadTrack(track: Track) = track.copy(
-        isLiked = library.likedPlaylist.songList.any { it.id == track.id }
+        isLiked = library.likedPlaylist?.songList.orEmpty().any { it.id == track.id }
     )
 
     override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
@@ -397,8 +402,8 @@ class OfflineExtension(
     override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
         if (refreshLibrary) refreshLibrary()
         return when (tab?.id) {
-            "Folders" -> library.folderStructure.folderList.entries.first().value
-                .toShelf(context, null).items!!
+            "Folders" -> library.folderStructure.folderList.entries.firstOrNull()?.value
+                ?.toShelf(context, null)?.items ?: PagedData.Single { listOf() }
 
             else -> {
                 val cached = if (cachedTracks.isNotEmpty()) Playlist(
@@ -418,7 +423,9 @@ class OfflineExtension(
     override suspend fun listEditablePlaylists() = library.playlistList.map { it.toPlaylist() }
 
     override suspend fun likeTrack(track: Track, isLiked: Boolean) {
-        val playlist = library.likedPlaylist.id
+        val library = library
+        val playlist = library.likedPlaylist?.id
+            ?: throw ClientException.NotSupported("Couldn't create Liked Playlist")
         if (isLiked) context.addSongToPlaylist(playlist, track.id.toLong(), 0)
         else {
             val index = library.likedPlaylist.songList.indexOfFirst { it.id == track.id }
