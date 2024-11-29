@@ -260,4 +260,6 @@
     <string name="sources">উৎসসমূহ</string>
     <string name="backgrounds">পটভূমি</string>
     <string name="source_selection">উৎস নিৰ্বাচন</string>
+    <string name="blacklist_folder_keywords">ব্লেকলিষ্ট ফোল্ডাৰৰ মূল শব্দ</string>
+    <string name="blacklist_folder_keywords_summary">ব্লেকলিষ্ট ফোল্ডাৰসমূহলৈ মূল শব্দসমূহ, বিভাজকৰ বাবে কমা ব্যৱহাৰ কৰক</string>
 </resources>
