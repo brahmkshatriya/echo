@@ -257,4 +257,9 @@
     <string name="extension_installed">%1$s (sthaapit)</string>
     <string name="add_extensions">Extension joden</string>
     <string name="invalid_extension_list">Amanya extension list</string>
+    <string name="blacklist_folder_keywords">Blacklist Folder Ke Shabd</string>
+    <string name="blacklist_folder_keywords_summary">Folder blacklist karne ke shabd, alag karne ke liye comma lagao</string>
+    <string name="sources">Srot</string>
+    <string name="backgrounds">Prishthbhumiyan</string>
+    <string name="source_selection">Srot Chayan</string>
 </resources>
