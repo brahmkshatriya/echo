@@ -257,4 +257,9 @@
     <string name="link_or_code">सूत्रं वा कोड</string>
     <string name="add_extensions">विस्तारकान् योजयतु</string>
     <string name="invalid_extension_list">अमङ्गल-प्रायः विस्तारक-सूची</string>
+    <string name="blacklist_folder_keywords">अवरोध-सूची फोल्डर-कुंजिकाशब्दः</string>
+    <string name="blacklist_folder_keywords_summary">अवरोध-सूचीकरणाय फोल्डर-कुंजिकाशब्दाः, विभेदाय अल्पविरामस्य प्रयोगः कुर्वन्तु।</string>
+    <string name="sources">स्रोताः</string>
+    <string name="backgrounds">पृष्ठभूमयः</string>
+    <string name="source_selection">स्रोत-चयनम्</string>
 </resources>
