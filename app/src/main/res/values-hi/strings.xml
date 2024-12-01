@@ -257,4 +257,9 @@
     <string name="link_or_code">लिंक या कोड</string>
     <string name="list_is_empty">सूची खाली है</string>
     <string name="invalid_extension_list">अमान्य एक्सटेंशन सूची</string>
+    <string name="blacklist_folder_keywords">ब्लैकलिस्ट फ़ोल्डर कुंजीशब्द</string>
+    <string name="blacklist_folder_keywords_summary">फ़ोल्डरों को ब्लैकलिस्ट करने के लिए कुंजीशब्द, अलग करने के लिए अल्पविराम का उपयोग करें</string>
+    <string name="sources">स्रोत</string>
+    <string name="source_selection">स्रोत चयन</string>
+    <string name="backgrounds">पृष्ठभूमियां</string>
 </resources>
