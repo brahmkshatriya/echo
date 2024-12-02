@@ -315,14 +315,8 @@ class PlayerTrackAdapter(
         }
 
         viewHolder.observe(viewModel.buffering) { buffering ->
-            collapsedContainer.run {
-                collapsedProgressBar.isVisible = buffering
-                collapsedTrackPlayPause.isEnabled = !buffering
-            }
+            collapsedContainer.collapsedProgressBar.isVisible = buffering
             progressBar.isVisible = buffering
-            seekBar.isEnabled = !buffering
-            trackPlayPause.isEnabled = !buffering
-
         }
 
         observeCurrent(viewModel.totalDuration) {

@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.playback.StreamableLoadingException
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
@@ -55,7 +56,7 @@ class StreamableLoader(
         if (client !is TrackClient)
             throw Exception(context.trackNotSupported(extension.metadata.name).message)
         return runCatching { block(client) }.getOrElse {
-            throw it.toAppException(extension)
+            throw StreamableLoadingException(mediaItem, it.toAppException(extension))
         }
     }
 

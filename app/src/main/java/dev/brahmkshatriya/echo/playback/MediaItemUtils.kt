@@ -47,6 +47,7 @@ object MediaItemUtils {
         val bundle = Bundle().apply {
             putAll(mediaMetadata.extras!!)
             putInt("sourcesIndex", index)
+            putInt("retries", 0)
         }
         buildWithBundle(this, bundle)
     }
@@ -55,6 +56,7 @@ object MediaItemUtils {
         val bundle = Bundle().apply {
             putAll(mediaMetadata.extras!!)
             putInt("sourceIndex", index)
+            putInt("retries", 0)
         }
         buildWithBundle(this, bundle)
     }
@@ -75,6 +77,13 @@ object MediaItemUtils {
         buildWithBundle(this, bundle)
     }
 
+
+    fun withRetry(item: MediaItem): MediaItem {
+        val bundle = item.mediaMetadata.extras!!
+        val retries = bundle.getInt("retries") + 1
+        bundle.putInt("retries", retries)
+        return buildWithBundle(item, bundle)
+    }
 
     private fun buildWithBundle(mediaItem: MediaItem, bundle: Bundle) = run {
         val item = mediaItem.buildUpon()
@@ -171,6 +180,7 @@ object MediaItemUtils {
     val MediaMetadata.isLiked get() = (userRating as? ThumbRating)?.isThumbsUp == true
     val MediaMetadata.background
         get() = extras?.getSerialized<Streamable.Media.Background?>("background")
+    val MediaMetadata.retries get() = extras?.getInt("retries") ?: 0
 
     val MediaItem.track get() = mediaMetadata.track
     val MediaItem.clientId get() = mediaMetadata.clientId
@@ -182,6 +192,7 @@ object MediaItemUtils {
     val MediaItem.subtitleIndex get() = mediaMetadata.subtitleIndex
     val MediaItem.background get() = mediaMetadata.background
     val MediaItem.isLiked get() = mediaMetadata.isLiked
+    val MediaItem.retries get() = mediaMetadata.retries
 
     private fun Streamable.SubtitleType.toMimeType() = when (this) {
         Streamable.SubtitleType.VTT -> MimeTypes.TEXT_VTT

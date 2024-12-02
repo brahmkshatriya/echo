@@ -180,7 +180,6 @@
                 android:background="@drawable/ripple_68dp"
                 android:button="@drawable/anim_play_pause_48dp"
                 android:contentDescription="@string/play_pause"
-                android:enabled="false"
                 app:buttonTint="@color/button_player"
                 tools:ignore="DuplicateSpeakableTextCheck" />
         </FrameLayout>

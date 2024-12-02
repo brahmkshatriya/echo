@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.session.MediaSession
@@ -13,11 +14,15 @@ import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.retries
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getLikeButton
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getRepeatButton
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
+import dev.brahmkshatriya.echo.playback.StreamableLoadingException
+import dev.brahmkshatriya.echo.ui.exception.AppException
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class PlayerEventListener(
@@ -86,4 +91,30 @@ class PlayerEventListener(
         updateCurrent()
     }
 
+    private val maxRetries = 1
+    private var last: Pair<MediaItem, Throwable>? = null
+    override fun onPlayerError(error: PlaybackException) {
+        val cause = error.cause?.cause
+        if (cause !is StreamableLoadingException) return
+        if (cause.cause !is AppException.Other) return
+        val mediaItem = cause.mediaItem
+        if (last?.first?.mediaId != mediaItem.mediaId && last?.second == cause.cause.cause)
+            return
+        val index = player.currentMediaItemIndex.takeIf {
+            player.currentMediaItem?.mediaId == mediaItem.mediaId
+        } ?: return
+        last = mediaItem to cause.cause.cause
+        val retries = mediaItem.retries
+        handler.post {
+            if (retries >= maxRetries) {
+                val hasMore = index < player.mediaItemCount - 1
+                if (!hasMore) return@post
+                player.seekToNextMediaItem()
+            } else {
+                val new = MediaItemUtils.withRetry(mediaItem)
+                player.replaceMediaItem(index, new)
+            }
+            player.play()
+        }
+    }
 }

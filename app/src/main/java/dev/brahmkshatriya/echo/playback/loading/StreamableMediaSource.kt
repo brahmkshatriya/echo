@@ -135,7 +135,8 @@ class StreamableMediaSource(
             if (backgroundIndex != mediaItem.backgroundIndex) return@run false
             if (subtitleIndex != mediaItem.subtitleIndex) return@run false
         }
-        actualSource.canUpdateMediaItem(mediaItem)
+        if (::actualSource.isInitialized) actualSource.canUpdateMediaItem(mediaItem)
+        else false
     }
 
     override fun updateMediaItem(mediaItem: MediaItem) {

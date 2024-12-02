@@ -7,11 +7,10 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
-import dev.brahmkshatriya.echo.ui.exception.AppException
+import dev.brahmkshatriya.echo.playback.StreamableLoadingException
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 class PlayerUiListener(
     val player: Player,
@@ -77,7 +76,6 @@ class PlayerUiListener(
             Player.STATE_READY -> {
                 viewModel.buffering.value = false
             }
-
             else -> Unit
         }
         updateProgress()
@@ -111,12 +109,11 @@ class PlayerUiListener(
     }
 
     override fun onPlayerError(error: PlaybackException) {
-        var cause = error.cause ?: error
-        if (cause is IOException) {
-            cause = cause.cause ?: cause
+        viewModel.isPlaying.value = false
+        val cause = error.cause?.cause ?: error.cause ?: error
+        viewModel.run {
+            if (cause !is StreamableLoadingException) createException(cause.toExceptionDetails(app))
+            else viewModelScope.launch { throwableFlow.emit(cause.cause) }
         }
-        if (cause is AppException) {
-            viewModel.apply { viewModelScope.launch { throwableFlow.emit(cause) } }
-        } else viewModel.createException(cause.toExceptionDetails(viewModel.app))
     }
 }

@@ -105,7 +105,6 @@
                         android:background="@drawable/ripple_44dp"
                         android:button="@drawable/anim_play_pause"
                         android:contentDescription="@string/play_pause"
-                        android:enabled="false"
                         app:buttonTint="@color/button_player" />
 
                 </FrameLayout>
