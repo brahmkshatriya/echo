@@ -101,7 +101,7 @@ class TrackDetailsFragment : Fragment() {
             mediaAdapter?.submit(it)
         }
 
-        observe(playerViewModel.currentSources) {
+        observe(playerViewModel.currentServers) {
             infoAdapter.applySources(it)
         }
 
@@ -122,7 +122,7 @@ class TrackDetailsFragment : Fragment() {
         private val playerViewModel: PlayerViewModel
     ) : RecyclerView.Adapter<InfoAdapter.ViewHolder>() {
 
-        private var sources = mapOf<String, Streamable.Media.Sources>()
+        private var sources = mapOf<String, Streamable.Media.Server>()
         private var item: MediaItem? = null
         private var tracks: Tracks? = null
         private var player: Player? = null
@@ -159,7 +159,7 @@ class TrackDetailsFragment : Fragment() {
             notifyDataSetChanged()
         }
 
-        fun applySources(sources: Map<String, Streamable.Media.Sources>) {
+        fun applySources(sources: Map<String, Streamable.Media.Server>) {
             this.sources = sources
             notifyDataSetChanged()
         }
@@ -177,14 +177,14 @@ class TrackDetailsFragment : Fragment() {
             }
 
             applyChips(
-                track.sources,
-                streamableSources,
-                streamableSourcesGroup,
+                track.servers,
+                streamableServer,
+                streamableServerGroup,
                 item.sourcesIndex
             ) {
                 it ?: return@applyChips
-                val index = track.sources.indexOf(it)
-                val newItem = MediaItemUtils.buildSources(item, index)
+                val index = track.servers.indexOf(it)
+                val newItem = MediaItemUtils.buildServer(item, index)
                 playerViewModel.withBrowser { player ->
                     player.replaceMediaItem(player.currentMediaItemIndex, newItem)
                 }
@@ -338,8 +338,8 @@ class TrackDetailsFragment : Fragment() {
             )
         }
 
-        private fun ItemTrackInfoBinding.applySources(sources: Streamable.Media.Sources?) {
-            val list = if (sources != null && !sources.merged) sources.sources else listOf()
+        private fun ItemTrackInfoBinding.applySources(server: Streamable.Media.Server?) {
+            val list = if (server != null && !server.merged) server.sources else listOf()
             val context = root.context
             applyChips(
                 list,

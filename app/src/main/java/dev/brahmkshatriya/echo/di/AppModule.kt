@@ -68,7 +68,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideCurrentSourcesFlow() = MutableStateFlow(mapOf<String, Streamable.Media.Sources>())
+    fun provideCurrentServersFlow() = MutableStateFlow(mapOf<String, Streamable.Media.Server>())
 
     @Provides
     @Singleton

@@ -24,7 +24,7 @@
         tools:text="@tools:sample/full_names" />
 
     <TextView
-        android:id="@+id/streamableSources"
+        android:id="@+id/streamable_server"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingVertical="8dp"
@@ -32,7 +32,7 @@
         android:textStyle="bold" />
 
     <com.google.android.material.chip.ChipGroup
-        android:id="@+id/streamableSourcesGroup"
+        android:id="@+id/streamable_server_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:selectionRequired="true"

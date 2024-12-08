@@ -37,13 +37,13 @@ class StreamableLoader(
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.buildLoaded(settings, mediaItem, loadTrack(mediaItem))
 
-        val srcs = async { loadSources(new) }
+        val server = async { loadServer(new) }
         val background = async { if (new.backgroundIndex < 0) null else loadBackground(new) }
         val subtitle = async { if (new.subtitleIndex < 0) null else loadSubtitle(new) }
 
         MediaItemUtils.buildWithBackgroundAndSubtitle(
             new, background.await(), subtitle.await()
-        ) to srcs.await()
+        ) to server.await()
     }
 
     private suspend fun <T> withClient(
@@ -62,18 +62,18 @@ class StreamableLoader(
 
     private suspend fun loadTrack(item: MediaItem) = withClient(item) {
         loadTrack(item.track).also {
-            it.sources.ifEmpty {
+            it.servers.ifEmpty {
                 throw Exception(context.getString(R.string.no_streams_found))
             }
         }
     }
 
-    private suspend fun loadSources(mediaItem: MediaItem): Streamable.Media.Sources {
-        val streams = mediaItem.track.sources
+    private suspend fun loadServer(mediaItem: MediaItem): Streamable.Media.Server {
+        val streams = mediaItem.track.servers
         val index = mediaItem.sourcesIndex
         val streamable = streams[index]
         return withClient(mediaItem) {
-            getStreamableMedia(streamable) as Streamable.Media.Sources
+            loadStreamableMedia(streamable) as Streamable.Media.Server
         }
     }
 
@@ -82,7 +82,7 @@ class StreamableLoader(
         val index = mediaItem.backgroundIndex
         val streamable = streams[index]
         return withClient(mediaItem) {
-            getStreamableMedia(streamable) as Streamable.Media.Background
+            loadStreamableMedia(streamable) as Streamable.Media.Background
         }
     }
 
@@ -91,7 +91,7 @@ class StreamableLoader(
         val index = mediaItem.subtitleIndex
         val streamable = streams[index]
         return withClient(mediaItem) {
-            getStreamableMedia(streamable) as Streamable.Media.Subtitle
+            loadStreamableMedia(streamable) as Streamable.Media.Subtitle
         }
     }
 }

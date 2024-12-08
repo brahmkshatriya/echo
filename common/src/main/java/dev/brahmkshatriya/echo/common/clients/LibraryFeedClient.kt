@@ -5,26 +5,25 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 
 /**
- * Used to show the home feed and get its tabs.
+ * Used to show the library feed and get its tabs.
  *
  * @see Tab
  * @see Shelf
  * @see PagedData
  */
-interface HomeFeedClient {
-
+interface LibraryFeedClient {
     /**
-     * Gets the home tabs.
+     * Gets the library tabs.
      *
-     * @return the home tabs.
+     * @return the library tabs.
      *
      * @see Tab
      */
-    suspend fun getHomeTabs(): List<Tab>
+    suspend fun getLibraryTabs(): List<Tab>
 
     /**
-     * Gets the home feed.
-     * [tab] will be null if [getHomeTabs] returned an empty list.
+     * Gets the library feed.
+     * [tab] will be null if [getLibraryTabs] returned an empty list.
      *
      * @param tab the tab to get the feed of.
      * @return the paged shelves.
@@ -33,6 +32,5 @@ interface HomeFeedClient {
      * @see Shelf
      * @see PagedData
      */
-    fun getHomeFeed(tab: Tab?): PagedData<Shelf>
-
+    fun getLibraryFeed(tab: Tab?): PagedData<Shelf>
 }

@@ -26,11 +26,11 @@ import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.run
-import dev.brahmkshatriya.echo.utils.toSettings
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialMultipleChoicePreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialTextInputPreference
+import dev.brahmkshatriya.echo.utils.toSettings
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import kotlinx.coroutines.launch
 
@@ -103,6 +103,10 @@ class ExtensionFragment : BaseSettingsFragment() {
                         if (this is SettingsChangeListenerClient) {
                             prefs.registerOnSharedPreferenceChangeListener { _, key ->
                                 onSettingsChanged(client, settings, key)
+                            }
+                            preferenceManager.setOnPreferenceTreeClickListener {
+                                onSettingsChanged(client, settings, it.key)
+                                true
                             }
                         }
                     }
@@ -213,8 +217,6 @@ class ExtensionFragment : BaseSettingsFragment() {
                         preferenceGroup.addPreference(it)
                     }
                 }
-
-                else -> throw IllegalArgumentException("Unsupported setting type")
             }
         }
 

@@ -352,10 +352,10 @@ object MediaStoreUtils {
                 duration = duration,
                 releaseDate = year?.toString(),
                 isLiked = liked,
-                genre = genre,
                 description = description,
-                streamables = listOf(Streamable.source(path, 0)),
+                streamables = listOf(Streamable.server(path, 0)),
                 extras = mapOf(
+                    "genre" to (genre ?: ""),
                     "addDate" to addDate.toString(),
                     "trackNumber" to trackNumber.toString()
                 )
@@ -486,8 +486,14 @@ object MediaStoreUtils {
         )
 
         cursor?.parseSongQuery(
-            limitValueSeconds, folderFilter, blacklistKeywords, context, songs, foundPlaylistContent,
-            idMap, likedAudios
+            limitValueSeconds,
+            folderFilter,
+            blacklistKeywords,
+            context,
+            songs,
+            foundPlaylistContent,
+            idMap,
+            likedAudios
         ) { song ->
             song.artists.map {
                 val id = it.id.toLongOrNull()
@@ -513,7 +519,7 @@ object MediaStoreUtils {
             }
             handleShallowTrack(song, albumId, path, shallowRoot, folderArray)
 
-            val genre = song.genre ?: "Unknown"
+            val genre = song.extras["genre"] ?: "Unknown"
             genreMap.getOrPut(genre) {
                 Genre(genre.id(), genre, mutableSetOf())
             }.songList.add(song)

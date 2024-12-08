@@ -9,7 +9,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
@@ -57,7 +57,7 @@ class LibraryFragment : Fragment() {
             binding.toolBar.alpha = 1 - offset
         }
 
-        configureFeedUI<LibraryClient>(
+        configureFeedUI<LibraryFeedClient>(
             R.string.library,
             viewModel,
             binding.recyclerView,

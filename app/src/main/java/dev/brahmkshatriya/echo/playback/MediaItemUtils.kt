@@ -43,10 +43,10 @@ object MediaItemUtils {
         return item.build()
     }
 
-    fun buildSources(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
+    fun buildServer(mediaItem: MediaItem, index: Int): MediaItem = with(mediaItem) {
         val bundle = Bundle().apply {
             putAll(mediaMetadata.extras!!)
-            putInt("sourcesIndex", index)
+            putInt("serverIndex", index)
             putInt("retries", 0)
         }
         buildWithBundle(this, bundle)
@@ -156,7 +156,7 @@ object MediaItemUtils {
             putString("clientId", clientId)
             putSerialized("context", context)
             putBoolean("loaded", loaded)
-            putInt("sourcesIndex", sourcesIndex ?: selectSourceIndex(settings, sources))
+            putInt("serverIndex", sourcesIndex ?: selectSourceIndex(settings, servers))
             putInt("subtitleIndex", subtitleIndex ?: 0.takeIf { subtitles.isNotEmpty() } ?: -1)
             putInt(
                 "backgroundIndex", backgroundIndex ?: 0.takeIf { backgrounds.isNotEmpty() } ?: -1
@@ -167,13 +167,13 @@ object MediaItemUtils {
         .build()
 
     private fun Bundle.indexes() =
-        "${getInt("sourcesIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
+        "${getInt("serverIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
 
     val MediaMetadata.isLoaded get() = extras?.getBoolean("loaded") ?: false
     val MediaMetadata.track get() = requireNotNull(extras?.getSerialized<Track>("track"))
     val MediaMetadata.clientId get() = requireNotNull(extras?.getString("clientId"))
     val MediaMetadata.context get() = extras?.getSerialized<EchoMediaItem?>("context")
-    val MediaMetadata.sourcesIndex get() = extras?.getInt("sourcesIndex") ?: -1
+    val MediaMetadata.sourcesIndex get() = extras?.getInt("serverIndex") ?: -1
     val MediaMetadata.sourceIndex get() = extras?.getInt("sourceIndex") ?: -1
     val MediaMetadata.backgroundIndex get() = extras?.getInt("backgroundIndex") ?: -1
     val MediaMetadata.subtitleIndex get() = extras?.getInt("subtitleIndex") ?: -1

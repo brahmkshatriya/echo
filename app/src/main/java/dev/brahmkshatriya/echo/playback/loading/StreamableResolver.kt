@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class StreamableResolver(
-    private val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>
+    private val current: MutableStateFlow<Map<String, Streamable.Media.Server>>
 ) : Resolver {
 
     @UnstableApi

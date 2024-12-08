@@ -14,7 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
@@ -144,7 +144,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 saveToPlaylist(item),
                 saveToLibraryButton(item, loaded),
                 downloadButton(item),
-                if (client is LibraryClient && item.playlist.isEditable)
+                if (client is LibraryFeedClient && item.playlist.isEditable)
                     ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
                         playerViewModel.deletePlaylist(clientId, item.playlist)
                     }
@@ -256,7 +256,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             }
         else null
 
-    private fun saveToPlaylist(item: EchoMediaItem) = if (client is LibraryClient)
+    private fun saveToPlaylist(item: EchoMediaItem) = if (client is LibraryFeedClient)
         ItemAction.Resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
             AddToPlaylistBottomSheet.newInstance(clientId, item)
                 .show(parentFragmentManager, null)

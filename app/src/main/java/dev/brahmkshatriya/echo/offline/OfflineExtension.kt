@@ -9,11 +9,11 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.common.clients.LibraryClient
+import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
@@ -61,7 +61,7 @@ class OfflineExtension(
     val context: Context,
     val cache: SimpleCache
 ) : ExtensionClient, HomeFeedClient, TrackClient, AlbumClient, ArtistClient, PlaylistClient,
-    RadioClient, SearchClient, LibraryClient, TrackLikeClient, PlaylistEditorListenerClient,
+    RadioClient, SearchFeedClient, LibraryFeedClient, TrackLikeClient, PlaylistEditorListenerClient,
     SettingsChangeListenerClient {
 
     companion object {
@@ -199,7 +199,7 @@ class OfflineExtension(
         isLiked = library.likedPlaylist?.songList.orEmpty().any { it.id == track.id }
     )
 
-    override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
+    override suspend fun loadStreamableMedia(streamable: Streamable): Streamable.Media {
         return streamable.id.toSource().toMedia()
     }
 
@@ -233,8 +233,8 @@ class OfflineExtension(
         getArtistsWithCategories(album.artists) { it.album?.id != album.id }
     }
 
-    override suspend fun loadArtist(small: Artist) =
-        find(small)!!.toArtist()
+    override suspend fun loadArtist(artist: Artist) =
+        find(artist)!!.toArtist()
 
     override fun getShelves(artist: Artist) = PagedData.Single<Shelf> {
         find(artist)?.run {
@@ -332,8 +332,8 @@ class OfflineExtension(
     override suspend fun radio(playlist: Playlist) = createRadioPlaylist(playlist.toMediaItem())
     override suspend fun radio(user: User): Radio = throw IllegalAccessException()
 
-    override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
-        return if (query.isNullOrBlank()) {
+    override suspend fun quickSearch(query: String): List<QuickSearchItem> {
+        return if (query.isBlank()) {
             getHistory().map { QuickSearchItem.Query(it, true) }
         } else listOf()
     }
@@ -354,7 +354,7 @@ class OfflineExtension(
         context.saveToCache("search_history", history, "offline")
     }
 
-    override suspend fun searchTabs(query: String?) =
+    override suspend fun searchTabs(query: String) =
         listOf("All", "Tracks", "Albums", "Artists").map { Tab(it, it) }
 
     override fun searchFeed(query: String?, tab: Tab?) = run {

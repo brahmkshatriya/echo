@@ -21,7 +21,7 @@ import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toBackgroundMedia
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSourceMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toServerMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtitleMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Tab
@@ -80,21 +80,21 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     override suspend fun getCurrentUser(): User? = null
 
 
-    override suspend fun getStreamableMedia(streamable: Streamable): Streamable.Media {
+    override suspend fun loadStreamableMedia(streamable: Streamable): Streamable.Media {
         return when (streamable.type) {
             Streamable.MediaType.Background -> streamable.id.toBackgroundMedia()
-            Streamable.MediaType.Source -> {
+            Streamable.MediaType.Server -> {
                 val srcs = Srcs.valueOf(streamable.id)
                 when (srcs) {
                     Srcs.Single -> throw Exception("Single source not supported")
-                    Srcs.Merged -> Streamable.Media.Sources(
+                    Srcs.Merged -> Streamable.Media.Server(
                         listOf(
                             BUNNY.toSource(),
                             FUN.toSource(),
                         ), false
                     )
 
-                    Srcs.M3U8 -> M3U8.toSourceMedia(type = Streamable.SourceType.HLS)
+                    Srcs.M3U8 -> M3U8.toServerMedia(type = Streamable.SourceType.HLS)
                 }
             }
 
@@ -113,7 +113,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         Single, Merged, M3U8;
 
         fun createTrack() = createTrack(
-            name, name, listOf(Streamable.source(this.name, 0), Streamable.subtitle(SUBTITLE))
+            name, name, listOf(Streamable.server(this.name, 0), Streamable.subtitle(SUBTITLE))
         )
     }
 
@@ -122,9 +122,9 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
             Artist("bruh", "Bruh").toMediaItem().toShelf(),
             createTrack(
                 "all", "All", listOf(
-                    Streamable.source(Srcs.Single.name, 0),
-                    Streamable.source(Srcs.Merged.name, 0),
-                    Streamable.source(Srcs.M3U8.name, 0),
+                    Streamable.server(Srcs.Single.name, 0),
+                    Streamable.server(Srcs.Merged.name, 0),
+                    Streamable.server(Srcs.M3U8.name, 0),
                     Streamable.subtitle(SUBTITLE)
                 )
             ),
@@ -148,21 +148,14 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     override suspend fun radio(playlist: Playlist) = radio
 
     private var isFollowing = false
-    override suspend fun followArtist(artist: Artist): Boolean {
-        isFollowing = true
+    override suspend fun followArtist(artist: Artist, follow: Boolean) {
+        isFollowing = follow
         println("follow")
-        return true
     }
 
-    override suspend fun unfollowArtist(artist: Artist): Boolean {
-        isFollowing = false
-        println("unfollow")
-        return true
-    }
-
-    override suspend fun loadArtist(small: Artist): Artist {
+    override suspend fun loadArtist(artist: Artist): Artist {
         println("isFollowing : $isFollowing")
-        return small.copy(isFollowing = isFollowing, extras = mapOf("loaded" to "Loaded bro"))
+        return artist.copy(isFollowing = isFollowing, extras = mapOf("loaded" to "Loaded bro"))
     }
 
     override fun getShelves(artist: Artist) = PagedData.Single<Shelf> {
@@ -173,16 +166,10 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     }
 
     private var isSaved = false
-    override suspend fun saveToLibrary(mediaItem: EchoMediaItem) {
+    override suspend fun saveToLibrary(mediaItem: EchoMediaItem, save: Boolean) {
         println(mediaItem.extras["loaded"])
         isSaved = true
         println("save")
-    }
-
-    override suspend fun removeFromLibrary(mediaItem: EchoMediaItem) {
-        println(mediaItem.extras["loaded"])
-        isSaved = false
-        println("remove")
     }
 
     override suspend fun isSavedToLibrary(mediaItem: EchoMediaItem): Boolean {

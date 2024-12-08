@@ -45,7 +45,7 @@ class StreamableMediaSource(
     private val context: Context,
     private val scope: CoroutineScope,
     private val settings: SharedPreferences,
-    private val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
+    private val current: MutableStateFlow<Map<String, Streamable.Media.Server>>,
     private val loader: StreamableLoader,
     private val dash: Lazy<MediaSource.Factory>,
     private val hls: Lazy<MediaSource.Factory>,
@@ -75,13 +75,13 @@ class StreamableMediaSource(
         super.prepareSourceInternal(mediaTransferListener)
         val handler = Util.createHandlerForCurrentLooper()
         scope.launch {
-            val (new, streamable) = runCatching { loader.load(mediaItem) }.getOrElse {
+            val (new, server) = runCatching { loader.load(mediaItem) }.getOrElse {
                 error = it
                 return@launch
             }
             mediaItem = new
             current.apply {
-                value = value.toMutableMap().apply { set(new.mediaId, streamable) }
+                value = value.toMutableMap().apply { set(new.mediaId, server) }
             }
 
             if (new.clientId != OfflineExtension.metadata.id) {
@@ -89,7 +89,7 @@ class StreamableMediaSource(
                 context.saveToCache(track.id, new.clientId to track, "track")
             }
 
-            val sources = streamable.sources
+            val sources = server.sources
             actualSource = when (sources.size) {
                 0 -> {
                     error = Exception(context.getString(R.string.streamable_not_found))
@@ -98,7 +98,7 @@ class StreamableMediaSource(
 
                 1 -> create(new, 0, sources.first())
                 else -> {
-                    if (streamable.merged) MergingMediaSource(
+                    if (server.merged) MergingMediaSource(
                         *sources.mapIndexed { index, source ->
                             create(new, index, source)
                         }.toTypedArray()
@@ -149,7 +149,7 @@ class StreamableMediaSource(
         val context: Context,
         val scope: CoroutineScope,
         val settings: SharedPreferences,
-        val current: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
+        val current: MutableStateFlow<Map<String, Streamable.Media.Server>>,
         extListFlow: MutableStateFlow<List<MusicExtension>?>,
         cache: SimpleCache,
     ) : MediaSource.Factory {

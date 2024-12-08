@@ -55,7 +55,7 @@ class PlayerViewModel @Inject constructor(
     val app: Application,
     val currentFlow: MutableStateFlow<Current?>,
     val radioStateFlow: MutableStateFlow<Radio.State>,
-    val currentSources: MutableStateFlow<Map<String, Streamable.Media.Sources>>,
+    val currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>,
     val cache: SimpleCache,
     val fftAudioProcessor: FFTAudioProcessor,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,

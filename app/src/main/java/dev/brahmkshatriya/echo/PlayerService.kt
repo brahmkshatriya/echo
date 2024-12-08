@@ -67,7 +67,7 @@ class PlayerService : MediaLibraryService() {
     lateinit var current: MutableStateFlow<Current?>
 
     @Inject
-    lateinit var currentSources: MutableStateFlow<Map<String, Streamable.Media.Sources>>
+    lateinit var currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>
 
     @Inject
     lateinit var fftAudioProcessor: FFTAudioProcessor
@@ -89,7 +89,7 @@ class PlayerService : MediaLibraryService() {
             .build()
 
         val factory = StreamableMediaSource.Factory(
-            this, scope, settings, currentSources, extListFlow, cache
+            this, scope, settings, currentServers, extListFlow, cache
         )
 
         ExoPlayer.Builder(this, factory)

@@ -10,9 +10,9 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
-import dev.brahmkshatriya.echo.common.providers.LyricsClientsProvider
-import dev.brahmkshatriya.echo.common.providers.MusicClientsProvider
-import dev.brahmkshatriya.echo.common.providers.TrackerClientsProvider
+import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
+import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
+import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 import dev.brahmkshatriya.echo.db.ExtensionDao
 import dev.brahmkshatriya.echo.db.UserDao
 import dev.brahmkshatriya.echo.db.models.UserEntity
@@ -116,18 +116,18 @@ class ExtensionLoader(
                     val lyricsExtensions = lyricsListFlow.value.orEmpty()
                     val musicExtensions = extensionListFlow.value.orEmpty()
                     list?.forEach { extension ->
-                        extension.get<TrackerClientsProvider, Unit>(throwableFlow) {
-                            inject(extension.name, requiredTrackerClients, trackerExtensions) {
+                        extension.get<TrackerExtensionsProvider, Unit>(throwableFlow) {
+                            inject(extension.name, requiredTrackerExtensions, trackerExtensions) {
                                 setTrackerExtensions(it)
                             }
                         }
-                        extension.get<LyricsClientsProvider, Unit>(throwableFlow) {
-                            inject(extension.name, requiredLyricsClients, lyricsExtensions) {
+                        extension.get<LyricsExtensionsProvider, Unit>(throwableFlow) {
+                            inject(extension.name, requiredLyricsExtensions, lyricsExtensions) {
                                 setLyricsExtensions(it)
                             }
                         }
-                        extension.get<MusicClientsProvider, Unit>(throwableFlow) {
-                            inject(extension.name, requiredMusicClients, musicExtensions) {
+                        extension.get<MusicExtensionsProvider, Unit>(throwableFlow) {
+                            inject(extension.name, requiredMusicExtensions, musicExtensions) {
                                 setMusicExtensions(it)
                             }
                         }

@@ -210,7 +210,7 @@ class ItemViewModel @Inject constructor(
     fun subscribe(artist: Artist, subscribe: Boolean, reload: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<ArtistFollowClient, Unit> {
-                if (subscribe) followArtist(artist) else unfollowArtist(artist)
+                followArtist(artist, subscribe)
                 val message = if (subscribe) app.getString(R.string.following_artist, artist.name)
                 else app.getString(R.string.unfollowed_artist, artist.name)
                 createSnack(message)
@@ -222,13 +222,11 @@ class ItemViewModel @Inject constructor(
     fun saveToLibrary(item: EchoMediaItem, save: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<SaveToLibraryClient, Unit> {
-                if (save) {
-                    saveToLibrary(item)
+                saveToLibrary(item, save)
+                if (save)
                     createSnack(app.getString(R.string.saved_item_to_library, item.title))
-                } else {
-                    removeFromLibrary(item)
+                else
                     createSnack(app.getString(R.string.removed_item_from_library, item.title))
-                }
             }
         }
     }

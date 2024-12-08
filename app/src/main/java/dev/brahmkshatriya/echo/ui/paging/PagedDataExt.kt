@@ -7,5 +7,5 @@ fun <T : Any> PagedData<T>.toFlow() = when (this) {
     is PagedData.Continuous ->
         ContinuationSource<T, String>({ loadList(it) }, { invalidate(it) }).toFlow()
     is PagedData.Concat ->
-        ContinuationSource<T, Pair<Int,String?>>({ loadList(it) }, { invalidate(it) }).toFlow()
+        ContinuationSource<T, String>({ loadList(it) }, { invalidate(it) }).toFlow()
 }

@@ -91,7 +91,7 @@ inline fun <reified T> Fragment.configureFeedUI(
         tabLayout.isVisible = genres.isNotEmpty()
         genres.forEach { genre ->
             val tab = tabLayout.newTab()
-            tab.text = genre.name
+            tab.text = genre.title
             val selected = viewModel.tab?.id == genre.id
             tabLayout.addTab(tab, selected)
         }

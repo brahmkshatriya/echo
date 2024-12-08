@@ -1,14 +1,33 @@
 package dev.brahmkshatriya.echo.common.models
 
+/**
+ * Represents a quick search item.
+ * This can be a [Query] or a [Media] item.
+ *
+ * @property searched whether the item was already searched by the user.
+ */
 sealed class QuickSearchItem {
     abstract val searched: Boolean
 
+    /**
+     * Represents a search query.
+     *
+     * @property query the search query.
+     * @property extras additional information about the search query.
+     */
     data class Query(
         val query: String,
         override val searched: Boolean,
         val extras: Map<String, String> = mapOf()
     ) : QuickSearchItem()
 
+    /**
+     * Represents a media item.
+     *
+     * @property media the media item.
+     *
+     * @see EchoMediaItem
+     */
     data class Media(
         val media: EchoMediaItem,
         override val searched: Boolean

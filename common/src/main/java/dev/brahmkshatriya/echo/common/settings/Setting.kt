@@ -1,6 +1,19 @@
 package dev.brahmkshatriya.echo.common.settings
 
-interface Setting {
+/**
+ * A sealed interface that represents a setting. These are the types of [Setting]s:
+ * - [SettingCategory]
+ * - [SettingItem]
+ * - [SettingSwitch]
+ * - [SettingSlider]
+ * - [SettingTextInput]
+ * - [SettingList]
+ * - [SettingMultipleChoice]
+ *
+ * @property title The title of the setting.
+ * @property key The unique key of the setting.
+ */
+sealed interface Setting {
     val title: String
     val key: String
 }

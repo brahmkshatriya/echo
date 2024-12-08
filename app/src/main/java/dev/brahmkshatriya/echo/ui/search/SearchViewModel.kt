@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.get
@@ -24,18 +24,18 @@ class SearchViewModel @Inject constructor(
     override val userFlow: MutableSharedFlow<UserEntity?>,
 ) : FeedViewModel(throwableFlow, userFlow, extensionFlow, extensionListFlow) {
 
-    var query: String? = null
+    var query: String = ""
     override suspend fun getTabs(client: ExtensionClient) =
-        (client as? SearchClient)?.searchTabs(query)
+        (client as? SearchFeedClient)?.searchTabs(query)
 
     override fun getFeed(client: ExtensionClient) =
-        (client as? SearchClient)?.searchFeed(query, tab)?.toFlow()
+        (client as? SearchFeedClient)?.searchFeed(query, tab)?.toFlow()
 
     val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
     fun quickSearch(query: String) {
         val extension = extensionFlow.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val list = extension.get<SearchClient, List<QuickSearchItem>>(throwableFlow) {
+            val list = extension.get<SearchFeedClient, List<QuickSearchItem>>(throwableFlow) {
                 quickSearch(query)
             } ?: emptyList()
             quickFeed.value = list
@@ -45,7 +45,7 @@ class SearchViewModel @Inject constructor(
     fun deleteSearch(item: QuickSearchItem, query: String) {
         val extension = extensionFlow.value ?: return
         viewModelScope.launch {
-            extension.get<SearchClient, Unit>(throwableFlow) {
+            extension.get<SearchFeedClient, Unit>(throwableFlow) {
                 deleteQuickSearch(item)
             }
             quickSearch(query)

@@ -25,7 +25,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -203,7 +203,7 @@ class PlayerCallback(
         val client =
             extension?.instance?.value?.getOrNull() ?: return default { noClient().message }
         val id = extension.metadata.id
-        if (client !is SearchClient) return default { searchNotSupported(id).message }
+        if (client !is SearchFeedClient) return default { searchNotSupported(id).message }
         if (client !is TrackClient) return default { trackNotSupported(id).message }
         return scope.future {
             val itemsContainers = runCatching {

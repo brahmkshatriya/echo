@@ -16,7 +16,7 @@ import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter.Companion.getListener
@@ -75,7 +75,7 @@ class SearchFragment : Fragment() {
 
         val clientId = arguments?.getString("clientId")
 
-        configureFeedUI<SearchClient>(
+        configureFeedUI<SearchFeedClient>(
             R.string.search,
             viewModel,
             binding.recyclerView,
@@ -92,7 +92,7 @@ class SearchFragment : Fragment() {
             viewModel.quickSearch(text.toString())
         }
         binding.quickSearchView.editText.setOnEditorActionListener { textView, _, _ ->
-            val query = textView.text.toString().ifBlank { null }
+            val query = textView.text.toString()
             binding.searchBar.setText(query)
             binding.quickSearchView.hide()
             if (query != viewModel.query) {

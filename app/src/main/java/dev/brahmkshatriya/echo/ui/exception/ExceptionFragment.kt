@@ -145,7 +145,7 @@ class ExceptionFragment : Fragment() {
             is PlayerViewModel.PlayerException -> """
 Client Id : ${throwable.mediaItem?.clientId}
 Track : ${throwable.mediaItem?.track}
-Stream : ${throwable.mediaItem?.run { track.sources.getOrNull(sourcesIndex) }}
+Stream : ${throwable.mediaItem?.run { track.servers.getOrNull(sourcesIndex) }}
 
 ${throwable.details.causedBy}
 """.trimIndent()
