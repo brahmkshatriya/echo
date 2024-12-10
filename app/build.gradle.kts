@@ -48,25 +48,25 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.7.0")
 
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     implementation("androidx.fragment:fragment-ktx:1.6.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
-    implementation("androidx.paging:paging-common-ktx:3.3.2")
-    implementation("androidx.paging:paging-runtime-ktx:3.3.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+    implementation("androidx.paging:paging-common-ktx:3.3.4")
+    implementation("androidx.paging:paging-runtime-ktx:3.3.4")
     implementation("androidx.preference:preference-ktx:1.2.1")
 
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    implementation("androidx.media3:media3-exoplayer:1.4.1")
-    implementation("androidx.media3:media3-session:1.4.1")
-    implementation("androidx.media3:media3-ui:1.4.1")
-    implementation("androidx.media3:media3-exoplayer-dash:1.4.1")
-    implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
+    implementation("androidx.media3:media3-exoplayer:1.5.0")
+    implementation("androidx.media3:media3-session:1.5.0")
+    implementation("androidx.media3:media3-ui:1.5.0")
+    implementation("androidx.media3:media3-exoplayer-dash:1.5.0")
+    implementation("androidx.media3:media3-exoplayer-hls:1.5.0")
 
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.palette:palette-ktx:1.0.0")
@@ -85,8 +85,6 @@ dependencies {
     implementation("me.zhanghai.android.fastscroll:library:1.3.0")
     implementation("com.flaviofaria:kenburnsview:1.0.7")
     implementation("com.github.paramsen:noise:2.0.0")
-
-    implementation("com.github.Kyant0:taglib:1.0.0-alpha22")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
     testImplementation("junit:junit:4.13.2")
