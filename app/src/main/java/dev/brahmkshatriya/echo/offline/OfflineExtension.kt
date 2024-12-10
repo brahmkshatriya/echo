@@ -357,8 +357,8 @@ class OfflineExtension(
     override suspend fun searchTabs(query: String) =
         listOf("All", "Tracks", "Albums", "Artists").map { Tab(it, it) }
 
-    override fun searchFeed(query: String?, tab: Tab?) = run {
-        query ?: return@run emptyList()
+    override fun searchFeed(query: String, tab: Tab?) = run {
+        query.ifBlank { return@run emptyList() }
         saveInHistory(query)
         val tracks = library.songList.map { it }.searchBy(query) {
             listOf(it.title, it.album?.title) + it.artists.map { artist -> artist.name }

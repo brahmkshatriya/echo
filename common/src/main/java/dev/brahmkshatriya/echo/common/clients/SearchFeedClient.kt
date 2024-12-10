@@ -17,7 +17,7 @@ interface SearchFeedClient {
     /**
      * Searches for quick search items.
      *
-     * @param query the query to search for.
+     * @param query the query to search for, will be empty if the user hasn't typed anything.
      * @return the quick search items.
      *
      * @see QuickSearchItem
@@ -34,7 +34,7 @@ interface SearchFeedClient {
     /**
      * Searches for tabs.
      *
-     * @param query the query to search for.
+     * @param query the query to search for, will be empty if the user hasn't typed anything.
      * @return the tabs.
      *
      * @see Tab
@@ -44,7 +44,7 @@ interface SearchFeedClient {
     /**
      * Searches for shelves.
      *
-     * @param query the query to search for.
+     * @param query the query to search for, will be empty if the user hasn't typed anything.
      * @param tab the tab to search in.
      * @return the paged shelves.
      *
@@ -52,5 +52,5 @@ interface SearchFeedClient {
      * @see Shelf
      * @see PagedData
      */
-    fun searchFeed(query: String?, tab: Tab?): PagedData<Shelf>
+    fun searchFeed(query: String, tab: Tab?): PagedData<Shelf>
 }

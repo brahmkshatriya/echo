@@ -4,13 +4,13 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingState
 import dev.brahmkshatriya.echo.common.helpers.Page
 
-class ContinuationSource<C : Any, P : Any>(
-    private val load: suspend (token: P?) -> Page<C, P?>,
-    private val invalidate: (token: P?) -> Unit
-) : ErrorPagingSource<P, C>() {
+class ContinuationSource<C : Any>(
+    private val load: suspend (token: String?) -> Page<C>,
+    private val invalidate: (token: String?) -> Unit
+) : ErrorPagingSource<String, C>() {
 
     override val config = PagingConfig(pageSize = 10, enablePlaceholders = false)
-    override suspend fun loadData(params: LoadParams<P>): LoadResult.Page<P, C> {
+    override suspend fun loadData(params: LoadParams<String>): LoadResult.Page<String, C> {
         val token = params.key
         val page = load(token)
         return LoadResult.Page(
@@ -20,8 +20,8 @@ class ContinuationSource<C : Any, P : Any>(
         )
     }
 
-    override fun getRefreshKey(state: PagingState<P, C>) = state.anchorPosition?.let { position ->
-        state.closestPageToPosition(position)?.nextKey?.let { key ->
+    override fun getRefreshKey(state: PagingState<String, C>) = state.anchorPosition?.let { pos ->
+        state.closestPageToPosition(pos)?.nextKey?.let { key ->
             invalidate(key)
             key
         }

@@ -10,6 +10,8 @@ abstract class ErrorPagingSource<Key : Any, Value : Any> : PagingSource<Key, Val
         pagingSourceFactory = { this }
     ).flow
 
+    override val keyReuseSupported = true
+
     abstract val config: PagingConfig
 
     override suspend fun load(params: LoadParams<Key>): LoadResult<Key, Value> {
