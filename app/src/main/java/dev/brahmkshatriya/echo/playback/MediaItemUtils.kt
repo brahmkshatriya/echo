@@ -10,6 +10,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.ThumbRating
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.selectSourceIndex
@@ -147,7 +148,9 @@ object MediaItemUtils {
         subtitleIndex: Int? = null
     ) = MediaMetadata.Builder()
         .setTitle(title)
-        .setArtist(artists.joinToString(", ") { it.name })
+        .setAlbumTitle(album?.title)
+        .setAlbumArtist(album?.artists?.joinToString(", ") { it.name })
+        .setArtist(toMediaItem().subtitleWithE)
         .setArtworkUri(cover?.toJson()?.toUri())
         .setUserRating(ThumbRating(isLiked))
         .setIsBrowsable(false)

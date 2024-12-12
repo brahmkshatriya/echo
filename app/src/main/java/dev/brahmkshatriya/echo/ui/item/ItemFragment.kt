@@ -30,6 +30,8 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.RadioItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.extensions.isClient
@@ -166,20 +168,26 @@ class ItemFragment : Fragment() {
                 playerVM.radio(clientId, artist.toMediaItem())
         })
 
-        fun concatAdapter(item: EchoMediaItem, itemsAdapter: ConcatAdapter): ConcatAdapter {
-            trackAdapter = TrackAdapter(clientId, view.transitionName, listener, item, true)
-            return when (item) {
-                is AlbumItem ->
-                    ConcatAdapter(albumHeaderAdapter, trackAdapter, itemsAdapter)
+        fun concatAdapter(item: EchoMediaItem, itemsAdapter: ConcatAdapter) = when (item) {
+            is EchoMediaItem.Lists -> {
+                val trackAdapter =
+                    TrackAdapter(clientId, view.transitionName, listener, item, true)
+                this.trackAdapter = trackAdapter
+                when (item) {
+                    is AlbumItem -> ConcatAdapter(
+                        ExplicitAdapter(item), albumHeaderAdapter, trackAdapter, itemsAdapter
+                    )
 
-                is PlaylistItem ->
-                    ConcatAdapter(playlistHeaderAdapter, trackAdapter, itemsAdapter)
+                    is PlaylistItem ->
+                        ConcatAdapter(playlistHeaderAdapter, trackAdapter, itemsAdapter)
 
-                is RadioItem -> ConcatAdapter(trackAdapter)
-
-                is ArtistItem -> ConcatAdapter(artistHeaderAdapter, itemsAdapter)
-                else -> itemsAdapter
+                    is RadioItem -> trackAdapter
+                }
             }
+
+            is ArtistItem -> ConcatAdapter(artistHeaderAdapter, itemsAdapter)
+            is TrackItem -> ConcatAdapter(ExplicitAdapter(item), itemsAdapter)
+            is UserItem -> itemsAdapter
         }
 
         binding.swipeRefresh.configure {
@@ -270,13 +278,13 @@ class ItemFragment : Fragment() {
             binding.recyclerView.run {
                 val adapter = concatAdapter(item, mediaAdapter.withLoaders())
                 when (item) {
-                    is EchoMediaItem.Profile.UserItem ->
+                    is UserItem ->
                         applyAdapter<UserClient>(extension, R.string.user, adapter)
 
                     is ArtistItem ->
                         applyAdapter<ArtistClient>(extension, R.string.artist, adapter)
 
-                    is EchoMediaItem.TrackItem ->
+                    is TrackItem ->
                         applyAdapter<TrackClient>(extension, R.string.track, adapter)
 
                     is AlbumItem ->

@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.ui.search
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
@@ -27,7 +26,7 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
 
         override fun bind(item: QuickSearchItem) {
             item as QuickSearchItem.Query
-            binding.history.isVisible = item.searched
+            binding.history.visibility = if (item.searched) View.VISIBLE else View.INVISIBLE
             binding.query.text = item.query
         }
 

@@ -430,7 +430,7 @@ class PlayerTrackAdapter(
         }
 
         collapsedContainer.run {
-            collapsedTrackArtist.text = track.artists.joinToString(", ") { it.name }
+            collapsedTrackArtist.text = item.track.toMediaItem().subtitleWithE
             collapsedTrackTitle.text = track.title
             collapsedTrackTitle.isSelected = true
             collapsedTrackTitle.setHorizontallyScrolling(true)
@@ -467,7 +467,7 @@ class PlayerTrackAdapter(
         trackTitle.isSelected = true
         trackTitle.setHorizontallyScrolling(true)
         val artists = track.artists
-        val artistNames = artists.joinToString(", ") { it.name }
+        val artistNames = track.toMediaItem().subtitleWithE ?: ""
         val spannableString = SpannableString(artistNames)
 
         artists.forEach { artist ->

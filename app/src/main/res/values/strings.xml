@@ -269,6 +269,7 @@
     <string name="source_selection">Source Selection</string>
     <string name="blacklist_folder_keywords">Blacklist Folder Keywords</string>
     <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders, use comma for separator</string>
+    <string name="explicit">Explicit</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

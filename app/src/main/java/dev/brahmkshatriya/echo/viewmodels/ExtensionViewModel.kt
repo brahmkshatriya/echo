@@ -216,7 +216,7 @@ class ExtensionViewModel @Inject constructor(
         inline fun <reified T> RecyclerView.applyAdapter(
             extension: Extension<*>?,
             name: Int,
-            adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>
+            adapter: RecyclerView.Adapter<*>
         ) {
             val client = extension?.instance?.value?.getOrNull()
             setAdapter(

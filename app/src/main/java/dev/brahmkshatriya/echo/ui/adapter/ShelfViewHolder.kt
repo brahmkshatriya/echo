@@ -178,8 +178,8 @@ sealed class ShelfViewHolder(
 
             fun ItemShelfMediaBinding.bind(item: EchoMediaItem): (Boolean) -> Unit {
                 title.text = item.title
-                subtitle.text = item.subtitle
-                subtitle.isVisible = item.subtitle.isNullOrBlank().not()
+                subtitle.text = item.subtitleWithE
+                subtitle.isVisible = item.subtitleWithE.isNullOrBlank().not()
 
                 trackImageContainer.root.isVisible = item is EchoMediaItem.TrackItem
                 listsImageContainer.root.isVisible = item is EchoMediaItem.Lists

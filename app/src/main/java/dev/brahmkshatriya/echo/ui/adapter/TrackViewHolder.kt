@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
@@ -38,9 +39,10 @@ class TrackViewHolder(
         track.duration?.toTimeString()?.let {
             subtitle += it
         }
-        track.artists.joinToString(", ") { it.name }.let {
+        track.toMediaItem().subtitleWithE?.let {
             if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
         }
+
         binding.itemSubtitle.isVisible = subtitle.isNotEmpty()
         binding.itemSubtitle.text = subtitle
 

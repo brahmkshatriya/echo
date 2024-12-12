@@ -63,6 +63,7 @@
                 android:id="@+id/itemSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:alpha="0.66"
                 android:maxLines="1"
                 tools:text="@tools:sample/last_names" />
         </LinearLayout>

@@ -118,8 +118,8 @@ sealed class MediaItemViewHolder(
         override fun bind(item: EchoMediaItem) {
             item as EchoMediaItem.Profile
             binding.title.text = item.title
-            binding.subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
-            binding.subtitle.text = item.subtitle
+            binding.subtitle.isVisible = item.subtitleWithE.isNullOrEmpty().not()
+            binding.subtitle.text = item.subtitleWithE
             binding.cover.bind(item)
         }
 
@@ -160,8 +160,8 @@ sealed class MediaItemViewHolder(
 
         fun NewItemMediaTitleBinding.bind(item: EchoMediaItem) {
             title.text = item.title
-            subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
-            subtitle.text = item.subtitle
+            subtitle.isVisible = item.subtitleWithE.isNullOrEmpty().not()
+            subtitle.text = item.subtitleWithE
         }
 
         fun View.toolTipOnClick() {

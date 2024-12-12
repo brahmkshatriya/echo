@@ -22,7 +22,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  * @property id The id of the media item
  * @property title The title of the media item
  * @property cover The cover image of the media item
- * @property subtitle The subtitle of the media item, used to display information under the title
+ * @property subtitleWithE The subtitle of the media item, used to display information under the title
  * @property extras Any extra data you want to associate with the media item
  *
  * @see Track
@@ -146,6 +146,13 @@ sealed class EchoMediaItem {
             is Lists.RadioItem -> radio.title
         }
 
+    val isExplicit
+        get() = when (this) {
+            is TrackItem -> track.isExplicit
+            is Lists.AlbumItem -> album.isExplicit
+            else -> false
+        }
+
     val cover
         get() = when (this) {
             is TrackItem -> track.cover
@@ -156,7 +163,10 @@ sealed class EchoMediaItem {
             is Lists.RadioItem -> radio.cover
         }
 
-    val subtitle
+    val subtitleWithE
+        get() = if (isExplicit) "\uD83C\uDD74 " + (subtitle ?: "") else subtitle
+
+    private val subtitle
         get() = when (this) {
             is TrackItem -> track.run { subtitle ?: artists.joinToString(", ") { it.name } }
             is Profile.ArtistItem -> artist.subtitle
