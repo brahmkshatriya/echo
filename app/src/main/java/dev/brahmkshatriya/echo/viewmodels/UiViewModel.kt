@@ -96,7 +96,7 @@ class UiViewModel @Inject constructor(
     }
 
     fun setSystemInsets(context: Context, insets: WindowInsetsCompat) {
-        val system = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        val system = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
         val inset = system.run {
             if (context.isRTL()) Insets(top, bottom, right, left)
             else Insets(top, bottom, left, right)

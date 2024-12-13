@@ -119,6 +119,16 @@ class LookFragment : BaseSettingsFragment() {
                     setDefaultValue(true)
                     addPreference(this)
                 }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = SHOW_BACKGROUND
+                    title = getString(R.string.show_background)
+                    summary = getString(R.string.show_background_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    addPreference(this)
+                }
             }
 
             PreferenceCategory(context).apply {
@@ -161,6 +171,7 @@ class LookFragment : BaseSettingsFragment() {
         const val AMOLED_KEY = "amoled"
         const val NAVBAR_GRADIENT = "navbar_gradient"
         const val DYNAMIC_PLAYER = "dynamic_player"
+        const val SHOW_BACKGROUND = "show_background"
         const val ANIMATIONS_KEY = "animations"
         const val SHARED_ELEMENT_KEY = "shared_element_transitions"
     }

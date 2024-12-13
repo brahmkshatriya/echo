@@ -30,7 +30,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.listeners.Radio
-import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
@@ -57,7 +56,6 @@ class PlayerViewModel @Inject constructor(
     val radioStateFlow: MutableStateFlow<Radio.State>,
     val currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>,
     val cache: SimpleCache,
-    val fftAudioProcessor: FFTAudioProcessor,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {

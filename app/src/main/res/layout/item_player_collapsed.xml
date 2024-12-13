@@ -30,7 +30,7 @@
             app:indicatorColor="?attr/colorTertiary"
             app:indicatorTrackGapSize="0dp"
             app:trackColor="?attr/colorOnSurface"
-            app:trackThickness="2dp" />
+            app:trackThickness="1dp" />
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/collapsedSeekBar"
@@ -40,7 +40,7 @@
             android:progress="20"
             app:indicatorColor="?attr/colorTertiary"
             app:trackColor="@android:color/transparent"
-            app:trackThickness="2dp" />
+            app:trackThickness="1dp" />
 
         <LinearLayout
             android:layout_width="match_parent"

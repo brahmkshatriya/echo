@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.playback.render
 
 import android.content.Context
 import androidx.annotation.OptIn
-import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -11,8 +10,7 @@ import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 
 @OptIn(UnstableApi::class)
 class RenderersFactory(
-    context: Context,
-    private val audioProcessor: AudioProcessor
+    context: Context
 ) : DefaultRenderersFactory(context) {
     override fun buildAudioSink(
         context: Context,
@@ -32,7 +30,7 @@ class RenderersFactory(
             .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
             .setAudioProcessorChain(
                 DefaultAudioSink.DefaultAudioProcessorChain(
-                    arrayOf(audioProcessor), silenceSkippingAudioProcessor, SonicAudioProcessor()
+                    emptyArray(), silenceSkippingAudioProcessor, SonicAudioProcessor()
                 )
             )
             .build()

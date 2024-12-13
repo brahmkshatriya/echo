@@ -27,7 +27,6 @@ import dev.brahmkshatriya.echo.playback.listeners.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.playback.listeners.TrackingListener
 import dev.brahmkshatriya.echo.playback.loading.StreamableMediaSource
-import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.playback.render.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.render.RenderersFactory
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
@@ -69,9 +68,6 @@ class PlayerService : MediaLibraryService() {
     @Inject
     lateinit var currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>
 
-    @Inject
-    lateinit var fftAudioProcessor: FFTAudioProcessor
-
     private val scope = CoroutineScope(Dispatchers.Main)
 
     @OptIn(UnstableApi::class)
@@ -93,7 +89,7 @@ class PlayerService : MediaLibraryService() {
         )
 
         ExoPlayer.Builder(this, factory)
-            .setRenderersFactory(RenderersFactory(this, fftAudioProcessor))
+            .setRenderersFactory(RenderersFactory(this))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))

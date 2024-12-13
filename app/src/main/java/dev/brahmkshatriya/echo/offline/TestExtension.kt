@@ -86,7 +86,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
             Streamable.MediaType.Server -> {
                 val srcs = Srcs.valueOf(streamable.id)
                 when (srcs) {
-                    Srcs.Single -> throw Exception("Single source not supported")
+                    Srcs.Single -> FUN.toServerMedia()
                     Srcs.Merged -> Streamable.Media.Server(
                         listOf(
                             BUNNY.toSource(),

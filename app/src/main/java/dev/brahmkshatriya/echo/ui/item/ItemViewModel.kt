@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.item
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -85,31 +86,7 @@ class ItemViewModel @Inject constructor(
                 )
 
                 is TrackItem -> loadItem<TrackClient, TrackItem>(
-                    item, { loadTrack(it.track).toMediaItem() }, { trackItem ->
-                        val client = this
-                        val track = trackItem.track
-                        val album = trackItem.track.album
-                        val artists = trackItem.track.artists
-                        PagedData.Concat(
-                            if (client is AlbumClient && album != null) PagedData.Single {
-                                listOf(
-                                    client.loadAlbum(album).toMediaItem().toShelf()
-                                )
-                            } else PagedData.empty(),
-                            if (artists.isNotEmpty()) PagedData.Single {
-                                listOf(
-                                    Shelf.Lists.Items(
-                                        app.getString(R.string.artists),
-                                        if (client is ArtistClient) artists.map {
-                                            val artist = client.loadArtist(it)
-                                            artist.toMediaItem()
-                                        } else artists.map { it.toMediaItem() }
-                                    )
-                                )
-                            } else PagedData.empty(),
-                            client.getShelves(track)
-                        )
-                    }
+                    item, { loadTrack(it.track).toMediaItem() }, { getTrackShelves(it.track, app) }
                 )
 
                 is RadioItem -> loadItem<RadioClient, RadioItem>(item, { it }, { null })
@@ -231,4 +208,32 @@ class ItemViewModel @Inject constructor(
         }
     }
 
+    companion object {
+
+        fun Any.getTrackShelves(
+            track: Track, context: Context
+        ): PagedData.Concat<Shelf> {
+            val album = track.album
+            val artists = track.artists
+            return PagedData.Concat(
+                if (album != null) PagedData.Single {
+                    val a = if (this !is AlbumClient) album
+                    else loadAlbum(album)
+                    listOf(a.toMediaItem().toShelf())
+                } else PagedData.empty(),
+                if (artists.isNotEmpty()) PagedData.Single {
+                    listOf(
+                        Shelf.Lists.Items(
+                            context.getString(R.string.artists),
+                            if (this is ArtistClient) artists.map {
+                                val artist = loadArtist(it)
+                                artist.toMediaItem()
+                            } else artists.map { it.toMediaItem() }
+                        )
+                    )
+                } else PagedData.empty(),
+                if (this is TrackClient) getShelves(track) else PagedData.empty()
+            )
+        }
+    }
 }

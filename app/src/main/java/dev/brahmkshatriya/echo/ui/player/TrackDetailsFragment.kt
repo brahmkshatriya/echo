@@ -27,10 +27,6 @@ import com.google.android.material.chip.ChipGroup
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.clients.AlbumClient
-import dev.brahmkshatriya.echo.common.clients.ArtistClient
-import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -49,6 +45,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.adapter.ShelfClickListener
+import dev.brahmkshatriya.echo.ui.item.ExplicitAdapter
+import dev.brahmkshatriya.echo.ui.item.ItemViewModel.Companion.getTrackShelves
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
@@ -93,7 +91,9 @@ class TrackDetailsFragment : Fragment() {
             val adapter =
                 ShelfAdapter(this, "track_details", extension, shelfClickListener)
             mediaAdapter = adapter
-            binding.root.adapter = ConcatAdapter(infoAdapter, adapter.withLoaders())
+            binding.root.adapter = ConcatAdapter(
+                ExplicitAdapter(track.toMediaItem()), infoAdapter, adapter.withLoaders()
+            )
             viewModel.load(item.clientId, track)
         }
 
@@ -401,33 +401,10 @@ class TrackDetailsFragment : Fragment() {
             itemsFlow.value = null
 
             val extension = extensionListFlow.getExtension(clientId) ?: return
-            val client = extension.instance.value.getOrNull()
-            val album = track.album
-            val artists = track.artists
-
             viewModelScope.launch {
-                val pagedData = PagedData.Concat(
-                    if (client is AlbumClient && album != null) PagedData.Single {
-                        listOf(
-                            client.loadAlbum(album).toMediaItem().toShelf()
-                        )
-                    } else PagedData.empty(),
-                    if (artists.isNotEmpty()) PagedData.Single {
-                        listOf(
-                            Shelf.Lists.Items(
-                                app.getString(R.string.artists),
-                                if (client is ArtistClient) artists.map {
-                                    val artist = client.loadArtist(it)
-                                    artist.toMediaItem()
-                                } else artists.map { it.toMediaItem() }
-                            )
-                        )
-                    } else PagedData.empty(),
-                    if (client is TrackClient) extension.run(throwableFlow) {
-                        client.getShelves(track)
-                    } ?: PagedData.empty()
-                    else PagedData.empty()
-                )
+                val pagedData = extension.run(throwableFlow) {
+                    getTrackShelves(track, app)
+                } ?: return@launch
                 pagedData.toFlow().collectTo(itemsFlow)
             }
         }

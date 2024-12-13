@@ -10,13 +10,11 @@ import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -64,7 +62,6 @@ import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerCol
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
 import dev.brahmkshatriya.echo.utils.animateVisibility
-import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
 import dev.brahmkshatriya.echo.utils.loadBitmap
@@ -75,8 +72,8 @@ import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
@@ -105,18 +102,59 @@ class PlayerTrackAdapter(
         return ViewHolder(ItemPlayerTrackBinding.inflate(inflater, parent, false))
     }
 
+    @OptIn(UnstableApi::class)
     inner class ViewHolder(val binding: ItemPlayerTrackBinding) : Holder<MediaItem>(binding.root) {
+
         override fun bind(item: MediaItem) {
+            this.item = item
             onBind(bindingAdapterPosition)
+
+            applyVideoVisibility(false)
+            binding.bgVideo.run {
+                player = null
+                val background = item.background
+                if (background != null && showBackground()) {
+                    resizeMode = RESIZE_MODE_ZOOM
+                    player = getPlayer(context, viewModel.cache, background)
+                    applyVideoVisibility(true)
+                }
+            }
+            observe(merge(viewModel.currentFlow, viewModel.browser)) { applyVideo() }
+        }
+
+        private fun applyVideoVisibility(visible: Boolean) {
+            binding.bgVideo.isVisible = visible
+            binding.bgImage.isVisible = !visible
+        }
+
+        private fun isCurrent() = viewModel.currentFlow.value?.index == bindingAdapterPosition
+        var item: MediaItem? = null
+        fun applyVideo() {
+            if (item?.background != null) return
+            if (isCurrent()) {
+                val player = viewModel.browser.value
+                binding.bgVideo.resizeMode = RESIZE_MODE_FIT
+                binding.bgVideo.player = player
+                applyVideoVisibility(player.hasVideo())
+            } else {
+                binding.bgVideo.player = null
+                applyVideoVisibility(false)
+            }
+        }
+
+        init {
+            viewModel.browser.value!!.addListener(object : Player.Listener {
+                override fun onTracksChanged(tracks: Tracks) {
+                    applyVideo()
+                }
+            })
         }
     }
 
     private val viewModel by fragment.activityViewModels<PlayerViewModel>()
     private val uiViewModel by fragment.activityViewModels<UiViewModel>()
 
-    @OptIn(UnstableApi::class)
     fun ViewHolder.onBind(position: Int) {
-        binding.bgVisualizer.processor = viewModel.fftAudioProcessor
 
         val item = getItem(position) ?: return
         val clientId = item.clientId
@@ -126,11 +164,7 @@ class PlayerTrackAdapter(
         lifecycleScope.launch {
             val bitmap = item.track.cover?.loadBitmap(binding.root.context)
             val colors = binding.root.context.getPlayerColors(bitmap)
-            binding.root.setBackgroundColor(colors.background)
-            binding.bgInfoSpace.setBackgroundColor(colors.background)
-            binding.bgVisualizer.setColors(colors.accent)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
-            binding.bgInfoGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.expandedToolbar.run {
                 setTitleTextColor(colors.text)
                 setSubtitleTextColor(colors.text)
@@ -138,9 +172,8 @@ class PlayerTrackAdapter(
             binding.collapsedContainer.applyColors(colors)
             binding.playerControls.applyColors(colors)
 
-            binding.bgInfoTitle.setTextColor(colors.text)
-            binding.bgInfoArtist.setTextColor(colors.text)
-            binding.bgImage.loadBlurred(bitmap, 12f)
+            if (showBackground()) binding.bgImage.loadBlurred(bitmap, 12f)
+            else binding.bgImage.setImageDrawable(null)
         }
 
         binding.collapsedContainer.root.setOnClickListener {
@@ -165,7 +198,6 @@ class PlayerTrackAdapter(
 
         observe(uiViewModel.playerBgVisibleState) {
             val animate = viewModel.currentFlow.value?.index == bindingAdapterPosition
-            binding.bgInfoContainer.animateVisibility(it, animate)
             if (uiViewModel.playerSheetState.value == STATE_EXPANDED) {
                 binding.bgGradient.animateVisibility(!it, animate)
                 binding.expandedTrackCoverContainer.animateVisibility(!it, animate)
@@ -179,28 +211,22 @@ class PlayerTrackAdapter(
             }
         }
 
-        binding.bgImage.setOnClickListener {
+        binding.bgContainer.setOnClickListener {
             emit(uiViewModel.playerBgVisibleState) { false }
             if (uiViewModel.infoSheetState.value == STATE_EXPANDED)
                 emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
         }
 
-//        binding.bgVideo.setOnClickListener {
-//            emit(uiViewModel.playerBgVisibleState) { false }
-//            if (uiViewModel.infoSheetState.value == STATE_EXPANDED)
-//                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
-//        }
-
         binding.expandedTrackCover.setOnClickListener {
-            emit(uiViewModel.playerBgVisibleState) { true }
+            val bgImage = binding.bgImage.drawable != null
+            if (bgImage || viewModel.browser.value.hasVideo() || item.background != null)
+                emit(uiViewModel.playerBgVisibleState) { true }
         }
 
         observe(uiViewModel.infoSheetOffset) {
             if (uiViewModel.playerBgVisibleState.value) {
                 binding.bgGradient.isVisible = it != 0f
                 binding.bgGradient.alpha = it
-                if (!binding.root.context.isLandscape())
-                    binding.bgInfoContainer.alpha = 1 - it
             } else {
                 binding.expandedContainer.alpha = 1 - it
                 binding.expandedContainer.isVisible = it != 1f
@@ -209,49 +235,14 @@ class PlayerTrackAdapter(
 
         observe(uiViewModel.systemInsets) {
             binding.expandedTrackCoverContainer.applyInsets(it, 24)
-            binding.bgInfoContainer.applyInsets(it)
-            binding.bgInfoSpace.updateLayoutParams<MarginLayoutParams> {
-                val context = binding.bgInfoSpace.context
-                height = (if (context.isLandscape()) 0 else 64).dpToPx(context) + it.bottom
-                bottomMargin = -it.bottom
-            }
             binding.collapsedContainer.root.updatePaddingRelative(start = it.start, end = it.end)
         }
 
         binding.playerControls.bind(this, item, clientId)
-
-        //VIDEO STUFF
-        binding.bgVideo.apply {
-            isVisible = false
-            val background = item.background
-            if (background != null) {
-                isVisible = true
-                val player = getPlayer(context, viewModel.cache, background)
-                setPlayer(player)
-                resizeMode = RESIZE_MODE_ZOOM
-            } else {
-                observe(viewModel.currentFlow) {
-                    val isCurrent = it?.index == bindingAdapterPosition
-                    if (!isCurrent) return@observe
-                    post {
-                        setPlayer(null)
-                        val player = viewModel.browser.value
-                        isVisible = player != null && player.hasVideo()
-                        setPlayer(player)
-                        player?.addListener(object : Player.Listener {
-                            override fun onTracksChanged(tracks: Tracks) {
-                                isVisible = player.hasVideo()
-                            }
-                        })
-                    }
-                }
-                resizeMode = RESIZE_MODE_FIT
-            }
-        }
     }
 
-    private fun Player.hasVideo() =
-        currentTracks.groups.any { it.type == C.TRACK_TYPE_VIDEO }
+    private fun Player?.hasVideo() =
+        this?.currentTracks?.groups.orEmpty().any { it.type == C.TRACK_TYPE_VIDEO }
 
     private fun ItemPlayerControlsBinding.bind(
         viewHolder: ViewHolder,
@@ -439,7 +430,6 @@ class PlayerTrackAdapter(
         playerControls.run {
             applyTitles(track, trackTitle, trackArtist, client, listener)
         }
-        applyTitles(track, bgInfoTitle, bgInfoArtist, client, listener)
 
         expandedToolbar.run {
             val itemContext = item.context
@@ -483,19 +473,20 @@ class PlayerTrackAdapter(
         trackArtist.movementMethod = LinkMovementMethod.getInstance()
     }
 
+    private fun showBackground() =
+        viewModel.settings.getBoolean(LookFragment.SHOW_BACKGROUND, true)
+
+    private fun isDynamic() =
+        viewModel.settings.getBoolean(LookFragment.DYNAMIC_PLAYER, true)
+
     private fun Context.getPlayerColors(bitmap: Bitmap?): PlayerColors {
         val defaultColors = defaultPlayerColors()
         bitmap ?: return defaultColors
-        val preferences =
-            applicationContext.getSharedPreferences(packageName, Context.MODE_PRIVATE)
-        val dynamicPlayer = preferences.getBoolean(LookFragment.DYNAMIC_PLAYER, true)
-        val imageColors =
-            if (dynamicPlayer) getColorsFrom(bitmap) else defaultColors
+        val imageColors = if (isDynamic()) getColorsFrom(bitmap) else defaultColors
         return imageColors ?: defaultColors
     }
 
     private fun ItemPlayerCollapsedBinding.applyColors(colors: PlayerColors) {
-//        root.setBackgroundColor(colors.background)
         collapsedProgressBar.setIndicatorColor(colors.accent)
         collapsedSeekBar.setIndicatorColor(colors.accent)
         collapsedBuffer.setIndicatorColor(colors.accent)

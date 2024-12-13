@@ -110,6 +110,7 @@ class PlayerUiListener(
 
     override fun onPlayerError(error: PlaybackException) {
         viewModel.isPlaying.value = false
+        viewModel.buffering.value = false
         val cause = error.cause?.cause ?: error.cause ?: error
         viewModel.run {
             if (cause !is StreamableLoadingException) createException(cause.toExceptionDetails(app))

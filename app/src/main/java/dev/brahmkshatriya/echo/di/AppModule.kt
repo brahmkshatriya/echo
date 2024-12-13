@@ -17,7 +17,6 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.listeners.Radio
-import dev.brahmkshatriya.echo.playback.render.FFTAudioProcessor
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CACHE_SIZE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -77,8 +76,4 @@ class AppModule {
     @Provides
     @Singleton
     fun provideExtensionListFlow() = MutableStateFlow<Radio.State>(Radio.State.Empty)
-
-    @Provides
-    @Singleton
-    fun providesAudioProcessor() = FFTAudioProcessor()
 }

@@ -270,6 +270,8 @@
     <string name="blacklist_folder_keywords">Blacklist Folder Keywords</string>
     <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders, use comma for separator</string>
     <string name="explicit">Explicit</string>
+    <string name="show_background">Show Background</string>
+    <string name="show_background_summary">Background video or blurred artwork of track in player</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>

@@ -180,8 +180,9 @@ sealed class PagedData<T : Any> {
         override suspend fun loadAll(): List<T> = sources.flatMap { it.loadAll() }
 
         private fun splitContinuation(continuation: String?): Pair<Int, String?> {
-            val index = continuation?.substringBefore("_")?.toIntOrNull() ?: -1
-            val token = continuation?.substringAfter("_")
+            if (continuation == null) return 0 to null
+            val index = continuation.substringBefore("_").toIntOrNull() ?: -1
+            val token = continuation.substringAfter("_")
             return index to token
         }
 

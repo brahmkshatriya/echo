@@ -54,8 +54,8 @@ dependencies {
 
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    implementation("androidx.paging:paging-common-ktx:3.3.4")
-    implementation("androidx.paging:paging-runtime-ktx:3.3.4")
+    implementation("androidx.paging:paging-common-ktx:3.3.5")
+    implementation("androidx.paging:paging-runtime-ktx:3.3.5")
     implementation("androidx.preference:preference-ktx:1.2.1")
 
     implementation("androidx.room:room-runtime:2.6.1")
@@ -84,7 +84,6 @@ dependencies {
     implementation("com.github.bosphere.android-fadingedgelayout:fadingedgelayout:1.0.0")
     implementation("me.zhanghai.android.fastscroll:library:1.3.0")
     implementation("com.flaviofaria:kenburnsview:1.0.7")
-    implementation("com.github.paramsen:noise:2.0.0")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
     testImplementation("junit:junit:4.13.2")

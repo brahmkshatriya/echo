@@ -1,9 +1,14 @@
 package dev.brahmkshatriya.echo.ui.player
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +24,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
+import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
@@ -116,11 +122,34 @@ class PlayerFragment : Fragment() {
             viewModel.browser.value?.volume = 1 + min(0f, it)
             val offset = max(0f, it)
             binding.playerOutline.alpha = 1 - offset
+            if (offset < 1)
+                requireActivity().hideSystemUi(false)
+            else if (uiViewModel.playerBgVisibleState.value)
+                requireActivity().hideSystemUi(true)
         }
 
         observe(uiViewModel.infoSheetState) {
             binding.viewPager.isUserInputEnabled =
                 requireContext().isLandscape() || it == STATE_COLLAPSED
+        }
+
+        observe(uiViewModel.playerBgVisibleState) {
+            binding.playerInfoContainer.animateVisibility(!it)
+            requireActivity().hideSystemUi(it)
+        }
+    }
+
+    private fun Activity.hideSystemUi(hide: Boolean) {
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+        if (hide) {
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 

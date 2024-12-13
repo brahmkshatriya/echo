@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="4dp"
         android:contentDescription="@string/close"
-        android:padding="12dp"
+        android:padding="8dp"
         app:icon="@drawable/ic_close"
         app:iconSize="24dp"
         app:iconTint="?colorOnSurface" />
