@@ -11,7 +11,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
@@ -50,7 +50,7 @@ class StreamableLoader(
         mediaItem: MediaItem,
         block: suspend TrackClient.() -> T
     ): T {
-        val extension = extensionListFlow.getExtension(mediaItem.clientId)
+        val extension = extensionListFlow.getExtension(mediaItem.extensionId)
             ?: throw Exception(context.noClient().message)
         val client = extension.instance.value.getOrNull()
         if (client !is TrackClient)
@@ -73,7 +73,7 @@ class StreamableLoader(
         val index = mediaItem.sourcesIndex
         val streamable = streams[index]
         return withClient(mediaItem) {
-            loadStreamableMedia(streamable) as Streamable.Media.Server
+            loadStreamableMedia(streamable, false) as Streamable.Media.Server
         }
     }
 
@@ -82,7 +82,7 @@ class StreamableLoader(
         val index = mediaItem.backgroundIndex
         val streamable = streams[index]
         return withClient(mediaItem) {
-            loadStreamableMedia(streamable) as Streamable.Media.Background
+            loadStreamableMedia(streamable, false) as Streamable.Media.Background
         }
     }
 
@@ -91,7 +91,7 @@ class StreamableLoader(
         val index = mediaItem.subtitleIndex
         val streamable = streams[index]
         return withClient(mediaItem) {
-            loadStreamableMedia(streamable) as Streamable.Media.Subtitle
+            loadStreamableMedia(streamable, false) as Streamable.Media.Subtitle
         }
     }
 }

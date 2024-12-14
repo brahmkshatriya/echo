@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackHideClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -26,13 +27,15 @@ import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtit
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.TrackDetails
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 import kotlin.random.Random
 
-class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient, HomeFeedClient,
-    ArtistFollowClient, RadioClient, SaveToLibraryClient, TrackLikeClient, TrackHideClient {
+class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient,
+    HomeFeedClient, ArtistFollowClient, RadioClient, SaveToLibraryClient, TrackLikeClient,
+    TrackHideClient, TrackerClient {
 
     companion object {
         val metadata = Metadata(
@@ -80,7 +83,9 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     override suspend fun getCurrentUser(): User? = null
 
 
-    override suspend fun loadStreamableMedia(streamable: Streamable): Streamable.Media {
+    override suspend fun loadStreamableMedia(
+        streamable: Streamable, isDownload: Boolean
+    ): Streamable.Media {
         return when (streamable.type) {
             Streamable.MediaType.Background -> streamable.id.toBackgroundMedia()
             Streamable.MediaType.Server -> {
@@ -195,4 +200,17 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         isHidden = isHidden,
         extras = mapOf("loaded" to "Loaded bro")
     )
+
+    override suspend fun onTrackChanged(details: TrackDetails?) {
+        println("onTrackChanged : $details")
+    }
+
+    override suspend fun onPlayingStateChanged(details: TrackDetails, isPlaying: Boolean) {
+        println("onPlayingStateChanged $isPlaying : $details")
+    }
+
+    override val markAsPlayedDuration = 10000L
+    override suspend fun onMarkAsPlayed(details: TrackDetails) {
+        println("onMarkAsPlayed : $details")
+    }
 }

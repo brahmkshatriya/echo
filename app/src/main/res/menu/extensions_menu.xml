@@ -3,6 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/menu_repo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:icon="@drawable/ic_language"
+        android:title="@string/extension"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menu_uninstall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

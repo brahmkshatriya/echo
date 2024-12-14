@@ -39,7 +39,7 @@ object MediaItemUtils {
         settings: SharedPreferences?, mediaItem: MediaItem, track: Track
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
-        val metadata = track.toMetaData(mediaMetadata.extras!!, clientId, context, true, settings)
+        val metadata = track.toMetaData(mediaMetadata.extras!!, extensionId, context, true, settings)
         item.setMediaMetadata(metadata)
         return item.build()
     }
@@ -139,7 +139,7 @@ object MediaItemUtils {
 
     private fun Track.toMetaData(
         bundle: Bundle,
-        clientId: String = bundle.getString("clientId")!!,
+        extensionId: String = bundle.getString("clientId")!!,
         context: EchoMediaItem? = bundle.getSerialized("context"),
         loaded: Boolean = bundle.getBoolean("loaded"),
         settings: SharedPreferences? = null,
@@ -156,7 +156,7 @@ object MediaItemUtils {
         .setIsBrowsable(false)
         .setExtras(bundle.apply {
             putSerialized("track", this@toMetaData)
-            putString("clientId", clientId)
+            putString("extensionId", extensionId)
             putSerialized("context", context)
             putBoolean("loaded", loaded)
             putInt("serverIndex", sourcesIndex ?: selectSourceIndex(settings, servers))
@@ -174,7 +174,7 @@ object MediaItemUtils {
 
     val MediaMetadata.isLoaded get() = extras?.getBoolean("loaded") ?: false
     val MediaMetadata.track get() = requireNotNull(extras?.getSerialized<Track>("track"))
-    val MediaMetadata.clientId get() = requireNotNull(extras?.getString("clientId"))
+    val MediaMetadata.clientId get() = requireNotNull(extras?.getString("extensionId"))
     val MediaMetadata.context get() = extras?.getSerialized<EchoMediaItem?>("context")
     val MediaMetadata.sourcesIndex get() = extras?.getInt("serverIndex") ?: -1
     val MediaMetadata.sourceIndex get() = extras?.getInt("sourceIndex") ?: -1
@@ -186,7 +186,7 @@ object MediaItemUtils {
     val MediaMetadata.retries get() = extras?.getInt("retries") ?: 0
 
     val MediaItem.track get() = mediaMetadata.track
-    val MediaItem.clientId get() = mediaMetadata.clientId
+    val MediaItem.extensionId get() = mediaMetadata.clientId
     val MediaItem.context get() = mediaMetadata.context
     val MediaItem.isLoaded get() = mediaMetadata.isLoaded
     val MediaItem.sourcesIndex get() = mediaMetadata.sourcesIndex

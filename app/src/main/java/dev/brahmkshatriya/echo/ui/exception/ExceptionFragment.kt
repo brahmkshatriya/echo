@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
 import dev.brahmkshatriya.echo.extensions.InvalidExtensionListException
 import dev.brahmkshatriya.echo.extensions.RequiredExtensionsException
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -143,7 +143,7 @@ class ExceptionFragment : Fragment() {
 
         fun Context.getDetails(throwable: Throwable): String = when (throwable) {
             is PlayerViewModel.PlayerException -> """
-Client Id : ${throwable.mediaItem?.clientId}
+Client Id : ${throwable.mediaItem?.extensionId}
 Track : ${throwable.mediaItem?.track}
 Stream : ${throwable.mediaItem?.run { track.servers.getOrNull(sourcesIndex) }}
 

@@ -9,8 +9,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
@@ -22,11 +22,11 @@ object ResumptionUtils {
         val list = player.mediaItems()
         val currentIndex = player.currentMediaItemIndex
         val tracks = list.map { it.track }
-        val clients = list.map { it.clientId }
+        val extensionIds = list.map { it.extensionId }
         val contexts = list.map { it.context }
         context.saveToCache("queue_tracks", tracks, "queue")
         context.saveToCache("queue_contexts", contexts, "queue")
-        context.saveToCache("queue_clients", clients, "queue")
+        context.saveToCache("queue_extensions", extensionIds, "queue")
         context.saveToCache("queue_index", currentIndex, "queue")
     }
 
@@ -37,12 +37,12 @@ object ResumptionUtils {
     private fun recoverQueue(context: Context): List<MediaItem>? {
         val settings = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         val tracks = context.getFromCache<List<Track>>("queue_tracks", "queue")
-        val clientIds = context.getFromCache<List<String>>("queue_clients", "queue")
+        val extensionIds = context.getFromCache<List<String>>("queue_extensions", "queue")
         val contexts = context.getFromCache<List<EchoMediaItem>>("queue_contexts", "queue")
         return tracks?.mapIndexedNotNull { index, track ->
-            val clientId = clientIds?.getOrNull(index) ?: return@mapIndexedNotNull null
+            val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
-            MediaItemUtils.build(settings, track, clientId, item)
+            MediaItemUtils.build(settings, track, extensionId, item)
         } ?: return null
     }
 

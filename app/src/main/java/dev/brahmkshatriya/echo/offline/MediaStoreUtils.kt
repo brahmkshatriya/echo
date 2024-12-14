@@ -355,7 +355,7 @@ object MediaStoreUtils {
                 description = description,
                 streamables = listOf(Streamable.server(path, 0)),
                 extras = mapOf(
-                    "genre" to (genre ?: ""),
+                    "genre" to (genre ?: context.getString(R.string.unknown)),
                     "addDate" to addDate.toString(),
                     "trackNumber" to trackNumber.toString()
                 )
@@ -474,7 +474,8 @@ object MediaStoreUtils {
         val genreMap = hashMapOf<String?, Genre>()
         val dateMap = hashMapOf<Int?, Date>()
         val playlists = mutableListOf<Pair<MPlaylist, MutableList<Long>>>()
-        val foundPlaylistContent = playlistContent(context, playlists)
+        val foundPlaylistContent =
+            runCatching { playlistContent(context, playlists) }.getOrNull() ?: false
         val idMap = hashMapOf<Long, Track>()
         val likedAudios = playlists.find { it.first.title == "Liked" }?.second ?: emptyList()
         val cursor = context.contentResolver.query(

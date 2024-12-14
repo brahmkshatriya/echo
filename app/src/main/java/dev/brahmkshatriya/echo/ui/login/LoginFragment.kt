@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
@@ -64,6 +65,8 @@ class LoginFragment : Fragment() {
         fun newInstance(error: AppException.LoginRequired) =
             newInstance(error.extension.id, error.extension.name, error.extension.type)
 
+        const val USER_AGENT =
+            "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36"
     }
 
     private var binding by autoCleared<FragmentLoginBinding>()
@@ -128,9 +131,10 @@ class LoginFragment : Fragment() {
             return
         }
 
-        metadata.iconUrl?.toImageHolder().loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
-            binding.extensionIcon.setImageDrawable(it)
-        }
+        metadata.iconUrl?.toImageHolder()
+            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
+                binding.extensionIcon.setImageDrawable(it)
+            }
 
         binding.loginContainer.isVisible = true
 
@@ -177,7 +181,7 @@ class LoginFragment : Fragment() {
         extension: Extension<*>,
         client: LoginClient.WebView
     ) = with(client) {
-        webViewContainer.isVisible = true
+        webView.isVisible = true
         webView.applyDarkMode()
         val callback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
@@ -190,18 +194,19 @@ class LoginFragment : Fragment() {
             override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
                 callback.isEnabled = webView.canGoBack()
                 url ?: return
-                lifecycleScope.launch {
-                    if (loginWebViewStopUrlRegex.matches(url)) {
-                        webView.stopLoading()
+                if (loginWebViewStopUrlRegex.find(url) != null) {
+                    webView.stopLoading()
+                    lifecycleScope.launch {
                         val data = webView.loadData(url, client)
-                        loginViewModel.onWebViewStop(extension, url, data)
+                        webView.isVisible = false
+                        loadingContainer.root.isVisible = true
+                        callback.isEnabled = false
+                        WebStorage.getInstance().deleteAllData()
                         CookieManager.getInstance().run {
                             removeAllCookies(null)
                             flush()
                         }
-                        webViewContainer.isVisible = false
-                        loadingContainer.root.isVisible = true
-                        callback.isEnabled = false
+                        loginViewModel.onWebViewStop(extension, url, data)
                     }
                 }
             }
@@ -213,6 +218,7 @@ class LoginFragment : Fragment() {
             @Suppress("DEPRECATION")
             databaseEnabled = true
             userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
+                ?: USER_AGENT
         }
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
 

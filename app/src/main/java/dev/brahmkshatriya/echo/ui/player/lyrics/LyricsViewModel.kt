@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.playback.Current
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
 import dev.brahmkshatriya.echo.ui.paging.toFlow
@@ -50,7 +50,7 @@ class LyricsViewModel @Inject constructor(
     }
 
     private fun update() {
-        val trackExtension = currentMediaFlow.value?.mediaItem?.clientId?.let { id ->
+        val trackExtension = currentMediaFlow.value?.mediaItem?.extensionId?.let { id ->
             extensionListFlow.getExtension(id)?.takeIf { it.isClient<LyricsClient>() }
         }
         lyricsExtensionList.value =
@@ -106,7 +106,7 @@ class LyricsViewModel @Inject constructor(
     ): PagedData<Lyrics>? {
         val track = mediaItem.track
         return extension.get<LyricsClient, PagedData<Lyrics>>(throwableFlow) {
-            searchTrackLyrics(mediaItem.clientId, track)
+            searchTrackLyrics(mediaItem.extensionId, track)
         }
     }
 

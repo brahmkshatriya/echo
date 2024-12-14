@@ -28,7 +28,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
@@ -84,9 +84,9 @@ class StreamableMediaSource(
                 value = value.toMutableMap().apply { set(new.mediaId, server) }
             }
 
-            if (new.clientId != OfflineExtension.metadata.id) {
+            if (new.extensionId != OfflineExtension.metadata.id) {
                 val track = mediaItem.track
-                context.saveToCache(track.id, new.clientId to track, "track")
+                context.saveToCache(track.id, new.extensionId to track, "track")
             }
 
             val sources = server.sources

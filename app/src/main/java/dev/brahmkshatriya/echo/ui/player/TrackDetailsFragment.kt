@@ -37,7 +37,7 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
@@ -87,14 +87,14 @@ class TrackDetailsFragment : Fragment() {
             if (viewModel.previous?.id == track.id) return@observe
 
             val extension =
-                playerViewModel.extensionListFlow.getExtension(item.clientId) ?: return@observe
+                playerViewModel.extensionListFlow.getExtension(item.extensionId) ?: return@observe
             val adapter =
                 ShelfAdapter(this, "track_details", extension, shelfClickListener)
             mediaAdapter = adapter
             binding.root.adapter = ConcatAdapter(
                 ExplicitAdapter(track.toMediaItem()), infoAdapter, adapter.withLoaders()
             )
-            viewModel.load(item.clientId, track)
+            viewModel.load(item.extensionId, track)
         }
 
         observe(viewModel.itemsFlow) {

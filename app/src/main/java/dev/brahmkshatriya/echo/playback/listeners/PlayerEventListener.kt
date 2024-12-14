@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.retries
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getLikeButton
@@ -45,7 +45,7 @@ class PlayerEventListener(
 
     private fun updateCustomLayout() {
         val item = player.currentMediaItem ?: return
-        val supportsLike = extensionList.getExtension(item.clientId)?.isClient<TrackLikeClient>()
+        val supportsLike = extensionList.getExtension(item.extensionId)?.isClient<TrackLikeClient>()
             ?: false
 
         val commandButtons = listOfNotNull(

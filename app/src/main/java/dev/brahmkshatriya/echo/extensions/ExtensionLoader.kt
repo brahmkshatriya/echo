@@ -19,7 +19,6 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.plugger.FileChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
-import dev.brahmkshatriya.echo.offline.BuiltInExtensionRepo
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.CoroutineName
@@ -58,9 +57,11 @@ class ExtensionLoader(
     private val scope = MainScope() + CoroutineName("ExtensionLoader")
     private val listener = PackageChangeListener(context)
     val fileListener = FileChangeListener(scope)
-    private val builtIn = BuiltInExtensionRepo(offlineExtension)
 
-    private val musicExtensionRepo = MusicExtensionRepo(context, listener, fileListener, builtIn)
+    private val offline = OfflineExtension.metadata to offlineExtension
+//    private val test = TestExtension.metadata to TestExtension()
+
+    private val musicExtensionRepo = MusicExtensionRepo(context, listener, fileListener, offline)
     private val trackerExtensionRepo = TrackerExtensionRepo(context, listener, fileListener)
     private val lyricsExtensionRepo = LyricsExtensionRepo(context, listener, fileListener)
 

@@ -10,6 +10,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
@@ -81,20 +82,20 @@ class ExtensionFragment : BaseSettingsFragment() {
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
-            preferenceManager.sharedPreferencesName = "$extensionType-$extensionId"
+            preferenceManager.sharedPreferencesName = extensionPrefId(extensionType, extensionId)
             preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
             val screen = preferenceManager.createPreferenceScreen(context)
             preferenceScreen = screen
 
             val viewModel by activityViewModels<ExtensionViewModel>()
             viewModel.apply {
-                val client = when (extensionType) {
+                val extension = when (extensionType) {
                     ExtensionType.MUSIC -> extensionListFlow.getExtension(extensionId)
                     ExtensionType.TRACKER -> trackerListFlow.getExtension(extensionId)
                     ExtensionType.LYRICS -> lyricsListFlow.getExtension(extensionId)
                 }
                 viewModelScope.launch {
-                    client?.run(throwableFlow) {
+                    extension?.run(throwableFlow) {
                         settingItems.forEach { setting ->
                             setting.addPreferenceTo(screen)
                         }
@@ -102,10 +103,10 @@ class ExtensionFragment : BaseSettingsFragment() {
                         val settings = toSettings(prefs)
                         if (this is SettingsChangeListenerClient) {
                             prefs.registerOnSharedPreferenceChangeListener { _, key ->
-                                onSettingsChanged(client, settings, key)
+                                onSettingsChanged(extension, settings, key)
                             }
                             preferenceManager.setOnPreferenceTreeClickListener {
-                                onSettingsChanged(client, settings, it.key)
+                                onSettingsChanged(extension, settings, it.key)
                                 true
                             }
                         }
@@ -230,6 +231,10 @@ class ExtensionFragment : BaseSettingsFragment() {
                     arguments = bundle
                 }
             }
+
+            val Extension<*>.prefId get() = extensionPrefId(type, id)
+            fun extensionPrefId(extensionType: ExtensionType, extensionId: String) =
+                "$extensionType-$extensionId"
         }
     }
 }

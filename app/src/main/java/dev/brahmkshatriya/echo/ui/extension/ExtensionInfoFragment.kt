@@ -1,10 +1,16 @@
 package dev.brahmkshatriya.echo.ui.extension
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -22,6 +28,7 @@ import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
+import dev.brahmkshatriya.echo.utils.PlayerItemSpan
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
@@ -100,6 +107,9 @@ class ExtensionInfoFragment : Fragment() {
 
         if (metadata.importType != ImportType.BuiltIn) {
             binding.toolBar.inflateMenu(R.menu.extensions_menu)
+            if (metadata.repoUrl == null) {
+                binding.toolBar.menu.removeItem(R.id.menu_repo)
+            }
             binding.toolBar.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.menu_uninstall -> {
@@ -111,14 +121,20 @@ class ExtensionInfoFragment : Fragment() {
                         true
                     }
 
+                    R.id.menu_repo -> {
+                        requireActivity().openLink(metadata.repoUrl!!)
+                        true
+                    }
+
                     else -> false
                 }
             }
         }
 
-        metadata.iconUrl?.toImageHolder().loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
-            binding.extensionIcon.setImageDrawable(it)
-        }
+        metadata.iconUrl?.toImageHolder()
+            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
+                binding.extensionIcon.setImageDrawable(it)
+            }
         binding.extensionDetails.text =
             "${metadata.version} • ${metadata.importType.name}"
 
@@ -129,7 +145,18 @@ class ExtensionInfoFragment : Fragment() {
             ExtensionType.LYRICS -> R.string.lyrics
         }
         val typeString = getString(R.string.name_extension, getString(type))
-        binding.extensionDescription.text = "$typeString\n\n${metadata.description}\n\n$byAuthor"
+        val span = SpannableString("$typeString\n\n${metadata.description}\n\n$byAuthor")
+        val authUrl = metadata.authorUrl
+        if (authUrl != null) {
+            span.setSpan(
+                PlayerItemSpan(requireContext(), authUrl) {
+                    requireActivity().openLink(it)
+                },
+                span.length - metadata.author.length, span.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+        binding.extensionDescription.text = span
+        binding.extensionDescription.movementMethod = LinkMovementMethod.getInstance()
 
         fun updateText(enabled: Boolean) {
             binding.enabledText.text = getString(
@@ -158,4 +185,8 @@ class ExtensionInfoFragment : Fragment() {
         }
     }
 
+    private fun Activity.openLink(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW).apply { data = url.toUri() }
+        startActivity(intent)
+    }
 }

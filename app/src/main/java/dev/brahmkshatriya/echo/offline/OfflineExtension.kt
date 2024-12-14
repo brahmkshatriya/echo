@@ -199,9 +199,8 @@ class OfflineExtension(
         isLiked = library.likedPlaylist?.songList.orEmpty().any { it.id == track.id }
     )
 
-    override suspend fun loadStreamableMedia(streamable: Streamable): Streamable.Media {
-        return streamable.id.toSource().toMedia()
-    }
+    override suspend fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean) =
+        streamable.id.toSource().toMedia()
 
     override fun getShelves(track: Track): PagedData<Shelf> =
         PagedData.Single { listOf() }

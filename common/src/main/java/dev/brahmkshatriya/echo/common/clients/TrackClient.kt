@@ -33,7 +33,7 @@ interface TrackClient {
      * @see Streamable
      * @see Streamable.Media
      */
-    suspend fun loadStreamableMedia(streamable: Streamable): Streamable.Media
+    suspend fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean): Streamable.Media
 
     /**
      * Gets the shelves for a track. (Like "More from this artist", "Similar tracks", etc.)

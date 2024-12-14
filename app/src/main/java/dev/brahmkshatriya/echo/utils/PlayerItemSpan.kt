@@ -1,21 +1,19 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.utils
 
 import android.content.Context
 import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 
-class PlayerItemSpan(
+class PlayerItemSpan<T>(
     val context: Context,
-    val client: String?,
-    val item: EchoMediaItem,
-    private val onItemClicked: (String?, EchoMediaItem) -> Unit
+    val item: T,
+    private val onItemClicked: (T) -> Unit
 ) : ClickableSpan() {
 
     override fun onClick(widget: View) {
-        onItemClicked(client, item)
+        onItemClicked(item)
     }
 
     override fun updateDrawState(ds: TextPaint) {

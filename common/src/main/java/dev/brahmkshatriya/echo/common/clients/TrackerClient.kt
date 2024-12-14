@@ -2,11 +2,15 @@ package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.TrackDetails
 
 /**
  * Used to track the playback of a track.
+ *
+ * You can override the following methods to get the track details:
+ * - [onTrackChanged]
+ * - [onPlayingStateChanged]
+ * - [onMarkAsPlayed]
  *
  * Can be implemented by both:
  * - [MusicExtension]
@@ -17,36 +21,31 @@ interface TrackerClient : ExtensionClient {
     /**
      * Called when the track has started playing.
      *
-     * @param extensionId the extension id of the extension that is playing the track.
-     * @param context the context of the track.
-     * @param track the track that is playing.
+     * This method will be called again if the track was played again from the beginning.
      *
-     * @see EchoMediaItem
-     * @see Track
+     * @param details the details of the track that is playing, or null if player is empty.
      */
-    suspend fun onStartedPlaying(extensionId: String, context: EchoMediaItem?, track: Track)
+    suspend fun onTrackChanged(details: TrackDetails?) {}
 
     /**
-     * Called when the track has reached the mark as played duration (defaults to 30s).
-     *
-     * @param extensionId the extension id of the extension that is playing the track.
-     * @param context the context of the track.
-     * @param track the track that is playing.
-     *
-     * @see EchoMediaItem
-     * @see Track
+     * The duration after which the track should be marked as played (defaults to null).
+     * If null, the track will not be marked as played.
      */
-    suspend fun onMarkAsPlayed(extensionId: String, context: EchoMediaItem?, track: Track)
+    val markAsPlayedDuration: Long?
+        get() = null
 
     /**
-     * Called when the track has stopped playing.
+     * Called when the track has reached the [markAsPlayedDuration].
      *
-     * @param extensionId the extension id of the extension that is playing the track.
-     * @param context the context of the track.
-     * @param track the track that is playing.
-     *
-     * @see EchoMediaItem
-     * @see Track
+     * @param details the details of the track that is playing.
      */
-    suspend fun onStoppedPlaying(extensionId: String, context: EchoMediaItem?, track: Track)
+    suspend fun onMarkAsPlayed(details: TrackDetails) {}
+
+
+    /**
+     * Called when the track has started playing or paused.
+     *
+     * @param details the details of the track that was playing.
+     */
+    suspend fun onPlayingStateChanged(details: TrackDetails, isPlaying: Boolean) {}
 }

@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.AUTO_START_RADIO
@@ -128,7 +128,7 @@ class Radio(
 
     private fun loadPlaylist() {
         val mediaItem = player.currentMediaItem ?: return
-        val client = mediaItem.clientId
+        val client = mediaItem.extensionId
         val item = mediaItem.track.toMediaItem()
         val itemContext = mediaItem.context
         stateFlow.value = State.Loading

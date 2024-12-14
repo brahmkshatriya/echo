@@ -52,7 +52,7 @@ import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
@@ -61,6 +61,7 @@ import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
+import dev.brahmkshatriya.echo.utils.PlayerItemSpan
 import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.load
@@ -85,7 +86,7 @@ class PlayerTrackAdapter(
 
     interface Listener {
         fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean)
-        fun onItemClicked(clientId: String?, item: EchoMediaItem)
+        fun onItemClicked(item: Pair<String?, EchoMediaItem>)
     }
 
     object DiffCallback : DiffUtil.ItemCallback<MediaItem>() {
@@ -111,16 +112,21 @@ class PlayerTrackAdapter(
 
             applyVideoVisibility(false)
             binding.bgVideo.run {
+                backgroundPlayer?.release()
+                backgroundPlayer = null
                 player = null
                 val background = item.background
                 if (background != null && showBackground()) {
                     resizeMode = RESIZE_MODE_ZOOM
-                    player = getPlayer(context, viewModel.cache, background)
+                    backgroundPlayer = getPlayer(context, viewModel.cache, background)
+                    player = backgroundPlayer
                     applyVideoVisibility(true)
                 }
             }
             observe(merge(viewModel.currentFlow, viewModel.browser)) { applyVideo() }
         }
+
+        private var backgroundPlayer: Player? = null
 
         private fun applyVideoVisibility(visible: Boolean) {
             binding.bgVideo.isVisible = visible
@@ -147,6 +153,10 @@ class PlayerTrackAdapter(
                 override fun onTracksChanged(tracks: Tracks) {
                     applyVideo()
                 }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    backgroundPlayer?.playWhenReady = isPlaying
+                }
             })
         }
     }
@@ -157,7 +167,7 @@ class PlayerTrackAdapter(
     fun ViewHolder.onBind(position: Int) {
 
         val item = getItem(position) ?: return
-        val clientId = item.clientId
+        val clientId = item.extensionId
 
         binding.applyTrackDetails(clientId, item)
 
@@ -464,7 +474,7 @@ class PlayerTrackAdapter(
             val start = artistNames.indexOf(artist.name)
             val end = start + artist.name.length
             val clickableSpan = PlayerItemSpan(
-                trackArtist.context, client, artist.toMediaItem(), listener::onItemClicked
+                trackArtist.context, client to artist.toMediaItem(), listener::onItemClicked
             )
             spannableString.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }

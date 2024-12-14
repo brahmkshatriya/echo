@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.extensions.plugger.LazyRepoComposer
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.catchLazy
 import dev.brahmkshatriya.echo.utils.getSettings
+import kotlinx.coroutines.flow.MutableStateFlow
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
 
@@ -26,7 +27,7 @@ sealed class ExtensionRepo<T : ExtensionClient>(
     private val context: Context,
     private val listener: PackageChangeListener,
     private val fileChangeListener: FileChangeListener,
-    private vararg val repo: LazyPluginRepo<Metadata, T>
+    private vararg val repo: Pair<Metadata, T>
 ) : LazyPluginRepo<Metadata, T> {
     abstract val type: ExtensionType
 
@@ -43,7 +44,8 @@ sealed class ExtensionRepo<T : ExtensionClient>(
             ApkManifestParser(ImportType.App),
             loader
         )
-        LazyRepoComposer(*repo, appPluginRepo, apkFilePluginRepo)
+        val builtInRepo = BuiltInRepo(repo.toList())
+        LazyRepoComposer(builtInRepo, appPluginRepo, apkFilePluginRepo)
     }
 
     private fun injected() = composed.getAllPlugins().mapState { list ->
@@ -75,7 +77,7 @@ class MusicExtensionRepo(
     context: Context,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
-    vararg repo: LazyPluginRepo<Metadata, ExtensionClient>
+    vararg repo: Pair<Metadata, ExtensionClient>
 ) : ExtensionRepo<ExtensionClient>(context, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.MUSIC
 }
@@ -84,7 +86,7 @@ class TrackerExtensionRepo(
     context: Context,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
-    vararg repo: LazyPluginRepo<Metadata, TrackerClient>
+    vararg repo: Pair<Metadata, TrackerClient>
 ) : ExtensionRepo<TrackerClient>(context, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.TRACKER
 }
@@ -93,7 +95,21 @@ class LyricsExtensionRepo(
     context: Context,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
-    vararg repo: LazyPluginRepo<Metadata, LyricsClient>
+    vararg repo: Pair<Metadata, LyricsClient>
 ) : ExtensionRepo<LyricsClient>(context, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.LYRICS
+}
+
+class BuiltInRepo<T : ExtensionClient>(
+    private val list: List<Pair<Metadata, T>>
+) : LazyPluginRepo<Metadata, T> {
+
+    override fun getAllPlugins() = MutableStateFlow(
+        list.map {
+            getLazy(it.first, it.second)
+        }
+    )
+
+    private fun getLazy(metadata: Metadata, extension: T) =
+        Result.success(Pair(metadata, catchLazy { extension }))
 }

@@ -32,7 +32,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.extensions.getExtension
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.clientId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
@@ -126,7 +126,7 @@ class PlayerCallback(
             val errorIO = SessionResult(SessionError.ERROR_IO)
             val item = session.player.currentMediaItem ?: return@future errorIO
             extensionList.first { it != null }
-            val extension = extensionList.getExtension(item.clientId) ?: return@future errorIO
+            val extension = extensionList.getExtension(item.extensionId) ?: return@future errorIO
             val client = extension.instance.value.getOrNull() ?: return@future errorIO
             if (client !is TrackLikeClient) return@future errorIO
             val track = item.track

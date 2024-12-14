@@ -66,12 +66,13 @@ class PlayerFragment : Fragment() {
                     .show(parentFragmentManager, null)
             }
 
-            override fun onItemClicked(clientId: String?, item: EchoMediaItem) {
+            override fun onItemClicked(item: Pair<String?, EchoMediaItem>) {
+                val (clientId, media) = item
                 if (clientId == null) {
                     createSnack(requireContext().noClient())
                     return
                 }
-                requireActivity().openFragment(ItemFragment.newInstance(clientId, item))
+                requireActivity().openFragment(ItemFragment.newInstance(clientId, media))
                 uiViewModel.collapsePlayer()
             }
 

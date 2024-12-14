@@ -42,6 +42,7 @@ import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference.Companion.prefId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -118,6 +119,7 @@ class ExtensionViewModel @Inject constructor(
     suspend fun uninstall(
         context: FragmentActivity, extension: Extension<*>, function: (Boolean) -> Unit
     ) {
+        context.deleteSharedPreferences(extension.prefId)
         val result = uninstallExtension(context, extension).getOrElse {
             throwableFlow.emit(it)
             false
