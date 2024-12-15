@@ -67,35 +67,32 @@ class EchoApplication : Application(), SingletonImageLoader.Factory {
 
     companion object {
 
+        private var theme: Int? = null
+
         @SuppressLint("RestrictedApi")
+        private val onAppliedCallback = DynamicColors.OnAppliedCallback {
+            val theme = theme ?: return@OnAppliedCallback
+            ThemeUtils.applyThemeOverlay(it, theme)
+        }
+
         fun applyUiChanges(app: Application, preferences: SharedPreferences) {
-            val theme = when (preferences.getBoolean(AMOLED_KEY, false)) {
-                true -> R.style.Amoled
-                false -> null
+            val mode = when (preferences.getString(THEME_KEY, "system")) {
+                "light" -> AppCompatDelegate.MODE_NIGHT_NO
+                "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             }
+            AppCompatDelegate.setDefaultNightMode(mode)
+
+            theme = if (preferences.getBoolean(AMOLED_KEY, false)) R.style.Amoled else null
 
             val customColor = if (!preferences.getBoolean(CUSTOM_THEME_KEY, false)) null
             else preferences.getInt(COLOR_KEY, -1).takeIf { it != -1 }
 
-            val builder = if (customColor != null) DynamicColorsOptions.Builder()
-                .setContentBasedSource(customColor)
-            else DynamicColorsOptions.Builder()
-
-            theme?.let {
-                builder.setOnAppliedCallback {
-                    ThemeUtils.applyThemeOverlay(it, theme)
-                }
-            }
-
+            val builder = DynamicColorsOptions.Builder()
+            builder.setOnAppliedCallback(onAppliedCallback)
+            customColor?.let { builder.setContentBasedSource(it) }
             DynamicColors.applyToActivitiesIfAvailable(app, builder.build())
-
-            when (preferences.getString(THEME_KEY, "system")) {
-                "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-            }
         }
-
 
         fun applyLocale(sharedPref: SharedPreferences) {
             val value = sharedPref.getString("language", "system") ?: "system"

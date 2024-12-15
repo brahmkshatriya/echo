@@ -52,6 +52,7 @@ class SearchFragment : Fragment() {
         setupTransition(view)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
             binding.quickSearchView.updatePaddingRelative(start = it.start, end = it.end)
+            binding.quickSearchRecyclerView.updatePaddingRelative(bottom = it.bottom)
         }
         applyBackPressCallback {
             if (it == STATE_EXPANDED) binding.quickSearchView.hide()

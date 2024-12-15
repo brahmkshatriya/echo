@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.ui.settings
 
+import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -10,9 +12,6 @@ import dev.brahmkshatriya.echo.EchoApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.prefs.ColorListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
-import dev.brahmkshatriya.echo.utils.restartApp
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
-import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 
 
 class LookFragment : BaseSettingsFragment() {
@@ -28,25 +27,8 @@ class LookFragment : BaseSettingsFragment() {
             preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
             val preferences = preferenceManager.sharedPreferences ?: return
 
-            val message = SnackBar.Message(
-                getString(R.string.restart_app),
-                SnackBar.Action(getString(R.string.restart)) {
-                    context.restartApp()
-                }
-            )
-
-            fun uiListener(block: (Any) -> Unit = {}) =
-                Preference.OnPreferenceChangeListener { _, new ->
-                    val activity = requireActivity()
-                    applyUiChanges(activity.application, preferences)
-                    createSnack(message)
-                    block(new)
-                    true
-                }
-
             val screen = preferenceManager.createPreferenceScreen(context)
             preferenceScreen = screen
-
 
             PreferenceCategory(context).apply {
                 title = getString(R.string.ui)
@@ -65,7 +47,6 @@ class LookFragment : BaseSettingsFragment() {
                     entries = context.resources.getStringArray(R.array.themes)
                     entryValues = arrayOf("light", "dark", "system")
                     value = preferences.getString(THEME_KEY, "system")
-                    onPreferenceChangeListener = uiListener()
                     addPreference(this)
                 }
 
@@ -76,8 +57,9 @@ class LookFragment : BaseSettingsFragment() {
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(false)
-                    onPreferenceChangeListener = uiListener {
+                    onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, it ->
                         screen.findPreference<Preference>(COLOR_KEY)?.isEnabled = it as Boolean
+                        true
                     }
                     addPreference(this)
                 }
@@ -85,7 +67,6 @@ class LookFragment : BaseSettingsFragment() {
                 ColorListPreference(this@LookPreference).apply {
                     key = COLOR_KEY
                     isEnabled = preferences.getBoolean(CUSTOM_THEME_KEY, false)
-                    listener = ColorListPreference.Listener { createSnack(message) }
                     addPreference(this)
                 }
 
@@ -96,7 +77,6 @@ class LookFragment : BaseSettingsFragment() {
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(false)
-                    onPreferenceChangeListener = uiListener()
                     addPreference(this)
                 }
 
@@ -145,7 +125,6 @@ class LookFragment : BaseSettingsFragment() {
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(true)
-                    onPreferenceChangeListener = uiListener()
                     addPreference(this)
                 }
 
@@ -156,10 +135,29 @@ class LookFragment : BaseSettingsFragment() {
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(true)
-                    onPreferenceChangeListener = uiListener()
                     addPreference(this)
                 }
             }
+        }
+
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY -> {
+                    requireActivity().applyUiChanges()
+                }
+            }
+        }
+
+        override fun onResume() {
+            super.onResume()
+            preferenceManager.sharedPreferences!!.registerOnSharedPreferenceChangeListener(listener)
+        }
+
+        override fun onPause() {
+            super.onPause()
+            preferenceManager.sharedPreferences!!.unregisterOnSharedPreferenceChangeListener(
+                listener
+            )
         }
     }
 
@@ -174,5 +172,11 @@ class LookFragment : BaseSettingsFragment() {
         const val SHOW_BACKGROUND = "show_background"
         const val ANIMATIONS_KEY = "animations"
         const val SHARED_ELEMENT_KEY = "shared_element_transitions"
+
+        fun Activity.applyUiChanges() {
+            val preferences = getSharedPreferences(packageName, Context.MODE_PRIVATE)
+            applyUiChanges(application, preferences)
+            recreate()
+        }
     }
 }

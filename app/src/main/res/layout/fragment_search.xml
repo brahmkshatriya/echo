@@ -33,33 +33,33 @@
         <com.google.android.material.search.SearchBar
             android:id="@+id/searchBar"
             android:layout_width="match_parent"
+            android:layout_height="40dp"
             android:layout_marginVertical="12dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="112dp"
-            android:layout_height="40dp"
             android:hint="@string/search"
             app:backgroundTint="?navBackground"
-            app:strokeWidth="1dp"
-            app:strokeColor="?colorSurfaceContainer"
-            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
             app:defaultMarginsEnabled="false"
-            app:navigationIcon="@drawable/ic_search_outline" />
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
+            app:navigationIcon="@drawable/ic_search_outline"
+            app:strokeColor="?colorSurfaceContainer"
+            app:strokeWidth="1dp" />
 
         <com.google.android.material.appbar.MaterialToolbar
-            android:layout_gravity="end"
             android:id="@+id/toolBar"
-            android:layout_marginTop="-64dp"
-            android:layout_marginHorizontal="8dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="-64dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:menu="@menu/top_bar_menu" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
+            style="@style/TabLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TabLayout">
+            android:layout_height="wrap_content">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -95,15 +95,16 @@
         android:id="@+id/quickSearchView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:elevation="1dp"
         android:hint="@string/search"
-        android:elevation="0dp"
-        app:closeIcon="@drawable/ic_close"
-        app:backgroundTint="?navBackground">
+        app:backHandlingEnabled="true"
+        app:backgroundTint="?navBackground"
+        app:closeIcon="@drawable/ic_close">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/quickSearchRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:clipToPadding="false"
             android:contentDescription="@string/search"
             android:orientation="vertical"
