@@ -8,7 +8,6 @@ plugins {
     kotlin("plugin.serialization") version "2.0.10"
 }
 
-tasks.withType<PublishToMavenLocal>().configureEach { enabled = false }
 
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
