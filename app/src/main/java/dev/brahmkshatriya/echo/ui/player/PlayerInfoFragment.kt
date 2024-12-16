@@ -38,18 +38,22 @@ class PlayerInfoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        observe(uiViewModel.systemInsets) {
-            binding.viewCard.updateLayoutParams<MarginLayoutParams> {
-                topMargin = it.top
+        fun applyChange() {
+            val offset = uiViewModel.infoSheetOffset.value
+            binding.buttonToggleGroupContainer.run {
+                translationY = offset * uiViewModel.systemInsets.value.top
+                binding.viewCard.translationY = (1 - offset) * uiViewModel.systemInsets.value.bottom
             }
         }
 
+        observe(uiViewModel.systemInsets) {
+            binding.viewCard.updateLayoutParams<MarginLayoutParams> { topMargin = it.top }
+            applyChange()
+        }
+
         observe(uiViewModel.infoSheetOffset) {
-            binding.buttonToggleGroupContainer.run {
-                translationY = it * uiViewModel.systemInsets.value.top
-                binding.viewCard.translationY = (1 - it) * height
-            }
             binding.buttonToggleGroupBg.alpha = it
+            applyChange()
         }
 
         observe(uiViewModel.infoSheetState) {

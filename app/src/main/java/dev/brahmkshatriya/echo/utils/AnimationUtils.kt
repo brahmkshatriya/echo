@@ -6,6 +6,7 @@ import android.view.ViewPropertyAnimator
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.animation.PathInterpolatorCompat
+import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
@@ -35,31 +36,34 @@ fun startAnimation(
 }
 
 fun NavigationBarView.animateTranslation(
-    isRail: Boolean, isMainFragment: Boolean, visible: Boolean, action: () -> Unit
-) {
-    val value = if (isMainFragment && visible) 0f
+    isRail: Boolean,
+    isMainFragment: Boolean,
+    isPlayerCollapsed: Boolean,
+    animate: Boolean = true,
+    action: () -> Unit
+) = doOnLayout {
+    val visible = isMainFragment && isPlayerCollapsed
+    val value = if (visible) 0f
     else if (isRail) -width.toFloat() else height.toFloat()
-    if (animations) {
-        isVisible = true
+    if (animations && animate) {
         var animation = if (isRail) animate().translationX(value)
         else animate().translationY(value)
-
-        animation =
-            if (isMainFragment) animation.withStartAction(action).withEndAction { isVisible = true }
-            else animation.withEndAction { action(); isVisible = false }
-
+        animation = if (visible) animation.withStartAction(action)
+        else animation.withEndAction { action() }
         startAnimation(this, animation)
 
-        val menuValue =
-            if (isMainFragment) 0f else if (isRail) -width.toFloat() else height.toFloat()
-        menu.forEachIndexed { index, it ->
-            val view = findViewById<View>(it.itemId)
-            val dis = menuValue * (index + 1)
-            if (isRail) startAnimation(view, view.animate().translationX(dis))
-            else startAnimation(view, view.animate().translationY(dis))
+        val delay = if (!visible) 0L else animationDurationSmall
+        menu.forEachIndexed { index, item ->
+            val view = findViewById<View>(item.itemId)
+            val anim = view.animate().setStartDelay(index * delay)
+            if (isRail) anim.translationX(value)
+            else anim.translationY(value)
+            startAnimation(view, anim, 0.5f)
         }
     } else {
-        isVisible = isMainFragment
+        if (isRail) translationX = value
+        else translationY = value
+
         menu.forEach {
             findViewById<View>(it.itemId).apply {
                 translationX = 0f
@@ -100,6 +104,14 @@ private val View.animationDuration: Long
             this, com.google.android.material.R.attr.motionDurationMedium1, 350
         ).toLong()
     }
+
+private val View.animationDurationSmall: Long
+    get() = context.applicationContext.run {
+        MotionUtils.resolveThemeDuration(
+            this, com.google.android.material.R.attr.motionDurationShort1, 100
+        ).toLong()
+    }
+
 private val View.animations
     get() = context.applicationContext.run {
         getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
@@ -136,7 +148,7 @@ fun Fragment.setupTransition(view: View) {
 
         postponeEnterTransition()
         view.doOnPreDraw { startPostponedEnterTransition() }
-        if(parentFragmentManager.backStackEntryCount < 1) return
+        if (parentFragmentManager.backStackEntryCount == 0) return
         val predictiveBackMargin = resources.getDimensionPixelSize(R.dimen.predictive_back_margin)
         var initialTouchY = -1f
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -148,7 +160,7 @@ fun Fragment.setupTransition(view: View) {
 
                 override fun handleOnBackProgressed(backEvent: BackEventCompat) {
                     val progress = GestureInterpolator.getInterpolation(backEvent.progress)
-                    if(transitionName == null)
+                    if (transitionName == null)
                         view.alpha = 1 - progress
                     if (initialTouchY < 0f)
                         initialTouchY = backEvent.touchY
@@ -157,9 +169,9 @@ fun Fragment.setupTransition(view: View) {
                     )
                     val maxTranslationX = (view.width / 20) - predictiveBackMargin
                     view.translationX = progress * maxTranslationX *
-                            (if (backEvent.swipeEdge == BackEventCompat.EDGE_LEFT) -1 else 1)
+                            (if (backEvent.swipeEdge == BackEventCompat.EDGE_LEFT) 1 else -1)
                     val maxTranslationY = (view.height / 20) - predictiveBackMargin
-                    view.translationY = progressY * maxTranslationY * -1
+                    view.translationY = progressY * maxTranslationY
                     val scale = 1f - (0.1f * progress)
                     view.scaleX = scale
                     view.scaleY = scale
@@ -168,6 +180,7 @@ fun Fragment.setupTransition(view: View) {
                 override fun handleOnBackCancelled() {
                     initialTouchY = -1f
                     view.run {
+                        alpha = 1f
                         translationX = 0f
                         translationY = 0f
                         scaleX = 1f

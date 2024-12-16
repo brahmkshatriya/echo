@@ -122,8 +122,12 @@ class UiViewModel @Inject constructor(
     val changePlayerState = MutableSharedFlow<Int>()
     val changeInfoState = MutableSharedFlow<Int>()
 
-    val playerSheetOffset = MutableStateFlow(0f)
-    val infoSheetOffset = MutableStateFlow(0f)
+    val playerSheetOffset = MutableStateFlow(
+        if (playerSheetState.value == STATE_EXPANDED) 1f else 0f
+    )
+    val infoSheetOffset = MutableStateFlow(
+        if (infoSheetState.value == STATE_EXPANDED) 1f else 0f
+    )
 
     private var playerBackPressCallback: OnBackPressedCallback? = null
     private var infoBackPressCallback: OnBackPressedCallback? = null
@@ -252,7 +256,7 @@ class UiViewModel @Inject constructor(
             observe(viewModel.changePlayerState) {
                 if (it == STATE_HIDDEN) behavior.isHideable = true
                 viewModel.playerSheetState.value = it
-                viewModel.playerSheetOffset.value = if(it == STATE_EXPANDED) 1f else 0f
+                viewModel.playerSheetOffset.value = if (it == STATE_EXPANDED) 1f else 0f
                 behavior.state = it
             }
             viewModel.playerBackPressCallback = behavior.backPressCallback()
@@ -266,8 +270,9 @@ class UiViewModel @Inject constructor(
                     view.resources.getDimensionPixelSize(R.dimen.bottom_player_peek_height)
                 val height = if (it.bottom == 0) collapsedCoverSize else peekHeight
                 val newHeight = viewModel.systemInsets.value.bottom + height
-                animateTranslation(view, behavior.peekHeight, newHeight)
                 behavior.peekHeight = newHeight
+                if (viewModel.playerSheetState.value != STATE_HIDDEN)
+                    animateTranslation(view, behavior.peekHeight, newHeight)
             }
 
             behavior.state = viewModel.playerSheetState.value

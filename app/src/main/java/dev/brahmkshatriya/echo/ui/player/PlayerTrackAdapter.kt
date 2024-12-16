@@ -52,8 +52,8 @@ import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -127,6 +127,10 @@ class PlayerTrackAdapter(
         }
 
         private var backgroundPlayer: Player? = null
+        override fun onDestroy() {
+            backgroundPlayer?.release()
+            backgroundPlayer = null
+        }
 
         private fun applyVideoVisibility(visible: Boolean) {
             binding.bgVideo.isVisible = visible

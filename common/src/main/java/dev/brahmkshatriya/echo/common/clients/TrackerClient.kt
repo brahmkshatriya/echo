@@ -28,14 +28,15 @@ interface TrackerClient : ExtensionClient {
     suspend fun onTrackChanged(details: TrackDetails?) {}
 
     /**
-     * The duration after which the track should be marked as played (defaults to null).
-     * If null, the track will not be marked as played.
+     * The duration in milliseconds after which the track should be marked as played (defaults to null).
+     * If null, the [onMarkAsPlayed] method will not be called.
      */
     val markAsPlayedDuration: Long?
         get() = null
 
     /**
      * Called when the track has reached the [markAsPlayedDuration].
+     * will not be called if [markAsPlayedDuration] is null.
      *
      * @param details the details of the track that is playing.
      */

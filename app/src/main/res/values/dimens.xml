@@ -6,5 +6,5 @@
     <dimen name="nav_width">@dimen/collapsed_cover_size</dimen>
     <dimen name="nav_height">@dimen/collapsed_cover_size</dimen>
     <dimen name="player_info_peek_height">@dimen/nav_height</dimen>
-    <dimen name="predictive_back_margin">56dp</dimen>
+    <dimen name="predictive_back_margin">8dp</dimen>
 </resources>

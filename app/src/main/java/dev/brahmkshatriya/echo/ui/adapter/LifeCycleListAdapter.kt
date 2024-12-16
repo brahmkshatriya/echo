@@ -46,6 +46,7 @@ abstract class LifeCycleListAdapter<T : Any, Holder : LifeCycleListAdapter.Holde
 
     abstract class Holder<T>(itemView: View) : RecyclerView.ViewHolder(itemView), LifecycleOwner {
         abstract fun bind(item: T)
+        open fun onDestroy() {}
         lateinit var lifecycleRegistry: LifecycleRegistry
         override val lifecycle get() = lifecycleRegistry
     }

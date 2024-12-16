@@ -4,15 +4,17 @@ import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
+import android.view.View
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.forEach
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
@@ -24,7 +26,6 @@ import dev.brahmkshatriya.echo.ui.common.openItemFragmentFromUri
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.checkAudioPermissions
-import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.createNavDrawable
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.listenFuture
@@ -87,20 +88,19 @@ class MainActivity : AppCompatActivity() {
             uiViewModel.isMainFragment.value = supportFragmentManager.backStackEntryCount == 0
         }
 
-        binding.navView.post {
-            collect(uiViewModel.navigation) { navView.selectedItemId = uiViewModel.navIds[it] }
-            collect(uiViewModel.isMainFragment) { isMainFragment ->
-                val insets =
-                    uiViewModel.setPlayerNavViewInsets(this, isMainFragment, isRail)
-                val visible = uiViewModel.playerSheetState.value.let {
-                    it == STATE_COLLAPSED || it == STATE_HIDDEN
-                }
-                navView.animateTranslation(isRail, isMainFragment, visible) {
-                    uiViewModel.setNavInsets(insets)
-                }
+        fun applyNav(animate: Boolean) {
+            val isMainFragment = uiViewModel.isMainFragment.value
+            val insets =
+                uiViewModel.setPlayerNavViewInsets(this, isMainFragment, isRail)
+            val isPlayerCollapsed = uiViewModel.playerSheetState.value != STATE_EXPANDED
+            navView.animateTranslation(isRail, isMainFragment, isPlayerCollapsed, animate) {
+                uiViewModel.setNavInsets(insets)
             }
         }
 
+        applyNav(false)
+        observe(uiViewModel.navigation) { navView.selectedItemId = uiViewModel.navIds[it] }
+        observe(uiViewModel.isMainFragment) { applyNav(true) }
         observe(uiViewModel.playerSheetState) {
             uiViewModel.setPlayerInsets(this, it != STATE_HIDDEN)
         }
@@ -113,6 +113,12 @@ class MainActivity : AppCompatActivity() {
             val offset = max(0f, it)
             if (isRail) navView.translationX = -navView.width * offset
             else navView.translationY = navView.height * offset
+            navView.menu.forEach { item ->
+                findViewById<View>(item.itemId).apply {
+                    translationX = 0f
+                    translationY = 0f
+                }
+            }
         }
 
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
