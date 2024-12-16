@@ -50,12 +50,12 @@ class EchoApplication : Application(), SingletonImageLoader.Factory {
         applyUiChanges(this, settings)
         cleanupTempApks()
 
-        //Crash Handling
-        Thread.setDefaultUncaughtExceptionHandler { _, exception ->
-            exception.printStackTrace()
-            ExceptionActivity.start(this, exception)
-            Runtime.getRuntime().exit(0)
-        }
+//        //Crash Handling
+//        Thread.setDefaultUncaughtExceptionHandler { _, exception ->
+//            exception.printStackTrace()
+//            ExceptionActivity.start(this, exception)
+//            Runtime.getRuntime().exit(0)
+//        }
 
         scope.launch {
             throwableFlow.collect {

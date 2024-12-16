@@ -6,6 +6,8 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "2.0.10"
+    id("com.google.gms.google-services") version "4.4.2"
+    id("com.google.firebase.crashlytics") version "3.0.2"
 }
 
 
@@ -86,6 +88,10 @@ dependencies {
     implementation("me.zhanghai.android.fastscroll:library:1.3.0")
     implementation("com.flaviofaria:kenburnsview:1.0.7")
     implementation("com.telefonica:nestedscrollwebview:0.1.6")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 
     testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
     testImplementation("junit:junit:4.13.2")
