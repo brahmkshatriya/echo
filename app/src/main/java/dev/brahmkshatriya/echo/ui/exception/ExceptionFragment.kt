@@ -11,6 +11,7 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
+import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
@@ -20,19 +21,18 @@ import dev.brahmkshatriya.echo.extensions.RequiredExtensionsException
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.playback.PlayerException
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.utils.setupTransition
-import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -42,7 +42,7 @@ import java.nio.channels.UnresolvedAddressException
 class ExceptionFragment : Fragment() {
     private var binding by autoCleared<FragmentExceptionBinding>()
     private val throwable by lazy {
-        requireArguments().getSerialized<ExceptionDetails>("exception")!!
+        requireArguments().getSerialized<ExceptionActivity.ExceptionDetails>("exception")!!
     }
 
     override fun onCreateView(
@@ -96,14 +96,15 @@ class ExceptionFragment : Fragment() {
     companion object {
 
         private val client = OkHttpClient()
-        suspend fun getPasteLink(throwable: ExceptionDetails) = withContext(Dispatchers.IO) {
-            val details = throwable.causedBy
-            val request = Request.Builder()
-                .url("https://paste.rs")
-                .post(details.toRequestBody())
-                .build()
-            runCatching { client.newCall(request).await().body.string() }
-        }
+        suspend fun getPasteLink(throwable: ExceptionActivity.ExceptionDetails) =
+            withContext(Dispatchers.IO) {
+                val details = throwable.causedBy
+                val request = Request.Builder()
+                    .url("https://paste.rs")
+                    .post(details.toRequestBody())
+                    .build()
+                runCatching { client.newCall(request).await().body.string() }
+            }
 
         fun Context.copyToClipboard(label: String?, string: String) {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -114,7 +115,7 @@ class ExceptionFragment : Fragment() {
         fun Context.getTitle(throwable: Throwable): String = when (throwable) {
             is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
-            is PlayerViewModel.PlayerException -> throwable.details.title
+            is PlayerException -> throwable.details.title
             is ExtensionLoadingException -> "${getString(R.string.invalid_extension)} : ${throwable.type}"
             is RequiredExtensionsException -> getString(
                 R.string.extension_requires_following_extensions,
@@ -142,7 +143,7 @@ class ExceptionFragment : Fragment() {
         }
 
         fun Context.getDetails(throwable: Throwable): String = when (throwable) {
-            is PlayerViewModel.PlayerException -> """
+            is PlayerException -> """
 Client Id : ${throwable.mediaItem?.extensionId}
 Track : ${throwable.mediaItem?.track}
 Stream : ${throwable.mediaItem?.run { track.servers.getOrNull(sourcesIndex) }}
@@ -169,7 +170,7 @@ ${getDetails(throwable.cause)}
         }
 
 
-        fun newInstance(details: ExceptionDetails) = ExceptionFragment().apply {
+        fun newInstance(details: ExceptionActivity.ExceptionDetails) = ExceptionFragment().apply {
             arguments = Bundle().apply {
                 putSerialized("exception", details)
             }
@@ -177,14 +178,15 @@ ${getDetails(throwable.cause)}
 
         fun newInstance(context: Context, throwable: Throwable): ExceptionFragment {
             val details =
-                ExceptionDetails(context.getTitle(throwable), context.getDetails(throwable))
+                ExceptionActivity.ExceptionDetails(
+                    context.getTitle(throwable),
+                    context.getDetails(throwable)
+                )
             return newInstance(details)
         }
 
         fun Throwable.toExceptionDetails(context: Context) =
-            ExceptionDetails(context.getTitle(this), context.getDetails(this))
+            ExceptionActivity.ExceptionDetails(context.getTitle(this), context.getDetails(this))
     }
 
-    @Serializable
-    class ExceptionDetails(val title: String, val causedBy: String)
 }

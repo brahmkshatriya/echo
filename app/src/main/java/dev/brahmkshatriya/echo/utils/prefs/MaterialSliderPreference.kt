@@ -8,6 +8,8 @@ import androidx.preference.PreferenceViewHolder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
+import kotlin.math.max
+import kotlin.math.min
 
 class MaterialSliderPreference(
     context: Context,
@@ -32,11 +34,13 @@ class MaterialSliderPreference(
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
         val slider = holder.itemView.findViewById<Slider>(R.id.preferences_slider)
-        slider.valueFrom = from.toFloat()
-        val max = if (allowOverride) getPersistedInt(to).coerceAtLeast(to) else to
+        val current = getPersistedInt(defaultValue ?: from)
+        val min = if (allowOverride) min(from, current) else from
+        slider.valueFrom = min.toFloat()
+        val max = if (allowOverride) max(to, current) else to
         slider.valueTo = max.toFloat()
+        slider.value = max(min(current, min), max).toFloat()
         slider.stepSize = steps?.toFloat() ?: 1f
-        slider.value = getPersistedInt(defaultValue ?: from).toFloat()
 
         slider.addOnChangeListener { _, value, byUser ->
             persistInt(value.toInt())
@@ -46,7 +50,7 @@ class MaterialSliderPreference(
             }
         }
 
-        if(allowOverride) holder.itemView.setOnClickListener {
+        if (allowOverride) holder.itemView.setOnClickListener {
             showOverrideDialog(slider, slider.value)
         }
     }

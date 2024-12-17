@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -75,8 +77,10 @@ class ExtensionOpenerActivity : Activity() {
         }
 
         suspend fun FragmentActivity.installExtension(fileString: String) = suspendCoroutine {
-            ExtensionInstallerBottomSheet.newInstance(fileString)
-                .show(supportFragmentManager, null)
+            Handler(Looper.getMainLooper()).post {
+                ExtensionInstallerBottomSheet.newInstance(fileString)
+                    .show(supportFragmentManager, null)
+            }
 
             supportFragmentManager.setFragmentResultListener(EXTENSION_INSTALLER, this) { _, b ->
                 val file = b.getString("file")?.toUri()?.toFile()

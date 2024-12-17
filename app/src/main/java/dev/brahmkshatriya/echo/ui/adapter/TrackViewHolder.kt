@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
-import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -9,12 +8,9 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
-import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
-import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.toolTipOnClick
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
-import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.toTimeString
 
 class TrackViewHolder(
@@ -55,12 +51,7 @@ class TrackViewHolder(
         binding.itemMore.setOnClickListener {
             listener.onLongClick(clientId, context, list, pos, binding.root)
         }
-        binding.isPlaying.toolTipOnClick()
-        observe(listener.current) {
-            val playing = it.isPlaying(track.id)
-            binding.isPlaying.animateVisibility(playing)
-            if(playing) (binding.isPlaying.icon as Animatable).start()
-        }
+        applyIsPlaying(listener.current, track.id, binding.isPlaying)
     }
 
     override val transitionView = binding.root

@@ -22,7 +22,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 fun Fragment.openFragment(newFragment: Fragment, view: View? = null) {
     parentFragmentManager.commit {
-        if (view != null) {
+        if (view != null) runCatching {
             addSharedElement(view, view.transitionName)
             newFragment.run {
                 if (arguments == null) arguments = Bundle()

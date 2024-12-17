@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent.SPACE_BETWEEN
+import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
@@ -29,8 +30,8 @@ import dev.brahmkshatriya.echo.databinding.ItemShelfListsBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaListsBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
-import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.adapter.GridViewHolder.Companion.ifGrid
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
@@ -152,9 +153,7 @@ sealed class ShelfViewHolder(
         override fun bind(item: Shelf) {
             val media = (item as? Shelf.Item)?.media ?: return
             val isPlaying = binding.bind(media)
-            observe(listener.current) {
-                isPlaying(it.isPlaying(media.id))
-            }
+            applyIsPlaying(listener.current, media.id, isPlaying)
             binding.more.setOnClickListener {
                 listener.onLongClick(clientId, media, transitionView)
             }
@@ -176,7 +175,7 @@ sealed class ShelfViewHolder(
                 )
             }
 
-            fun ItemShelfMediaBinding.bind(item: EchoMediaItem): (Boolean) -> Unit {
+            fun ItemShelfMediaBinding.bind(item: EchoMediaItem): MaterialButton? {
                 title.text = item.title
                 subtitle.text = item.subtitleWithE
                 subtitle.isVisible = item.subtitleWithE.isNullOrBlank().not()
@@ -207,9 +206,7 @@ sealed class ShelfViewHolder(
             val media = (item as? Shelf.Item)?.media ?: return
             if (media !is EchoMediaItem.Lists) return
             val isPlaying = binding.listsInfo.bind(media)
-            observe(listener.current) {
-                isPlaying(it.isPlaying(media.id))
-            }
+            applyIsPlaying(listener.current, media.id, isPlaying)
             binding.listsInfo.more.setOnClickListener {
                 listener.onLongClick(clientId, media, transitionView)
             }

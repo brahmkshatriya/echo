@@ -82,6 +82,7 @@ object MediaItemUtils {
     fun withRetry(item: MediaItem): MediaItem {
         val bundle = item.mediaMetadata.extras!!
         val retries = bundle.getInt("retries") + 1
+        bundle.putBoolean("loaded", false)
         bundle.putInt("retries", retries)
         return buildWithBundle(item, bundle)
     }

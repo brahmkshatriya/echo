@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetai
 import dev.brahmkshatriya.echo.utils.restartApp
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint
 class ExceptionActivity : AppCompatActivity() {
@@ -36,7 +37,7 @@ class ExceptionActivity : AppCompatActivity() {
             replace(
                 R.id.exceptionFragmentContainer,
                 ExceptionFragment.newInstance(
-                    ExceptionFragment.ExceptionDetails(
+                    ExceptionDetails(
                         getString(R.string.app_crashed),
                         exception
                     )
@@ -55,4 +56,7 @@ class ExceptionActivity : AppCompatActivity() {
             context.startActivity(intent)
         }
     }
+
+    @Serializable
+    class ExceptionDetails(val title: String, val causedBy: String)
 }

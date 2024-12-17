@@ -27,7 +27,7 @@ sealed class ExtensionRepo<T : ExtensionClient>(
     private val context: Context,
     private val listener: PackageChangeListener,
     private val fileChangeListener: FileChangeListener,
-    private vararg val repo: Pair<Metadata, T>
+    private vararg val repo: Pair<Metadata, Lazy<Result<T>>>
 ) : LazyPluginRepo<Metadata, T> {
     abstract val type: ExtensionType
 
@@ -77,7 +77,7 @@ class MusicExtensionRepo(
     context: Context,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
-    vararg repo: Pair<Metadata, ExtensionClient>
+    vararg repo: Pair<Metadata, Lazy<Result<ExtensionClient>>>
 ) : ExtensionRepo<ExtensionClient>(context, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.MUSIC
 }
@@ -86,7 +86,7 @@ class TrackerExtensionRepo(
     context: Context,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
-    vararg repo: Pair<Metadata, TrackerClient>
+    vararg repo: Pair<Metadata, Lazy<Result<TrackerClient>>>
 ) : ExtensionRepo<TrackerClient>(context, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.TRACKER
 }
@@ -95,21 +95,13 @@ class LyricsExtensionRepo(
     context: Context,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
-    vararg repo: Pair<Metadata, LyricsClient>
+    vararg repo: Pair<Metadata, Lazy<Result<LyricsClient>>>
 ) : ExtensionRepo<LyricsClient>(context, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.LYRICS
 }
 
 class BuiltInRepo<T : ExtensionClient>(
-    private val list: List<Pair<Metadata, T>>
+    private val list: List<Pair<Metadata, Lazy<Result<T>>>>
 ) : LazyPluginRepo<Metadata, T> {
-
-    override fun getAllPlugins() = MutableStateFlow(
-        list.map {
-            getLazy(it.first, it.second)
-        }
-    )
-
-    private fun getLazy(metadata: Metadata, extension: T) =
-        Result.success(Pair(metadata, catchLazy { extension }))
+    override fun getAllPlugins() = MutableStateFlow(list.map { Result.success(it) })
 }

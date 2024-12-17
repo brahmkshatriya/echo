@@ -15,7 +15,6 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.offline.OfflineExtension
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Singleton
@@ -23,12 +22,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class ExtensionModule {
-
-    @OptIn(UnstableApi::class)
-    @Provides
-    @Singleton
-    fun provideOfflineExtension(context: Application, cache: SimpleCache) =
-        OfflineExtension(context, cache)
 
     @Provides
     @Singleton
@@ -50,16 +43,17 @@ class ExtensionModule {
     @Singleton
     fun provideTrackerListFlow() = MutableStateFlow<List<TrackerExtension>?>(null)
 
+    @OptIn(UnstableApi::class)
     @Provides
     @Singleton
     fun provideExtensionLoader(
         context: Application,
+        cache: SimpleCache,
         throwableFlow: MutableSharedFlow<Throwable>,
         database: EchoDatabase,
         settings: SharedPreferences,
         refresher: MutableSharedFlow<Boolean>,
         userFlow: MutableSharedFlow<UserEntity?>,
-        offlineExtension: OfflineExtension,
         extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
         trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
         lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
@@ -69,7 +63,7 @@ class ExtensionModule {
         val userDao = database.userDao()
         ExtensionLoader(
             context,
-            offlineExtension,
+            cache,
             throwableFlow,
             extensionDao,
             userDao,

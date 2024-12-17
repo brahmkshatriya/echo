@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.lifecycle.LifecycleOwner
+import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemListsCoverBinding
@@ -14,11 +16,13 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaListsBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaProfileBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
 import dev.brahmkshatriya.echo.utils.observe
+import kotlinx.coroutines.flow.StateFlow
 
 sealed class MediaItemViewHolder(
     val listener: ShelfAdapter.Listener,
@@ -53,10 +57,8 @@ sealed class MediaItemViewHolder(
         override fun bind(item: EchoMediaItem) {
             item as EchoMediaItem.Lists
             titleBinding.bind(item)
-            val isPlaying = binding.cover.bind(item)
-            observe(listener.current) {
-                isPlaying(it.isPlaying(item.id))
-            }
+            binding.cover.bind(item)
+            applyIsPlaying(listener.current, item.id, binding.cover.isPlaying)
         }
 
         companion object {
@@ -86,10 +88,8 @@ sealed class MediaItemViewHolder(
 
         override fun bind(item: EchoMediaItem) {
             titleBinding.bind(item)
-            val isPlaying = binding.cover.bind(item)
-            observe(listener.current) {
-                isPlaying(it.isPlaying(item.id))
-            }
+            binding.cover.bind(item)
+            applyIsPlaying(listener.current, item.id, binding.cover.isPlaying)
         }
 
         companion object {
@@ -164,27 +164,35 @@ sealed class MediaItemViewHolder(
             subtitle.text = item.subtitleWithE
         }
 
-        fun View.toolTipOnClick() {
+        private fun View.toolTipOnClick() {
             setOnClickListener { performLongClick() }
         }
 
-        fun ItemTrackCoverBinding.bind(item: EchoMediaItem): (Boolean) -> Unit {
-            item.cover.loadInto(trackImageView, item.placeHolder())
-            this.iconContainer.isVisible = item !is EchoMediaItem.TrackItem
-            this.icon.setImageResource(item.icon())
-            isPlaying.toolTipOnClick()
-            return { playing: Boolean ->
-                isPlaying.animateVisibility(playing)
-                if (playing) (isPlaying.icon as Animatable).start()
+        fun LifecycleOwner.applyIsPlaying(
+            current: StateFlow<Current?>, id: String, view: MaterialButton?
+        ) {
+            view ?: return
+            view.toolTipOnClick()
+            observe(current) {
+                val playing = it.isPlaying(id)
+                view.animateVisibility(playing)
+                if (playing) (view.icon as Animatable).start()
             }
         }
 
-        fun ItemProfileCoverBinding.bind(item: EchoMediaItem): (Boolean) -> Unit {
-            item.cover.loadInto(profileImageView, item.placeHolder())
-            return { }
+        fun ItemTrackCoverBinding.bind(item: EchoMediaItem): MaterialButton {
+            item.cover.loadInto(trackImageView, item.placeHolder())
+            this.iconContainer.isVisible = item !is EchoMediaItem.TrackItem
+            this.icon.setImageResource(item.icon())
+            return isPlaying
         }
 
-        fun ItemListsCoverBinding.bind(item: EchoMediaItem.Lists): (Boolean) -> Unit {
+        fun ItemProfileCoverBinding.bind(item: EchoMediaItem): MaterialButton? {
+            item.cover.loadInto(profileImageView, item.placeHolder())
+            return null
+        }
+
+        fun ItemListsCoverBinding.bind(item: EchoMediaItem.Lists): MaterialButton {
             playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
             val cover = item.cover
             cover.loadWith(listImageView, null, item.placeHolder()) {
@@ -192,11 +200,7 @@ sealed class MediaItemViewHolder(
                 cover.loadInto(listImageView2)
             }
             albumImage(item.size, listImageContainer1, listImageContainer2)
-            isPlaying.toolTipOnClick()
-            return { playing: Boolean ->
-                isPlaying.animateVisibility(playing)
-                if (playing) (isPlaying.icon as Animatable).start()
-            }
+            return isPlaying
         }
 
         private fun albumImage(size: Int?, view1: View, view2: View) {

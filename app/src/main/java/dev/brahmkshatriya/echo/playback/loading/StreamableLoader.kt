@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -16,6 +17,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.playback.PlayerException
 import dev.brahmkshatriya.echo.playback.StreamableLoadingException
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
@@ -63,7 +65,14 @@ class StreamableLoader(
     private suspend fun loadTrack(item: MediaItem) = withClient(item) {
         loadTrack(item.track).also {
             it.servers.ifEmpty {
-                throw Exception(context.getString(R.string.no_streams_found))
+                val message = context.getString(R.string.no_streams_found)
+                throw PlayerException(
+                    ExceptionActivity.ExceptionDetails(
+                        "${item.track.title} : $message",
+                        message
+                    ),
+                    item
+                )
             }
         }
     }

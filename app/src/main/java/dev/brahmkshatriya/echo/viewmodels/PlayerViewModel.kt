@@ -13,6 +13,7 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.LibraryResult.RESULT_SUCCESS
 import androidx.media3.session.MediaController
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
@@ -28,10 +29,10 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
+import dev.brahmkshatriya.echo.playback.PlayerException
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
-import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.ui.player.PlayerUiListener
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
@@ -100,8 +101,8 @@ class PlayerViewModel @Inject constructor(
             val result = sessionResult.getOrThrow()
             if (result.resultCode != RESULT_SUCCESS) {
                 val exception =
-                    result.extras.getSerialized<ExceptionFragment.ExceptionDetails>("error")
-                        ?: ExceptionFragment.ExceptionDetails("IO Error", "")
+                    result.extras.getSerialized<ExceptionActivity.ExceptionDetails>("error")
+                        ?: ExceptionActivity.ExceptionDetails("IO Error", "")
                 createException(exception)
                 this.isLiked.value = old
             }
@@ -241,18 +242,15 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun createException(exceptionDetails: ExceptionFragment.ExceptionDetails) = withBrowser {
-        viewModelScope.launch {
-            throwableFlow.emit(
-                PlayerException(exceptionDetails, it.currentMediaItem)
-            )
+    private fun createException(exceptionDetails: ExceptionActivity.ExceptionDetails) =
+        withBrowser {
+            viewModelScope.launch {
+                throwableFlow.emit(
+                    PlayerException(exceptionDetails, it.currentMediaItem)
+                )
+            }
         }
-    }
 
-    data class PlayerException(
-        val details: ExceptionFragment.ExceptionDetails,
-        val mediaItem: MediaItem?
-    ) : Throwable()
 
     var list: List<MediaItem> = listOf()
 

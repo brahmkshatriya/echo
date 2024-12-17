@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.download.Downloader
-import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadItem
 import dev.brahmkshatriya.echo.ui.download.DownloadItem.Companion.toItem
@@ -28,7 +28,7 @@ class DownloadViewModel @Inject constructor(
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val application: Application,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
-    val offline: OfflineExtension,
+    private val extensionLoader: ExtensionLoader,
     database: EchoDatabase,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
@@ -108,7 +108,8 @@ class DownloadViewModel @Inject constructor(
     val offlineFlow = MutableStateFlow<PagingData<Shelf>?>(null)
     private fun loadOfflineDownloads() {
         viewModelScope.launch {
-            offline.getDownloads().toFlow().collectTo(offlineFlow)
+            extensionLoader.offline.second.value.getOrNull()?.getDownloads()
+                ?.toFlow()?.collectTo(offlineFlow)
         }
     }
 }

@@ -478,11 +478,12 @@ object MediaStoreUtils {
             runCatching { playlistContent(context, playlists) }.getOrNull() ?: false
         val idMap = hashMapOf<Long, Track>()
         val likedAudios = playlists.find { it.first.title == "Liked" }?.second ?: emptyList()
+        val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        else MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+
         val cursor = context.contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            projection,
-            selection,
-            null,
+            uri, projection, selection, null,
             MediaStore.Audio.Media.TITLE + " COLLATE UNICODE ASC",
         )
 

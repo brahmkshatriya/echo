@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
@@ -31,7 +32,7 @@ import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
+import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
@@ -83,10 +84,8 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        var isPlaying: (Boolean) -> Unit = {}
-        observe(playerViewModel.currentFlow) {
-            isPlaying(it.isPlaying(item.id))
-        }
+        var isPlaying: MaterialButton? = null
+        applyIsPlaying(playerViewModel.currentFlow, item.id, isPlaying)
         binding.itemContainer.run {
             more.run {
                 setOnClickListener { dismiss() }

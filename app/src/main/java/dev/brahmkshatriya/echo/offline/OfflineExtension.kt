@@ -116,7 +116,7 @@ class OfflineExtension(
     private val refreshLibrary
         get() = settings.getBoolean("refresh_library") ?: true
 
-    var library = MediaStoreUtils.getAllSongs(context, settings)
+    private var library = MediaStoreUtils.getAllSongs(context, settings)
     private fun refreshLibrary() {
         library = MediaStoreUtils.getAllSongs(context, settings)
         cachedTracks = getCachedTracks()

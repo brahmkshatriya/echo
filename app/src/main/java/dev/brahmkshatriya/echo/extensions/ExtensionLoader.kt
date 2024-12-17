@@ -2,6 +2,9 @@ package dev.brahmkshatriya.echo.extensions
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
@@ -19,6 +22,7 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.plugger.FileChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
+import dev.brahmkshatriya.echo.extensions.plugger.catchLazy
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.CoroutineName
@@ -40,9 +44,10 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
+@OptIn(UnstableApi::class)
 class ExtensionLoader(
     context: Context,
-    offlineExtension: OfflineExtension,
+    cache: SimpleCache,
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val extensionDao: ExtensionDao,
     private val userDao: UserDao,
@@ -58,8 +63,8 @@ class ExtensionLoader(
     private val listener = PackageChangeListener(context)
     val fileListener = FileChangeListener(scope)
 
-    private val offline = OfflineExtension.metadata to offlineExtension
-//    private val test = TestExtension.metadata to TestExtension()
+    val offline = OfflineExtension.metadata to catchLazy { OfflineExtension(context, cache) }
+//    private val test = TestExtension.metadata to catchLazy { TestExtension() }
 
     private val musicExtensionRepo = MusicExtensionRepo(context, listener, fileListener, offline)
     private val trackerExtensionRepo = TrackerExtensionRepo(context, listener, fileListener)

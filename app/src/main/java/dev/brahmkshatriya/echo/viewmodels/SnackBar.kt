@@ -4,7 +4,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -58,15 +57,16 @@ class SnackBar @Inject constructor(
     companion object {
         fun AppCompatActivity.configureSnackBar(root: View) {
             val viewModel by viewModels<SnackBar>()
+            val uiViewModel by viewModels<UiViewModel>()
             fun createSnackBar(message: Message) {
-                val snackBar = Snackbar.make(
-                    root,
-                    message.message,
-                    Snackbar.LENGTH_LONG
-                )
+                val snackBar = Snackbar.make(root, message.message, Snackbar.LENGTH_LONG)
                 snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
-                snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> { setMargins(0) }
-                snackBar.anchorView = root
+                snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    val insets = uiViewModel.systemInsets.value
+                    marginStart = insets.start
+                    marginEnd = insets.end
+                    bottomMargin = uiViewModel.getCombined().bottom - insets.bottom
+                }
                 message.action?.run { snackBar.setAction(name) { handler() } }
                 snackBar.addCallback(object : Snackbar.Callback() {
                     override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {

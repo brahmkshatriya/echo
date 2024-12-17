@@ -20,16 +20,23 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.retries
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getLikeButton
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getRepeatButton
+import dev.brahmkshatriya.echo.playback.PlayerException
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.StreamableLoadingException
 import dev.brahmkshatriya.echo.ui.exception.AppException
+import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 class PlayerEventListener(
     private val context: Context,
+    private val scope: CoroutineScope,
     private val session: MediaSession,
     private val currentFlow: MutableStateFlow<Current?>,
     private val extensionList: MutableStateFlow<List<MusicExtension>?>,
+    private val throwableFlow: MutableSharedFlow<Throwable>
 ) : Player.Listener {
 
     private val handler = Handler(Looper.getMainLooper())
@@ -92,29 +99,43 @@ class PlayerEventListener(
     }
 
     private val maxRetries = 1
-    private var last: Pair<MediaItem, Throwable>? = null
+    private var currentRetries = 0
+    private var last: Pair<String, Throwable>? = null
     override fun onPlayerError(error: PlaybackException) {
-        val cause = error.cause?.cause
+        val cause = error.cause?.cause ?: error.cause ?: error
+        scope.launch {
+            val exception = if (cause is StreamableLoadingException) cause.cause
+            else PlayerException(cause.toExceptionDetails(context), player.currentMediaItem)
+            throwableFlow.emit(exception)
+        }
         if (cause !is StreamableLoadingException) return
         if (cause.cause !is AppException.Other) return
+
         val mediaItem = cause.mediaItem
-        if (last?.first?.mediaId != mediaItem.mediaId && last?.second == cause.cause.cause)
-            return
         val index = player.currentMediaItemIndex.takeIf {
             player.currentMediaItem?.mediaId == mediaItem.mediaId
         } ?: return
-        last = mediaItem to cause.cause.cause
+
+        val old = last
+        val new = cause.cause.cause
+        last = mediaItem.mediaId to new
+        if (old != null && old.first != mediaItem.mediaId && old.second::class == new::class)
+            currentRetries++
+        else currentRetries = 0
+
+        if (currentRetries >= maxRetries) return
+        if (!player.playWhenReady) return
+
         val retries = mediaItem.retries
-        handler.post {
-            if (retries >= maxRetries) {
-                val hasMore = index < player.mediaItemCount - 1
-                if (!hasMore) return@post
-                player.seekToNextMediaItem()
-            } else {
-                val new = MediaItemUtils.withRetry(mediaItem)
-                player.replaceMediaItem(index, new)
-            }
-            player.play()
+        if (retries >= maxRetries) {
+            val hasMore = index < player.mediaItemCount - 1
+            if (!hasMore) return
+            player.seekToNextMediaItem()
+        } else {
+            val newItem = MediaItemUtils.withRetry(mediaItem)
+            player.replaceMediaItem(index, newItem)
         }
+        player.prepare()
+        player.play()
     }
 }

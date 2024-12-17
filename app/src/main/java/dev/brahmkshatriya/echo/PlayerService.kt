@@ -137,7 +137,9 @@ class PlayerService : MediaLibraryService() {
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
         setMediaNotificationProvider(notificationProvider)
 
-        exoPlayer.addListener(PlayerEventListener(this, session, current, extListFlow))
+        exoPlayer.addListener(
+            PlayerEventListener(this, scope, session, current, extListFlow, throwFlow)
+        )
         exoPlayer.addListener(AudioFocusListener(this, exoPlayer))
         exoPlayer.addListener(
             Radio(exoPlayer, this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)

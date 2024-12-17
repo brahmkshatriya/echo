@@ -79,6 +79,9 @@ class UiViewModel @Inject constructor(
         system.add(player)
     }
 
+    fun getCombined() = (if (isMainFragment.value) systemInsets.value.add(navViewInsets.value)
+    else systemInsets.value).add(playerInsets.value)
+
     fun setPlayerNavViewInsets(context: Context, isNavVisible: Boolean, isRail: Boolean): Insets {
         val insets = context.resources.run {
             if (!isNavVisible) return@run Insets()
