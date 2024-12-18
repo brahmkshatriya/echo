@@ -236,7 +236,7 @@
     <string name="extension_installed_successfully">Erweiterung erfolgreich installiert.</string>
     <string name="extension_uninstalled_successfully">Erweiterung erfolgreich deinstalliert.</string>
     <string name="allow_opening_links">Öffnen von Links erlauben</string>
-    <string name="open_links_instruction">Um das öffnen dieser Links zu erlauben, müssen Sie:\n- Nach unten Scrollen und \"Standardmäßig öffnen\" klicken\n- Auf \"+ Link Hinzufügen\" klicken</string>
+    <string name="open_links_instruction">"Um das öffnen dieser Links zu erlauben, müssen Sie:\n- Nach unten Scrollen und tandardmäßig öffnen klicken\n- Auf  Link Hinzufügen klicken"</string>
     <string name="extension_requires_following_extensions">%1$s erfordert %2$s</string>
     <string name="extension_updated_successfully">%1$s erfolgreich aktualisiert</string>
     <string name="check_for_extension_updates">Nach Erweiterungsupdates überprüfen</string>
