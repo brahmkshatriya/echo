@@ -238,7 +238,7 @@
     <string name="installation_type_summary">Az App telepítése a következő linkek Echo-ban megnyítását engedélyezi:</string>
     <string name="extension_installer">Bővítmény telepítő</string>
     <string name="uninstall">Törlés</string>
-    <string name="open_links_instruction">Ahhoz hogy ezen linkek megnyitását engedélyezze:\n- Görgessen le és kattintsd meg a \"Megnyitás Alapból\" Opciót\n- kattintsd meg a \"+ Link hozzáadása\"-t</string>
+    <string name="open_links_instruction">"Ahhoz hogy ezen linkek megnyitását engedélyezze:\n- Görgessen le és kattintsd meg a egnyitás Alapból Opciót\n- kattintsd meg a  Link hozzáadásat"</string>
     <string name="extension_requires_following_extensions">%1$s müködéséhez szükséges a(z) %2$s</string>
     <string name="installation_type_warning">Nem elérhető a Bővítmény fájlból való telepítése esetén.</string>
     <string name="could_not_find_the_file">A fájl nem található.</string>
