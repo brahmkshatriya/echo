@@ -246,7 +246,7 @@
     <string name="extension_installer">संस्थापकः</string>
     <string name="extension_uninstalled_successfully">विस्तारः सफलतया अपाकृतः।</string>
     <string name="uninstall">अपाक्रियताम्</string>
-    <string name="open_links_instruction">एतान् सम्पर्कान् उद्घाटनाय निम्नलिखितं करणीयम् अस्ति:\n– अधः स्क्रोल् कृत्वा \"स्वयमेव उद्घाटनं\" इत्यस्मिन्हि क्लिक् क्रियताम्।\n– \"+ सम्पर्कं योजय\" इत्यत्र क्लिक् क्रियताम्।</string>
+    <string name="open_links_instruction">एतानि लिंक् उद्घाटनाय अनुमतिं दातुं, युष्मिन्कर्तव्यं:\\n- अधो स्क्रोल् कृत्वा \\\"डिफ़ॉल्ट रूपेण उद्घाटय\\\" इति क्लिक् कुरुत\\n- \\\"+ लिंकं योजय\\\" इति क्लिक् कुरुत</string>
     <string name="link">सूत्रम्</string>
     <string name="extension_updated_successfully">%1$s यथावत् सफलतया अद्यतनं कृतम्</string>
     <string name="check_for_extension_updates">विस्तारक-अद्यतनेषु परीक्षां कुरु</string>
@@ -262,4 +262,7 @@
     <string name="sources">स्रोताः</string>
     <string name="backgrounds">पृष्ठभूमयः</string>
     <string name="source_selection">स्रोत-चयनम्</string>
+    <string name="explicit">स्पष्टम्</string>
+    <string name="show_background">पृष्ठभूमिं दर्शयतु</string>
+    <string name="show_background_summary">प्लेयरमध्ये ट्रैकस्य पृष्ठभूमिः विडियो वा धुन्धला कलाकृतिः</string>
 </resources>
