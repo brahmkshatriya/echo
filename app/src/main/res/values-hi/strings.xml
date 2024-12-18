@@ -245,7 +245,7 @@
     <string name="extension_installed_successfully">एक्सटेंशन सफलतापूर्वक स्थापित किया गया।</string>
     <string name="uninstall">अनइंस्टॉल</string>
     <string name="allow_opening_links">लिंक खोलने की अनुमति दें</string>
-    <string name="open_links_instruction">इन लिंक को खोलने की अनुमति देने के लिए, आपको:\n- नीचे स्क्रॉल करें और \"डिफ़ॉल्ट रूप से खोलें\" पर क्लिक करें।\n- \"+ लिंक जोड़ें\" पर क्लिक करें।</string>
+    <string name="open_links_instruction">इन लिंक को खोलने की अनुमति देने के लिए, आपको ये करना होगा:\\n- नीचे स्क्रॉल करके \\\"डिफ़ॉल्ट के रूप में खोलें\\\" पर क्लिक करें\\n- \\\"+ लिंक जोड़ें\\\" पर क्लिक करें</string>
     <string name="extension_requires_following_extensions">%1$s को %2$s की आवश्यकता है।</string>
     <string name="extension_installed">%1$s (स्थापित)</string>
     <string name="add_extensions">एक्सटेंशन जोड़ें</string>
@@ -262,4 +262,7 @@
     <string name="sources">स्रोत</string>
     <string name="source_selection">स्रोत चयन</string>
     <string name="backgrounds">पृष्ठभूमियां</string>
+    <string name="show_background_summary">प्लेयर में ट्रैक की पृष्ठभूमि वीडियो या धुंधली कलाकृति</string>
+    <string name="explicit">मुखर</string>
+    <string name="show_background">पृष्ठभूमि दिखाएं</string>
 </resources>
