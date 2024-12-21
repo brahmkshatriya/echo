@@ -39,7 +39,7 @@ class MaterialSliderPreference(
         slider.valueFrom = min.toFloat()
         val max = if (allowOverride) max(to, current) else to
         slider.valueTo = max.toFloat()
-        slider.value = max(min(current, min), max).toFloat()
+        slider.value = min(max(current, min), max).toFloat()
         slider.stepSize = steps?.toFloat() ?: 1f
 
         slider.addOnChangeListener { _, value, byUser ->
@@ -76,12 +76,13 @@ class MaterialSliderPreference(
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val newMaxValue = editText?.text?.toString()?.toIntOrNull()
-                if (newMaxValue != null && newMaxValue > from) {
+                if (newMaxValue != null && (allowOverride || (newMaxValue in from..to))) {
                     slider.valueTo = newMaxValue.toFloat()
                     slider.value = newMaxValue.toFloat()
                     dialog.dismiss()
                 } else {
-                    editText?.error = context.getString(R.string.error)
+                    editText?.error = context.getString(R.string.error) +
+                            if (!allowOverride) ": $from - $to" else ""
                 }
             }
 
