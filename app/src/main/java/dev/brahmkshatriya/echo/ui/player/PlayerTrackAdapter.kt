@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.max
 
 @OptIn(UnstableApi::class)
 class PlayerTrackAdapter(
@@ -179,7 +180,7 @@ class PlayerTrackAdapter(
                 }
 
                 override fun onSeekTo(position: Long) {
-                    playerViewModel.withBrowser { it.seekTo(position) }
+                    playerViewModel.withBrowser { it.seekTo(max(0, position)) }
                 }
 
                 override fun onNext() {

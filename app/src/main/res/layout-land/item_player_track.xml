@@ -25,6 +25,10 @@
             app:use_controller="false"
             tools:visibility="gone" />
 
+        <include
+            android:id="@+id/bgPanel"
+            layout="@layout/item_click_panels" />
+
     </FrameLayout>
 
     <ImageView
@@ -64,7 +68,6 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:background="?attr/colorSurfaceContainerHigh"
-                android:elevation="2dp"
                 android:importantForAccessibility="no"
                 android:scaleType="fitCenter"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -77,6 +80,19 @@
                 app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Small"
                 tools:ignore="ImageContrastCheck"
                 tools:src="@tools:sample/avatars[3]" />
+
+            <include
+                android:id="@+id/trackPanel"
+                layout="@layout/item_click_panels"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1,1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_max="@dimen/max_cover_size"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_max="@dimen/max_cover_size" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

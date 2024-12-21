@@ -24,6 +24,8 @@ import dev.brahmkshatriya.echo.ui.paging.toFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import tel.jeelpa.plugger.utils.mapState
 import javax.inject.Inject
@@ -64,7 +66,7 @@ class LyricsViewModel @Inject constructor(
     override fun onInitialize() {
         update()
         viewModelScope.launch {
-            currentMediaFlow.collect {
+            currentMediaFlow.map { it?.mediaItem }.distinctUntilChanged().collect {
                 update()
             }
         }

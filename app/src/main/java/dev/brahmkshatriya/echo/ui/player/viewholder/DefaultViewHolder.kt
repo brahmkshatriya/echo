@@ -9,6 +9,9 @@ import android.graphics.drawable.AnimatedVectorDrawable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
 import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
@@ -64,6 +67,8 @@ import dev.brahmkshatriya.echo.utils.loadWithThumb
 import dev.brahmkshatriya.echo.utils.toTimeString
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import java.util.Timer
+import kotlin.concurrent.schedule
 import kotlin.math.max
 import kotlin.math.min
 
@@ -106,15 +111,54 @@ class DefaultViewHolder(
         binding.collapsedContainer.playerClose.setOnClickListener {
             listener.onChangePlayerState(STATE_HIDDEN)
         }
-        binding.bgContainer.setOnClickListener {
-            listener.onShowBackground(false)
-        }
-        binding.expandedTrackCover.setOnClickListener {
+
+        binding.bgPanel.start.handleGestures(true) { listener.onShowBackground(false) }
+        binding.bgPanel.end.handleGestures(false) { listener.onShowBackground(false) }
+        fun show() {
             val bgImage = binding.bgImage.drawable != null
             if (bgImage || binding.bgVideo.player.hasVideo() || item.background != null)
                 listener.onShowBackground(true)
         }
+        binding.trackPanel.start.handleGestures(true, ::show)
+        binding.trackPanel.end.handleGestures(false, ::show)
+
         binding.playerControls.bind(item)
+    }
+
+    private fun View.handleGestures(start: Boolean, show: () -> Unit) {
+        val listener = object : GestureDetector.SimpleOnGestureListener() {
+            private var timer: Timer? = null
+            private var seeking = false
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                if (playerSheetState != STATE_EXPANDED) return false
+                if (!seeking) show()
+                else onDoubleTap(e)
+                return true
+            }
+
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                if (playerSheetState != STATE_EXPANDED) return false
+                isPressed = true
+                isPressed = false
+                val amount = 10000L
+                listener.onSeekTo(max(0, pos + if (start) -amount else amount))
+
+                seeking = true
+                timer?.cancel()
+                val timer = Timer()
+                this.timer = timer
+                timer.schedule(1000) {
+                    seeking = false
+                }
+                return true
+            }
+        }
+        val detector = GestureDetector(context, listener)
+        setOnTouchListener { _, event ->
+            detector.onTouchEvent(event)
+            performClick()
+            true
+        }
     }
 
     private var isCurrent: Boolean = false
@@ -296,9 +340,11 @@ class DefaultViewHolder(
         }
     }
 
+    var pos = 0
     override fun onProgressChanged(current: Int, buffered: Int) {
-        val curr = if (isCurrent) current else 0
-        val buff = if (isCurrent) buffered else 0
+        val curr = max(0, if (isCurrent) current else 0)
+        val buff = max(0, if (isCurrent) buffered else 0)
+        pos = curr
         binding.collapsedContainer.run {
             collapsedBuffer.progress = buff
             collapsedSeekBar.progress = curr
