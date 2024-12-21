@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.adapter.ShelfLoadingAdapter
 
 class LyricsItemAdapter(
-    private val fragment: Fragment,
+    fragment: Fragment,
     private val info: Extension<*>,
     private val listener: Listener
 ) : PagingDataAdapter<Lyrics, LyricsItemAdapter.ViewHolder>(DiffCallback) {
@@ -46,9 +46,10 @@ class LyricsItemAdapter(
         }
     }
 
+    private val loadingListener = ShelfLoadingAdapter.createListener(fragment) { retry() }
     fun withLoaders(): ConcatAdapter {
-        val footer = ShelfLoadingAdapter(fragment, info) { retry() }
-        val header = ShelfLoadingAdapter(fragment, info) { retry() }
+        val footer = ShelfLoadingAdapter(info, loadingListener)
+        val header = ShelfLoadingAdapter(info, loadingListener)
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)

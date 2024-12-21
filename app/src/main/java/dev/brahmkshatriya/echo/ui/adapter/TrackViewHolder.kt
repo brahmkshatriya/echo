@@ -7,7 +7,9 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
 import dev.brahmkshatriya.echo.utils.loadInto
@@ -24,6 +26,7 @@ class TrackViewHolder(
         val shelf = shelf as? Shelf.Lists.Tracks ?: return
         val pos = bindingAdapterPosition
         val track = shelf.list[pos]
+        this.track = track
         val list = shelf.list
         val isNumbered = shelf.isNumbered
         binding.itemNumber.text =
@@ -51,14 +54,21 @@ class TrackViewHolder(
         binding.itemMore.setOnClickListener {
             listener.onLongClick(clientId, context, list, pos, binding.root)
         }
-        applyIsPlaying(listener.current, track.id, binding.isPlaying)
+    }
+
+    var track: Track? = null
+    override fun onCurrentChanged(current: Current?) {
+        applyIsPlaying(current, track?.id, binding.isPlaying)
     }
 
     override val transitionView = binding.root
 
     companion object {
         fun create(
-            parent: ViewGroup, listener: TrackAdapter.Listener, clientId: String, context: EchoMediaItem?
+            parent: ViewGroup,
+            listener: TrackAdapter.Listener,
+            clientId: String,
+            context: EchoMediaItem?
         ): TrackViewHolder {
             val inflater = LayoutInflater.from(parent.context)
             return TrackViewHolder(

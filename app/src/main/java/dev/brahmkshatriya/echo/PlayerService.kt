@@ -100,6 +100,8 @@ class PlayerService : MediaLibraryService() {
                     .buildUpon()
                     .setAudioOffloadPreferences(audioOffloadPreferences)
                     .build()
+
+                it.preloadConfiguration = ExoPlayer.PreloadConfiguration(0)
             }
     }
 

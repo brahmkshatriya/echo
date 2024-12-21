@@ -22,8 +22,7 @@ import dev.brahmkshatriya.echo.ui.exception.openLoginException
 class ShelfLoadingAdapter(
     private val extension: Extension<*>,
     val listener: Listener? = null
-) :
-    LoadStateAdapter<ShelfLoadingAdapter.LoadViewHolder>() {
+) : LoadStateAdapter<ShelfLoadingAdapter.LoadViewHolder>() {
 
     interface Listener {
         fun onRetry()
@@ -140,20 +139,20 @@ class ShelfLoadingAdapter(
         holder.shelf.bind(loadState)
     }
 
-    constructor (fragment: Fragment, extension: Extension<*>, retry: () -> Unit) : this(
-        extension,
-        object : Listener {
-            override fun onRetry() {
-                retry()
-            }
+    companion object {
+        fun createListener(fragment: Fragment, retry: () -> Unit) =
+            object : Listener {
+                override fun onRetry() {
+                    retry()
+                }
 
-            override fun onError(view: View, error: Throwable) {
-                fragment.requireActivity().openException(error, view)
-            }
+                override fun onError(view: View, error: Throwable) {
+                    fragment.requireActivity().openException(error, view)
+                }
 
-            override fun onLoginRequired(view: View, error: AppException.LoginRequired) {
-                fragment.requireActivity().openLoginException(error, view)
+                override fun onLoginRequired(view: View, error: AppException.LoginRequired) {
+                    fragment.requireActivity().openLoginException(error, view)
+                }
             }
-        }
-    )
+    }
 }

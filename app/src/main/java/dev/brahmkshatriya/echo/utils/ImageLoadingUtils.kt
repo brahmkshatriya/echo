@@ -17,7 +17,6 @@ import coil3.request.error
 import coil3.request.placeholder
 import coil3.request.target
 import coil3.request.transformations
-import coil3.target.GenericViewTarget
 import coil3.toBitmap
 import coil3.transform.CircleCropTransformation
 import coil3.transform.Transformation
@@ -60,10 +59,12 @@ fun ImageHolder?.loadWithThumb(
         return@tryWith
     }
     val request = createRequest(imageView.context, null, error)
-    request.target(ViewTarget(imageView) {
-        imageView.load(it)
-        tryWith(false) { onDrawable(it) }
-    })
+    fun setDrawable(image: Image?) {
+        val drawable = image?.asDrawable(imageView.resources)
+        imageView.load(drawable)
+        tryWith(false) { onDrawable(drawable) }
+    }
+    request.target(::setDrawable, ::setDrawable, ::setDrawable)
     imageView.enqueue(request)
 }
 
@@ -72,24 +73,13 @@ fun ImageHolder?.loadWith(
     error: Int? = null, onDrawable: (Drawable?) -> Unit = {}
 ) = tryWith {
     val request = createRequest(imageView.context, placeholder, error)
-    request.target(ViewTarget(imageView) {
-        imageView.load(it)
-        tryWith(false) { onDrawable(it) }
-    })
+    fun setDrawable(image: Image?) {
+        val drawable = image?.asDrawable(imageView.resources)
+        imageView.load(drawable)
+        tryWith(false) { onDrawable(drawable) }
+    }
+    request.target(::setDrawable, ::setDrawable, ::setDrawable)
     imageView.enqueue(request)
-}
-
-class ViewTarget(
-    override val view: View,
-    val onDrawable: (Drawable?) -> Unit,
-) : GenericViewTarget<View>() {
-    private var mDrawable: Drawable? = null
-    override var drawable: Drawable?
-        get() = mDrawable
-        set(value) {
-            mDrawable = value
-            onDrawable(value)
-        }
 }
 
 val circleCrop = CircleCropTransformation()
@@ -103,6 +93,18 @@ fun <T : View> ImageHolder?.loadAsCircle(
         tryWith(false) { onDrawable(drawable) }
     }
     request.target(::setDrawable, ::setDrawable, ::setDrawable)
+    view.enqueue(request)
+}
+
+fun ImageHolder?.loadWithBitmap(
+    view: View, placeholder: Int? = null, onBitmap: (Bitmap?) -> Unit
+) = tryWith {
+    val request = createRequest(view.context, null, placeholder)
+    fun setBitmap(image: Image?) {
+        val bitmap = image?.toBitmap()
+        tryWith(false) { onBitmap(bitmap) }
+    }
+    request.target(::setBitmap, ::setBitmap, ::setBitmap)
     view.enqueue(request)
 }
 

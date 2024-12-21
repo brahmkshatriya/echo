@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaGridBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
@@ -36,7 +37,6 @@ class GridViewHolder(
                 binding.root.setOnLongClickListener {
                     listener.onLongClick(clientId, item, it)
                 }
-                applyIsPlaying(listener.current, item.id, binding.isPlaying)
                 item
             }
 
@@ -59,15 +59,20 @@ class GridViewHolder(
                     if (isNumbered) listener.onLongClick(clientId, null, tracks, pos, it)
                     else listener.onLongClick(clientId, media, it)
                 }
-                applyIsPlaying(listener.current, media.id, binding.isPlaying)
                 media
             }
 
             else -> return
         }
+        this.item = media
         val titleBinding = NewItemMediaTitleBinding.bind(binding.root)
         titleBinding.bind(media)
         media.cover.loadInto(binding.imageView, media.placeHolder())
+    }
+
+    var item: EchoMediaItem? = null
+    override fun onCurrentChanged(current: Current?) {
+        applyIsPlaying(current, item?.id, binding.isPlaying)
     }
 
     override val transitionView = binding.root

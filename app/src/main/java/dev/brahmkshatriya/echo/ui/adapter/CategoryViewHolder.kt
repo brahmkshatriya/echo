@@ -8,6 +8,7 @@ import com.google.android.material.R
 import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
+import dev.brahmkshatriya.echo.playback.Current
 
 class CategoryViewHolder(
     val listener: ShelfAdapter.Listener,
@@ -46,6 +47,8 @@ class CategoryViewHolder(
             listener.onLongClick(clientId, item, root)
         }
     }
+
+    override fun onCurrentChanged(current: Current?) {}
 
     override val transitionView = binding.root
 }

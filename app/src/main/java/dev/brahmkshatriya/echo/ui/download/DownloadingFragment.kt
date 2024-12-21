@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.ConcatAdapter
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
-import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
@@ -76,6 +76,8 @@ class DownloadingFragment : Fragment() {
         val offline = viewModel.extensionListFlow.getExtension(OfflineExtension.metadata.id)
             ?: return
         val downloadedAdapter = ShelfAdapter(this, "downloads", offline)
+        downloadedAdapter.applyCurrent(this, binding.recyclerView)
+
         val titleAdapter = ShelfAdapter(this, "", offline)
 
         val concatAdapter = ConcatAdapter(

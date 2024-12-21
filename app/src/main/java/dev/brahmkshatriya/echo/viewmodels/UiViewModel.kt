@@ -15,26 +15,21 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
 import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.dpToPx
-import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -122,9 +117,6 @@ class UiViewModel @Inject constructor(
     val infoSheetState = MutableStateFlow(STATE_COLLAPSED)
     val playerBgVisibleState = MutableStateFlow(false)
 
-    val changePlayerState = MutableSharedFlow<Int>()
-    val changeInfoState = MutableSharedFlow<Int>()
-
     val playerSheetOffset = MutableStateFlow(
         if (playerSheetState.value == STATE_EXPANDED) 1f else 0f
     )
@@ -159,10 +151,32 @@ class UiViewModel @Inject constructor(
     }
 
     fun collapsePlayer() {
-        if (playerSheetState.value == STATE_EXPANDED) viewModelScope.launch {
-            changePlayerState.emit(STATE_COLLAPSED)
-            changeInfoState.emit(STATE_COLLAPSED)
+        if (playerSheetState.value == STATE_EXPANDED) {
+            changePlayerState(STATE_COLLAPSED)
+            changeInfoState(STATE_COLLAPSED)
         }
+    }
+
+    private var playerBehaviour = WeakReference<BottomSheetBehavior<View>>(null)
+    fun changePlayerState(state: Int) {
+        val behavior = playerBehaviour.get() ?: return
+        if (state == STATE_HIDDEN) behavior.isHideable = true
+        playerSheetState.value = state
+        playerSheetOffset.value = if (state == STATE_EXPANDED) 1f else 0f
+        behavior.state = state
+    }
+
+    private var infoBehaviour = WeakReference<BottomSheetBehavior<View>>(null)
+    fun changeInfoState(stateCollapsed: Int) {
+        val behavior = infoBehaviour.get() ?: return
+        infoSheetState.value = stateCollapsed
+        behavior.state = stateCollapsed
+    }
+
+    fun changeBgVisible(show: Boolean) {
+        playerBgVisibleState.value = show
+        if (!show && infoSheetState.value == STATE_EXPANDED)
+            changeInfoState(STATE_COLLAPSED)
     }
 
     companion object {
@@ -255,13 +269,8 @@ class UiViewModel @Inject constructor(
 
         fun LifecycleOwner.setupPlayerBehavior(viewModel: UiViewModel, view: View) {
             val behavior = BottomSheetBehavior.from(view)
+            viewModel.playerBehaviour = WeakReference(behavior)
             observe(viewModel.infoSheetState) { behavior.isDraggable = it == STATE_COLLAPSED }
-            observe(viewModel.changePlayerState) {
-                if (it == STATE_HIDDEN) behavior.isHideable = true
-                viewModel.playerSheetState.value = it
-                viewModel.playerSheetOffset.value = if (it == STATE_EXPANDED) 1f else 0f
-                behavior.state = it
-            }
             viewModel.playerBackPressCallback = behavior.backPressCallback()
 
             val combined =
@@ -283,8 +292,8 @@ class UiViewModel @Inject constructor(
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     val expanded = newState == STATE_EXPANDED
                     behavior.isHideable = !expanded
-                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
                     viewModel.playerSheetState.value = newState
+//                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -293,25 +302,18 @@ class UiViewModel @Inject constructor(
             })
 
             viewModel.run {
-                viewModelScope.launch {
-                    changePlayerState.first()
-                    observe(fromNotification) {
-                        if (!it) return@observe
-                        fromNotification.value = false
-                        emit(changePlayerState) { STATE_EXPANDED }
-                        emit(changeInfoState) { STATE_COLLAPSED }
-                    }
+                observe(fromNotification) {
+                    if (!it) return@observe
+                    fromNotification.value = false
+                    changePlayerState(STATE_EXPANDED)
+                    changeInfoState(STATE_COLLAPSED)
                 }
             }
         }
 
-        fun LifecycleOwner.setupPlayerInfoBehavior(viewModel: UiViewModel, view: View) {
+        fun setupPlayerInfoBehavior(viewModel: UiViewModel, view: View) {
             val behavior = BottomSheetBehavior.from(view)
-
-            observe(viewModel.changeInfoState) {
-                viewModel.infoSheetState.value = it
-                behavior.state = it
-            }
+            viewModel.infoBehaviour = WeakReference(behavior)
 
             behavior.state = viewModel.infoSheetState.value
             val backPress = behavior.backPressCallback()

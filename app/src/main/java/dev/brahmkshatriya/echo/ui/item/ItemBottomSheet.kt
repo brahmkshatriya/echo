@@ -85,7 +85,10 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         var isPlaying: MaterialButton? = null
-        applyIsPlaying(playerViewModel.currentFlow, item.id, isPlaying)
+        observe(playerViewModel.currentFlow) {
+            applyIsPlaying(it, item.id, isPlaying)
+        }
+
         binding.itemContainer.run {
             more.run {
                 setOnClickListener { dismiss() }

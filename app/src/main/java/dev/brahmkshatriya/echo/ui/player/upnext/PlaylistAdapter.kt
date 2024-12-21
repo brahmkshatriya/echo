@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.ui.player.upnext
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Animatable
@@ -8,20 +8,20 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemQueueBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.toTimeString
 
 class PlaylistAdapter(
-    private val callback: Callback,
+    private val listener: Listener,
     private val inactive: Boolean = false
-) : LifeCycleListAdapter<Pair<Boolean, MediaItem>, PlaylistAdapter.ViewHolder>(DiffCallback) {
+) : ListAdapter<Pair<Boolean, MediaItem>, PlaylistAdapter.ViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<Pair<Boolean, MediaItem>>() {
         override fun areItemsTheSame(
@@ -36,22 +36,22 @@ class PlaylistAdapter(
 
     }
 
-    open class Callback {
+    open class Listener {
         open fun onItemClicked(position: Int) {}
         open fun onItemClosedClicked(position: Int) {}
         open fun onDragHandleTouched(viewHolder: RecyclerView.ViewHolder) {}
     }
 
     inner class ViewHolder(val binding: ItemPlaylistItemBinding) :
-        Holder<Pair<Boolean, MediaItem>>(binding.root) {
-        override fun bind(item: Pair<Boolean, MediaItem>) {
-            onBind(bindingAdapterPosition)
-        }
-    }
+        RecyclerView.ViewHolder(binding.root)
 
-    override fun createHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return ViewHolder(ItemPlaylistItemBinding.inflate(inflater, parent, false))
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.onBind(position)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -75,18 +75,18 @@ class PlaylistAdapter(
 
         binding.playlistItemClose.isVisible = !inactive
         binding.playlistItemClose.setOnClickListener {
-            callback.onItemClosedClicked(bindingAdapterPosition)
+            listener.onItemClosedClicked(bindingAdapterPosition)
         }
 
         binding.playlistItemDragImg.isVisible = !inactive
         binding.playlistItemDragHandle.setOnTouchListener { _, event ->
             if (event.actionMasked != MotionEvent.ACTION_DOWN) return@setOnTouchListener false
-            callback.onDragHandleTouched(this)
+            listener.onDragHandleTouched(this)
             true
         }
 
         binding.root.setOnClickListener {
-            callback.onItemClicked(bindingAdapterPosition)
+            listener.onItemClicked(bindingAdapterPosition)
         }
 
         binding.playlistCurrentItem.isVisible = isCurrent

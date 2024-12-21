@@ -12,7 +12,7 @@ data class Current(
 ) {
     val context = lazy { mediaItem.context }
     val track = lazy { mediaItem.track }
-    fun isPlaying(id: String): Boolean {
+    fun isPlaying(id: String?): Boolean {
         val same = mediaItem.mediaId == id
                 || context.value?.id == id
                 || track.value.album?.id == id
@@ -21,6 +21,6 @@ data class Current(
     }
 
     companion object {
-        fun Current?.isPlaying(id: String): Boolean = this?.isPlaying(id) ?: false
+        fun Current?.isPlaying(id: String?): Boolean = this?.isPlaying(id) ?: false
     }
 }

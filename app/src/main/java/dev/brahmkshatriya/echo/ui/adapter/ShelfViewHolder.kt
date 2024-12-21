@@ -7,9 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -30,15 +29,14 @@ import dev.brahmkshatriya.echo.databinding.ItemShelfListsBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaListsBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.adapter.GridViewHolder.Companion.ifGrid
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
-import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.utils.dpToPx
-import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.lang.ref.WeakReference
@@ -46,7 +44,10 @@ import javax.inject.Inject
 
 sealed class ShelfViewHolder(
     itemView: View,
-) : LifeCycleListAdapter.Holder<Shelf>(itemView) {
+) : RecyclerView.ViewHolder(itemView) {
+
+    abstract fun bind(item: Shelf)
+    abstract fun onCurrentChanged(current: Current?)
 
     open val clickView = itemView
     abstract val transitionView: View
@@ -74,7 +75,6 @@ sealed class ShelfViewHolder(
             } else false
             binding.recyclerView.setRecycledViewPool(sharedPool)
             val position = bindingAdapterPosition
-            val transition = transitionView.transitionName + item.id
             val context = binding.root.context
             val (layoutManager, padding) = item.ifGrid {
                 FlexboxLayoutManager(context).apply {
@@ -93,9 +93,18 @@ sealed class ShelfViewHolder(
                 else scrollToPosition(0)
             }
             viewModel.visibleScrollableViews[position] = WeakReference(this)
-            val adapter = ShelfListItemViewAdapter(clientId, transition, listener, item)
+
+            val transition = transitionView.transitionName + item.id
             binding.recyclerView.adapter = adapter
             binding.recyclerView.layoutManager = layoutManager
+            adapter.shelf = item
+            adapter.transition = transition
+        }
+
+        val adapter = ShelfListItemViewAdapter(clientId, listener)
+
+        override fun onCurrentChanged(current: Current?) {
+            adapter.onCurrentChanged(binding.recyclerView, current)
         }
 
         val layoutManager get() = binding.recyclerView.layoutManager
@@ -132,6 +141,8 @@ sealed class ShelfViewHolder(
             binding.subtitle.isVisible = item.subtitle.isNullOrBlank().not()
         }
 
+        override fun onCurrentChanged(current: Current?) {}
+
         override val transitionView = binding.root
 
         companion object {
@@ -152,11 +163,17 @@ sealed class ShelfViewHolder(
     ) : ShelfViewHolder(binding.root) {
         override fun bind(item: Shelf) {
             val media = (item as? Shelf.Item)?.media ?: return
-            val isPlaying = binding.bind(media)
-            applyIsPlaying(listener.current, media.id, isPlaying)
+            this.media = media
+            isPlaying = binding.bind(media)
             binding.more.setOnClickListener {
                 listener.onLongClick(clientId, media, transitionView)
             }
+        }
+
+        var media: EchoMediaItem? = null
+        var isPlaying: MaterialButton? = null
+        override fun onCurrentChanged(current: Current?) {
+            applyIsPlaying(current, media?.id, isPlaying)
         }
 
         override val transitionView: View = binding.root
@@ -197,7 +214,8 @@ sealed class ShelfViewHolder(
         val binding: ItemShelfMediaListsBinding,
         private val clientId: String,
         val listener: ShelfAdapter.Listener,
-        val viewModel: ListViewModel
+        val viewModel: ListViewModel,
+        val observe: (PagedData.Single<Track>, suspend (PagingData<Track>) -> Unit) -> Unit
     ) : ShelfViewHolder(binding.root) {
         override val transitionView: View
             get() = binding.root
@@ -205,8 +223,9 @@ sealed class ShelfViewHolder(
         override fun bind(item: Shelf) {
             val media = (item as? Shelf.Item)?.media ?: return
             if (media !is EchoMediaItem.Lists) return
-            val isPlaying = binding.listsInfo.bind(media)
-            applyIsPlaying(listener.current, media.id, isPlaying)
+            this.media = media
+            isPlaying = binding.listsInfo.bind(media)
+
             binding.listsInfo.more.setOnClickListener {
                 listener.onLongClick(clientId, media, transitionView)
             }
@@ -216,9 +235,13 @@ sealed class ShelfViewHolder(
             val adapter = TrackAdapter(clientId, transition, listener, media, false)
             binding.listsTracks.recyclerView.adapter = adapter
             val tracks = viewModel.loadTracks(clientId, media)
-            observe(tracks.toFlow()) {
-                adapter.submitData(it)
-            }
+            observe(tracks) { adapter.submitData(it) }
+        }
+
+        var media: EchoMediaItem.Lists? = null
+        var isPlaying: MaterialButton? = null
+        override fun onCurrentChanged(current: Current?) {
+            applyIsPlaying(current, media?.id, isPlaying)
         }
 
         companion object {
@@ -226,15 +249,16 @@ sealed class ShelfViewHolder(
                 parent: ViewGroup,
                 clientId: String,
                 listener: ShelfAdapter.Listener,
-                fragment: Fragment
+                viewModel: ListViewModel,
+                observe: (PagedData.Single<Track>, suspend (PagingData<Track>) -> Unit) -> Unit
             ): ShelfViewHolder {
-                val viewModel by fragment.activityViewModels<ListViewModel>()
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return MediaLists(
                     ItemShelfMediaListsBinding.inflate(layoutInflater, parent, false),
                     clientId,
                     listener,
-                    viewModel
+                    viewModel,
+                    observe
                 )
             }
         }

@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfShowButtonBinding
+import dev.brahmkshatriya.echo.playback.Current
 
 class ShowButtonViewHolder(
     val binding: ItemShelfShowButtonBinding
@@ -18,6 +19,8 @@ class ShowButtonViewHolder(
         binding.show.setText(id)
         binding.show.setOnClickListener { onClick(item, shelf.list) }
     }
+
+    override fun onCurrentChanged(current: Current?) {}
 
     private fun onClick(showingAll: Boolean, list: List<Any>) {
         if (showingAll) adapter.submitList(list.take(MAX) + false)

@@ -59,6 +59,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCa
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -90,7 +91,9 @@ class ItemFragment : Fragment() {
     }
 
     private var shelfAdapter: ShelfAdapter? = null
+    private var shelfJob: Job? = null
     private var trackAdapter: TrackAdapter? = null
+    private var trackJob: Job? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
@@ -172,6 +175,8 @@ class ItemFragment : Fragment() {
             is EchoMediaItem.Lists -> {
                 val trackAdapter =
                     TrackAdapter(clientId, view.transitionName, listener, item, true)
+                trackJob?.cancel()
+                trackJob = trackAdapter.applyCurrent(this, binding.recyclerView)
                 this.trackAdapter = trackAdapter
                 when (item) {
                     is AlbumItem -> ConcatAdapter(
@@ -266,6 +271,9 @@ class ItemFragment : Fragment() {
 
             val mediaAdapter =
                 ShelfAdapter(this, view.transitionName, extension, listener)
+            shelfJob?.cancel()
+            shelfJob = mediaAdapter.applyCurrent(this, binding.recyclerView)
+
             shelfAdapter = mediaAdapter
             viewModel.isRadioClient = extension.isClient<RadioClient>()
             viewModel.isFollowClient = extension.isClient<ArtistFollowClient>()

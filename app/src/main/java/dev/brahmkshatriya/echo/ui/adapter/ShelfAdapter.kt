@@ -4,34 +4,50 @@ import android.os.Parcelable
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.ui.adapter.ShelfLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Category
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Lists
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.MediaLists
+import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.MediaLists.ListViewModel
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
+import dev.brahmkshatriya.echo.ui.paging.toFlow
+import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
+import kotlinx.coroutines.Job
 import java.lang.ref.WeakReference
 
 class ShelfAdapter(
-    private val fragment: Fragment,
+    fragment: Fragment,
     private val transition: String,
     private val extension: Extension<*>,
     val listener: Listener = getListener(fragment)
 ) : PagingDataAdapter<Shelf, ShelfViewHolder>(DiffCallback) {
+
+    fun applyCurrent(fragment: Fragment, recycler: RecyclerView): Job {
+        val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
+        return fragment.observe(playerViewModel.currentFlow) {
+            onCurrentChanged(recycler, it)
+        }
+    }
 
     interface Listener : TrackAdapter.Listener {
         fun onClick(clientId: String, shelf: Shelf, transitionView: View)
@@ -55,9 +71,12 @@ class ShelfAdapter(
         }
     }
 
+    private val loadingListener = createListener(fragment) { retry() }
+    private fun getLoadingAdapter() = ShelfLoadingAdapter(extension, loadingListener)
+
     fun withLoaders(): ConcatAdapter {
-        val footer = ShelfLoadingAdapter(fragment, extension) { retry() }
-        val header = ShelfLoadingAdapter(fragment, extension) { retry() }
+        val footer = getLoadingAdapter()
+        val header = getLoadingAdapter()
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
@@ -125,25 +144,16 @@ class ShelfAdapter(
     }
 
     override fun onViewRecycled(holder: ShelfViewHolder) {
-        destroyLifeCycle(holder)
         if (holder is Lists) saveScrollState(holder) {
             stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
         }
     }
 
-    private fun destroyLifeCycle(holder: ShelfViewHolder) {
-        if (holder.lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED))
-            holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    }
-
     override fun onBindViewHolder(holder: ShelfViewHolder, position: Int) {
-        destroyLifeCycle(holder)
-        holder.lifecycleRegistry = LifecycleRegistry(holder)
-        holder.lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-
         val items = getItem(position) ?: return
         holder.transitionView.transitionName = (transition + items.id).hashCode().toString()
         holder.bind(items)
+        holder.onCurrentChanged(current)
         val clickView = holder.clickView
         clickView.setOnClickListener {
             listener.onClick(extension.id, items, holder.transitionView)
@@ -164,16 +174,31 @@ class ShelfAdapter(
     }
 
     private val sharedPool = RecycledViewPool()
+    private val viewModel by fragment.activityViewModels<ListViewModel>()
+    private val observe: (
+        paged: PagedData.Single<Track>,
+        block: suspend (PagingData<Track>) -> Unit
+    ) -> Unit = { paged, block ->
+        fragment.observe(paged.toFlow(), block)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShelfViewHolder {
         val holder = when (viewType) {
             0 -> Lists.create(parent, stateViewModel, sharedPool, extension.id, listener)
             1 -> Media.create(parent, extension.id, listener)
             2 -> Category.create(parent)
-            3 -> MediaLists.create(parent, extension.id, listener, fragment)
+            3 -> MediaLists.create(parent, extension.id, listener, viewModel, observe)
             else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }
-        holder.lifecycleRegistry = LifecycleRegistry(holder)
         return holder
     }
 
+    private var current: Current? = null
+    private fun onCurrentChanged(recycler: RecyclerView, current: Current?) {
+        this.current = current
+        for (i in 0 until recycler.childCount) {
+            val holder = recycler.getChildViewHolder(recycler.getChildAt(i)) as? ShelfViewHolder
+            holder?.onCurrentChanged(current)
+        }
+    }
 }

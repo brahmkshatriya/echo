@@ -44,9 +44,12 @@ class MaterialSliderPreference(
 
         slider.addOnChangeListener { _, value, byUser ->
             persistInt(value.toInt())
-            updateSummary()
-            if (allowOverride && !dialogOpened && byUser && value == slider.valueTo) {
-                showOverrideDialog(slider, value)
+            slider.post {
+                runCatching {
+                    updateSummary()
+                    if (allowOverride && !dialogOpened && byUser && value == slider.valueTo)
+                        showOverrideDialog(slider, value)
+                }
             }
         }
 

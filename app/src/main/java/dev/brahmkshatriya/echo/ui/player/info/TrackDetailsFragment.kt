@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.ui.player.info
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -53,6 +53,7 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -71,29 +72,40 @@ class TrackDetailsFragment : Fragment() {
         return binding.root
     }
 
+    val infoAdapter by lazy { InfoAdapter(playerViewModel) }
+    var player: Player? = null
+    val listener = object : Player.Listener {
+        @OptIn(UnstableApi::class)
+        override fun onTracksChanged(tracks: Tracks) {
+            player?.let { infoAdapter.applyTracks(it, tracks) }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val shelfClickListener = ShelfClickListener(requireActivity().supportFragmentManager) {
             uiViewModel.collapsePlayer()
         }
 
-        val infoAdapter = InfoAdapter(playerViewModel)
         var mediaAdapter: ShelfAdapter? = null
+        var job: Job? = null
         observe(playerViewModel.currentFlow) { current ->
             val (_, item) = current ?: return@observe
             item.takeIf { it.isLoaded } ?: return@observe
             val track = item.track
             infoAdapter.applyCurrent(item)
 
-            if (viewModel.previous?.id == track.id) return@observe
-
             val extension =
                 playerViewModel.extensionListFlow.getExtension(item.extensionId) ?: return@observe
             val adapter =
                 ShelfAdapter(this, "track_details", extension, shelfClickListener)
+            job?.cancel()
+            job = adapter.applyCurrent(this, binding.root)
             mediaAdapter = adapter
             binding.root.adapter = ConcatAdapter(
                 ExplicitAdapter(track.toMediaItem()), infoAdapter, adapter.withLoaders()
             )
+
+            if (viewModel.previous?.id == track.id) return@observe
             viewModel.load(item.extensionId, track)
         }
 
@@ -107,13 +119,9 @@ class TrackDetailsFragment : Fragment() {
 
         observe(playerViewModel.browser) { player ->
             player ?: return@observe
+            this.player = player
             infoAdapter.applyTracks(player, player.currentTracks)
-            player.addListener(object : Player.Listener {
-                @OptIn(UnstableApi::class)
-                override fun onTracksChanged(tracks: Tracks) {
-                    infoAdapter.applyTracks(player, tracks)
-                }
-            })
+            player.addListener(listener)
         }
     }
 

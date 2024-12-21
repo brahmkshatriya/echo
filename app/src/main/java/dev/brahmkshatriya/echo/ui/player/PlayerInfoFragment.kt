@@ -16,10 +16,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
+import dev.brahmkshatriya.echo.ui.player.info.TrackDetailsFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsFragment
+import dev.brahmkshatriya.echo.ui.player.upnext.QueueFragment
 import dev.brahmkshatriya.echo.utils.SlideInPageTransformer
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
@@ -77,9 +78,9 @@ class PlayerInfoFragment : Fragment() {
         binding.viewPager.setPageTransformer(SlideInPageTransformer())
 
         binding.buttonToggleGroupFg.addOnButtonCheckedListener { group, checkedId, isChecked ->
-            emit(uiViewModel.changeInfoState) {
+            uiViewModel.changeInfoState(
                 if (group.checkedButtonId == -1) STATE_COLLAPSED else STATE_EXPANDED
-            }
+            )
             if (!isChecked) return@addOnButtonCheckedListener
             val index = idsFg.indexOf(checkedId)
             binding.buttonToggleGroupBg.check(idsBg[index])

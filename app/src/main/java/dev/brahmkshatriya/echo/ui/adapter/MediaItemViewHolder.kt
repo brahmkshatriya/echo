@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -21,8 +20,6 @@ import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.loadInto
 import dev.brahmkshatriya.echo.utils.loadWith
-import dev.brahmkshatriya.echo.utils.observe
-import kotlinx.coroutines.flow.StateFlow
 
 sealed class MediaItemViewHolder(
     val listener: ShelfAdapter.Listener,
@@ -54,11 +51,17 @@ sealed class MediaItemViewHolder(
         override val transitionView: View
             get() = binding.cover.listImageContainer
 
+        override fun onCurrentChanged(current: Current?) {
+            applyIsPlaying(current, item?.id, binding.cover.isPlaying)
+        }
+
+        var item: EchoMediaItem? = null
+        var isPlaying: MaterialButton? = null
         override fun bind(item: EchoMediaItem) {
             item as EchoMediaItem.Lists
+            this.item = item
             titleBinding.bind(item)
-            binding.cover.bind(item)
-            applyIsPlaying(listener.current, item.id, binding.cover.isPlaying)
+            isPlaying = binding.cover.bind(item)
         }
 
         companion object {
@@ -86,10 +89,16 @@ sealed class MediaItemViewHolder(
         override val transitionView: View
             get() = binding.cover.root
 
+        override fun onCurrentChanged(current: Current?) {
+            applyIsPlaying(current, item?.id, binding.cover.isPlaying)
+        }
+
+        var item: EchoMediaItem? = null
+        var isPlaying: MaterialButton? = null
         override fun bind(item: EchoMediaItem) {
+            this.item = item
             titleBinding.bind(item)
-            binding.cover.bind(item)
-            applyIsPlaying(listener.current, item.id, binding.cover.isPlaying)
+            isPlaying = binding.cover.bind(item)
         }
 
         companion object {
@@ -114,6 +123,8 @@ sealed class MediaItemViewHolder(
     ) : MediaItemViewHolder(listener, clientId, binding.root) {
         override val transitionView: View
             get() = binding.cover.root
+
+        override fun onCurrentChanged(current: Current?) {}
 
         override fun bind(item: EchoMediaItem) {
             item as EchoMediaItem.Profile
@@ -168,16 +179,15 @@ sealed class MediaItemViewHolder(
             setOnClickListener { performLongClick() }
         }
 
-        fun LifecycleOwner.applyIsPlaying(
-            current: StateFlow<Current?>, id: String, view: MaterialButton?
+        fun applyIsPlaying(
+            current: Current?, id: String?, view: MaterialButton?
         ) {
             view ?: return
             view.toolTipOnClick()
-            observe(current) {
-                val playing = it.isPlaying(id)
-                view.animateVisibility(playing)
-                if (playing) (view.icon as Animatable).start()
-            }
+            view.isVisible = false
+            val playing = current.isPlaying(id)
+            view.animateVisibility(playing)
+            if (playing) (view.icon as Animatable).start()
         }
 
         fun ItemTrackCoverBinding.bind(item: EchoMediaItem): MaterialButton {

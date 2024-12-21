@@ -57,7 +57,7 @@ class AppModule {
     @UnstableApi
     fun provideCache(application: Application, settings: SharedPreferences): SimpleCache {
         val databaseProvider = StandaloneDatabaseProvider(application)
-        val cacheSize = settings.getInt(CACHE_SIZE, 200)
+        val cacheSize = settings.getInt(CACHE_SIZE, 250)
         return SimpleCache(
             File(application.cacheDir, "exoplayer"),
             LeastRecentlyUsedCacheEvictor(cacheSize * 1024 * 1024L),

@@ -1,92 +1,61 @@
 package dev.brahmkshatriya.echo.ui.player
 
-import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.Bitmap
-import android.graphics.drawable.Animatable
-import android.graphics.drawable.AnimatedVectorDrawable
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
+import android.content.SharedPreferences
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.annotation.OptIn
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.net.toUri
-import androidx.core.view.isVisible
-import androidx.core.view.updatePaddingRelative
+import androidx.core.view.doOnDetach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.Player.REPEAT_MODE_ALL
-import androidx.media3.common.Player.REPEAT_MODE_OFF
-import androidx.media3.common.Player.REPEAT_MODE_ONE
-import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
-import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import androidx.recyclerview.widget.DiffUtil
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.slider.Slider
-import dev.brahmkshatriya.echo.R
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
-import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.adapter.LifeCycleListAdapter
-import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
-import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
-import dev.brahmkshatriya.echo.ui.settings.LookFragment
-import dev.brahmkshatriya.echo.utils.PlayerItemSpan
-import dev.brahmkshatriya.echo.utils.animateVisibility
-import dev.brahmkshatriya.echo.utils.emit
-import dev.brahmkshatriya.echo.utils.load
-import dev.brahmkshatriya.echo.utils.loadBitmap
-import dev.brahmkshatriya.echo.utils.loadBlurred
-import dev.brahmkshatriya.echo.utils.loadWithThumb
+import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
+import dev.brahmkshatriya.echo.ui.item.ItemFragment
+import dev.brahmkshatriya.echo.ui.player.viewholder.DefaultViewHolder
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.toTimeString
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
-import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.launch
-import kotlin.math.max
-import kotlin.math.min
 
+@OptIn(UnstableApi::class)
 class PlayerTrackAdapter(
-    val fragment: Fragment,
-    private val listener: Listener
-) : LifeCycleListAdapter<MediaItem, PlayerTrackAdapter.ViewHolder>(DiffCallback) {
+    private val listener: Listener,
+    private val cache: SimpleCache,
+    private val settings: SharedPreferences,
+    private val isTrackLikeClient: (String) -> Boolean
+) : ListAdapter<MediaItem, PlayerTrackAdapter.ViewHolder>(DiffCallback) {
 
     interface Listener {
-        fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean)
+        fun onPlayPause(play: Boolean)
+        fun onRepeat(mode: Int)
+        fun onShuffle(shuffle: Boolean)
+        fun onSeekTo(position: Long)
+        fun onNext()
+        fun onPrevious()
+        fun onItemLiked(mediaItem: MediaItem, liked: Boolean)
         fun onItemClicked(item: Pair<String?, EchoMediaItem>)
+        fun onMoreClicked(mediaItem: MediaItem)
+        fun onChangePlayerState(state: Int)
+        fun onShowBackground(show: Boolean)
     }
 
     object DiffCallback : DiffUtil.ItemCallback<MediaItem>() {
@@ -98,448 +67,297 @@ class PlayerTrackAdapter(
 
     }
 
-    override fun createHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return ViewHolder(ItemPlayerTrackBinding.inflate(inflater, parent, false))
+        return DefaultViewHolder(
+            ItemPlayerTrackBinding.inflate(inflater, parent, false),
+            listener,
+            cache,
+            settings,
+            isTrackLikeClient,
+            players
+        )
     }
 
-    @OptIn(UnstableApi::class)
-    inner class ViewHolder(val binding: ItemPlayerTrackBinding) : Holder<MediaItem>(binding.root) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(getItem(position))
+        updateViewHolder(holder)
+    }
 
-        override fun bind(item: MediaItem) {
-            this.item = item
-            onBind(bindingAdapterPosition)
+    private fun updateViewHolder(holder: ViewHolder) {
+        holder.onPlayer(player)
+        holder.onCurrentChanged(current)
+        holder.onRepeatModeChanged(repeatMode)
+        holder.onShuffleChanged(shuffle)
+        holder.onNextEnabled(nextEnabled)
+        holder.onPreviousEnabled(previousEnabled)
+        holder.onPlayPause(isPlaying)
+        holder.onBufferingChanged(buffering)
+        holder.onProgressChanged(progress.first, progress.second)
+        holder.onTotalDurationChanged(totalDuration)
 
-            applyVideoVisibility(false)
-            binding.bgVideo.run {
-                backgroundPlayer?.release()
-                backgroundPlayer = null
-                player = null
-                val background = item.background
-                if (background != null && showBackground()) {
-                    resizeMode = RESIZE_MODE_ZOOM
-                    backgroundPlayer = getPlayer(context, viewModel.cache, background)
-                    player = backgroundPlayer
-                    applyVideoVisibility(true)
-                }
-            }
-            observe(merge(viewModel.currentFlow, viewModel.browser)) { applyVideo() }
-        }
+        holder.onPlayerOffsetChanged(playerOffset)
+        holder.onPlayerStateChanged(playerState)
+        holder.onPlayerBgVisibleChanged(playerBgVisible)
+        holder.onInfoSheetOffsetChanged(infoSheetOffset)
+        holder.onInfoSheetStateChanged(infoSheetState)
+        holder.onSystemInsetsChanged(systemInsets)
+    }
 
-        private var backgroundPlayer: Player? = null
-        override fun onDestroy() {
-            backgroundPlayer?.release()
-            backgroundPlayer = null
-        }
+    override fun onViewAttachedToWindow(holder: ViewHolder) {
+        updateViewHolder(holder)
+    }
 
-        private fun applyVideoVisibility(visible: Boolean) {
-            binding.bgVideo.isVisible = visible
-            binding.bgImage.isVisible = !visible
-        }
+    override fun onViewDetachedFromWindow(holder: ViewHolder) {
+        holder.cleanUp()
+    }
 
-        private fun isCurrent() = viewModel.currentFlow.value?.index == bindingAdapterPosition
-        var item: MediaItem? = null
-        fun applyVideo() {
-            if (item?.background != null) return
-            if (isCurrent()) {
-                val player = viewModel.browser.value
-                binding.bgVideo.resizeMode = RESIZE_MODE_FIT
-                binding.bgVideo.player = player
-                applyVideoVisibility(player.hasVideo())
-            } else {
-                binding.bgVideo.player = null
-                applyVideoVisibility(false)
-            }
-        }
+    override fun onViewRecycled(holder: ViewHolder) {
+        holder.cleanUp()
+    }
 
-        init {
-            viewModel.browser.value!!.addListener(object : Player.Listener {
-                override fun onTracksChanged(tracks: Tracks) {
-                    applyVideo()
-                }
-
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    backgroundPlayer?.playWhenReady = isPlaying
-                }
-            })
+    private val players = mutableListOf<Player>()
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        recyclerView.doOnDetach {
+            players.forEach { it.release() }
+            players.clear()
         }
     }
 
-    private val viewModel by fragment.activityViewModels<PlayerViewModel>()
-    private val uiViewModel by fragment.activityViewModels<UiViewModel>()
-
-    fun ViewHolder.onBind(position: Int) {
-
-        val item = getItem(position) ?: return
-        val clientId = item.extensionId
-
-        binding.applyTrackDetails(clientId, item)
-
-        lifecycleScope.launch {
-            val bitmap = item.track.cover?.loadBitmap(binding.root.context)
-            val colors = binding.root.context.getPlayerColors(bitmap)
-            binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
-            binding.expandedToolbar.run {
-                setTitleTextColor(colors.text)
-                setSubtitleTextColor(colors.text)
-            }
-            binding.collapsedContainer.applyColors(colors)
-            binding.playerControls.applyColors(colors)
-
-            if (showBackground()) binding.bgImage.loadBlurred(bitmap, 12f)
-            else binding.bgImage.setImageDrawable(null)
+    private lateinit var recyclerView: RecyclerView
+    private fun onEachViewHolder(block: ViewHolder.() -> Unit) {
+        for (i in 0 until recyclerView.childCount) {
+            val holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i)) as ViewHolder
+            holder.block()
         }
-
-        binding.collapsedContainer.root.setOnClickListener {
-            emit(uiViewModel.changePlayerState) { STATE_EXPANDED }
-        }
-        binding.expandedToolbar.setNavigationOnClickListener {
-            emit(uiViewModel.changePlayerState) { STATE_COLLAPSED }
-        }
-        binding.collapsedContainer.playerClose.setOnClickListener {
-            emit(uiViewModel.changePlayerState) { BottomSheetBehavior.STATE_HIDDEN }
-        }
-
-        observe(uiViewModel.playerSheetOffset) {
-            val offset = max(0f, it)
-            val height = binding.collapsedContainer.root.height
-            binding.collapsedContainer.root.run {
-                translationY = -height * offset
-                alpha = 1 - offset
-            }
-            binding.expandedTrackCoverContainer.alpha = offset
-        }
-
-        observe(uiViewModel.playerBgVisibleState) {
-            val animate = viewModel.currentFlow.value?.index == bindingAdapterPosition
-            if (uiViewModel.playerSheetState.value == STATE_EXPANDED) {
-                binding.bgGradient.animateVisibility(!it, animate)
-                binding.expandedTrackCoverContainer.animateVisibility(!it, animate)
-            } else {
-                binding.bgGradient.animateVisibility(true, animate)
-                binding.expandedTrackCoverContainer.isVisible = true
-            }
-            if (!it) {
-                binding.expandedContainer.alpha = 1f
-                binding.expandedContainer.isVisible = true
-            }
-        }
-
-        binding.bgContainer.setOnClickListener {
-            emit(uiViewModel.playerBgVisibleState) { false }
-            if (uiViewModel.infoSheetState.value == STATE_EXPANDED)
-                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
-        }
-
-        binding.expandedTrackCover.setOnClickListener {
-            val bgImage = binding.bgImage.drawable != null
-            if (bgImage || viewModel.browser.value.hasVideo() || item.background != null)
-                emit(uiViewModel.playerBgVisibleState) { true }
-        }
-
-        observe(uiViewModel.infoSheetOffset) {
-            if (uiViewModel.playerBgVisibleState.value) {
-                binding.bgGradient.isVisible = it != 0f
-                binding.bgGradient.alpha = it
-            } else {
-                binding.expandedContainer.alpha = 1 - it
-                binding.expandedContainer.isVisible = it != 1f
-            }
-        }
-
-        observe(uiViewModel.systemInsets) {
-            binding.expandedTrackCoverContainer.applyInsets(it, 24)
-            binding.collapsedContainer.root.updatePaddingRelative(start = it.start, end = it.end)
-        }
-
-        binding.playerControls.bind(this, item, clientId)
     }
 
-    private fun Player?.hasVideo() =
-        this?.currentTracks?.groups.orEmpty().any { it.type == C.TRACK_TYPE_VIDEO }
+    abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        abstract fun bind(item: MediaItem)
+        open fun cleanUp() {}
 
-    private fun ItemPlayerControlsBinding.bind(
-        viewHolder: ViewHolder,
-        item: MediaItem,
-        clientId: String
-    ) {
+        // Player Changes
+        open fun onPlayer(player: Player?) {}
+        open fun onCurrentChanged(current: Current?) {}
+        open fun onRepeatModeChanged(mode: Int) {}
+        open fun onShuffleChanged(shuffled: Boolean) {}
+        open fun onNextEnabled(enabled: Boolean) {}
+        open fun onPreviousEnabled(enabled: Boolean) {}
+        open fun onPlayPause(play: Boolean) {}
+        open fun onBufferingChanged(buffering: Boolean) {}
+        open fun onProgressChanged(current: Int, buffered: Int) {}
+        open fun onTotalDurationChanged(totalDuration: Int?) {}
 
-        fun <T> observe(flow: Flow<T>, block: (T) -> Unit) {
-            viewHolder.observe(flow) { block(it) }
-        }
+        // UI Changes
+        open fun onPlayerOffsetChanged(it: Float) {}
+        open fun onPlayerStateChanged(state: Int) {}
+        open fun onPlayerBgVisibleChanged(visible: Boolean) {}
+        open fun onInfoSheetOffsetChanged(offset: Float) {}
+        open fun onInfoSheetStateChanged(state: Int) {}
+        open fun onSystemInsetsChanged(insets: UiViewModel.Insets) {}
+    }
 
-        fun <T> observeCurrent(flow: Flow<T>, block: (T?) -> Unit) = with(viewHolder) {
-            observe(flow) {
-                if (viewModel.currentFlow.value?.index == bindingAdapterPosition) block(it)
-                else block(null)
-            }
-        }
+    companion object {
+        fun newInstance(
+            fragment: Fragment,
+            recyclerView: RecyclerView
+        ): PlayerTrackAdapter {
+            val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
+            val uiViewModel by fragment.activityViewModels<UiViewModel>()
 
-        trackHeart.run {
-            val extension = viewModel.extensionListFlow.getExtension(clientId) ?: return
-            val isTrackLikeClient = extension.isClient<TrackLikeClient>()
-            isVisible = isTrackLikeClient
-
-            val likeListener = viewModel.likeListener
-            if (isTrackLikeClient) {
-                addOnCheckedStateChangedListener(likeListener)
-                observeCurrent(viewModel.isLiked) {
-                    it ?: return@observeCurrent
-                    likeListener.enabled = false
-                    trackHeart.isChecked = it
-                    likeListener.enabled = true
+            val listener = object : Listener {
+                override fun onPlayPause(play: Boolean) {
+                    playerViewModel.withBrowser { it.playWhenReady = play }
                 }
-            } else removeOnCheckedStateChangedListener(likeListener)
-            viewModel.isLiked.value = item.isLiked
-        }
 
-        seekBar.apply {
-            addOnChangeListener { _, value, fromUser ->
-                if (fromUser)
-                    trackCurrentTime.text = value.toLong().toTimeString()
-            }
-            addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
-                override fun onStartTrackingTouch(slider: Slider) = Unit
-                override fun onStopTrackingTouch(slider: Slider) =
-                    viewModel.seekTo(slider.value.toLong())
-            })
-        }
+                override fun onRepeat(mode: Int) {
+                    playerViewModel.withBrowser { it.repeatMode = mode }
+                }
 
-        val collapsedContainer = viewHolder.binding.collapsedContainer
-        observeCurrent(viewModel.progress) {
-            val (current, buffered) = it ?: (0 to 0)
-            collapsedContainer.run {
-                collapsedBuffer.progress = buffered
-                collapsedSeekBar.progress = current
-            }
-            if (!seekBar.isPressed) {
-                bufferBar.progress = buffered
-                seekBar.value = min(current.toFloat(), seekBar.valueTo)
-                trackCurrentTime.text = current.toLong().toTimeString()
-            }
-        }
+                override fun onShuffle(shuffle: Boolean) {
+                    playerViewModel.withBrowser { it.shuffleModeEnabled = shuffle }
+                }
 
-        viewHolder.observe(viewModel.buffering) { buffering ->
-            collapsedContainer.collapsedProgressBar.isVisible = buffering
-            progressBar.isVisible = buffering
-        }
+                override fun onSeekTo(position: Long) {
+                    playerViewModel.withBrowser { it.seekTo(position) }
+                }
 
-        observeCurrent(viewModel.totalDuration) {
-            val duration = it ?: item.track.duration?.toInt() ?: return@observeCurrent
-            collapsedContainer.run {
-                collapsedSeekBar.max = duration
-                collapsedBuffer.max = duration
-            }
-            bufferBar.max = duration
-            seekBar.apply {
-                value = min(value, duration.toFloat())
-                valueTo = 1f + duration
-            }
-            trackTotalTime.text = duration.toLong().toTimeString()
-        }
+                override fun onNext() {
+                    playerViewModel.withBrowser { it.seekToNext() }
+                }
 
+                override fun onPrevious() {
+                    playerViewModel.withBrowser { it.seekToPrevious() }
+                }
 
-        val playPauseListener = viewModel.playPauseListener
+                override fun onItemLiked(mediaItem: MediaItem, liked: Boolean) {
+                    playerViewModel.likeTrack(liked)
+                }
 
-        collapsedContainer.collapsedTrackPlayPause
-            .addOnCheckedStateChangedListener(playPauseListener)
-        trackPlayPause
-            .addOnCheckedStateChangedListener(playPauseListener)
+                override fun onMoreClicked(mediaItem: MediaItem) {
+                    val extensionId = mediaItem.extensionId
+                    val item = mediaItem.track.toMediaItem()
+                    val loaded = mediaItem.isLoaded
+                    ItemBottomSheet.newInstance(extensionId, item, loaded, true)
+                        .show(fragment.parentFragmentManager, null)
+                }
 
-        observe(viewModel.isPlaying) {
-            playPauseListener.enabled = false
-            trackPlayPause.isChecked = it
-            collapsedContainer.collapsedTrackPlayPause.isChecked = it
-            playPauseListener.enabled = true
-        }
-
-        observe(viewModel.nextEnabled) {
-            trackNext.isEnabled = it
-        }
-        trackNext.setOnClickListener {
-            viewModel.seekToNext()
-            it as MaterialButton
-            (it.icon as Animatable).start()
-        }
-        observe(viewModel.previousEnabled) {
-            trackPrevious.isEnabled = it
-        }
-        trackPrevious.setOnClickListener {
-            viewModel.seekToPrevious()
-            it as MaterialButton
-            (it.icon as Animatable).start()
-        }
-
-        val shuffleListener = viewModel.shuffleListener
-        trackShuffle.addOnCheckedStateChangedListener(shuffleListener)
-        observe(viewModel.shuffleMode) {
-            shuffleListener.enabled = false
-            trackShuffle.isChecked = it
-            shuffleListener.enabled = true
-        }
-
-        val animatedVectorDrawables = trackRepeat.context.run {
-            fun asAnimated(id: Int) =
-                AppCompatResources.getDrawable(this, id) as AnimatedVectorDrawable
-            listOf(
-                asAnimated(R.drawable.ic_repeat_one_to_repeat_off_40dp),
-                asAnimated(R.drawable.ic_repeat_off_to_repeat_40dp),
-                asAnimated(R.drawable.ic_repeat_to_repeat_one_40dp)
-            )
-        }
-        val drawables = trackRepeat.context.run {
-            fun asDrawable(id: Int) = AppCompatResources.getDrawable(this, id)!!
-            listOf(
-                asDrawable(R.drawable.ic_repeat_off_40dp),
-                asDrawable(R.drawable.ic_repeat_40dp),
-                asDrawable(R.drawable.ic_repeat_one_40dp),
-            )
-        }
-
-        val repeatModes = listOf(REPEAT_MODE_OFF, REPEAT_MODE_ALL, REPEAT_MODE_ONE)
-        var currRepeatMode = viewModel.repeatMode.value
-        fun changeRepeatDrawable(repeatMode: Int) = trackRepeat.run {
-            if (currRepeatMode == repeatMode) {
-                icon = drawables[repeatModes.indexOf(repeatMode)]
-                return
-            }
-            val index = repeatModes.indexOf(repeatMode)
-            icon = animatedVectorDrawables[index]
-            (icon as Animatable).start()
-        }
-        trackRepeat.setOnClickListener {
-            val mode = when (viewModel.repeatMode.value) {
-                REPEAT_MODE_OFF -> REPEAT_MODE_ALL
-                REPEAT_MODE_ALL -> REPEAT_MODE_ONE
-                else -> REPEAT_MODE_OFF
-            }
-            viewModel.onRepeat(mode)
-            changeRepeatDrawable(mode)
-        }
-
-        observe(viewModel.repeatMode) {
-            viewModel.repeatEnabled = false
-            changeRepeatDrawable(it)
-            currRepeatMode = it
-            viewModel.repeatEnabled = true
-        }
-    }
-
-    private fun ItemPlayerTrackBinding.applyTrackDetails(
-        client: String,
-        item: MediaItem,
-    ) {
-        val track = item.track
-        track.cover.loadWithThumb(expandedTrackCover) {
-            collapsedContainer.collapsedTrackCover.load(it)
-        }
-
-        collapsedContainer.run {
-            collapsedTrackArtist.text = item.track.toMediaItem().subtitleWithE
-            collapsedTrackTitle.text = track.title
-            collapsedTrackTitle.isSelected = true
-            collapsedTrackTitle.setHorizontallyScrolling(true)
-        }
-
-        playerControls.run {
-            applyTitles(track, trackTitle, trackArtist, client, listener)
-        }
-
-        expandedToolbar.run {
-            val itemContext = item.context
-            title = if (itemContext != null) context.getString(R.string.playing_from) else null
-            subtitle = itemContext?.title
-
-            setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.menu_more -> {
-                        listener.onMoreClicked(client, track.toMediaItem(), item.isLoaded)
-                        true
+                override fun onItemClicked(item: Pair<String?, EchoMediaItem>) {
+                    val (clientId, media) = item
+                    if (clientId == null) {
+                        fragment.createSnack(fragment.requireContext().noClient())
+                        return
                     }
+                    fragment.requireActivity()
+                        .openFragment(ItemFragment.newInstance(clientId, media))
+                    uiViewModel.collapsePlayer()
+                }
 
-                    else -> false
+                override fun onChangePlayerState(state: Int) {
+                    uiViewModel.changePlayerState(state)
+                }
+
+                override fun onShowBackground(show: Boolean) {
+                    uiViewModel.changeBgVisible(show)
                 }
             }
+
+            fun isTrackLikeClient(extensionId: String) =
+                playerViewModel.extensionListFlow.getExtension(extensionId)
+                    ?.isClient<TrackLikeClient>() ?: false
+
+            val adapter = PlayerTrackAdapter(
+                listener,
+                playerViewModel.cache,
+                playerViewModel.settings,
+                ::isTrackLikeClient
+            )
+
+            adapter.recyclerView = recyclerView
+            fun <T> observe(flow: Flow<T>, block: PlayerTrackAdapter.(T) -> Unit) =
+                fragment.observe(flow) {
+                    adapter.block(it)
+                }
+
+            playerViewModel.run {
+                observe(browser) { onPlayer(it) }
+                observe(currentFlow) { onCurrentUpdated(it) }
+                observe(repeatMode) { onRepeatModeChanged(it) }
+                observe(shuffleMode) { onShuffleChanged(it) }
+                observe(nextEnabled) { onNextEnabled(it) }
+                observe(previousEnabled) { onPreviousEnabled(it) }
+                observe(isPlaying) { onPlayPause(it) }
+                observe(buffering) { onBufferingChanged(it) }
+                observe(progress) { onProgressChanged(it.first, it.second) }
+                observe(totalDuration) { onTotalDurationChanged(it) }
+            }
+
+            uiViewModel.run {
+                observe(playerSheetOffset) { onPlayerOffsetChanged(it) }
+                observe(playerSheetState) { onPlayerStateChanged(it) }
+                observe(playerBgVisibleState) { onPlayerBgVisibleChanged(it) }
+                observe(infoSheetOffset) { onInfoSheetOffsetChanged(it) }
+                observe(infoSheetState) { onInfoSheetStateChanged(it) }
+                observe(systemInsets) { onSystemInsetsChanged(it) }
+            }
+
+            return adapter
         }
     }
 
-    private fun applyTitles(
-        track: Track, trackTitle: TextView, trackArtist: TextView,
-        client: String, listener: Listener
-    ) {
-        trackTitle.text = track.title
-        trackTitle.isSelected = true
-        trackTitle.setHorizontallyScrolling(true)
-        val artists = track.artists
-        val artistNames = track.toMediaItem().subtitleWithE ?: ""
-        val spannableString = SpannableString(artistNames)
-
-        artists.forEach { artist ->
-            val start = artistNames.indexOf(artist.name)
-            val end = start + artist.name.length
-            val clickableSpan = PlayerItemSpan(
-                trackArtist.context, client to artist.toMediaItem(), listener::onItemClicked
-            )
-            spannableString.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-
-        trackArtist.text = spannableString
-        trackArtist.movementMethod = LinkMovementMethod.getInstance()
+    private var player: Player? = null
+    private fun onPlayer(player: Player?) {
+        this.player = player
+        onEachViewHolder { onPlayer(player) }
     }
 
-    private fun showBackground() =
-        viewModel.settings.getBoolean(LookFragment.SHOW_BACKGROUND, true)
-
-    private fun isDynamic() =
-        viewModel.settings.getBoolean(LookFragment.DYNAMIC_PLAYER, true)
-
-    private fun Context.getPlayerColors(bitmap: Bitmap?): PlayerColors {
-        val defaultColors = defaultPlayerColors()
-        bitmap ?: return defaultColors
-        val imageColors = if (isDynamic()) getColorsFrom(bitmap) else defaultColors
-        return imageColors ?: defaultColors
+    private var current: Current? = null
+    private fun onCurrentUpdated(current: Current?) {
+        this.current = current
+        onEachViewHolder { onCurrentChanged(current) }
     }
 
-    private fun ItemPlayerCollapsedBinding.applyColors(colors: PlayerColors) {
-        collapsedProgressBar.setIndicatorColor(colors.accent)
-        collapsedSeekBar.setIndicatorColor(colors.accent)
-        collapsedBuffer.setIndicatorColor(colors.accent)
-        collapsedBuffer.trackColor = colors.text
-        collapsedTrackArtist.setTextColor(colors.text)
-        collapsedTrackTitle.setTextColor(colors.text)
+    private var shuffle = false
+    private fun onShuffleChanged(shuffle: Boolean) {
+        this.shuffle = shuffle
+        onEachViewHolder { onShuffleChanged(shuffle) }
     }
 
-    private fun ItemPlayerControlsBinding.applyColors(colors: PlayerColors) {
-        val clickableState = ColorStateList.valueOf(colors.accent)
-        seekBar.trackActiveTintList = clickableState
-        seekBar.thumbTintList = clickableState
-        progressBar.setIndicatorColor(colors.accent)
-        bufferBar.setIndicatorColor(colors.accent)
-        bufferBar.trackColor = colors.text
-        trackCurrentTime.setTextColor(colors.text)
-        trackTotalTime.setTextColor(colors.text)
-        trackTitle.setTextColor(colors.text)
-        trackArtist.setTextColor(colors.text)
+    private var repeatMode = 0
+    private fun onRepeatModeChanged(mode: Int) {
+        repeatMode = mode
+        onEachViewHolder { onRepeatModeChanged(mode) }
     }
 
-    @OptIn(UnstableApi::class)
-    fun getPlayer(
-        context: Context, cache: SimpleCache, video: Streamable.Media.Background
-    ): ExoPlayer {
-        val cacheFactory = CacheDataSource
-            .Factory().setCache(cache)
-            .setUpstreamDataSourceFactory(
-                DefaultHttpDataSource.Factory()
-                    .setDefaultRequestProperties(video.request.headers)
-            )
-        val factory = DefaultMediaSourceFactory(context)
-            .setDataSourceFactory(cacheFactory)
-        val player = ExoPlayer.Builder(context).setMediaSourceFactory(factory).build()
-        player.setMediaItem(MediaItem.fromUri(video.request.url.toUri()))
-        player.repeatMode = ExoPlayer.REPEAT_MODE_ONE
-        player.volume = 0f
-        player.prepare()
-        player.play()
-        return player
+    private var nextEnabled = false
+    private fun onNextEnabled(enabled: Boolean) {
+        nextEnabled = enabled
+        onEachViewHolder { onNextEnabled(enabled) }
+    }
+
+    private var previousEnabled = false
+    private fun onPreviousEnabled(enabled: Boolean) {
+        previousEnabled = enabled
+        onEachViewHolder { onPreviousEnabled(enabled) }
+    }
+
+    private var isPlaying = false
+    private fun onPlayPause(play: Boolean) {
+        isPlaying = play
+        onEachViewHolder { onPlayPause(play) }
+    }
+
+    private var buffering = false
+    private fun onBufferingChanged(buffering: Boolean) {
+        this.buffering = buffering
+        onEachViewHolder { onBufferingChanged(buffering) }
+    }
+
+    private var progress = 0 to 0
+    private fun onProgressChanged(current: Int, buffered: Int) {
+        progress = current to buffered
+        onEachViewHolder { onProgressChanged(current, buffered) }
+    }
+
+    private var totalDuration: Int? = null
+    private fun onTotalDurationChanged(totalDuration: Int?) {
+        this.totalDuration = totalDuration
+        onEachViewHolder { onTotalDurationChanged(totalDuration) }
+    }
+
+    private var playerOffset = 0f
+    private fun onPlayerOffsetChanged(it: Float) {
+        playerOffset = it
+        onEachViewHolder { onPlayerOffsetChanged(it) }
+    }
+
+    private var playerState = 0
+    private fun onPlayerStateChanged(state: Int) {
+        playerState = state
+        onEachViewHolder { onPlayerStateChanged(state) }
+    }
+
+    private var playerBgVisible = false
+    private fun onPlayerBgVisibleChanged(visible: Boolean) {
+        playerBgVisible = visible
+        onEachViewHolder { onPlayerBgVisibleChanged(visible) }
+    }
+
+    private var infoSheetOffset = 0f
+    private fun onInfoSheetOffsetChanged(offset: Float) {
+        infoSheetOffset = offset
+        onEachViewHolder { onInfoSheetOffsetChanged(offset) }
+    }
+
+    private var infoSheetState = 0
+    private fun onInfoSheetStateChanged(state: Int) {
+        infoSheetState = state
+        onEachViewHolder { onInfoSheetStateChanged(state) }
+    }
+
+    private var systemInsets = UiViewModel.Insets(0, 0, 0, 0)
+    private fun onSystemInsetsChanged(insets: UiViewModel.Insets) {
+        systemInsets = insets
+        onEachViewHolder { onSystemInsetsChanged(insets) }
     }
 }

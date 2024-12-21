@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemMediaSelectableBinding
@@ -16,9 +18,7 @@ import kotlin.math.roundToInt
 
 class MediaItemSelectableAdapter(
     val listener: Listener
-) : LifeCycleListAdapter<Pair<EchoMediaItem, Boolean>, MediaItemSelectableAdapter.ViewHolder>(
-    DiffCallback
-) {
+) : ListAdapter<Pair<EchoMediaItem, Boolean>, MediaItemSelectableAdapter.ViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<Pair<EchoMediaItem, Boolean>>() {
 
@@ -37,14 +37,18 @@ class MediaItemSelectableAdapter(
         fun onItemSelected(selected: Boolean, item: EchoMediaItem)
     }
 
-    override fun createHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return ViewHolder(ItemMediaSelectableBinding.inflate(inflater, parent, false))
     }
 
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+
     inner class ViewHolder(val binding: ItemMediaSelectableBinding) :
-        Holder<Pair<EchoMediaItem, Boolean>>(binding.root) {
-        override fun bind(item: Pair<EchoMediaItem, Boolean>) {
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Pair<EchoMediaItem, Boolean>) {
             val mediaItem = item.first
             binding.cover.bind(mediaItem)
             binding.title.text = mediaItem.title

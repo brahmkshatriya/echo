@@ -3,23 +3,29 @@ package dev.brahmkshatriya.echo.ui.adapter
 import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 
 class ShelfListItemViewAdapter(
     private val clientId: String,
-    private val transition: String,
-    private val listener: ShelfAdapter.Listener,
-    val shelf: Shelf.Lists<*>
-) : LifeCycleListAdapter<Any, ShelfListItemViewHolder>(DiffCallback) {
+    private val listener: ShelfAdapter.Listener
+) : ListAdapter<Any, ShelfListItemViewHolder>(DiffCallback) {
 
-    init {
-        shelf.ifShowingButton {
-            ShowButtonViewHolder.initialize(this, it)
-        } ?: submitList(shelf.list)
-    }
+    var transition: String = ""
+    var shelf: Shelf.Lists<*>? = null
+        set(value) {
+            field = value
+            value?.let {
+                shelf?.ifShowingButton {
+                    ShowButtonViewHolder.initialize(this, it)
+                } ?: submitList(shelf?.list)
+            }
+        }
 
     object DiffCallback : DiffUtil.ItemCallback<Any>() {
         override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
@@ -38,18 +44,16 @@ class ShelfListItemViewAdapter(
 
     }
 
-    override fun createHolder(parent: ViewGroup, viewType: Int): ShelfListItemViewHolder {
-        return when (viewType) {
-            -1 -> GridViewHolder.create(parent, listener, clientId)
-            3 -> CategoryViewHolder.create(parent, listener, clientId)
-            4 -> TrackViewHolder.create(parent, listener, clientId, null)
-            5 -> ShowButtonViewHolder.create(parent)
-            else -> MediaItemViewHolder.create(viewType, parent, listener, clientId)
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
+        -1 -> GridViewHolder.create(parent, listener, clientId)
+        3 -> CategoryViewHolder.create(parent, listener, clientId)
+        4 -> TrackViewHolder.create(parent, listener, clientId, null)
+        5 -> ShowButtonViewHolder.create(parent)
+        else -> MediaItemViewHolder.create(viewType, parent, listener, clientId)
     }
 
     override fun getItemViewType(position: Int): Int {
-        val grid = shelf.type == Shelf.Lists.Type.Grid
+        val grid = shelf?.type == Shelf.Lists.Type.Grid
         return when (val item = getItem(position)) {
             is EchoMediaItem -> if (!grid) MediaItemViewHolder.getViewType(item) else -1
             is Shelf.Category -> 3
@@ -60,10 +64,20 @@ class ShelfListItemViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ShelfListItemViewHolder, position: Int) {
+        holder.shelf = shelf ?: return
         val item = getItem(position) ?: return
         holder.transitionView.transitionName = (transition + item.hashCode()).hashCode().toString()
         holder.adapter = this
-        holder.shelf = shelf
-        super.onBindViewHolder(holder, position)
+        holder.bind(item)
+        holder.onCurrentChanged(current)
+    }
+
+    private var current: Current? = null
+    fun onCurrentChanged(recycler: RecyclerView, current: Current?) {
+        this.current = current
+        for (i in 0 until recycler.childCount) {
+            val holder = recycler.getChildViewHolder(recycler.getChildAt(i)) as? ShelfListItemViewHolder
+            holder?.onCurrentChanged(current)
+        }
     }
 }

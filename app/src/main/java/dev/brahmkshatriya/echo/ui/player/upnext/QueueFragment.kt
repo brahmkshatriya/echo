@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.ui.player.upnext
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -73,7 +73,7 @@ class QueueFragment : Fragment() {
         }
         val touchHelper = ItemTouchHelper(callback)
 
-        queueAdapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
+        queueAdapter = PlaylistAdapter(object : PlaylistAdapter.Listener() {
             override fun onDragHandleTouched(viewHolder: RecyclerView.ViewHolder) {
                 touchHelper.startDrag(viewHolder)
             }
@@ -87,7 +87,7 @@ class QueueFragment : Fragment() {
             }
         })
 
-        val radioAdapter = PlaylistAdapter(object : PlaylistAdapter.Callback() {
+        val radioAdapter = PlaylistAdapter(object : PlaylistAdapter.Listener() {
             override fun onItemClicked(position: Int) {
                 viewModel.radioPlay(position)
             }
@@ -120,7 +120,7 @@ class QueueFragment : Fragment() {
 
         val manager = binding.root.layoutManager as LinearLayoutManager
         val offset = 24.dpToPx(requireContext())
-        observe(uiViewModel.changeInfoState) {
+        observe(uiViewModel.infoSheetState) {
             val index = viewModel.currentFlow.value?.index ?: -1
             if (it == STATE_EXPANDED && index != -1)
                 manager.scrollToPositionWithOffset(index, offset)

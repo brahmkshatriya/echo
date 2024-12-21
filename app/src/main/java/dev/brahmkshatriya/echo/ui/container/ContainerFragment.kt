@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.utils.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
+import kotlinx.coroutines.Job
 
 @AndroidEntryPoint
 class ContainerFragment : Fragment() {
@@ -64,11 +65,13 @@ class ContainerFragment : Fragment() {
         binding.toolBar.title = title
 
         var shelfAdapter: ShelfAdapter? = null
-
+        var job: Job? = null
         observe(activityViewModel.extensionListFlow) { list ->
             val extension = list?.find { it.metadata.id == clientId }
             extension ?: return@observe
-           val adapter = ShelfAdapter(this, view.transitionName, extension)
+            val adapter = ShelfAdapter(this, view.transitionName, extension)
+            job?.cancel()
+            job = adapter.applyCurrent(this, binding.recyclerView)
             val concatAdapter = adapter.withLoaders()
             shelfAdapter = adapter
             binding.recyclerView.adapter = concatAdapter

@@ -19,18 +19,12 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
-import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
-import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.utils.animateVisibility
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
@@ -56,28 +50,13 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         setupPlayerInfoBehavior(uiViewModel, binding.playerInfoContainer)
-        val adapter = PlayerTrackAdapter(this, object : PlayerTrackAdapter.Listener {
-            override fun onMoreClicked(clientId: String?, item: EchoMediaItem, loaded: Boolean) {
-                if (clientId == null) {
-                    createSnack(requireContext().noClient())
-                    return
-                }
-                ItemBottomSheet.newInstance(clientId, item, loaded, true)
-                    .show(parentFragmentManager, null)
-            }
 
-            override fun onItemClicked(item: Pair<String?, EchoMediaItem>) {
-                val (clientId, media) = item
-                if (clientId == null) {
-                    createSnack(requireContext().noClient())
-                    return
-                }
-                requireActivity().openFragment(ItemFragment.newInstance(clientId, media))
-                uiViewModel.collapsePlayer()
-            }
+        val recycler = binding.viewPager.getChildAt(0) as RecyclerView
+        recycler.run {
+            isNestedScrollingEnabled = false
+            overScrollMode = View.OVER_SCROLL_NEVER
+        }
 
-        })
-        binding.viewPager.adapter = adapter
         binding.viewPager.setPageTransformer(
             ParallaxPageTransformer(R.id.expandedTrackCoverContainer)
         )
@@ -86,12 +65,8 @@ class PlayerFragment : Fragment() {
             if (viewModel.currentFlow.value?.index != position && userInitiated)
                 lifecycleScope.launch { viewModel.play(position) }
         }
-
-        binding.viewPager.getChildAt(0).run {
-            this as RecyclerView
-            isNestedScrollingEnabled = false
-            overScrollMode = View.OVER_SCROLL_NEVER
-        }
+        val adapter = PlayerTrackAdapter.newInstance(this@PlayerFragment, recycler)
+        binding.viewPager.adapter = adapter
 
         fun update() {
             val list = viewModel.list
@@ -105,12 +80,12 @@ class PlayerFragment : Fragment() {
                 }
             }
             if (list.isEmpty()) {
-                emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
-                emit(uiViewModel.changePlayerState) { STATE_HIDDEN }
+                uiViewModel.changeInfoState(STATE_COLLAPSED)
+                uiViewModel.changePlayerState(STATE_HIDDEN)
             } else {
                 if (uiViewModel.playerSheetState.value == STATE_HIDDEN) {
-                    emit(uiViewModel.changePlayerState) { STATE_COLLAPSED }
-                    emit(uiViewModel.changeInfoState) { STATE_COLLAPSED }
+                    uiViewModel.changePlayerState(STATE_COLLAPSED)
+                    uiViewModel.changeInfoState(STATE_COLLAPSED)
                 }
             }
         }

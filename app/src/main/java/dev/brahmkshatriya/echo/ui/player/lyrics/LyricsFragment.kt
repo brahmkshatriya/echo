@@ -126,7 +126,7 @@ class LyricsFragment : Fragment() {
         }
         lyricAdapter = LyricAdapter { lyric ->
             currentItem = null
-            playerVM.seekTo(lyric.startTime)
+            playerVM.withBrowser { it.seekTo(lyric.startTime) }
             updateLyrics(lyric.startTime)
         }
         binding.lyricsRecyclerView.adapter = lyricAdapter

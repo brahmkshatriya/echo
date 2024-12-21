@@ -40,6 +40,7 @@ suspend fun installExtension(
         val it = context.waitForResult(installIntent)
         if (it.resultCode == Activity.RESULT_OK) return@runCatching true
         val result = it.data?.extras?.getInt("android.intent.extra.INSTALL_RESULT")
+            ?: return@runCatching true
         throw Exception(installStatusToString(result))
     } else {
         val viewModel by context.viewModels<ExtensionViewModel>()

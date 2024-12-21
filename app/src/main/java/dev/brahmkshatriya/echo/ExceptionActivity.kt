@@ -21,7 +21,9 @@ import kotlinx.serialization.Serializable
 class ExceptionActivity : AppCompatActivity() {
 
     val binding by lazy { ActivityExceptionBinding.inflate(layoutInflater) }
-    val exception: String by lazy { intent.getStringExtra("stackTrace")!! }
+    val exception: String by lazy {
+        intent.getStringExtra("stackTrace") ?: "Unknown Stack Trace"
+    }
     val uiViewModel by viewModels<UiViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {

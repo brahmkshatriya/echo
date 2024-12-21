@@ -14,23 +14,24 @@ import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.configure
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
+import kotlinx.coroutines.Job
 
 inline fun <reified T> Fragment.applyClient(
     recyclerView: RecyclerView,
     swipeRefresh: SwipeRefreshLayout,
     id: Int,
-    it: Extension<*>?
+    extension: Extension<*>?
 ): ShelfAdapter? {
-    swipeRefresh.isEnabled = it != null
-    it ?: return null
+    swipeRefresh.isEnabled = extension != null
+    extension ?: return null
     val parent = parentFragment as Fragment
     val adapter = ShelfAdapter(
         parent,
         id.toString(),
-        it
+        extension
     )
     val concatAdapter = adapter.withLoaders()
-    recyclerView.applyAdapter<T>(it, id, concatAdapter)
+    recyclerView.applyAdapter<T>(extension, id, concatAdapter)
     return adapter
 }
 
@@ -53,16 +54,20 @@ inline fun <reified T> Fragment.configureFeedUI(
 
     viewModel.initialize()
     var shelfAdapter: ShelfAdapter? = null
-
-    if (clientId == null)
-        collect(viewModel.extensionFlow) {
-            shelfAdapter = applyClient<T>(recyclerView, swipeRefresh, id, it)
-        }
-    else
-        collect(viewModel.extensionListFlow) {
-            val extension = viewModel.extensionListFlow.getExtension(clientId)
-            shelfAdapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)
-        }
+    var job: Job? = null
+    if (clientId == null) collect(viewModel.extensionFlow) {
+        job?.cancel()
+        val adapter = applyClient<T>(recyclerView, swipeRefresh, id, it)
+        job = adapter?.applyCurrent(this, recyclerView)
+        shelfAdapter = adapter
+    }
+    else collect(viewModel.extensionListFlow) {
+        job?.cancel()
+        val extension = viewModel.extensionListFlow.getExtension(clientId)
+        val adapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)
+        job = adapter?.applyCurrent(this, recyclerView)
+        shelfAdapter = adapter
+    }
 
     val tabListener = object : TabLayout.OnTabSelectedListener {
         var enabled = true

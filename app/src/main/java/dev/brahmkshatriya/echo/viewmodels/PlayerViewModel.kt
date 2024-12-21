@@ -33,7 +33,6 @@ import dev.brahmkshatriya.echo.playback.PlayerException
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.deletePlaylist
-import dev.brahmkshatriya.echo.ui.player.CheckBoxListener
 import dev.brahmkshatriya.echo.ui.player.PlayerUiListener
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.utils.getSerialized
@@ -69,33 +68,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    val playPauseListener = CheckBoxListener {
-        withBrowser { browser -> if (it) browser.play() else browser.pause() }
-    }
-
-    val shuffleListener = CheckBoxListener {
-        withBrowser { browser -> browser.shuffleModeEnabled = it }
-    }
-
-    var repeatEnabled = false
-    fun onRepeat(it: Int) {
-        if (repeatEnabled) withBrowser { browser ->
-            browser.repeatMode = it
-        }
-    }
-
-    fun seekTo(position: Long) = withBrowser { it.seekTo(position) }
-    fun seekToPrevious() = withBrowser { it.seekToPrevious() }
-    fun seekToNext() = withBrowser { it.seekToNext() }
-
-    val likeListener = CheckBoxListener {
-        println("sending like $it")
-        likeTrack(it)
-    }
-
-    private fun likeTrack(isLiked: Boolean) = withBrowser {
-        val old = this.isLiked.value
-        this.isLiked.value = isLiked
+    fun likeTrack(isLiked: Boolean) = withBrowser {
         val future = it.setRating(ThumbRating(isLiked))
         app.listenFuture(future) { sessionResult ->
             val result = sessionResult.getOrThrow()
@@ -104,9 +77,7 @@ class PlayerViewModel @Inject constructor(
                     result.extras.getSerialized<ExceptionActivity.ExceptionDetails>("error")
                         ?: ExceptionActivity.ExceptionDetails("IO Error", "")
                 createException(exception)
-                this.isLiked.value = old
             }
-            this.isLiked.value = result.extras.getBoolean("liked")
         }
     }
 
@@ -256,7 +227,6 @@ class PlayerViewModel @Inject constructor(
 
     val listUpdateFlow = MutableSharedFlow<Unit>()
 
-    val isLiked = MutableStateFlow(false)
     val progress = MutableStateFlow(0 to 0)
     val discontinuity = MutableStateFlow(0L)
     val totalDuration = MutableStateFlow<Int?>(null)
