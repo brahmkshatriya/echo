@@ -252,7 +252,7 @@
     <string name="extension_installed_successfully">Extension installed successfully.</string>
     <string name="extension_uninstalled_successfully">Extension uninstalled successfully.</string>
     <string name="allow_opening_links">Allow opening links</string>
-    <string name="open_links_instruction">To allow opening these links, you need to:\n- Scroll down and click on \"Open by Default\"\n- Click on \"+ Add Link\"</string>
+    <string name="open_links_instruction">To allow opening these links, you need to:\\n- Scroll down and click on \\\"Open by Default\\\"\\n- Click on \\\"+ Add Link\\</string>
     <string name="extension_requires_following_extensions">%1$s requires %2$s</string>
     <string name="downloading_update_for_extension">Downloading update for %1$s</string>
     <string name="extension_updated_successfully">%1$s updated successfully</string>
