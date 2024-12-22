@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.paging.PagingData
@@ -40,7 +39,6 @@ class DownloadingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
         applyInsets {
-            binding.exceptionIconContainer.updatePadding(top = it.top)
             binding.recyclerView.applyContentInsets(it)
         }
         applyBackPressCallback()
