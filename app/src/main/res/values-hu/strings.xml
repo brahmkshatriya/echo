@@ -93,7 +93,7 @@
     <string name="no_lyrics">Nincs dalszöveg</string>
     <string name="downloads">Letöltések</string>
     <string name="download">Letöltés</string>
-    <string name="username_password">Felhasználónév és jelszó</string>
+    <string name="username_password"><![CDATA[Felhasználónév és jelszó]]></string>
     <string name="extensions_summary">A telepített bővítmények kezelése</string>
     <string name="refresh">Frissítés</string>
     <string name="tracker">Nyomkövető</string>
@@ -238,7 +238,7 @@
     <string name="installation_type_summary">Az App telepítése a következő linkek Echo-ban megnyítását engedélyezi:</string>
     <string name="extension_installer">Bővítmény telepítő</string>
     <string name="uninstall">Törlés</string>
-    <string name="open_links_instruction">"Ahhoz hogy ezen linkek megnyitását engedélyezze:\n- Görgessen le és kattintsd meg a egnyitás Alapból Opciót\n- kattintsd meg a  Link hozzáadásat"</string>
+    <string name="open_links_instruction">Ahhoz hogy ezen linkek megnyitását engedélyezd:\\n- Görgess le és kattints a \\\"Megnyitás Alapból\\\" gombra\\n- Majd a \\\"+ Link hozzáadása\\\" gombra</string>
     <string name="extension_requires_following_extensions">%1$s müködéséhez szükséges a(z) %2$s</string>
     <string name="installation_type_warning">Nem elérhető a Bővítmény fájlból való telepítése esetén.</string>
     <string name="could_not_find_the_file">A fájl nem található.</string>
@@ -246,4 +246,22 @@
     <string name="extension_installed_successfully">Bővítmény sikeresen telepítve.</string>
     <string name="extension_uninstalled_successfully">Bővítmény sikeresen törölve.</string>
     <string name="allow_opening_links">Linkek megnyitásának engedélyezése</string>
+    <string name="explicit">Explicit</string>
+    <string name="show_background">Háttér mutatása</string>
+    <string name="show_background_summary">Háttér videó vagy elmosódott grafika a lejátszóban</string>
+    <string name="blacklist_folder_keywords">Mappa kulcsszó feketelista</string>
+    <string name="blacklist_folder_keywords_summary">Kulcsszavak mappák kizárásához, vesszővel elválasztva</string>
+    <string name="source_selection">Forrás kiválasztás</string>
+    <string name="downloading_update_for_extension">Frissítés letöltése a(z) %1$s bővítményhez</string>
+    <string name="extension_updated_successfully">%1$s sikeresen frissítve</string>
+    <string name="link">Link</string>
+    <string name="link_or_code">Link vagy kód</string>
+    <string name="check_for_extension_updates">Bővítmény frissítések keresése</string>
+    <string name="check_for_extension_updates_summary">A program elindításakor ellenőrizze, hogy van-e új bővítmény frissítés.</string>
+    <string name="list_is_empty">A lista üres</string>
+    <string name="extension_installed">%1$s (Telepítve)</string>
+    <string name="add_extensions">Bővítmények hozzáadása</string>
+    <string name="invalid_extension_list">Hibás bővítmény lista</string>
+    <string name="sources">Források</string>
+    <string name="backgrounds">Hátterek</string>
 </resources>
