@@ -70,7 +70,7 @@ class ApkLinkParser {
         val document: Document =
             DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
         private val mStack = Stack<Node?>()
-        private fun isEmpty(text: String?) = (text == null) || ("" == text)
+        private fun isEmpty(text: String?) = text == null || ("" == text)
         fun startDocument() { mStack.push(document) }
         fun startElement(
             uri: String?, localName: String?, qName: String?, attrs: Array<Attribute>
@@ -168,7 +168,7 @@ class ApkLinkParser {
             mStringsTable = arrayOfNulls(mStringsCount)
             var offset: Int
             for (i in 0 until mStringsCount) {
-                offset = (strOffset + getLEWord(mParserOffset + ((i + 7) * WORD_SIZE)))
+                offset = strOffset + getLEWord(mParserOffset + ((i + 7) * WORD_SIZE))
                 mStringsTable[i] = getStringFromStringTable(offset)
             }
             mParserOffset += chunk
@@ -191,7 +191,7 @@ class ApkLinkParser {
             val prefix = getString(prefixIdx)
             if (start) mNamespaces[uri] = prefix
             else mNamespaces.remove(uri)
-            mParserOffset += (6 * WORD_SIZE)
+            mParserOffset += 6 * WORD_SIZE
         }
 
         private fun parseStartTag() {
@@ -204,9 +204,9 @@ class ApkLinkParser {
                 uri to if (mNamespaces.containsKey(uri)) mNamespaces[uri] + ':' + name
                 else name
             }
-            mParserOffset += (9 * WORD_SIZE)
+            mParserOffset += 9 * WORD_SIZE
             val attrs = Array(attrCount) {
-                parseAttribute().also { mParserOffset += (5 * 4) }
+                parseAttribute().also { mParserOffset += 5 * 4 }
             }
             mListener.startElement(uri, name, qName, attrs)
         }
@@ -241,16 +241,16 @@ class ApkLinkParser {
             val strIndex = getLEWord(mParserOffset + (4 * WORD_SIZE))
             val data = getString(strIndex)
             mListener.characterData(data)
-            mParserOffset += (7 * WORD_SIZE)
+            mParserOffset += 7 * WORD_SIZE
         }
 
         private fun parseEndTag() {
             mListener.endElement()
-            mParserOffset += (6 * WORD_SIZE)
+            mParserOffset += 6 * WORD_SIZE
         }
 
         private fun getString(index: Int): String? {
-            val res = if ((index >= 0) && (index < mStringsCount)) mStringsTable[index] else null
+            val res = if ((index >= 0) && index < mStringsCount) mStringsTable[index] else null
             return res
         }
 
@@ -265,7 +265,7 @@ class ApkLinkParser {
                 }
             } else {
                 strLength =
-                    (((mData[offset + 1].toInt() shl 8) and 0xFF00) or (mData[offset].toInt() and 0xFF))
+                    ((mData[offset + 1].toInt() shl 8) and 0xFF00) or (mData[offset].toInt() and 0xFF)
                 chars = ByteArray(strLength)
                 for (i in 0 until strLength) {
                     chars[i] = mData[offset + 2 + (i * 2)]
@@ -280,7 +280,7 @@ class ApkLinkParser {
                 or ((mData[off + 0].toInt() shl 0) and 0x000000ff))
 
         private fun getLEShort(off: Int) =
-            (((mData[off + 1].toInt() shl 8) and 0xff00) or ((mData[off + 0].toInt() shl 0) and 0x00ff))
+            ((mData[off + 1].toInt() shl 8) and 0xff00) or ((mData[off + 0].toInt() shl 0) and 0x00ff)
 
         private fun getAttributeValue(type: Int, data: Int) = when (type) {
             TYPE_STRING -> getString(data)

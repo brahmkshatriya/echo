@@ -22,9 +22,8 @@
                 android:id="@+id/toolbarIconContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="64dp"
-                android:layout_marginBottom="48dp">
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="64dp">
 
                 <ImageView
                     android:layout_width="wrap_content"

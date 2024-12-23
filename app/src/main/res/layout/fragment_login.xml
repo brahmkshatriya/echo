@@ -23,10 +23,8 @@
                 android:id="@+id/iconContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginHorizontal="24dp"
-                android:paddingTop="64dp"
-                android:layout_marginBottom="32dp"
-                android:paddingBottom="32dp">
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="64dp">
 
                 <ImageView
                     android:id="@+id/extensionIcon"

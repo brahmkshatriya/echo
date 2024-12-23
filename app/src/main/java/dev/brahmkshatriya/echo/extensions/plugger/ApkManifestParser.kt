@@ -8,7 +8,8 @@ class ApkManifestParser(
     private val importType: ImportType
 ) : ManifestParser<AppInfo, Metadata> {
     override fun parseManifest(data: AppInfo): Metadata = with(data.appInfo.metaData) {
-        fun get(key: String): String = getString(key)
+        fun getOrNull(key: String) = getString(key)?.takeIf { it.isNotBlank() }
+        fun get(key: String) = getOrNull(key)
             ?: error("$key not found in Metadata for ${data.appInfo.packageName}")
 
         Metadata(
@@ -16,14 +17,14 @@ class ApkManifestParser(
             className = get("class"),
             importType = importType,
             id = get("id"),
-            name = get("name"),
             version = get("version"),
+            iconUrl = getOrNull("icon_url"),
+            name = get("name"),
             description = get("description"),
             author = get("author"),
-            authorUrl = getString("author_url"),
-            iconUrl = getString("icon_url"),
-            repoUrl = getString("repo_url"),
-            updateUrl = getString("update_url"),
+            authorUrl = getOrNull("author_url"),
+            repoUrl = getOrNull("repo_url"),
+            updateUrl = getOrNull("update_url"),
             enabled = getBoolean("enabled", true)
         )
     }
