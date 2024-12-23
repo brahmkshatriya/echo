@@ -246,7 +246,7 @@
     <string name="extension_installer">संस्थापकः</string>
     <string name="extension_uninstalled_successfully">विस्तारः सफलतया अपाकृतः।</string>
     <string name="uninstall">अपाक्रियताम्</string>
-    <string name="open_links_instruction">एतानि लिंक् उद्घाटनाय अनुमतिं दातुं, युष्मिन्कर्तव्यं:\\n- अधो स्क्रोल् कृत्वा \\\"डिफ़ॉल्ट रूपेण उद्घाटय\\\" इति क्लिक् कुरुत\\n- \\\"+ लिंकं योजय\\\" इति क्लिक् कुरुत</string>
+    <string name="open_links_instruction">एतानि लिङ्कानि उद्घाटयितुं अनुमतिं दातुं भवद्भिः आवश्यकं यत् :\n- अधः स्क्रॉल कृत्वा \"Open by Default\" इत्यत्र क्लिक् कुर्वन्तु ।\n- \"+ Add Link\" इत्यत्र क्लिक् कुर्वन्तु ।</string>
     <string name="link">सूत्रम्</string>
     <string name="extension_updated_successfully">%1$s यथावत् सफलतया अद्यतनं कृतम्</string>
     <string name="check_for_extension_updates">विस्तारक-अद्यतनेषु परीक्षां कुरु</string>
