@@ -238,7 +238,7 @@
     <string name="installation_type_warning">Agar aap extension ko file ke roop mein sthaapit karte hain, to yeh upalabdh nahi hoga.</string>
     <string name="uninstall">Uninstall</string>
     <string name="invalid_extension">Amanya extension</string>
-    <string name="open_links_instruction">In links ko kholne ki anumati dene ke liye, aapko ye karna hoga:\\n- Neeche scroll karke \\\"Default ke roop mein kholen\\\" par click karein\\n- \\\"+ Link jodein\\\" par click karein</string>
+    <string name="open_links_instruction">In links ko kholne ki anumati dene ke liye, aapko ye karna hoga:\n- Neeche scroll karke \"Default ke roop mein kholen\" par click karein\n- \"+ Link jodein\" par click karein</string>
     <string name="install">Sthaapit karein</string>
     <string name="cache_playlist_warning">Prayogaatmak suvidha. \nInhe sunne ke alawa kuch bhi samarthit nahi hai.</string>
     <string name="could_not_find_the_file">File nahi mili.</string>
