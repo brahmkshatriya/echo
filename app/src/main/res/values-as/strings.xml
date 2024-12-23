@@ -245,7 +245,7 @@
     <string name="invalid_extension">অবৈধ এক্সটেনশন</string>
     <string name="extension_installer">এক্সটেনচন ইনষ্টলাৰ</string>
     <string name="extension_uninstalled_successfully">এক্সটেনশন সফলভাৱে আনইনষ্টল কৰা হৈছে।</string>
-    <string name="open_links_instruction">এই লিঙ্কসমূহ খোলাৰ অনুমতি দিবলৈ, আপোনাক এইবোৰ কৰিব লাগিবঃ\\n- তললৈ স্ক্ৰ\'ল কৰি \\\"ডিফল্ট হিচাপে খোলক\\\" ক্লিক কৰক\\n- \\\"+ Add Link\\\" ক্লিক কৰক</string>
+    <string name="open_links_instruction">এই লিংকসমূহ খোলাৰ অনুমতি দিবলৈ, আপুনি নিম্নলিখিত কৰিব লাগিব:\n- তললৈ স্ক্ৰল কৰক আৰু \"অবিকল্পিত দ্বাৰা খোলক\" ক্লিক কৰক।\n- \"+ লিংক যোগ কৰক\" ত ক্লিক কৰক।</string>
     <string name="installation_type_warning">যদি আপুনি এক্সটেনশন এটা ফাইল হিচাপে সংস্থাপন কৰিব বিচাৰে তেন্তে উপলব্ধ নহয় ।</string>
     <string name="downloading_update_for_extension">%1$s ৰ বাবে আপডেইট ডাউনলোড কৰা হৈছে</string>
     <string name="extension_updated_successfully">%1$s সফলভাৱে আপডেইট কৰা হৈছে</string>
