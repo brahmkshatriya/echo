@@ -151,11 +151,26 @@ fun Fragment.setupTransition(view: View) {
         if (parentFragmentManager.backStackEntryCount == 0) return
         val predictiveBackMargin = resources.getDimensionPixelSize(R.dimen.predictive_back_margin)
         var initialTouchY = -1f
+
+        fun reset(){
+            initialTouchY = -1f
+            view.run {
+                alpha = 1f
+                translationX = 0f
+                translationY = 0f
+                scaleX = 1f
+                scaleY = 1f
+            }
+        }
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     parentFragmentManager.popBackStack()
+                }
+
+                override fun handleOnBackStarted(backEvent: BackEventCompat) {
+                    reset()
                 }
 
                 override fun handleOnBackProgressed(backEvent: BackEventCompat) {
@@ -169,7 +184,7 @@ fun Fragment.setupTransition(view: View) {
                     )
                     val maxTranslationX = (view.width / 20) - predictiveBackMargin
                     view.translationX = progress * maxTranslationX *
-                            (if (backEvent.swipeEdge == BackEventCompat.EDGE_LEFT) 1 else -1)
+                            if (backEvent.swipeEdge == BackEventCompat.EDGE_LEFT) 1 else -1
                     val maxTranslationY = (view.height / 20) - predictiveBackMargin
                     view.translationY = progressY * maxTranslationY
                     val scale = 1f - (0.1f * progress)
@@ -178,14 +193,7 @@ fun Fragment.setupTransition(view: View) {
                 }
 
                 override fun handleOnBackCancelled() {
-                    initialTouchY = -1f
-                    view.run {
-                        alpha = 1f
-                        translationX = 0f
-                        translationY = 0f
-                        scaleX = 1f
-                        scaleY = 1f
-                    }
+                    reset()
                 }
             }
         )

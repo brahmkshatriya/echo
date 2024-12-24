@@ -117,6 +117,9 @@ class PlayerService : MediaLibraryService() {
         val exoPlayer = createExoplayer(extListFlow)
         exoPlayer.prepare()
 
+//        val player = ShufflePlayer(exoPlayer)
+        val player = exoPlayer
+
         val intent = Intent(this, MainActivity::class.java)
             .putExtra("fromNotification", true)
 
@@ -127,7 +130,7 @@ class PlayerService : MediaLibraryService() {
             this, settings, scope, extListFlow, extFlow, throwFlow, messageFlow, stateFlow
         )
 
-        val session = MediaLibrarySession.Builder(this, exoPlayer, callback)
+        val session = MediaLibrarySession.Builder(this, player, callback)
             .setSessionActivity(pendingIntent)
             .setBitmapLoader(PlayerBitmapLoader(this, scope))
             .build()
@@ -139,15 +142,15 @@ class PlayerService : MediaLibraryService() {
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
         setMediaNotificationProvider(notificationProvider)
 
-        exoPlayer.addListener(
+        player.addListener(AudioFocusListener(this, player))
+        player.addListener(
             PlayerEventListener(this, scope, session, current, extListFlow, throwFlow)
         )
-        exoPlayer.addListener(AudioFocusListener(this, exoPlayer))
-        exoPlayer.addListener(
-            Radio(exoPlayer, this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)
+        player.addListener(
+            Radio(player, this, settings, scope, extListFlow, throwFlow, messageFlow, stateFlow)
         )
-        exoPlayer.addListener(
-            TrackingListener(exoPlayer, scope, extListFlow, trackerList, throwFlow)
+        player.addListener(
+            TrackingListener(player, scope, extListFlow, trackerList, throwFlow)
         )
         settings.registerOnSharedPreferenceChangeListener { prefs, key ->
             when (key) {
@@ -155,7 +158,6 @@ class PlayerService : MediaLibraryService() {
             }
         }
 
-        //TODO: EQ, Pitch, Tempo, Reverb & Sleep Timer(5m, 10m, 15m, 30m, 45m, 1hr, End of track)
 //        val equalizer = Equalizer(1, exoPlayer.audioSessionId)
 
         mediaSession = session

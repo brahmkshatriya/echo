@@ -70,7 +70,7 @@ class ApkLinkParser {
         val document: Document =
             DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
         private val mStack = Stack<Node?>()
-        private fun isEmpty(text: String?) = text == null || ("" == text)
+        private fun isEmpty(text: String?) = text == null || "" == text
         fun startDocument() { mStack.push(document) }
         fun startElement(
             uri: String?, localName: String?, qName: String?, attrs: Array<Attribute>
@@ -157,7 +157,7 @@ class ApkLinkParser {
 
         private fun parseStartDocument() {
             mListener.startDocument()
-            mParserOffset += (2 * WORD_SIZE)
+            mParserOffset += 2 * WORD_SIZE
         }
 
         private fun parseStringTable() {
@@ -250,7 +250,7 @@ class ApkLinkParser {
         }
 
         private fun getString(index: Int): String? {
-            val res = if ((index >= 0) && index < mStringsCount) mStringsTable[index] else null
+            val res = if (index in 0..<mStringsCount) mStringsTable[index] else null
             return res
         }
 
