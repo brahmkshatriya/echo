@@ -29,6 +29,7 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
+import dev.brahmkshatriya.echo.playback.PlayerCommands.sleepTimer
 import dev.brahmkshatriya.echo.playback.PlayerException
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.listeners.Radio
@@ -60,7 +61,7 @@ class PlayerViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
-    var browser = MutableStateFlow<MediaController?>(null)
+    val browser = MutableStateFlow<MediaController?>(null)
     fun withBrowser(block: (MediaController) -> Unit) {
         viewModelScope.launch(Dispatchers.Main) {
             val browser = browser.first { it != null }!!
@@ -249,4 +250,8 @@ class PlayerViewModel @Inject constructor(
 
     fun deletePlaylist(clientId: String, playlist: Playlist) =
         deletePlaylist(extensionListFlow, mutableMessageFlow, app, clientId, playlist)
+
+    fun setSleepTimer(ms: Long) {
+        withBrowser { it.sendCustomCommand(sleepTimer, bundleOf("ms" to ms)) }
+    }
 }

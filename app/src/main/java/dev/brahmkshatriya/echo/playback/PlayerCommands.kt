@@ -16,6 +16,7 @@ object PlayerCommands {
     val repeatOffCommand = SessionCommand("repeat_off", Bundle.EMPTY)
     val repeatOneCommand = SessionCommand("repeat_one", Bundle.EMPTY)
     val radioCommand = SessionCommand("radio", Bundle.EMPTY)
+    val sleepTimer = SessionCommand("sleep_timer", Bundle.EMPTY)
 
     fun getLikeButton(context: Context, item: MediaItem) = run {
         val builder = CommandButton.Builder()

@@ -37,6 +37,7 @@ import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
+import dev.brahmkshatriya.echo.ui.player.SleepTimerBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.loadAsCircle
@@ -223,7 +224,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 createSnack("Not implemented")
             },
             ItemAction.Resource(R.drawable.ic_snooze, R.string.sleep_timer) {
-                createSnack("Not implemented")
+                SleepTimerBottomSheet().show(parentFragmentManager, null)
             }
         )
 

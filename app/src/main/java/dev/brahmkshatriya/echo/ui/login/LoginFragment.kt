@@ -65,7 +65,7 @@ class LoginFragment : Fragment() {
             newInstance(error.extension.id, error.extension.name, error.extension.type)
 
         const val USER_AGENT =
-            "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36"
+            "Mozilla/5.0 (Linux; Android 2; Jeff Bezos) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36"
     }
 
     private var binding by autoCleared<FragmentLoginBinding>()

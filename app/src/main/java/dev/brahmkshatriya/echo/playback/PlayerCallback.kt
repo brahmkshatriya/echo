@@ -50,6 +50,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import java.util.Timer
+import java.util.TimerTask
 
 @UnstableApi
 class PlayerCallback(
@@ -69,7 +71,7 @@ class PlayerCallback(
         val sessionCommands = with(PlayerCommands) {
             MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
                 .add(likeCommand).add(unlikeCommand).add(repeatCommand).add(repeatOffCommand)
-                .add(repeatOneCommand).add(radioCommand).build()
+                .add(repeatOneCommand).add(radioCommand).add(sleepTimer).build()
         }
         return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
             .setAvailableSessionCommands(sessionCommands).build()
@@ -82,6 +84,7 @@ class PlayerCallback(
         args: Bundle
     ): ListenableFuture<SessionResult> = with(PlayerCommands) {
         val player = session.player
+        println("Custom Command: ${customCommand.customAction}")
         when (customCommand) {
             likeCommand -> onSetRating(session, controller, ThumbRating(true))
             unlikeCommand -> onSetRating(session, controller, ThumbRating(false))
@@ -89,8 +92,26 @@ class PlayerCallback(
             repeatOneCommand -> setRepeat(player, Player.REPEAT_MODE_ONE)
             repeatCommand -> setRepeat(player, Player.REPEAT_MODE_ALL)
             radioCommand -> radio(player, args)
+            sleepTimer -> onSleepTimer(player, args.getLong("ms"))
             else -> super.onCustomCommand(session, controller, customCommand, args)
         }
+    }
+
+    private inner class SleepTimerTask(private val player: Player) : TimerTask() {
+        override fun run() { player.pause() }
+    }
+
+    private var timer = Timer()
+    private fun onSleepTimer(player: Player, ms: Long): ListenableFuture<SessionResult> {
+        timer.cancel()
+        val time = when (ms) {
+            0L -> return Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
+            Long.MAX_VALUE -> player.run { duration - currentPosition }
+            else -> ms
+        }
+        timer = Timer()
+        timer.schedule(SleepTimerTask(player), time)
+        return Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
     }
 
     private fun setRepeat(player: Player, repeat: Int) = run {

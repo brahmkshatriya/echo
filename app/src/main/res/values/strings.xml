@@ -272,6 +272,24 @@
     <string name="explicit">Explicit</string>
     <string name="show_background">Show Background</string>
     <string name="show_background_summary">Background video or blurred artwork of track in player</string>
+    <string name="end_of_track">End of Track</string>
+    <string name="_15min">15m</string>
+    <string name="_30min">30m</string>
+    <string name="_45min">45m</string>
+    <string name="_1hr">1h</string>
+    <string name="_2hr">2h</string>
+    <string name="sleep_timer_desc">Set a sleep timer to stop playback after a certain amount of time</string>
+    <string name="sleep_on_specific_time">Sleep on specific time</string>
+    <string name="sleep_timer_canceled">Sleep timer cancelled</string>
+    <string name="sleep_timer_set_for">Sleep timer set for %1$s</string>
+    <plurals name="number_hour">
+        <item quantity="one">%1$d Hour</item>
+        <item quantity="other">%1$d Hours</item>
+    </plurals>
+    <plurals name="number_min">
+        <item quantity="one">%1$d Min</item>
+        <item quantity="other">%1$d Mins</item>
+    </plurals>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
