@@ -99,7 +99,6 @@ class ItemFragment : Fragment() {
 
         setupTransition(view)
         applyInsets {
-            binding.coverContainer.updateLayoutParams<MarginLayoutParams> { topMargin = it.top }
             binding.recyclerView.applyContentInsets(it)
             binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
