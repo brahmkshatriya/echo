@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
@@ -57,7 +56,6 @@ class ExceptionFragment : Fragment() {
 
         setupTransition(view)
         applyInsets {
-            binding.exceptionIconContainer.updatePadding(top = it.top)
             binding.nestedScrollView.applyContentInsets(it)
         }
         applyBackPressCallback()

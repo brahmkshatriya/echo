@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -19,14 +18,14 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentEditPlaylistBinding
-import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
-import dev.brahmkshatriya.echo.ui.player.upnext.PlaylistAdapter
+import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Add
-import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Move
-import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.ListAction.Remove
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Add
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Move
+import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Remove
+import dev.brahmkshatriya.echo.ui.player.upnext.PlaylistAdapter
 import dev.brahmkshatriya.echo.utils.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.dpToPx
@@ -73,7 +72,6 @@ class EditPlaylistFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
         applyInsets {
-            binding.toolbarIconContainer.updatePadding(top = it.top)
             binding.recyclerView.updatePaddingRelative(
                 top = 16.dpToPx(requireContext()),
                 bottom = it.bottom + 96.dpToPx(requireContext()),
