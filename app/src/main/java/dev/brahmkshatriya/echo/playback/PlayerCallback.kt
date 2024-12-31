@@ -55,15 +55,15 @@ import java.util.TimerTask
 
 @UnstableApi
 class PlayerCallback(
-    private val context: Context,
-    private val settings: SharedPreferences,
-    private val scope: CoroutineScope,
-    private val extensionList: StateFlow<List<MusicExtension>?>,
+    override val context: Context,
+    override val settings: SharedPreferences,
+    override val scope: CoroutineScope,
+    override val extensionList: StateFlow<List<MusicExtension>?>,
     private val extensionFlow: StateFlow<MusicExtension?>,
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val radioFlow: MutableStateFlow<Radio.State>
-) : AndroidAutoCallback() {
+) : AndroidAutoCallback(settings, context, scope, extensionList) {
 
     override fun onConnect(
         session: MediaSession, controller: MediaSession.ControllerInfo

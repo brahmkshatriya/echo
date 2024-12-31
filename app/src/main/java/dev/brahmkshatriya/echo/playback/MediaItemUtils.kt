@@ -167,7 +167,7 @@ object MediaItemUtils {
             )
         })
         .setSubtitle(bundle.indexes())
-        .setIsPlayable(loaded)
+        .setIsPlayable(true)
         .build()
 
     private fun Bundle.indexes() =
