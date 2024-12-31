@@ -42,7 +42,7 @@ class GridViewHolder(
 
             is Track -> {
                 val pos = bindingAdapterPosition
-                val shelf = shelf as Shelf.Lists.Tracks
+                val shelf = shelf as? Shelf.Lists.Tracks ?: return
                 val isNumbered = shelf.isNumbered
                 val tracks = shelf.list
                 val media = item.toMediaItem()

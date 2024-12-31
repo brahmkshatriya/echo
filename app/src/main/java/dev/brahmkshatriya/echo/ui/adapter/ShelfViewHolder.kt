@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent.SPACE_BETWEEN
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,6 +35,7 @@ import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
+import dev.brahmkshatriya.echo.utils.SafeFlexboxLayoutManager
 import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,7 +77,7 @@ sealed class ShelfViewHolder(
             val position = bindingAdapterPosition
             val context = binding.root.context
             val (layoutManager, padding) = item.ifGrid {
-                FlexboxLayoutManager(context).apply {
+                SafeFlexboxLayoutManager(context).apply {
                     justifyContent = SPACE_BETWEEN
                 } to 16.dpToPx(context)
             } ?: item.ifShowingButton {

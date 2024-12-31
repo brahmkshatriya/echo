@@ -56,7 +56,7 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
             doOnLayout {
                 val itemWidth = 24.dpToPx(requireContext())
                 val padding = (width - itemWidth) / 2
-                adapter.padding = (padding / itemWidth)
+                adapter.padding = padding / itemWidth
                 adapter.notifyDataSetChanged()
                 post {
                     layoutManager.scrollToPositionWithOffset(
@@ -138,7 +138,6 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
         val adapter = adapter as Adapter
 
         fun selected(vh: Adapter.ViewHolder, pos: Int) {
-            println("selected $pos")
             adapter.selectItem(vh)
             rulerTime = vh.time(pos)
             binding.sleepTimerValue.text = context.createString(rulerTime * 60L * 1000)

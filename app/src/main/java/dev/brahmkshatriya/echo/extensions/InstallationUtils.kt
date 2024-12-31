@@ -97,7 +97,7 @@ suspend fun uninstallExtension(
 
 fun Context.getPackageName(path: String) = packageManager.getPackageArchiveInfo(
     path, ApkPluginSource.PACKAGE_FLAGS
-)!!.packageName
+)?.packageName
 
 suspend fun FragmentActivity.waitForResult(intent: Intent) = suspendCoroutine { cont ->
     val contract = ActivityResultContracts.StartActivityForResult()

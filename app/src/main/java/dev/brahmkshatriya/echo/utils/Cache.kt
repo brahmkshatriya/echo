@@ -11,7 +11,7 @@ const val CACHE_FOLDER_SIZE = 50 * 1024 * 1024 //50MB
 
 inline fun <reified T> Context.saveToCache(
     id: String, data: T?, folderName: String = T::class.java.simpleName
-) {
+) = runCatching {
     val fileName = id.hashCode().toString()
     val cacheDir = cacheDir(this, folderName)
     val file = File(cacheDir, fileName)

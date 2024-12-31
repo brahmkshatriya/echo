@@ -13,7 +13,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Rating
 import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
@@ -49,6 +48,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.util.Timer
 import java.util.TimerTask
@@ -63,7 +63,7 @@ class PlayerCallback(
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val radioFlow: MutableStateFlow<Radio.State>
-) : MediaLibrarySession.Callback {
+) : AndroidAutoCallback() {
 
     override fun onConnect(
         session: MediaSession, controller: MediaSession.ControllerInfo
@@ -98,7 +98,9 @@ class PlayerCallback(
     }
 
     private inner class SleepTimerTask(private val player: Player) : TimerTask() {
-        override fun run() { player.pause() }
+        override fun run() {
+            runBlocking(Dispatchers.Main) { player.pause() }
+        }
     }
 
     private var timer = Timer()

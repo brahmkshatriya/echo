@@ -18,7 +18,7 @@ class MaterialListPreference(context: Context) : ListPreference(context) {
     override fun onClick() {
         MaterialAlertDialogBuilder(context)
             .setSingleChoiceItems(entries, entryValues.indexOf(value)) { dialog, index ->
-                if (callChangeListener(entryValues[index].toString())) {
+                if (callChangeListener(entryValues[index].toString())) runCatching {
                     setValueIndex(index)
                     updateSummary()
                 }

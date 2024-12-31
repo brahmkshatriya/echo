@@ -76,7 +76,7 @@ class MaterialSliderPreference(
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val newMaxValue = editText?.text?.toString()?.toIntOrNull()
-                if (newMaxValue != null && (allowOverride || (newMaxValue in from..to))) {
+                if (newMaxValue != null && (allowOverride || newMaxValue in from..to)) {
                     slider.valueTo = newMaxValue.toFloat()
                     slider.value = newMaxValue.toFloat()
                     dialog.dismiss()

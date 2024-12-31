@@ -51,7 +51,7 @@ class ExtensionOpenerActivity : Activity() {
     }
 
     private fun getTempFile(uri: Uri): File? {
-        val stream = contentResolver.openInputStream(uri) ?: return null
+        val stream = runCatching { contentResolver.openInputStream(uri) }.getOrNull() ?: return null
         val bytes = stream.readBytes()
         return getTempFile(bytes)
     }
