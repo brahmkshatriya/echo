@@ -12,7 +12,7 @@ class LyricAdapter(
     val listener: Listener
 ) : ListAdapter<Pair<Boolean, Lyrics.Item>, LyricAdapter.ViewHolder>(DiffCallback) {
     fun interface Listener {
-        fun onLyricSelected(lyric: Lyrics.Item)
+        fun onLyricSelected(adapter: LyricAdapter, lyric: Lyrics.Item)
     }
     object DiffCallback : DiffUtil.ItemCallback<Pair<Boolean, Lyrics.Item>>() {
         override fun areItemsTheSame(
@@ -32,8 +32,8 @@ class LyricAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val (current, lyric) = getItem(position) ?: return
         holder.binding.root.apply {
-            setOnClickListener { listener.onLyricSelected(lyric) }
-            text = lyric.text
+            setOnClickListener { listener.onLyricSelected(this@LyricAdapter, lyric) }
+            text = lyric.text.trim()
             alpha = if (current) 1f else 0.33f
         }
     }

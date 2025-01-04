@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.player.lyrics
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
@@ -15,7 +16,7 @@ import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
+import com.google.android.material.behavior.HideViewOnScrollBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
@@ -31,6 +32,8 @@ import dev.brahmkshatriya.echo.utils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import java.util.Timer
+import java.util.TimerTask
 
 
 class LyricsFragment : Fragment() {
@@ -104,6 +107,23 @@ class LyricsFragment : Fragment() {
         var lyricAdapter: LyricAdapter? = null
 
         val layoutManager = binding.lyricsRecyclerView.layoutManager as LinearLayoutManager
+        var shouldAutoScroll = false
+        var timer = Timer()
+        binding.lyricsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy < 0) {
+                    shouldAutoScroll = false
+                    timer.cancel()
+                    timer = Timer()
+                    timer.schedule(object : TimerTask() {
+                        override fun run() {
+                            shouldAutoScroll = true
+                        }
+                    }, 3000)
+                }
+            }
+        })
+
         fun updateLyrics(current: Long) {
             val lyrics = currentLyrics as? Lyrics.Timed ?: return
             if ((currentItem?.endTime ?: 0) < current || current <= 0) {
@@ -116,15 +136,17 @@ class LyricsFragment : Fragment() {
                 val currentIndex = list.indexOfLast { it.first }
                     .takeIf { it != -1 } ?: return
 
-                val smoothScroller = CenterSmoothScroller(binding.lyricsRecyclerView)
-                smoothScroller.targetPosition = currentIndex
-                layoutManager.startSmoothScroll(smoothScroller)
-
-                binding.appBarLayout.setExpanded(false)
-                slideDown()
+                if (shouldAutoScroll) {
+                    val smoothScroller = CenterSmoothScroller(binding.lyricsRecyclerView)
+                    smoothScroller.targetPosition = currentIndex
+                    layoutManager.startSmoothScroll(smoothScroller)
+                    binding.appBarLayout.setExpanded(false)
+                    slideDown()
+                }
             }
         }
-        lyricAdapter = LyricAdapter { lyric ->
+        lyricAdapter = LyricAdapter { adapter, lyric ->
+            if (adapter.itemCount <= 1) return@LyricAdapter
             currentItem = null
             playerVM.withBrowser { it.seekTo(lyric.startTime) }
             updateLyrics(lyric.startTime)
@@ -199,9 +221,11 @@ class LyricsFragment : Fragment() {
         }
     }
 
+    @SuppressLint("WrongConstant")
     private fun slideDown() {
         val params = binding.lyricsItem.root.layoutParams as CoordinatorLayout.LayoutParams
-        val behavior = params.behavior as HideBottomViewOnScrollBehavior
-        behavior.slideDown(binding.lyricsItem.root)
+        val behavior = params.behavior as HideViewOnScrollBehavior
+        behavior.setViewEdge(1)
+        behavior.slideOut(binding.lyricsItem.root)
     }
 }

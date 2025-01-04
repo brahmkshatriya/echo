@@ -287,7 +287,7 @@ class UiViewModel @Inject constructor(
                     animateTranslation(view, behavior.peekHeight, newHeight)
             }
 
-            behavior.state = viewModel.playerSheetState.value
+            runCatching { behavior.state = viewModel.playerSheetState.value }
             behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     val expanded = newState == STATE_EXPANDED

@@ -41,7 +41,7 @@ class MainFragment : Fragment() {
         binding.root.adapter = adapter
         binding.root.setPageTransformer(SlideInPageTransformer())
         binding.root.isUserInputEnabled = false
-        val backCallback = object : OnBackPressedCallback(false){
+        val backCallback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
                 viewModel.navigation.value = 0
             }
@@ -73,7 +73,7 @@ class MainFragment : Fragment() {
             if (position < 1) return@doOnLayout
             (layoutManager as LinearLayoutManager).run {
                 scrollToPositionWithOffset(position, 0)
-                post { block(findFirstVisibleItemPosition()) }
+                post { runCatching { block(findFirstVisibleItemPosition()) } }
             }
         }
     }

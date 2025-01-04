@@ -79,7 +79,7 @@ class LibraryFragment : Fragment() {
             parent.openFragment(CreatePlaylistFragment(), it)
         }
 
-        val listener = ShelfAdapter.getListener(this)
+        val listener = ShelfAdapter.getListener(parent)
         observe(viewModel.playlistCreatedFlow) { (clientId, playlist) ->
             createSnack(SnackBar.Message(
                 getString(R.string.playlist_created, playlist.title),

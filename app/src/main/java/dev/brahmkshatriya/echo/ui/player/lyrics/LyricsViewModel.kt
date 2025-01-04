@@ -15,7 +15,6 @@ import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
-import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -75,23 +74,27 @@ class LyricsViewModel @Inject constructor(
     private fun onLyricsClientSelected(extension: Extension<*>?) {
         currentExtension.value = extension
         currentLyrics.value = null
+        searchResults.value = null
         settings.edit().putString(LAST_LYRICS_KEY, extension?.id).apply()
         val streamableTrack = currentMediaFlow.value?.mediaItem ?: return
         extension ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val data = onTrackChange(extension, streamableTrack)
             if (data != null) {
-                currentLyrics.value =
-                    extension.run(throwableFlow) { data.loadFirst().firstOrNull() }
+                loading.value = true
+                currentLyrics.value = extension.get<LyricsClient, Lyrics?>(throwableFlow) {
+                    val unloaded = data.loadFirst().firstOrNull() ?: return@get null
+                    loadLyrics(unloaded)
+                }
+                loading.value = false
                 data.toFlow().collectTo(searchResults)
-            } else searchResults.value = null
+            }
         }
     }
 
     companion object {
         const val LAST_LYRICS_KEY = "last_lyrics_client"
     }
-
 
     val searchResults = MutableStateFlow<PagingData<Lyrics>?>(null)
     private suspend fun onSearch(query: String?): PagedData<Lyrics>? {
@@ -123,10 +126,10 @@ class LyricsViewModel @Inject constructor(
     val loading = MutableStateFlow(false)
     val currentLyrics = MutableStateFlow<Lyrics?>(null)
     fun onLyricsSelected(lyricsItem: Lyrics) {
-        loading.value = true
         currentLyrics.value = lyricsItem
         val extension = currentExtension.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
+            loading.value = true
             currentLyrics.value = extension.get<LyricsClient, Lyrics>(throwableFlow) {
                 loadLyrics(lyricsItem)
             }?.fillGaps()

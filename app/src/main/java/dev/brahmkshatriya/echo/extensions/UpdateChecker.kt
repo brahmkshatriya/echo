@@ -41,6 +41,7 @@ suspend fun getUpdateFileUrl(
     updateUrl: String,
     client: OkHttpClient
 ) = runIOCatching {
+    if (updateUrl.isEmpty()) return@runIOCatching null
     if (updateUrl.startsWith("https://api.github.com")) {
         getGithubUpdateUrl(currentVersion, updateUrl, client).getOrThrow()
     } else {
@@ -60,7 +61,7 @@ suspend fun getGithubUpdateUrl(
     }.maxByOrNull {
         dateFormat.parse(it.createdAt)?.time ?: 0
     } ?: return@runIOCatching null
-    if (res.tagName.substringAfter('v') != currentVersion) {
+    if (res.tagName != currentVersion) {
         res.assets.firstOrNull {
             it.name.endsWith(".eapk")
         }?.browserDownloadUrl ?: throw Exception("No EApk assets found")
