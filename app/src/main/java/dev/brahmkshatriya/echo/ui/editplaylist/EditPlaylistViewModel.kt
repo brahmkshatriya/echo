@@ -110,19 +110,15 @@ class EditPlaylistViewModel @Inject constructor(
         if (newActions.isNotEmpty()) {
             val tracks = originalList.toMutableList()
             performedActions.emit(tracks to null)
-            println("Actions Size : ${newActions.size}")
             client<PlaylistEditorListenerClient>(clientId) {
                 it.onEnterPlaylistEditor(playlist, tracks)
             }
             playlistEditClient(clientId) { client ->
                 newActions.forEach { action ->
-                    println("new action : $action")
                     performedActions.emit(tracks to action)
                     when (action) {
                         is Add -> {
-                            println("adding action")
                             client.addTracksToPlaylist(playlist, tracks, action.index, action.items)
-                            println("added")
                             tracks.addAll(action.index, action.items)
                         }
 
@@ -160,63 +156,88 @@ class EditPlaylistViewModel @Inject constructor(
         data class Move<T>(val from: Int, val to: Int) : Action<T>
     }
 
-    // I am KR bbg.
-    // Don't forget to subscribe to my OnlyFans at https://github.com/justfoolingaround
-    private fun <T> computeActions(
-        before: List<T>, after: List<T>
-    ): MutableList<Action<T>> {
-        val out = mutableListOf<Action<T>>()
-        val workingBefore = before.toMutableList()
-
-        // Handle moves
-        after.forEachIndexed { targetIndex, targetItem ->
-            val currentIndex = workingBefore.indexOfFirst { it == targetItem }
-            if (currentIndex != -1 && currentIndex != targetIndex) {
-                out.add(Move(from = currentIndex, to = targetIndex))
-                val item = workingBefore.removeAt(currentIndex)
-                workingBefore.add(targetIndex, item)
-            }
-        }
-
-        // Handle removals
-        val afterIds = after.map { it }.toSet()
-        val removeIndexes = mutableListOf<Int>()
-        var index = 0
-        while (index < workingBefore.size) {
-            if (workingBefore[index] !in afterIds) {
-                removeIndexes.add(index)
-                workingBefore.removeAt(index)
-            } else {
-                index++
-            }
-        }
-        if (removeIndexes.isNotEmpty()) {
-            out.add(Remove(indexes = removeIndexes))
-        }
-
-        // Handle additions
-        val additions = mutableListOf<T>()
-        var addIndex = -1
-        after.forEachIndexed { targetIndex, targetItem ->
-            if (workingBefore.none { it == targetItem }) {
-                if (addIndex == -1) addIndex = targetIndex
-                additions.add(targetItem)
-                workingBefore.add(targetIndex, targetItem)
-            } else if (additions.isNotEmpty()) {
-                out.add(Add(index = addIndex, items = additions.toMutableList()))
-                additions.clear()
-                addIndex = -1
-            }
-        }
-        if (additions.isNotEmpty()) {
-            out.add(Add(index = addIndex, items = additions))
-        }
-
-        return out
-    }
-
-
     companion object {
+
+        // I am KR bbg.
+        // Don't forget to subscribe to my OnlyFans at https://github.com/justfoolingaround
+        fun <T> computeActions(
+            old: List<T>, new: List<T>
+        ): MutableList<Action<T>> {
+            val out = mutableListOf<Action<T>>()
+            val before = old.toMutableList()
+
+            // Handle removals
+            val afterIds = new.map { it }.toSet()
+            val removeIndexes = mutableListOf<Int>()
+            var index = 0
+            while (index < before.size) {
+                if (before[index] !in afterIds) {
+                    removeIndexes.add(index)
+                    before.removeAt(index)
+                } else {
+                    index++
+                }
+            }
+            if (removeIndexes.isNotEmpty()) {
+                out.add(Remove(indexes = removeIndexes))
+            }
+
+            // Handle additions
+            val additions = mutableListOf<T>()
+            var addIndex = -1
+            new.forEachIndexed { targetIndex, targetItem ->
+                if (before.none { it == targetItem }) {
+                    if (addIndex == -1) addIndex = targetIndex
+                    additions.add(targetItem)
+                    before.add(targetIndex, targetItem)
+                } else if (additions.isNotEmpty()) {
+                    out.add(Add(index = addIndex, items = additions.toMutableList()))
+                    additions.clear()
+                    addIndex = -1
+                }
+            }
+            if (additions.isNotEmpty()) {
+                out.add(Add(index = addIndex, items = additions))
+            }
+
+            // Handle moves
+            val moveActions = mutableListOf<Move<T>>()
+            new.forEachIndexed { targetIndex, targetItem ->
+                val currentIndex = before.indexOfFirst { it == targetItem }
+                if (currentIndex != -1 && currentIndex != targetIndex) {
+                    moveActions.add(Move(from = currentIndex, to = targetIndex))
+                    val item = before.removeAt(currentIndex)
+                    before.add(targetIndex, item)
+                }
+            }
+
+            //Optimize moves
+            var ind = -1
+            var last: Move<T>? = null
+            moveActions.forEach {
+                val l = last
+                if (l != null) {
+                    if (l.from == it.to) {
+                        if (ind == -1) ind = l.from - 1
+                    } else {
+                        if (ind == -1) out.add(l)
+                        else {
+                            out.add(Move(from = ind, to = l.from))
+                            ind = -1
+                        }
+                    }
+                }
+                last = it
+            }
+            val l = last
+            if (l != null) {
+                if (ind != -1) out.add(Move(from = ind, to = l.from))
+                else out.add(l)
+            }
+
+            return out
+        }
+
         fun CatchingViewModel.deletePlaylist(
             extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
             mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
@@ -227,9 +248,7 @@ class EditPlaylistViewModel @Inject constructor(
             val extension = extensionListFlow.getExtension(clientId) ?: return
             viewModelScope.launch(Dispatchers.IO) {
                 extension.get<PlaylistEditClient, Unit>(throwableFlow) {
-                    println("deleting playlist : ${playlist.title}")
                     deletePlaylist(playlist)
-                    println("deleted playlist : ${playlist.title}")
                 }
                 mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
             }

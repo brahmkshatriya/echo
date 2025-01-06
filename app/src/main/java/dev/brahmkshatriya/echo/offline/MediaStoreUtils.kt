@@ -652,40 +652,9 @@ object MediaStoreUtils {
         )
     }
 
-    fun Context.moveSongInPlaylist(playlistId: Long, from: Int, to: Int) {
-        val uri = @Suppress("DEPRECATION")
-        MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId)
-
-        val cursor = contentResolver.query(
-            uri,
-            arrayOf(@Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID),
-            null,
-            null,
-            @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.PLAY_ORDER + " ASC"
-        )
-        cursor?.use {
-            val idColumn = it.getColumnIndexOrThrow(
-                @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID
-            )
-            val ids = mutableListOf<Long>()
-            while (it.moveToNext()) {
-                ids.add(it.getLong(idColumn))
-            }
-            ids.add(to, ids.removeAt(from))
-            contentResolver.delete(uri, null, null)
-            ids.forEachIndexed { index, id ->
-                val values = ContentValues()
-                values.put(
-                    @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.PLAY_ORDER,
-                    index + 1
-                )
-                values.put(
-                    @Suppress("DEPRECATION") MediaStore.Audio.Playlists.Members.AUDIO_ID,
-                    id
-                )
-                contentResolver.insert(uri, values)
-            }
-        }
+    fun Context.moveSongInPlaylist(playlistId: Long, song:Long, from: Int, to: Int) {
+        removeSongFromPlaylist(playlistId, from)
+        addSongToPlaylist(playlistId, song, to)
     }
 
     fun <E> List<E>.searchBy(query: String, block: (E) -> List<String?>) = map { item ->

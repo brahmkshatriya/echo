@@ -469,7 +469,8 @@ class OfflineExtension(
     override suspend fun moveTrackInPlaylist(
         playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int
     ) {
-        context.moveSongInPlaylist(playlist.id.toLong(), fromIndex, toIndex)
+        val song = tracks[fromIndex].id.toLong()
+        context.moveSongInPlaylist(playlist.id.toLong(), song, fromIndex, toIndex)
     }
 
     override suspend fun onEnterPlaylistEditor(playlist: Playlist, tracks: List<Track>) {}
