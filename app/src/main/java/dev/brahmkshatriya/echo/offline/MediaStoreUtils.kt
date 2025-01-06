@@ -659,7 +659,7 @@ object MediaStoreUtils {
 
     fun <E> List<E>.searchBy(query: String, block: (E) -> List<String?>) = map { item ->
         val titles = block(item).mapNotNull { it }.ifEmpty { return@map 0 to item }
-        val distance = titles.map { it to wagnerFischer(it, query) }.minBy { it.second }
+        val distance = titles.map { it to wagnerFischer(it, query) }.maxBy { it.second }
         val bonus = if (distance.first.contains(query, true)) -20 else 0
         distance.second + bonus to item
     }.filter { it.first <= 0 }.sortedBy { it.first }
