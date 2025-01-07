@@ -215,6 +215,7 @@ class EditPlaylistFragment : Fragment() {
             override fun onItemClicked(position: Int) {}
 
             override fun onItemClosedClicked(position: Int) {
+                if (position == -1) return
                 viewModel.edit(Remove(position))
             }
         })

@@ -95,6 +95,7 @@ class ExtensionOpenerActivity : Activity() {
                         if (result && installAsApk) {
                             context.createLinksDialog(file, links)
                         }
+                        supportFragmentManager.clearFragmentResultListener(EXTENSION_INSTALLER)
                         it.resume(result)
                     }
                 }

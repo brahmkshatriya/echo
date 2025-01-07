@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.playback
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.C
@@ -9,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.ThumbRating
+import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -39,7 +41,8 @@ object MediaItemUtils {
         settings: SharedPreferences?, mediaItem: MediaItem, track: Track
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
-        val metadata = track.toMetaData(mediaMetadata.extras!!, extensionId, context, true, settings)
+        val metadata =
+            track.toMetaData(mediaMetadata.extras!!, extensionId, context, true, settings)
         item.setMediaMetadata(metadata)
         return item.build()
     }
@@ -137,7 +140,7 @@ object MediaItemUtils {
         item.build()
     }
 
-
+    @OptIn(UnstableApi::class)
     private fun Track.toMetaData(
         bundle: Bundle,
         extensionId: String = bundle.getString("clientId")!!,
@@ -153,8 +156,9 @@ object MediaItemUtils {
         .setAlbumArtist(album?.artists?.joinToString(", ") { it.name })
         .setArtist(toMediaItem().subtitleWithE)
         .setArtworkUri(cover?.toJson()?.toUri())
-        .setUserRating(ThumbRating(isLiked))
-        .setIsBrowsable(false)
+        .setUserRating(
+            if (isLiked) ThumbRating(true) else ThumbRating()
+        )
         .setExtras(bundle.apply {
             putSerialized("track", this@toMetaData)
             putString("extensionId", extensionId)
@@ -167,7 +171,9 @@ object MediaItemUtils {
             )
         })
         .setSubtitle(bundle.indexes())
+        .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
         .setIsPlayable(true)
+        .setIsBrowsable(false)
         .build()
 
     private fun Bundle.indexes() =

@@ -21,7 +21,6 @@ import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionResult.RESULT_SUCCESS
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.SettableFuture
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
@@ -30,12 +29,14 @@ import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.utils.future
+import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
@@ -87,7 +88,7 @@ class PlayerCallback(
         println("Custom Command: ${customCommand.customAction}")
         when (customCommand) {
             likeCommand -> onSetRating(session, controller, ThumbRating(true))
-            unlikeCommand -> onSetRating(session, controller, ThumbRating(false))
+            unlikeCommand -> onSetRating(session, controller, ThumbRating())
             repeatOffCommand -> setRepeat(player, Player.REPEAT_MODE_OFF)
             repeatOneCommand -> setRepeat(player, Player.REPEAT_MODE_ONE)
             repeatCommand -> setRepeat(player, Player.REPEAT_MODE_ALL)
@@ -135,9 +136,11 @@ class PlayerCallback(
         val mediaItem = MediaItemUtils.build(
             settings, loaded.tracks[0], loaded.clientId, loaded.radio.toMediaItem()
         )
-        player.setMediaItem(mediaItem)
-        player.prepare()
-        player.playWhenReady = true
+        withContext(Dispatchers.Main) {
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.playWhenReady = true
+        }
         SessionResult(RESULT_SUCCESS)
     }
 
@@ -147,16 +150,15 @@ class PlayerCallback(
         return if (rating !is ThumbRating) super.onSetRating(session, controller, rating)
         else scope.future {
             val errorIO = SessionResult(SessionError.ERROR_IO)
-            val item = session.player.currentMediaItem ?: return@future errorIO
+            val item = withContext(Dispatchers.Main) { session.player.currentMediaItem }
+                ?: return@future errorIO
             extensionList.first { it != null }
             val extension = extensionList.getExtension(item.extensionId) ?: return@future errorIO
             val client = extension.instance.value.getOrNull() ?: return@future errorIO
             if (client !is TrackLikeClient) return@future errorIO
             val track = item.track
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    client.likeTrack(track, rating.isThumbsUp)
-                }
+            runCatching {
+                client.likeTrack(track, rating.isThumbsUp)
             }.getOrElse {
                 return@future SessionResult(
                     SessionError.ERROR_UNKNOWN,
@@ -169,7 +171,9 @@ class PlayerCallback(
                     mediaMetadata.buildUpon().setUserRating(ThumbRating(liked)).build()
                 )
             }.build()
-            session.player.replaceMediaItem(session.player.currentMediaItemIndex, newItem)
+            withContext(Dispatchers.Main) {
+                session.player.replaceMediaItem(session.player.currentMediaItemIndex, newItem)
+            }
             SessionResult(RESULT_SUCCESS, bundleOf("liked" to liked))
         }
     }
@@ -178,10 +182,7 @@ class PlayerCallback(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaItemsWithStartPosition> {
-        val settable = SettableFuture.create<MediaItemsWithStartPosition>()
-        val resumptionPlaylist = ResumptionUtils.recoverPlaylist(context)
-        settable.set(resumptionPlaylist)
-        return settable
+        return Futures.immediateFuture(ResumptionUtils.recoverPlaylist(context))
     }
 
     override fun onSetMediaItems(
@@ -210,12 +211,8 @@ class PlayerCallback(
     ): ListenableFuture<MutableList<MediaItem>> {
 
         //Look at the first item's search query, if it's null, return the super method
-        val query =
-            mediaItems.firstOrNull()?.requestMetadata?.searchQuery ?: return super.onAddMediaItems(
-                mediaSession,
-                controller,
-                mediaItems
-            )
+        val query = mediaItems.firstOrNull()?.requestMetadata?.searchQuery
+            ?: return super.onAddMediaItems(mediaSession, controller, mediaItems)
 
         fun default(reason: Context.() -> String): ListenableFuture<MutableList<MediaItem>> {
             toast(reason.invoke(context))

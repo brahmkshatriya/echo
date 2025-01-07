@@ -76,9 +76,7 @@ class Radio(
 
                 else -> {
                     suspend fun <T> tryIO(block: suspend () -> T): T? =
-                        withContext(Dispatchers.IO) {
-                            extension.run(throwableFlow) { block() }
-                        }
+                        extension.run(throwableFlow) { block() }
 
                     val radio = tryIO {
                         when (item) {
@@ -93,17 +91,11 @@ class Radio(
 
                     if (radio != null) {
                         val tracks = tryIO { client.loadTracks(radio).loadFirst() }
-                        val state = if (!tracks.isNullOrEmpty()) State.Loaded(
-                            clientId,
-                            radio,
-                            tracks,
-                            play
-                        )
+                        val state = if (!tracks.isNullOrEmpty())
+                            State.Loaded(clientId, radio, tracks, play)
                         else {
                             messageFlow.emit(
-                                SnackBar.Message(
-                                    context.getString(R.string.radio_empty)
-                                )
+                                SnackBar.Message(context.getString(R.string.radio_empty))
                             )
                             null
                         }
@@ -115,16 +107,17 @@ class Radio(
         }
     }
 
-    private fun play(loaded: State.Loaded, play: Int): Boolean {
-        val track = loaded.tracks.getOrNull(play) ?: return false
-        val item = MediaItemUtils.build(
-            settings, track, loaded.clientId, loaded.radio.toMediaItem()
-        )
-        player.addMediaItem(item)
-        player.prepare()
-        player.playWhenReady = true
-        return true
-    }
+    private suspend fun play(loaded: State.Loaded, play: Int): Boolean =
+        withContext(Dispatchers.Main) {
+            val track = loaded.tracks.getOrNull(play) ?: return@withContext false
+            val item = MediaItemUtils.build(
+                settings, track, loaded.clientId, loaded.radio.toMediaItem()
+            )
+            player.addMediaItem(item)
+            player.prepare()
+            player.playWhenReady = true
+            true
+        }
 
     private fun loadPlaylist() {
         val mediaItem = player.currentMediaItem ?: return
@@ -159,7 +152,7 @@ class Radio(
                 loadPlaylist()
             }
 
-            is State.Loaded -> {
+            is State.Loaded -> scope.launch {
                 val toBePlayed = state.played + 1
                 if (toBePlayed == state.tracks.size) loadPlaylist()
                 if (play(state, toBePlayed)) {

@@ -103,11 +103,11 @@ class PlayerEventListener(
     private var last: Pair<String, Throwable>? = null
     override fun onPlayerError(error: PlaybackException) {
         val cause = error.cause?.cause ?: error.cause ?: error
-        scope.launch {
-            val exception = if (cause is StreamableLoadingException) cause.cause
-            else PlayerException(cause.toExceptionDetails(context), player.currentMediaItem)
-            throwableFlow.emit(exception)
-        }
+
+        val exception = if (cause is StreamableLoadingException) cause.cause
+        else PlayerException(cause.toExceptionDetails(context), player.currentMediaItem)
+        scope.launch { throwableFlow.emit(exception) }
+
         if (cause !is StreamableLoadingException) return
         if (cause.cause !is AppException.Other) return
 

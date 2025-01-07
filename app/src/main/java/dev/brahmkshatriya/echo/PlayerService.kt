@@ -68,7 +68,7 @@ class PlayerService : MediaLibraryService() {
     @Inject
     lateinit var currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>
 
-    private val scope = CoroutineScope(Dispatchers.Main)
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     @OptIn(UnstableApi::class)
     private fun createExoplayer(extListFlow: MutableStateFlow<List<MusicExtension>?>) = run {

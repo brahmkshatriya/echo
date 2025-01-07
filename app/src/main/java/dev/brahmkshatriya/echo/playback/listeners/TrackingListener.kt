@@ -44,7 +44,7 @@ class TrackingListener(
         val extension = extensionList.getExtension(details?.extensionId)
         val trackers = trackerList.value?.filter { it.metadata.enabled } ?: emptyList()
 
-        scope.launch(Dispatchers.IO) {
+        scope.launch {
             extension?.get<TrackerClient, Unit>(throwableFlow) {
                 block(extension, details)
             }
