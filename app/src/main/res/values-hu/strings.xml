@@ -238,7 +238,7 @@
     <string name="installation_type_summary">Az App telepítése a következő linkek Echo-ban megnyítását engedélyezi:</string>
     <string name="extension_installer">Bővítmény telepítő</string>
     <string name="uninstall">Törlés</string>
-    <string name="open_links_instruction">Ahhoz hogy ezen linkek megnyitását engedélyezd:\\n- Görgess le és kattints a \\\"Megnyitás Alapból\\\" gombra\\n- Majd a \\\"+ Link hozzáadása\\\" gombra</string>
+    <string name="open_links_instruction">Ahhoz hogy ezen linkek megnyitását engedélyezze:\n- Görgessen le és kattintsd meg a \"Megnyitás Alapból\" Opciót\n- kattintsd meg a \"+ Link hozzáadása\"-t</string>
     <string name="extension_requires_following_extensions">%1$s müködéséhez szükséges a(z) %2$s</string>
     <string name="installation_type_warning">Nem elérhető a Bővítmény fájlból való telepítése esetén.</string>
     <string name="could_not_find_the_file">A fájl nem található.</string>
@@ -246,7 +246,7 @@
     <string name="extension_installed_successfully">Bővítmény sikeresen telepítve.</string>
     <string name="extension_uninstalled_successfully">Bővítmény sikeresen törölve.</string>
     <string name="allow_opening_links">Linkek megnyitásának engedélyezése</string>
-    <string name="explicit">Explicit</string>
+    <string name="explicit">Egyértelmű</string>
     <string name="show_background">Háttér mutatása</string>
     <string name="show_background_summary">Háttér videó vagy elmosódott grafika a lejátszóban</string>
     <string name="blacklist_folder_keywords">Mappa kulcsszó feketelista</string>
