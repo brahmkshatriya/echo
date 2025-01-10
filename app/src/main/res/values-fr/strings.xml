@@ -25,7 +25,7 @@
         <item quantity="many">%1$d Chansons</item>
         <item quantity="other">%1$d Chansons</item>
     </plurals>
-    <string name="saved_to_playlist">Sauvegardé dans la playlist \"%1$s\"</string>
+    <string name="saved_to_playlist">Sauvegardé dans la playlist %1$s</string>
     <string name="songs">Chansons</string>
     <string name="radio">Radio</string>
     <string name="str_copy">Copier</string>
@@ -83,7 +83,7 @@
     <string name="moving_track">Déplacement de %1$s</string>
     <string name="skip_silence">Sauter les silences</string>
     <string name="skip_silence_summary">Ignore le silence au début/à la fin d\'une chanson, afin d\'obtenir une lecture sans coupure.</string>
-    <string name="app_crashed">L\'application a crashé!</string>
+    <string name="app_crashed">L\'application a crashé !</string>
     <string name="keep_queue">Sauvegarder la liste de lecture</string>
     <string name="radio_based_on_item">Radio basée sur %1$s</string>
     <string name="albums">Albums</string>
