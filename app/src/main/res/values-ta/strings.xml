@@ -143,7 +143,7 @@
     <string name="keep_queue_summary">நீங்கள் பயன்பாட்டை மீண்டும் திறக்கும்போது, பிளேயர் வரிசையை மீட்டெடுக்கவும்.</string>
     <string name="incognito">மறைநிலை</string>
     <string name="no_internet">இணையம் இல்லை</string>
-    <string name="albums">ஆல்பம்</string>
+    <string name="albums">பாடல் தொகுப்புகள்</string>
     <string name="artists">கலைஞர்கள்</string>
     <string name="unknown_amount_songs">\??? பாடல்கள்</string>
     <string name="item_radio">%1$s வானொலி</string>
@@ -157,7 +157,7 @@
     <string name="extension">நீட்டிப்பு</string>
     <string name="downloaded_percentage">பதிவிறக்கம்: %1$d</string>
     <string name="download">பதிவிறக்கம்</string>
-    <string name="username_password">&lt;! [CDATA [பயனர்பெயர் &amp; கடவுச்சொல்]]&gt;</string>
+    <string name="username_password"><![CDATA[பயனர்பெயர் & கடவுச்சொல்]]></string>
     <string name="webview">வெப்வியூ</string>
     <string name="manual">கையேடு</string>
     <string name="required_field">%1$s தேவை.</string>
@@ -226,7 +226,7 @@
     <string name="unliked_track">விரும்பத்தகாத %1$s</string>
     <string name="unhide">இரக்கமற்றது</string>
     <string name="hidden_track">மறைக்கப்பட்ட %1$s</string>
-    <string name="unhidden_track">உடிங்% 1 $ s</string>
+    <string name="unhidden_track">உடிங் %1$s</string>
     <string name="cached_songs">தற்காலிக சேமிப்பு பாடல்கள்</string>
     <string name="install">நிறுவவும்</string>
     <string name="app">பயன்பாடு</string>
@@ -242,7 +242,7 @@
     <string name="extension_installed_successfully">நீட்டிப்பு வெற்றிகரமாக நிறுவப்பட்டது.</string>
     <string name="extension_uninstalled_successfully">நீட்டிப்பு வெற்றிகரமாக நிறுவல் நீக்கப்பட்டது.</string>
     <string name="allow_opening_links">திறப்பு இணைப்புகளை அனுமதிக்கவும்</string>
-    <string name="open_links_instruction">இந்த இணைப்புகளைத் திறக்க அனுமதிக்க, நீங்கள் செய்ய வேண்டியது: n- கீழே உருட்டவும், இயல்பாக பேனாவைக் சொடுக்கு செய்யவும்\n - சொடுக்கு செய்க \"+ இணைப்பைச் சேர்</string>
+    <string name="open_links_instruction">இந்த இணைப்புகளைத் திறக்க அனுமதிக்க, நீங்கள் செய்ய வேண்டியது:\n- கீழே உருட்டி, \"இயல்புநிலையாக திற\" என்பதைக் கிளிக் செய்யவும்\n- \"+ சேர் இணைப்பை\" கிளிக் செய்யவும்</string>
     <string name="extension_requires_following_extensions">%1$s க்கு %2$s தேவை</string>
     <string name="downloading_update_for_extension">%1$s க்கான புதுப்பிப்பைப் பதிவிறக்குகிறது</string>
     <string name="extension_updated_successfully">%1$s வெற்றிகரமாக புதுப்பிக்கப்பட்டன</string>
