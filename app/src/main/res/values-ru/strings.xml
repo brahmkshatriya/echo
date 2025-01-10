@@ -260,4 +260,12 @@
     <string name="hide">Скрыть</string>
     <string name="unhide">Показать</string>
     <string name="hidden_track">Скрытый %1$s</string>
+    <string name="shared_element_transitions">Осветить художественные переходы</string>
+    <string name="stream_quality_summary">Выберите качество потока</string>
+    <string name="no_streams_found">Не найдено ни одного потока</string>
+    <string name="amoled">Чисто черный</string>
+    <string name="up_next">Следующий</string>
+    <string name="streamable_not_found">Поток не найден</string>
+    <string name="stream_quality">Качество потока</string>
+    <string name="play_next">Играть дальше</string>
 </resources>
