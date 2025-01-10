@@ -1,2 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="home">Почетна</string>
+    <string name="library">Библиотека</string>
+    <string name="search">Претрага</string>
+    <string name="extensions">Проширења</string>
+    <string name="settings">Поставке</string>
+    <string name="play_pause">Пусти/Пауза</string>
+    <string name="extension_settings">Поставке Проширења</string>
+    <string name="more">Више</string>
+    <string name="retry">Пробај поново</string>
+    <string name="failed_loading">Неуспешно Учитавање</string>
+    <string name="repeat">Понови</string>
+    <string name="add_extension">Додај Проширење</string>
+    <string name="previous">Претходно</string>
+    <string name="next">Следеће</string>
+</resources>
