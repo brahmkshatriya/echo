@@ -27,7 +27,7 @@ import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.MediaLists
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.MediaLists.ListViewModel
 import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistClickListener
-import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistFragment
+import dev.brahmkshatriya.echo.ui.editplaylist.SearchForPlaylistsFragment
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.utils.observe
@@ -62,7 +62,7 @@ class ShelfAdapter(
             val type = fragment.arguments?.getString("itemListener")
             return when (type) {
                 "search" -> SearchForPlaylistClickListener(
-                    if (fragment is SearchForPlaylistFragment) fragment.childFragmentManager
+                    if (fragment is SearchForPlaylistsFragment) fragment.childFragmentManager
                     else fragment.parentFragmentManager
                 )
 

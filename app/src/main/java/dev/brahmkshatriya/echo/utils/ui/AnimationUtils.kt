@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.ui
 
 import android.content.Context.MODE_PRIVATE
 import android.view.View

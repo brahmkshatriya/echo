@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsP
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.image.loadInto
 
 class GridViewHolder(
     val listener: ShelfAdapter.Listener,

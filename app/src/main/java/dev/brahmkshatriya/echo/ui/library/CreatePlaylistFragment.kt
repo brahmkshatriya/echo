@@ -9,7 +9,7 @@ import androidx.fragment.app.activityViewModels
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentCreatePlaylistBinding
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 

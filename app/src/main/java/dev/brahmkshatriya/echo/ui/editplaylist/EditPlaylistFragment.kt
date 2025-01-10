@@ -26,14 +26,14 @@ import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Add
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Move
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Remove
 import dev.brahmkshatriya.echo.ui.player.upnext.PlaylistAdapter
-import dev.brahmkshatriya.echo.utils.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.putSerialized
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyFabInsets
@@ -139,7 +139,7 @@ class EditPlaylistFragment : Fragment() {
 
         binding.fabAddTracks.setOnClickListener {
             backCallback.isEnabled = false
-            openFragment(SearchForPlaylistFragment.newInstance(clientId, playlist), it)
+            openFragment(SearchForPlaylistsFragment.newInstance(clientId), it)
         }
         parentFragmentManager.setFragmentResultListener(
             "searchedTracks",

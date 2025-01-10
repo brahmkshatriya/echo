@@ -16,7 +16,7 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.image.loadInto
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 

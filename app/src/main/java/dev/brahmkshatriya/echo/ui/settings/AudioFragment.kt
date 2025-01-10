@@ -1,30 +1,26 @@
 package dev.brahmkshatriya.echo.ui.settings
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.media.audiofx.AudioEffect
 import android.os.Bundle
-import androidx.activity.result.contract.ActivityResultContracts
+import android.view.View
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.playback.listeners.EffectsListener.Companion.SKIP_SILENCE
+import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
+import dev.brahmkshatriya.echo.utils.prefs.TransitionPreference
 
 class AudioFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.audio)
-    override val transitionName = "audio"
     override val creator = { AudioPreference() }
 
     class AudioPreference : PreferenceFragmentCompat() {
-        private val equalizerActivityLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
-            }
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
@@ -32,6 +28,36 @@ class AudioFragment : BaseSettingsFragment() {
             preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
             val screen = preferenceManager.createPreferenceScreen(context)
             preferenceScreen = screen
+
+            PreferenceCategory(context).apply {
+                title = getString(R.string.playback)
+                key = "playback"
+                isIconSpaceReserved = false
+                layoutResource = R.layout.preference_category
+                screen.addPreference(this)
+
+                TransitionPreference(context).apply {
+                    key = AUDIO_FX
+                    title = getString(R.string.audio_fx)
+                    summary = getString(R.string.audio_fx_summary)
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+                    addPreference(this)
+                }
+
+                MaterialListPreference(context).apply {
+                    key = STREAM_QUALITY
+                    title = getString(R.string.stream_quality)
+                    summary = getString(R.string.stream_quality_summary)
+                    entries = context.resources.getStringArray(R.array.stream_qualities)
+                    entryValues = streamQualities
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+                    setDefaultValue(streamQualities[1])
+                    addPreference(this)
+                }
+
+            }
 
             PreferenceCategory(context).apply {
                 title = getString(R.string.behavior)
@@ -66,7 +92,7 @@ class AudioFragment : BaseSettingsFragment() {
                     summary = getString(R.string.skip_silence_summary)
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
-                    setDefaultValue(true)
+                    setDefaultValue(false)
                     addPreference(this)
                 }
 
@@ -80,18 +106,6 @@ class AudioFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-                MaterialListPreference(context).apply {
-                    key = STREAM_QUALITY
-                    title = getString(R.string.stream_quality)
-                    summary = getString(R.string.stream_quality_summary)
-                    entries = context.resources.getStringArray(R.array.stream_qualities)
-                    entryValues = streamQualities
-                    layoutResource = R.layout.preference
-                    isIconSpaceReserved = false
-                    setDefaultValue(streamQualities[1])
-                    addPreference(this)
-                }
-
                 MaterialSliderPreference(context, 200, 1000, allowOverride = true).apply {
                     key = CACHE_SIZE
                     title = getString(R.string.cache_size)
@@ -100,37 +114,25 @@ class AudioFragment : BaseSettingsFragment() {
                     setDefaultValue(250)
                     addPreference(this)
                 }
+            }
+        }
 
-                Preference(context).apply {
-                    key = EQUALIZER
-                    title = getString(R.string.equalizer)
-                    summary = getString(R.string.equalizer_summary)
-                    layoutResource = R.layout.preference
-                    isIconSpaceReserved = false
-
-                    // Intent for the hidden device equalizer, might not be available on all devices
-                    val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
-                    val isAvailable = intent.resolveActivity(context.packageManager) != null
-
-                    setOnPreferenceClickListener {
-                        equalizerActivityLauncher.launch(intent)
-                        true
-                    }
-
-                    if (isAvailable) {
-                        addPreference(this)
-                    }
-                }
+        override fun onPreferenceTreeClick(preference: Preference): Boolean {
+            val fragment = when (preference.key) {
+                AUDIO_FX -> AudioEffectsFragment()
+                else -> return false
             }
 
+            val view = listView.findViewById<View>(preference.key.hashCode())
+            parentFragment?.openFragment(fragment, view)
+            return true
         }
 
         companion object {
             const val KEEP_QUEUE = "keep_playlist"
             const val CLOSE_PLAYER = "close_player_when_app_closes"
-            const val SKIP_SILENCE = "skip_silence"
             const val AUTO_START_RADIO = "auto_start_radio"
-            const val EQUALIZER = "equalizer"
+            const val AUDIO_FX = "AudioFx"
 
             const val STREAM_QUALITY = "stream_quality"
             const val CACHE_SIZE = "cache_size"
@@ -140,7 +142,6 @@ class AudioFragment : BaseSettingsFragment() {
                 settings: SharedPreferences?, streamables: List<Streamable>
             ) = if (streamables.isNotEmpty()) streamables.indexOf(streamables.select(settings))
             else -1
-
 
             fun <E> List<E>.select(settings: SharedPreferences?, quality: (E) -> Int) =
                 when (settings?.getString(STREAM_QUALITY, "medium")) {

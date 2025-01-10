@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemMediaSelectableBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
-import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import kotlin.math.roundToInt
 
 class MediaItemSelectableAdapter(
@@ -50,7 +50,8 @@ class MediaItemSelectableAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Pair<EchoMediaItem, Boolean>) {
             val mediaItem = item.first
-            binding.cover.bind(mediaItem)
+            val isPlaying = binding.cover.bind(mediaItem)
+            isPlaying.isVisible = false
             binding.title.text = mediaItem.title
             binding.selected.isVisible = item.second
             binding.root.setOnClickListener {

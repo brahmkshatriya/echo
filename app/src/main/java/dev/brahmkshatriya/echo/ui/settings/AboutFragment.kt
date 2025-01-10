@@ -19,7 +19,6 @@ import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 
 class AboutFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.about)
-    override val transitionName = "about"
     override val creator = { AboutPreference() }
 
 

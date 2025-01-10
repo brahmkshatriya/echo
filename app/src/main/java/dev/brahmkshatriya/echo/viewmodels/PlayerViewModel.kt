@@ -57,6 +57,7 @@ class PlayerViewModel @Inject constructor(
     val radioStateFlow: MutableStateFlow<Radio.State>,
     val currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>,
     val cache: SimpleCache,
+    val audioSessionFlow: MutableStateFlow<Int>,
     private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
@@ -238,7 +239,6 @@ class PlayerViewModel @Inject constructor(
     val previousEnabled = MutableStateFlow(false)
     val repeatMode = MutableStateFlow(0)
     val shuffleMode = MutableStateFlow(false)
-
 
     val shareLink = MutableSharedFlow<String>()
     fun onShare(client: ShareClient, item: EchoMediaItem) {

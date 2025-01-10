@@ -38,3 +38,21 @@ fun toSettings(prefs: SharedPreferences) = object : Settings {
         prefs.edit { putStringSet(key, value) }
     }
 }
+
+@Suppress("UNCHECKED_CAST")
+fun SharedPreferences.copyTo(dest: SharedPreferences) = with(dest.edit()) {
+    all.entries.forEach { entry ->
+        val value = entry.value ?: return@forEach
+        val key = entry.key
+        when (value) {
+            is String -> putString(key, value)
+            is Set<*> -> putStringSet(key, value as Set<String>)
+            is Int -> putInt(key, value)
+            is Long -> putLong(key, value)
+            is Float -> putFloat(key, value)
+            is Boolean -> putBoolean(key, value)
+            else -> {}
+        }
+    }
+    apply()
+}

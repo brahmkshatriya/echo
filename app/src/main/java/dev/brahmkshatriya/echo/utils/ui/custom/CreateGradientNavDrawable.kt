@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.ui.custom
 
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -11,7 +11,7 @@ import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isRTL
 
-fun View.createNavDrawable(
+fun View.createGradientNavDrawable(
     isRail: Boolean,
     bottom: Int = 0,
     full: Boolean = true

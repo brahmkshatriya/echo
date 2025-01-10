@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class ExtensionsListBottomSheet : BottomSheetDialogFragment() {

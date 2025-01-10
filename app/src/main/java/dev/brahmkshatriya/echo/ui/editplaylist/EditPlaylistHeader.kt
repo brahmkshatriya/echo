@@ -8,7 +8,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemEditPlaylistHeaderBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.image.loadInto
 
 class EditPlaylistHeader(
     val playlist: Playlist,

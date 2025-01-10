@@ -9,21 +9,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.edit
-import androidx.core.view.doOnLayout
 import androidx.fragment.app.activityViewModels
 import androidx.media3.common.C
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.color.MaterialColors
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.DialogSleepTimerBinding
-import dev.brahmkshatriya.echo.databinding.ItemRulerBinding
+import dev.brahmkshatriya.echo.utils.ui.custom.RulerAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import java.util.Calendar
@@ -42,30 +37,13 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val last = viewModel.settings.getInt("sleep_timer", 5)
-        binding.sleepTimerRecycler.apply {
-            val adapter = Adapter()
-            val snapHelper = PagerSnapHelper()
-            val layoutManager = layoutManager as LinearLayoutManager
-            this.adapter = adapter
-            snapHelper.attachToRecyclerView(this)
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    post { selectMiddleItem() }
-                }
-            })
-            doOnLayout {
-                val itemWidth = 24.dpToPx(requireContext())
-                val padding = (width - itemWidth) / 2
-                adapter.padding = padding / itemWidth
-                adapter.notifyDataSetChanged()
-                post {
-                    layoutManager.scrollToPositionWithOffset(
-                        adapter.getPositionFromTime(last), padding
-                    )
-                    post { selectMiddleItem() }
-                }
-            }
+        RulerAdapter(
+            binding.sleepTimerRecycler, timeRangeWithIntervals, last, { it.toString() }
+        ) {
+            rulerTime = it
+            binding.sleepTimerValue.text = requireContext().createString(it * 60L * 1000)
         }
+        PagerSnapHelper().attachToRecyclerView(binding.sleepTimerRecycler)
 
         binding.okay.setOnClickListener { saveAndDismiss(rulerTime) }
         binding.endOfTrack.setOnClickListener { setTimerAndDismiss(Long.MAX_VALUE) }
@@ -132,42 +110,17 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
     }
 
     private var rulerTime = 5
-    private fun selectMiddleItem() = binding.sleepTimerRecycler.run {
-        val screenWidth = resources.displayMetrics.widthPixels
-        val layoutManager = layoutManager as LinearLayoutManager
-        val adapter = adapter as Adapter
-
-        fun selected(vh: Adapter.ViewHolder, pos: Int) {
-            adapter.selectItem(vh)
-            rulerTime = vh.time(pos)
-            binding.sleepTimerValue.text = context.createString(rulerTime * 60L * 1000)
-        }
-
-        val firstVisibleIndex = layoutManager.findFirstVisibleItemPosition()
-        val lastVisibleIndex = layoutManager.findLastVisibleItemPosition()
-        val visibleIndexes = firstVisibleIndex..lastVisibleIndex
-
-        visibleIndexes.forEach {
-            val vh = findViewHolderForLayoutPosition(it) ?: return@forEach
-            val location = IntArray(2)
-            vh.itemView.getLocationOnScreen(location)
-            val x = location[0]
-            val halfWidth = vh.itemView.width * .5
-            val rightSide = x + halfWidth
-            val leftSide = x - halfWidth
-            val isInMiddle = screenWidth * .5 in leftSide..rightSide
-            if (isInMiddle) {
-                selected(vh as Adapter.ViewHolder, it)
-                return
-            }
-        }
-    }
 
     companion object {
-        const val MAX = 360
-        const val MIN = 5
-        const val STEPS = 5
-        const val INTERVAL = 15
+        private const val MAX = 360
+        private const val MIN = 5
+        private const val STEPS = 5
+        private const val INTERVAL = 15
+
+        val timeRangeWithIntervals = 0.rangeTo((MAX - MIN) / STEPS).map {
+            val value = MIN + it * STEPS
+            value to (value == MIN || value % INTERVAL == 0)
+        }
 
         private fun Context.createString(ms: Long): String {
             val minutes = ms / 1000 / 60
@@ -182,59 +135,5 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
             )
             return str.toString()
         }
-    }
-
-    class Adapter : RecyclerView.Adapter<Adapter.ViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val inflater = LayoutInflater.from(parent.context)
-            val binding = ItemRulerBinding.inflate(inflater, parent, false)
-            return ViewHolder(binding)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.bind()
-        }
-
-        var padding = 0
-        override fun getItemCount() = (MAX - MIN) / STEPS + (padding + 1) * 2 + 1
-        fun getPositionFromTime(time: Int) = (time - MIN) / STEPS + padding + 1
-
-        inner class ViewHolder(val binding: ItemRulerBinding) :
-            RecyclerView.ViewHolder(binding.root) {
-
-            fun time(pos: Int) = MIN + (pos - padding - 1) * STEPS
-            fun bind() {
-                val time = time(bindingAdapterPosition)
-                binding.root.visibility =
-                    if (time < MIN || time > MAX) View.INVISIBLE else View.VISIBLE
-                val shouldShowValue = time == MIN || time % INTERVAL == 0
-                binding.rulerText.text = if (shouldShowValue) time.toString() else ""
-            }
-
-            private val selectedColor = MaterialColors.getColor(
-                itemView, com.google.android.material.R.attr.colorPrimary, 0
-            )
-
-            private val unselectedColor = MaterialColors.getColor(
-                itemView, com.google.android.material.R.attr.colorOnSurface, 0
-            )
-
-            fun select() {
-                binding.rulerCard.setCardBackgroundColor(selectedColor)
-            }
-
-            fun unselect() {
-                binding.rulerCard.setCardBackgroundColor(unselectedColor)
-            }
-        }
-
-        private var selectedVh: ViewHolder? = null
-        fun selectItem(vh: ViewHolder) {
-            selectedVh?.unselect()
-            vh.select()
-            selectedVh = vh
-        }
-
-
     }
 }

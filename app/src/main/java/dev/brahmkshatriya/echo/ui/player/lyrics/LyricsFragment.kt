@@ -28,7 +28,7 @@ import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel

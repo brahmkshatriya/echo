@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel
 

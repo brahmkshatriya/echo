@@ -18,8 +18,8 @@ import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets

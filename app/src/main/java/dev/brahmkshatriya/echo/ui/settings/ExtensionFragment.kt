@@ -41,7 +41,6 @@ class ExtensionFragment : BaseSettingsFragment() {
     private val id by lazy { args.getString("id")!! }
     private val type by lazy { args.getString("type")!! }
     override val title get() = getString(R.string.name_settings, name)
-    override val transitionName get() = id
     override val creator = { ExtensionPreference.newInstance(id, type) }
 
     companion object {

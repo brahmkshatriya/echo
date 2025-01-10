@@ -24,12 +24,12 @@ import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.openExtensionIn
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.common.openItemFragmentFromUri
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
-import dev.brahmkshatriya.echo.utils.animateTranslation
 import dev.brahmkshatriya.echo.utils.checkAudioPermissions
-import dev.brahmkshatriya.echo.utils.createNavDrawable
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.listenFuture
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.ui.animateTranslation
+import dev.brahmkshatriya.echo.utils.ui.custom.createGradientNavDrawable
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel.Companion.connectPlayerToUI
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
             uiViewModel.setSystemInsets(this, insets)
             val navBarSize = uiViewModel.systemInsets.value.bottom
             val full = playerViewModel.settings.getBoolean(NAVBAR_GRADIENT, true)
-            navView.createNavDrawable(isRail, navBarSize, !full)
+            navView.createGradientNavDrawable(isRail, navBarSize, !full)
             insets
         }
 

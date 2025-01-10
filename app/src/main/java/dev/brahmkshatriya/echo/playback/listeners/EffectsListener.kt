@@ -1,0 +1,128 @@
+package dev.brahmkshatriya.echo.playback.listeners
+
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.media.audiofx.Equalizer
+import android.media.audiofx.LoudnessEnhancer
+import androidx.annotation.OptIn
+import androidx.core.content.edit
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import dev.brahmkshatriya.echo.utils.copyTo
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.math.pow
+import kotlin.math.roundToInt
+
+@OptIn(UnstableApi::class)
+class EffectsListener(
+    private val exoPlayer: ExoPlayer,
+    private val context: Context,
+    private val audioSessionFlow: MutableStateFlow<Int>
+) : Player.Listener {
+
+    init {
+        audioSessionFlow.value = exoPlayer.audioSessionId
+    }
+
+    private val settings: SharedPreferences = context.globalFx()
+    private var oldSettings = settings
+    private fun applyCustomEffects() {
+        oldSettings.unregisterOnSharedPreferenceChangeListener(listener)
+        val settings = context.getFxPrefs(exoPlayer.currentMediaItem?.mediaId)
+        oldSettings = settings
+        oldSettings.registerOnSharedPreferenceChangeListener(listener)
+        applyPlayback(settings)
+        effects.applySettings(settings)
+    }
+
+    private fun createEffects() = Effects(exoPlayer.audioSessionId)
+
+    private fun applyPlayback(settings: SharedPreferences) {
+        val index = settings.getInt(PLAYBACK_SPEED, speedRange.indexOf(1f))
+        val speed = speedRange.getOrNull(index) ?: 1f
+        val pitch = if (settings.getBoolean(CHANGE_PITCH, true)) speed else 1f
+        exoPlayer.playbackParameters =
+            PlaybackParameters(speed, pitch)
+    }
+
+    private var effects: Effects = createEffects()
+    private val listener = OnSharedPreferenceChangeListener { _, _ -> applyCustomEffects() }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = applyCustomEffects()
+    override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        audioSessionFlow.value = audioSessionId
+        effects.release()
+        effects = createEffects()
+        effects.applySettings(oldSettings)
+    }
+
+    class Effects(sessionId: Int) {
+        private val equalizer = Equalizer(0, sessionId)
+        private val gain = LoudnessEnhancer(sessionId)
+        private fun applyBassBoost(strength: Int) {
+            if (strength == 0) {
+                equalizer.setEnabled(false)
+                gain.setEnabled(false)
+                return
+            }
+            gain.setEnabled(true)
+            equalizer.setEnabled(true)
+            equalizer.apply {
+                val value =
+                    ((strength) * bandLevelRange.last().toDouble() / 10).roundToInt().toShort()
+                val zero = numberOfBands.toDouble() * 2 / 3
+                (0 until numberOfBands).forEach {
+                    val v = ((-(it - zero).pow(3) * value) / zero.pow(3)).roundToInt()
+                    setBandLevel(it.toShort(), v.toShort())
+                }
+            }
+            val g = (strength.toDouble().pow(1.toDouble() / 3) * 1600).roundToInt()
+            gain.setTargetGain(g)
+        }
+
+        fun release() {
+            equalizer.release()
+            gain.release()
+        }
+
+        fun applySettings(settings: SharedPreferences) {
+            applyBassBoost(settings.getInt(BASS_BOOST, 0))
+        }
+    }
+
+    companion object {
+        private const val GLOBAL_FX = "global_fx"
+        const val SKIP_SILENCE = "skip_silence"
+        const val BASS_BOOST = "bass_boost"
+        const val PLAYBACK_SPEED = "playback_speed"
+        val speedRange = listOf(
+            0.1f, 0.175f, 0.25f, 0.33f, 0.5f, 0.66f, 0.75f, 0.85f, 0.9f, 0.95f,
+            1f, 1.05f, 1.1f, 1.15f, 1.25f, 1.33f, 1.5f, 1.66f, 1.75f, 1.88f, 2f,
+            2.33f, 2.5f, 3f, 4f, 8f, 16f, 32f, 64f
+        )
+
+        const val CHANGE_PITCH = "change_pitch"
+        const val CUSTOM_EFFECTS = "custom_effects"
+
+        fun Context.globalFx() = getSharedPreferences(GLOBAL_FX, Context.MODE_PRIVATE)!!
+        fun Context.deleteGlobalFx() = deleteSharedPreferences(GLOBAL_FX)
+        fun Context.getFxPrefs(id: String? = null): SharedPreferences {
+            val settings = globalFx()
+            if (id == null) return settings
+            val hasCustom = settings.getStringSet(CUSTOM_EFFECTS, emptySet())?.contains(id) ?: false
+            return if (!hasCustom) settings
+            else getSharedPreferences("fx_$id", Context.MODE_PRIVATE)!!.apply {
+                if (getBoolean("init", false)) return@apply
+                settings.copyTo(this)
+                edit { putBoolean("init", true) }
+            }
+        }
+
+        fun Context.deleteFxPrefs(id: String) =
+            deleteSharedPreferences("fx_$id")
+    }
+}

@@ -35,8 +35,8 @@ import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
-import dev.brahmkshatriya.echo.utils.SafeFlexboxLayoutManager
-import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.SafeFlexboxLayoutManager
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.lang.ref.WeakReference

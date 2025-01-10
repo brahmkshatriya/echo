@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.ui
 
 import android.view.View
 import androidx.viewpager2.widget.ViewPager2

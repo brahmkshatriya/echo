@@ -20,7 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPS
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
-import dev.brahmkshatriya.echo.utils.animateVisibility
+import dev.brahmkshatriya.echo.utils.ui.animateVisibility
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe

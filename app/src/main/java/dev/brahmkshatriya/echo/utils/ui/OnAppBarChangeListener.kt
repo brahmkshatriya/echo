@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.ui
 
 import com.google.android.material.appbar.AppBarLayout
 

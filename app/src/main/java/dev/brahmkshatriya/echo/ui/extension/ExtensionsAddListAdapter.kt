@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.databinding.ItemExtensionAddBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddFooterBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddHeaderBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionAssetResponse
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 
 class ExtensionsAddListAdapter(
     val map: List<Item>,

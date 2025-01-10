@@ -23,8 +23,8 @@ import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback

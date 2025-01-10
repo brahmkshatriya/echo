@@ -1,10 +1,11 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.ui
 
 import android.view.View
 import android.view.animation.Interpolator
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.recyclerview.widget.RecyclerView
+import me.zhanghai.android.fastscroll.FastScrollNestedScrollView
 import me.zhanghai.android.fastscroll.FastScroller.AnimationHelper
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import kotlin.math.max
@@ -72,11 +73,14 @@ class FastScrollerHelper(private val mView: View) : AnimationHelper {
         private val HIDE_SCROLLBAR_INTERPOLATOR: Interpolator = FastOutLinearInInterpolator()
         private const val AUTO_HIDE_SCROLLBAR_DELAY_MILLIS = 500
 
-
         fun applyTo(view: RecyclerView) = FastScrollerBuilder(view).apply {
             useMd2Style()
             setAnimationHelper(FastScrollerHelper(view))
         }.build()
 
+        fun applyTo(view: FastScrollNestedScrollView) = FastScrollerBuilder(view).apply {
+            useMd2Style()
+            setAnimationHelper(FastScrollerHelper(view))
+        }.build()
     }
 }

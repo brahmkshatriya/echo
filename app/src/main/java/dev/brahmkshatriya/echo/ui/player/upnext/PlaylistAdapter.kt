@@ -15,8 +15,8 @@ import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemQueueBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.toTimeString
+import dev.brahmkshatriya.echo.utils.image.loadInto
+import dev.brahmkshatriya.echo.utils.ui.toTimeString
 
 class PlaylistAdapter(
     private val listener: Listener,

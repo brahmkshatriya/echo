@@ -8,7 +8,7 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.utils.loadInto
+import dev.brahmkshatriya.echo.utils.image.loadInto
 
 sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     abstract fun bind(item: QuickSearchItem)

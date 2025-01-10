@@ -12,8 +12,8 @@ import dev.brahmkshatriya.echo.databinding.ItemTrackBinding
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
-import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.toTimeString
+import dev.brahmkshatriya.echo.utils.image.loadInto
+import dev.brahmkshatriya.echo.utils.ui.toTimeString
 
 class TrackViewHolder(
     private val listener: TrackAdapter.Listener,

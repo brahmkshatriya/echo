@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.image
 
 import android.graphics.Bitmap
 import coil3.size.Size

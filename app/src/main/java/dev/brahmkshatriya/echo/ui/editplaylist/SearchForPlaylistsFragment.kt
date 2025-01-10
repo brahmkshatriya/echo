@@ -16,21 +16,20 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistSearchBinding
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
 import dev.brahmkshatriya.echo.ui.search.SearchFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 
 @AndroidEntryPoint
-class SearchForPlaylistFragment : Fragment() {
+class SearchForPlaylistsFragment : Fragment() {
     private var binding by autoCleared<FragmentPlaylistSearchBinding>()
     private val viewModel by activityViewModels<SearchForPlaylistViewModel>()
 
@@ -121,7 +120,7 @@ class SearchForPlaylistFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(clientId: String, playlist: Playlist) = SearchForPlaylistFragment().apply {
+        fun newInstance(clientId: String) = SearchForPlaylistsFragment().apply {
             arguments = Bundle().apply {
                 putString("clientId", clientId)
             }

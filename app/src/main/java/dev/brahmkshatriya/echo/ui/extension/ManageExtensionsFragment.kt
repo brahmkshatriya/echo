@@ -15,12 +15,12 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.utils.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.configure
+import dev.brahmkshatriya.echo.utils.ui.configure
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets

@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.utils.image
 
 import android.content.Context
 import android.graphics.Bitmap

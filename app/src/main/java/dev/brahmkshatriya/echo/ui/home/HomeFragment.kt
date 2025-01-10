@@ -17,8 +17,8 @@ import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsetsMain
 

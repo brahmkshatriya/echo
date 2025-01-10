@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 
 class
 ExtensionAdapter(

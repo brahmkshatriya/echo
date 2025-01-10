@@ -98,6 +98,6 @@ class MaterialSliderPreference(
         val value = context.getString(R.string.value)
         val entry = getPersistedInt(defaultValue ?: 0)
         val sum = customSummary?.let { "\n\n$it" } ?: ""
-        summary = "$value : $entry$sum"
+        summary = "$value : $entry$sum".trimIndent()
     }
 }

@@ -10,11 +10,11 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentCategoryBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
-import dev.brahmkshatriya.echo.utils.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets

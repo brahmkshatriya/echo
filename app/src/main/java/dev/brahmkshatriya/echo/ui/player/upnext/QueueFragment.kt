@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentPlaylistBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel

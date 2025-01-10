@@ -8,10 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
-import dev.brahmkshatriya.echo.utils.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
@@ -19,7 +19,6 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 abstract class BaseSettingsFragment : Fragment() {
 
     abstract val title: String?
-    abstract val transitionName: String?
     abstract val creator: () -> PreferenceFragmentCompat
 
     private var binding: FragmentSettingsContainerBinding by autoCleared()

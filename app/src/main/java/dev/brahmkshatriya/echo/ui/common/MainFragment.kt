@@ -16,10 +16,10 @@ import dev.brahmkshatriya.echo.databinding.FragmentMainBinding
 import dev.brahmkshatriya.echo.ui.home.HomeFragment
 import dev.brahmkshatriya.echo.ui.library.LibraryFragment
 import dev.brahmkshatriya.echo.ui.search.SearchFragment
-import dev.brahmkshatriya.echo.utils.SlideInPageTransformer
+import dev.brahmkshatriya.echo.utils.ui.SlideInPageTransformer
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 @AndroidEntryPoint

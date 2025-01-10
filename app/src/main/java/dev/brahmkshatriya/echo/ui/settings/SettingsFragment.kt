@@ -6,15 +6,14 @@ import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceViewHolder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.extension.ManageExtensionsFragment
+import dev.brahmkshatriya.echo.utils.prefs.TransitionPreference
 
 
 class SettingsFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.settings)
-    override val transitionName = "settings"
     override val creator = { SettingsPreference() }
 
     class SettingsPreference : PreferenceFragmentCompat() {
@@ -57,16 +56,6 @@ class SettingsFragment : BaseSettingsFragment() {
                 key = "about"
                 summary = getString(R.string.about_summary)
                 icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
-            }
-        }
-
-        class TransitionPreference(
-            context: Context
-        ) : Preference(context) {
-            override fun onBindViewHolder(holder: PreferenceViewHolder) {
-                super.onBindViewHolder(holder)
-                holder.itemView.id = key.hashCode()
-                holder.itemView.transitionName = key
             }
         }
 

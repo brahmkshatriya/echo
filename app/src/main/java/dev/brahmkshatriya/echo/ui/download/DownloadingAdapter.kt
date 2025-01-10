@@ -16,8 +16,8 @@ import dev.brahmkshatriya.echo.databinding.ItemDownloadBinding
 import dev.brahmkshatriya.echo.databinding.ItemDownloadGroupBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
-import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadInto
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 
 class DownloadingAdapter(
     val listener: Listener

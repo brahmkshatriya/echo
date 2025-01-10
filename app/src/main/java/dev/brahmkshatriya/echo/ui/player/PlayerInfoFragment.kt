@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
 import dev.brahmkshatriya.echo.ui.player.info.TrackDetailsFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsFragment
 import dev.brahmkshatriya.echo.ui.player.upnext.QueueFragment
-import dev.brahmkshatriya.echo.utils.SlideInPageTransformer
+import dev.brahmkshatriya.echo.utils.ui.SlideInPageTransformer
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel

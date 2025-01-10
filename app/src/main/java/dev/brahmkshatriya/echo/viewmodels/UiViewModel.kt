@@ -23,8 +23,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
-import dev.brahmkshatriya.echo.utils.animateTranslation
-import dev.brahmkshatriya.echo.utils.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.animateTranslation
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

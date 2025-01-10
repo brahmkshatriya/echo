@@ -25,7 +25,7 @@ import dev.brahmkshatriya.echo.extensions.plugger.ApkPluginSource
 import dev.brahmkshatriya.echo.extensions.plugger.AppInfo
 import dev.brahmkshatriya.echo.utils.ApkLinkParser
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import kotlinx.coroutines.launch
 

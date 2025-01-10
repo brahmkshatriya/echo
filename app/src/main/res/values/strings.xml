@@ -282,6 +282,16 @@
     <string name="sleep_on_specific_time">Sleep on specific time</string>
     <string name="sleep_timer_canceled">Sleep timer cancelled</string>
     <string name="sleep_timer_set_for">Sleep timer set for %1$s</string>
+    <string name="reset">Reset</string>
+    <string name="audio_fx">Audio Effects</string>
+    <string name="audio_fx_desc">Change the audio effects for the current track.</string>
+    <string name="playback_speed">Playback Speed</string>
+    <string name="change_pitch_with_speed">Change pitch with speed</string>
+    <string name="bass_boost">Bass Boost</string>
+    <string name="bass_boost_desc">Larger value may distort the sound.</string>
+    <string name="change_pitch_with_speed_desc">Get that slow-motion sound</string>
+    <string name="audio_fx_summary">Effects applied for all songs</string>
+    <string name="playback">Playback</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

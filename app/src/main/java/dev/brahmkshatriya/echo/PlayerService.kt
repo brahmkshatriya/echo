@@ -23,6 +23,8 @@ import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.PlayerCallback
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
 import dev.brahmkshatriya.echo.playback.listeners.AudioFocusListener
+import dev.brahmkshatriya.echo.playback.listeners.EffectsListener
+import dev.brahmkshatriya.echo.playback.listeners.EffectsListener.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.playback.listeners.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.playback.listeners.TrackingListener
@@ -30,7 +32,6 @@ import dev.brahmkshatriya.echo.playback.loading.StreamableMediaSource
 import dev.brahmkshatriya.echo.playback.render.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.render.RenderersFactory
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
+@OptIn(UnstableApi::class)
 @AndroidEntryPoint
 class PlayerService : MediaLibraryService() {
     private var mediaSession: MediaLibrarySession? = null
@@ -54,6 +56,9 @@ class PlayerService : MediaLibraryService() {
 
     @Inject
     lateinit var stateFlow: MutableStateFlow<Radio.State>
+
+    @Inject
+    lateinit var audioSessionFlow: MutableStateFlow<Int>
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -92,7 +97,6 @@ class PlayerService : MediaLibraryService() {
             .setRenderersFactory(RenderersFactory(this))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
-            .setSkipSilenceEnabled(settings.getBoolean(SKIP_SILENCE, true))
             .setAudioAttributes(audioAttributes, true)
             .build()
             .also {
@@ -102,10 +106,18 @@ class PlayerService : MediaLibraryService() {
                     .build()
 
                 it.preloadConfiguration = ExoPlayer.PreloadConfiguration(0)
+                it.skipSilenceEnabled = settings.getBoolean(SKIP_SILENCE, false)
             }
     }
 
-    @OptIn(UnstableApi::class)
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+        when (key) {
+            SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, false)
+        }
+    }
+
+    private val exoPlayer by lazy { createExoplayer(extensionLoader.extensions) }
+
     override fun onCreate() {
         super.onCreate()
         extensionLoader.initialize()
@@ -114,7 +126,6 @@ class PlayerService : MediaLibraryService() {
         val extFlow = extensionLoader.current
         val trackerList = extensionLoader.trackers
 
-        val exoPlayer = createExoplayer(extListFlow)
         exoPlayer.prepare()
 
 //        val player = ShufflePlayer(exoPlayer)
@@ -152,14 +163,10 @@ class PlayerService : MediaLibraryService() {
         player.addListener(
             TrackingListener(player, scope, extListFlow, trackerList, throwFlow)
         )
-        settings.registerOnSharedPreferenceChangeListener { prefs, key ->
-            when (key) {
-                SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, true)
-            }
-        }
-
-//        val equalizer = Equalizer(1, exoPlayer.audioSessionId)
-
+        player.addListener(
+            EffectsListener(exoPlayer, this, audioSessionFlow)
+        )
+        settings.registerOnSharedPreferenceChangeListener(listener)
         mediaSession = session
     }
 

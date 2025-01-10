@@ -9,7 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.utils.future
-import dev.brahmkshatriya.echo.utils.loadBitmap
+import dev.brahmkshatriya.echo.utils.image.loadBitmap
 import dev.brahmkshatriya.echo.utils.toData
 import kotlinx.coroutines.CoroutineScope
 

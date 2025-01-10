@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel

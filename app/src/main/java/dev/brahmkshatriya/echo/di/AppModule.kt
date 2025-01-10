@@ -76,4 +76,8 @@ class AppModule {
     @Provides
     @Singleton
     fun provideExtensionListFlow() = MutableStateFlow<Radio.State>(Radio.State.Empty)
+
+    @Provides
+    @Singleton
+    fun provideAudioSessionFlow() = MutableStateFlow(0)
 }

@@ -37,15 +37,15 @@ import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.AddToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
+import dev.brahmkshatriya.echo.ui.player.AudioEffectsBottomSheet
 import dev.brahmkshatriya.echo.ui.player.SleepTimerBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
-import dev.brahmkshatriya.echo.utils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 @AndroidEntryPoint
@@ -220,8 +220,8 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             else null
         )
         else listOf(
-            ItemAction.Resource(R.drawable.ic_equalizer, R.string.equalizer) {
-                createSnack("Not implemented")
+            ItemAction.Resource(R.drawable.ic_equalizer, R.string.audio_fx) {
+                AudioEffectsBottomSheet().show(parentFragmentManager, null)
             },
             ItemAction.Resource(R.drawable.ic_snooze, R.string.sleep_timer) {
                 SleepTimerBottomSheet().show(parentFragmentManager, null)

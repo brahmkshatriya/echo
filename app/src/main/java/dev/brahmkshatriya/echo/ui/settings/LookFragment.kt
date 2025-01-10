@@ -16,7 +16,6 @@ import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 
 class LookFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.look_and_feel)
-    override val transitionName = "look"
     override val creator = { LookPreference() }
 
     class LookPreference : PreferenceFragmentCompat() {

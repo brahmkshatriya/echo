@@ -27,11 +27,11 @@ import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
-import dev.brahmkshatriya.echo.utils.PlayerItemSpan
+import dev.brahmkshatriya.echo.utils.ui.PlayerItemSpan
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.loadAsCircle
-import dev.brahmkshatriya.echo.utils.onAppBarChangeListener
-import dev.brahmkshatriya.echo.utils.setupTransition
+import dev.brahmkshatriya.echo.utils.image.loadAsCircle
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.LoginUserViewModel

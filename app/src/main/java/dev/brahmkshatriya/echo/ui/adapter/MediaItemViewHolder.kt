@@ -17,9 +17,9 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
-import dev.brahmkshatriya.echo.utils.animateVisibility
-import dev.brahmkshatriya.echo.utils.loadInto
-import dev.brahmkshatriya.echo.utils.loadWith
+import dev.brahmkshatriya.echo.utils.ui.animateVisibility
+import dev.brahmkshatriya.echo.utils.image.loadInto
+import dev.brahmkshatriya.echo.utils.image.loadWith
 
 sealed class MediaItemViewHolder(
     val listener: ShelfAdapter.Listener,
