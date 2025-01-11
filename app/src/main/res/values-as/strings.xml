@@ -265,4 +265,22 @@
     <string name="explicit">স্পষ্ট</string>
     <string name="show_background">পটভূমি দেখুৱাওক</string>
     <string name="show_background_summary">প্লেয়াৰত ট্ৰেকৰ পটভূমি ভিডিঅ\' বা অস্পষ্ট আৰ্টৱৰ্ক</string>
+    <string name="end_of_track">ট্ৰেকৰ শেষ</string>
+    <string name="_15min">15m</string>
+    <string name="_30min">30m</string>
+    <string name="_45min">45m</string>
+    <string name="_1hr">1h</string>
+    <string name="_2hr">2h</string>
+    <string name="sleep_timer_set_for">%1$s ৰ বাবে টোপনিৰ টাইমাৰ সংহতি কৰা হৈছে</string>
+    <plurals name="number_hour">
+        <item quantity="one">%1$d ঘন্টা</item>
+        <item quantity="other">%1$d ঘন্টা</item>
+    </plurals>
+    <plurals name="number_min">
+        <item quantity="one">%1$d মিনিট</item>
+        <item quantity="other">%1$d মিনিট</item>
+    </plurals>
+    <string name="sleep_on_specific_time">নিৰ্দিষ্ট সময়ত শুব লাগে</string>
+    <string name="sleep_timer_canceled">টোপনিৰ টাইমাৰ বাতিল কৰা হৈছে</string>
+    <string name="sleep_timer_desc">এটা নিৰ্দিষ্ট সময়ৰ পিছত প্লেবেক বন্ধ কৰিবলৈ এটা স্লিপ টাইমাৰ ছেট কৰক</string>
 </resources>
