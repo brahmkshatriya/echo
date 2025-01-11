@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -16,6 +17,8 @@ import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.image.loadInto
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
+import kotlin.math.roundToInt
 
 class GridViewHolder(
     val listener: ShelfAdapter.Listener,
@@ -94,6 +97,14 @@ class GridViewHolder(
         fun <T> Shelf.Lists<*>.ifGrid(block: (Shelf.Lists<*>) -> T): T? {
             return if (type == Shelf.Lists.Type.Grid) block(this)
             else null
+        }
+
+        fun View.gridItemSpanCount(horizontalPadding: Int = 16 * 2): Int {
+            val itemWidth = 176.dpToPx(context)
+            val screenWidth = resources.displayMetrics.widthPixels
+            val newWidth = screenWidth - horizontalPadding.dpToPx(context)
+            val count = (newWidth.toFloat() / itemWidth).roundToInt()
+            return count
         }
     }
 }

@@ -50,7 +50,7 @@ class MediaItemSelectableAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Pair<EchoMediaItem, Boolean>) {
             val mediaItem = item.first
-            val isPlaying = binding.cover.bind(mediaItem)
+            val isPlaying = binding.cover.bind(mediaItem as EchoMediaItem.Lists)
             isPlaying.isVisible = false
             binding.title.text = mediaItem.title
             binding.selected.isVisible = item.second
@@ -69,7 +69,7 @@ class MediaItemSelectableAdapter(
     }
 
     companion object {
-        fun View.mediaItemSpanCount(horizontalPadding: Int = 24 * 2, block: (count: Int) -> Unit) =
+        fun View.mediaItemSpanCount(horizontalPadding: Int = 8 * 2, block: (count: Int) -> Unit) =
             doOnLayout {
                 val typed = context.theme.obtainStyledAttributes(intArrayOf(R.attr.itemCoverSize))
                 val itemWidth = typed.getDimensionPixelSize(typed.getIndex(0), 0)

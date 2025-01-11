@@ -48,13 +48,21 @@
         <item name="titleTextColor">?colorOnSurface</item>
     </style>
 
-    <style name="EchoDialog" parent="Theme.MaterialComponents.Dialog.MinWidth">
-        <item name="android:dialogTheme">@style/EchoDialog</item>
+    <style name="EchoDialog" parent="ThemeOverlay.Material3.Dialog.Alert">
         <item name="android:windowBackground">@drawable/dialog_bg</item>
     </style>
-
+    <style name="EchoAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/EchoDialogStyle</item>
+    </style>
+    <style name="EchoDialogStyle" parent="MaterialAlertDialog.Material3">
+        <item name="backgroundTint">?navBackground</item>
+    </style>
     <style name="EchoBottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/EchoBottomSheetStyle</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+    <style name="EchoBottomSheetStyle" parent="Widget.Material3.BottomSheet">
+        <item name="backgroundTint">?navBackground</item>
     </style>
 
     <style name="TopCollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
@@ -220,4 +228,5 @@
         <item name="android:padding">0dp</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
+
 </resources>

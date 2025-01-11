@@ -73,7 +73,9 @@
         android:layout_height="wrap_content"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_track" />
+        app:spanCount="5"
+        android:paddingHorizontal="16dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        tools:listitem="@layout/item_shelf_media_grid" />
 
 </LinearLayout>

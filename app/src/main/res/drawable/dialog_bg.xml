@@ -4,6 +4,6 @@
     android:insetRight="16dp">
     <shape android:shape="rectangle">
         <corners android:radius="24dp" />
-        <solid android:color="?attr/colorSurface" />
+        <solid android:color="?navBackground" />
     </shape>
 </inset>

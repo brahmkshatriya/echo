@@ -12,6 +12,8 @@
 
 
     <FrameLayout
+        android:paddingTop="8dp"
+        android:clipToPadding="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
@@ -37,7 +39,7 @@
 
         <include
             android:id="@+id/cover"
-            layout="@layout/item_track_cover" />
+            layout="@layout/item_lists_cover" />
     </FrameLayout>
 
     <TextView

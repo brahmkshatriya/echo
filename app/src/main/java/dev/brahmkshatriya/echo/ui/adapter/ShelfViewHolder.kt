@@ -9,9 +9,9 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.flexbox.JustifyContent.SPACE_BETWEEN
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
@@ -29,13 +29,13 @@ import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaListsBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.ui.adapter.GridViewHolder.Companion.gridItemSpanCount
 import dev.brahmkshatriya.echo.ui.adapter.GridViewHolder.Companion.ifGrid
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
-import dev.brahmkshatriya.echo.utils.ui.SafeFlexboxLayoutManager
 import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,15 +77,13 @@ sealed class ShelfViewHolder(
             val position = bindingAdapterPosition
             val context = binding.root.context
             val (layoutManager, padding) = item.ifGrid {
-                SafeFlexboxLayoutManager(context).apply {
-                    justifyContent = SPACE_BETWEEN
-                } to 16.dpToPx(context)
+                val count = binding.recyclerView.gridItemSpanCount()
+                GridLayoutManager(context, count) to 16.dpToPx(context)
             } ?: item.ifShowingButton {
                 LinearLayoutManager(context, RecyclerView.VERTICAL, false) to 0
-            } ?: (LinearLayoutManager(
-                context, RecyclerView.HORIZONTAL, false
-            ) to 16.dpToPx(context))
-
+            } ?: run {
+                LinearLayoutManager(context, RecyclerView.HORIZONTAL, false) to 16.dpToPx(context)
+            }
             binding.recyclerView.updatePaddingRelative(start = padding, end = padding)
             layoutManager.apply {
                 val state: Parcelable? = viewModel.layoutManagerStates[position]
@@ -95,10 +93,10 @@ sealed class ShelfViewHolder(
             viewModel.visibleScrollableViews[position] = WeakReference(this)
 
             val transition = transitionView.transitionName + item.id
-            binding.recyclerView.adapter = adapter
-            binding.recyclerView.layoutManager = layoutManager
             adapter.shelf = item
             adapter.transition = transition
+            binding.recyclerView.adapter = adapter
+            binding.recyclerView.layoutManager = layoutManager
         }
 
         val adapter = ShelfListItemViewAdapter(clientId, listener)

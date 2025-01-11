@@ -97,7 +97,7 @@ class SearchForPlaylistsFragment : Fragment() {
         }
 
         binding.recyclerView.adapter = adapter
-        binding.recyclerView.mediaItemSpanCount {
+        binding.recyclerView.mediaItemSpanCount(0) {
             (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = it
         }
 
