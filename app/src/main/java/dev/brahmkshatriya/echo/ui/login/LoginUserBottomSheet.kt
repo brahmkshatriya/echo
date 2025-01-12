@@ -86,7 +86,7 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
                 }
 
                 binding.currentUserName.text = user?.name
-                binding.currentUserSubTitle.text = user?.subtitle
+                binding.currentUserSubTitle.text = user?.subtitle ?: metadata?.name
                 user?.cover.loadInto(binding.currentUserAvatar, R.drawable.ic_account_circle)
             }
         }

@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.ui.download.DownloadItem
 import dev.brahmkshatriya.echo.ui.download.DownloadItem.Companion.toItem
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import dev.brahmkshatriya.echo.ui.paging.toFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -39,7 +40,7 @@ class DownloadViewModel @Inject constructor(
     private val downloader = Downloader(extensionListFlow, throwableFlow, database)
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             downloader.dao.getDownloadsFlow().collect { list ->
                 downloadEntities.value = list
                 applyDownloadItems()

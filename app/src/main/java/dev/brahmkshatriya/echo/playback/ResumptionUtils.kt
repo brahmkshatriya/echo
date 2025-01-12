@@ -17,6 +17,13 @@ import dev.brahmkshatriya.echo.utils.saveToCache
 
 object ResumptionUtils {
 
+    private const val FOLDER = "queue"
+    private const val TRACKS = "queue_tracks"
+    private const val CONTEXTS = "queue_contexts"
+    private const val EXTENSIONS = "queue_extensions"
+    private const val INDEX = "queue_index"
+    private const val POSITION = "position"
+
     private fun Player.mediaItems() = (0 until mediaItemCount).map { getMediaItemAt(it) }
     fun saveQueue(context: Context, player: Player) = runCatching {
         val list = player.mediaItems()
@@ -24,21 +31,21 @@ object ResumptionUtils {
         val tracks = list.map { it.track }
         val extensionIds = list.map { it.extensionId }
         val contexts = list.map { it.context }
-        context.saveToCache("queue_tracks", tracks, "queue")
-        context.saveToCache("queue_contexts", contexts, "queue")
-        context.saveToCache("queue_extensions", extensionIds, "queue")
-        context.saveToCache("queue_index", currentIndex, "queue")
+        context.saveToCache(TRACKS, tracks, FOLDER)
+        context.saveToCache(CONTEXTS, contexts, FOLDER)
+        context.saveToCache(EXTENSIONS, extensionIds, FOLDER)
+        context.saveToCache(INDEX, currentIndex, FOLDER)
     }
 
     fun saveCurrentPos(context: Context, position: Long) {
-        context.saveToCache("position", position, "queue")
+        context.saveToCache("position", position, FOLDER)
     }
 
-    private fun recoverQueue(context: Context): List<MediaItem>? {
-        val settings = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val tracks = context.getFromCache<List<Track>>("queue_tracks", "queue")
-        val extensionIds = context.getFromCache<List<String>>("queue_extensions", "queue")
-        val contexts = context.getFromCache<List<EchoMediaItem>>("queue_contexts", "queue")
+    private fun Context.recoverQueue(): List<MediaItem>? {
+        val settings = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val tracks = getFromCache<List<Track>>(TRACKS, FOLDER)
+        val extensionIds = getFromCache<List<String>>(EXTENSIONS, FOLDER)
+        val contexts = getFromCache<List<EchoMediaItem>>(CONTEXTS, FOLDER)
         return tracks?.mapIndexedNotNull { index, track ->
             val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
@@ -46,17 +53,14 @@ object ResumptionUtils {
         } ?: return null
     }
 
-    private fun recoverIndex(context: Context) =
-        context.getFromCache<Int>("queue_index", "queue")
-
-    private fun recoverPosition(context: Context) =
-        context.getFromCache<Long>("position", "queue")
+    private fun Context.recoverIndex() = getFromCache<Int>(INDEX, FOLDER)
+    private fun Context.recoverPosition() = getFromCache<Long>(POSITION, FOLDER)
 
     @OptIn(UnstableApi::class)
     fun recoverPlaylist(context: Context): MediaSession.MediaItemsWithStartPosition {
-        val items = recoverQueue(context) ?: emptyList()
-        val index = recoverIndex(context) ?: C.INDEX_UNSET
-        val position = recoverPosition(context) ?: 0L
+        val items = context.recoverQueue() ?: emptyList()
+        val index = context.recoverIndex() ?: C.INDEX_UNSET
+        val position = context.recoverPosition() ?: 0L
         return MediaSession.MediaItemsWithStartPosition(items, index, position)
     }
 

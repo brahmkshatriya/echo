@@ -168,7 +168,12 @@ class PlayerTrackAdapter(
 
             val listener = object : Listener {
                 override fun onPlayPause(play: Boolean) {
-                    playerViewModel.withBrowser { it.playWhenReady = play }
+                    playerViewModel.withBrowser {
+                        if (play) {
+                            it.prepare()
+                            it.play()
+                        } else it.pause()
+                    }
                 }
 
                 override fun onRepeat(mode: Int) {
@@ -184,11 +189,17 @@ class PlayerTrackAdapter(
                 }
 
                 override fun onNext() {
-                    playerViewModel.withBrowser { it.seekToNext() }
+                    playerViewModel.withBrowser {
+                        it.prepare()
+                        it.seekToNext()
+                    }
                 }
 
                 override fun onPrevious() {
-                    playerViewModel.withBrowser { it.seekToPrevious() }
+                    playerViewModel.withBrowser {
+                        it.prepare()
+                        it.seekToPrevious()
+                    }
                 }
 
                 override fun onItemLiked(mediaItem: MediaItem, liked: Boolean) {

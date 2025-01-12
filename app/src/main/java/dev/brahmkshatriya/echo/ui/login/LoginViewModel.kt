@@ -10,11 +10,9 @@ import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toEntity
-import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
@@ -22,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,10 +49,6 @@ class LoginViewModel @Inject constructor(
         userDao.setUsers(entities)
         val user = entities.first()
         userDao.setCurrentUser(user.toCurrentUser())
-
-        if (extension.type != ExtensionType.MUSIC) withContext(Dispatchers.IO) {
-            extension.get<LoginClient, Unit>(throwableFlow) { onSetLoginUser(user.toUser()) }
-        }
         loadingOver.emit(Unit)
     }
 

@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.ui.player
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
@@ -9,6 +8,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -29,6 +30,7 @@ import dev.brahmkshatriya.echo.playback.listeners.EffectsListener.Companion.glob
 import dev.brahmkshatriya.echo.playback.listeners.EffectsListener.Companion.speedRange
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.registerActivityResultLauncher
 import dev.brahmkshatriya.echo.utils.ui.custom.RulerAdapter
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import kotlinx.coroutines.launch
@@ -111,13 +113,16 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
             equalizer.setOnClickListener { onEqualizerClicked() }
         }
 
-        private fun openEqualizer(activity: Activity, sessionId: Int) {
+        private fun openEqualizer(activity: ComponentActivity, sessionId: Int) {
             val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, activity.packageName)
                 putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
                 putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
             }
-            activity.startActivityForResult(intent, 0)
+            val contract = ActivityResultContracts.StartActivityForResult()
+            activity.registerActivityResultLauncher(contract) {
+                println("Result: $it")
+            }.launch(intent)
         }
 
         fun Fragment.onEqualizerClicked() {

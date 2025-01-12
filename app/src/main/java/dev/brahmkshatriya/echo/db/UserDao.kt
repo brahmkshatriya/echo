@@ -12,40 +12,29 @@ import kotlinx.coroutines.flow.Flow
 interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun setCurrentUser(currentUser: CurrentUser)
+    suspend fun setCurrentUser(currentUser: CurrentUser)
 
-    @Query("DELETE FROM CurrentUser WHERE clientId = :clientId")
-    fun deleteCurrentUser(clientId: String)
+    @Query("SELECT * FROM CurrentUser")
+    fun observeCurrentUser(): Flow<List<CurrentUser>>
 
-    @Query("""
-        SELECT UserEntity.* FROM UserEntity
-        INNER JOIN CurrentUser 
-        ON UserEntity.id = CurrentUser.id
-        AND UserEntity.clientId = CurrentUser.clientId
-    """)
-    fun observeCurrentUser() : Flow<List<UserEntity>>
-
-    @Query("""
+    @Query(
+        """
         SELECT UserEntity.* FROM UserEntity
         INNER JOIN CurrentUser 
         ON UserEntity.id = CurrentUser.id
         AND UserEntity.clientId = CurrentUser.clientId
         WHERE CurrentUser.clientId = :clientId
-    """)
-    fun getCurrentUser(clientId: String): UserEntity?
+    """
+    )
+    suspend fun getCurrentUser(clientId: String?): UserEntity?
 
     @Query("SELECT * FROM UserEntity WHERE clientId = :clientId")
-    fun getAllUsers(clientId: String): List<UserEntity>
-
-    @Query("SELECT * FROM UserEntity WHERE id = :userId AND clientId = :clientId")
-    fun getUser(clientId: String?, userId: String?) : UserEntity?
+    suspend fun getAllUsers(clientId: String): List<UserEntity>
 
     @Query("DELETE FROM UserEntity WHERE id = :userId AND clientId = :clientId")
-    fun deleteUser(userId: String, clientId: String)
-
-    @Query("DELETE FROM UserEntity WHERE clientId = :clientId")
-    fun deleteAllUsers(clientId: String)
+    suspend fun deleteUser(userId: String, clientId: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun setUsers(users: List<UserEntity>)
+    suspend fun setUsers(users: List<UserEntity>)
+
 }

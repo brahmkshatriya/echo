@@ -77,7 +77,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     }
 
     override suspend fun onSetLoginUser(user: User?) {
-        println("onSetLoginUser: $user")
+        println("setLoginUser: $user")
     }
 
     override suspend fun getCurrentUser(): User? = null

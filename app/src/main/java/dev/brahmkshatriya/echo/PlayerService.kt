@@ -117,7 +117,7 @@ class PlayerService : MediaLibraryService() {
     }
 
     private val exoPlayer by lazy { createExoplayer(extensionLoader.extensions) }
-
+    private val effects by lazy { EffectsListener(exoPlayer, this, audioSessionFlow) }
     override fun onCreate() {
         super.onCreate()
         extensionLoader.initialize()
@@ -163,9 +163,7 @@ class PlayerService : MediaLibraryService() {
         player.addListener(
             TrackingListener(player, scope, extListFlow, trackerList, throwFlow)
         )
-        player.addListener(
-            EffectsListener(exoPlayer, this, audioSessionFlow)
-        )
+        player.addListener(effects)
         settings.registerOnSharedPreferenceChangeListener(listener)
         mediaSession = session
     }
@@ -173,6 +171,7 @@ class PlayerService : MediaLibraryService() {
     override fun onDestroy() {
         mediaSession?.run {
             ResumptionUtils.saveQueue(this@PlayerService, player)
+            effects.release()
             player.release()
             release()
             mediaSession = null
@@ -181,7 +180,7 @@ class PlayerService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        val stopPlayer = settings.getBoolean(CLOSE_PLAYER, true)
+        val stopPlayer = settings.getBoolean(CLOSE_PLAYER, false)
         val player = mediaSession?.player ?: return stopSelf()
         if (stopPlayer || !player.isPlaying) stopSelf()
     }

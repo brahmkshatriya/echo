@@ -73,8 +73,13 @@ class AlbumHeaderAdapter(
         if (holder !is ViewHolder.Info) return
         val binding = holder.binding
         val album = holder.album
-        binding.albumDescription.text = album.description
-        binding.albumDescription.isVisible = !album.description.isNullOrBlank()
+        binding.albumDescription.apply {
+            text = album.description
+            isVisible = !album.description.isNullOrBlank()
+            setOnClickListener {
+                maxLines = if (maxLines == 3) Int.MAX_VALUE else 3
+            }
+        }
         var info = binding.root.context.run {
             album.tracks?.let {
                 resources.getQuantityString(R.plurals.number_songs, it, it)

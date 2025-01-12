@@ -34,7 +34,7 @@ data class Track(
     val cover: ImageHolder? = null,
     val duration: Long? = null,
     val plays: Long? = null,
-    val releaseDate: String? = null,
+    val releaseDate: Date? = null,
     val description: String? = null,
     val isExplicit: Boolean = false,
     val subtitle: String? = null,

@@ -3,6 +3,8 @@ package dev.brahmkshatriya.echo.ui.paging
 import androidx.paging.PagingConfig
 import androidx.paging.PagingState
 import dev.brahmkshatriya.echo.common.helpers.Page
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ContinuationSource<C : Any>(
     private val load: suspend (token: String?) -> Page<C>,
@@ -12,7 +14,7 @@ class ContinuationSource<C : Any>(
     override val config = PagingConfig(pageSize = 10, enablePlaceholders = false)
     override suspend fun loadData(params: LoadParams<String>): LoadResult.Page<String, C> {
         val token = params.key
-        val page = load(token)
+        val page = withContext(Dispatchers.IO) { load(token) }
         return LoadResult.Page(
             data = page.data,
             prevKey = null,

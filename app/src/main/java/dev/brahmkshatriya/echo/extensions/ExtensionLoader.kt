@@ -18,17 +18,18 @@ import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 import dev.brahmkshatriya.echo.db.ExtensionDao
 import dev.brahmkshatriya.echo.db.UserDao
+import dev.brahmkshatriya.echo.db.models.CurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.plugger.FileChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.catchLazy
 import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.offline.UnifiedExtension
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -59,16 +61,22 @@ class ExtensionLoader(
     private val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
     private val extensionFlow: MutableStateFlow<MusicExtension?>,
 ) {
-    private val scope = MainScope() + CoroutineName("ExtensionLoader")
+    private val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Extension Loader")
     private val listener = PackageChangeListener(context)
     val fileListener = FileChangeListener(scope)
 
     val offline = OfflineExtension.metadata to catchLazy { OfflineExtension(context, cache) }
+    private val unified = UnifiedExtension.metadata to catchLazy { UnifiedExtension(context) }
 //    private val test = TestExtension.metadata to catchLazy { TestExtension() }
 
-    private val musicExtensionRepo = MusicExtensionRepo(context, listener, fileListener, offline)
-    private val trackerExtensionRepo = TrackerExtensionRepo(context, listener, fileListener)
-    private val lyricsExtensionRepo = LyricsExtensionRepo(context, listener, fileListener)
+    private val musicExtensionRepo =
+        MusicExtensionRepo(context, listener, fileListener, offline, unified)
+
+    private val trackerExtensionRepo =
+        TrackerExtensionRepo(context, listener, fileListener)
+
+    private val lyricsExtensionRepo =
+        LyricsExtensionRepo(context, listener, fileListener)
 
     val trackers = trackerListFlow
     val extensions = extensionListFlow
@@ -81,35 +89,47 @@ class ExtensionLoader(
         MutableStateFlow(list)
     }
 
+    private suspend fun Extension<*>.setLoginUser(trigger: Boolean = false) {
+        val user = userDao.getCurrentUser(id)
+        get<LoginClient, Unit>(throwableFlow) {
+            withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
+        }
+        if (trigger) {
+            if (current.value?.id == id) currentWithUser.value = current.value to user
+            userFlow.emit(user)
+        }
+    }
+
+    private val userMap = mutableMapOf<String, String?>()
+    private suspend fun CurrentUser.setUser() {
+        val last = userMap[clientId]
+        if (last == id) return
+        userMap[clientId] = id
+        trackerListFlow.getExtension(clientId)?.setLoginUser()
+        lyricsListFlow.getExtension(clientId)?.setLoginUser()
+        extensionListFlow.getExtension(clientId)?.setLoginUser(true)
+    }
+
+    private var initialized = false
     fun initialize() {
+        if (initialized) return
+        initialized = true
         scope.launch {
             getAllPlugins(scope)
 
-            //Inject User to Music Extension
-            launch {
-                currentWithUser.collect { (musicExtension, user) ->
-                    musicExtension ?: return@collect
-                    setLoginUser(musicExtension, user, userFlow, throwableFlow)
-                }
-            }
-            var extension: MusicExtension? = null
-            var userEntities: List<UserEntity> = listOf()
-            fun update() {
-                val musicExtension = extension
-                val user = userEntities.find { it.clientId == extension?.id }
-                currentWithUser.value = musicExtension to user
-            }
-            launch {
-                userDao.observeCurrentUser().collect {
-                    userEntities = it
-                    update()
-                }
-            }
             launch {
                 extensionFlow.collect {
-                    extension = it
-                    update()
+                    currentWithUser.value = it to userDao.getCurrentUser(it?.id)
                 }
+            }
+            launch {
+                val combined = merge(
+                    trackerListFlow, lyricsListFlow, extensionListFlow, extensionFlow
+                )
+                userDao.observeCurrentUser()
+                    .combine(combined) { it, _ -> it }
+                    .distinctUntilChanged()
+                    .collect { it.map { launch { it.setUser() } } }
             }
 
             //Inject other extensions
@@ -201,9 +221,7 @@ class ExtensionLoader(
                 extensionListFlow.value = extensions
                 val id = settings.getString(LAST_EXTENSION_KEY, null)
                 val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
-                setupMusicExtension(
-                    scope, settings, extensionFlow, userDao, userFlow, throwableFlow, extension
-                )
+                setupMusicExtension(scope, settings, extensionFlow, throwableFlow, extension)
                 refresher.emit(false)
                 music.emit(Unit)
             }
@@ -234,7 +252,7 @@ class ExtensionLoader(
     private suspend fun List<Extension<*>>.setExtensions() = coroutineScope {
         map {
             async {
-                setExtension(userDao, userFlow, throwableFlow, it)
+                setExtension(throwableFlow, it)
             }
         }.awaitAll()
     }
@@ -255,42 +273,26 @@ class ExtensionLoader(
             scope: CoroutineScope,
             settings: SharedPreferences,
             extensionFlow: MutableStateFlow<MusicExtension?>,
-            userDao: UserDao,
-            userFlow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
             extension: MusicExtension?
         ) {
             settings.edit().putString(LAST_EXTENSION_KEY, extension?.id).apply()
             extension?.takeIf { it.metadata.enabled } ?: return
             scope.launch {
-                setExtension(userDao, userFlow, throwableFlow, extension)
+                extension.run(throwableFlow) {
+                    withTimeout(TIMEOUT) { onExtensionSelected() }
+                }
                 extensionFlow.value = extension
             }
         }
 
         suspend fun setExtension(
-            userDao: UserDao,
-            userFlow: MutableSharedFlow<UserEntity?>,
             throwableFlow: MutableSharedFlow<Throwable>,
             extension: Extension<*>,
         ) = withContext(Dispatchers.IO) {
             extension.run(throwableFlow) {
                 withTimeout(TIMEOUT) { onExtensionSelected() }
             }
-            val user = userDao.getCurrentUser(extension.id)
-            setLoginUser(extension, user, userFlow, throwableFlow)
-        }
-
-        suspend fun setLoginUser(
-            extension: Extension<*>,
-            user: UserEntity?,
-            flow: MutableSharedFlow<UserEntity?>,
-            throwableFlow: MutableSharedFlow<Throwable>,
-        ) = withContext(Dispatchers.IO) {
-            val success = extension.get<LoginClient, Unit>(throwableFlow) {
-                withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
-            }
-            if (success != null) flow.emit(user)
         }
     }
 }

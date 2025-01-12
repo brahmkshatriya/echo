@@ -292,6 +292,8 @@
     <string name="change_pitch_with_speed_desc">Get that slow-motion sound</string>
     <string name="audio_fx_summary">Effects applied for all songs</string>
     <string name="playback">Playback</string>
+    <string name="show_tabs">Show Tabs</string>
+    <string name="show_tab_summary">will show tabs of the extensions as category</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

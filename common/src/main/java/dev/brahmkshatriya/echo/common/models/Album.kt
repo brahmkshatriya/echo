@@ -9,10 +9,10 @@ import kotlinx.serialization.Serializable
  * @property title The title of the album
  * @property cover The cover image of the album
  * @property artists The artists of the album
- * @property tracks The number of tracks in the album
+ * @property duration The duration of the album in milliseconds
+ * @property tracks The total number of tracks in the album
  * @property releaseDate The release date of the album
  * @property publisher The publisher of the album
- * @property duration The duration of the album
  * @property description The description of the album
  * @property isExplicit Whether the album is explicit
  * @property subtitle The subtitle of the album, used to display information under the title
@@ -25,10 +25,10 @@ data class Album(
     val cover: ImageHolder? = null,
     val artists: List<Artist> = listOf(),
     val tracks: Int? = null,
-    val releaseDate: String? = null,
-    val publisher: String? = null,
     val duration: Long? = null,
+    val releaseDate: Date? = null,
     val description: String? = null,
+    val publisher: String? = null,
     val isExplicit: Boolean = false,
     val subtitle: String? = null,
     val extras: Map<String, String> = mapOf()

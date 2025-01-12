@@ -21,7 +21,7 @@ data class UserEntity(
 ) {
     companion object {
         fun User.toEntity(clientId: String) =
-            UserEntity(clientId, id, name, cover?.toEntity(), null, extras)
+            UserEntity(clientId, id, name, cover?.toEntity(), subtitle, extras)
 
         fun UserEntity.toUser() =
             User(id, name, cover?.toImageHolder(), subtitle, extras)

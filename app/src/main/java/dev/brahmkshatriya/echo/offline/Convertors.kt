@@ -5,6 +5,8 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.Date
+import dev.brahmkshatriya.echo.common.models.Date.Companion.toDate
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toUriImageHolder
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -16,7 +18,8 @@ fun MediaStoreUtils.MAlbum.toAlbum() = Album(
     cover.toString().toUriImageHolder(),
     artists.map { it.toArtist() },
     songList.size,
-    albumYear?.toString()
+    songList.sumOf { it.duration ?: 0 },
+    albumYear?.toDate()
 )
 
 fun MediaStoreUtils.MArtist?.toArtist() = Artist(
@@ -33,17 +36,16 @@ fun MediaStoreUtils.MPlaylist.toPlaylist() = Playlist(
     listOf(),
     songList.size,
     songList.sumOf { it.duration ?: 0 },
-    "Modified " + modifiedDate.toTimeAgo(),
+    modifiedDate.toDate(),
     description
 )
 
-private fun Long.toTimeAgo() = when (val diff = System.currentTimeMillis() / 1000 - this) {
-    in 0..59 -> "Just now"
-    in 60..3599 -> "${diff / 60}min ago"
-    in 3600..86399 -> "${diff / 3600}h ago"
-    in 86400..2591999 -> "${diff / 86400}d ago"
-    in 2592000..31535999 -> "${diff / 2592000}m ago"
-    else -> "${diff / 31536000}y ago"
+//coverts epoch seconds long to Date
+fun Long.toDate() = run {
+    val year = (this / 31556952 + 1970).toInt()
+    val month = ((this % 31556952) / 2629746).toInt()
+    val day = (((this % 31556952) % 2629746) / 86400).toInt()
+    Date(year, month, day)
 }
 
 fun MediaStoreUtils.FileNode.toShelf(

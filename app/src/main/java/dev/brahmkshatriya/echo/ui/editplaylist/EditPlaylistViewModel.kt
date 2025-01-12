@@ -89,10 +89,14 @@ class EditPlaylistViewModel @Inject constructor(
 
     fun edit(action: Action<Track>) {
         currentTracks.value = currentTracks.value?.toMutableList()?.apply {
-            when (action) {
-                is Add -> addAll(action.index, action.items)
-                is Move -> add(action.to, removeAt(action.from))
-                is Remove -> action.indexes.forEach { removeAt(it) }
+            runCatching {
+                when (action) {
+                    is Add -> addAll(action.index, action.items)
+                    is Move -> add(action.to, removeAt(action.from))
+                    is Remove -> action.indexes.forEach { removeAt(it) }
+                }
+            }.getOrElse {
+                viewModelScope.launch { throwableFlow.emit(it) }
             }
         }
     }

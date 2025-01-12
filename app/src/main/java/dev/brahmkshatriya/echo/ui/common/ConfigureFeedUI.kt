@@ -9,10 +9,10 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
-import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.collect
-import dev.brahmkshatriya.echo.utils.ui.configure
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.configure
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import kotlinx.coroutines.Job
 
@@ -48,6 +48,7 @@ inline fun <reified T> Fragment.configureFeedUI(
     swipeRefresh.configure {
         viewModel.refresh(true)
     }
+
     observe(viewModel.userFlow) {
         viewModel.refresh(true)
     }

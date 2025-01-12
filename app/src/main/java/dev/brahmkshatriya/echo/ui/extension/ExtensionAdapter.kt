@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
@@ -25,6 +27,7 @@ ExtensionAdapter(
     interface Listener {
         fun onClick(extension: Extension<*>, view: View)
         fun onDragHandleTouched(viewHolder: ViewHolder)
+        fun onOpenClick(extension: Extension<*>)
     }
 
     object DiffCallback : DiffUtil.ItemCallback<Extension<*>>() {
@@ -58,6 +61,10 @@ ExtensionAdapter(
             }
             binding.extensionDrag.setOnClickListener {
                 listener.onDragHandleTouched(this)
+            }
+            binding.extensionOpen.isVisible = extension.type == ExtensionType.MUSIC
+            binding.extensionOpen.setOnClickListener {
+                listener.onOpenClick(extension)
             }
         }
     }

@@ -27,7 +27,7 @@ class ShufflePlayer(
         if (enabled) original = getQueue()
         isShuffled = enabled
         changeQueue(if (enabled) original.shuffled() else original)
-        player.shuffleModeEnabled = enabled
+//        player.shuffleModeEnabled = enabled
     }
 
     override fun hasNextMediaItem(): Boolean {
@@ -105,4 +105,49 @@ class ShufflePlayer(
         print("Replace media items from $fromIndex to $toIndex")
     }
 
+    override fun setMediaItem(mediaItem: MediaItem) {
+        if (isShuffled) original = listOf(mediaItem)
+        player.setMediaItem(mediaItem)
+        print("Set media item")
+    }
+
+    override fun setMediaItem(mediaItem: MediaItem, resetPosition: Boolean) {
+        if (isShuffled) original = listOf(mediaItem)
+        player.setMediaItem(mediaItem, resetPosition)
+        print("Set media item")
+    }
+
+    override fun setMediaItem(mediaItem: MediaItem, startPositionMs: Long) {
+        if (isShuffled) original = listOf(mediaItem)
+        player.setMediaItem(mediaItem, startPositionMs)
+        print("Set media item")
+    }
+
+    override fun setMediaItems(mediaItems: MutableList<MediaItem>) {
+        if (isShuffled) original = mediaItems
+        player.setMediaItems(mediaItems)
+        print("Set media items")
+    }
+
+    override fun setMediaItems(mediaItems: MutableList<MediaItem>, resetPosition: Boolean) {
+        if (isShuffled) original = mediaItems
+        player.setMediaItems(mediaItems, resetPosition)
+        print("Set media items")
+    }
+
+    override fun setMediaItems(
+        mediaItems: MutableList<MediaItem>,
+        startIndex: Int,
+        startPositionMs: Long
+    ) {
+        if (isShuffled) original = mediaItems
+        player.setMediaItems(mediaItems, startIndex, startPositionMs)
+        print("Set media items")
+    }
+
+    override fun clearMediaItems() {
+        original = emptyList()
+        player.clearMediaItems()
+        print("Clear media items")
+    }
 }

@@ -1,8 +1,10 @@
 package dev.brahmkshatriya.echo.playback.listeners
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.media.audiofx.AudioEffect
 import android.media.audiofx.Equalizer
 import android.media.audiofx.LoudnessEnhancer
 import androidx.annotation.OptIn
@@ -26,6 +28,7 @@ class EffectsListener(
 
     init {
         audioSessionFlow.value = exoPlayer.audioSessionId
+        context.broadcastAudioSession()
     }
 
     private val settings: SharedPreferences = context.globalFx()
@@ -54,24 +57,25 @@ class EffectsListener(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = applyCustomEffects()
     override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        release()
+        context.broadcastAudioSession()
         audioSessionFlow.value = audioSessionId
-        effects.release()
         effects = createEffects()
         effects.applySettings(oldSettings)
     }
 
     class Effects(sessionId: Int) {
-        private val equalizer = Equalizer(0, sessionId)
-        private val gain = LoudnessEnhancer(sessionId)
+        private val equalizer = runCatching { Equalizer(0, sessionId) }.getOrNull()
+        private val gain = runCatching { LoudnessEnhancer(sessionId) }.getOrNull()
         private fun applyBassBoost(strength: Int) {
             if (strength == 0) {
-                equalizer.setEnabled(false)
-                gain.setEnabled(false)
+                equalizer?.setEnabled(false)
+                gain?.setEnabled(false)
                 return
             }
-            gain.setEnabled(true)
-            equalizer.setEnabled(true)
-            equalizer.apply {
+            gain?.setEnabled(true)
+            equalizer?.setEnabled(true)
+            equalizer?.apply {
                 val value =
                     ((strength) * bandLevelRange.last().toDouble() / 10).roundToInt().toShort()
                 val zero = numberOfBands.toDouble() * 2 / 3
@@ -81,12 +85,12 @@ class EffectsListener(
                 }
             }
             val g = (strength.toDouble().pow(1.toDouble() / 3) * 1600).roundToInt()
-            gain.setTargetGain(g)
+            gain?.setTargetGain(g)
         }
 
         fun release() {
-            equalizer.release()
-            gain.release()
+            equalizer?.release()
+            gain?.release()
         }
 
         fun applySettings(settings: SharedPreferences) {
@@ -124,5 +128,26 @@ class EffectsListener(
 
         fun Context.deleteFxPrefs(id: String) =
             deleteSharedPreferences("fx_$id")
+    }
+
+    private fun Context.broadcastAudioSession() {
+        val id = exoPlayer.audioSessionId
+        sendBroadcast(Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
+            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+        })
+    }
+
+    private fun Context.broadcastAudioSessionClose(id: Int) {
+        sendBroadcast(Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
+        })
+    }
+
+    fun release() {
+        effects.release()
+        context.broadcastAudioSessionClose(audioSessionFlow.value)
     }
 }

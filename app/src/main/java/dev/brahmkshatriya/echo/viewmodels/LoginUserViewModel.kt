@@ -32,19 +32,14 @@ class LoginUserViewModel @Inject constructor(
     val currentUser = MutableStateFlow<Pair<Extension<*>?, User?>>(null to null)
 
     init {
-        var users = emptyList<UserEntity>()
-        fun update() {
+        suspend fun update() {
             val currentExt = currentExtension.value
-            val entities = users
-            val current = entities.find { it.clientId == currentExt?.id }
-            currentUser.value = currentExt to current?.toUser()
+            val user = userDao.getCurrentUser(currentExt?.id)
+            currentUser.value = currentExt to user?.toUser()
         }
         viewModelScope.launch {
             launch { currentExtension.collect { update() } }
-            userDao.observeCurrentUser().collect {
-                users = it
-                update()
-            }
+            userDao.observeCurrentUser().collect { update() }
         }
     }
 

@@ -74,6 +74,7 @@ class OfflineExtension(
             description = "Offline extension",
             version = "1.0.0",
             author = "Echo",
+            iconUrl = "https://i.ibb.co/xhKzgw2/offline.png",
         )
     }
 

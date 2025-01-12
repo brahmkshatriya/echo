@@ -105,7 +105,6 @@ class EditPlaylistFragment : Fragment() {
         onLoadChange(viewModel.loading)
 
         observe(viewModel.performedActions) { (tracks, action) ->
-            println("action : $action")
             binding.loading.textView.text = when (action) {
                 is Add -> getString(
                     R.string.adding_tracks,

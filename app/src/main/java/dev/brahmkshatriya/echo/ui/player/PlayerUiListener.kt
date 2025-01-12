@@ -99,13 +99,14 @@ class PlayerUiListener(
     }
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-        viewModel.shuffleMode.value = shuffleModeEnabled
+        viewModel.shuffleMode.value = player.shuffleModeEnabled
         updateList()
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateNavigation()
-        viewModel.repeatMode.value = repeatMode
+        updateList()
+        viewModel.repeatMode.value = player.repeatMode
     }
 
     override fun onPlayerError(error: PlaybackException) {

@@ -11,8 +11,8 @@ import dev.brahmkshatriya.echo.db.models.ExtensionEntity
 interface ExtensionDao {
 
     @Query("SELECT * FROM ExtensionEntity WHERE type = :type AND id = :id")
-    fun getExtension(type: ExtensionType, id: String) : ExtensionEntity?
+    suspend fun getExtension(type: ExtensionType, id: String): ExtensionEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun setExtension(extensionEntity: ExtensionEntity)
+    suspend fun setExtension(extensionEntity: ExtensionEntity)
 }

@@ -55,9 +55,7 @@ sealed class ExtensionRepo<T : ExtensionClient>(
                 val (metadata, resultLazy) = plugin
                 metadata to catchLazy {
                     val instance = resultLazy.value.getOrThrow()
-                    //Injection
                     instance.setSettings(getSettings(context, type, metadata))
-
                     instance
                 }
             }

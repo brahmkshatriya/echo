@@ -56,6 +56,16 @@
                 android:maxLines="1"
                 tools:text="@tools:sample/cities" />
         </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/extensionOpen"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/close"
+            android:padding="8dp"
+            android:scaleX="-1"
+            app:icon="@drawable/ic_arrow_insert"
+            app:iconSize="24dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/extensionDrag"

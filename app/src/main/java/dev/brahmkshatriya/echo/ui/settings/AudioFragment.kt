@@ -82,7 +82,7 @@ class AudioFragment : BaseSettingsFragment() {
                     summary = getString(R.string.stop_player_summary)
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
-                    setDefaultValue(true)
+                    setDefaultValue(false)
                     addPreference(this)
                 }
 

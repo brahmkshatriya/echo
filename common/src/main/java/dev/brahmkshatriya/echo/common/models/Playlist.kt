@@ -10,8 +10,8 @@ import kotlinx.serialization.Serializable
  * @property isEditable Whether the playlist is editable
  * @property cover The cover image of the playlist
  * @property authors The authors of the playlist
- * @property tracks The number of tracks in the playlist
- * @property duration The total duration of the playlist
+ * @property tracks The total number of tracks in the playlist
+ * @property duration The total duration of the playlist in milliseconds
  * @property creationDate The creation date of the playlist
  * @property description The description of the playlist
  * @property subtitle The subtitle of the playlist, used to display information under the title
@@ -27,7 +27,7 @@ data class Playlist(
     val authors: List<User> = listOf(),
     val tracks: Int? = null,
     val duration: Long? = null,
-    val creationDate: String? = null,
+    val creationDate: Date? = null,
     val description: String? = null,
     val subtitle: String? = null,
     val isPrivate: Boolean = true,

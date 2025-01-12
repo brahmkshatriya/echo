@@ -17,6 +17,7 @@ import androidx.core.net.toUri
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.Date.Companion.toDate
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toUriImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
@@ -350,7 +351,7 @@ object MediaStoreUtils {
                 album = album,
                 cover = imgUri.toString().toUriImageHolder(),
                 duration = duration,
-                releaseDate = year?.toString(),
+                releaseDate = year?.toDate(),
                 isLiked = liked,
                 description = description,
                 streamables = listOf(Streamable.server(path, 0)),
@@ -504,7 +505,7 @@ object MediaStoreUtils {
                 mArtist
             }
 
-            val year = song.releaseDate?.toIntOrNull()
+            val year = song.releaseDate?.year
             songAlbumMap(song, year, albumMap, artistMap, haveImgPerm)
 
             val albumId = song.album?.id?.toLong()
@@ -569,7 +570,7 @@ object MediaStoreUtils {
             context.getString(R.string.playlist_favourite),
             liked?.songList ?: mutableSetOf(),
             context.getString(R.string.playlist_favourite_desc),
-            liked?.modifiedDate ?: System.currentTimeMillis()
+            liked?.modifiedDate ?: (System.currentTimeMillis() / 1000L)
         )
     }
 
