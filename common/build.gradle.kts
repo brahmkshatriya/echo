@@ -1,7 +1,7 @@
 plugins {
     id("java-library")
-    id("org.jetbrains.kotlin.jvm")
-    kotlin("plugin.serialization") version "2.0.10"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlinx.serialization)
     id("maven-publish")
 }
 
@@ -15,9 +15,9 @@ kotlin {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
-    api("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
-    api("io.ktor:ktor-utils:3.0.0-beta-2")
+    api(libs.kotlinx.serialization.json)
+    api(libs.okhttp)
+    api(libs.ktor.utils)
 }
 
 publishing {
