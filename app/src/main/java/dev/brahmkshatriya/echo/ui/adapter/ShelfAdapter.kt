@@ -176,11 +176,8 @@ class ShelfAdapter(
     private val sharedPool = RecycledViewPool()
     private val viewModel by fragment.activityViewModels<ListViewModel>()
     private val observe: (
-        paged: PagedData.Single<Track>,
-        block: suspend (PagingData<Track>) -> Unit
-    ) -> Unit = { paged, block ->
-        fragment.observe(paged.toFlow(), block)
-    }
+        paged: PagedData.Single<Track>, block: suspend (PagingData<Track>) -> Unit
+    ) -> Job = { paged, block -> fragment.observe(paged.toFlow(), block) }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShelfViewHolder {
         val holder = when (viewType) {

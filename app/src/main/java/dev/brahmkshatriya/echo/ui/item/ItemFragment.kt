@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.ItemTouchHelper
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
@@ -40,17 +41,18 @@ import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter.Companion.getListener
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistFragment
-import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import dev.brahmkshatriya.echo.ui.item.TrackAdapter.Companion.applySwipe
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.collect
-import dev.brahmkshatriya.echo.utils.ui.configure
-import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.image.load
 import dev.brahmkshatriya.echo.utils.image.loadInto
 import dev.brahmkshatriya.echo.utils.image.loadWithThumb
-import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.putSerialized
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.configure
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
@@ -169,10 +171,13 @@ class ItemFragment : Fragment() {
                 playerVM.radio(clientId, artist.toMediaItem())
         })
 
+        var swipeHelper: ItemTouchHelper? = null
         fun concatAdapter(item: EchoMediaItem, itemsAdapter: ConcatAdapter) = when (item) {
             is EchoMediaItem.Lists -> {
                 val trackAdapter =
                     TrackAdapter(clientId, view.transitionName, listener, item, true)
+                swipeHelper?.attachToRecyclerView(null)
+                swipeHelper = binding.recyclerView.applySwipe(trackAdapter)
                 trackJob?.cancel()
                 trackJob = trackAdapter.applyCurrent(this, binding.recyclerView)
                 this.trackAdapter = trackAdapter

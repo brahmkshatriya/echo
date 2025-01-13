@@ -123,6 +123,16 @@ open class ShelfClickListener(
         }
     }
 
+    override fun onTrackSwiped(
+        clientId: String, context: EchoMediaItem?, list: List<Track>, pos: Int, view: View
+    ) {
+        val track = list[pos]
+        withClient<TrackClient>(clientId) {
+            it.addToQueue(clientId, track, true)
+            snack { SnackBar.Message(getString(R.string.track_added_to_queue, track.title)) }
+        }
+    }
+
     override fun onLongClick(
         clientId: String, item: EchoMediaItem, transitionView: View?
     ): Boolean {

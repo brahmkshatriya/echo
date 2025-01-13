@@ -7,6 +7,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -17,6 +18,7 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import kotlinx.coroutines.Job
 
+
 class TrackAdapter(
     private val clientId: String,
     private val transition: String,
@@ -24,6 +26,40 @@ class TrackAdapter(
     private val context: EchoMediaItem? = null,
     private val isNumbered: Boolean = false
 ) : PagingDataAdapter<Track, TrackViewHolder>(DiffCallback) {
+
+    companion object {
+
+        fun RecyclerView.applySwipe(adapter: TrackAdapter): ItemTouchHelper {
+            val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.END) {
+                override fun getMovementFlags(
+                    recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
+                ): Int {
+                    return if (viewHolder.bindingAdapter != adapter) 0
+                    else makeMovementFlags(0, ItemTouchHelper.END)
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val pos = viewHolder.bindingAdapterPosition
+                    val list = adapter.snapshot().items
+                    adapter.run {
+                        listener.onTrackSwiped(clientId, context, list, pos, viewHolder.itemView)
+                        notifyItemChanged(pos)
+                    }
+                }
+
+                override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder) = 0.25f
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ) = false
+            }
+            val touchHelper = ItemTouchHelper(callback)
+            touchHelper.attachToRecyclerView(this)
+            return touchHelper
+        }
+    }
+
 
     object DiffCallback : DiffUtil.ItemCallback<Track>() {
         override fun areItemsTheSame(oldItem: Track, newItem: Track) = oldItem.id == newItem.id
@@ -38,6 +74,10 @@ class TrackAdapter(
         fun onLongClick(
             clientId: String, context: EchoMediaItem?, list: List<Track>, pos: Int, view: View
         ): Boolean
+
+        fun onTrackSwiped(
+            clientId: String, context: EchoMediaItem?, list: List<Track>, pos: Int, view: View
+        )
     }
 
     suspend fun submit(pagingData: PagingData<Track>?) {

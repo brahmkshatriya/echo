@@ -10,6 +10,7 @@ import androidx.core.view.updatePaddingRelative
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
@@ -36,8 +37,10 @@ import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowingButton
 import dev.brahmkshatriya.echo.ui.item.TrackAdapter
+import dev.brahmkshatriya.echo.ui.item.TrackAdapter.Companion.applySwipe
 import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -213,11 +216,13 @@ sealed class ShelfViewHolder(
         private val clientId: String,
         val listener: ShelfAdapter.Listener,
         val viewModel: ListViewModel,
-        val observe: (PagedData.Single<Track>, suspend (PagingData<Track>) -> Unit) -> Unit
+        val observe: (PagedData.Single<Track>, suspend (PagingData<Track>) -> Unit) -> Job
     ) : ShelfViewHolder(binding.root) {
         override val transitionView: View
             get() = binding.root
 
+        private var touchHelper: ItemTouchHelper? = null
+        private var job: Job? = null
         override fun bind(item: Shelf) {
             val media = (item as? Shelf.Item)?.media ?: return
             if (media !is EchoMediaItem.Lists) return
@@ -232,8 +237,11 @@ sealed class ShelfViewHolder(
             val transition = transitionView.transitionName + media.id
             val adapter = TrackAdapter(clientId, transition, listener, media, false)
             binding.listsTracks.recyclerView.adapter = adapter
+            touchHelper?.attachToRecyclerView(null)
+            touchHelper = binding.listsTracks.recyclerView.applySwipe(adapter)
+            job?.cancel()
             val tracks = viewModel.loadTracks(clientId, media)
-            observe(tracks) { adapter.submitData(it) }
+            job = observe(tracks) { adapter.submitData(it) }
         }
 
         var media: EchoMediaItem.Lists? = null
@@ -248,7 +256,7 @@ sealed class ShelfViewHolder(
                 clientId: String,
                 listener: ShelfAdapter.Listener,
                 viewModel: ListViewModel,
-                observe: (PagedData.Single<Track>, suspend (PagingData<Track>) -> Unit) -> Unit
+                observe: (PagedData.Single<Track>, suspend (PagingData<Track>) -> Unit) -> Job
             ): ShelfViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 return MediaLists(

@@ -168,8 +168,10 @@ class PlayerViewModel @Inject constructor(
             val curr = currentFlow.value?.index ?: 0
             curr + 1
         }
+        val shouldPlay = it.mediaItemCount == 0
         it.addMediaItems(index, mediaItems)
         it.prepare()
+        if (shouldPlay) it.playWhenReady = true
     }
 
     fun radio(clientId: String, item: EchoMediaItem) {
