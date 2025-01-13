@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.map
 import dev.brahmkshatriya.echo.R
@@ -31,6 +32,7 @@ import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 open class ShelfClickListener(
     private val fragmentManager: FragmentManager,
@@ -43,18 +45,22 @@ open class ShelfClickListener(
     private fun snack(block: Context.() -> SnackBar.Message) =
         fragment.createSnack(fragment.requireContext().block())
 
-    private inline fun <reified T> withClient(clientId: String, block: (PlayerViewModel) -> Unit) {
+    private inline fun <reified T> withClient(
+        clientId: String, crossinline block: (PlayerViewModel) -> Unit
+    ) {
         val playerViewModel by fragment.activityViewModels<PlayerViewModel>()
         val extension = playerViewModel.extensionListFlow.getExtension(clientId)
             ?: return snack { noClient() }
-        if (!extension.isClient<T>()) return snack {
-            when (T::class) {
-                TrackClient::class -> trackNotSupported(clientId)
-                RadioClient::class -> radioNotSupported(clientId)
-                else -> noClient()
+        playerViewModel.viewModelScope.launch {
+            if (!extension.isClient<T>()) return@launch snack {
+                when (T::class) {
+                    TrackClient::class -> trackNotSupported(clientId)
+                    RadioClient::class -> radioNotSupported(clientId)
+                    else -> noClient()
+                }
             }
+            block(playerViewModel)
         }
-        block(playerViewModel)
     }
 
     private fun openItem(clientId: String, item: EchoMediaItem, transitionView: View?) {

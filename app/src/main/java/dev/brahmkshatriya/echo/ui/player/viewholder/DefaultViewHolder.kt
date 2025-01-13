@@ -78,7 +78,7 @@ class DefaultViewHolder(
     private val listener: Listener,
     private val cache: SimpleCache,
     private val settings: SharedPreferences,
-    private val isTrackLikeClient: (String) -> Boolean,
+    private val isTrackLikeClient: (String, (Boolean) -> Unit) -> Unit,
     private val players: MutableList<Player>
 ) : ViewHolder(binding.root) {
 
@@ -292,8 +292,7 @@ class DefaultViewHolder(
         CheckBoxListener { item?.let { it1 -> listener.onItemLiked(it1, it) } }
 
     private fun ItemPlayerControlsBinding.bind(item: MediaItem) {
-        val isTrackLikeClient = isTrackLikeClient(item.extensionId)
-        trackHeart.isVisible = isTrackLikeClient
+        isTrackLikeClient(item.extensionId) { trackHeart.isVisible = it }
         trackHeart.addOnCheckedStateChangedListener(likeListener)
         likeListener.enabled = false
         trackHeart.isChecked = item.isLiked

@@ -35,9 +35,9 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.getExtensionList
 import dev.brahmkshatriya.echo.extensions.getUpdateFileUrl
 import dev.brahmkshatriya.echo.extensions.installExtension
-import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.extensions.uninstallExtension
 import dev.brahmkshatriya.echo.extensions.waitForResult
+import dev.brahmkshatriya.echo.extensions.with
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
@@ -168,7 +168,7 @@ class ExtensionViewModel @Inject constructor(
         val currentVersion = extension.version
         val updateUrl = extension.metadata.updateUrl ?: return
 
-        val url = extension.run(throwableFlow) {
+        val url = extension.with(throwableFlow) {
             getUpdateFileUrl(currentVersion, updateUrl, client).getOrThrow()
         } ?: return
 
@@ -177,7 +177,7 @@ class ExtensionViewModel @Inject constructor(
                 app.getString(R.string.downloading_update_for_extension, extension.name)
             )
         )
-        val file = extension.run(throwableFlow) {
+        val file = extension.with(throwableFlow) {
             downloadUpdate(context, url, client).getOrThrow()
         } ?: return
         val installAsApk = extension.metadata.importType == ImportType.App
@@ -214,12 +214,12 @@ class ExtensionViewModel @Inject constructor(
             getString(R.string.is_not_supported, getString(R.string.login), client)
         )
 
-        inline fun <reified T> RecyclerView.applyAdapter(
+        suspend inline fun <reified T> RecyclerView.applyAdapter(
             extension: Extension<*>?,
             name: Int,
             adapter: RecyclerView.Adapter<*>
         ) {
-            val client = extension?.instance?.value?.getOrNull()
+            val client = extension?.instance?.value()?.getOrNull()
             setAdapter(
                 if (extension == null)
                     ClientLoadingAdapter()

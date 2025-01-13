@@ -28,6 +28,7 @@ import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.getSettings
 import dev.brahmkshatriya.echo.utils.saveToCache
+import kotlinx.coroutines.runBlocking
 
 class UnifiedExtension(
     private val context: Context
@@ -49,7 +50,7 @@ class UnifiedExtension(
         )
 
         inline fun <reified C, T> Extension<*>.client(block: C.() -> T): T = run {
-            val client = instance.value.getOrThrow() as? C
+            val client = runBlocking { instance.value().getOrThrow() } as? C
                 ?: throw ClientException.NotSupported("$name - ${C::class.java.name}")
             runCatching { client.block() }
         }.getOrElse { throw AppException.Other(it, this) }

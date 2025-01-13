@@ -151,7 +151,7 @@ class PlayerCallback(
                 ?: return@future errorIO
             extensionList.first { it != null }
             val extension = extensionList.getExtension(item.extensionId) ?: return@future errorIO
-            val client = extension.instance.value.getOrNull() ?: return@future errorIO
+            val client = extension.instance.value().getOrNull() ?: return@future errorIO
             if (client !is TrackLikeClient) return@future errorIO
             val track = item.track
             runCatching {
@@ -211,18 +211,22 @@ class PlayerCallback(
         val query = mediaItems.firstOrNull()?.requestMetadata?.searchQuery
             ?: return super.onAddMediaItems(mediaSession, controller, mediaItems)
 
-        fun default(reason: Context.() -> String): ListenableFuture<MutableList<MediaItem>> {
+        fun default(reason: Context.() -> String): MutableList<MediaItem> {
             toast(reason.invoke(context))
-            return super.onAddMediaItems(mediaSession, controller, mediaItems)
+            return mediaItems
         }
 
-        val extension = extensionFlow.value
-        val client =
-            extension?.instance?.value?.getOrNull() ?: return default { noClient().message }
-        val id = extension.metadata.id
-        if (client !is SearchFeedClient) return default { searchNotSupported(id).message }
-        if (client !is TrackClient) return default { trackNotSupported(id).message }
         return scope.future {
+            val extension = extensionFlow.value
+            val client = extension?.instance?.value()?.getOrNull()
+                ?: return@future default { noClient().message }
+
+            val name = extension.name
+            if (client !is SearchFeedClient)
+                return@future default { searchNotSupported(name).message }
+
+            if (client !is TrackClient)
+                return@future default { trackNotSupported(name).message }
             val itemsContainers = runCatching {
                 client.searchFeed(query, null).loadFirst()
             }.getOrElse {
@@ -251,7 +255,7 @@ class PlayerCallback(
                 }
             }.flatten()
             if (tracks.isEmpty()) default { getString(R.string.could_not_find_anything, query) }
-            tracks.map { MediaItemUtils.build(settings, it, id, null) }.toMutableList()
+            tracks.map { MediaItemUtils.build(settings, it, extension.id, null) }.toMutableList()
         }
     }
 }

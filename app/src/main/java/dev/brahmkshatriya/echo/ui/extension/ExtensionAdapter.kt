@@ -47,7 +47,7 @@ ExtensionAdapter(
         fun bind(extension: Extension<*>) {
             val metadata = extension.metadata
             binding.root.transitionName = metadata.id
-            binding.root.alpha = if (extension.instance.value.isSuccess) 1f else 0.5f
+            binding.root.alpha = if (extension.instance.isSuccess) 1f else 0.5f
             binding.root.setOnClickListener { listener.onClick(extension, binding.root) }
             binding.extensionName.apply {
                 text = if (metadata.enabled) metadata.name

@@ -8,6 +8,7 @@ import androidx.annotation.OptIn
 import androidx.core.view.doOnDetach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -35,6 +36,7 @@ import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlin.math.max
 
 @OptIn(UnstableApi::class)
@@ -42,7 +44,7 @@ class PlayerTrackAdapter(
     private val listener: Listener,
     private val cache: SimpleCache,
     private val settings: SharedPreferences,
-    private val isTrackLikeClient: (String) -> Boolean
+    private val isTrackLikeClient: (String, (Boolean) -> Unit) -> Unit
 ) : ListAdapter<MediaItem, PlayerTrackAdapter.ViewHolder>(DiffCallback) {
 
     interface Listener {
@@ -234,9 +236,12 @@ class PlayerTrackAdapter(
                 }
             }
 
-            fun isTrackLikeClient(extensionId: String) =
-                playerViewModel.extensionListFlow.getExtension(extensionId)
-                    ?.isClient<TrackLikeClient>() ?: false
+            fun isTrackLikeClient(extensionId: String, callback: (Boolean) -> Unit) =
+                fragment.lifecycleScope.launch {
+                    val isClient = playerViewModel.extensionListFlow.getExtension(extensionId)
+                        ?.isClient<TrackLikeClient>() ?: false
+                    callback(isClient)
+                }
 
             val adapter = PlayerTrackAdapter(
                 listener,

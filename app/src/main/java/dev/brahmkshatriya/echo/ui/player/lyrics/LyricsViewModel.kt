@@ -50,7 +50,7 @@ class LyricsViewModel @Inject constructor(
         onLyricsClientSelected(lyricsExtensionList.getExtension(clientId))
     }
 
-    private fun update() {
+    private suspend fun update() {
         val trackExtension = currentMediaFlow.value?.mediaItem?.extensionId?.let { id ->
             extensionListFlow.getExtension(id)?.takeIf { it.isClient<LyricsClient>() }
         }
@@ -63,8 +63,8 @@ class LyricsViewModel @Inject constructor(
     }
 
     override fun onInitialize() {
-        update()
         viewModelScope.launch {
+            update()
             currentMediaFlow.map { it?.mediaItem }.distinctUntilChanged().collect {
                 update()
             }

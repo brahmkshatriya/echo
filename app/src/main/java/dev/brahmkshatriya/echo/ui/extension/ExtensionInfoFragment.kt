@@ -27,9 +27,9 @@ import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
-import dev.brahmkshatriya.echo.utils.ui.PlayerItemSpan
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.image.loadAsCircle
+import dev.brahmkshatriya.echo.utils.ui.PlayerItemSpan
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
@@ -171,12 +171,13 @@ class ExtensionInfoFragment : Fragment() {
             binding.enabledCont.setOnClickListener { toggle() }
         }
 
-        if (extension.isClient<LoginClient>()) {
-            val loginViewModel by activityViewModels<LoginUserViewModel>()
-            loginViewModel.currentExtension.value = extension
-            binding.extensionLoginUser.bind(this) {}
-        } else binding.extensionLoginUser.root.isVisible = false
-
+        lifecycleScope.launch {
+            if (extension.isClient<LoginClient>()) {
+                val loginViewModel by activityViewModels<LoginUserViewModel>()
+                loginViewModel.currentExtension.value = extension
+                binding.extensionLoginUser.bind(this@ExtensionInfoFragment) {}
+            } else binding.extensionLoginUser.root.isVisible = false
+        }
         binding.extensionSettings.transitionName = "setting_${metadata.id}"
         binding.extensionSettings.setOnClickListener {
             openFragment(ExtensionFragment.newInstance(metadata, extensionType), it)

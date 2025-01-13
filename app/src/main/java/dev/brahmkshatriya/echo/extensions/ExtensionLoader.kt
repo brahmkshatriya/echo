@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
@@ -23,7 +24,6 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.plugger.FileChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
-import dev.brahmkshatriya.echo.extensions.plugger.catchLazy
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.offline.UnifiedExtension
 import dev.brahmkshatriya.echo.utils.catchWith
@@ -64,12 +64,17 @@ class ExtensionLoader(
     private val listener = PackageChangeListener(context)
     val fileListener = FileChangeListener(scope)
 
-    val offline = OfflineExtension.metadata to catchLazy { OfflineExtension(context, cache) }
-    private val unified = UnifiedExtension.metadata to catchLazy { UnifiedExtension(context) }
+    val offline by lazy { OfflineExtension(context, cache) }
+    private val offlinePair: Pair<Metadata, Injectable<ExtensionClient>> =
+        OfflineExtension.metadata to Injectable { offline }
+
+    private val unified: Pair<Metadata, Injectable<ExtensionClient>> =
+        UnifiedExtension.metadata to Injectable { UnifiedExtension(context) }
+
 //    private val test = TestExtension.metadata to catchLazy { TestExtension() }
 
     private val musicExtensionRepo =
-        MusicExtensionRepo(context, listener, fileListener, offline, unified)
+        MusicExtensionRepo(context, listener, fileListener, offlinePair, unified)
 
     private val trackerExtensionRepo =
         TrackerExtensionRepo(context, listener, fileListener)
@@ -91,7 +96,7 @@ class ExtensionLoader(
     private suspend fun Extension<*>.setLoginUser(trigger: Boolean = false) {
         println("Setting login user for $name")
         val user = userDao.getCurrentUser(id)
-        get<LoginClient, Unit>(throwableFlow) {
+        inject<LoginClient> {
             withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
         }
         if (trigger) {
@@ -109,6 +114,7 @@ class ExtensionLoader(
         lyricsListFlow.getExtension(clientId)?.setLoginUser()
         extensionListFlow.getExtension(clientId)?.setLoginUser(true)
     }
+
     private val combined = extensionListFlow
         .combine(trackerListFlow) { a, b -> a.orEmpty() + b.orEmpty() }
         .combine(lyricsListFlow) { a, b -> a + b.orEmpty() }
@@ -144,17 +150,17 @@ class ExtensionLoader(
                     val lyricsExtensions = lyricsListFlow.value.orEmpty()
                     val musicExtensions = extensionListFlow.value.orEmpty()
                     list.forEach { extension ->
-                        extension.get<TrackerExtensionsProvider, Unit>(throwableFlow) {
+                        extension.inject<TrackerExtensionsProvider> {
                             inject(extension.name, requiredTrackerExtensions, trackerExtensions) {
                                 setTrackerExtensions(it)
                             }
                         }
-                        extension.get<LyricsExtensionsProvider, Unit>(throwableFlow) {
+                        extension.inject<LyricsExtensionsProvider> {
                             inject(extension.name, requiredLyricsExtensions, lyricsExtensions) {
                                 setLyricsExtensions(it)
                             }
                         }
-                        extension.get<MusicExtensionsProvider, Unit>(throwableFlow) {
+                        extension.inject<MusicExtensionsProvider> {
                             inject(extension.name, requiredMusicExtensions, musicExtensions) {
                                 setMusicExtensions(it)
                             }
@@ -232,7 +238,7 @@ class ExtensionLoader(
     }
 
     private suspend fun <T : ExtensionClient> ExtensionRepo<T>.getPlugins(
-        collector: FlowCollector<List<Pair<Metadata, Lazy<Result<T>>>>>
+        collector: FlowCollector<List<Pair<Metadata, Injectable<T>>>>
     ) {
         val pluginFlow = getAllPlugins().catchWith(throwableFlow).map { list ->
             list.mapNotNull { result ->

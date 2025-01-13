@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -15,6 +16,7 @@ import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
@@ -45,8 +47,11 @@ import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.DownloadViewModel
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ItemBottomSheet : BottomSheetDialogFragment() {
@@ -75,7 +80,6 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
     private val loaded by lazy { args.getBoolean("loaded") }
     private val extension by lazy { playerViewModel.extensionListFlow.getExtension(clientId) }
-    private val client by lazy { extension?.instance?.value?.getOrNull() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -106,18 +110,24 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         viewModel.item = item
         viewModel.extension = extension
         viewModel.loadRelatedFeed = false
-        if (!loaded) {
-            binding.recyclerView.adapter =
-                ConcatAdapter(ActionAdapter(getActions(item, false)), LoadingAdapter())
-            viewModel.initialize()
-            observe(viewModel.itemFlow) {
-                if (it != null) {
-                    isPlaying = binding.itemContainer.bind(it)
-                    binding.recyclerView.adapter = ActionAdapter(getActions(it, true))
-                }
+        lifecycleScope.launch {
+            val client = extension?.instance?.value()?.getOrNull() ?: return@launch run {
+                createSnack(requireContext().noClient())
+                dismiss()
             }
-        } else {
-            binding.recyclerView.adapter = ActionAdapter(getActions(item, true))
+            if (!loaded) {
+                binding.recyclerView.adapter =
+                    ConcatAdapter(ActionAdapter(getActions(client, item, false)), LoadingAdapter())
+                viewModel.initialize()
+                observe(viewModel.itemFlow) {
+                    if (it != null) {
+                        isPlaying = binding.itemContainer.bind(it)
+                        binding.recyclerView.adapter = ActionAdapter(getActions(client, it, true))
+                    }
+                }
+            } else {
+                binding.recyclerView.adapter = ActionAdapter(getActions(client, item, true))
+            }
         }
         observe(playerViewModel.shareLink) {
             requireContext().copyToClipboard(it, it)
@@ -129,13 +139,15 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         uiViewModel.collapsePlayer()
     }
 
-    private fun getActions(item: EchoMediaItem, loaded: Boolean) = when (item) {
-        is EchoMediaItem.Lists -> getListButtons(item) + when (item) {
+    private fun getActions(
+        client: ExtensionClient, item: EchoMediaItem, loaded: Boolean
+    ) = when (item) {
+        is EchoMediaItem.Lists -> getListButtons(client, item) + when (item) {
             is EchoMediaItem.Lists.AlbumItem -> listOfNotNull(
-                radioButton(item, loaded),
-                saveToPlaylist(item),
-                saveToLibraryButton(item, loaded),
-                downloadButton(item),
+                radioButton(client, item, loaded),
+                saveToPlaylist(client, item),
+                saveToLibraryButton(client, item, loaded),
+                downloadButton(client, item),
             ) + item.album.artists.map {
                 ItemAction.Custom(it.cover, R.drawable.ic_artist, it.name) {
                     openItemFragment(it.toMediaItem())
@@ -143,10 +155,10 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             }
 
             is EchoMediaItem.Lists.PlaylistItem -> listOfNotNull(
-                radioButton(item, loaded),
-                saveToPlaylist(item),
-                saveToLibraryButton(item, loaded),
-                downloadButton(item),
+                radioButton(client, item, loaded),
+                saveToPlaylist(client, item),
+                saveToLibraryButton(client, item, loaded),
+                downloadButton(client, item),
                 if (client is LibraryFeedClient && item.playlist.isEditable)
                     ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
                         playerViewModel.deletePlaylist(clientId, item.playlist)
@@ -158,26 +170,27 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 }
             }
 
-            is EchoMediaItem.Lists.RadioItem -> listOfNotNull(saveToLibraryButton(item, loaded))
+            is EchoMediaItem.Lists.RadioItem ->
+                listOfNotNull(saveToLibraryButton(client, item, loaded))
         }
 
         is EchoMediaItem.Profile -> when (item) {
             is EchoMediaItem.Profile.ArtistItem -> listOfNotNull(
-                radioButton(item, loaded),
-                saveToLibraryButton(item, loaded),
-                followButton(item.artist, loaded)
+                radioButton(client, item, loaded),
+                saveToLibraryButton(client, item, loaded),
+                followButton(client, item.artist, loaded)
             )
 
             is EchoMediaItem.Profile.UserItem -> listOf()
         }
 
-        is EchoMediaItem.TrackItem -> getTrackButtons(item.track) + listOfNotNull(
-            likeButton(item.track, loaded),
-            hideButton(item.track, loaded),
-            radioButton(item, loaded),
-            saveToPlaylist(item),
-            saveToLibraryButton(item, loaded),
-            downloadButton(item),
+        is EchoMediaItem.TrackItem -> getTrackButtons(client, item.track) + listOfNotNull(
+            likeButton(client, item.track, loaded),
+            hideButton(client, item.track, loaded),
+            radioButton(client, item, loaded),
+            saveToPlaylist(client, item),
+            saveToLibraryButton(client, item, loaded),
+            downloadButton(client, item),
             item.track.album?.let {
                 ItemAction.Custom(it.cover, R.drawable.ic_album, it.title) {
                     openItemFragment(it.toMediaItem())
@@ -189,9 +202,11 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-    } + listOfNotNull(shareButton(item, loaded))
+    } + listOfNotNull(shareButton(client, item, loaded))
 
-    private fun getListButtons(item: EchoMediaItem.Lists) = if (client is TrackClient) listOf(
+    private fun getListButtons(
+        client: ExtensionClient, item: EchoMediaItem.Lists
+    ) = if (client is TrackClient) listOf(
         ItemAction.Resource(R.drawable.ic_play, R.string.play) {
             playerViewModel.play(clientId, item, 0)
         },
@@ -203,7 +218,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         }
     ) else listOf()
 
-    private fun getTrackButtons(track: Track) =
+    private fun getTrackButtons(client: ExtensionClient, track: Track) =
         if (client is TrackClient && !fromPlayer) listOfNotNull(
             ItemAction.Resource(R.drawable.ic_play, R.string.play) {
                 playerViewModel.play(clientId, track)
@@ -228,7 +243,9 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             }
         )
 
-    private fun likeButton(track: Track, loaded: Boolean) = if (client is TrackLikeClient && loaded)
+    private fun likeButton(
+        client: ExtensionClient, track: Track, loaded: Boolean
+    ) = if (client is TrackLikeClient && loaded)
         if (!track.isLiked)
             ItemAction.Resource(R.drawable.ic_heart_outline, R.string.like) {
                 viewModel.like(track, true)
@@ -238,7 +255,9 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         }
     else null
 
-    private fun hideButton(track: Track, loaded: Boolean) = if (client is TrackHideClient && loaded)
+    private fun hideButton(
+        client: ExtensionClient, track: Track, loaded: Boolean
+    ) = if (client is TrackHideClient && loaded)
         if (!track.isHidden)
             ItemAction.Resource(R.drawable.ic_hide_outline, R.string.hide) {
                 viewModel.hide(track, true)
@@ -248,38 +267,43 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         }
     else null
 
-    private fun followButton(artist: Artist, loaded: Boolean) =
-        if (client is ArtistFollowClient && loaded)
-            if (!artist.isFollowing)
-                ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
-                    viewModel.subscribe(artist, true)
-                }
-            else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unfollow) {
-                viewModel.subscribe(artist, false)
+    private fun followButton(
+        client: ExtensionClient, artist: Artist, loaded: Boolean
+    ) = if (client is ArtistFollowClient && loaded)
+        if (!artist.isFollowing)
+            ItemAction.Resource(R.drawable.ic_heart_outline, R.string.follow) {
+                viewModel.subscribe(artist, true)
             }
-        else null
+        else ItemAction.Resource(R.drawable.ic_heart_filled, R.string.unfollow) {
+            viewModel.subscribe(artist, false)
+        }
+    else null
 
-    private fun saveToPlaylist(item: EchoMediaItem) = if (client is LibraryFeedClient)
+    private fun saveToPlaylist(
+        client: ExtensionClient, item: EchoMediaItem
+    ) = if (client is LibraryFeedClient)
         ItemAction.Resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
             AddToPlaylistBottomSheet.newInstance(clientId, item)
                 .show(parentFragmentManager, null)
         }
     else null
 
-    private fun downloadButton(item: EchoMediaItem) =
-        if (client !is OfflineExtension && client is TrackClient)
-            ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
-                downloadViewModel.addToDownload(requireActivity(), clientId, item)
-            }
-        else null
+    private fun downloadButton(
+        client: ExtensionClient, item: EchoMediaItem
+    ) = if (client !is OfflineExtension && client is TrackClient)
+        ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
+            downloadViewModel.addToDownload(requireActivity(), clientId, item)
+        }
+    else null
 
-    private fun radioButton(item: EchoMediaItem, loaded: Boolean) =
-        if (client is RadioClient && loaded) ItemAction.Resource(
-            R.drawable.ic_sensors, R.string.radio
-        ) { playerViewModel.radio(clientId, item) }
-        else null
+    private fun radioButton(
+        client: ExtensionClient, item: EchoMediaItem, loaded: Boolean
+    ) = if (client is RadioClient && loaded) ItemAction.Resource(
+        R.drawable.ic_sensors, R.string.radio
+    ) { playerViewModel.radio(clientId, item) }
+    else null
 
-    private fun shareButton(item: EchoMediaItem, loaded: Boolean) =
+    private fun shareButton(client: ExtensionClient, item: EchoMediaItem, loaded: Boolean) =
         if (client is ShareClient && loaded) ItemAction.Resource(
             R.drawable.ic_forward,
             R.string.share
@@ -288,15 +312,16 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             playerViewModel.onShare(shareClient, item)
         } else null
 
-    private fun saveToLibraryButton(item: EchoMediaItem, loaded: Boolean) =
-        if (client is SaveToLibraryClient && loaded) {
-            if (viewModel.savedState.value) ItemAction.Resource(
-                R.drawable.ic_bookmark_filled, R.string.remove_from_library
-            ) { viewModel.saveToLibrary(item, false) }
-            else ItemAction.Resource(
-                R.drawable.ic_bookmark_outline, R.string.save_to_library
-            ) { viewModel.saveToLibrary(item, true) }
-        } else null
+    private fun saveToLibraryButton(
+        client: ExtensionClient, item: EchoMediaItem, loaded: Boolean
+    ) = if (client is SaveToLibraryClient && loaded) {
+        if (viewModel.savedState.value) ItemAction.Resource(
+            R.drawable.ic_bookmark_filled, R.string.remove_from_library
+        ) { viewModel.saveToLibrary(item, false) }
+        else ItemAction.Resource(
+            R.drawable.ic_bookmark_outline, R.string.save_to_library
+        ) { viewModel.saveToLibrary(item, true) }
+    } else null
 
     sealed class ItemAction {
         abstract val action: () -> Unit

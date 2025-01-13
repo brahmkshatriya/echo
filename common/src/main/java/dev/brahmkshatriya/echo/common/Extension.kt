@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
@@ -39,12 +40,12 @@ import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
  * @param T The type of the extension client
  * @property type The type of the extension
  * @property metadata The metadata of the extension
- * @property instance A lazy result instance of the [T] client
+ * @property instance An injectable instance of the [T] client
  */
 sealed class Extension<T : ExtensionClient>(
     val type: ExtensionType,
     open val metadata: Metadata,
-    open val instance: Lazy<Result<T>>
+    open val instance: Injectable<T>
 ) {
     /**
      * The id of the extension
@@ -113,11 +114,11 @@ sealed class Extension<T : ExtensionClient>(
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
  *
  * @param metadata The metadata of the extension
- * @param instance A lazy result instance of the [ExtensionClient] client
+ * @param instance An injectable instance of the [ExtensionClient] client
  */
 data class MusicExtension(
     override val metadata: Metadata,
-    override val instance: Lazy<Result<ExtensionClient>>,
+    override val instance: Injectable<ExtensionClient>,
 ) : Extension<ExtensionClient>(ExtensionType.MUSIC, metadata, instance)
 
 /**
@@ -133,11 +134,11 @@ data class MusicExtension(
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
  *
  * @param metadata The metadata of the extension
- * @param instance A lazy result instance of the [TrackerClient] client
+ * @param instance An injectable instance of the [TrackerClient] client
  */
 data class TrackerExtension(
     override val metadata: Metadata,
-    override val instance: Lazy<Result<TrackerClient>>,
+    override val instance: Injectable<TrackerClient>,
 ) : Extension<TrackerClient>(ExtensionType.TRACKER, metadata, instance)
 
 /**
@@ -152,9 +153,9 @@ data class TrackerExtension(
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
  * @param metadata The metadata of the extension
- * @param instance A lazy result instance of the [LyricsClient] client
+ * @param instance An injectable instance of the [LyricsClient] client
  */
 data class LyricsExtension(
     override val metadata: Metadata,
-    override val instance: Lazy<Result<LyricsClient>>,
+    override val instance: Injectable<LyricsClient>,
 ) : Extension<LyricsClient>(ExtensionType.LYRICS, metadata, instance)

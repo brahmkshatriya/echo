@@ -54,7 +54,7 @@ class StreamableLoader(
     ): T {
         val extension = extensionListFlow.getExtension(mediaItem.extensionId)
             ?: throw Exception(context.noClient().message)
-        val client = extension.instance.value.getOrNull()
+        val client = extension.instance.value().getOrNull()
         if (client !is TrackClient)
             throw Exception(context.trackNotSupported(extension.metadata.name).message)
         return runCatching { block(client) }.getOrElse {

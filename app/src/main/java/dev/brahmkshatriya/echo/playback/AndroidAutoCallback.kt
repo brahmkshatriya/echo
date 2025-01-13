@@ -49,7 +49,6 @@ import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.future
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
-import dev.brahmkshatriya.echo.utils.toJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -283,9 +282,9 @@ abstract class AndroidAutoCallback(
                 ).build()
         }
 
-        private fun Extension<*>.toMediaItem(context: Context) = browsableItem(
+        private suspend fun Extension<*>.toMediaItem(context: Context) = browsableItem(
             "$ROOT/$id", name, context.getString(R.string.extension),
-            instance.value.isSuccess,
+            instance.value().isSuccess,
             metadata.iconUrl?.toImageHolder()?.toUri()
         )
 
@@ -296,10 +295,10 @@ abstract class AndroidAutoCallback(
         @OptIn(UnstableApi::class)
         val errorIo = LibraryResult.ofError<ImmutableList<MediaItem>>(SessionError.ERROR_IO)
 
-        inline fun <reified C> Extension<*>.get(
+        suspend inline fun <reified C> Extension<*>.get(
             block: C.() -> List<MediaItem>
         ): LibraryResult<ImmutableList<MediaItem>> = runCatching {
-            val client = instance.value.getOrThrow() as? C ?: return@runCatching notSupported
+            val client = instance.value().getOrThrow() as? C ?: return@runCatching notSupported
             LibraryResult.ofItemList(
                 client.block(),
                 MediaLibraryService.LibraryParams.Builder()

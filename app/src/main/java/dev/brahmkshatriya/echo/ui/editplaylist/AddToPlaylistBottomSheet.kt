@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +28,7 @@ import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
@@ -90,20 +92,21 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         }
 
         observe(viewModel.dismiss) { dismiss() }
+        lifecycleScope.launch {
+            val hasCreate =
+                viewModel.extensionListFlow.getExtension(clientId)?.isClient<PlaylistEditClient>()
+                    ?: false
+            val concatAdapter =
+                if (hasCreate) ConcatAdapter(createPlaylistAdapter, adapter) else adapter
 
-        val hasCreate =
-            viewModel.extensionListFlow.getExtension(clientId)?.isClient<PlaylistEditClient>()
-                ?: false
-        val concatAdapter =
-            if (hasCreate) ConcatAdapter(createPlaylistAdapter, adapter) else adapter
-
-        binding.recyclerView.adapter = concatAdapter
-        binding.recyclerView.mediaItemSpanCount {
-            (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = it
+            binding.recyclerView.adapter = concatAdapter
+            binding.recyclerView.mediaItemSpanCount {
+                (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = it
+            }
+            viewModel.clientId = clientId
+            viewModel.item = item
+            viewModel.onInitialize()
         }
-        viewModel.clientId = clientId
-        viewModel.item = item
-        viewModel.onInitialize()
     }
 
     class CreatePlaylistAdapter(

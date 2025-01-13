@@ -277,7 +277,7 @@ sealed class ShelfViewHolder(
             val map = hashMapOf<EchoMediaItem.Lists, PagedData.Single<Track>>()
             fun loadTracks(clientId: String, lists: EchoMediaItem.Lists) = map.getOrPut(lists) {
                 PagedData.Single {
-                    val client = extensionList.getExtension(clientId)?.instance?.value?.getOrNull()
+                    val client = extensionList.getExtension(clientId)?.instance?.value()?.getOrNull()
                         ?: throw Exception(app.noClient().message)
                     when (lists) {
                         is EchoMediaItem.Lists.AlbumItem -> {

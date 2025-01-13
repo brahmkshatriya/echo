@@ -65,7 +65,7 @@ class Radio(
         ): State.Loaded? {
             val list = extensionListFlow.first { it != null }
             val extension = list?.find { it.metadata.id == clientId }
-            when (val client = extension?.instance?.value?.getOrNull()) {
+            when (val client = extension?.instance?.value()?.getOrNull()) {
                 null -> {
                     messageFlow.emit(context.noClient())
                 }

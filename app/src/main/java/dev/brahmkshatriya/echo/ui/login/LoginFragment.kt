@@ -31,7 +31,6 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.image.loadAsCircle
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
@@ -86,10 +85,10 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    private inline fun <reified T : LoginClient> Extension<*>.getClient(
+    private suspend inline fun <reified T : LoginClient> Extension<*>.getClient(
         button: MaterialButton, noinline configure: FragmentLoginBinding.(T) -> Unit
     ) = run {
-        val client = instance.value.getOrNull()
+        val client = instance.value().getOrNull()
         if (client !is T) null
         else Pair(button) { configure(binding, client) }
     }
@@ -123,52 +122,55 @@ class LoginFragment : Fragment() {
 
         val metadata = extension.metadata
 
-        if (!extension.isClient<LoginClient>()) {
-            createSnack(requireContext().loginNotSupported(clientName))
-            parentFragmentManager.popBackStack()
-            return
-        }
-
-        metadata.iconUrl?.toImageHolder()
-            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
-                binding.extensionIcon.setImageDrawable(it)
+        lifecycleScope.launch {
+            if (!extension.isClient<LoginClient>()) {
+                createSnack(requireContext().loginNotSupported(clientName))
+                parentFragmentManager.popBackStack()
+                return@launch
             }
 
-        binding.loginContainer.isVisible = true
+            metadata.iconUrl?.toImageHolder()
+                .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
+                    binding.extensionIcon.setImageDrawable(it)
+                }
 
-        val clients = listOfNotNull(
-            extension.getClient<LoginClient.UsernamePassword>(binding.loginUserPass) {
-                configureUsernamePassword(extension)
-            },
-            extension.getClient<LoginClient.WebView>(binding.loginWebview) {
-                configureWebView(extension, it)
-            },
-            extension.getClient<LoginClient.CustomTextInput>(binding.loginCustomInput) {
-                configureCustomTextInput(extension, it)
-            },
-        )
+            binding.loginContainer.isVisible = true
 
-        if (clients.isEmpty()) {
-            createSnack(requireContext().loginNotSupported(clientName))
-            parentFragmentManager.popBackStack()
-            return
-        } else if (clients.size == 1) loginViewModel.loginClient.value = 0
-        else {
-            binding.loginToggleGroup.isVisible = true
-            clients.forEachIndexed { index, pair ->
-                val (button, _) = pair
-                button.isVisible = true
-                button.setOnClickListener {
-                    loginViewModel.loginClient.value = index
-                    binding.loginToggleGroup.isVisible = false
+            val clients = listOfNotNull(
+                extension.getClient<LoginClient.UsernamePassword>(binding.loginUserPass) {
+                    configureUsernamePassword(extension)
+                },
+                extension.getClient<LoginClient.WebView>(binding.loginWebview) {
+                    configureWebView(extension, it)
+                },
+                extension.getClient<LoginClient.CustomTextInput>(binding.loginCustomInput) {
+                    configureCustomTextInput(extension, it)
+                },
+            )
+
+            if (clients.isEmpty()) {
+                createSnack(requireContext().loginNotSupported(clientName))
+                parentFragmentManager.popBackStack()
+                return@launch
+            } else if (clients.size == 1) loginViewModel.loginClient.value = 0
+            else {
+                binding.loginToggleGroup.isVisible = true
+                clients.forEachIndexed { index, pair ->
+                    val (button, _) = pair
+                    button.isVisible = true
+                    button.setOnClickListener {
+                        loginViewModel.loginClient.value = index
+                        binding.loginToggleGroup.isVisible = false
+                    }
                 }
             }
+            observe(loginViewModel.loginClient) {
+                it ?: return@observe
+                binding.loginToggleGroup.isVisible = false
+                clients[it].second()
+            }
         }
-        collect(loginViewModel.loginClient) {
-            it ?: return@collect
-            binding.loginToggleGroup.isVisible = false
-            clients[it].second()
-        }
+
 
         observe(loginViewModel.loadingOver) {
             parentFragmentManager.popBackStack()

@@ -16,7 +16,7 @@ import dev.brahmkshatriya.echo.utils.ui.configure
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.applyAdapter
 import kotlinx.coroutines.Job
 
-inline fun <reified T> Fragment.applyClient(
+suspend inline fun <reified T> Fragment.applyClient(
     recyclerView: RecyclerView,
     swipeRefresh: SwipeRefreshLayout,
     id: Int,

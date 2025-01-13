@@ -109,8 +109,7 @@ class DownloadViewModel @Inject constructor(
     val offlineFlow = MutableStateFlow<PagingData<Shelf>?>(null)
     private fun loadOfflineDownloads() {
         viewModelScope.launch {
-            extensionLoader.offline.second.value.getOrNull()?.getDownloads()
-                ?.toFlow()?.collectTo(offlineFlow)
+            extensionLoader.offline.getDownloads().toFlow().collectTo(offlineFlow)
         }
     }
 }

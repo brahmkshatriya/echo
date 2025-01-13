@@ -26,9 +26,11 @@ import dev.brahmkshatriya.echo.playback.StreamableLoadingException
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PlayerEventListener(
     private val context: Context,
@@ -50,11 +52,12 @@ class PlayerEventListener(
 
     val player get() = session.player
 
-    private fun updateCustomLayout() {
-        val item = player.currentMediaItem ?: return
-        val supportsLike = extensionList.getExtension(item.extensionId)?.isClient<TrackLikeClient>()
-            ?: false
-
+    private fun updateCustomLayout() = scope.launch(Dispatchers.Main) {
+        val item = player.currentMediaItem ?: return@launch
+        val supportsLike = withContext(Dispatchers.IO) {
+            extensionList.getExtension(item.extensionId)?.isClient<TrackLikeClient>()
+                ?: false
+        }
         val commandButtons = listOfNotNull(
             getRepeatButton(context, player.repeatMode),
             getLikeButton(context, item).takeIf { supportsLike }

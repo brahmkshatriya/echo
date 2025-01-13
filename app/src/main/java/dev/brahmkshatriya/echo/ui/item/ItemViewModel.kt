@@ -122,7 +122,7 @@ class ItemViewModel @Inject constructor(
     }
 
     private suspend inline fun <reified T, reified R : Any> getClient(
-        block: T.() -> R
+        crossinline block: suspend T.() -> R
     ) = extension?.get<T, R>(throwableFlow, block)
 
     private val songsFlow = MutableStateFlow<PagingData<Track>?>(null)
