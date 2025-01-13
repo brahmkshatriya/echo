@@ -145,16 +145,12 @@ class Radio(
     private suspend fun startRadio() {
         if (!autoStartRadio) return
         val hasNext = withContext(Dispatchers.Main) {
-            player.hasNextMediaItem() || player.currentMediaItem != null
+            player.hasNextMediaItem() || player.currentMediaItem == null
         }
         if (hasNext) return
         when (val state = stateFlow.value) {
             is State.Loading -> {}
-            is State.Empty -> {
-                if (stateFlow.value != State.Empty) return
-                loadPlaylist()
-            }
-
+            is State.Empty -> loadPlaylist()
             is State.Loaded -> {
                 val toBePlayed = state.played + 1
                 if (toBePlayed == state.tracks.size) loadPlaylist()

@@ -58,12 +58,12 @@ import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.player.PlayerTrackAdapter.Listener
 import dev.brahmkshatriya.echo.ui.player.PlayerTrackAdapter.ViewHolder
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
-import dev.brahmkshatriya.echo.utils.ui.PlayerItemSpan
-import dev.brahmkshatriya.echo.utils.ui.animateVisibility
 import dev.brahmkshatriya.echo.utils.image.load
 import dev.brahmkshatriya.echo.utils.image.loadBlurred
 import dev.brahmkshatriya.echo.utils.image.loadWithBitmap
 import dev.brahmkshatriya.echo.utils.image.loadWithThumb
+import dev.brahmkshatriya.echo.utils.ui.PlayerItemSpan
+import dev.brahmkshatriya.echo.utils.ui.animateVisibility
 import dev.brahmkshatriya.echo.utils.ui.toTimeString
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
@@ -177,7 +177,7 @@ class DefaultViewHolder(
     override fun onPlayer(player: Player?) {
         actualPlayer = player
         player?.addListener(playerListener)
-        applyPlayerVideo()
+        applyVideo()
     }
 
     private var item: MediaItem? = null
@@ -197,22 +197,19 @@ class DefaultViewHolder(
 
     private fun applyVideo() {
         val background = item?.background
-        if (oldBg == background) {
-            applyPlayerVideo()
-            return
-        }
-        oldBg = background
+        if (background == null || background == oldBg || !showBackground())
+            return applyPlayerVideo()
+
         cleanUp()
+        oldBg = background
         actualPlayer?.addListener(playerListener)
         binding.bgVideo.run {
-            if (background != null && showBackground()) {
-                resizeMode = RESIZE_MODE_ZOOM
-                val bP = getPlayer(context, cache, background)
-                players.add(bP)
-                backgroundPlayer = bP
-                player = backgroundPlayer
-                applyVideoVisibility(true)
-            } else applyPlayerVideo()
+            resizeMode = RESIZE_MODE_ZOOM
+            val bP = getPlayer(context, cache, background)
+            players.add(bP)
+            backgroundPlayer = bP
+            player = backgroundPlayer
+            applyVideoVisibility(true)
         }
     }
 
@@ -232,6 +229,7 @@ class DefaultViewHolder(
         backgroundPlayer?.release()
         players.remove(backgroundPlayer)
         backgroundPlayer = null
+        oldBg = null
     }
 
     private var offset = 0f

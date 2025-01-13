@@ -40,7 +40,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
@@ -90,6 +89,7 @@ class ExtensionLoader(
     }
 
     private suspend fun Extension<*>.setLoginUser(trigger: Boolean = false) {
+        println("Setting login user for $name")
         val user = userDao.getCurrentUser(id)
         get<LoginClient, Unit>(throwableFlow) {
             withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
@@ -109,6 +109,9 @@ class ExtensionLoader(
         lyricsListFlow.getExtension(clientId)?.setLoginUser()
         extensionListFlow.getExtension(clientId)?.setLoginUser(true)
     }
+    private val combined = extensionListFlow
+        .combine(trackerListFlow) { a, b -> a.orEmpty() + b.orEmpty() }
+        .combine(lyricsListFlow) { a, b -> a + b.orEmpty() }
 
     private var initialized = false
     fun initialize() {
@@ -123,25 +126,24 @@ class ExtensionLoader(
                 }
             }
             launch {
-                val combined = merge(
-                    trackerListFlow, lyricsListFlow, extensionListFlow, extensionFlow
-                )
                 userDao.observeCurrentUser()
-                    .combine(combined) { it, _ -> it }
+                    .combine(combined) { it, ext -> it to ext }
                     .distinctUntilChanged()
-                    .collect { it.map { launch { it.setUser() } } }
+                    .collect { (users, extensions) ->
+                        val ext = extensions.map { it.id }.toSet()
+                        val extToRemove = userMap.keys - ext
+                        extToRemove.forEach { userMap.remove(it) }
+                        users.filter { it.clientId in ext }.map { launch { it.setUser() } }
+                    }
             }
 
             //Inject other extensions
             launch {
-                val combined = merge(
-                    extensionFlow.map { listOfNotNull(it) }, trackerListFlow, lyricsListFlow
-                )
                 combined.collect { list ->
                     val trackerExtensions = trackerListFlow.value.orEmpty()
                     val lyricsExtensions = lyricsListFlow.value.orEmpty()
                     val musicExtensions = extensionListFlow.value.orEmpty()
-                    list?.forEach { extension ->
+                    list.forEach { extension ->
                         extension.get<TrackerExtensionsProvider, Unit>(throwableFlow) {
                             inject(extension.name, requiredTrackerExtensions, trackerExtensions) {
                                 setTrackerExtensions(it)

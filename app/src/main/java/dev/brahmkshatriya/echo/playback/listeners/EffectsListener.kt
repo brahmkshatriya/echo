@@ -67,11 +67,11 @@ class EffectsListener(
     class Effects(sessionId: Int) {
         private val equalizer = runCatching { Equalizer(0, sessionId) }.getOrNull()
         private val gain = runCatching { LoudnessEnhancer(sessionId) }.getOrNull()
-        private fun applyBassBoost(strength: Int) {
+        private fun applyBassBoost(strength: Int) = runCatching {
             if (strength == 0) {
                 equalizer?.setEnabled(false)
                 gain?.setEnabled(false)
-                return
+                return@runCatching
             }
             gain?.setEnabled(true)
             equalizer?.setEnabled(true)
@@ -89,8 +89,10 @@ class EffectsListener(
         }
 
         fun release() {
-            equalizer?.release()
-            gain?.release()
+            runCatching {
+                equalizer?.release()
+                gain?.release()
+            }
         }
 
         fun applySettings(settings: SharedPreferences) {
