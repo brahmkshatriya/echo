@@ -283,4 +283,14 @@
     <string name="sleep_on_specific_time">নিৰ্দিষ্ট সময়ত শুব লাগে</string>
     <string name="sleep_timer_canceled">টোপনিৰ টাইমাৰ বাতিল কৰা হৈছে</string>
     <string name="sleep_timer_desc">এটা নিৰ্দিষ্ট সময়ৰ পিছত প্লেবেক বন্ধ কৰিবলৈ এটা স্লিপ টাইমাৰ ছেট কৰক</string>
+    <string name="audio_fx">অডিও প্ৰভাৱসমূহ</string>
+    <string name="playback_speed">প্লেবেকৰ গতি</string>
+    <string name="bass_boost">বেছ বুষ্ট</string>
+    <string name="bass_boost_desc">বৃহৎ মানে শব্দ বিকৃত কৰিব পাৰে।</string>
+    <string name="audio_fx_summary">সকলো গীতৰ বাবে প্ৰযোজ্য প্ৰভাৱ</string>
+    <string name="playback">প্লেবেক</string>
+    <string name="reset">ৰিছেট কৰক</string>
+    <string name="audio_fx_desc">বৰ্তমানৰ ট্ৰেকৰ বাবে অডিঅ\' প্ৰভাৱ সলনি কৰক।</string>
+    <string name="change_pitch_with_speed">গতিৰ সৈতে পিচ সলনি কৰক</string>
+    <string name="change_pitch_with_speed_desc">সেই স্লো-মোচন শব্দটো পাওক</string>
 </resources>
