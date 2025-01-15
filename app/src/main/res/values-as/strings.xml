@@ -293,4 +293,7 @@
     <string name="audio_fx_desc">বৰ্তমানৰ ট্ৰেকৰ বাবে অডিঅ\' প্ৰভাৱ সলনি কৰক।</string>
     <string name="change_pitch_with_speed">গতিৰ সৈতে পিচ সলনি কৰক</string>
     <string name="change_pitch_with_speed_desc">সেই স্লো-মোচন শব্দটো পাওক</string>
+    <string name="show_tabs">টেবসমূহ দেখুৱাওক</string>
+    <string name="show_tab_summary">এক্সটেনশনৰ টেবসমূহক শ্ৰেণী হিচাপে দেখুৱাব</string>
+    <string name="track_added_to_queue">%1$s শাৰীত যোগ কৰা হৈছে</string>
 </resources>
