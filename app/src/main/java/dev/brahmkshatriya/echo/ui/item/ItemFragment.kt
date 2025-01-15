@@ -219,7 +219,7 @@ class ItemFragment : Fragment() {
         }
 
 
-        collect(viewModel.relatedFeed) {
+        collect(viewModel.relatedFeedFlow) {
             shelfAdapter?.submit(it)
         }
 
@@ -273,7 +273,7 @@ class ItemFragment : Fragment() {
             extension ?: return@collect
 
             val mediaAdapter =
-                ShelfAdapter(this, view.transitionName, extension, listener)
+                ShelfAdapter(this, getString(R.string.shelves, item.title), view.transitionName, extension, listener)
             shelfJob?.cancel()
             shelfJob = mediaAdapter.applyCurrent(this, binding.recyclerView)
 
@@ -287,7 +287,9 @@ class ItemFragment : Fragment() {
             viewModel.initialize()
 
             binding.recyclerView.run {
-                val adapter = concatAdapter(item, mediaAdapter.withLoaders())
+                val adapter = concatAdapter(
+                    item, mediaAdapter.withSearchHeaderAndLoaders { viewModel.relatedFeed }
+                )
                 when (item) {
                     is UserItem ->
                         applyAdapter<UserClient>(extension, R.string.user, adapter)

@@ -62,6 +62,8 @@ sealed class PagedData<T : Any> {
 
     abstract fun hasNext(): Boolean
 
+    abstract fun <R : Any> map(block:(T) -> R): PagedData<R>
+
     /**
      * A class representing a single page of data.
      *
@@ -102,6 +104,9 @@ sealed class PagedData<T : Any> {
         }
 
         override fun hasNext() = !loaded
+        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
+            return Single { load().map(block) }
+        }
     }
 
     /**
@@ -177,6 +182,12 @@ sealed class PagedData<T : Any> {
         }
 
         override fun hasNext() = !loaded
+        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
+            return Continuous { continuation ->
+                val (data, cont) = load(continuation)
+                Page(data.map(block), cont)
+            }
+        }
     }
 
     /**
@@ -221,6 +232,9 @@ sealed class PagedData<T : Any> {
         }
 
         override fun hasNext() = sources.any { it.hasNext() }
+        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
+            return Concat(*sources.map { it.map(block) }.toTypedArray())
+        }
 
         private fun splitContinuation(continuation: String?): Pair<Int, String?> {
             if (continuation == null) return 0 to null

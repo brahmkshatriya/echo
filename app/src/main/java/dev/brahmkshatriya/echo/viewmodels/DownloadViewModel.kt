@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.db.models.DownloadEntity
@@ -106,10 +107,12 @@ class DownloadViewModel @Inject constructor(
         }
     }
 
+    var offline: PagedData<Shelf>? = null
     val offlineFlow = MutableStateFlow<PagingData<Shelf>?>(null)
     private fun loadOfflineDownloads() {
         viewModelScope.launch {
-            extensionLoader.offline.getDownloads().toFlow().collectTo(offlineFlow)
+            offline = extensionLoader.offline.getDownloads()
+            offline!!.toFlow().collectTo(offlineFlow)
         }
     }
 }

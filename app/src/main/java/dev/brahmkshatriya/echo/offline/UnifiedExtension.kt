@@ -133,7 +133,7 @@ class UnifiedExtension(
         ),
     )
 
-    private val settings = getSettings(context, ExtensionType.MUSIC, OfflineExtension.metadata)
+    private val settings = getSettings(context, ExtensionType.MUSIC, metadata)
     override fun setSettings(settings: Settings) {}
     private val showTabs get() = settings.getBoolean("show_tabs") ?: true
 
@@ -152,7 +152,13 @@ class UnifiedExtension(
         val shelf = if (!showTabs || tabs.isEmpty())
             injectExtensionId(id, getFeed(tabs.firstOrNull()))
         else PagedData.Single {
-            tabs.map { Shelf.Category(it.title, injectExtensionId(id, getFeed(it))) }
+            listOf(
+                Shelf.Lists.Categories(
+                    context.getString(R.string.tabs),
+                    tabs.map { Shelf.Category(it.title, injectExtensionId(id, getFeed(it))) },
+                    type = Shelf.Lists.Type.Grid
+                )
+            )
         }
         val list = shelf.loadNext().orEmpty()
         val hasNext = shelf.hasNext()

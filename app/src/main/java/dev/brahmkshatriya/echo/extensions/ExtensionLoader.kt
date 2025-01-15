@@ -94,7 +94,6 @@ class ExtensionLoader(
     }
 
     private suspend fun Extension<*>.setLoginUser(trigger: Boolean = false) {
-        println("Setting login user for $name")
         val user = userDao.getCurrentUser(id)
         inject<LoginClient> {
             withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
@@ -235,6 +234,7 @@ class ExtensionLoader(
             }
         }
         music.first { it != null }
+        userMap.clear()
     }
 
     private suspend fun <T : ExtensionClient> ExtensionRepo<T>.getPlugins(

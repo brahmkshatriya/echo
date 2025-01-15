@@ -5,11 +5,10 @@ import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.map
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -19,19 +18,17 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.container.ContainerFragment
-import dev.brahmkshatriya.echo.ui.container.ContainerViewModel
 import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
-import dev.brahmkshatriya.echo.ui.paging.toFlow
+import dev.brahmkshatriya.echo.ui.shelf.ShelfFragment
+import dev.brahmkshatriya.echo.ui.shelf.ShelfSearchFragment
+import dev.brahmkshatriya.echo.ui.shelf.ShelfViewModel
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 open class ShelfClickListener(
@@ -70,12 +67,12 @@ open class ShelfClickListener(
 
     private fun openContainer(
         clientId: String, title: String,
-        flow: Flow<PagingData<Shelf>>?, transitionView: View?
+        flow: PagedData<Shelf>?, transitionView: View?
     ) {
         flow ?: return
-        val viewModel by fragment.activityViewModels<ContainerViewModel>()
-        viewModel.moreFlow = flow
-        fragment.openFragment(ContainerFragment.newInstance(clientId, title), transitionView)
+        val viewModel by fragment.activityViewModels<ShelfViewModel>()
+        viewModel.shelves = flow
+        fragment.openFragment(ShelfFragment.newInstance(clientId, title), transitionView)
         afterOpening?.invoke()
     }
 
@@ -139,6 +136,24 @@ open class ShelfClickListener(
         }
     }
 
+    override fun onShelfSearchClick(
+        client: String, title: String, shelf: PagedData<Shelf>, view: View
+    ) {
+        val viewModel by fragment.activityViewModels<ShelfViewModel>()
+        viewModel.shelves = shelf
+        fragment.openFragment(ShelfSearchFragment.newInstance(client, title, true), view)
+        afterOpening?.invoke()
+    }
+
+    override fun onShelfSortClick(
+        client: String, title: String, shelf: PagedData<Shelf>, view: View
+    ) {
+        val viewModel by fragment.activityViewModels<ShelfViewModel>()
+        viewModel.shelves = shelf
+        fragment.openFragment(ShelfSearchFragment.newInstance(client, title, false), view)
+        afterOpening?.invoke()
+    }
+
     override fun onLongClick(
         clientId: String, item: EchoMediaItem, transitionView: View?
     ): Boolean {
@@ -153,28 +168,28 @@ open class ShelfClickListener(
             is Category -> openContainer(
                 clientId,
                 shelf.title,
-                shelf.items?.toFlow(),
+                shelf.items,
                 transitionView
             )
 
             is Shelf.Lists.Tracks -> openContainer(
                 clientId,
                 shelf.title,
-                shelf.more?.toFlow()?.map { it.map { track -> track.toMediaItem().toShelf() } },
+                shelf.more?.map { track -> track.toMediaItem().toShelf() },
                 transitionView
             )
 
             is Shelf.Lists.Items -> openContainer(
                 clientId,
                 shelf.title,
-                shelf.more?.toFlow()?.map { it.map { item -> item.toShelf() } },
+                shelf.more?.map { item -> item.toShelf() },
                 transitionView
             )
 
             is Shelf.Lists.Categories -> openContainer(
                 clientId,
                 shelf.title,
-                shelf.more?.toFlow()?.map { it.map { category -> category } },
+                shelf.more?.map { category -> category },
                 transitionView
             )
         }

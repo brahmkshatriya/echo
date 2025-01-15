@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.container
+package dev.brahmkshatriya.echo.ui.shelf
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,9 +10,9 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.databinding.FragmentCategoryBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
-import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
@@ -21,7 +21,7 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
 import kotlinx.coroutines.Job
 
 @AndroidEntryPoint
-class ContainerFragment : Fragment() {
+class ShelfFragment : Fragment() {
 
     private var binding by autoCleared<FragmentCategoryBinding>()
     private val clientId by lazy {
@@ -31,8 +31,8 @@ class ContainerFragment : Fragment() {
         requireArguments().getString("title")!!
     }
 
-    private val activityViewModel by activityViewModels<ContainerViewModel>()
-    private val viewModel by viewModels<ContainerViewModel>()
+    private val activityViewModel by activityViewModels<ShelfViewModel>()
+    private val viewModel by viewModels<ShelfViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -55,10 +55,10 @@ class ContainerFragment : Fragment() {
         }
         FastScrollerHelper.applyTo(binding.recyclerView)
 
-        if (viewModel.moreFlow == null) {
-            val category = activityViewModel.moreFlow ?: return
-            activityViewModel.moreFlow = null
-            viewModel.moreFlow = category
+        if (viewModel.shelves == null) {
+            val category = activityViewModel.shelves ?: return
+            activityViewModel.shelves = null
+            viewModel.shelves = category
             viewModel.initialize()
         }
 
@@ -69,10 +69,10 @@ class ContainerFragment : Fragment() {
         observe(activityViewModel.extensionListFlow) { list ->
             val extension = list?.find { it.metadata.id == clientId }
             extension ?: return@observe
-            val adapter = ShelfAdapter(this, view.transitionName, extension)
+            val adapter = ShelfAdapter(this, title, view.transitionName, extension)
             job?.cancel()
             job = adapter.applyCurrent(this, binding.recyclerView)
-            val concatAdapter = adapter.withLoaders()
+            val concatAdapter = adapter.withSearchHeaderAndLoaders { viewModel.shelves }
             shelfAdapter = adapter
             binding.recyclerView.adapter = concatAdapter
         }
@@ -84,7 +84,7 @@ class ContainerFragment : Fragment() {
 
     companion object {
         fun newInstance(clientId: String, title: String): Fragment {
-            return ContainerFragment().apply {
+            return ShelfFragment().apply {
                 arguments = Bundle().apply {
                     putString("clientId", clientId)
                     putString("title", title)

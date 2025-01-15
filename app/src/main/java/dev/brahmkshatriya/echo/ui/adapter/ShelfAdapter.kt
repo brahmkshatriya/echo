@@ -37,6 +37,7 @@ import java.lang.ref.WeakReference
 
 class ShelfAdapter(
     fragment: Fragment,
+    private val title: String,
     private val transition: String,
     private val extension: Extension<*>,
     val listener: Listener = getListener(fragment)
@@ -49,7 +50,7 @@ class ShelfAdapter(
         }
     }
 
-    interface Listener : TrackAdapter.Listener {
+    interface Listener : TrackAdapter.Listener, ShelfHeaderAdapter.Listener {
         fun onClick(clientId: String, shelf: Shelf, transitionView: View)
         fun onLongClick(clientId: String, shelf: Shelf, transitionView: View): Boolean
         fun onClick(clientId: String, item: EchoMediaItem, transitionView: View?)
@@ -74,18 +75,26 @@ class ShelfAdapter(
     private val loadingListener = createListener(fragment) { retry() }
     private fun getLoadingAdapter() = ShelfLoadingAdapter(extension, loadingListener)
 
-    fun withLoaders(): ConcatAdapter {
+    fun withLoaders(
+        vararg adapters: RecyclerView.Adapter<*>,
+        onStateChanged: (loading: Boolean) -> Unit = {}
+    ): ConcatAdapter {
         val footer = getLoadingAdapter()
         val header = getLoadingAdapter()
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
-            empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
-                LoadState.Loading
+            onStateChanged(loadStates.refresh is LoadState.Loading || itemCount == 0)
+            empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0) LoadState.Loading
             else LoadState.NotLoading(false)
             header.loadState = loadStates.refresh
             footer.loadState = loadStates.append
         }
-        return ConcatAdapter(empty, header, this, footer)
+        return ConcatAdapter(empty, header, *adapters, this, footer)
+    }
+
+    fun withSearchHeaderAndLoaders(shelves: () -> PagedData<Shelf>?): ConcatAdapter {
+        val search = ShelfHeaderAdapter(extension.id, title, listener)
+        return withLoaders(search) { loading -> search.setShelf(shelves().takeIf { !loading }) }
     }
 
     object DiffCallback : DiffUtil.ItemCallback<Shelf>() {

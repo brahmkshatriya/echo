@@ -27,6 +27,7 @@ suspend inline fun <reified T> Fragment.applyClient(
     val parent = parentFragment as Fragment
     val adapter = ShelfAdapter(
         parent,
+        recyclerView.context.getString(id),
         id.toString(),
         extension
     )

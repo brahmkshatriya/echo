@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/title"
+            style="@style/Toolbar"
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
+            tools:title="@string/settings" />
+
+        <LinearLayout
+            android:id="@+id/topBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-12dp"
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp"
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="-8dp"
+                android:layout_weight="1">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/search"
+                    android:padding="8dp"
+                    android:paddingHorizontal="16dp"
+                    app:boxBackgroundColor="?navBackground"
+                    app:boxCornerRadiusBottomEnd="24dp"
+                    app:boxCornerRadiusBottomStart="24dp"
+                    app:boxCornerRadiusTopEnd="24dp"
+                    app:boxCornerRadiusTopStart="24dp"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp"
+                    app:startIconDrawable="@drawable/ic_search_outline">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/searchBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:inputType="text"
+                        android:singleLine="true" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+            </FrameLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSort"
+                style="@style/IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/sort"
+                app:icon="@drawable/ic_sort" />
+
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <View
+        android:id="@+id/toolbarOutline"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="-1dp"
+        android:alpha="0"
+        android:background="?attr/colorOutline"
+        android:translationZ="1dp"
+        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchorGravity="bottom" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/skeleton_item_category" />
+
+    <include
+        android:id="@+id/loading"
+        layout="@layout/item_client_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

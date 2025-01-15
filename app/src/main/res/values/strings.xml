@@ -295,6 +295,9 @@
     <string name="show_tabs">Show Tabs</string>
     <string name="show_tab_summary">will show tabs of the extensions as category</string>
     <string name="track_added_to_queue">%1$s added to queue</string>
+    <string name="sort">Sort</string>
+    <string name="tabs">Tabs</string>
+    <string name="shelves">%1$s Shelves</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

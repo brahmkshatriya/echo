@@ -61,7 +61,8 @@ class ItemViewModel @Inject constructor(
 
     val itemFlow = MutableStateFlow<EchoMediaItem?>(null)
     var loadRelatedFeed = true
-    val relatedFeed = MutableStateFlow<PagingData<Shelf>?>(null)
+    var relatedFeed: PagedData<Shelf>? = null
+    val relatedFeedFlow = MutableStateFlow<PagingData<Shelf>?>(null)
 
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -104,14 +105,14 @@ class ItemViewModel @Inject constructor(
         return getClient<U, T> {
             val loaded = loadItem(item)
             extension?.run(throwableFlow) {
-                if (this is SaveToLibraryClient)
-                    savedState.value = isSavedToLibrary(loaded)
+                if (this !is SaveToLibraryClient) return@run
+                savedState.value = isSavedToLibrary(loaded)
             }
 
             viewModelScope.launch {
-                if (loadRelatedFeed) extension?.run(throwableFlow) {
-                    loadRelated(loaded)?.toFlow()?.map { it }
-                }?.collectTo(relatedFeed)
+                if (!loadRelatedFeed) return@launch
+                relatedFeed = extension?.run(throwableFlow) { loadRelated(loaded) }
+                relatedFeed?.toFlow()?.map { it }?.collectTo(relatedFeedFlow)
             }
             loaded
         }

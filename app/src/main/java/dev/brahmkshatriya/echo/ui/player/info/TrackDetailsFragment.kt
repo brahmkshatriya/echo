@@ -27,6 +27,7 @@ import com.google.android.material.chip.ChipGroup
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -96,13 +97,16 @@ class TrackDetailsFragment : Fragment() {
 
             val extension =
                 playerViewModel.extensionListFlow.getExtension(item.extensionId) ?: return@observe
+            val title = getString(R.string.shelves, track.title)
             val adapter =
-                ShelfAdapter(this, "track_details", extension, shelfClickListener)
+                ShelfAdapter(this, title, "track_details", extension, shelfClickListener)
             job?.cancel()
             job = adapter.applyCurrent(this, binding.root)
             mediaAdapter = adapter
             binding.root.adapter = ConcatAdapter(
-                ExplicitAdapter(track.toMediaItem()), infoAdapter, adapter.withLoaders()
+                ExplicitAdapter(track.toMediaItem()),
+                infoAdapter,
+                adapter.withSearchHeaderAndLoaders { viewModel.shelves }
             )
 
             if (viewModel.previous?.id == track.id) return@observe
@@ -402,6 +406,7 @@ class TrackDetailsFragment : Fragment() {
     ) : CatchingViewModel(throwableFlow) {
 
         var previous: Track? = null
+        var shelves: PagedData<Shelf>? = null
         val itemsFlow = MutableStateFlow<PagingData<Shelf>?>(null)
 
         fun load(clientId: String, track: Track) {
@@ -410,10 +415,10 @@ class TrackDetailsFragment : Fragment() {
 
             val extension = extensionListFlow.getExtension(clientId) ?: return
             viewModelScope.launch {
-                val pagedData = extension.run(throwableFlow) {
+                shelves = extension.run(throwableFlow) {
                     getTrackShelves(track, app)
                 } ?: return@launch
-                pagedData.toFlow().collectTo(itemsFlow)
+                shelves?.toFlow()?.collectTo(itemsFlow)
             }
         }
     }

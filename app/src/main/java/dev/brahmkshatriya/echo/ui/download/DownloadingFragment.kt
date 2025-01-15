@@ -73,15 +73,15 @@ class DownloadingFragment : Fragment() {
 
         val offline = viewModel.extensionListFlow.getExtension(OfflineExtension.metadata.id)
             ?: return
-        val downloadedAdapter = ShelfAdapter(this, "downloads", offline)
+        val downloadedAdapter =
+            ShelfAdapter(this, getString(R.string.downloads), "downloads", offline)
         downloadedAdapter.applyCurrent(this, binding.recyclerView)
 
-        val titleAdapter = ShelfAdapter(this, "", offline)
-
+        val titleAdapter = ShelfAdapter(this, "", "", offline)
         val concatAdapter = ConcatAdapter(
             adapter.withEmptyAdapter(),
             titleAdapter,
-            downloadedAdapter.withLoaders()
+            downloadedAdapter.withSearchHeaderAndLoaders { viewModel.offline }
         )
 
         binding.recyclerView.adapter = concatAdapter
