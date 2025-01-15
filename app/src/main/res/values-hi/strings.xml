@@ -265,4 +265,35 @@
     <string name="show_background_summary">प्लेयर में ट्रैक की पृष्ठभूमि वीडियो या धुंधली कलाकृति</string>
     <string name="explicit">मुखर</string>
     <string name="show_background">पृष्ठभूमि दिखाएं</string>
+    <string name="_15min">15m</string>
+    <string name="_30min">30m</string>
+    <string name="_45min">45m</string>
+    <string name="_1hr">1h</string>
+    <string name="_2hr">2h</string>
+    <string name="sleep_timer_desc">एक निश्चित समय के बाद प्लेबैक को रोकने के लिए एक नींद टाइमर सेट करें</string>
+    <string name="sleep_on_specific_time">विशिष्ट समय पर सोएं</string>
+    <string name="sleep_timer_set_for">%1$s के लिए स्लीप टाइमर सेट किया गया</string>
+    <plurals name="number_hour">
+        <item quantity="one"></item>
+        <item quantity="other">%1$d घंटे</item>
+    </plurals>
+    <string name="reset">रीसेट</string>
+    <string name="audio_fx_desc">वर्तमान ट्रैक के लिए ऑडियो प्रभाव बदलें।</string>
+    <string name="playback">प्लेबैक</string>
+    <string name="bass_boost_desc">बड़ा मान ध्वनि को विकृत कर सकता है।</string>
+    <string name="end_of_track">ट्रैक का अंत</string>
+    <string name="change_pitch_with_speed_desc">उस धीमी गति की आवाज़ को प्राप्त करें</string>
+    <string name="audio_fx">ऑडियो प्रभाव</string>
+    <string name="playback_speed">प्लेबैक गति</string>
+    <string name="track_added_to_queue">%1$s कतार में जोड़ा गया</string>
+    <string name="sleep_timer_canceled">स्लीप टाइमर रद्द कर दिया गया</string>
+    <string name="change_pitch_with_speed">गति के साथ पिच बदलें</string>
+    <string name="bass_boost">बास बूस्ट</string>
+    <string name="show_tabs">टैब दिखाएँ</string>
+    <plurals name="number_min">
+        <item quantity="one"></item>
+        <item quantity="other">%1$d मिनट</item>
+    </plurals>
+    <string name="show_tab_summary">श्रेणी के रूप में एक्सटेंशन के टैब दिखाए जाएंगे</string>
+    <string name="audio_fx_summary">सभी गीतों के लिए लागू किए गए प्रभाव</string>
 </resources>
