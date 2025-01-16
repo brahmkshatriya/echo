@@ -292,7 +292,7 @@
     <string name="show_tabs">टैब दिखाएँ</string>
     <plurals name="number_min">
         <item quantity="one">%1$d मिनट</item>
-        <item quantity="other">%1$d मिनट</item>
+        <item quantity="other">%1$d मिनटों</item>
     </plurals>
     <string name="show_tab_summary">श्रेणी के रूप में एक्सटेंशन के टैब दिखाए जाएंगे</string>
     <string name="audio_fx_summary">सभी गीतों के लिए लागू किए गए प्रभाव</string>
