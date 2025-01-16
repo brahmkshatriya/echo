@@ -125,8 +125,8 @@ class MainActivity : AppCompatActivity() {
         configureSnackBar(binding.navView)
 
         val sessionToken =
-            SessionToken(this, ComponentName(application, PlayerService::class.java))
-        val playerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+            SessionToken(application, ComponentName(application, PlayerService::class.java))
+        val playerFuture = MediaController.Builder(application, sessionToken).buildAsync()
         listenFuture(playerFuture) {
             val player = it.getOrElse { e ->
                 e.printStackTrace()

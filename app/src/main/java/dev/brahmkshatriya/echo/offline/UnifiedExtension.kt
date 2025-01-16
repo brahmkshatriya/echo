@@ -11,7 +11,6 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
-import dev.brahmkshatriya.echo.common.helpers.Page
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
@@ -96,31 +95,26 @@ class UnifiedExtension(
             media = media.withExtensionId(id)
         )
 
-        private fun Shelf.Category.withExtensionId(id: String) =
-            copy(items = items?.let { injectExtensionId(id, it) })
+        private fun Shelf.Category.withExtensionId(id: String): Shelf.Category =
+            copy(items = items?.injectExtensionId(id))
 
-        fun injectExtensionId(id: String, shelf: PagedData<Shelf>): PagedData<Shelf> =
-            PagedData.Continuous {
-                val list = shelf.loadNext()?.map {
-                    when (it) {
-                        is Shelf.Category -> it.withExtensionId(id)
-                        is Shelf.Item -> it.withExtensionId(id)
-                        is Shelf.Lists.Categories -> it.copy(
-                            list = it.list.map { category -> category.withExtensionId(id) }
-                        )
+        fun PagedData<Shelf>.injectExtensionId(id: String) = map {
+            when (it) {
+                is Shelf.Category -> it.withExtensionId(id)
+                is Shelf.Item -> it.withExtensionId(id)
+                is Shelf.Lists.Categories -> it.copy(
+                    list = it.list.map { category -> category.withExtensionId(id) }
+                )
 
-                        is Shelf.Lists.Items -> it.copy(
-                            list = it.list.map { item -> item.withExtensionId(id) }
-                        )
+                is Shelf.Lists.Items -> it.copy(
+                    list = it.list.map { item -> item.withExtensionId(id) }
+                )
 
-                        is Shelf.Lists.Tracks -> it.copy(
-                            list = it.list.map { track -> track.withExtensionId(id) }
-                        )
-                    }
-                } ?: emptyList()
-                val hasMore = shelf.hasNext()
-                Page(list, if (hasMore) list.hashCode().toString() else null)
+                is Shelf.Lists.Tracks -> it.copy(
+                    list = it.list.map { track -> track.withExtensionId(id) }
+                )
             }
+        }
     }
 
     override suspend fun onExtensionSelected() {}
@@ -147,22 +141,20 @@ class UnifiedExtension(
         id: String,
         loadTabs: suspend () -> List<Tab>,
         getFeed: (Tab?) -> PagedData<Shelf>
-    ): PagedData.Continuous<Shelf> = PagedData.Continuous {
+    ): PagedData<Shelf> = PagedData.Suspend {
         val tabs = loadTabs()
-        val shelf = if (!showTabs || tabs.isEmpty())
-            injectExtensionId(id, getFeed(tabs.firstOrNull()))
+        val shelf: PagedData<Shelf> = if (!showTabs || tabs.isEmpty())
+            getFeed(tabs.firstOrNull()).injectExtensionId(id)
         else PagedData.Single {
             listOf(
                 Shelf.Lists.Categories(
                     context.getString(R.string.tabs),
-                    tabs.map { Shelf.Category(it.title, injectExtensionId(id, getFeed(it))) },
+                    tabs.map { Shelf.Category(it.title, getFeed(it).injectExtensionId(id)) },
                     type = Shelf.Lists.Type.Grid
                 )
             )
         }
-        val list = shelf.loadNext().orEmpty()
-        val hasNext = shelf.hasNext()
-        Page(list, if (hasNext) list.hashCode().toString() else null)
+        shelf
     }
 
     override suspend fun getHomeTabs() = extensions.map { Tab(it.id, it.name) }
@@ -224,7 +216,7 @@ class UnifiedExtension(
     override fun getShelves(track: Track): PagedData<Shelf> {
         val id = track.extras.extensionId
         return extensions.get(id).client<TrackClient, PagedData<Shelf>> {
-            injectExtensionId(id, getShelves(track))
+            getShelves(track).injectExtensionId(id)
         }
     }
 }

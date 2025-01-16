@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -71,9 +72,9 @@ class ShelfSearchFragment : Fragment() {
             createSnack(SnackBar.Message("Sort not implemented"))
         }
 
-        binding.searchBar.setOnEditorActionListener { v, _, _ ->
-            createSnack(SnackBar.Message(v.text.toString()))
-            true
+        binding.searchBar.setText(viewModel.query)
+        binding.searchBar.doOnTextChanged { text, _, _, _ ->
+            viewModel.search(text.toString())
         }
 
         var shelfAdapter: ShelfAdapter? = null
@@ -98,6 +99,7 @@ class ShelfSearchFragment : Fragment() {
             }
             shelfAdapter?.submit(PagingData.from(data))
         }
+
     }
 
     companion object {

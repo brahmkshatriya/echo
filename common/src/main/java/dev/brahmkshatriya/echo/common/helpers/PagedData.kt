@@ -1,5 +1,12 @@
 package dev.brahmkshatriya.echo.common.helpers
 
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.empty
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Concat
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Continuous
+import dev.brahmkshatriya.echo.common.helpers.PagedData.Single
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
 /**
  * A class that represents a paged data source.
  *
@@ -52,17 +59,27 @@ sealed class PagedData<T : Any> {
      */
     abstract suspend fun loadAll(): List<T>
 
+    abstract suspend fun loadList(continuation: String?): Page<T>
+    abstract fun invalidate(continuation: String?)
+
+    private var loaded = false
+    private var lastContinuation: String? = null
+    suspend fun loadNext(): List<T>? {
+        if (loaded) return null
+        val page = loadList(lastContinuation)
+        loaded = page.continuation == null
+        lastContinuation = page.continuation
+        return page.data
+    }
 
     /**
      * To load the next page of data
      *
      * @return A list of the next page of data
      */
-    abstract suspend  fun loadNext(): List<T>?
+    fun hasNext() = !loaded
 
-    abstract fun hasNext(): Boolean
-
-    abstract fun <R : Any> map(block:(T) -> R): PagedData<R>
+    abstract fun <R : Any> map(block: (T) -> R): PagedData<R>
 
     /**
      * A class representing a single page of data.
@@ -99,11 +116,10 @@ sealed class PagedData<T : Any> {
          * @return A list of all the data
          */
         override suspend fun loadAll() = loadList()
-        override suspend fun loadNext(): List<T>? {
-            return if (loaded) null else loadList()
+        override suspend fun loadList(continuation: String?): Page<T> {
+            return Page(loadList(), null)
         }
-
-        override fun hasNext() = !loaded
+        override fun invalidate(continuation: String?) { clear() }
         override fun <R : Any> map(block: (T) -> R): PagedData<R> {
             return Single { load().map(block) }
         }
@@ -145,7 +161,7 @@ sealed class PagedData<T : Any> {
     ) : PagedData<T>() {
 
         private val itemMap = mutableMapOf<String?, Page<T>>()
-        suspend fun loadList(continuation: String?): Page<T> {
+        override suspend fun loadList(continuation: String?): Page<T> {
             val page = itemMap.getOrPut(continuation) {
                 val (data, cont) = load(continuation)
                 Page(data, cont)
@@ -153,7 +169,7 @@ sealed class PagedData<T : Any> {
             return page
         }
 
-        fun invalidate(continuation: String?) = itemMap.remove(continuation)
+        override fun invalidate(continuation: String?) { itemMap.remove(continuation) }
         override fun clear() = itemMap.clear()
 
         override suspend fun loadFirst() = loadList(null).data
@@ -171,17 +187,6 @@ sealed class PagedData<T : Any> {
             return list
         }
 
-        private var loaded = false
-        private var lastContinuation: String? = null
-        override suspend fun loadNext(): List<T>? {
-            if (loaded) return null
-            val page = loadList(lastContinuation)
-            loaded = page.continuation == null
-            lastContinuation = page.continuation
-            return page.data
-        }
-
-        override fun hasNext() = !loaded
         override fun <R : Any> map(block: (T) -> R): PagedData<R> {
             return Continuous { continuation ->
                 val (data, cont) = load(continuation)
@@ -217,21 +222,6 @@ sealed class PagedData<T : Any> {
         override suspend fun loadFirst(): List<T> = sources.first().loadFirst()
         override suspend fun loadAll(): List<T> = sources.flatMap { it.loadAll() }
 
-        private var lastSource: PagedData<T>? = null
-        override suspend fun loadNext(): List<T>? {
-            if (lastSource == null) lastSource = sources.first()
-            val next = lastSource?.loadNext()
-            if (next == null) {
-                val index = sources.indexOf(lastSource)
-                if (index < sources.size - 1) {
-                    lastSource = sources[index + 1]
-                    return loadNext()
-                }
-            }
-            return next
-        }
-
-        override fun hasNext() = sources.any { it.hasNext() }
         override fun <R : Any> map(block: (T) -> R): PagedData<R> {
             return Concat(*sources.map { it.map(block) }.toTypedArray())
         }
@@ -247,38 +237,53 @@ sealed class PagedData<T : Any> {
             return "${index}_${token ?: ""}"
         }
 
-        suspend fun loadList(continuation: String?): Page<T> {
+        override suspend fun loadList(continuation: String?): Page<T> {
             val (index, token) = splitContinuation(continuation)
             val source = sources.getOrNull(index) ?: return Page(emptyList(), null)
-
-            val page: Page<T> = when (source) {
-                is Single -> Page(source.loadList(), combine(index + 1, null))
-
-                is Continuous -> {
-                    val page = source.loadList(token)
-                    if (page.continuation != null)
-                        Page(page.data, combine(index, page.continuation))
-                    else Page(page.data, combine(index + 1, null))
-                }
-
-                is Concat -> {
-                    val page = source.loadList(token)
-                    if (page.continuation != null)
-                        Page(page.data, combine(index, page.continuation))
-                    else Page(page.data, combine(index + 1, null))
-                }
-            }
+            val page = source.loadList(token)
+            if (page.continuation != null) Page(page.data, combine(index, page.continuation))
+            else Page(page.data, combine(index + 1, null))
             return page
         }
 
-        fun invalidate(continuation: String?) {
+        override fun invalidate(continuation: String?) {
             val (index, token) = splitContinuation(continuation)
-            when (val source = sources.getOrNull(index)) {
-                is Single -> source.clear()
-                is Continuous -> source.invalidate(token)
-                is Concat -> source.invalidate(token)
-                else -> return
-            }
+            val source = sources.getOrNull(index)
+            source?.invalidate(token)
+        }
+    }
+
+    class Suspend<T : Any>(
+        private val getter: suspend () -> PagedData<T>
+    ) : PagedData<T>() {
+        private val mutex = Mutex()
+        private var _data: PagedData<T>? = null
+        private suspend fun data(): PagedData<T> {
+            return _data ?: mutex.withLock { getter() }.also { _data = it }
+        }
+
+        override fun clear() {
+            _data?.clear()
+        }
+
+        override suspend fun loadFirst(): List<T> {
+            return data().loadFirst()
+        }
+
+        override suspend fun loadAll(): List<T> {
+            return data().loadAll()
+        }
+
+        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
+            return Suspend { data().map(block) }
+        }
+
+        override suspend fun loadList(continuation: String?): Page<T> {
+            return data().loadList(continuation)
+        }
+
+        override fun invalidate(continuation: String?) {
+            _data?.invalidate(continuation)
         }
     }
 

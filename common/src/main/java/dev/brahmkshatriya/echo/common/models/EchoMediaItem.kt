@@ -166,7 +166,7 @@ sealed class EchoMediaItem {
     val subtitleWithE
         get() = if (isExplicit) "\uD83C\uDD74 " + (subtitle ?: "") else subtitle
 
-    private val subtitle
+    val subtitle
         get() = when (this) {
             is TrackItem -> track.run { subtitle ?: artists.joinToString(", ") { it.name } }
             is Profile.ArtistItem -> artist.subtitle

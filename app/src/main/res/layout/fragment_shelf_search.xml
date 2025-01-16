@@ -4,71 +4,82 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/title"
-            style="@style/Toolbar"
-            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
-            tools:title="@string/settings" />
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
 
         <LinearLayout
-            android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-12dp"
-            android:gravity="bottom"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp"
+            android:orientation="vertical"
             app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap">
 
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="-8dp"
-                android:layout_weight="1">
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/title"
+                style="@style/Toolbar"
+                tools:title="@string/settings" />
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
-                    android:layout_width="match_parent"
+            <LinearLayout
+                android:id="@+id/topBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-12dp"
+                android:gravity="bottom"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp"
+                app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap">
+
+                <FrameLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:hint="@string/search"
-                    android:padding="8dp"
-                    android:paddingHorizontal="16dp"
-                    app:boxBackgroundColor="?navBackground"
-                    app:boxCornerRadiusBottomEnd="24dp"
-                    app:boxCornerRadiusBottomStart="24dp"
-                    app:boxCornerRadiusTopEnd="24dp"
-                    app:boxCornerRadiusTopStart="24dp"
-                    app:boxStrokeWidth="0dp"
-                    app:boxStrokeWidthFocused="0dp"
-                    app:startIconDrawable="@drawable/ic_search_outline">
+                    android:layout_marginEnd="-8dp"
+                    android:layout_weight="1">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/searchBar"
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:inputType="text"
-                        android:singleLine="true" />
+                        android:layout_height="wrap_content"
+                        android:hint="@string/search"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp"
+                        app:boxBackgroundColor="?navBackground"
+                        app:boxCornerRadiusBottomEnd="24dp"
+                        app:boxCornerRadiusBottomStart="24dp"
+                        app:boxCornerRadiusTopEnd="24dp"
+                        app:boxCornerRadiusTopStart="24dp"
+                        app:boxStrokeWidth="0dp"
+                        app:boxStrokeWidthFocused="0dp"
+                        app:startIconDrawable="@drawable/ic_search_outline">
 
-                </com.google.android.material.textfield.TextInputLayout>
-            </FrameLayout>
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/searchBar"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:inputType="text"
+                            android:padding="0dp"
+                            android:singleLine="true" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSort"
-                style="@style/IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:contentDescription="@string/sort"
-                app:icon="@drawable/ic_sort" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </FrameLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSort"
+                    style="@style/IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:contentDescription="@string/sort"
+                    app:icon="@drawable/ic_sort" />
+
+            </LinearLayout>
 
         </LinearLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <View

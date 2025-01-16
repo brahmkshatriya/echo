@@ -1,10 +1,17 @@
 package dev.brahmkshatriya.echo
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.annotation.OptIn
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.TrackSelectionParameters
@@ -104,7 +111,6 @@ class PlayerService : MediaLibraryService() {
                     .buildUpon()
                     .setAudioOffloadPreferences(audioOffloadPreferences)
                     .build()
-
                 it.preloadConfiguration = ExoPlayer.PreloadConfiguration(0)
                 it.skipSilenceEnabled = settings.getBoolean(SKIP_SILENCE, false)
             }
@@ -116,10 +122,19 @@ class PlayerService : MediaLibraryService() {
         }
     }
 
+    val intent: PendingIntent
+        get() = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+
     private val exoPlayer by lazy { createExoplayer(extensionLoader.extensions) }
     private val effects by lazy { EffectsListener(exoPlayer, this, audioSessionFlow) }
     override fun onCreate() {
         super.onCreate()
+        setListener(MediaSessionServiceListener())
         extensionLoader.initialize()
 
         val extListFlow = extensionLoader.extensions
@@ -131,18 +146,12 @@ class PlayerService : MediaLibraryService() {
 //        val player = ShufflePlayer(exoPlayer)
         val player = exoPlayer
 
-        val intent = Intent(this, MainActivity::class.java)
-            .putExtra("fromNotification", true)
-
-        val pendingIntent = PendingIntent
-            .getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
         val callback = PlayerCallback(
             this, settings, scope, extListFlow, extFlow, throwFlow, messageFlow, stateFlow
         )
 
         val session = MediaLibrarySession.Builder(this, player, callback)
-            .setSessionActivity(pendingIntent)
+            .setSessionActivity(intent)
             .setBitmapLoader(PlayerBitmapLoader(this, scope))
             .build()
 
@@ -183,5 +192,46 @@ class PlayerService : MediaLibraryService() {
         val stopPlayer = settings.getBoolean(CLOSE_PLAYER, false)
         val player = mediaSession?.player ?: return stopSelf()
         if (stopPlayer || !player.isPlaying) stopSelf()
+    }
+
+    private inner class MediaSessionServiceListener : Listener {
+        override fun onForegroundServiceStartNotAllowedException() {
+            if (
+                Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) return
+            val notificationManagerCompat = NotificationManagerCompat.from(this@PlayerService)
+            ensureNotificationChannel(notificationManagerCompat)
+            val builder = NotificationCompat.Builder(this@PlayerService, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_mono)
+                .setContentTitle(getString(R.string.app_name))
+                .setStyle(
+                    NotificationCompat.BigTextStyle().bigText(getString(R.string.app_name))
+                )
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .also { it.setContentIntent(intent) }
+            notificationManagerCompat.notify(NOTIFICATION_ID, builder.build())
+        }
+    }
+
+    private fun ensureNotificationChannel(notificationManagerCompat: NotificationManagerCompat) {
+        if (
+            Build.VERSION.SDK_INT < 26 ||
+            notificationManagerCompat.getNotificationChannel(CHANNEL_ID) != null
+        ) return
+
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            getString(R.string.app_name),
+            NotificationManager.IMPORTANCE_DEFAULT,
+        )
+        notificationManagerCompat.createNotificationChannel(channel)
+    }
+
+    companion object {
+        private const val NOTIFICATION_ID = 123
+        private const val CHANNEL_ID = "echo_notification_channel_id"
     }
 }

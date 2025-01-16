@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.ui.item.ItemBottomSheet
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.ui.shelf.ShelfFragment
 import dev.brahmkshatriya.echo.ui.shelf.ShelfSearchFragment
+import dev.brahmkshatriya.echo.ui.shelf.ShelfSearchViewModel
 import dev.brahmkshatriya.echo.ui.shelf.ShelfViewModel
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
@@ -139,7 +140,7 @@ open class ShelfClickListener(
     override fun onShelfSearchClick(
         client: String, title: String, shelf: PagedData<Shelf>, view: View
     ) {
-        val viewModel by fragment.activityViewModels<ShelfViewModel>()
+        val viewModel by fragment.activityViewModels<ShelfSearchViewModel>()
         viewModel.shelves = shelf
         fragment.openFragment(ShelfSearchFragment.newInstance(client, title, true), view)
         afterOpening?.invoke()
@@ -148,7 +149,7 @@ open class ShelfClickListener(
     override fun onShelfSortClick(
         client: String, title: String, shelf: PagedData<Shelf>, view: View
     ) {
-        val viewModel by fragment.activityViewModels<ShelfViewModel>()
+        val viewModel by fragment.activityViewModels<ShelfSearchViewModel>()
         viewModel.shelves = shelf
         fragment.openFragment(ShelfSearchFragment.newInstance(client, title, false), view)
         afterOpening?.invoke()
