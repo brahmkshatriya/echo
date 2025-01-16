@@ -296,4 +296,7 @@
     <string name="show_tabs">টেবসমূহ দেখুৱাওক</string>
     <string name="show_tab_summary">এক্সটেনশনৰ টেবসমূহক শ্ৰেণী হিচাপে দেখুৱাব</string>
     <string name="track_added_to_queue">%1$s শাৰীত যোগ কৰা হৈছে</string>
+    <string name="tabs">টেবসমূহ</string>
+    <string name="shelves">%1$s শ্বেলফসমূহ</string>
+    <string name="sort">সজোৱা</string>
 </resources>
