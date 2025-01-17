@@ -298,6 +298,11 @@
     <string name="sort">Sort</string>
     <string name="tabs">Tabs</string>
     <string name="shelves">%1$s Shelves</string>
+    <string name="sort_title">Title</string>
+    <string name="sort_subtitle">Subtitle</string>
+    <string name="sort_date">Date</string>
+    <string name="sort_duration">Duration</string>
+    <string name="sort_descending">%1$s Descending</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

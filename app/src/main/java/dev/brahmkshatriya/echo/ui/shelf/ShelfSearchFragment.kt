@@ -10,7 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.paging.PagingData
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentShelfSearchBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -18,8 +20,6 @@ import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
-import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyInsets
@@ -69,7 +69,26 @@ class ShelfSearchFragment : Fragment() {
         binding.title.title = title
 
         binding.btnSort.setOnClickListener {
-            createSnack(SnackBar.Message("Sort not implemented"))
+            val sorts = viewModel.sorts.flatMap {
+                val sort = getString(it.title)
+                listOf(sort, getString(R.string.sort_descending, sort))
+            }
+            val entries = (listOf(getString(R.string.video_quality_none)) + sorts).toTypedArray()
+            val entryValues = (listOf(null to false) + viewModel.sorts.flatMap {
+                listOf(it to false, it to true)
+            }).toTypedArray()
+            val value =
+                viewModel.sort to if (viewModel.sort != null) viewModel.descending else false
+            MaterialAlertDialogBuilder(requireContext())
+                .setSingleChoiceItems(entries, entryValues.indexOf(value)) { dialog, index ->
+                    val sort = entryValues[index]
+                    viewModel.sort(sort.first, sort.second)
+                    dialog.dismiss()
+                }
+                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                .setTitle(R.string.sort)
+                .create()
+                .show()
         }
 
         binding.searchBar.setText(viewModel.query)
@@ -92,14 +111,15 @@ class ShelfSearchFragment : Fragment() {
         observe(viewModel.flow) { data ->
             binding.loading.root.isVisible = data == null
             data ?: return@observe
-            if (wasSearch) viewModel.run {
-                if (searchBarClicked) return@run
-                searchBarClicked = true
-                binding.searchBar.performClick()
+            viewModel.run {
+                if (actionPerformed) return@run
+                actionPerformed = true
+                if (wasSearch) binding.searchBar.requestFocus()
+                else binding.btnSort.performClick()
             }
             shelfAdapter?.submit(PagingData.from(data))
+            binding.recyclerView.post { binding.recyclerView.scrollToPosition(0) }
         }
-
     }
 
     companion object {

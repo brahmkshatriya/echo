@@ -659,10 +659,16 @@ object MediaStoreUtils {
     }
 
     fun <E> List<E>.searchBy(query: String, block: (E) -> List<String?>) = map { item ->
-        val titles = block(item).mapNotNull { it }.ifEmpty { return@map 0 to item }
-        val distance = titles.map { it to wagnerFischer(it, query) }.maxBy { it.second }
-        val bonus = if (distance.first.contains(query, true)) -20 else 0
-        distance.second + bonus to item
+        val qLower = query.lowercase()
+        val titles = block(item).mapNotNull {
+            it?.takeIf { it.isNotBlank() }?.lowercase()
+        }.ifEmpty { return@map 0 to item }
+        val selected = titles.map {
+            val distance = wagnerFischer(it, qLower)
+            val bonus = if (it.contains(qLower)) -20 else 0
+            (distance + bonus) to it
+        }.minBy { it.first }
+        selected.first to item
     }.filter { it.first <= 0 }.sortedBy { it.first }
 
     // taken from https://gist.github.com/jmarchesini/e330088e03daa394cf03ddedb8956fbe
@@ -694,7 +700,6 @@ object MediaStoreUtils {
                 d[i][j] = minOf(delCost, addCost, subCost)
             }
         }
-
         return d[m][n]
     }
 

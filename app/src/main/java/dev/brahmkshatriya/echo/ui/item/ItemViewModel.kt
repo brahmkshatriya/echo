@@ -129,12 +129,13 @@ class ItemViewModel @Inject constructor(
     private val songsFlow = MutableStateFlow<PagingData<Track>?>(null)
     val songsLiveData = songsFlow.asLiveData()
 
+    var tracks: PagedData<Track>? = null
     fun loadAlbumTracks(album: Album) {
         viewModelScope.launch(Dispatchers.IO) {
             getClient<AlbumClient, Unit> {
                 songsFlow.value = null
-                val tracks = loadTracks(album)
-                tracks.toFlow().collectTo(songsFlow)
+                tracks = loadTracks(album)
+                tracks?.toFlow()?.collectTo(songsFlow)
             }
         }
     }
@@ -143,8 +144,8 @@ class ItemViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getClient<PlaylistClient, Unit> {
                 songsFlow.value = null
-                val tracks = loadTracks(playlist)
-                tracks.toFlow().collectTo(songsFlow)
+                tracks = loadTracks(playlist)
+                tracks?.toFlow()?.collectTo(songsFlow)
             }
         }
     }
@@ -153,8 +154,8 @@ class ItemViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getClient<RadioClient, Unit> {
                 songsFlow.value = null
-                val tracks = loadTracks(radio)
-                tracks.toFlow().collectTo(songsFlow)
+                tracks = loadTracks(radio)
+                tracks?.toFlow()?.collectTo(songsFlow)
             }
         }
     }

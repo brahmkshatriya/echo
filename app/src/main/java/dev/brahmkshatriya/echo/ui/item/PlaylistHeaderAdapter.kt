@@ -32,6 +32,12 @@ class PlaylistHeaderAdapter(
                 binding.albumRadio.setOnClickListener {
                     listener.onRadioClicked(playlist)
                 }
+                binding.btnSearch.setOnClickListener {
+                    listener.onSearchClicked(playlist, it)
+                }
+                binding.btnSort.setOnClickListener {
+                    listener.onSortClicked(playlist, it)
+                }
             }
         }
 
@@ -42,6 +48,8 @@ class PlaylistHeaderAdapter(
     interface Listener {
         fun onPlayClicked(list: Playlist)
         fun onRadioClicked(list: Playlist)
+        fun onSortClicked(playlist: Playlist, view: View)
+        fun onSearchClicked(playlist: Playlist, view: View)
     }
 
     override fun getItemViewType(position: Int) = if (_playlist == null) 0 else 1
@@ -76,7 +84,7 @@ class PlaylistHeaderAdapter(
         val playlist = holder.playlist
         binding.albumDescription.text = playlist.description
         binding.albumDescription.isVisible = !playlist.description.isNullOrBlank()
-        var info =  binding.root.context.run {
+        var info = binding.root.context.run {
             playlist.tracks?.let {
                 resources.getQuantityString(R.plurals.number_songs, it, it)
             } ?: getString(R.string.unknown_amount_songs)
@@ -89,6 +97,8 @@ class PlaylistHeaderAdapter(
         }
         binding.albumInfo.text = info
         binding.albumRadio.isVisible = _radio
+        binding.btnSearch.transitionName = "search_${playlist.id.hashCode()}"
+        binding.btnSort.transitionName = "sort_${playlist.id.hashCode()}"
     }
 
     fun submit(playlist: Playlist, radio: Boolean) {

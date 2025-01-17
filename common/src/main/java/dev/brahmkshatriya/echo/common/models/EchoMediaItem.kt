@@ -126,6 +126,17 @@ sealed class EchoMediaItem {
         is Lists.RadioItem -> other is Lists.RadioItem && radio.id == other.radio.id
     }
 
+    fun copy(subtitle: String): EchoMediaItem {
+        return when (this) {
+            is TrackItem -> copy(track = track.copy(subtitle = subtitle))
+            is Profile.ArtistItem -> copy(artist = artist.copy(subtitle = subtitle))
+            is Profile.UserItem -> copy(user = user.copy(subtitle = subtitle))
+            is Lists.AlbumItem -> copy(album = album.copy(subtitle = subtitle))
+            is Lists.PlaylistItem -> copy(playlist = playlist.copy(subtitle = subtitle))
+            is Lists.RadioItem -> copy(radio = radio.copy(subtitle = subtitle))
+        }
+    }
+
     val id
         get() = when (this) {
             is TrackItem -> track.id

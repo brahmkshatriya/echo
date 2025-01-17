@@ -31,6 +31,12 @@ class AlbumHeaderAdapter(
                 binding.albumRadio.setOnClickListener {
                     listener.onRadioClicked(album)
                 }
+                binding.btnSearch.setOnClickListener {
+                    listener.onSearchClicked(album, it)
+                }
+                binding.btnSort.setOnClickListener {
+                    listener.onSortClicked(album, it)
+                }
             }
         }
 
@@ -41,6 +47,8 @@ class AlbumHeaderAdapter(
     interface Listener {
         fun onPlayClicked(album: Album)
         fun onRadioClicked(album: Album)
+        fun onSearchClicked(album: Album, view: View)
+        fun onSortClicked(album: Album, view: View)
     }
 
     override fun getItemViewType(position: Int) = if (_album == null) 0 else 1
@@ -96,6 +104,8 @@ class AlbumHeaderAdapter(
         }
         binding.albumInfo.text = info
         binding.albumRadio.isVisible = _radio
+        binding.btnSearch.transitionName = "search_${album.id.hashCode()}"
+        binding.btnSort.transitionName = "sort_${album.id.hashCode()}"
     }
 
     fun submit(album: Album, radio: Boolean) {

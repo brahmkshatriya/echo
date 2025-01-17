@@ -150,6 +150,20 @@ class ItemFragment : Fragment() {
 
                 override fun onRadioClicked(album: Album) =
                     playerVM.radio(clientId, album.toMediaItem())
+
+                override fun onSearchClicked(album: Album, view: View) {
+                    val tracks = viewModel.tracks ?: return
+                    listener.onShelfSearchClick(
+                        clientId, album.title, tracks.map { it.toMediaItem().toShelf() }, view
+                    )
+                }
+
+                override fun onSortClicked(album: Album, view: View) {
+                    val tracks = viewModel.tracks ?: return
+                    listener.onShelfSortClick(
+                        clientId, album.title, tracks.map { it.toMediaItem().toShelf() }, view
+                    )
+                }
             }
         )
 
@@ -160,6 +174,20 @@ class ItemFragment : Fragment() {
 
                 override fun onRadioClicked(list: Playlist) =
                     playerVM.radio(clientId, list.toMediaItem())
+
+                override fun onSortClicked(playlist: Playlist, view: View) {
+                    val tracks = viewModel.tracks ?: return
+                    listener.onShelfSortClick(
+                        clientId, playlist.title, tracks.map { it.toMediaItem().toShelf() }, view
+                    )
+                }
+
+                override fun onSearchClicked(playlist: Playlist, view: View) {
+                    val tracks = viewModel.tracks ?: return
+                    listener.onShelfSearchClick(
+                        clientId, playlist.title, tracks.map { it.toMediaItem().toShelf() }, view
+                    )
+                }
             }
         )
 
@@ -273,7 +301,13 @@ class ItemFragment : Fragment() {
             extension ?: return@collect
 
             val mediaAdapter =
-                ShelfAdapter(this, getString(R.string.shelves, item.title), view.transitionName, extension, listener)
+                ShelfAdapter(
+                    this,
+                    getString(R.string.shelves, item.title),
+                    view.transitionName,
+                    extension,
+                    listener
+                )
             shelfJob?.cancel()
             shelfJob = mediaAdapter.applyCurrent(this, binding.recyclerView)
 
