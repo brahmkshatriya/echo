@@ -63,6 +63,7 @@ class ShelfSearchFragment : Fragment() {
             val shelves = activityViewModel.shelves ?: return
             activityViewModel.shelves = null
             viewModel.shelves = shelves
+            viewModel.clientId = clientId
             viewModel.initialize()
         }
 

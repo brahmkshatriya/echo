@@ -653,15 +653,17 @@ object MediaStoreUtils {
         )
     }
 
-    fun Context.moveSongInPlaylist(playlistId: Long, song:Long, from: Int, to: Int) {
+    fun Context.moveSongInPlaylist(playlistId: Long, song: Long, from: Int, to: Int) {
         removeSongFromPlaylist(playlistId, from)
         addSongToPlaylist(playlistId, song, to)
     }
 
     fun <E> List<E>.searchBy(query: String, block: (E) -> List<String?>) = map { item ->
         val qLower = query.lowercase()
-        val titles = block(item).mapNotNull {
-            it?.takeIf { it.isNotBlank() }?.lowercase()
+        val titles = block(item).flatMap {
+            it?.split(" ") ?: listOf()
+        }.mapNotNull {
+            it.takeIf { it.isNotBlank() }?.lowercase()
         }.ifEmpty { return@map 0 to item }
         val selected = titles.map {
             val distance = wagnerFischer(it, qLower)

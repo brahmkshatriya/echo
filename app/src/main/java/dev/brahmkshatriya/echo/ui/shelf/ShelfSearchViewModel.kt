@@ -6,6 +6,8 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +23,7 @@ class ShelfSearchViewModel @Inject constructor(
 ) : CatchingViewModel(throwableFlow) {
 
     var actionPerformed = false
+    var clientId: String? = null
     var shelves: PagedData<Shelf>? = null
     private var _data: List<Shelf>? = null
     val flow = MutableStateFlow<List<Shelf>?>(null)
@@ -31,15 +34,17 @@ class ShelfSearchViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val shelf = shelves!!
             val list = mutableListOf<Shelf>()
-            val (l, c) = shelf.loadList(null)
-            list.addAll(l)
-            var cont = c
-            var count = 1
-            while (cont != null && count < MAX) {
-                val page = shelf.loadList(cont)
-                list.addAll(page.data)
-                cont = page.continuation
-                count++
+            extensionListFlow.getExtension(clientId)?.run(throwableFlow) {
+                val (l, c) = shelf.loadList(null)
+                list.addAll(l)
+                var cont = c
+                var count = 1
+                while (cont != null && count < MAX) {
+                    val page = shelf.loadList(cont)
+                    list.addAll(page.data)
+                    cont = page.continuation
+                    count++
+                }
             }
             val data = list.flatMap { item ->
                 when (item) {
