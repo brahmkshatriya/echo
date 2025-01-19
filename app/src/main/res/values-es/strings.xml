@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">Principal</string>
+    <string name="library">Biblioteca</string>
+    <string name="search">Buscar</string>
+    <string name="extensions">Extensiones</string>
+    <string name="settings">Ajustes</string>
+    <string name="play_pause">Reproducir/Pausar</string>
+    <string name="previous">Previa</string>
+    <string name="next">Siguiente</string>
+    <string name="add_extension">Añadir extensión</string>
+    <string name="extension_settings">Ajuste de extensión</string>
+    <string name="more">Más</string>
+    <string name="retry">Reintentar</string>
+    <string name="failed_loading">Error al cargar</string>
+    <string name="repeat">Repetir</string>
+    <string name="is_not_supported">%1$s no es compatible con la extensión %2$s</string>
+    <string name="drag_to_change_playlist_position">Arrastra para cambiar la posición de la playlist</string>
+    <string name="up_next">A continuación</string>
+    <string name="close">Cerrar</string>
+    <string name="collapse_player">Contraer el reproductor</string>
+    <string name="shuffle">Mezclar</string>
+    <string name="clear_playlist">Borrar playlist</string>
+    <string name="playlist">Playlist</string>
+    <string name="loading">Cargando…</string>
+    <string name="album">Álbum</string>
+    <string name="play">Reproducir</string>
+</resources>
