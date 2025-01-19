@@ -307,4 +307,8 @@
     <string name="navbar_gradient">Gradientowy Navbar</string>
     <string name="navbar_gradient_summary">Navbar stopniowo staje się przezroczysty</string>
     <string name="unliked_track">Nie lubię %1$s</string>
+    <string name="sort_duration">Czas trwania</string>
+    <string name="sort_title">Tytuł</string>
+    <string name="sort_date">Data</string>
+    <string name="sort_subtitle">Podtytuł</string>
 </resources>
