@@ -46,7 +46,7 @@
     <string name="explicit">Explicit</string>
     <string name="show_background">Pokaż tło</string>
     <string name="show_background_summary">Tło wideo lub rozmyta grafika utworu w odtwarzaczu</string>
-    <string name="open_links_instruction">Aby umożliwić otwieranie tych linków, musisz:\n- Przewinąć w dół i kliknąć \"Otwórz domyślnie\"\n- Kliknąć \"+ Dodaj link\"</string>
+    <string name="open_links_instruction">Aby umożliwić otwieranie tych linków, musisz:\n- Przewinąć w dół i kliknąć \"Otwórz domyślnie\"\n- Kliknąć \"+ Dodaj link\\</string>
     <string name="show_all">Pokaż wszystko</string>
     <string name="show_less">Pokaż mniej</string>
     <string name="end_of_track">Koniec utworu</string>
