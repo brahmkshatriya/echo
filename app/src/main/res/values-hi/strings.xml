@@ -196,7 +196,7 @@
     <string name="video_selection">वीडियो चयन</string>
     <string name="track_total_plays">%1$d चल रहा है</string>
     <string name="audio_qualities">ऑडियो गुणवत्ता</string>
-    <string name="subtitles">उपशीर्षक</string>
+    <string name="subtitles">उपशीर्षकें</string>
     <string name="audio_selection">ऑडियो चयन</string>
     <string name="subtitle_selection">उपशीर्षक चयन</string>
     <string name="unknown">अज्ञात</string>
@@ -299,4 +299,9 @@
     <string name="sort">वर्गीकरण</string>
     <string name="shelves">%1$s शेल्व्स</string>
     <string name="tabs">टैब</string>
+    <string name="sort_title">शीर्षक</string>
+    <string name="sort_subtitle">उपशीर्षक</string>
+    <string name="sort_date">तारीख</string>
+    <string name="sort_duration">अवधि</string>
+    <string name="sort_descending">%1$s अवरोहण</string>
 </resources>
