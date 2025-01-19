@@ -194,7 +194,7 @@
     <string name="navbar_gradient">Barra de Navegação Gradiente</string>
     <string name="navbar_gradient_summary">Barra de navegação vai gradualmente ficando transparente</string>
     <string name="explicit">Explícito</string>
-    <string name="open_links_instruction">Para permitir a abertura desses links, você precisa:\n- Rolar para baixo e clicar em \"Abrir por Padrão\"\n- Clicar em \"+ Adicionar Link\"</string>
+    <string name="open_links_instruction">Para permitir a abertura desses links, você precisa:\n- Rolar para baixo e clicar em \"Abrir por Padrão\"\n- Clicar em \"+ Adicionar Link\\</string>
     <string name="show_all">Mostrar Tudo</string>
     <string name="show_less">Mostrar Menos</string>
     <string name="subtitles">Legendas</string>
