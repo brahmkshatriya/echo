@@ -25,4 +25,29 @@
     <string name="loading">Cargando…</string>
     <string name="album">Álbum</string>
     <string name="play">Reproducir</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d Canción</item>
+        <item quantity="many">%1$d Canciones</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="saved_to_playlist">Guardado en %1$s</string>
+    <string name="saved_to_playlists">Guardado en listas de reproducción</string>
+    <string name="songs">Canciones</string>
+    <string name="radio">Radio</string>
+    <string name="view">Ver</string>
+    <string name="str_copy">Copiar</string>
+    <string name="artist">Artista</string>
+    <string name="unfollow">Dejar de seguir</string>
+    <string name="follow">Seguir</string>
+    <string name="version">Versión</string>
+    <string name="about">Acerca de</string>
+    <string name="stop_player">Detener jugador</string>
+    <string name="auto_start_radio">Radio de inicio automático</string>
+    <string name="auto_start_radio_summary">Agregar automáticamente canciones relacionadas de la pista en la lista de reproducción, para tener una cola infinita</string>
+    <plurals name="number_followers">
+        <item quantity="one">%1$d Seguidor</item>
+        <item quantity="many">%1$d Seguidores</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="stop_player_summary">Detén al reproductor cuando la aplicación se elimine de recientes</string>
 </resources>
