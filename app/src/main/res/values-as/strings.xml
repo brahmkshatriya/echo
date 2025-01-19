@@ -193,11 +193,11 @@
     <string name="cache_size_summary">অডিঅ\' আৰু ভিডিঅ\' কেচ কৰিবলৈ MB ত আকাৰ</string>
     <string name="audio_qualities">অডিঅ’ৰ গুণ</string>
     <string name="video_qualities">ভিডিঅ\'ৰ গুণ</string>
-    <string name="subtitles">উপশিৰোনামা</string>
+    <string name="subtitles">উপশিৰোনামসমুহ</string>
     <string name="audio_selection">অডিঅ\' নিৰ্বাচন</string>
     <string name="video_selection">ভিডিঅ\' নিৰ্বাচন</string>
     <string name="track_total_plays">%1$d বাজিছে</string>
-    <string name="subtitle_selection">উপশিৰোনামা নিৰ্বাচন</string>
+    <string name="subtitle_selection">উপশিৰোনাম নিৰ্বাচন</string>
     <string name="off">বন্ধ</string>
     <string name="quality_number">গুণমান %1$d</string>
     <string name="unknown">অজ্ঞাত</string>
@@ -245,7 +245,7 @@
     <string name="invalid_extension">অবৈধ এক্সটেনশন</string>
     <string name="extension_installer">এক্সটেনচন ইনষ্টলাৰ</string>
     <string name="extension_uninstalled_successfully">এক্সটেনশন সফলভাৱে আনইনষ্টল কৰা হৈছে।</string>
-    <string name="open_links_instruction">এই লিংকসমূহ খোলাৰ অনুমতি দিবলৈ, আপুনি নিম্নলিখিত কৰিব লাগিব:\n- তললৈ স্ক্ৰল কৰক আৰু \"অবিকল্পিত দ্বাৰা খোলক\" ক্লিক কৰক।\n- \"+ লিংক যোগ কৰক\" ত ক্লিক কৰক।</string>
+    <string name="open_links_instruction">এই লিংকসমূহ খোলাৰ অনুমতি দিবলৈ, আপুনি নিম্নলিখিত কৰিব লাগিব:\n- তললৈ স্ক্ৰল কৰক আৰু \"অবিকল্পিত দ্বাৰা খোলক\" ক্লিক কৰক।\n- \"+ লিংক যোগ কৰক\" ত ক্লিক কৰক</string>
     <string name="installation_type_warning">যদি আপুনি এক্সটেনশন এটা ফাইল হিচাপে সংস্থাপন কৰিব বিচাৰে তেন্তে উপলব্ধ নহয় ।</string>
     <string name="downloading_update_for_extension">%1$s ৰ বাবে আপডেইট ডাউনলোড কৰা হৈছে</string>
     <string name="extension_updated_successfully">%1$s সফলভাৱে আপডেইট কৰা হৈছে</string>
@@ -299,4 +299,9 @@
     <string name="tabs">টেবসমূহ</string>
     <string name="shelves">%1$s শ্বেলফসমূহ</string>
     <string name="sort">সজোৱা</string>
+    <string name="sort_title">শিৰোনাম</string>
+    <string name="sort_date">তাৰিখ</string>
+    <string name="sort_duration">কালসীমা</string>
+    <string name="sort_descending">%1$s অৱতৰণ</string>
+    <string name="sort_subtitle">উপশিৰোনাম</string>
 </resources>
