@@ -7,6 +7,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
+import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -15,6 +16,7 @@ import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
+import dev.brahmkshatriya.echo.common.providers.MiscExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 import dev.brahmkshatriya.echo.db.ExtensionDao
@@ -58,6 +60,7 @@ class ExtensionLoader(
     private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     private val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
+    private val miscListFlow: MutableStateFlow<List<MiscExtension>?>,
     private val extensionFlow: MutableStateFlow<MusicExtension?>,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Extension Loader")
@@ -81,6 +84,9 @@ class ExtensionLoader(
 
     private val lyricsExtensionRepo =
         LyricsExtensionRepo(context, listener, fileListener)
+
+    private val miscExtensionRepo =
+        MiscExtensionRepo(context, listener, fileListener)
 
     val trackers = trackerListFlow
     val extensions = extensionListFlow
@@ -111,12 +117,14 @@ class ExtensionLoader(
         userMap[clientId] = id
         trackerListFlow.getExtension(clientId)?.setLoginUser()
         lyricsListFlow.getExtension(clientId)?.setLoginUser()
+        miscListFlow.getExtension(clientId)?.setLoginUser()
         extensionListFlow.getExtension(clientId)?.setLoginUser(true)
     }
 
     private val combined = extensionListFlow
         .combine(trackerListFlow) { a, b -> a.orEmpty() + b.orEmpty() }
         .combine(lyricsListFlow) { a, b -> a + b.orEmpty() }
+        .combine(miscListFlow) { a, b -> a + b.orEmpty() }
 
     private var initialized = false
     fun initialize() {
@@ -148,6 +156,7 @@ class ExtensionLoader(
                     val trackerExtensions = trackerListFlow.value.orEmpty()
                     val lyricsExtensions = lyricsListFlow.value.orEmpty()
                     val musicExtensions = extensionListFlow.value.orEmpty()
+                    val miscExtensions = miscListFlow.value.orEmpty()
                     list.forEach { extension ->
                         extension.inject<TrackerExtensionsProvider> {
                             inject(extension.name, requiredTrackerExtensions, trackerExtensions) {
@@ -162,6 +171,11 @@ class ExtensionLoader(
                         extension.inject<MusicExtensionsProvider> {
                             inject(extension.name, requiredMusicExtensions, musicExtensions) {
                                 setMusicExtensions(it)
+                            }
+                        }
+                        extension.inject<MiscExtensionsProvider> {
+                            inject(extension.name, requiredMiscExtensions, miscExtensions) {
+                                setMiscExtensions(it)
                             }
                         }
                     }
@@ -196,6 +210,7 @@ class ExtensionLoader(
     private suspend fun getAllPlugins(scope: CoroutineScope) {
         val trackers = MutableStateFlow<Unit?>(null)
         val lyrics = MutableStateFlow<Unit?>(null)
+        val misc = MutableStateFlow<Unit?>(null)
         val music = MutableStateFlow<Unit?>(null)
         scope.launch {
             trackerExtensionRepo.getPlugins { list ->
@@ -217,6 +232,18 @@ class ExtensionLoader(
                 lyrics.emit(Unit)
             }
         }
+        scope.launch {
+            miscExtensionRepo.getPlugins { list ->
+                val miscExtensions = list.map { (metadata, client) ->
+                    MiscExtension(metadata, client)
+                }
+                miscListFlow.value = miscExtensions
+                miscExtensions.setExtensions()
+                misc.emit(Unit)
+            }
+        }
+
+        misc.first { it != null }
         lyrics.first { it != null }
         trackers.first { it != null }
 

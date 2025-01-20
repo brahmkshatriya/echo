@@ -14,8 +14,6 @@ import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.offline.OfflineExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
-import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
@@ -49,28 +47,6 @@ class DownloadingFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
 
-        val adapter = DownloadingAdapter(object : DownloadingAdapter.Listener {
-            override fun onDownloadItemClick(download: DownloadItem.Single) {
-                requireActivity().openFragment(
-                    ItemFragment.newInstance(download.clientId, download.item)
-                )
-            }
-
-            override fun onGroupToggled(download: DownloadItem.Group, checked: Boolean) {
-                viewModel.toggleGroup(download.name, checked)
-            }
-
-            override fun onDownloadingToggled(
-                download: DownloadItem.Single, isDownloading: Boolean
-            ) {
-                viewModel.toggleDownloading(download, isDownloading)
-            }
-
-            override fun onDownloadRemove(download: DownloadItem.Single) {
-                viewModel.removeDownload(download)
-            }
-        })
-
         val offline = viewModel.extensionListFlow.getExtension(OfflineExtension.metadata.id)
             ?: return
         val downloadedAdapter =
@@ -79,7 +55,6 @@ class DownloadingFragment : Fragment() {
 
         val titleAdapter = ShelfAdapter(this, "", "", offline)
         val concatAdapter = ConcatAdapter(
-            adapter.withEmptyAdapter(),
             titleAdapter,
             downloadedAdapter.withSearchHeaderAndLoaders { viewModel.offline }
         )
@@ -94,6 +69,5 @@ class DownloadingFragment : Fragment() {
             )
             downloadedAdapter.submit(it)
         }
-        observe(viewModel.downloads) { adapter.submit(it) }
     }
 }

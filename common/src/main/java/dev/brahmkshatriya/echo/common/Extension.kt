@@ -159,3 +159,23 @@ data class LyricsExtension(
     override val metadata: Metadata,
     override val instance: Injectable<LyricsClient>,
 ) : Extension<LyricsClient>(ExtensionType.LYRICS, metadata, instance)
+
+
+/**
+ * A data class representing a Misc Extension.
+ * Misc Extension supports the following types of clients:
+ * - [ExtensionClient] - Mandatory Base Client
+ * - [LoginClient] - For login support
+ *
+ * The extension can also implement the following providers to get installed extensions:
+ * - [MusicExtensionsProvider] - To get installed music extensions
+ * - [LyricsExtensionsProvider] - To get installed lyrics extensions
+ * - [TrackerExtensionsProvider] - To get installed tracker extensions
+ *
+ * @param metadata The metadata of the extension
+ * @param instance An injectable instance of the [ExtensionClient] client
+ */
+data class MiscExtension(
+    override val metadata: Metadata,
+    override val instance: Injectable<ExtensionClient>,
+) : Extension<ExtensionClient>(ExtensionType.MISC, metadata, instance)

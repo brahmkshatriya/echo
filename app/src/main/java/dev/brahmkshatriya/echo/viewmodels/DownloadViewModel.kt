@@ -1,22 +1,23 @@
 package dev.brahmkshatriya.echo.viewmodels
 
-import android.app.Application
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
-import dev.brahmkshatriya.echo.db.models.DownloadEntity
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.get
+import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
-import dev.brahmkshatriya.echo.ui.download.DownloadItem
-import dev.brahmkshatriya.echo.ui.download.DownloadItem.Companion.toItem
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import kotlinx.coroutines.Dispatchers
@@ -28,52 +29,49 @@ import javax.inject.Inject
 @HiltViewModel
 class DownloadViewModel @Inject constructor(
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    private val application: Application,
-    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     private val extensionLoader: ExtensionLoader,
-    database: EchoDatabase,
+    private val downloader: Downloader,
+    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
-    val downloads = MutableStateFlow<List<DownloadItem>>(emptyList())
-    private val visibleGroups = mutableSetOf<String>()
-    private val downloadEntities = MutableStateFlow<List<DownloadEntity>>(emptyList())
-    private val downloader = Downloader(extensionListFlow, throwableFlow, database)
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            downloader.dao.getDownloadsFlow().collect { list ->
-                downloadEntities.value = list
-                applyDownloadItems()
+    private suspend fun add(clientId: String, item: EchoMediaItem) {
+        val extension = extensionListFlow.getExtension(clientId) ?: return
+        val (tracks, context) = when (item) {
+            is EchoMediaItem.Lists.AlbumItem -> {
+                val tracks = extension.get<AlbumClient, List<Track>>(throwableFlow) {
+                    loadTracks(item.album).loadAll()
+                } ?: return
+                tracks to item
             }
-        }
-    }
 
-    private fun applyDownloadItems() {
-        val list = downloadEntities.value
-        val downloadItems = mutableListOf<DownloadItem>()
-        val groups = mutableMapOf<String, List<DownloadItem>>()
-        list.forEach { entity ->
-            val item = entity.toItem(application, extensionListFlow) ?: return@forEach
-            if (entity.groupName != null) {
-                groups[entity.groupName] = groups[entity.groupName].orEmpty() + item
-            } else {
-                downloadItems.add(item)
+            is EchoMediaItem.Lists.PlaylistItem -> {
+                val tracks = extension.get<PlaylistClient, List<Track>>(throwableFlow) {
+                    loadTracks(item.playlist).loadAll()
+                } ?: return
+                tracks to item
             }
+
+            is EchoMediaItem.Lists.RadioItem -> {
+                val tracks = extension.get<RadioClient, List<Track>>(throwableFlow) {
+                    loadTracks(item.radio).loadAll()
+                } ?: return
+                tracks to item
+            }
+
+            is EchoMediaItem.TrackItem -> listOf(item.track) to null
+            else -> emptyList<Track>() to null
         }
-        groups.forEach { (groupName, items) ->
-            downloadItems.add(DownloadItem.Group(groupName, true))
-            if (visibleGroups.contains(groupName)) downloadItems.addAll(items)
-        }
-        downloads.value = downloadItems
-        loadOfflineDownloads()
+        if (tracks.isEmpty()) return
+        downloader.add(clientId, context, tracks)
     }
 
     fun addToDownload(
         activity: FragmentActivity, clientId: String, item: EchoMediaItem
-    ) = viewModelScope.launch {
-        downloader.addToDownload(activity, clientId, item)
+    ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
+            messageFlow.emit(SnackBar.Message(getString(R.string.downloading_item, item.title)))
+            add(clientId, item)
             messageFlow.emit(
                 SnackBar.Message(
                     getString(R.string.download_started),
@@ -85,30 +83,38 @@ class DownloadViewModel @Inject constructor(
         }
     }
 
-    fun toggleGroup(name: String, checked: Boolean) {
-        if (checked) visibleGroups.add(name)
-        else visibleGroups.remove(name)
-        applyDownloadItems()
+    fun pauseAllDownloads() {
+        downloader.pauseAll()
     }
 
-    fun toggleDownloading(download: DownloadItem.Single, downloading: Boolean) {
-        viewModelScope.launch {
-            if (downloading) {
-                downloader.resumeDownload(application, download.id)
-            } else {
-                downloader.pauseDownload(application, download.id)
-            }
-        }
+    fun resumeAllDownloads() {
+        downloader.resumeAll()
     }
 
-    fun removeDownload(download: DownloadItem.Single) {
-        viewModelScope.launch {
-            downloader.removeDownload(application, download.id)
-        }
+    fun cancelAllDownloads() {
+        downloader.cancelAll()
     }
 
+    fun pauseDownload(downloadIds: List<Long>) {
+        downloader.pause(downloadIds)
+    }
+
+    fun resumeDownload(downloadIds: List<Long>) {
+        downloader.resume(downloadIds)
+    }
+
+    fun cancelDownload(downloadIds: List<Long>) {
+        downloader.cancel(downloadIds)
+    }
+
+    val downloadsFlow = downloader.downloadsFlow
     var offline: PagedData<Shelf>? = null
     val offlineFlow = MutableStateFlow<PagingData<Shelf>?>(null)
+
+    init {
+        loadOfflineDownloads()
+    }
+
     private fun loadOfflineDownloads() {
         viewModelScope.launch {
             offline = extensionLoader.offline.getDownloads()

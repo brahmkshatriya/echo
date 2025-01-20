@@ -103,15 +103,6 @@
             </intent-filter>
         </receiver>
 
-        <receiver
-            android:name=".download.DownloadReceiver"
-            android:exported="true"
-            android:permission="android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS">
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
-            </intent-filter>
-        </receiver>
-
         <activity
             android:name=".ExceptionActivity"
             android:exported="true" />
@@ -126,6 +117,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove" />
 
         <meta-data android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc"/>

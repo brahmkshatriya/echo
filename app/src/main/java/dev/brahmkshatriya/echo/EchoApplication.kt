@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -33,7 +35,14 @@ import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @HiltAndroidApp
-class EchoApplication : Application(), SingletonImageLoader.Factory {
+class EchoApplication : Application(), SingletonImageLoader.Factory, Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration = Configuration.Builder()
+        .setWorkerFactory(workerFactory)
+        .build()
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -123,4 +132,5 @@ class EchoApplication : Application(), SingletonImageLoader.Factory {
             .crossfade(true)
             .build()
     }
+
 }

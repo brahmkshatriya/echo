@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.bundles.paging)
     implementation(libs.preference)
 
+    implementation(libs.work.runtime.ktx)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
@@ -71,6 +72,7 @@ dependencies {
     implementation(libs.material)
 
     implementation(libs.hilt)
+    implementation(libs.hilt.work)
     ksp(libs.hilt.compiler)
 
     implementation(libs.bundles.coil)

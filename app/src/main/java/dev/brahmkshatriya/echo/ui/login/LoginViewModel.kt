@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
+import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
@@ -27,6 +28,7 @@ class LoginViewModel @Inject constructor(
     val extensionList: MutableStateFlow<List<MusicExtension>?>,
     val trackerList: MutableStateFlow<List<TrackerExtension>?>,
     val lyricsList: MutableStateFlow<List<LyricsExtension>?>,
+    val miscList: MutableStateFlow<List<MiscExtension>?>,
     private val context: Application,
     val messageFlow: MutableSharedFlow<SnackBar.Message>,
     database: EchoDatabase,

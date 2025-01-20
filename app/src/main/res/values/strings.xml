@@ -303,6 +303,8 @@
     <string name="sort_date">Date</string>
     <string name="sort_duration">Duration</string>
     <string name="sort_descending">%1$s Descending</string>
+    <string name="downloading_item">Downloading %1$s</string>
+    <string name="misc">Misc</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

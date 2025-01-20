@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.extensions
 
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +33,16 @@ suspend inline fun <reified C, R> Extension<*>.get(
     block(client)
 }
 
+suspend inline fun <reified C, R> Extension<*>.get(
+    crossinline block: suspend C.() -> R
+): Result<R> = runCatching {
+    runCatching {
+        val client = instance.value().getOrThrow() as? C
+            ?: throw ClientException.NotSupported(C::class.simpleName ?: "")
+        block(client)
+    }.getOrElse { throw it.toAppException(this) }
+}
+
 suspend inline fun <reified T> Extension<*>.inject(crossinline block: suspend T.() -> Unit) {
     instance.injectSuspended { (getOrNull() as? T)?.block() }
 }
@@ -40,3 +51,6 @@ suspend inline fun <reified T> Extension<*>.isClient() = instance.value().getOrN
 
 fun StateFlow<List<Extension<*>>?>.getExtension(id: String?) =
     value?.find { it.metadata.id == id }
+
+fun StateFlow<List<Extension<*>>?>.getExtensionOrThrow(id: String?) =
+    value?.find { it.metadata.id == id } ?: throw ExtensionNotFoundException(id)

@@ -11,6 +11,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.LyricsExtension
+import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.db.models.UserEntity
@@ -43,6 +44,10 @@ class ExtensionModule {
     @Singleton
     fun provideTrackerListFlow() = MutableStateFlow<List<TrackerExtension>?>(null)
 
+    @Provides
+    @Singleton
+    fun provideMiscListFlow() = MutableStateFlow<List<MiscExtension>?>(null)
+
     @OptIn(UnstableApi::class)
     @Provides
     @Singleton
@@ -57,6 +62,7 @@ class ExtensionModule {
         extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
         trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
         lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
+        miscListFlow: MutableStateFlow<List<MiscExtension>?>,
         extensionFlow: MutableStateFlow<MusicExtension?>,
     ) = run {
         val extensionDao = database.extensionDao()
@@ -73,7 +79,8 @@ class ExtensionModule {
             extensionListFlow,
             trackerListFlow,
             lyricsListFlow,
-            extensionFlow,
+            miscListFlow,
+            extensionFlow
         )
     }
 }

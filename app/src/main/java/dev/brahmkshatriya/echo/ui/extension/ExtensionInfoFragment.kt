@@ -93,6 +93,7 @@ class ExtensionInfoFragment : Fragment() {
             ExtensionType.MUSIC -> viewModel.extensionListFlow.getExtension(clientId)
             ExtensionType.TRACKER -> viewModel.trackerListFlow.getExtension(clientId)
             ExtensionType.LYRICS -> viewModel.lyricsListFlow.getExtension(clientId)
+            ExtensionType.MISC -> viewModel.miscListFlow.getExtension(clientId)
         }
 
         if (extension == null) {
@@ -141,6 +142,7 @@ class ExtensionInfoFragment : Fragment() {
             ExtensionType.MUSIC -> R.string.music
             ExtensionType.TRACKER -> R.string.tracker
             ExtensionType.LYRICS -> R.string.lyrics
+            ExtensionType.MISC -> R.string.misc
         }
         val typeString = getString(R.string.name_extension, getString(type))
         val span = SpannableString("$typeString\n\n${metadata.description}\n\n$byAuthor")

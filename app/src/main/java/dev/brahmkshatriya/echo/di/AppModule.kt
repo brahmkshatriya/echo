@@ -15,6 +15,8 @@ import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.db.models.UserEntity
+import dev.brahmkshatriya.echo.download.TaskAction
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CACHE_SIZE
@@ -80,4 +82,16 @@ class AppModule {
     @Provides
     @Singleton
     fun provideAudioSessionFlow() = MutableStateFlow(0)
+
+    @Provides
+    @Singleton
+    fun provideDownloadActionsFlow() = MutableSharedFlow<TaskAction>()
+
+    @Provides
+    @Singleton
+    fun provideDownloader(
+        application: Application,
+        database: EchoDatabase,
+        actionsFlow: MutableSharedFlow<TaskAction>
+    ) = Downloader(application, database, actionsFlow)
 }

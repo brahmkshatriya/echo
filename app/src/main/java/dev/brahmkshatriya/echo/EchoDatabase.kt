@@ -6,18 +6,22 @@ import dev.brahmkshatriya.echo.db.DownloadDao
 import dev.brahmkshatriya.echo.db.ExtensionDao
 import dev.brahmkshatriya.echo.db.UserDao
 import dev.brahmkshatriya.echo.db.models.CurrentUser
-import dev.brahmkshatriya.echo.db.models.DownloadEntity
+import dev.brahmkshatriya.echo.db.models.EchoMediaItemEntity
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
+import dev.brahmkshatriya.echo.db.models.MediaTaskEntity
+import dev.brahmkshatriya.echo.db.models.TrackDownloadTaskEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity
 
 @Database(
     entities = [
         UserEntity::class,
         CurrentUser::class,
-        DownloadEntity::class,
-        ExtensionEntity::class
+        MediaTaskEntity::class,
+        ExtensionEntity::class,
+        EchoMediaItemEntity::class,
+        TrackDownloadTaskEntity::class
     ],
-    version = 3
+    version = 4
 )
 abstract class EchoDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao

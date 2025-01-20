@@ -11,5 +11,6 @@ import dev.brahmkshatriya.echo.common.Extension
 enum class ExtensionType(val feature: String) {
     MUSIC("music"),
     TRACKER("tracker"),
-    LYRICS("lyrics")
+    LYRICS("lyrics"),
+    MISC("misc")
 }

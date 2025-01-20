@@ -79,6 +79,15 @@ class LyricsExtensionRepo(
     override val type = ExtensionType.LYRICS
 }
 
+class MiscExtensionRepo(
+    context: Context,
+    listener: PackageChangeListener,
+    fileChangeListener: FileChangeListener,
+    vararg repo: Pair<Metadata, Injectable<ExtensionClient>>
+) : ExtensionRepo<ExtensionClient>(context, listener, fileChangeListener, *repo) {
+    override val type = ExtensionType.MISC
+}
+
 class BuiltInRepo<T : ExtensionClient>(
     private val list: List<Pair<Metadata, Injectable<T>>>
 ) : InjectablePluginRepo<Metadata, T> {

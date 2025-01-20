@@ -54,7 +54,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
         val viewModel = when (type) {
             ExtensionType.LYRICS -> activityViewModels<LyricsViewModel>().value
             ExtensionType.MUSIC -> activityViewModels<ExtensionViewModel>().value
-            ExtensionType.TRACKER -> throw IllegalStateException("Tracker not supported")
+            else -> throw IllegalStateException("Not supported")
         }
 
         val listener = object : OnButtonCheckedListener {

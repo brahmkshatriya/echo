@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.installExtensio
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
+import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
@@ -63,6 +64,7 @@ class ExtensionViewModel @Inject constructor(
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
+    val miscListFlow: MutableStateFlow<List<MiscExtension>?>,
     val extensionFlow: MutableStateFlow<MusicExtension?>,
     val settings: SharedPreferences,
     val database: EchoDatabase,
@@ -131,6 +133,7 @@ class ExtensionViewModel @Inject constructor(
         ExtensionType.MUSIC -> extensionListFlow
         ExtensionType.TRACKER -> trackerListFlow
         ExtensionType.LYRICS -> lyricsListFlow
+        ExtensionType.MISC -> miscListFlow
     }
 
     fun moveExtensionItem(type: ExtensionType, toPos: Int, fromPos: Int) {

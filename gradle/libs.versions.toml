@@ -1,20 +1,23 @@
 [versions]
 agp = "8.2.2"
+hilt-work = "1.2.0"
 kotlin = "2.0.10"
 okhttp = "5.0.0-alpha.14"
 ktor = "3.0.0-beta-2"
 kotlinx-serialization = "1.7.1"
-firebase-bom = "33.7.0"
+firebase-bom = "33.8.0"
 androidx-paging = "3.3.5"
 room = "2.6.1"
 media3 = "1.5.1"
-hilt = "2.48.1"
+hilt = "2.49"
 coil = "3.0.0-rc01"
 junit = "4.13.2"
+work-runtime-ktx = "2.10.0"
 
 [libraries]
 appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.0" }
+hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt-work" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 swiperefresh = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 
@@ -64,6 +67,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
+work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime-ktx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
