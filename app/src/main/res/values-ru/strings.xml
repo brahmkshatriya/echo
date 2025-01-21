@@ -230,7 +230,7 @@
     <string name="extension_installed_successfully">Расширение успешно установлено.</string>
     <string name="extension_uninstalled_successfully">Расширение успешно удалено.</string>
     <string name="allow_opening_links">Разрешить открытие ссылок</string>
-    <string name="open_links_instruction">Чтобы разрешить открытие этих ссылок, вам нужно:\n- Прокрутить вниз и нажать на \"Открывать по умолчанию\"\n- Нажать на \"+ Добавить ссылку\\</string>
+    <string name="open_links_instruction">Чтобы разрешить открытие этих ссылок, вам нужно:\n- Прокрутить вниз и нажать на \"Открывать по умолчанию\"\n- Нажать на \"+ Добавить ссылку</string>
     <string name="extension_requires_following_extensions">%1$s требует %2$s</string>
     <string name="blacklist_folder_keywords">Ключевые слова черного списка папки</string>
     <string name="check_for_extension_updates">Проверьте обновления расширений</string>
