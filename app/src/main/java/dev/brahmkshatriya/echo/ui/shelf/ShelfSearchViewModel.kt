@@ -8,7 +8,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.run
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

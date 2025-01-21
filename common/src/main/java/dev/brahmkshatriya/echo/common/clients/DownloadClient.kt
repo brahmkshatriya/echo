@@ -7,6 +7,16 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import java.io.File
 
+/**
+ * The client for downloading tracks. Needs to support the following:
+ * - Get the download folder for the given context of downloading track.
+ * - Which server to use for downloading.
+ * - Which sources to use for downloading.
+ * - Download the given sources.
+ * - Merge the given media files into a single file.
+ * - Tag a file with the given track metadata.
+ * - The maximum number of concurrent downloads allowed.
+ */
 interface DownloadClient : ExtensionClient {
     /**
      * The maximum number of concurrent downloads allowed.
@@ -42,14 +52,16 @@ interface DownloadClient : ExtensionClient {
      * Which source to use for downloading.
      *
      * @param context The context of the downloading track.
-     * @param media The media to choose sources from.
+     * @param server The server to choose sources from.
      *
-     * @return The selected source.
+     * @return The selected sources.
      *
-     * @see Streamable.Media
+     * @see Streamable.Media.Server
      * @see Streamable.Source
      */
-    suspend fun selectSource(context: DownloadContext, media: Streamable.Media): Streamable.Source
+    suspend fun selectSources(
+        context: DownloadContext, server: Streamable.Media.Server
+    ): List<Streamable.Source>
 
     /**
      * Download the given [source].
@@ -76,7 +88,7 @@ interface DownloadClient : ExtensionClient {
      *
      * @see FileTask
      */
-    suspend fun merge(context: DownloadContext, files: List<File>, dir:File): FileTask
+    suspend fun merge(context: DownloadContext, files: List<File>, dir: File): FileTask
 
     /**
      * Tag a file with the given track metadata

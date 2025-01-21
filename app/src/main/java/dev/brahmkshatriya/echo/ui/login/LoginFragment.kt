@@ -93,7 +93,10 @@ class LoginFragment : Fragment() {
         else Pair(button) { configure(binding, client) }
     }
 
+    var clients = listOf<Pair<MaterialButton, () -> Unit>>()
+    var current: Int? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        println("Login View Created")
         setupTransition(view)
         applyInsets {
             binding.loginContainer.applyContentInsets(it)
@@ -123,7 +126,21 @@ class LoginFragment : Fragment() {
 
         val metadata = extension.metadata
 
+        observe(loginViewModel.loginClient) {
+            it ?: return@observe
+            if (current == it) return@observe
+            println("loginClient: $it")
+            current = it
+            binding.loginToggleGroup.isVisible = false
+            clients[it].second()
+        }
+
+        observe(loginViewModel.loadingOver) {
+            parentFragmentManager.popBackStack()
+        }
+
         lifecycleScope.launch {
+            println("launched")
             if (!extension.isClient<LoginClient>()) {
                 createSnack(requireContext().loginNotSupported(clientName))
                 parentFragmentManager.popBackStack()
@@ -148,7 +165,7 @@ class LoginFragment : Fragment() {
                     configureCustomTextInput(extension, it)
                 },
             )
-
+            this@LoginFragment.clients = clients
             if (clients.isEmpty()) {
                 createSnack(requireContext().loginNotSupported(clientName))
                 parentFragmentManager.popBackStack()
@@ -165,23 +182,16 @@ class LoginFragment : Fragment() {
                     }
                 }
             }
-            observe(loginViewModel.loginClient) {
-                it ?: return@observe
-                binding.loginToggleGroup.isVisible = false
-                clients[it].second()
-            }
         }
 
 
-        observe(loginViewModel.loadingOver) {
-            parentFragmentManager.popBackStack()
-        }
     }
 
     private fun FragmentLoginBinding.configureWebView(
         extension: Extension<*>,
         client: LoginClient.WebView
     ) = with(client) {
+        println("Configuring WebView")
         webView.isVisible = true
         webView.applyDarkMode()
         val callback = object : OnBackPressedCallback(false) {
@@ -221,6 +231,7 @@ class LoginFragment : Fragment() {
             userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
                 ?: USER_AGENT
         }
+        println("Loading URL: ${loginWebViewInitialUrl.url}")
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
 
         lifecycleScope.launch {

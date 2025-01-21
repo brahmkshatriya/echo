@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.offline
+package dev.brahmkshatriya.echo.builtin
 
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient

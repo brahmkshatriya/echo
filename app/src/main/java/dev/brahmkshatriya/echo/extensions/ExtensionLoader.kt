@@ -5,6 +5,9 @@ import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
+import dev.brahmkshatriya.echo.builtin.DownloadExtension
+import dev.brahmkshatriya.echo.builtin.OfflineExtension
+import dev.brahmkshatriya.echo.builtin.UnifiedExtension
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MiscExtension
@@ -26,8 +29,6 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.plugger.FileChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
-import dev.brahmkshatriya.echo.offline.OfflineExtension
-import dev.brahmkshatriya.echo.offline.UnifiedExtension
 import dev.brahmkshatriya.echo.utils.catchWith
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +77,9 @@ class ExtensionLoader(
 
 //    private val test = TestExtension.metadata to catchLazy { TestExtension() }
 
+    private val download: Pair<Metadata, Injectable<ExtensionClient>> =
+        DownloadExtension.metadata to Injectable { DownloadExtension(context) }
+
     private val musicExtensionRepo =
         MusicExtensionRepo(context, listener, fileListener, offlinePair, unified)
 
@@ -86,7 +90,7 @@ class ExtensionLoader(
         LyricsExtensionRepo(context, listener, fileListener)
 
     private val miscExtensionRepo =
-        MiscExtensionRepo(context, listener, fileListener)
+        MiscExtensionRepo(context, listener, fileListener, download)
 
     val trackers = trackerListFlow
     val extensions = extensionListFlow

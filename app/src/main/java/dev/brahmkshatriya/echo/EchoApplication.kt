@@ -21,6 +21,7 @@ import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
 import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.cleanupTempApks
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetails
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
@@ -40,9 +41,13 @@ class EchoApplication : Application(), SingletonImageLoader.Factory, Configurati
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-    override val workManagerConfiguration = Configuration.Builder()
-        .setWorkerFactory(workerFactory)
-        .build()
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
+
+    @Inject
+    lateinit var downloader: Downloader
 
     @Inject
     lateinit var settings: SharedPreferences
@@ -58,6 +63,8 @@ class EchoApplication : Application(), SingletonImageLoader.Factory, Configurati
         applyLocale(settings)
         applyUiChanges(this, settings)
         cleanupTempApks()
+
+        downloader.start()
 
 //        //Crash Handling
 //        Thread.setDefaultUncaughtExceptionHandler { _, exception ->

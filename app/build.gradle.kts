@@ -71,7 +71,8 @@ dependencies {
 
     implementation(libs.material)
 
-    implementation(libs.hilt)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.work)
     ksp(libs.hilt.compiler)
 

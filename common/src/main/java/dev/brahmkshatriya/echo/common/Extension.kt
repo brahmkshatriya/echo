@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.common
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
+import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
@@ -165,6 +166,7 @@ data class LyricsExtension(
  * A data class representing a Misc Extension.
  * Misc Extension supports the following types of clients:
  * - [ExtensionClient] - Mandatory Base Client
+ * - [DownloadClient] - For downloading tracks
  * - [LoginClient] - For login support
  *
  * The extension can also implement the following providers to get installed extensions:

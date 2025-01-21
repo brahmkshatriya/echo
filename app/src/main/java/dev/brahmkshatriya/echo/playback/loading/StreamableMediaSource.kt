@@ -25,7 +25,7 @@ import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.builtin.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId

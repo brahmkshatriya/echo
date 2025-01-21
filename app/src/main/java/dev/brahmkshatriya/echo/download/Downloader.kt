@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.download
 
 import android.content.Context
+import androidx.work.Constraints
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -38,7 +40,7 @@ class Downloader(
         tracks.forEach { track ->
             dao.insertTrackEntity(TrackDownloadTaskEntity(0, clientId, id, track.toJson()))
         }
-        invoke()
+        start()
     }
 
     fun pauseAll() = scope.launch {
@@ -66,13 +68,14 @@ class Downloader(
     }
 
     private val workManager = WorkManager.getInstance(context)
-    operator fun invoke() {
+    fun start() {
         val workInfo = workManager.getWorkInfosByTag(TAG).get()
         workInfo.forEach { work ->
             if (work.state == WorkInfo.State.ENQUEUED || work.state == WorkInfo.State.RUNNING)
                 return
         }
         val request = OneTimeWorkRequestBuilder<DownloadWorker>()
+            .setConstraints(Constraints(NetworkType.CONNECTED, requiresStorageNotLow = true))
             .addTag(TAG)
             .build()
         workManager.enqueue(request)

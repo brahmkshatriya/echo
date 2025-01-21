@@ -22,12 +22,13 @@ import java.util.concurrent.ConcurrentHashMap
 
 @HiltWorker
 class DownloadWorker @AssistedInject constructor(
+    @Assisted private val context: Context,
+    @Assisted private val workerParams: WorkerParameters,
     database: EchoDatabase,
     private val extensionsList: MutableStateFlow<List<MusicExtension>?>,
     private val miscList: MutableStateFlow<List<MiscExtension>?>,
     private val actions: MutableSharedFlow<TaskAction>,
-    @Assisted private val context: Context,
-    @Assisted private val workerParams: WorkerParameters,
+    private val throwableFlow: MutableSharedFlow<Throwable>,
 ) : CoroutineWorker(context, workerParams) {
 
     private val dao = database.downloadDao()
@@ -41,14 +42,21 @@ class DownloadWorker @AssistedInject constructor(
         val actionJob = launch { actions.collect { performAction(it) } }
 
         tracksFlow.value = dao.getTracks()
+        println("Initial Tracks: ${tracksFlow.value}")
 
         val trackJob = launch {
             dao.getTrackFlow().collect {
+                println("New Tracks: $it")
                 tracksFlow.value = it
                 it.forEach { entity ->
                     trackTaskMap.getOrPut(entity.id) {
+                        println("putting task for ${entity.id}")
                         TrackDownloadTask(entity, dao, extensionsList, downloadExtension).also {
-                            launch { it.initialize() }
+                            launch {
+                                println("initializing task for ${entity.id}")
+                                val throwable = it.initialize()
+                                if (throwable != null) throwableFlow.emit(throwable)
+                            }
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.offline
+package dev.brahmkshatriya.echo.builtin.offline
 
 import android.content.Context
 import dev.brahmkshatriya.echo.R

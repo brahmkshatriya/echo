@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
-import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.builtin.OfflineExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe

@@ -14,6 +14,8 @@ import dev.brahmkshatriya.echo.ExceptionActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
+import dev.brahmkshatriya.echo.download.DownloadException
+import dev.brahmkshatriya.echo.download.TaskException
 import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
 import dev.brahmkshatriya.echo.extensions.InvalidExtensionListException
 import dev.brahmkshatriya.echo.extensions.RequiredExtensionsException
@@ -23,8 +25,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerException
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
-import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.putSerialized
+import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
@@ -37,6 +39,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
+import kotlin.coroutines.cancellation.CancellationException
 
 class ExceptionFragment : Fragment() {
     private var binding by autoCleared<FragmentExceptionBinding>()
@@ -114,7 +117,7 @@ class ExceptionFragment : Fragment() {
             is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
             is PlayerException -> throwable.details.title
-            is ExtensionLoadingException -> "${getString(R.string.invalid_extension)} : ${throwable.type}"
+            is ExtensionLoadingException -> "${getString(R.string.invalid_extension)}: ${throwable.type}"
             is RequiredExtensionsException -> getString(
                 R.string.extension_requires_following_extensions,
                 throwable.name,
@@ -137,6 +140,9 @@ class ExceptionFragment : Fragment() {
                 }
             }
 
+            is DownloadException -> "▼ ${throwable.trackEntity.track.title}: ${getTitle(throwable.cause)}"
+            is TaskException -> "${throwable.taskEntity.run { title ?: id }} - ${getTitle(throwable.cause)}"
+            is CancellationException -> getString(R.string.cancelled)
             else -> throwable.message ?: getString(R.string.error)
         }
 
@@ -160,6 +166,17 @@ Id : ${throwable.extension.name}
 Type : ${throwable.extension.type}
 Version : ${throwable.extension.version}
 App Version : ${appVersion()}
+
+${getDetails(throwable.cause)}
+""".trimIndent()
+
+            is DownloadException -> """
+Track : ${throwable.trackEntity}
+${getDetails(throwable.cause)}
+""".trimIndent()
+
+            is TaskException -> """
+Task : ${throwable.taskEntity}
 
 ${getDetails(throwable.cause)}
 """.trimIndent()

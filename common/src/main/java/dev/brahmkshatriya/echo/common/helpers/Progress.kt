@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.common.helpers
 
-import dev.brahmkshatriya.echo.common.helpers.Progress.Downloading
 import dev.brahmkshatriya.echo.common.helpers.Progress.Final
+import dev.brahmkshatriya.echo.common.helpers.Progress.InProgress
 import dev.brahmkshatriya.echo.common.helpers.Progress.Initialized
 import dev.brahmkshatriya.echo.common.helpers.Progress.Paused
 
@@ -11,54 +11,62 @@ import dev.brahmkshatriya.echo.common.helpers.Progress.Paused
  * ```
  *     Initial         Progressing        Final
  * -------------------------------------------------
- * |  Initialized  🡺  Downloading  🡺  Completed  |
- * |                     🡹  🡻     🡺  Failed     |
- * |                     Paused                    |
+ * |  Initialized  🡺   InProgress  🡺  Completed  |
+ * |                     🡹  🡻     🡺  Cancelled  |
+ * |                     Paused     🡺  Failed     |
  * -------------------------------------------------
  * ```
  * @see Initialized
- * @see Downloading
+ * @see InProgress
  * @see Paused
  * @see Final.Completed
+ * @see Final.Cancelled
  * @see Final.Failed
  */
 sealed class Progress<T> {
     /**
-     * Represents the initial state of a download.
+     * Represents the initial state of the task.
      *
-     * @param size The size of the file to be downloaded, `null` if unknown.
+     * @param size The size of the final data when task is completed, `null` if unknown.
      */
     data class Initialized<T>(val size: Long?) : Progress<T>()
 
     /**
-     * Represents the progress of a download.
+     * Represents the current progress of the task.
      *
-     * @param downloaded The number of bytes downloaded so far.
-     * @param speed The download speed in bytes per second.
+     * @param downloaded The number of bytes progressed so far.
+     * @param speed The progress speed in bytes per second.
      */
-    data class Downloading<T>(val downloaded: Long, val speed: Long?) : Progress<T>()
+    data class InProgress<T>(val downloaded: Long, val speed: Long?) : Progress<T>()
 
     /**
-     * Represents the paused state of a download.
+     * Represents the paused state of the task.
      *
-     * @param downloaded The number of bytes downloaded so far.
+     * @param downloaded The number of bytes progressed so far.
      */
     data class Paused<T>(val downloaded: Long) : Progress<T>()
 
     /**
-     * Represents the final state of a download.
+     * Represents the final state of the task.
      */
     sealed class Final<T> : Progress<T>() {
         /**
-         * Represents the successful completion of a download.
+         * Represents the successful completion of the task.
          *
-         * @param finalSize The final size of the downloaded file.
-         * @param data The downloaded file.
+         * @param finalSize The final size of the task.
+         * @param data The task data.
          */
         data class Completed<T>(val finalSize: Long, val data: T) : Final<T>()
 
+
         /**
-         * Represents the failure of a download.
+         * Represents the cancellation of the task.
+         */
+        class Cancelled<T> : Final<T>()
+
+
+        /**
+         * Represents the failure of the task.
          *
          * @param reason The reason for the failure.
          */

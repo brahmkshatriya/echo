@@ -45,7 +45,7 @@ import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.extensions.isClient
-import dev.brahmkshatriya.echo.offline.OfflineExtension
+import dev.brahmkshatriya.echo.builtin.OfflineExtension
 import dev.brahmkshatriya.echo.utils.future
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache

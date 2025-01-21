@@ -1,10 +1,22 @@
-package dev.brahmkshatriya.echo.offline
+package dev.brahmkshatriya.echo.builtin
 
 import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.addSongToPlaylist
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.createPlaylist
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.deletePlaylist
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.editPlaylist
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.moveSongInPlaylist
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.removeSongFromPlaylist
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.searchBy
+import dev.brahmkshatriya.echo.builtin.offline.toAlbum
+import dev.brahmkshatriya.echo.builtin.offline.toArtist
+import dev.brahmkshatriya.echo.builtin.offline.toPlaylist
+import dev.brahmkshatriya.echo.builtin.offline.toShelf
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -42,13 +54,6 @@ import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.common.settings.Settings
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.addSongToPlaylist
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.createPlaylist
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.deletePlaylist
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.editPlaylist
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.moveSongInPlaylist
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.removeSongFromPlaylist
-import dev.brahmkshatriya.echo.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.getSettings

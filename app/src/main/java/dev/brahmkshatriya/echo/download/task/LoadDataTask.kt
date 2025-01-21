@@ -5,7 +5,6 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.Progress
-import dev.brahmkshatriya.echo.common.helpers.TaskCancellationException
 import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
@@ -29,7 +28,7 @@ typealias MediaProgress = Progress<Streamable.Media.Server>
 class LoadDataTask(
     private val dao: DownloadDao,
     private var trackEntity: TrackDownloadTaskEntity,
-    private var context: EchoMediaItemEntity,
+    private var context: EchoMediaItemEntity?,
     private val extensionsList: MutableStateFlow<List<MusicExtension>?>,
     private val downloadExtension: MiscExtension,
 ) : MediaTask<Streamable.Media.Server>(dao) {
@@ -40,12 +39,15 @@ class LoadDataTask(
     private var progress = 0L
         set(value) {
             field = value
-            progressFlow.value = Progress.Downloading(value, null)
+            progressFlow.value = Progress.InProgress(value, null)
         }
 
     private suspend fun load(): Streamable.Media.Server {
         progress = 0
+        println("Loading Track: ${trackEntity.track.title}")
+
         val extension = extensionsList.getExtensionOrThrow(trackEntity.clientId)
+        trackEntity = dao.getTrackEntity(trackEntity.id)
         val streamables = if (!trackEntity.loaded) {
             val (track, streamables) =
                 extension.get<TrackClient, Pair<Track, List<Streamable>>> {
@@ -61,8 +63,10 @@ class LoadDataTask(
         } else trackEntity.track.streamables
         progress++
 
+        println("Streamables: $streamables")
+
         val downloadContext = DownloadContext(
-            trackEntity.clientId, trackEntity.track, context.mediaItem
+            trackEntity.clientId, trackEntity.track, context?.mediaItem
         )
         val folderPath = trackEntity.folderPath
         if (folderPath == null) {
@@ -71,6 +75,8 @@ class LoadDataTask(
             dao.insertTrackEntity(trackEntity)
         } else File(folderPath)
         progress++
+
+        println("Folder Path: $folderPath")
 
         val streamableId = trackEntity.streamableId
         val selectedStreamable = if (streamableId == null) {
@@ -81,7 +87,9 @@ class LoadDataTask(
         } else streamables.find { it.id == streamableId }!!
         progress++
 
-        val media = extension.get<TrackClient, Streamable.Media.Server> {
+        println("Selected Streamable: $selectedStreamable")
+
+        val server = extension.get<TrackClient, Streamable.Media.Server> {
             val media =
                 loadStreamableMedia(selectedStreamable, true) as Streamable.Media.Server
             media.sources.ifEmpty {
@@ -91,15 +99,15 @@ class LoadDataTask(
         }.getOrThrow()
 
         val indexes = trackEntity.indexes.ifEmpty {
-            if (!media.merged) {
-                val source = withDownloadExtension { selectSource(downloadContext, media) }
-                listOf(media.sources.indexOf(source))
-            } else media.sources.indices.toList()
+            val sources = withDownloadExtension { selectSources(downloadContext, server) }
+            sources.map { server.sources.indexOf(it) }
         }
         trackEntity = trackEntity.copy(indexesData = indexes.toJson())
         dao.insertTrackEntity(trackEntity)
         progress++
-        return media
+        println("Indexes: $indexes")
+
+        return server
     }
 
     private suspend fun <T> withDownloadExtension(block: suspend DownloadClient.() -> T) =
@@ -128,7 +136,7 @@ class LoadDataTask(
 
     override suspend fun cancel() {
         job?.cancel()
-        progressFlow.value = Progress.Final.Failed(TaskCancellationException())
+        progressFlow.value = Progress.Final.Cancelled()
         job = null
     }
 
@@ -138,7 +146,6 @@ class LoadDataTask(
     }
 
     override suspend fun resume() {
-        trackEntity = dao.getTrackEntity(trackEntity.id)
         start()
     }
 
