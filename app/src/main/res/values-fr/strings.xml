@@ -215,7 +215,7 @@
     <string name="extension_installed_successfully">Extension installée avec succès.</string>
     <string name="extension_uninstalled_successfully">Extension désinstallée avec succès.</string>
     <string name="allow_opening_links">Autoriser l\'ouverture des liens</string>
-    <string name="open_links_instruction">Pour permettre l\'ouverture de ces liens, vous devez :\n- Faire défiler vers le bas et cliquer sur \"Ouvrir par défaut\"\n- Cliquer sur \"+ Ajouter un lien\\</string>
+    <string name="open_links_instruction">Pour permettre l\'ouverture de ces liens, vous devez :\n- Faire défiler vers le bas et cliquer sur \"Ouvrir par défaut\"\n- Cliquer sur \"+ Ajouter un lien</string>
     <string name="extension_requires_following_extensions">%1$s nécessite %2$s</string>
     <string name="quality_number">Qualité %1$d</string>
     <string name="unknown">Inconnu</string>
