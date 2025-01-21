@@ -304,4 +304,6 @@
     <string name="sort_date">तारीख</string>
     <string name="sort_duration">अवधि</string>
     <string name="sort_descending">%1$s अवरोहण</string>
+    <string name="downloading_item">डाउनलोड हो रहा है %1$s</string>
+    <string name="misc">विविध</string>
 </resources>
