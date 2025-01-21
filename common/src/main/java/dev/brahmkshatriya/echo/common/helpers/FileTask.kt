@@ -29,22 +29,22 @@ interface FileTask {
     /**
      * What to do when the task is started.
      */
-    val start: suspend () -> Unit
+    val start: SuspendedFunction
 
     /**
      * What to do when the task is cancelled.
      */
-    val cancel: suspend () -> Unit
+    val cancel: SuspendedFunction
 
     /**
      * Pause the task. Use null if pausing is not supported.
      */
-    val pause: (suspend () -> Unit)?
+    val pause: SuspendedFunction?
 
     /**
      * Resume the task. Use null if pausing is not supported.
      */
-    val resume: (suspend () -> Unit)?
+    val resume: SuspendedFunction?
 
     /**
      * Whether the task supports pausing.

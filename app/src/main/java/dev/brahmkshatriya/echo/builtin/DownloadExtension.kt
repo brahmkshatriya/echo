@@ -6,6 +6,7 @@ import dev.brahmkshatriya.echo.common.helpers.FileProgress
 import dev.brahmkshatriya.echo.common.helpers.FileTask
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.Progress
+import dev.brahmkshatriya.echo.common.helpers.SuspendedFunction
 import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -65,7 +66,7 @@ class DownloadExtension(
     ) : FileTask {
         override val progressFlow = MutableStateFlow<FileProgress>(Progress.Initialized(4))
         private var job: Job? = null
-        override val start: suspend () -> Unit = {
+        override val start = SuspendedFunction {
             println("Starting Download")
             job?.cancel()
             job = coroutineScope {
@@ -79,17 +80,17 @@ class DownloadExtension(
                 }
             }
         }
-        override val cancel: suspend () -> Unit = {
+        override val cancel = SuspendedFunction {
             println("Cancelling Download")
             job?.cancel()
             progressFlow.value = Progress.Final.Cancelled()
         }
-        override val pause: (suspend () -> Unit) = {
+        override val pause = SuspendedFunction {
             println("Pausing Download")
             job?.cancel()
             progressFlow.value = Progress.Paused(4)
         }
-        override val resume: (suspend () -> Unit) = {
+        override val resume = SuspendedFunction {
             println("Resuming Download")
             start()
         }

@@ -38,7 +38,7 @@ class TrackDownloadTask(
         downloadExtension: MiscExtension,
     ): Result<File> {
         val id = "${trackEntity.streamableId}-$i".hashCode().toLong()
-        val title = it.title ?: "${trackEntity.streamableId}-$i"
+        val title = it.title ?: "${trackEntity.streamableId.hashCode()}-$i"
         val taskEntity = MediaTaskEntity(id, entity.id, TaskType.DOWNLOAD, title)
         val file = File(folderPath, title)
         val task = FiledTask(dao, taskEntity, downloadExtension) {
