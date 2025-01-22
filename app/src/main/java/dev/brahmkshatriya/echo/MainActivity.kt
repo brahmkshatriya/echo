@@ -22,7 +22,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
+import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.common.openItemFragmentFromUri
+import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.utils.checkAudioPermissions
 import dev.brahmkshatriya.echo.utils.emit
@@ -152,7 +154,9 @@ class MainActivity : AppCompatActivity() {
         this.intent = null
         intent ?: return
         val fromNotif = intent.hasExtra("fromNotification")
+        val fromDownload = intent.hasExtra("fromDownload")
         if (fromNotif) uiViewModel.fromNotification.value = true
+        else if (fromDownload) openFragment(DownloadingFragment())
         else {
             val uri = intent.data
             when (uri?.scheme) {

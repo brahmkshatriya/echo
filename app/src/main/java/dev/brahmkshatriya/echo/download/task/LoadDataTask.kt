@@ -19,7 +19,6 @@ import dev.brahmkshatriya.echo.utils.toJson
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -39,6 +38,7 @@ class LoadDataTask(
     private var progress = 0L
         set(value) {
             field = value
+            println("loading task setting progress: $value")
             progressFlow.value = Progress.InProgress(value, null)
         }
 
@@ -115,7 +115,7 @@ class LoadDataTask(
 
     var job: Job? = null
     private lateinit var progressFlow: MutableStateFlow<MediaProgress>
-    override suspend fun initialize(): StateFlow<MediaProgress> {
+    override suspend fun initialize(): MutableStateFlow<MediaProgress> {
         val progressFlow: MutableStateFlow<MediaProgress> =
             MutableStateFlow(Progress.Initialized(4))
         this.progressFlow = progressFlow

@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.helpers
 
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 
 /**
@@ -24,7 +23,7 @@ interface FileTask {
     /**
      * The progress of the task.
      */
-    val progressFlow: StateFlow<FileProgress>
+    val progressFlow: MutableStateFlow<FileProgress>
 
     /**
      * What to do when the task is started.

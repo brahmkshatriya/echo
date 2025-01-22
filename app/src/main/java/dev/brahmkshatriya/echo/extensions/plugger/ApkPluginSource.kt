@@ -13,10 +13,6 @@ class ApkPluginSource(
     private val featureName: String,
 ) : PluginSource<AppInfo>, PackageChangeListener.Listener {
 
-    init {
-        packageChangeListener.add(this)
-    }
-
     override fun getSourceFiles() = loadedPlugins.asStateFlow()
 
     private val loadedPlugins = MutableStateFlow(context.getStaticPackages(featureName))
@@ -43,5 +39,9 @@ class ApkPluginSource(
 
     override fun onPackageChanged() {
         loadedPlugins.value = context.getStaticPackages(featureName)
+    }
+
+    init {
+        packageChangeListener.add(this)
     }
 }

@@ -306,6 +306,11 @@
     <string name="downloading_item">Downloading %1$s</string>
     <string name="misc">Misc</string>
     <string name="cancelled">Cancelled</string>
+    <string name="items">%1$d Items</string>
+    <string name="downloading_x">Downloading %1$s</string>
+    <string name="pause_all">Pause All</string>
+    <string name="cancel_all">Cancel All</string>
+    <string name="progress_x">Progress: %1$d %%</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

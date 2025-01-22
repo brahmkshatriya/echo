@@ -11,7 +11,6 @@ import dev.brahmkshatriya.echo.extensions.get
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -27,33 +26,35 @@ class FiledTask(
 
     private lateinit var task: FileTask
     override val entity: MediaTaskEntity
-        get() = taskEntity.copy(supportsPause = task.supportsPause(),)
+        get() = taskEntity.copy(supportsPause = task.supportsPause())
 
-    override suspend fun initialize(): StateFlow<FileProgress> {
-        val task = withDownloadExtension { getter() }.getOrElse {
-            return MutableStateFlow(Progress.Final.Failed(it))
-        }
+    override suspend fun initialize(): MutableStateFlow<FileProgress> {
+        val task = withDownloadExtension { getter() }.getOrThrow()
         this.task = task
         return task.progressFlow
     }
 
+    private suspend fun withFailure(block: suspend FileTask.() -> Unit) {
+        runCatching { block(task) }.onFailure { task.progressFlow.value = Progress.Final.Failed(it) }
+    }
+
     private var job: Job? = null
     override suspend fun start() {
-        job = coroutineScope { launch { task.start() } }
+        job = coroutineScope { launch { withFailure { start() } } }
     }
 
     override suspend fun cancel() {
-        task.cancel()
+        withFailure { cancel() }
         job?.cancel()
     }
 
     override suspend fun pause() {
-        task.pause?.invoke()
+        withFailure { pause?.invoke() }
         job?.cancel()
     }
 
     override suspend fun resume() {
         job?.cancel()
-        job = coroutineScope { launch { task.resume?.invoke() } }
+        job = coroutineScope { launch { withFailure { resume?.invoke() } } }
     }
 }

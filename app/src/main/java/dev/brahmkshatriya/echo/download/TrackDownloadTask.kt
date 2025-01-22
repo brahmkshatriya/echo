@@ -50,10 +50,10 @@ class TrackDownloadTask(
 
     private suspend fun <T : Any> get(ids: List<Long>, block: suspend (MediaTask<*>) -> T) =
         ids.map { id ->
-            loadTask?.takeIf { it.entity.id == id }?.let { task -> block(task) }
-            tasks[id]?.let { task -> block(task) }
-            mergeTask?.takeIf { it.entity.id == id }?.let { task -> block(task) }
-            taggingTask?.takeIf { it.entity.id == id }?.let { task -> block(task) }
+            loadTask?.takeIf { it.entity.id == id }?.let { task -> task.launch { block(this) } }
+            tasks[id]?.let { task -> task.launch { block(this) } }
+            mergeTask?.takeIf { it.entity.id == id }?.let { task -> task.launch { block(this) } }
+            taggingTask?.takeIf { it.entity.id == id }?.let { task -> task.launch { block(this) } }
         }.mapNotNull { it }
 
     suspend fun initialize(): Throwable? {

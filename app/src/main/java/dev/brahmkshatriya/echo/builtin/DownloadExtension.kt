@@ -74,12 +74,14 @@ class DownloadExtension(
                     progressFlow.value = Progress.InProgress(0, 256)
                     for (i in 1L..4) {
                         delay(3000)
+                        println("flow progress: from extension $i")
                         progressFlow.value = Progress.InProgress(i, 256)
                     }
                     progressFlow.value = Progress.Final.Completed(4, file)
                 }
             }
         }
+
         override val cancel = SuspendedFunction {
             println("Cancelling Download")
             job?.cancel()

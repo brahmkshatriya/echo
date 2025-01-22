@@ -11,10 +11,13 @@ import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.db.models.TrackDownloadTaskEntity
+import dev.brahmkshatriya.echo.download.notifications.NotificationUtil
 import dev.brahmkshatriya.echo.extensions.isClient
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,13 +37,19 @@ class DownloadWorker @AssistedInject constructor(
     private val dao = database.downloadDao()
     private val tracksFlow = MutableStateFlow<List<TrackDownloadTaskEntity>>(listOf())
 
+    @OptIn(FlowPreview::class)
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         extensionsList.first { it != null }
         val downloadExtension = miscList.value?.first { it.isClient<DownloadClient>() }
             ?: return@withContext Result.failure()
 
         val actionJob = launch { actions.collect { performAction(it) } }
-
+        val notificationJob = launch {
+            dao.getCurrentDownloadsFlow().debounce(500L).collect {
+                val info = NotificationUtil.create(context, dao, it) ?: return@collect
+                setForeground(info)
+            }
+        }
         tracksFlow.value = dao.getTracks()
         println("Initial Tracks: ${tracksFlow.value}")
 
@@ -66,6 +75,7 @@ class DownloadWorker @AssistedInject constructor(
         tracksFlow.first { it.isEmpty() }
 
         actionJob.cancel()
+        notificationJob.cancel()
         trackJob.cancel()
         Result.success()
     }
