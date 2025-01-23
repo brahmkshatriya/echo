@@ -2,16 +2,13 @@ package dev.brahmkshatriya.echo.viewmodels
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
@@ -19,7 +16,6 @@ import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
-import dev.brahmkshatriya.echo.ui.paging.toFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,18 +79,6 @@ class DownloadViewModel @Inject constructor(
         }
     }
 
-    fun pauseAllDownloads() {
-        downloader.pauseAll()
-    }
-
-    fun resumeAllDownloads() {
-        downloader.resumeAll()
-    }
-
-    fun cancelAllDownloads() {
-        downloader.cancelAll()
-    }
-
     fun pauseDownload(downloadIds: List<Long>) {
         downloader.pause(downloadIds)
     }
@@ -108,17 +92,8 @@ class DownloadViewModel @Inject constructor(
     }
 
     val downloadsFlow = downloader.downloadsFlow
-    var offline: PagedData<Shelf>? = null
-    val offlineFlow = MutableStateFlow<PagingData<Shelf>?>(null)
+    val dao = downloader.dao
 
-    init {
-        loadOfflineDownloads()
-    }
+    fun getOfflineDownloads() = extensionLoader.offline.getDownloads()
 
-    private fun loadOfflineDownloads() {
-        viewModelScope.launch {
-            offline = extensionLoader.offline.getDownloads()
-            offline!!.toFlow().collectTo(offlineFlow)
-        }
-    }
 }

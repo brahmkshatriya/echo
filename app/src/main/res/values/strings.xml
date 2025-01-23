@@ -310,7 +310,14 @@
     <string name="downloading_x">Downloading %1$s</string>
     <string name="pause_all">Pause All</string>
     <string name="cancel_all">Cancel All</string>
-    <string name="progress_x">Progress: %1$d %%</string>
+    <string name="progress_x">Progress: %1$d%%</string>
+    <string name="initialized">Initialized</string>
+    <string name="paused_x">Paused: %1$d%%</string>
+    <string name="completed">Completed</string>
+    <string name="failed">Failed</string>
+    <string name="metadata">Metadata</string>
+    <string name="merging">Merging</string>
+    <string name="tagging">Tagging</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

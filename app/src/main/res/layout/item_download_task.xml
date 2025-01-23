@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/downloadGroup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="24dp"
+        app:cardBackgroundColor="?navBackground"
+        app:cardCornerRadius="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="42dp"
+            android:layout_weight="1"
+            android:baselineAligned="false"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/taskTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                tools:text="@tools:sample/full_names" />
+
+            <TextView
+                android:id="@+id/taskSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.66"
+                android:maxLines="1"
+                tools:text="Downloaded: 33%" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/taskProgressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:progress="33"
+                    app:indicatorColor="?attr/colorTertiary" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/taskPlayPause"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="0.5dp"
+                    android:layout_marginTop="0.5dp"
+                    android:background="@drawable/ripple_44dp"
+                    android:button="@drawable/anim_play_pause"
+                    android:checked="true"
+                    android:contentDescription="@string/play_pause"
+                    app:buttonTint="@color/button_player" />
+
+            </FrameLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/taskCancel"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/cancel"
+                android:padding="8dp"
+                app:icon="@drawable/ic_close"
+                app:iconSize="24dp"
+                app:iconTint="@color/button_player"
+                tools:ignore="DuplicateClickableBoundsCheck" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

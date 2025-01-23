@@ -15,34 +15,29 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingVertical="12dp">
+        android:gravity="center"
+        android:paddingVertical="12dp"
+        android:orientation="horizontal">
 
-        <FrameLayout
-            android:id="@+id/itemContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/trackExt"
+            android:layout_width="48dp"
+            android:layout_height="@dimen/collapsed_cover_size"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/extension"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/ic_extension" />
 
-            <ImageView
-                android:id="@+id/itemExtension"
-                android:layout_width="32dp"
-                android:layout_height="@dimen/collapsed_cover_size"
-                android:layout_marginHorizontal="8dp"
-                android:contentDescription="@string/extension"
-                android:scaleType="fitCenter"
-                app:srcCompat="@drawable/ic_extension" />
-
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/itemImageView"
-                android:layout_width="@dimen/collapsed_cover_size"
-                android:layout_height="@dimen/collapsed_cover_size"
-                android:layout_marginStart="48dp"
-                android:background="?attr/colorSurfaceContainerHigh"
-                android:scaleType="fitCenter"
-                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraSmall"
-                tools:srcCompat="@tools:sample/avatars" />
-
-        </FrameLayout>
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/trackCover"
+            android:layout_width="@dimen/collapsed_cover_size"
+            android:layout_height="@dimen/collapsed_cover_size"
+            android:background="?attr/colorSurfaceContainerHigh"
+            android:scaleType="fitCenter"
+            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraSmall"
+            tools:srcCompat="@tools:sample/avatars" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -61,19 +56,18 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/downloadTitle"
+                    android:id="@+id/trackTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textStyle="bold"
+                    android:maxLines="2"
                     tools:text="@tools:sample/full_names" />
 
                 <TextView
-                    android:id="@+id/downloadProgressText"
+                    android:id="@+id/trackContext"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:alpha="0.66"
                     android:maxLines="1"
-                    android:visibility="gone"
                     tools:text="Downloaded: 33%" />
             </LinearLayout>
 
@@ -83,20 +77,19 @@
                 android:padding="8dp">
 
                 <FrameLayout
-                    android:visibility="gone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center">
 
                     <com.google.android.material.progressindicator.CircularProgressIndicator
-                        android:id="@+id/downloadProgressBar"
+                        android:id="@+id/trackProgressBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:progress="33"
                         app:indicatorColor="?attr/colorTertiary" />
 
                     <com.google.android.material.checkbox.MaterialCheckBox
-                        android:id="@+id/downloadPlayPause"
+                        android:id="@+id/trackPlayPause"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="0.5dp"
@@ -110,11 +103,11 @@
                 </FrameLayout>
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/downloadClose"
+                    android:id="@+id/trackCancel"
                     style="?attr/materialIconButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/close"
+                    android:contentDescription="@string/cancel"
                     android:padding="8dp"
                     app:icon="@drawable/ic_close"
                     app:iconSize="24dp"

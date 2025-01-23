@@ -6,14 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.paging.PagingData
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.Shelf
-import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
-import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.builtin.OfflineExtension
-import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
+import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
+import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
+import dev.brahmkshatriya.echo.ui.common.openFragment
+import dev.brahmkshatriya.echo.ui.shelf.ShelfFragment
+import dev.brahmkshatriya.echo.ui.shelf.ShelfViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
@@ -47,27 +48,46 @@ class DownloadingFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
 
-        val offline = viewModel.extensionListFlow.getExtension(OfflineExtension.metadata.id)
-            ?: return
-        val downloadedAdapter =
-            ShelfAdapter(this, getString(R.string.downloads), "downloads", offline)
-        downloadedAdapter.applyCurrent(this, binding.recyclerView)
+        val downloadsMenu = binding.toolBar.findViewById<View>(R.id.downloads)!!
+        downloadsMenu.transitionName = "downloads"
+        downloadsMenu.setOnClickListener {
+            val vm by activityViewModels<ShelfViewModel>()
+            vm.shelves = viewModel.getOfflineDownloads()
+            openFragment(
+                ShelfFragment.newInstance(
+                    OfflineExtension.metadata.id, getString(R.string.downloads)
+                ), it
+            )
+        }
 
-        val titleAdapter = ShelfAdapter(this, "", "", offline)
-        val concatAdapter = ConcatAdapter(
-            titleAdapter,
-            downloadedAdapter.withSearchHeaderAndLoaders { viewModel.offline }
+        val downloadAdapter = DownloadItemAdapter(object : DownloadItemAdapter.Listener {
+            override fun onCancelClick(taskIds: List<Long>) {
+                viewModel.cancelDownload(taskIds)
+            }
+
+            override fun onPauseClick(taskIds: List<Long>) {
+                viewModel.pauseDownload(taskIds)
+            }
+
+            override fun onResumeClick(taskIds: List<Long>) {
+                viewModel.resumeDownload(taskIds)
+            }
+
+        })
+
+        val emptyAdapter = ShelfEmptyAdapter()
+        binding.recyclerView.adapter = ConcatAdapter(
+            emptyAdapter,
+            downloadAdapter,
         )
 
-        binding.recyclerView.adapter = concatAdapter
-
-        observe(viewModel.offlineFlow) {
-            titleAdapter.submit(
-                PagingData.from(
-                    listOf(Shelf.Category(getString(R.string.downloads), null))
-                )
-            )
-            downloadedAdapter.submit(it)
+        viewModel.run {
+            observe(downloadsFlow) {
+                downloadAdapter.submitList(DownloadItem.fromTasks(dao, it, extensionListFlow)) {
+                    emptyAdapter.loadState = if (it.isEmpty()) LoadState.Loading
+                    else LoadState.NotLoading(false)
+                }
+            }
         }
     }
 }

@@ -44,48 +44,58 @@ abstract class MediaTask<T>(
             return Result.failure(entity?.let { it1 -> it.toTaskException(it1) } ?: it)
         }
         dao.insertDownload(entity)
-        launch { start() }
-        var last: KClass<*>? = null
-        val final = flow.debounce {
-            val time = if (last == it::class) 0L else 500L
-            last = it::class
-            time
-        }.first {
-            println("${entity.title} flow progress: from media task $it")
-            when (it) {
-                is Progress.Initialized ->
-                    dao.insertDownload(entity.copy(status = Status.Initialized))
+        launch {
+            var last: KClass<*> = Progress.Initialized::class
+            var size: Long? = null
+            flow.debounce {
+                val time = if (last == it::class) 0L else 500L
+                last = it::class
+                time
+            }.collect {
+                println("${entity.title} flow progress: from media task $it")
+                when (it) {
+                    is Progress.Initialized -> {
+                        size = it.size
+                        dao.insertDownload(entity.copy(status = Status.Initialized, size = size))
+                    }
 
-                is Progress.InProgress -> dao.insertDownload(
-                    entity.copy(
-                        status = Status.Progressing,
-                        progress = it.downloaded,
-                        speed = it.speed
-                    )
-                )
-
-                is Progress.Paused -> dao.insertDownload(
-                    entity.copy(
-                        status = Status.Paused,
-                        progress = it.downloaded,
-                    )
-                )
-
-                is Progress.Final -> {
-                    dao.insertDownload(
+                    is Progress.InProgress -> dao.insertDownload(
                         entity.copy(
-                            status = when (it) {
-                                is Progress.Final.Completed -> Status.Completed
-                                is Progress.Final.Cancelled -> Status.Cancelled
-                                is Progress.Final.Failed -> Status.Failed
-                            }
+                            status = Status.Progressing,
+                            progress = it.downloaded,
+                            speed = it.speed,
+                            size = size
                         )
                     )
+
+                    is Progress.Paused -> dao.insertDownload(
+                        entity.copy(
+                            status = Status.Paused,
+                            progress = it.downloaded,
+                            speed = null,
+                            size = size
+                        )
+                    )
+
+                    is Progress.Final -> {
+                        dao.insertDownload(
+                            entity.copy(
+                                status = when (it) {
+                                    is Progress.Final.Completed -> Status.Completed
+                                    is Progress.Final.Cancelled -> Status.Cancelled
+                                    is Progress.Final.Failed -> Status.Failed
+                                }
+                            )
+                        )
+                    }
                 }
             }
-            it is Progress.Final
-        } as Progress.Final<T>
+        }
+        launch { start() }
+
+        val final = flow.first { it is Progress.Final } as Progress.Final<T>
         scope.cancel()
+
         return when (final) {
             is Progress.Final.Failed -> Result.failure(final.reason.toTaskException(entity))
             is Progress.Final.Completed -> {

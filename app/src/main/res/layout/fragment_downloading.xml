@@ -38,6 +38,7 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolBar"
                 style="@style/Toolbar"
+                app:menu="@menu/download"
                 app:title="@string/downloading" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -59,6 +60,6 @@
         android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_download" />
+        tools:listitem="@layout/item_download_track" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

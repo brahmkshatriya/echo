@@ -24,7 +24,7 @@ class Downloader(
     database: EchoDatabase,
     private val actions: MutableSharedFlow<TaskAction>
 ) {
-    private val dao = database.downloadDao()
+    val dao = database.downloadDao()
     val downloadsFlow = dao.getCurrentDownloadsFlow()
 
     private val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Downloader")
@@ -41,18 +41,6 @@ class Downloader(
             dao.insertTrackEntity(TrackDownloadTaskEntity(0, clientId, id, track.toJson()))
         }
         start()
-    }
-
-    fun pauseAll() = scope.launch {
-        actions.emit(TaskAction.All.PauseAll)
-    }
-
-    fun resumeAll() = scope.launch {
-        actions.emit(TaskAction.All.ResumeAll)
-    }
-
-    fun cancelAll() = scope.launch {
-        actions.emit(TaskAction.All.RemoveAll)
     }
 
     fun cancel(downloadIds: List<Long>) = scope.launch {
