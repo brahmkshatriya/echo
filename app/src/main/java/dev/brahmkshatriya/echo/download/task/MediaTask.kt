@@ -52,7 +52,6 @@ abstract class MediaTask<T>(
                 last = it::class
                 time
             }.collect {
-                println("${entity.title} flow progress: from media task $it")
                 when (it) {
                     is Progress.Initialized -> {
                         size = it.size

@@ -120,9 +120,7 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
                 putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
             }
             val contract = ActivityResultContracts.StartActivityForResult()
-            activity.registerActivityResultLauncher(contract) {
-                println("Result: $it")
-            }.launch(intent)
+            activity.registerActivityResultLauncher(contract) {}.launch(intent)
         }
 
         fun Fragment.onEqualizerClicked() {

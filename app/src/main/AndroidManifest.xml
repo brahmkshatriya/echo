@@ -125,6 +125,10 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
 
+        <receiver
+            android:name=".download.notifications.NotificationReceiver"
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />

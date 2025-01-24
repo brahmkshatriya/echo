@@ -40,8 +40,8 @@ class DownloadItemAdapter(
         private val playPauseListener = object : MaterialCheckBox.OnCheckedStateChangedListener {
             override fun onCheckedStateChangedListener(checkBox: MaterialCheckBox, state: Int) {
                 val item = item ?: return
-                if (checkBox.isChecked) listener.onPauseClick(item.taskIds)
-                else listener.onResumeClick(item.taskIds)
+                if (checkBox.isChecked) listener.onResumeClick(item.taskIds)
+                else listener.onPauseClick(item.taskIds)
             }
         }
 

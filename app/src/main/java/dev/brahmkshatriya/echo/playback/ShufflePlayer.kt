@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.playback
 
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
@@ -150,6 +149,5 @@ class ShufflePlayer(
         original = emptyList()
         player.clearMediaItems()
         print("Clear media items")
-        println(Log.getStackTraceString(RuntimeException("Bruh")))
     }
 }

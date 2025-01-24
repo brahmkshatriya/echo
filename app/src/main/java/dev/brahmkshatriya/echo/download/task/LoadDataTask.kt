@@ -38,13 +38,11 @@ class LoadDataTask(
     private var progress = 0L
         set(value) {
             field = value
-            println("loading task setting progress: $value")
             progressFlow.value = Progress.InProgress(value, null)
         }
 
     private suspend fun load(): Streamable.Media.Server {
         progress = 0
-        println("Loading Track: ${trackEntity.track.title}")
 
         val extension = extensionsList.getExtensionOrThrow(trackEntity.clientId)
         trackEntity = dao.getTrackEntity(trackEntity.id)
@@ -63,8 +61,6 @@ class LoadDataTask(
         } else trackEntity.track.streamables
         progress++
 
-        println("Streamables: $streamables")
-
         val downloadContext = DownloadContext(
             trackEntity.clientId, trackEntity.track, context?.mediaItem
         )
@@ -76,8 +72,6 @@ class LoadDataTask(
         } else File(folderPath)
         progress++
 
-        println("Folder Path: $folderPath")
-
         val streamableId = trackEntity.streamableId
         val selectedStreamable = if (streamableId == null) {
             val selected = withDownloadExtension { selectServer(downloadContext) }
@@ -86,8 +80,6 @@ class LoadDataTask(
             selected
         } else streamables.find { it.id == streamableId }!!
         progress++
-
-        println("Selected Streamable: $selectedStreamable")
 
         val server = extension.get<TrackClient, Streamable.Media.Server> {
             val media =
@@ -105,7 +97,6 @@ class LoadDataTask(
         trackEntity = trackEntity.copy(indexesData = indexes.toJson())
         dao.insertTrackEntity(trackEntity)
         progress++
-        println("Indexes: $indexes")
 
         return server
     }

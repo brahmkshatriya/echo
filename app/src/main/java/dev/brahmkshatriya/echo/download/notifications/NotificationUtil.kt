@@ -26,9 +26,7 @@ object NotificationUtil {
         mediaTaskEntities: List<MediaTaskEntity>
     ): ForegroundInfo? {
         val notificationId = 0
-        println("creating notification for ${mediaTaskEntities.size} tasks")
         val progressing = mediaTaskEntities.filter { it.status == Status.Progressing }
-        println("progressing: $progressing")
         if (progressing.isEmpty()) {
             removeNotification(context)
             return null
@@ -47,8 +45,8 @@ object NotificationUtil {
     }
 
     private const val CHANNEL_ID = "download_channel"
-    const val ACTION_PAUSE_ALL = "dev.brahmkshatriya.echo.download.PAUSE_ALL"
-    const val ACTION_CANCEL_ALL = "dev.brahmkshatriya.echo.download.CANCEL_ALL"
+    const val ACTION_PAUSE_ALL = "PAUSE_ALL"
+    const val ACTION_CANCEL_ALL = "CANCEL_ALL"
 
     @OptIn(UnstableApi::class)
     private fun createNotification(
@@ -59,8 +57,6 @@ object NotificationUtil {
         progress: Long,
         speed: Long
     ): ForegroundInfo {
-        println("creating notification for $title with total: $total, progress: $progress, speed: $speed")
-
         createNotificationChannel(
             context, CHANNEL_ID, R.string.downloads, 0,
             NotificationUtil.IMPORTANCE_DEFAULT
@@ -86,8 +82,8 @@ object NotificationUtil {
         )
 
         val pendingIntentPause = PendingIntent.getBroadcast(
-            context.applicationContext,
-            notificationId,
+            context,
+            0,
             Intent(context, NotificationReceiver::class.java).apply {
                 action = ACTION_PAUSE_ALL
             },
@@ -95,8 +91,8 @@ object NotificationUtil {
         )
 
         val pendingIntentCancel = PendingIntent.getBroadcast(
-            context.applicationContext,
-            notificationId,
+            context,
+            0,
             Intent(context, NotificationReceiver::class.java).apply {
                 action = ACTION_CANCEL_ALL
             },

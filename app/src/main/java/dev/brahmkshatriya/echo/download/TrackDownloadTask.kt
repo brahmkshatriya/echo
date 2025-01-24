@@ -57,9 +57,7 @@ class TrackDownloadTask(
         }.mapNotNull { it }
 
     suspend fun initialize(): Throwable? {
-        println("initialized ${entity.id}")
         val success = start()
-        println("Success: $success")
         if (success) {
             dao.deleteTrackEntity(entity)
             entity.contextId?.let {
@@ -74,14 +72,12 @@ class TrackDownloadTask(
 
     suspend fun start(): Boolean = coroutineScope {
         val context = entity.contextId?.let { dao.getMediaItemEntity(it) }
-        println("Context: $context")
         val server = LoadDataTask(dao, entity, context, extensionsList, downloadExtension)
             .also { loadTask = it }
             .await().getOrElse {
                 errors.add(it)
                 return@coroutineScope false
             }
-        println("Server: $server")
         val trackEntity = dao.getTrackEntity(entity.id)
         val downloadContext =
             trackEntity.run { DownloadContext(clientId, track, context?.mediaItem) }
@@ -97,7 +93,6 @@ class TrackDownloadTask(
                     }
                 }
             }.awaitAll().mapNotNull { it }
-        println("To Merge Files: $toMergeFiles")
 
         if (toMergeFiles.isEmpty()) return@coroutineScope false
         val mergeEntity = MediaTaskEntity(
@@ -110,7 +105,6 @@ class TrackDownloadTask(
             return@coroutineScope false
         }
 
-        println("Merge File: $mergedFile")
         val taggingEntity = MediaTaskEntity(
             "${entity.id}_tag".hashCode().toLong(), entity.id, TaskType.TAGGING
         )
@@ -120,7 +114,6 @@ class TrackDownloadTask(
             errors.add(it)
             return@coroutineScope false
         }
-        println("Tagging File: $taggingEntity")
 
         return@coroutineScope true
     }

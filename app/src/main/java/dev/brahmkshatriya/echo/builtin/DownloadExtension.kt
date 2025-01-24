@@ -13,7 +13,6 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -54,46 +53,39 @@ class DownloadExtension(
 
     override suspend fun download(
         context: DownloadContext, source: Streamable.Source, file: File
-    ) = TestTask(file)
+    ) = TestTask(file, "Download")
 
     override suspend fun merge(context: DownloadContext, files: List<File>, dir: File) =
-        TestTask(dir)
+        TestTask(dir, "Merge")
 
-    override suspend fun tag(context: DownloadContext, file: File) = TestTask(file)
+    override suspend fun tag(context: DownloadContext, file: File) = TestTask(file, "Tag")
 
     class TestTask(
-        val file: File
+        val file: File, val name: String
     ) : FileTask {
         override val progressFlow = MutableStateFlow<FileProgress>(Progress.Initialized(4))
         private var job: Job? = null
         override val start = SuspendedFunction {
-            println("Starting Download")
             job?.cancel()
-            job = coroutineScope {
-                launch {
-                    progressFlow.value = Progress.InProgress(0, 256)
-                    for (i in 1L..4) {
-                        delay(3000)
-                        println("flow progress: from extension $i")
-                        progressFlow.value = Progress.InProgress(i, 256)
-                    }
-                    progressFlow.value = Progress.Final.Completed(4, file)
+            job = launch {
+                progressFlow.value = Progress.InProgress(0, 256)
+                for (i in 1L..4) {
+                    delay(3000)
+                    progressFlow.value = Progress.InProgress(i, 256)
                 }
+                progressFlow.value = Progress.Final.Completed(4, file)
             }
         }
 
         override val cancel = SuspendedFunction {
-            println("Cancelling Download")
             job?.cancel()
             progressFlow.value = Progress.Final.Cancelled()
         }
         override val pause = SuspendedFunction {
-            println("Pausing Download")
             job?.cancel()
             progressFlow.value = Progress.Paused(4)
         }
         override val resume = SuspendedFunction {
-            println("Resuming Download")
             start()
         }
 
