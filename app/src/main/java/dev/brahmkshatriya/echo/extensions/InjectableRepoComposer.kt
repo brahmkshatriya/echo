@@ -5,6 +5,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.common.providers.MetadataProvider
 import dev.brahmkshatriya.echo.utils.getSettings
 import tel.jeelpa.plugger.utils.combineStates
 import tel.jeelpa.plugger.utils.mapState
@@ -26,6 +27,8 @@ class InjectableRepoComposer<TPlugin : ExtensionClient>(
         }
 
     private fun Injectable<TPlugin>.injected(metadata: Metadata) = inject {
-        getOrNull()?.setSettings(getSettings(context, type, metadata))
+        val instance = getOrNull() ?: return@inject
+        if (instance is MetadataProvider) instance.setMetadata(metadata)
+        instance.setSettings(getSettings(context, type, metadata))
     }
 }

@@ -12,10 +12,7 @@ import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import java.io.File
 
 class DownloadExtension(
@@ -63,32 +60,25 @@ class DownloadExtension(
     class TestTask(
         val file: File, val name: String
     ) : FileTask {
-        override val progressFlow = MutableStateFlow<FileProgress>(Progress.Initialized(4))
-        private var job: Job? = null
+        private val command =
+            "-f lavfi -i color=size=1280x720:rate=25:color=black -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -t 10 \"${file.absolutePath}.mp4\""
+        override val progressFlow = MutableStateFlow<FileProgress>(Progress.Initialized(null))
+//        private var session: FFmpegSession? = null
         override val start = SuspendedFunction {
-            job?.cancel()
-            job = launch {
-                progressFlow.value = Progress.InProgress(0, 256)
-                for (i in 1L..4) {
-                    delay(3000)
-                    progressFlow.value = Progress.InProgress(i, 256)
-                }
-                progressFlow.value = Progress.Final.Completed(4, file)
-            }
+//            session = FFmpegKit.executeAsync(command, {
+//                println("$name Completed: $it")
+//                progressFlow.value = Progress.Final.Completed(0, file)
+//            }, null, {
+//                println("$name: $it")
+//            })
         }
 
         override val cancel = SuspendedFunction {
-            job?.cancel()
+//            session?.cancel()
             progressFlow.value = Progress.Final.Cancelled()
         }
-        override val pause = SuspendedFunction {
-            job?.cancel()
-            progressFlow.value = Progress.Paused(4)
-        }
-        override val resume = SuspendedFunction {
-            start()
-        }
-
+        override val pause = null
+        override val resume = null
     }
 
     override suspend fun onExtensionSelected() {}
