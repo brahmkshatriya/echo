@@ -35,13 +35,13 @@
     <string name="failed_loading">লোডিং বিফল</string>
     <string name="repeat">পুনৰাবৃত্তি</string>
     <string name="drag_to_change_playlist_position">প্লেলিষ্টৰ স্থিতি সলনি কৰিবলৈ টানক</string>
-    <string name="up_next">পৰৱৰ্তী</string>
+    <string name="up_next">অহা পৰৱৰ্তী</string>
     <string name="close">বন্ধ কৰক</string>
     <string name="collapse_player">প্লেয়াৰ সংকোচন কৰক</string>
     <string name="shuffle">অলপমাহৰ</string>
     <string name="clear_playlist">প্লেলিষ্ট পৰিষ্কাৰ কৰক</string>
     <string name="playlist">প্লেলিষ্ট</string>
-    <string name="stop_player_summary">আপ্প পুনৰ খোলাৰ সময়ত প্লেয়াৰ সংক্ৰমণ পুনৰুদ্ধাৰ কৰক।</string>
+    <string name="stop_player_summary">আপ্প পুনৰ খোলাৰ সময়ত প্লেয়াৰ সংক্ৰমণ পুনৰুদ্ধাৰ কৰক</string>
     <string name="loading">লোডিং…</string>
     <string name="play">প্লে</string>
     <plurals name="number_songs">
@@ -60,7 +60,7 @@
     <string name="stop_player">প্লেয়াৰ বন্ধ কৰক</string>
     <string name="auto_start_radio">স্বয়ংক্ৰিয়ভাৱে ৰেডিঅ\' আৰম্ভ কৰক</string>
     <string name="behavior">আচৰণ</string>
-    <string name="auto_start_radio_summary">স্বয়ংক্ৰিয়ভাৱে সংগীতৰ সম্পৰ্কীয় গানসমূহ প্লেলিষ্টত যোগ কৰক, যাতে অসীম ক্ৰম থাকে।</string>
+    <string name="auto_start_radio_summary">স্বয়ংক্ৰিয়ভাৱে সংগীতৰ সম্পৰ্কীয় গানসমূহ প্লেলিষ্টত যোগ কৰক, যাতে অসীম ক্ৰম থাকে</string>
     <string name="extension_settings_summary">নির্বাচিত এক্সটেনশনৰ ছেটিংছ</string>
     <string name="theme">থিম</string>
     <string name="theme_summary">অন্ধ হ\'ব বিচাৰে নেকি?</string>
@@ -68,7 +68,7 @@
     <string name="amoled_summary">একেবাৰেই ক’লা, খাটি ক’লা</string>
     <string name="ui">UI</string>
     <string name="dynamic_player">ডায়নামিক প্লেয়াৰ ৰং</string>
-    <string name="dynamic_player_summary">সংগীতৰ কভাৰৰ ওপৰত ভিত্তি কৰি প্লেয়াৰৰ ৰং প্ৰয়োগ কৰক।</string>
+    <string name="dynamic_player_summary">সংগীতৰ কভাৰৰ ওপৰত ভিত্তি কৰি প্লেয়াৰৰ ৰং প্ৰয়োগ কৰক</string>
     <string name="currently_playing">বৰ্তমান বাজি থকা</string>
     <string name="restart_app">পূৰ্ণৰূপে সলনি কৰিবলৈ আপ্প পুনৰ আৰম্ভ কৰক</string>
     <string name="like">ভাল লগা</string>
@@ -157,7 +157,7 @@
     <string name="search_extension">%1$s সন্ধান কৰক</string>
     <string name="no_lyrics">গীতৰ বাণী নাই</string>
     <string name="downloads">ডাউনলোডসমূহ</string>
-    <string name="downloading">ডাউনলোড কৰি আছে</string>
+    <string name="downloading">ডাউনলোড হৈ আছে</string>
     <string name="extension">এক্সটেনশন</string>
     <string name="downloaded_percentage">ডাউনলোড কৰা হৈছে: %1$d</string>
     <string name="download_started">ডাউনলোড আৰম্ভ হৈছে</string>
@@ -247,7 +247,7 @@
     <string name="extension_uninstalled_successfully">এক্সটেনশন সফলভাৱে আনইনষ্টল কৰা হৈছে।</string>
     <string name="open_links_instruction">এই লিংকসমূহ খোলাৰ অনুমতি দিবলৈ, আপুনি নিম্নলিখিত কৰিব লাগিব:\n- তললৈ স্ক্ৰল কৰক আৰু \"অবিকল্পিত দ্বাৰা খোলক\" ক্লিক কৰক।\n- \"+ লিংক যোগ কৰক\" ত ক্লিক কৰক</string>
     <string name="installation_type_warning">যদি আপুনি এক্সটেনশন এটা ফাইল হিচাপে সংস্থাপন কৰিব বিচাৰে তেন্তে উপলব্ধ নহয় ।</string>
-    <string name="downloading_update_for_extension">%1$s ৰ বাবে আপডেইট ডাউনলোড কৰা হৈছে</string>
+    <string name="downloading_update_for_extension">%1$s ৰ বাবে আপডেইট ডাউনলোড হৈ আছে</string>
     <string name="extension_updated_successfully">%1$s সফলভাৱে আপডেইট কৰা হৈছে</string>
     <string name="check_for_extension_updates">এক্সটেনশ্যন আপডেইটসমূহৰ বাবে পৰীক্ষা কৰক</string>
     <string name="list_is_empty">তালিকা খালী হৈ আছে</string>
@@ -274,11 +274,11 @@
     <string name="sleep_timer_set_for">%1$s ৰ বাবে টোপনিৰ টাইমাৰ সংহতি কৰা হৈছে</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d ঘন্টা</item>
-        <item quantity="other">%1$d ঘন্টা</item>
+        <item quantity="other">%1$d ঘণ্টাট</item>
     </plurals>
     <plurals name="number_min">
         <item quantity="one">%1$d মিনিট</item>
-        <item quantity="other">%1$d মিনিট</item>
+        <item quantity="other">%1$d মিনিটট</item>
     </plurals>
     <string name="sleep_on_specific_time">নিৰ্দিষ্ট সময়ত শুব লাগে</string>
     <string name="sleep_timer_canceled">টোপনিৰ টাইমাৰ বাতিল কৰা হৈছে</string>
@@ -304,4 +304,6 @@
     <string name="sort_duration">কালসীমা</string>
     <string name="sort_descending">%1$s অৱতৰণ</string>
     <string name="sort_subtitle">উপশিৰোনাম</string>
+    <string name="downloading_item">ডাউনলোড হৈ আছে %1$s</string>
+    <string name="misc">বিবিধ</string>
 </resources>
