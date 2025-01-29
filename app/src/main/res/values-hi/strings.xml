@@ -3,7 +3,7 @@
     <string name="app_name">ईको</string>
     <string name="library">लाइब्रेरी</string>
     <plurals name="number_songs">
-        <item quantity="one">%1$d गीत</item>
+        <item quantity="one">%1$d गाना</item>
         <item quantity="other">%1$d गीत</item>
     </plurals>
     <plurals name="number_followers">
@@ -17,7 +17,7 @@
     <string name="ui">इंटरफ़ेस</string>
     <string name="user">उपयोगकर्ता</string>
     <string name="animation">एनीमेशन</string>
-    <string name="animations">एनीमेशन</string>
+    <string name="animations">एनीमेशनें</string>
     <string name="shared_element_transitions">कवर आर्ट ट्रांजिशन</string>
     <string name="shared_element_transitions_summary">शानदार एलिमेंट ट्रांजिशन, आपने इसे बंद क्यों किया?</string>
     <string name="equalizer_summary">डिवाइस की इक्वलाइज़र सेटिंग्स खोलें</string>
@@ -246,9 +246,9 @@
     <string name="uninstall">अनइंस्टॉल</string>
     <string name="allow_opening_links">लिंक खोलने की अनुमति दें</string>
     <string name="open_links_instruction">इन लिंक को खोलने की अनुमति देने के लिए, आपको यह करना होगा:\n- नीचे स्क्रॉल करें और \"डिफ़ॉल्ट रूप से खोलें\" पर क्लिक करें\n- \"+ लिंक जोड़ें\" पर क्लिक करें</string>
-    <string name="extension_requires_following_extensions">%1$s को %2$s की आवश्यकता है।</string>
+    <string name="extension_requires_following_extensions">%1$s को %2$s की आवश्यकता है</string>
     <string name="extension_installed">%1$s (स्थापित)</string>
-    <string name="add_extensions">एक्सटेंशन जोड़ें</string>
+    <string name="add_extensions">एक्सटेंशनों को जोड़ें</string>
     <string name="extension_updated_successfully">%1$s सफलतापूर्वक अद्यतन किया गया</string>
     <string name="check_for_extension_updates_summary">ऐप खोलने पर एक्सटेंशनों के नए अद्यतन देखें।</string>
     <string name="downloading_update_for_extension">%1$s के लिए अद्यतन डाउनलोड कर रहे हैं</string>
