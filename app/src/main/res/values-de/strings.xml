@@ -36,7 +36,7 @@
     <string name="look_and_feel">Design und Handhabung</string>
     <plurals name="number_followers">
         <item quantity="one">%1$d Follower</item>
-        <item quantity="other">%1$d Follower</item>
+        <item quantity="other">%1$d Followers</item>
     </plurals>
     <string name="audio">Audio</string>
     <string name="about_summary">Erfahre mehr über Echo</string>
@@ -147,7 +147,7 @@
     <string name="extension">Erweiterung</string>
     <string name="downloaded_percentage">Heruntergeladen: %1$d</string>
     <string name="download_started">Download Gestartet</string>
-    <string name="download">Herunterladen</string>
+    <string name="download">Datei herunterladen</string>
     <string name="username_password"><![CDATA[Benutzername und Passwort]]></string>
     <string name="webview">Webview</string>
     <string name="manual">Manuell</string>
