@@ -306,4 +306,17 @@
     <string name="sort_subtitle">উপশিৰোনাম</string>
     <string name="downloading_item">ডাউনলোড হৈ আছে %1$s</string>
     <string name="misc">বিবিধ</string>
+    <string name="cancelled">বাতিল কৰা হ’ল</string>
+    <string name="items">%1$d বস্তুসমূহ</string>
+    <string name="progress_x">প্ৰগতি: %1$d%%</string>
+    <string name="pause_all">সকলো বিৰতি কৰক</string>
+    <string name="initialized">আৰম্ভ কৰা হৈছে</string>
+    <string name="paused_x">বিৰতি: %1$d%%</string>
+    <string name="merging">একত্ৰিত</string>
+    <string name="tagging">টেগিং</string>
+    <string name="cancel_all">সকলো বাতিল কৰক</string>
+    <string name="metadata">মেটাডাটা</string>
+    <string name="downloading_x">ডাউনলোড হৈ আছে %1$s</string>
+    <string name="failed">ব্যৰ্থ</string>
+    <string name="completed">সম্পূৰ্ণ হ’ল</string>
 </resources>
