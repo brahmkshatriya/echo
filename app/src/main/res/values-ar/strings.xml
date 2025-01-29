@@ -40,19 +40,19 @@
     <string name="failed_loading">فشل في التحميل</string>
     <string name="is_not_supported">%1$s غير مدعوم في ملحق %2$s</string>
     <string name="drag_to_change_playlist_position">اسحب لتغيير موضع قائمة التشغيل</string>
-    <string name="up_next">التالي</string>
+    <string name="up_next">القادم</string>
     <string name="close">أغلق</string>
     <string name="collapse_player">انهار اللاعب</string>
     <string name="shuffle">خلط</string>
     <string name="album">ألبوم</string>
     <string name="play">العب</string>
     <plurals name="number_songs">
-        <item quantity="zero"></item>
+        <item quantity="zero">%1$d أغنية</item>
         <item quantity="one">%1$d أغنية</item>
-        <item quantity="two"></item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="two">%1$d أغنيتان</item>
+        <item quantity="few">%1$d أغاني</item>
+        <item quantity="many">%1$d أغاني</item>
+        <item quantity="other">%1$d أغاني</item>
     </plurals>
     <string name="saved_to_playlist">تم حفظه في %1$s</string>
     <string name="saved_to_playlists">تم حفظه في قوائم التشغيل</string>
