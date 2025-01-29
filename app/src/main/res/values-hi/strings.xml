@@ -306,4 +306,17 @@
     <string name="sort_descending">%1$s अवरोहण</string>
     <string name="downloading_item">डाउनलोड हो रहा है %1$s</string>
     <string name="misc">विविध</string>
+    <string name="cancel_all">सभी को रद्द करे</string>
+    <string name="cancelled">रद्द कर दिया गया</string>
+    <string name="items">%1$d आइटम</string>
+    <string name="progress_x">प्रगति: %1$d %%</string>
+    <string name="initialized">आरंभिक</string>
+    <string name="completed">पूरा हुआ</string>
+    <string name="failed">विफल</string>
+    <string name="metadata">मेटाडाटा</string>
+    <string name="paused_x">रुका हुआ: %1$d%%</string>
+    <string name="tagging">टैगिंग</string>
+    <string name="pause_all">सभी को रोकें</string>
+    <string name="downloading_x">डाउनलोड हो रहा है %1$s</string>
+    <string name="merging">विलय</string>
 </resources>
