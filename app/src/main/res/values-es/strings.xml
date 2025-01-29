@@ -28,7 +28,7 @@
     <plurals name="number_songs">
         <item quantity="one">%1$d Canción</item>
         <item quantity="many">%1$d Canciones</item>
-        <item quantity="other"></item>
+        <item quantity="other">%1$d Canciones</item>
     </plurals>
     <string name="saved_to_playlist">Guardado en %1$s</string>
     <string name="saved_to_playlists">Guardado en listas de reproducción</string>
@@ -47,7 +47,7 @@
     <plurals name="number_followers">
         <item quantity="one">%1$d Seguidor</item>
         <item quantity="many">%1$d Seguidores</item>
-        <item quantity="other"></item>
+        <item quantity="other">%1$d Seguidores</item>
     </plurals>
     <string name="stop_player_summary">Detén al reproductor cuando la aplicación se elimine de recientes</string>
 </resources>
