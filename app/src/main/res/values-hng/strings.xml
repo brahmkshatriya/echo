@@ -164,7 +164,7 @@
     <string name="disabled">Disabled</string>
     <string name="by_author">%1$s ke dwara</string>
     <string name="manage_extensions">Extensions manage karo</string>
-    <string name="unauthorized">%1$s : User unauthorized hai</string>
+    <string name="unauthorized">$1%s : User unauthorized hai</string>
     <plurals name="number_songs">
         <item quantity="one">%1$d Gaana</item>
         <item quantity="other">%1$d Gaane</item>
@@ -179,7 +179,7 @@
     <string name="not_logged_in">Not logged in</string>
     <string name="add_account">Account Add karo</string>
     <string name="no_streams_found">Koi stream nahi mila</string>
-    <string name="navbar_gradient_summary">Navbar dheere dheere transparent ho jati hai</string>
+    <string name="navbar_gradient_summary">Navbar dheerese transparent ho jati hai</string>
     <string name="navbar_gradient">Rangantar Navbar</string>
     <string name="language">Bhasha</string>
     <string name="system">System</string>
@@ -193,8 +193,8 @@
     <string name="subtitle_selection">Subtitle Ka Chayan</string>
     <string name="track_total_plays">%1$d Chal Raha He</string>
     <string name="off">Bandh</string>
-    <string name="video_qualities">Video Ka Quality</string>
-    <string name="video_quality">Video Ka Quality</string>
+    <string name="video_qualities">Video Gunvattaayein</string>
+    <string name="video_quality">Video Gunvatta</string>
     <string name="video_quality_summary">Video Ka Quality, Yahan Se Video Ko Disable Bhi Kiya Ja Sakta Hai</string>
     <string name="video_quality_none">Kuch Nahi</string>
     <string name="cache_size">Cache Ka Size</string>
@@ -246,7 +246,7 @@
     <string name="extension_installer">Extension Installer</string>
     <string name="extension_installed_successfully">Extension safalta se sthaapit kiya gaya.</string>
     <string name="allow_opening_links">Link kholne ki anumati dein</string>
-    <string name="extension_requires_following_extensions">%1$s ko %2$s ki aavashyakta hai.</string>
+    <string name="extension_requires_following_extensions">%1$s ko %2$s ki aavashyakta hai</string>
     <string name="link">Link</string>
     <string name="downloading_update_for_extension">%1$s ke liye update download kar rahe hain</string>
     <string name="extension_updated_successfully">%1$s safalta se update kiya gaya</string>
