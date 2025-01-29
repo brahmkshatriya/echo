@@ -238,7 +238,7 @@
     <string name="link">Ссылка</string>
     <string name="list_is_empty">Список пуст</string>
     <string name="extension_installed">%1$s (Установлено)</string>
-    <string name="add_extensions">Добавить расширение</string>
+    <string name="add_extensions">Добавить расширения</string>
     <string name="invalid_extension_list">Недопустимый список расширений</string>
     <string name="composer">Композитор: %1$s</string>
     <string name="writer">Автор: %1$s</string>
