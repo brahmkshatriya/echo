@@ -30,7 +30,7 @@
     <string name="is_not_supported">%1$s wordt niet ondersteund door de %2$s Extensie</string>
     <string name="drag_to_change_playlist_position">Sleep om afspeellijstpositie te wijzigen</string>
     <string name="close">Sluit</string>
-    <string name="up_next">Volgende</string>
+    <string name="up_next">Komt eraan</string>
     <string name="album">Album</string>
     <string name="clear_playlist">Afspeellijst leegmaken</string>
     <plurals name="number_songs">
