@@ -180,12 +180,12 @@
     <string name="name_settings">%1$s विन्यासः</string>
     <string name="invalid_extension_host">मेजबानः मध्ये अमान्यः प्रत्यायुक्तिः प्रकारः।</string>
     <string name="navbar_gradient">आभासं नेवबार</string>
-    <string name="navbar_gradient_summary">नेवबार शनैः शनैः पारदर्शं भवति</string>
+    <string name="navbar_gradient_summary">नेवबार शनैः पारदर्शं भवति</string>
     <string name="value">मूल्य</string>
     <string name="str_not_set">न निर्धृतम्</string>
     <string name="language">भाषा</string>
     <string name="system">प्रणाली</string>
-    <string name="language_summary">अनुप्रयोगस्य भाषा, प्रणाली संस्कृतं निर्दिश्य, आवश्यं प्राकृत्यरूपेण आङ्ग्लं भविष्यति।</string>
+    <string name="language_summary">अनुप्रयोगस्य भाषा, प्रणाली संस्कृतं निर्दिश्य, आवश्यं प्राकृत्यरूपेण आङ्ग्लं भविष्यति</string>
     <string name="video_quality">विडियो क्वालिटी</string>
     <string name="video_quality_summary">विडियोस्य गुणवत्ता, विडिओ अपि अत्रतः अक्षमं कर्तुं शक्यते</string>
     <string name="video_quality_none">न कश्चित्</string>
@@ -235,7 +235,7 @@
     <string name="could_not_find_the_file">सञ्चिका न प्राप्ता।</string>
     <string name="invalid_extension">अमान्यः विस्तारः</string>
     <string name="extension_installed_successfully">विस्तारः सफलतया संस्थापितः।</string>
-    <string name="extension_requires_following_extensions">%1$s इदं %2$s अपेक्षते।</string>
+    <string name="extension_requires_following_extensions">%1$s इदं %2$s अपेक्षते</string>
     <string name="install">स्थापय</string>
     <string name="back">प्रत्यावर्तनम्</string>
     <string name="installation_type_warning">सञ्चिकारूपेण विस्तारस्य संस्थापनं कृते एतत् अनुपलब्धम्।</string>
@@ -246,7 +246,7 @@
     <string name="extension_installer">संस्थापकः</string>
     <string name="extension_uninstalled_successfully">विस्तारः सफलतया अपाकृतः।</string>
     <string name="uninstall">अपाक्रियताम्</string>
-    <string name="open_links_instruction">एतानि लिङ्कानि उद्घाटयितुं अनुमतिं दातुं भवद्भिः आवश्यकं यत् :\n- अधः स्क्रॉल कृत्वा \"Open by Default\" इत्यत्र क्लिक् कुर्वन्तु ।\n- \"+ Add Link\" इत्यत्र क्लिक् कुर्वन्तु ।</string>
+    <string name="open_links_instruction">एतानि लिङ्कानि उद्घाटयितुं अनुमतिं दातुं भवद्भिः आवश्यकं यत् :\n- अधः स्क्रॉल कृत्वा \"Open by Default\" इत्यत्र क्लिक् कुर्वन्तु ।\n- \"+ Add Link\" इत्यत्र क्लिक् कुर्वन्तु</string>
     <string name="link">सूत्रम्</string>
     <string name="extension_updated_successfully">%1$s यथावत् सफलतया अद्यतनं कृतम्</string>
     <string name="check_for_extension_updates">विस्तारक-अद्यतनेषु परीक्षां कुरु</string>
@@ -258,7 +258,7 @@
     <string name="add_extensions">विस्तारकान् योजयतु</string>
     <string name="invalid_extension_list">अमङ्गल-प्रायः विस्तारक-सूची</string>
     <string name="blacklist_folder_keywords">अवरोध-सूची फोल्डर-कुंजिकाशब्दः</string>
-    <string name="blacklist_folder_keywords_summary">अवरोध-सूचीकरणाय फोल्डर-कुंजिकाशब्दाः, विभेदाय अल्पविरामस्य प्रयोगः कुर्वन्तु।</string>
+    <string name="blacklist_folder_keywords_summary">अवरोध-सूचीकरणाय फोल्डर-कुंजिकाशब्दाः, विभेदाय अल्पविरामस्य प्रयोगः कुर्वन्तु</string>
     <string name="sources">स्रोताः</string>
     <string name="backgrounds">पृष्ठभूमयः</string>
     <string name="source_selection">स्रोत-चयनम्</string>
