@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">Principal</string>
+    <string name="library">Biblioteca</string>
+    <string name="search">Buscar</string>
+    <string name="extensions">Extensiones</string>
+    <string name="settings">Ajustes</string>
+    <string name="play_pause">Reproducir/Pausar</string>
+    <string name="previous">Previa</string>
+    <string name="next">Siguiente</string>
+    <string name="add_extension">Añadir extensión</string>
+    <string name="extension_settings">Ajuste de extensión</string>
+    <string name="more">Más</string>
+    <string name="retry">Reintentar</string>
+    <string name="failed_loading">Error al cargar</string>
+    <string name="repeat">Repetir</string>
+    <string name="is_not_supported">%1$s no es compatible con la extensión %2$s</string>
+    <string name="drag_to_change_playlist_position">Arrastra para cambiar la posición de la playlist</string>
+    <string name="up_next">A continuación</string>
+    <string name="close">Cerrar</string>
+    <string name="collapse_player">Contraer el reproductor</string>
+    <string name="shuffle">Mezclar</string>
+    <string name="clear_playlist">Borrar playlist</string>
+    <string name="playlist">Playlist</string>
+    <string name="loading">Cargando…</string>
+    <string name="album">Álbum</string>
+    <string name="play">Reproducir</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d Canción</item>
+        <item quantity="many">%1$d Canciones</item>
+        <item quantity="other">%1$d Canciones</item>
+    </plurals>
+    <string name="saved_to_playlist">Guardado en %1$s</string>
+    <string name="saved_to_playlists">Guardado en listas de reproducción</string>
+    <string name="songs">Canciones</string>
+    <string name="radio">Radio</string>
+    <string name="view">Ver</string>
+    <string name="str_copy">Copiar</string>
+    <string name="artist">Artista</string>
+    <string name="unfollow">Dejar de seguir</string>
+    <string name="follow">Seguir</string>
+    <string name="version">Versión</string>
+    <string name="about">Acerca de</string>
+    <string name="stop_player">Detener jugador</string>
+    <string name="auto_start_radio">Radio de inicio automático</string>
+    <string name="auto_start_radio_summary">Agregar automáticamente canciones relacionadas de la pista en la lista de reproducción, para tener una cola infinita</string>
+    <plurals name="number_followers">
+        <item quantity="one">%1$d Seguidor</item>
+        <item quantity="many">%1$d Seguidores</item>
+        <item quantity="other">%1$d Seguidores</item>
+    </plurals>
+    <string name="stop_player_summary">Detén al reproductor cuando la aplicación se elimine de recientes</string>
+</resources>
