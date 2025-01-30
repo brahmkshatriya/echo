@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.builtin
 
 import android.content.Context
+import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
@@ -60,6 +61,7 @@ import dev.brahmkshatriya.echo.utils.getSettings
 import dev.brahmkshatriya.echo.utils.saveToCache
 import dev.brahmkshatriya.echo.utils.toData
 import dev.brahmkshatriya.echo.utils.toJson
+import java.io.File
 
 @OptIn(UnstableApi::class)
 class OfflineExtension(
@@ -205,8 +207,9 @@ class OfflineExtension(
         isLiked = library.likedPlaylist?.songList.orEmpty().any { it.id == track.id }
     )
 
-    override suspend fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean) =
-        streamable.id.toSource().toMedia()
+    override suspend fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean): Streamable.Media {
+        return Uri.fromFile(File(streamable.id)).toString().toSource().toMedia()
+    }
 
     override fun getShelves(track: Track): PagedData<Shelf> =
         PagedData.Single { listOf() }
