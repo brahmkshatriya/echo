@@ -318,6 +318,7 @@
     <string name="metadata">Metadata</string>
     <string name="merging">Merging</string>
     <string name="tagging">Tagging</string>
+    <string name="update_error">Update Error</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

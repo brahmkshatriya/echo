@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.download.TaskException
 import dev.brahmkshatriya.echo.extensions.ExtensionLoadingException
 import dev.brahmkshatriya.echo.extensions.InvalidExtensionListException
 import dev.brahmkshatriya.echo.extensions.RequiredExtensionsException
+import dev.brahmkshatriya.echo.extensions.UpdateException
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -125,6 +126,7 @@ class ExceptionFragment : Fragment() {
             )
 
             is InvalidExtensionListException -> getString(R.string.invalid_extension_list)
+            is UpdateException -> "${getString(R.string.update_error)}: ${getTitle(throwable.cause)}"
             is AppException -> throwable.run {
                 when (this) {
                     is AppException.Unauthorized ->
@@ -136,11 +138,11 @@ class ExceptionFragment : Fragment() {
                     is AppException.NotSupported ->
                         getString(R.string.is_not_supported, operation, extension.name)
 
-                    is AppException.Other -> "${extension.name} : ${getTitle(cause)}"
+                    is AppException.Other -> "${extension.name}: ${getTitle(cause)}"
                 }
             }
 
-            is DownloadException -> "▼ ${throwable.trackEntity.track.title}: ${getTitle(throwable.cause)}"
+            is DownloadException -> "${getString(R.string.download)}: ${throwable.trackEntity.track.title}: ${getTitle(throwable.cause)}"
             is TaskException -> "${throwable.taskEntity.run { title ?: id }} - ${getTitle(throwable.cause)}"
             is CancellationException -> getString(R.string.cancelled)
             else -> throwable.message ?: getString(R.string.error)
@@ -180,6 +182,8 @@ Task : ${throwable.taskEntity}
 
 ${getDetails(throwable.cause)}
 """.trimIndent()
+
+            is UpdateException -> throwable.cause.stackTraceToString()
 
             else -> throwable.stackTraceToString()
         }

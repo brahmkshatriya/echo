@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extensions
 
 import android.content.Context
+import android.os.Build
 import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.getTempApkDir
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.utils.toData
@@ -21,7 +22,9 @@ suspend fun <T> runIOCatching(
 ) = withContext(Dispatchers.IO) {
     runCatching {
         block()
-    }
+    }.getOrElse {
+        return@withContext Result.failure<T>(UpdateException(it))
+    }.let { Result.success(it) }
 }
 
 suspend fun downloadUpdate(
@@ -62,7 +65,9 @@ suspend fun getGithubUpdateUrl(
         dateFormat.parse(it.createdAt)?.time ?: 0
     } ?: return@runIOCatching null
     if (res.tagName != currentVersion) {
-        res.assets.firstOrNull {
+        res.assets.sortedBy {
+            it.name.contains(Build.SUPPORTED_ABIS.first())
+        }.firstOrNull {
             it.name.endsWith(".eapk")
         }?.browserDownloadUrl ?: throw Exception("No EApk assets found")
     } else {
