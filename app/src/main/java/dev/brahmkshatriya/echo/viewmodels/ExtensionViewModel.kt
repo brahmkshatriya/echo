@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.db.models.ExtensionEntity
@@ -60,7 +61,7 @@ class ExtensionViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val app: Application,
     val extensionLoader: ExtensionLoader,
-    val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    val messageFlow: MutableSharedFlow<Message>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     val trackerListFlow: MutableStateFlow<List<TrackerExtension>?>,
     val lyricsListFlow: MutableStateFlow<List<LyricsExtension>?>,
@@ -113,7 +114,7 @@ class ExtensionViewModel @Inject constructor(
             throwableFlow.emit(it)
             false
         }
-        if (result) messageFlow.emit(SnackBar.Message(app.getString(R.string.extension_installed_successfully)))
+        if (result) messageFlow.emit(Message(app.getString(R.string.extension_installed_successfully)))
         return result
     }
 
@@ -125,7 +126,7 @@ class ExtensionViewModel @Inject constructor(
             throwableFlow.emit(it)
             false
         }
-        if (result) messageFlow.emit(SnackBar.Message(app.getString(R.string.extension_uninstalled_successfully)))
+        if (result) messageFlow.emit(Message(app.getString(R.string.extension_uninstalled_successfully)))
         function(result)
     }
 
@@ -176,7 +177,7 @@ class ExtensionViewModel @Inject constructor(
         } ?: return
 
         messageFlow.emit(
-            SnackBar.Message(
+            Message(
                 app.getString(R.string.downloading_update_for_extension, extension.name)
             )
         )
@@ -189,7 +190,7 @@ class ExtensionViewModel @Inject constructor(
             false
         }
         if (result) messageFlow.emit(
-            SnackBar.Message(
+            Message(
                 app.getString(R.string.extension_updated_successfully, extension.name)
             )
         )
@@ -197,23 +198,23 @@ class ExtensionViewModel @Inject constructor(
 
 
     companion object {
-        fun Context.noClient() = SnackBar.Message(
+        fun Context.noClient() = Message(
             getString(R.string.error_no_client)
         )
 
-        fun Context.searchNotSupported(client: String) = SnackBar.Message(
+        fun Context.searchNotSupported(client: String) = Message(
             getString(R.string.is_not_supported, getString(R.string.search), client)
         )
 
-        fun Context.trackNotSupported(client: String) = SnackBar.Message(
+        fun Context.trackNotSupported(client: String) = Message(
             getString(R.string.is_not_supported, getString(R.string.track), client)
         )
 
-        fun Context.radioNotSupported(client: String) = SnackBar.Message(
+        fun Context.radioNotSupported(client: String) = Message(
             getString(R.string.is_not_supported, getString(R.string.radio), client)
         )
 
-        fun Context.loginNotSupported(client: String) = SnackBar.Message(
+        fun Context.loginNotSupported(client: String) = Message(
             getString(R.string.is_not_supported, getString(R.string.login), client)
         )
 
@@ -245,7 +246,7 @@ class ExtensionViewModel @Inject constructor(
                 return@launch
             }
             if (list.isEmpty()) {
-                messageFlow.emit(SnackBar.Message(app.getString(R.string.list_is_empty)))
+                messageFlow.emit(Message(app.getString(R.string.list_is_empty)))
                 return@launch
             }
             ExtensionsAddListBottomSheet.newInstance(list)
@@ -276,7 +277,7 @@ class ExtensionViewModel @Inject constructor(
                     null
                 } ?: return@forEach
                 messageFlow.emit(
-                    SnackBar.Message(
+                    Message(
                         app.getString(R.string.downloading_update_for_extension, extension.name)
                     )
                 )

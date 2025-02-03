@@ -11,12 +11,12 @@ import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,7 @@ class LoginViewModel @Inject constructor(
     val lyricsList: MutableStateFlow<List<LyricsExtension>?>,
     val miscList: MutableStateFlow<List<MiscExtension>?>,
     private val context: Application,
-    val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    val messageFlow: MutableSharedFlow<Message>,
     database: EchoDatabase,
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
@@ -44,7 +44,7 @@ class LoginViewModel @Inject constructor(
         users: List<User>
     ) {
         if (users.isEmpty()) {
-            messageFlow.emit(SnackBar.Message(context.getString(R.string.no_user_found)))
+            messageFlow.emit(Message(context.getString(R.string.no_user_found)))
             return
         }
         val entities = users.map { it.toEntity(extension.id) }

@@ -319,6 +319,7 @@
     <string name="merging">Merging</string>
     <string name="tagging">Tagging</string>
     <string name="update_error">Update Error</string>
+    <string name="no_download_extension">No download extension found, use code \"down\"</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

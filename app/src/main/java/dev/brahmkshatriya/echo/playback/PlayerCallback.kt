@@ -28,6 +28,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
@@ -40,7 +41,6 @@ import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.searchNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -60,7 +60,7 @@ class PlayerCallback(
     override val extensionList: StateFlow<List<MusicExtension>?>,
     private val extensionFlow: StateFlow<MusicExtension?>,
     private val throwableFlow: MutableSharedFlow<Throwable>,
-    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val messageFlow: MutableSharedFlow<Message>,
     private val radioFlow: MutableStateFlow<Radio.State>
 ) : AndroidAutoCallback(settings, context, scope, extensionList) {
 

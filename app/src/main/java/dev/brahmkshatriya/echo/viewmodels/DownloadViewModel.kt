@@ -1,19 +1,20 @@
 package dev.brahmkshatriya.echo.viewmodels
 
+import android.app.Application
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.clients.AlbumClient
-import dev.brahmkshatriya.echo.common.clients.PlaylistClient
-import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.DownloadClient
+import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.get
-import dev.brahmkshatriya.echo.extensions.getExtension
+import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
 import kotlinx.coroutines.Dispatchers
@@ -25,53 +26,35 @@ import javax.inject.Inject
 @HiltViewModel
 class DownloadViewModel @Inject constructor(
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+    private val downloadList: MutableStateFlow<List<MiscExtension>?>,
     private val extensionLoader: ExtensionLoader,
     private val downloader: Downloader,
-    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val context: Application,
+    private val messageFlow: MutableSharedFlow<Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
     private suspend fun add(clientId: String, item: EchoMediaItem) {
-        val extension = extensionListFlow.getExtension(clientId) ?: return
-        val (tracks, context) = when (item) {
-            is EchoMediaItem.Lists.AlbumItem -> {
-                val tracks = extension.get<AlbumClient, List<Track>>(throwableFlow) {
-                    loadTracks(item.album).loadAll()
-                } ?: return
-                tracks to item
-            }
+        val downloadExt = downloadList.value?.first { it.isClient<DownloadClient>() }
+        downloadExt
+            ?: return messageFlow.emit(Message(context.getString(R.string.no_download_extension)))
 
-            is EchoMediaItem.Lists.PlaylistItem -> {
-                val tracks = extension.get<PlaylistClient, List<Track>>(throwableFlow) {
-                    loadTracks(item.playlist).loadAll()
-                } ?: return
-                tracks to item
-            }
-
-            is EchoMediaItem.Lists.RadioItem -> {
-                val tracks = extension.get<RadioClient, List<Track>>(throwableFlow) {
-                    loadTracks(item.radio).loadAll()
-                } ?: return
-                tracks to item
-            }
-
-            is EchoMediaItem.TrackItem -> listOf(item.track) to null
-            else -> emptyList<Track>() to null
-        }
-        if (tracks.isEmpty()) return
-        downloader.add(clientId, context, tracks)
+        val downloads = downloadExt.get<DownloadClient, List<DownloadContext>>(throwableFlow) {
+            getDownloadTracks(clientId, item)
+        } ?: return
+        downloader.add(downloads)
     }
 
     fun addToDownload(
         activity: FragmentActivity, clientId: String, item: EchoMediaItem
     ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
-            messageFlow.emit(SnackBar.Message(getString(R.string.downloading_item, item.title)))
+            messageFlow.emit(Message(getString(R.string.downloading_item, item.title)))
             add(clientId, item)
             messageFlow.emit(
-                SnackBar.Message(
+                Message(
                     getString(R.string.download_started),
-                    SnackBar.Action(getString(R.string.view)) {
+                    Message.Action(getString(R.string.view)) {
                         openFragment(DownloadingFragment())
                     }
                 )

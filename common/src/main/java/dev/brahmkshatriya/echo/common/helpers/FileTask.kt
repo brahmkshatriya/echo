@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.common.helpers
 
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import java.io.File
 
 /**
@@ -17,13 +17,13 @@ typealias FileProgress = Progress<File>
  * Once a [Progress.Final] state is reached, the task is considered complete.
  *
  * @see Progress
- * @see MutableStateFlow
+ * @see MutableSharedFlow
  */
 interface FileTask {
     /**
      * The progress of the task.
      */
-    val progressFlow: MutableStateFlow<FileProgress>
+    val progressFlow: MutableSharedFlow<FileProgress>
 
     /**
      * What to do when the task is started.

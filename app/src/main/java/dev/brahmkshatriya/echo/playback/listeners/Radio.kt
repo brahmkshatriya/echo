@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.run
@@ -23,7 +24,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,7 +40,7 @@ class Radio(
     private val scope: CoroutineScope,
     private val extensionList: StateFlow<List<MusicExtension>?>,
     private val throwFlow: MutableSharedFlow<Throwable>,
-    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val messageFlow: MutableSharedFlow<Message>,
     private val stateFlow: MutableStateFlow<State>,
 ) : Player.Listener {
 
@@ -55,7 +55,7 @@ class Radio(
     companion object {
         suspend fun start(
             context: Context,
-            messageFlow: MutableSharedFlow<SnackBar.Message>,
+            messageFlow: MutableSharedFlow<Message>,
             throwableFlow: MutableSharedFlow<Throwable>,
             extensionListFlow: StateFlow<List<MusicExtension>?>,
             clientId: String,
@@ -95,7 +95,7 @@ class Radio(
                             State.Loaded(clientId, radio, tracks, play)
                         else {
                             messageFlow.emit(
-                                SnackBar.Message(context.getString(R.string.radio_empty))
+                                Message(context.getString(R.string.radio_empty))
                             )
                             null
                         }

@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.ui.exception.AppException
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
@@ -27,16 +28,6 @@ class SnackBar @Inject constructor(
     val throwableFlow: MutableSharedFlow<Throwable>,
     val mutableMessageFlow: MutableSharedFlow<Message>
 ) : ViewModel() {
-
-    data class Message(
-        val message: String,
-        val action: Action? = null
-    )
-
-    data class Action(
-        val name: String,
-        val handler: (() -> Unit)
-    )
 
     private val messages = mutableListOf<Message>()
 
@@ -85,14 +76,14 @@ class SnackBar @Inject constructor(
                 val message = when (throwable) {
                     is AppException.LoginRequired -> Message(
                         message = getTitle(throwable),
-                        action = Action(getString(R.string.login)) {
+                        action = Message.Action(getString(R.string.login)) {
                             openLoginException(throwable)
                         }
                     )
 
                     else -> Message(
                         message = getTitle(throwable),
-                        action = Action(getString(R.string.view)) { openException(throwable) }
+                        action = Message.Action(getString(R.string.view)) { openException(throwable) }
                     )
                 }
                 viewModel.create(message)

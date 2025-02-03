@@ -72,8 +72,13 @@ class MainActivity : AppCompatActivity() {
             uiViewModel.navigation.value = uiViewModel.navIds.indexOf(it.itemId)
             true
         }
-        navView.setOnItemReselectedListener {
-            emit(uiViewModel.navigationReselected) { uiViewModel.navIds.indexOf(it.itemId) }
+
+        navView.menu.forEach {
+            findViewById<View>(it.itemId).setOnClickListener { v ->
+                if (uiViewModel.navigation.value == uiViewModel.navIds.indexOf(it.itemId))
+                    emit(uiViewModel.navigationReselected) { uiViewModel.navIds.indexOf(it.itemId) }
+                navView.selectedItemId = it.itemId
+            }
         }
 
         val isRail = binding.navView is NavigationRailView

@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
@@ -25,7 +26,6 @@ import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
@@ -81,9 +81,9 @@ class LibraryFragment : Fragment() {
 
         val listener = ShelfAdapter.getListener(parent)
         observe(viewModel.playlistCreatedFlow) { (clientId, playlist) ->
-            createSnack(SnackBar.Message(
+            createSnack(Message(
                 getString(R.string.playlist_created, playlist.title),
-                SnackBar.Action(getString(R.string.view)) {
+                Message.Action(getString(R.string.view)) {
                     listener.onClick(clientId, playlist.toMediaItem(), null)
                 }
             ))

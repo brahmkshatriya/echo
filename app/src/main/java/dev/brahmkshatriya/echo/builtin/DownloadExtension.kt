@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.Progress
 import dev.brahmkshatriya.echo.common.helpers.SuspendedFunction
 import dev.brahmkshatriya.echo.common.models.DownloadContext
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.settings.Setting
@@ -56,6 +57,15 @@ class DownloadExtension(
         TestTask(dir, "Merge")
 
     override suspend fun tag(context: DownloadContext, file: File) = TestTask(file, "Tag")
+    override suspend fun getDownloadTracks(
+        extensionId: String,
+        item: EchoMediaItem
+    ): List<DownloadContext> {
+        return when (item) {
+            is EchoMediaItem.TrackItem -> listOf(DownloadContext(extensionId, item.track))
+            else -> TODO()
+        }
+    }
 
     class TestTask(
         val file: File, val name: String
@@ -63,7 +73,8 @@ class DownloadExtension(
         private val command =
             "-f lavfi -i color=size=1280x720:rate=25:color=black -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -t 10 \"${file.absolutePath}.mp4\""
         override val progressFlow = MutableStateFlow<FileProgress>(Progress.Initialized(null))
-//        private var session: FFmpegSession? = null
+
+        //        private var session: FFmpegSession? = null
         override val start = SuspendedFunction {
 //            session = FFmpegKit.executeAsync(command, {
 //                println("$name Completed: $it")

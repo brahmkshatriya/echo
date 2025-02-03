@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingItem
 import dev.brahmkshatriya.echo.common.settings.SettingList
 import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
+import dev.brahmkshatriya.echo.common.settings.SettingOnClick
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
@@ -31,6 +32,7 @@ import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialMultipleChoicePreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialTextInputPreference
+import dev.brahmkshatriya.echo.utils.prefs.TransitionPreference
 import dev.brahmkshatriya.echo.utils.toSettings
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 import kotlinx.coroutines.launch
@@ -215,6 +217,18 @@ class ExtensionFragment : BaseSettingsFragment() {
                         it.setDefaultValue(this.defaultValue)
 
                         it.isIconSpaceReserved = false
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingOnClick -> {
+                    TransitionPreference(context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        it.setOnPreferenceClickListener { runCatching { onClick() }; true }
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
                         preferenceGroup.addPreference(it)
                     }
                 }

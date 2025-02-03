@@ -58,7 +58,7 @@ sealed class DownloadItem {
             }
             return tracks.values.map { (track, task) ->
                 val taskIds = task.map { it.id }
-                val extension = extensionList.getExtension(track.clientId)?.metadata
+                val extension = extensionList.getExtension(track.extensionId)?.metadata
                 val context = contexts.getOrPut(track.contextId) {
                     if (track.contextId == null) null
                     else dao.getMediaItemEntity(track.contextId).mediaItem

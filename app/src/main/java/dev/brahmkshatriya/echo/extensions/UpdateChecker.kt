@@ -65,7 +65,7 @@ suspend fun getGithubUpdateUrl(
         dateFormat.parse(it.createdAt)?.time ?: 0
     } ?: return@runIOCatching null
     if (res.tagName != currentVersion) {
-        res.assets.sortedBy {
+        res.assets.sortedByDescending {
             it.name.contains(Build.SUPPORTED_ABIS.first())
         }.firstOrNull {
             it.name.endsWith(".eapk")

@@ -11,13 +11,13 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.AlbumItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.PlaylistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.addToPlaylists
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +28,7 @@ import javax.inject.Inject
 class AddToPlaylistViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    private val messageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val messageFlow: MutableSharedFlow<Message>,
     private val app: Application,
 ) : CatchingViewModel(throwableFlow) {
     val playlists = MutableStateFlow<List<Playlist>?>(null)

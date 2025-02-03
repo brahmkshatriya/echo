@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MiscExtensionsProvider
@@ -51,6 +52,7 @@ import kotlinx.coroutines.withTimeout
 class ExtensionLoader(
     context: Context,
     cache: SimpleCache,
+    messageFlow: MutableSharedFlow<Message>,
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val extensionDao: ExtensionDao,
     private val userDao: UserDao,
@@ -80,16 +82,16 @@ class ExtensionLoader(
 //        DownloadExtension.metadata to Injectable { DownloadExtension(context) }
 
     private val musicExtensionRepo =
-        MusicExtensionRepo(context, listener, fileListener, offlinePair, unified)
+        MusicExtensionRepo(context, messageFlow, listener, fileListener, offlinePair, unified)
 
     private val trackerExtensionRepo =
-        TrackerExtensionRepo(context, listener, fileListener)
+        TrackerExtensionRepo(context, messageFlow, listener, fileListener)
 
     private val lyricsExtensionRepo =
-        LyricsExtensionRepo(context, listener, fileListener)
+        LyricsExtensionRepo(context, messageFlow, listener, fileListener)
 
     private val miscExtensionRepo =
-        MiscExtensionRepo(context, listener, fileListener)
+        MiscExtensionRepo(context, messageFlow, listener, fileListener)
 
     val trackers = trackerListFlow
     val extensions = extensionListFlow

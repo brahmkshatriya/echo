@@ -4,38 +4,35 @@ import dev.brahmkshatriya.echo.common.helpers.Progress
 import dev.brahmkshatriya.echo.db.DownloadDao
 import dev.brahmkshatriya.echo.db.models.MediaTaskEntity
 import dev.brahmkshatriya.echo.db.models.Status
+import dev.brahmkshatriya.echo.download.TaskCancelException
 import dev.brahmkshatriya.echo.download.TaskException.Companion.toTaskException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.reflect.KClass
 
 abstract class MediaTask<T>(
     private val dao: DownloadDao
 ) {
     abstract val entity: MediaTaskEntity
-    abstract suspend fun initialize(): MutableStateFlow<Progress<T>>
+    abstract suspend fun initialize(): MutableSharedFlow<Progress<T>>
     abstract suspend fun start()
     abstract suspend fun cancel()
     abstract suspend fun pause()
     abstract suspend fun resume()
 
-    suspend fun cancelWithDelete() {
-        cancel()
-        dao.deleteDownload(entity.id)
-    }
-
     private val scope = CoroutineScope(Dispatchers.IO)
     fun <R> launch(block: suspend MediaTask<T>.() -> R): Job {
         return scope.launch { block() }
     }
+
+    private var flow: MutableSharedFlow<Progress<T>>? = null
 
     @OptIn(FlowPreview::class)
     suspend fun await(): Result<T> {
@@ -43,15 +40,17 @@ abstract class MediaTask<T>(
             val entity = runCatching { entity }.getOrNull()
             return Result.failure(entity?.let { it1 -> it.toTaskException(it1) } ?: it)
         }
+        this.flow = flow
         dao.insertDownload(entity)
         launch {
-            var last: KClass<*> = Progress.Initialized::class
+            var last: KClass<*>? = null
             var size: Long? = null
             flow.debounce {
-                val time = if (last == it::class) 0L else 500L
+                val time = if (last == it::class) 500L else 0L
                 last = it::class
                 time
             }.collect {
+                println("Progress Flow: $it")
                 when (it) {
                     is Progress.Initialized -> {
                         size = it.size
@@ -97,14 +96,14 @@ abstract class MediaTask<T>(
 
         return when (final) {
             is Progress.Final.Failed -> Result.failure(final.reason.toTaskException(entity))
+            is Progress.Final.Cancelled -> {
+                dao.deleteDownload(entity.id)
+                Result.failure(TaskCancelException().toTaskException(entity))
+            }
+
             is Progress.Final.Completed -> {
                 dao.deleteDownload(entity.id)
                 Result.success(final.data)
-            }
-
-            is Progress.Final.Cancelled -> {
-                dao.deleteDownload(entity.id)
-                Result.failure(CancellationException().toTaskException(entity))
             }
         }
     }

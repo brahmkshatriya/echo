@@ -13,6 +13,8 @@ import dev.brahmkshatriya.echo.download.task.FiledTask
 import dev.brahmkshatriya.echo.download.task.LoadDataTask
 import dev.brahmkshatriya.echo.download.task.MediaTask
 import io.ktor.util.collections.ConcurrentSet
+import io.ktor.util.rootCause
+import io.ktor.utils.io.InternalAPI
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -56,7 +58,7 @@ class TrackDownloadTask(
             taggingTask?.takeIf { it.entity.id == id }?.let { task -> task.launch { block(this) } }
         }.mapNotNull { it }
 
-    suspend fun initialize(): Throwable? {
+    suspend fun await(): List<Throwable> {
         val success = start()
         if (success) {
             dao.deleteTrackEntity(entity)
@@ -67,7 +69,16 @@ class TrackDownloadTask(
                 dao.deleteMediaItemEntity(mediaEntity)
             }
         }
-        return errors.firstOrNull()?.toDownloadException(entity)
+        return errors.map { it.toDownloadException(entity) }
+    }
+
+    @OptIn(InternalAPI::class)
+    private fun ifCancelled(exception: Throwable?): Boolean {
+        if (exception != null) {
+            if (exception.rootCause is TaskCancelException) return true
+            errors.add(exception)
+        }
+        return false
     }
 
     suspend fun start(): Boolean = coroutineScope {
@@ -75,34 +86,31 @@ class TrackDownloadTask(
         val server = LoadDataTask(dao, entity, context, extensionsList, downloadExtension)
             .also { loadTask = it }
             .await().getOrElse {
-                errors.add(it)
-                return@coroutineScope false
+                return@coroutineScope ifCancelled(it)
             }
         val trackEntity = dao.getTrackEntity(entity.id)
         val downloadContext =
-            trackEntity.run { DownloadContext(clientId, track, context?.mediaItem) }
-        val folderPath = File(trackEntity.folderPath!!)
+            trackEntity.run { DownloadContext(extensionId, track, sortOrder, context?.mediaItem) }
+        val folder = File(trackEntity.folderPath!!)
         val toMergeFiles = server.sources.filterIndexed { i, _ -> i in trackEntity.indexes }
             .mapIndexed { i, it ->
-                async {
-                    download(
-                        i, it, downloadContext, trackEntity, folderPath, downloadExtension
-                    ).getOrElse {
-                        errors.add(it)
-                        null
-                    }
-                }
-            }.awaitAll().mapNotNull { it }
+                async { download(i, it, downloadContext, trackEntity, folder, downloadExtension) }
+            }.awaitAll()
 
-        if (toMergeFiles.isEmpty()) return@coroutineScope false
+        val allCancelled = toMergeFiles.map {
+            ifCancelled(it.exceptionOrNull())
+        }
+        if (allCancelled.all { it }) return@coroutineScope true
+
+        val mergeFiles = toMergeFiles.mapNotNull { it.getOrNull() }
+        if (mergeFiles.isEmpty()) return@coroutineScope false
         val mergeEntity = MediaTaskEntity(
             "${entity.id}_merge".hashCode().toLong(), entity.id, TaskType.MERGE
         )
         val mergedFile = FiledTask(dao, mergeEntity, downloadExtension) {
-            merge(downloadContext, toMergeFiles, folderPath)
+            merge(downloadContext, mergeFiles, folder)
         }.also { mergeTask = it }.await().getOrElse {
-            errors.add(it)
-            return@coroutineScope false
+            return@coroutineScope ifCancelled(it)
         }
 
         val taggingEntity = MediaTaskEntity(
@@ -111,15 +119,14 @@ class TrackDownloadTask(
         FiledTask(dao, taggingEntity, downloadExtension) {
             tag(downloadContext, mergedFile)
         }.also { taggingTask = it }.await().getOrElse {
-            errors.add(it)
-            return@coroutineScope false
+            return@coroutineScope ifCancelled(it)
         }
 
         return@coroutineScope true
     }
 
     suspend fun cancel(taskIds: List<Long>) {
-        get(taskIds) { it.cancelWithDelete() }
+        get(taskIds) { it.cancel() }
     }
 
     suspend fun resume(taskIds: List<Long>) {

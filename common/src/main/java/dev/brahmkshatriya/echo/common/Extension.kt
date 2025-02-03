@@ -29,6 +29,9 @@ import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
+import dev.brahmkshatriya.echo.common.providers.MessageFlowProvider
+import dev.brahmkshatriya.echo.common.providers.MetadataProvider
+import dev.brahmkshatriya.echo.common.providers.MiscExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 
@@ -109,10 +112,13 @@ sealed class Extension<T : ExtensionClient>(
  * - [PlaylistEditPrivacyClient] - To edit playlist privacy
  *
  * ## Providers
- * The extension can also implement the following providers to get installed extensions:
+ * The extension can also implement the following providers:
+ * - [MetadataProvider] - To get metadata of the extension
+ * - [MessageFlowProvider] - To send messages in the app
  * - [MusicExtensionsProvider] - To get installed music extensions
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
+ * - [MiscExtensionsProvider] - To get installed misc extensions
  *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [ExtensionClient] client
@@ -129,10 +135,13 @@ data class MusicExtension(
  * - [TrackerClient] - Mandatory, For tracking what the user is listening to
  * - [LoginClient] - For login support
  *
- * The extension can also implement the following providers to get installed extensions:
+ * The extension can also implement the following providers:
+ * - [MetadataProvider] - To get metadata of the extension
+ * - [MessageFlowProvider] - To send messages in the app
  * - [MusicExtensionsProvider] - To get installed music extensions
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
+ * - [MiscExtensionsProvider] - To get installed misc extensions
  *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [TrackerClient] client
@@ -149,10 +158,14 @@ data class TrackerExtension(
  * - [LyricsSearchClient] - For searching lyrics using user query
  * - [LoginClient] - For login support
  *
- * The extension can also implement the following providers to get installed extensions:
+ * The extension can also implement the following providers:
+ * - [MetadataProvider] - To get metadata of the extension
+ * - [MessageFlowProvider] - To send messages in the app
  * - [MusicExtensionsProvider] - To get installed music extensions
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
+ * - [MiscExtensionsProvider] - To get installed misc extensions
+ *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [LyricsClient] client
  */
@@ -169,10 +182,13 @@ data class LyricsExtension(
  * - [DownloadClient] - For downloading tracks
  * - [LoginClient] - For login support
  *
- * The extension can also implement the following providers to get installed extensions:
+ * The extension can also implement the following providers:
+ * - [MetadataProvider] - To get metadata of the extension
+ * - [MessageFlowProvider] - To send messages in the app
  * - [MusicExtensionsProvider] - To get installed music extensions
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
+ * - [MiscExtensionsProvider] - To get installed misc extensions
  *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [ExtensionClient] client

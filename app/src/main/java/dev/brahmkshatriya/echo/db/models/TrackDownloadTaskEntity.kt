@@ -9,9 +9,10 @@ import dev.brahmkshatriya.echo.utils.toData
 data class TrackDownloadTaskEntity(
     @PrimaryKey(true)
     val id: Long,
-    val clientId: String,
+    val extensionId: String,
     val contextId: Long?,
     val data: String,
+    val sortOrder: Int? = null,
     val loaded: Boolean = false,
     val folderPath: String? = null,
     val streamableId: String? = null,

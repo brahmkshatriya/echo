@@ -13,6 +13,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.brahmkshatriya.echo.EchoDatabase
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.download.TaskAction
@@ -20,7 +21,6 @@ import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CACHE_SIZE
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
@@ -37,7 +37,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideMessageFlow() = MutableSharedFlow<SnackBar.Message>()
+    fun provideMessageFlow() = MutableSharedFlow<Message>()
 
     @Provides
     @Singleton

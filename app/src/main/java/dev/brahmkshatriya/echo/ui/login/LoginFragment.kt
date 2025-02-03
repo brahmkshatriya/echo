@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
@@ -37,7 +38,6 @@ import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.loginNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyContentInsets
@@ -281,7 +281,7 @@ class LoginFragment : Fragment() {
                 if (it.isRequired && loginViewModel.inputs[it.key].isNullOrEmpty()) {
                     lifecycleScope.launch {
                         loginViewModel.messageFlow.emit(
-                            SnackBar.Message(
+                            Message(
                                 getString(
                                     R.string.required_field,
                                     it.label
@@ -317,7 +317,7 @@ class LoginFragment : Fragment() {
             if (username.isEmpty()) {
                 lifecycleScope.launch {
                     loginViewModel.messageFlow.emit(
-                        SnackBar.Message(
+                        Message(
                             getString(R.string.required_field, getString(R.string.username))
                         )
                     )

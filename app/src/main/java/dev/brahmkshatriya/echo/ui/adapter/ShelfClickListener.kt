@@ -11,6 +11,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Shelf.Category
 import dev.brahmkshatriya.echo.common.models.Shelf.Item
@@ -28,7 +29,6 @@ import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.noClient
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.radioNotSupported
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel.Companion.trackNotSupported
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import kotlinx.coroutines.launch
 
@@ -40,7 +40,7 @@ open class ShelfClickListener(
 
     val fragment get() = fragmentManager.findFragmentById(fragmentId)!!
 
-    private fun snack(block: Context.() -> SnackBar.Message) =
+    private fun snack(block: Context.() -> Message) =
         fragment.createSnack(fragment.requireContext().block())
 
     private inline fun <reified T> withClient(
@@ -133,7 +133,7 @@ open class ShelfClickListener(
         val track = list[pos]
         withClient<TrackClient>(clientId) {
             it.addToQueue(clientId, track, true)
-            snack { SnackBar.Message(getString(R.string.track_added_to_queue, track.title)) }
+            snack { Message(getString(R.string.track_added_to_queue, track.title)) }
         }
     }
 

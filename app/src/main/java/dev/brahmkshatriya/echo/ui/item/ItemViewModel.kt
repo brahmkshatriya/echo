@@ -30,6 +30,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists.RadioItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -38,7 +39,6 @@ import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.run
 import dev.brahmkshatriya.echo.ui.paging.toFlow
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,7 +51,7 @@ class ItemViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val app: Application,
-    private val snackBar: MutableSharedFlow<SnackBar.Message>
+    private val snackBar: MutableSharedFlow<Message>
 ) : CatchingViewModel(throwableFlow) {
 
     var item: EchoMediaItem? = null
@@ -161,7 +161,7 @@ class ItemViewModel @Inject constructor(
     }
 
     private fun createSnack(message: String) =
-        viewModelScope.launch { snackBar.emit(SnackBar.Message(message)) }
+        viewModelScope.launch { snackBar.emit(Message(message)) }
 
     fun like(track: Track, isLiked: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {

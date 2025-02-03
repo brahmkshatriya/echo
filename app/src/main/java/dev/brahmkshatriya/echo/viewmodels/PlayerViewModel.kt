@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
@@ -58,7 +59,7 @@ class PlayerViewModel @Inject constructor(
     val currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>,
     val cache: SimpleCache,
     val audioSessionFlow: MutableStateFlow<Int>,
-    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val mutableMessageFlow: MutableSharedFlow<Message>,
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 

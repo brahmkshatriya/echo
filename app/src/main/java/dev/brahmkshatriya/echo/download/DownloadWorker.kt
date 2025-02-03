@@ -45,7 +45,7 @@ class DownloadWorker @AssistedInject constructor(
 
         val actionJob = launch { actions.collect { performAction(it) } }
         val notificationJob = launch {
-            dao.getCurrentDownloadsFlow().debounce(500L).collect {
+            dao.getCurrentDownloadsFlow().debounce(1000L).collect {
                 val info = NotificationUtil.create(context, dao, it) ?: return@collect
                 setForeground(info)
             }
@@ -53,15 +53,12 @@ class DownloadWorker @AssistedInject constructor(
         tracksFlow.value = dao.getTracks()
 
         val trackJob = launch {
-            dao.getTrackFlow().collect {
-                tracksFlow.value = it
-                it.forEach { entity ->
-                    trackTaskMap.getOrPut(entity.id) {
-                        TrackDownloadTask(entity, dao, extensionsList, downloadExtension).also {
-                            launch {
-                                val throwable = it.initialize()
-                                if (throwable != null) throwableFlow.emit(throwable)
-                            }
+            dao.getTrackFlow().collect { tasks ->
+                tracksFlow.value = tasks
+                tasks.forEach { task ->
+                    trackTaskMap.getOrPut(task.id) {
+                        TrackDownloadTask(task, dao, extensionsList, downloadExtension).apply {
+                            launch { await().forEach { throwableFlow.emit(it) } }
                         }
                     }
                 }
@@ -83,9 +80,9 @@ class DownloadWorker @AssistedInject constructor(
         is TaskAction.All -> {
             val allIds = dao.getAllDownloadEntities().map { it.id }
             when (action) {
-                is TaskAction.All.PauseAll -> pause(allIds)
-                is TaskAction.All.RemoveAll -> cancel(allIds)
-                is TaskAction.All.ResumeAll -> resume(allIds)
+                TaskAction.All.PauseAll -> pause(allIds)
+                TaskAction.All.RemoveAll -> cancel(allIds)
+                TaskAction.All.ResumeAll -> resume(allIds)
             }
         }
     }

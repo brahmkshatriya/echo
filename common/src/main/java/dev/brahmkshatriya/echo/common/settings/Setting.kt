@@ -9,6 +9,7 @@ package dev.brahmkshatriya.echo.common.settings
  * - [SettingTextInput]
  * - [SettingList]
  * - [SettingMultipleChoice]
+ * - [SettingOnClick]
  *
  * @property title The title of the setting.
  * @property key The unique key of the setting.

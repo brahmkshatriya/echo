@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
@@ -48,7 +49,7 @@ fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
     fun createSnack(id: Int) {
         val snackbar by viewModels<SnackBar>()
         val message = getString(id)
-        snackbar.create(SnackBar.Message(message))
+        snackbar.create(Message(message))
     }
 
     val extensionType = uri.host

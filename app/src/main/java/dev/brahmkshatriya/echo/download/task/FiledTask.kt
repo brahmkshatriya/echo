@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.db.models.MediaTaskEntity
 import dev.brahmkshatriya.echo.extensions.get
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -28,14 +28,16 @@ class FiledTask(
     override val entity: MediaTaskEntity
         get() = taskEntity.copy(supportsPause = task.supportsPause())
 
-    override suspend fun initialize(): MutableStateFlow<FileProgress> {
+    override suspend fun initialize(): MutableSharedFlow<FileProgress> {
         val task = withDownloadExtension { getter() }.getOrThrow()
         this.task = task
         return task.progressFlow
     }
 
     private suspend fun withFailure(block: suspend FileTask.() -> Unit) {
-        runCatching { block(task) }.onFailure { task.progressFlow.value = Progress.Final.Failed(it) }
+        runCatching { block(task) }.onFailure {
+            task.progressFlow.emit(Progress.Final.Failed(it))
+        }
     }
 
     private var job: Job? = null
@@ -44,7 +46,9 @@ class FiledTask(
     }
 
     override suspend fun cancel() {
-        withFailure { cancel() }
+        runCatching { task.cancel() }.onFailure {
+            task.progressFlow.emit(Progress.Final.Cancelled())
+        }
         job?.cancel()
     }
 

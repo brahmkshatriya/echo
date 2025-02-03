@@ -18,8 +18,10 @@ import dev.brahmkshatriya.echo.extensions.getExtensionOrThrow
 import dev.brahmkshatriya.echo.utils.toJson
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 
 typealias MediaProgress = Progress<Streamable.Media.Server>
@@ -38,13 +40,13 @@ class LoadDataTask(
     private var progress = 0L
         set(value) {
             field = value
-            progressFlow.value = Progress.InProgress(value, null)
+            runBlocking { progressFlow.emit(Progress.InProgress(value, null)) }
         }
 
     private suspend fun load(): Streamable.Media.Server {
         progress = 0
 
-        val extension = extensionsList.getExtensionOrThrow(trackEntity.clientId)
+        val extension = extensionsList.getExtensionOrThrow(trackEntity.extensionId)
         trackEntity = dao.getTrackEntity(trackEntity.id)
         val streamables = if (!trackEntity.loaded) {
             val (track, streamables) =
@@ -62,7 +64,7 @@ class LoadDataTask(
         progress++
 
         val downloadContext = DownloadContext(
-            trackEntity.clientId, trackEntity.track, context?.mediaItem
+            trackEntity.extensionId, trackEntity.track, trackEntity.sortOrder, context?.mediaItem
         )
         val folderPath = trackEntity.folderPath
         if (folderPath == null) {
@@ -105,35 +107,30 @@ class LoadDataTask(
         downloadExtension.get<DownloadClient, T> { block() }.getOrThrow()
 
     var job: Job? = null
-    private lateinit var progressFlow: MutableStateFlow<MediaProgress>
-    override suspend fun initialize(): MutableStateFlow<MediaProgress> {
-        val progressFlow: MutableStateFlow<MediaProgress> =
-            MutableStateFlow(Progress.Initialized(4))
-        this.progressFlow = progressFlow
-        return progressFlow
-    }
-
+    private val progressFlow = MutableSharedFlow<MediaProgress>()
+    override suspend fun initialize() = progressFlow
 
     override suspend fun start() = coroutineScope {
-        job?.cancel()
         job = launch {
+            progressFlow.emit(Progress.Initialized(4))
             val final = runCatching { load() }.getOrElse {
-                progressFlow.value = Progress.Final.Failed(it)
+                progressFlow.emit(Progress.Final.Failed(it))
                 return@launch
             }
-            progressFlow.value = Progress.Final.Completed(4, final)
+            progressFlow.emit(Progress.Final.Completed(4, final))
         }
     }
 
     override suspend fun cancel() {
-        job?.cancel()
-        progressFlow.value = Progress.Final.Cancelled()
+        progressFlow.emit(Progress.Final.Cancelled())
+        runCatching { job?.cancel() }
         job = null
     }
 
     override suspend fun pause() {
-        progressFlow.value = Progress.Paused(progress)
-        job?.cancel()
+        progressFlow.emit(Progress.Paused(progress))
+        runCatching { job?.cancel() }
+        job = null
     }
 
     override suspend fun resume() {

@@ -24,6 +24,7 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.Current
@@ -39,7 +40,6 @@ import dev.brahmkshatriya.echo.playback.loading.StreamableMediaSource
 import dev.brahmkshatriya.echo.playback.render.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.render.RenderersFactory
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -59,7 +59,7 @@ class PlayerService : MediaLibraryService() {
     lateinit var throwFlow: MutableSharedFlow<Throwable>
 
     @Inject
-    lateinit var messageFlow: MutableSharedFlow<SnackBar.Message>
+    lateinit var messageFlow: MutableSharedFlow<Message>
 
     @Inject
     lateinit var stateFlow: MutableStateFlow<Radio.State>

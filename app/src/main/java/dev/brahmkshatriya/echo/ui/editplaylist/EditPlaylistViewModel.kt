@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.get
@@ -18,7 +19,6 @@ import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Add
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Move
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Action.Remove
 import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
-import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +31,7 @@ import javax.inject.Inject
 class EditPlaylistViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
     val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-    private val mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
+    private val mutableMessageFlow: MutableSharedFlow<Message>,
     private val context: Application,
 ) : CatchingViewModel(throwableFlow) {
 
@@ -244,7 +244,7 @@ class EditPlaylistViewModel @Inject constructor(
 
         fun CatchingViewModel.deletePlaylist(
             extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-            mutableMessageFlow: MutableSharedFlow<SnackBar.Message>,
+            mutableMessageFlow: MutableSharedFlow<Message>,
             context: Context,
             clientId: String,
             playlist: Playlist
@@ -254,13 +254,13 @@ class EditPlaylistViewModel @Inject constructor(
                 extension.get<PlaylistEditClient, Unit>(throwableFlow) {
                     deletePlaylist(playlist)
                 }
-                mutableMessageFlow.emit(SnackBar.Message(context.getString(R.string.playlist_deleted)))
+                mutableMessageFlow.emit(Message(context.getString(R.string.playlist_deleted)))
             }
         }
 
         suspend fun CatchingViewModel.addToPlaylists(
             extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
-            messageFlow: MutableSharedFlow<SnackBar.Message>,
+            messageFlow: MutableSharedFlow<Message>,
             context: Context,
             clientId: String,
             playlists: List<Playlist>,
@@ -283,7 +283,7 @@ class EditPlaylistViewModel @Inject constructor(
                 val message =
                     if (playlists.size != 1) context.getString(R.string.saved_to_playlists)
                     else context.getString(R.string.saved_to_playlist, playlists.first().title)
-                messageFlow.emit(SnackBar.Message(message))
+                messageFlow.emit(Message(message))
             }
         }
     }

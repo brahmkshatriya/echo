@@ -5,10 +5,12 @@ package dev.brahmkshatriya.echo.common.models
  *
  * @param extensionId The extension that the track belongs to.
  * @param track The track to download.
+ * @param sortOrder The order of the [track] in the [context].
  * @param context The context of the media item, Album/Playlist/Artist.
  */
 data class DownloadContext(
     val extensionId: String,
     val track: Track,
-    val context: EchoMediaItem?
+    val sortOrder: Int? = null,
+    val context: EchoMediaItem? = null
 )

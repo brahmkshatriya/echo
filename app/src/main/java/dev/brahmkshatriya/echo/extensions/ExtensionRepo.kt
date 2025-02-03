@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.extensions.plugger.AndroidPluginLoader
 import dev.brahmkshatriya.echo.extensions.plugger.ApkFileManifestParser
@@ -15,11 +16,13 @@ import dev.brahmkshatriya.echo.extensions.plugger.ApkPluginSource
 import dev.brahmkshatriya.echo.extensions.plugger.FileChangeListener
 import dev.brahmkshatriya.echo.extensions.plugger.FilePluginSource
 import dev.brahmkshatriya.echo.extensions.plugger.PackageChangeListener
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 
 sealed class ExtensionRepo<T : ExtensionClient>(
     private val context: Context,
+    private val messageFlow: MutableSharedFlow<Message>,
     private val listener: PackageChangeListener,
     private val fileChangeListener: FileChangeListener,
     private vararg val repo: Pair<Metadata, Injectable<T>>
@@ -40,7 +43,9 @@ sealed class ExtensionRepo<T : ExtensionClient>(
             loader
         )
         val builtInRepo = BuiltInRepo(repo.toList())
-        InjectableRepoComposer(context, type, builtInRepo, appPluginRepo, apkFilePluginRepo)
+        InjectableRepoComposer(
+            context, messageFlow, type, builtInRepo, appPluginRepo, apkFilePluginRepo
+        )
     }
 
     override fun getAllPlugins() = composed.getAllPlugins()
@@ -54,37 +59,41 @@ sealed class ExtensionRepo<T : ExtensionClient>(
 
 class MusicExtensionRepo(
     context: Context,
+    messageFlow: MutableSharedFlow<Message>,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
     vararg repo: Pair<Metadata, Injectable<ExtensionClient>>
-) : ExtensionRepo<ExtensionClient>(context, listener, fileChangeListener, *repo) {
+) : ExtensionRepo<ExtensionClient>(context, messageFlow, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.MUSIC
 }
 
 class TrackerExtensionRepo(
     context: Context,
+    messageFlow: MutableSharedFlow<Message>,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
     vararg repo: Pair<Metadata, Injectable<TrackerClient>>
-) : ExtensionRepo<TrackerClient>(context, listener, fileChangeListener, *repo) {
+) : ExtensionRepo<TrackerClient>(context, messageFlow, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.TRACKER
 }
 
 class LyricsExtensionRepo(
     context: Context,
+    messageFlow: MutableSharedFlow<Message>,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
     vararg repo: Pair<Metadata, Injectable<LyricsClient>>
-) : ExtensionRepo<LyricsClient>(context, listener, fileChangeListener, *repo) {
+) : ExtensionRepo<LyricsClient>(context, messageFlow, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.LYRICS
 }
 
 class MiscExtensionRepo(
     context: Context,
+    messageFlow: MutableSharedFlow<Message>,
     listener: PackageChangeListener,
     fileChangeListener: FileChangeListener,
     vararg repo: Pair<Metadata, Injectable<ExtensionClient>>
-) : ExtensionRepo<ExtensionClient>(context, listener, fileChangeListener, *repo) {
+) : ExtensionRepo<ExtensionClient>(context, messageFlow, listener, fileChangeListener, *repo) {
     override val type = ExtensionType.MISC
 }
 

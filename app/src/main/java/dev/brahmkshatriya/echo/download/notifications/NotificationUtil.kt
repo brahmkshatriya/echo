@@ -81,15 +81,6 @@ object NotificationUtil {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
-        val pendingIntentPause = PendingIntent.getBroadcast(
-            context,
-            0,
-            Intent(context, NotificationReceiver::class.java).apply {
-                action = ACTION_PAUSE_ALL
-            },
-            PendingIntent.FLAG_IMMUTABLE
-        )
-
         val pendingIntentCancel = PendingIntent.getBroadcast(
             context,
             0,
@@ -109,7 +100,6 @@ object NotificationUtil {
                 .setProgress(100, p, indeterminate)
                 .setOnlyAlertOnce(true)
                 .setOngoing(true)
-                .addAction(-1, context.getString(R.string.pause_all), pendingIntentPause)
                 .addAction(-1, context.getString(R.string.cancel_all), pendingIntentCancel)
                 .build(),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

@@ -9,6 +9,7 @@ import java.io.File
 
 /**
  * The client for downloading tracks. Needs to support the following:
+ * - Get the download tracks for the given media item.
  * - Get the download folder for the given context of downloading track.
  * - Which server to use for downloading.
  * - Which sources to use for downloading.
@@ -18,6 +19,20 @@ import java.io.File
  * - The maximum number of concurrent downloads allowed.
  */
 interface DownloadClient : ExtensionClient {
+
+    /**
+     * Get the download tracks for the given [item].
+     *
+     * @param extensionId The client ID.
+     * @param item The media item to get the download tracks for.
+     *
+     * @return The download tracks.
+     *
+     * @see DownloadContext
+     * @see EchoMediaItem
+     */
+    suspend fun getDownloadTracks(extensionId: String, item: EchoMediaItem): List<DownloadContext>
+
     /**
      * The maximum number of concurrent downloads allowed.
      */

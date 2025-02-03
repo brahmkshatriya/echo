@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
+import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -54,6 +55,7 @@ class ExtensionModule {
     fun provideExtensionLoader(
         context: Application,
         cache: SimpleCache,
+        messageFlow: MutableSharedFlow<Message>,
         throwableFlow: MutableSharedFlow<Throwable>,
         database: EchoDatabase,
         settings: SharedPreferences,
@@ -70,6 +72,7 @@ class ExtensionModule {
         ExtensionLoader(
             context,
             cache,
+            messageFlow,
             throwableFlow,
             extensionDao,
             userDao,
