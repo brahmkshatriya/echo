@@ -35,7 +35,7 @@ class DownloadViewModel @Inject constructor(
 ) : CatchingViewModel(throwableFlow) {
 
     private suspend fun add(clientId: String, item: EchoMediaItem) {
-        val downloadExt = downloadList.value?.first { it.isClient<DownloadClient>() }
+        val downloadExt = downloadList.value?.firstOrNull { it.isClient<DownloadClient>() }
         downloadExt
             ?: return messageFlow.emit(Message(context.getString(R.string.no_download_extension)))
 

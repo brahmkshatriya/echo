@@ -8,14 +8,11 @@ import dev.brahmkshatriya.echo.download.TaskCancelException
 import dev.brahmkshatriya.echo.download.TaskException.Companion.toTaskException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
 
 abstract class MediaTask<T>(
     private val dao: DownloadDao
@@ -34,7 +31,6 @@ abstract class MediaTask<T>(
 
     private var flow: MutableSharedFlow<Progress<T>>? = null
 
-    @OptIn(FlowPreview::class)
     suspend fun await(): Result<T> {
         val flow = runCatching { initialize() }.getOrElse {
             val entity = runCatching { entity }.getOrNull()
@@ -43,14 +39,8 @@ abstract class MediaTask<T>(
         this.flow = flow
         dao.insertDownload(entity)
         launch {
-            var last: KClass<*>? = null
             var size: Long? = null
-            flow.debounce {
-                val time = if (last == it::class) 500L else 0L
-                last = it::class
-                time
-            }.collect {
-                println("Progress Flow: $it")
+            flow.collect {
                 when (it) {
                     is Progress.Initialized -> {
                         size = it.size

@@ -43,17 +43,15 @@ class Downloader(
     }
 
     fun cancel(downloadIds: List<Long>) = scope.launch {
-        println("Cancel: ${isWorkerWorking()}")
         actions.emit(TaskAction.Remove(downloadIds))
     }
 
     fun pause(downloadIds: List<Long>) = scope.launch {
-        println("Pause: ${isWorkerWorking()}")
         actions.emit(TaskAction.Pause(downloadIds))
     }
 
     fun resume(downloadIds: List<Long>) = scope.launch {
-        println("Resume: ${isWorkerWorking()}")
+        start()
         actions.emit(TaskAction.Resume(downloadIds))
     }
 
