@@ -2,20 +2,12 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/amoled_bg">
+    android:layout_height="match_parent">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-<!--    <include layout="@layout/item_player_track" />-->
-
-    <View
-        android:id="@+id/playerOutline"
-        style="@style/AppBarOutline"
-        android:layout_marginTop="0dp" />
 
 <!--    <include-->
 <!--        layout="@layout/fragment_player_info"-->

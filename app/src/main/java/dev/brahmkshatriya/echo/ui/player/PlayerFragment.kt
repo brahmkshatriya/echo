@@ -1,10 +1,12 @@
 package dev.brahmkshatriya.echo.ui.player
 
 import android.app.Activity
+import android.graphics.Outline
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.view.WindowManager
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,10 +22,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPS
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
-import dev.brahmkshatriya.echo.utils.ui.animateVisibility
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.emit
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.ui.animateVisibility
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
@@ -48,9 +51,26 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val maxRound = 8.dpToPx(requireContext())
+        val padding = 8.dpToPx(requireContext())
+        val height = 64.dpToPx(requireContext())
+        var currHeight = height
+        var currRound = maxRound.toFloat()
+        var currPadding = padding
+        binding.root.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                outline.setRoundRect(
+                    currPadding,
+                    0,
+                    view.width - currPadding,
+                    currHeight,
+                    currRound
+                )
+            }
+        }
+        binding.root.clipToOutline = true
 
         setupPlayerInfoBehavior(uiViewModel, binding.playerInfoContainer)
-
         val recycler = binding.viewPager.getChildAt(0) as RecyclerView
         recycler.run {
             isNestedScrollingEnabled = false
@@ -101,7 +121,12 @@ class PlayerFragment : Fragment() {
         observe(uiViewModel.playerSheetOffset) {
             viewModel.browser.value?.volume = 1 + min(0f, it)
             val offset = max(0f, it)
-            binding.playerOutline.alpha = 1 - offset
+            val inv = 1 - offset
+            currHeight = height + ((view.height - height) * offset).toInt()
+            currPadding = (padding * inv).toInt()
+            currRound = maxRound * inv
+            binding.root.invalidateOutline()
+
             if (offset < 1)
                 requireActivity().hideSystemUi(false)
             else if (uiViewModel.playerBgVisibleState.value)

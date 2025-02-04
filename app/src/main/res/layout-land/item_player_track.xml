@@ -131,7 +131,7 @@
 
     <include
         android:id="@+id/collapsedContainer"
-        layout="@layout/item_player_collapsed"
+        layout="@layout/item_player_small"
         tools:visibility="gone" />
 
 

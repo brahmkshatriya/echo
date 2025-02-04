@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.exception.openException
 import dev.brahmkshatriya.echo.ui.exception.openLoginException
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,7 +57,8 @@ class SnackBar @Inject constructor(
                     val insets = uiViewModel.systemInsets.value
                     marginStart = insets.start
                     marginEnd = insets.end
-                    bottomMargin = uiViewModel.getCombined().bottom - insets.bottom
+                    bottomMargin =
+                        uiViewModel.getCombined().bottom - insets.bottom + 8.dpToPx(this@configureSnackBar)
                 }
                 message.action?.run { snackBar.setAction(name) { handler() } }
                 snackBar.addCallback(object : Snackbar.Callback() {

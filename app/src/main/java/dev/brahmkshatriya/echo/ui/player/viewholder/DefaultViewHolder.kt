@@ -42,8 +42,8 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.databinding.ItemPlayerCollapsedBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerControlsBinding
+import dev.brahmkshatriya.echo.databinding.ItemPlayerSmallBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
@@ -513,7 +513,9 @@ class DefaultViewHolder(
         return imageColors ?: defaultColors
     }
 
-    private fun ItemPlayerCollapsedBinding.applyColors(colors: PlayerColors) {
+    private fun ItemPlayerSmallBinding.applyColors(colors: PlayerColors) {
+        collapsedBg.setBackgroundColor(colors.background)
+        collapsedCoverFg.backgroundTintList = ColorStateList.valueOf(colors.background)
         collapsedProgressBar.setIndicatorColor(colors.accent)
         collapsedSeekBar.setIndicatorColor(colors.accent)
         collapsedBuffer.setIndicatorColor(colors.accent)
