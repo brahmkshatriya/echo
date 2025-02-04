@@ -515,7 +515,6 @@ class DefaultViewHolder(
 
     private fun ItemPlayerSmallBinding.applyColors(colors: PlayerColors) {
         collapsedBg.setBackgroundColor(colors.background)
-        collapsedCoverFg.backgroundTintList = ColorStateList.valueOf(colors.background)
         collapsedProgressBar.setIndicatorColor(colors.accent)
         collapsedSeekBar.setIndicatorColor(colors.accent)
         collapsedBuffer.setIndicatorColor(colors.accent)
