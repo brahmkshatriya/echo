@@ -44,6 +44,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.lang.ref.WeakReference
 import javax.inject.Inject
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 sealed class ShelfViewHolder(
     itemView: View,
@@ -63,6 +65,15 @@ sealed class ShelfViewHolder(
         val listener: ShelfAdapter.Listener,
     ) : ShelfViewHolder(binding.root) {
 
+        private val shelfAdapter = ShelfListItemViewAdapter(clientId, listener)
+
+        init {
+            binding.recyclerView.apply {
+                setRecycledViewPool(sharedPool)
+                adapter = shelfAdapter
+            }
+        }
+
         override fun bind(item: Shelf) {
             item as Shelf.Lists<*>
 
@@ -76,7 +87,7 @@ sealed class ShelfViewHolder(
                 }
                 true
             } else false
-            binding.recyclerView.setRecycledViewPool(sharedPool)
+
             val position = bindingAdapterPosition
             val context = binding.root.context
             val (layoutManager, padding) = item.ifGrid {
@@ -87,25 +98,25 @@ sealed class ShelfViewHolder(
             } ?: run {
                 LinearLayoutManager(context, RecyclerView.HORIZONTAL, false) to 16.dpToPx(context)
             }
+
             binding.recyclerView.updatePaddingRelative(start = padding, end = padding)
+            viewModel.visibleScrollableViews[position] = WeakReference(this)
+            layoutManager.initialPrefetchItemCount = binding.recyclerView.getPrefetchCount(item)
+
+            val transition = transitionView.transitionName + item.id
+            shelfAdapter.transition = transition
+            binding.recyclerView.layoutManager = layoutManager
+            shelfAdapter.shelf = item
+
             layoutManager.apply {
                 val state: Parcelable? = viewModel.layoutManagerStates[position]
                 if (state != null) onRestoreInstanceState(state)
                 else scrollToPosition(0)
             }
-            viewModel.visibleScrollableViews[position] = WeakReference(this)
-
-            val transition = transitionView.transitionName + item.id
-            adapter.shelf = item
-            adapter.transition = transition
-            binding.recyclerView.adapter = adapter
-            binding.recyclerView.layoutManager = layoutManager
         }
 
-        val adapter = ShelfListItemViewAdapter(clientId, listener)
-
         override fun onCurrentChanged(current: Current?) {
-            adapter.onCurrentChanged(binding.recyclerView, current)
+            shelfAdapter.onCurrentChanged(binding.recyclerView, current)
         }
 
         val layoutManager get() = binding.recyclerView.layoutManager
@@ -128,6 +139,19 @@ sealed class ShelfViewHolder(
                     clientId,
                     listener
                 )
+            }
+
+            private fun View.getPrefetchCount(item: Shelf.Lists<*>): Int {
+                val itemWidth = when(item.type) {
+                    Shelf.Lists.Type.Linear -> when(item) {
+                        is Shelf.Lists.Categories, is Shelf.Lists.Items -> 112
+                        is Shelf.Lists.Tracks -> return 3
+                    }
+                    Shelf.Lists.Type.Grid -> return item.list.size
+                }.dpToPx(context)
+                val screenWidth = resources.displayMetrics.widthPixels
+                val count = ceil(screenWidth.toFloat() / itemWidth)
+                return count.roundToInt()
             }
         }
     }
@@ -193,7 +217,7 @@ sealed class ShelfViewHolder(
                 )
             }
 
-            fun ItemShelfMediaBinding.bind(item: EchoMediaItem): MaterialButton? {
+            fun ItemShelfMediaBinding.bind(item: EchoMediaItem): MaterialButton {
                 title.text = item.title
                 subtitle.text = item.subtitleWithE
                 subtitle.isVisible = item.subtitleWithE.isNullOrBlank().not()
@@ -277,8 +301,9 @@ sealed class ShelfViewHolder(
             val map = hashMapOf<EchoMediaItem.Lists, PagedData.Single<Track>>()
             fun loadTracks(clientId: String, lists: EchoMediaItem.Lists) = map.getOrPut(lists) {
                 PagedData.Single {
-                    val client = extensionList.getExtension(clientId)?.instance?.value()?.getOrNull()
-                        ?: throw Exception(app.noClient().message)
+                    val client =
+                        extensionList.getExtension(clientId)?.instance?.value()?.getOrNull()
+                            ?: throw Exception(app.noClient().message)
                     when (lists) {
                         is EchoMediaItem.Lists.AlbumItem -> {
                             client as AlbumClient

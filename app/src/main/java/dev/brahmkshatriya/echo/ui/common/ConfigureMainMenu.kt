@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.db.models.UserEntity.Companion.toUser
 import dev.brahmkshatriya.echo.extensions.isClient
+import dev.brahmkshatriya.echo.ui.MainFragment
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.login.LoginUserBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment

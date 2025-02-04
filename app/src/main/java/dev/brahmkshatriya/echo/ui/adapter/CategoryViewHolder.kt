@@ -5,14 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import com.google.android.material.R
 import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
 import dev.brahmkshatriya.echo.playback.Current
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
 
 class CategoryViewHolder(
+    private val grid: Boolean,
     val listener: ShelfAdapter.Listener,
     val clientId: String,
     val binding: ItemShelfCategoryBinding
@@ -20,12 +23,14 @@ class CategoryViewHolder(
 
     companion object {
         fun create(
+            grid: Boolean,
             parent: ViewGroup,
             listener: ShelfAdapter.Listener,
             clientId: String
         ): CategoryViewHolder {
             val inflater = LayoutInflater.from(parent.context)
             return CategoryViewHolder(
+                grid,
                 listener,
                 clientId,
                 ItemShelfCategoryBinding.inflate(inflater, parent, false)
@@ -45,6 +50,7 @@ class CategoryViewHolder(
     override fun bind(item: Any) {
         if (item !is Shelf.Category) return
         val root = binding.root
+        if (!grid) root.updateLayoutParams { width = 112.dpToPx(root.context) }
         root.setCardBackgroundColor(root.randomColor(item.title))
         binding.title.text = item.title
         binding.title.isSelected = true

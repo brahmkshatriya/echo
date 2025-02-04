@@ -20,9 +20,9 @@ import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter.Companion.getListener
-import dev.brahmkshatriya.echo.ui.common.MainFragment
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
+import dev.brahmkshatriya.echo.ui.MainFragment
+import dev.brahmkshatriya.echo.ui.MainFragment.Companion.first
+import dev.brahmkshatriya.echo.ui.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.utils.autoCleared

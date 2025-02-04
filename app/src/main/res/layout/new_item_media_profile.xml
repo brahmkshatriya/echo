@@ -9,7 +9,7 @@
 
     <include
         android:id="@+id/cover"
-        layout="@layout/item_profile_cover" />
+        layout="@layout/item_cover_profile" />
 
     <TextView
         android:id="@+id/title"

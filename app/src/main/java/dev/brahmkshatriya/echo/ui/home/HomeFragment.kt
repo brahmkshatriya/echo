@@ -11,9 +11,9 @@ import androidx.fragment.app.activityViewModels
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
-import dev.brahmkshatriya.echo.ui.common.MainFragment
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
+import dev.brahmkshatriya.echo.ui.MainFragment
+import dev.brahmkshatriya.echo.ui.MainFragment.Companion.first
+import dev.brahmkshatriya.echo.ui.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.utils.autoCleared

@@ -8,7 +8,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/navHostFragment"
-        android:name="dev.brahmkshatriya.echo.ui.common.MainFragment"
+        android:name="dev.brahmkshatriya.echo.ui.MainFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
     

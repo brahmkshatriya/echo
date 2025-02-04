@@ -1,0 +1,16 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="?itemCoverSize"
+    android:layout_height="?itemCoverSize">
+
+    <ImageView
+        android:id="@+id/profileImageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/rounded_item_profile_bg"
+        android:importantForAccessibility="no" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/isPlaying"
+        style="@style/SmallNowPlayingButton" />
+
+</FrameLayout>

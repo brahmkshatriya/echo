@@ -1,68 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="?itemCoverSize"
     android:layout_height="wrap_content"
     android:layout_marginTop="-8dp"
     android:clipToPadding="false"
     android:paddingTop="8dp">
 
-    <androidx.cardview.widget.CardView
+    <View
         android:id="@+id/listImageContainer2"
         android:layout_width="match_parent"
         android:layout_height="?itemCoverSize"
         android:layout_marginHorizontal="6dp"
         android:layout_marginTop="-5dp"
         android:alpha="0.33"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer"
-        app:cardCornerRadius="?itemCorner">
+        android:background="@drawable/rounded_item_image_bg" />
 
-        <ImageView
-            android:id="@+id/listImageView2"
-            android:layout_width="?itemCoverSize"
-            android:layout_height="?itemCoverSize"
-            android:layout_marginStart="-6dp"
-            android:importantForAccessibility="no"
-            tools:srcCompat="@tools:sample/avatars[2]" />
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
+    <View
         android:id="@+id/listImageContainer1"
         android:layout_width="match_parent"
         android:layout_height="?itemCoverSize"
         android:layout_marginHorizontal="3dp"
         android:layout_marginTop="-3dp"
         android:alpha="0.66"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer"
-        app:cardCornerRadius="?itemCorner">
+        android:background="@drawable/rounded_item_image_bg" />
 
-        <ImageView
-            android:id="@+id/listImageView1"
-            android:layout_width="?itemCoverSize"
-            android:layout_height="?itemCoverSize"
-            android:layout_marginStart="-3dp"
-            android:importantForAccessibility="no"
-            tools:srcCompat="@tools:sample/avatars[2]" />
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/listImageContainer"
+    <ImageView
+        android:id="@+id/listImageView"
         android:layout_width="?itemCoverSize"
         android:layout_height="?itemCoverSize"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer"
-        app:cardCornerRadius="?itemCorner">
-
-        <ImageView
-            android:id="@+id/listImageView"
-            android:layout_width="?itemCoverSize"
-            android:layout_height="?itemCoverSize"
-            android:importantForAccessibility="no"
-            tools:srcCompat="@tools:sample/avatars[2]" />
-
-    </androidx.cardview.widget.CardView>
+        android:background="@drawable/rounded_item_image_bg"
+        android:importantForAccessibility="no" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/playlist"
@@ -83,6 +51,7 @@
             app:tint="?attr/colorOnSurface" />
 
     </androidx.cardview.widget.CardView>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/isPlaying"
         style="@style/SmallNowPlayingButton" />

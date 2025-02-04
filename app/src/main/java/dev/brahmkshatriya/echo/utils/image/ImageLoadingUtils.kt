@@ -53,9 +53,9 @@ fun ImageHolder?.loadInto(
 fun ImageHolder?.loadWithThumb(
     imageView: ImageView, thumbnail: ImageHolder? = null,
     error: Int? = null, onDrawable: (Drawable?) -> Unit = {}
-) = tryWith {
+): Unit? = tryWith {
     if (this == null) {
-        thumbnail.loadWith(imageView, null, error, onDrawable)
+        thumbnail.loadWithThumb(imageView, null, error, onDrawable)
         return@tryWith
     }
     val request = createRequest(imageView.context, null, error)
@@ -70,13 +70,14 @@ fun ImageHolder?.loadWithThumb(
 
 fun ImageHolder?.loadWith(
     imageView: ImageView, placeholder: Int? = null,
-    error: Int? = null, onDrawable: (Drawable?) -> Unit = {}
+    error: Int? = null, onDrawable: (Bitmap?) -> Unit = {}
 ) = tryWith {
     val request = createRequest(imageView.context, placeholder, error)
     fun setDrawable(image: Image?) {
         val drawable = image?.asDrawable(imageView.resources)
         imageView.load(drawable)
-        tryWith(false) { onDrawable(drawable) }
+        val bitmap = image?.toBitmap()
+        tryWith(false) { onDrawable(bitmap) }
     }
     request.target(::setDrawable, ::setDrawable, ::setDrawable)
     imageView.enqueue(request)

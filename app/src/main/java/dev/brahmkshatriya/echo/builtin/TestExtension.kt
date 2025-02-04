@@ -124,6 +124,17 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
 
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
         listOf(
+            Shelf.Lists.Categories(
+                "Bruh",
+                listOf(
+                    "Burhhhhhhh",
+                    "brjdksls",
+                    "sbajkxclllll",
+                    "a",
+                    "b",
+                    " b"
+                ).map { Shelf.Category(it, null) }
+            ),
             Artist("bruh", "Bruh").toMediaItem().toShelf(),
             createTrack(
                 "all", "All", listOf(

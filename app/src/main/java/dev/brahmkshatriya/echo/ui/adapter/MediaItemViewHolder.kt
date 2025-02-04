@@ -1,5 +1,8 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
+import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.View
@@ -8,18 +11,19 @@ import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.databinding.ItemListsCoverBinding
-import dev.brahmkshatriya.echo.databinding.ItemProfileCoverBinding
-import dev.brahmkshatriya.echo.databinding.ItemTrackCoverBinding
+import dev.brahmkshatriya.echo.databinding.ItemCoverListsBinding
+import dev.brahmkshatriya.echo.databinding.ItemCoverProfileBinding
+import dev.brahmkshatriya.echo.databinding.ItemCoverTrackBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaListsBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaProfileBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
-import dev.brahmkshatriya.echo.utils.ui.animateVisibility
 import dev.brahmkshatriya.echo.utils.image.loadInto
 import dev.brahmkshatriya.echo.utils.image.loadWith
+import dev.brahmkshatriya.echo.utils.ui.animateVisibility
+
 
 sealed class MediaItemViewHolder(
     val listener: ShelfAdapter.Listener,
@@ -49,7 +53,7 @@ sealed class MediaItemViewHolder(
 
         private val titleBinding = NewItemMediaTitleBinding.bind(binding.root)
         override val transitionView: View
-            get() = binding.cover.listImageContainer
+            get() = binding.cover.root
 
         override fun onCurrentChanged(current: Current?) {
             applyIsPlaying(current, item?.id, binding.cover.isPlaying)
@@ -124,14 +128,19 @@ sealed class MediaItemViewHolder(
         override val transitionView: View
             get() = binding.cover.root
 
-        override fun onCurrentChanged(current: Current?) {}
+        override fun onCurrentChanged(current: Current?) {
+            applyIsPlaying(current, item?.id, binding.cover.isPlaying)
+        }
 
+        var item: EchoMediaItem? = null
+        var isPlaying: MaterialButton? = null
         override fun bind(item: EchoMediaItem) {
             item as EchoMediaItem.Profile
+            this.item = item
             binding.title.text = item.title
             binding.subtitle.isVisible = item.subtitleWithE.isNullOrEmpty().not()
             binding.subtitle.text = item.subtitleWithE
-            binding.cover.bind(item)
+            isPlaying = binding.cover.bind(item)
         }
 
         companion object {
@@ -190,27 +199,58 @@ sealed class MediaItemViewHolder(
             if (playing) (view.icon as Animatable).start()
         }
 
-        fun ItemTrackCoverBinding.bind(item: EchoMediaItem): MaterialButton {
+        fun ItemCoverTrackBinding.bind(item: EchoMediaItem): MaterialButton {
+            trackImageView.clipToOutline = true
             item.cover.loadInto(trackImageView, item.placeHolder())
-            this.iconContainer.isVisible = item !is EchoMediaItem.TrackItem
-            this.icon.setImageResource(item.icon())
             return isPlaying
         }
 
-        fun ItemProfileCoverBinding.bind(item: EchoMediaItem): MaterialButton? {
+        fun ItemCoverProfileBinding.bind(item: EchoMediaItem): MaterialButton {
+            profileImageView.clipToOutline = true
             item.cover.loadInto(profileImageView, item.placeHolder())
-            return null
+            return isPlaying
         }
 
-        fun ItemListsCoverBinding.bind(item: EchoMediaItem.Lists): MaterialButton {
+        fun ItemCoverListsBinding.bind(item: EchoMediaItem.Lists): MaterialButton {
             playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
-            val cover = item.cover
-            cover.loadWith(listImageView, null, item.placeHolder()) {
-                cover.loadInto(listImageView1)
-                cover.loadInto(listImageView2)
+            listImageView.clipToOutline = true
+            item.cover.loadWith(listImageView, null, item.placeHolder()) { bitmap ->
+                val tint = bitmap?.let {
+                    ColorStateList.valueOf(getDominantColor(it))
+                }
+                listImageContainer1.backgroundTintList = tint
+                listImageContainer2.backgroundTintList = tint
             }
             albumImage(item.size, listImageContainer1, listImageContainer2)
             return isPlaying
+        }
+
+        private fun getDominantColor(bitmap: Bitmap): Int {
+            val height = bitmap.height
+            val pixels = IntArray(bitmap.width * height)
+            bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, height)
+
+            var redBucket = 0
+            var greenBucket = 0
+            var blueBucket = 0
+            var alphaBucket = 0
+
+            val hasAlpha = bitmap.hasAlpha()
+            val pixelCount = pixels.size
+
+            pixels.forEach { color ->
+                redBucket += (color shr 16) and 0xFF
+                greenBucket += (color shr 8) and 0xFF
+                blueBucket += color and 0xFF
+                if (hasAlpha) alphaBucket += color ushr 24
+            }
+
+            return Color.argb(
+                if (hasAlpha) alphaBucket / pixelCount else 255,
+                redBucket / pixelCount,
+                greenBucket / pixelCount,
+                blueBucket / pixelCount
+            )
         }
 
         private fun albumImage(size: Int?, view1: View, view2: View) {

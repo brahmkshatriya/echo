@@ -6,7 +6,6 @@
     style="@style/Selectable"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="-8dp"
     app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="8dp"
     app:contentPadding="8dp">

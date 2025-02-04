@@ -8,7 +8,7 @@
 
     <include
         android:id="@+id/cover"
-        layout="@layout/item_track_cover" />
+        layout="@layout/item_cover_track" />
 
     <include layout="@layout/new_item_media_title" />
 

@@ -19,17 +19,17 @@
 
         <include
             android:id="@+id/trackImageContainer"
-            layout="@layout/item_track_cover"
+            layout="@layout/item_cover_track"
             android:visibility="gone" />
 
         <include
             android:id="@+id/profileImageContainer"
-            layout="@layout/item_profile_cover"
+            layout="@layout/item_cover_profile"
             android:visibility="gone" />
 
         <include
             android:id="@+id/listsImageContainer"
-            layout="@layout/item_lists_cover" />
+            layout="@layout/item_cover_lists" />
     </FrameLayout>
 
     <LinearLayout

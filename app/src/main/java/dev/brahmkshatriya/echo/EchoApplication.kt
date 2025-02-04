@@ -22,6 +22,7 @@ import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
 import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.cleanupTempApks
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetails
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.AMOLED_KEY
@@ -47,6 +48,9 @@ class EchoApplication : Application(), SingletonImageLoader.Factory, Configurati
             .build()
 
     @Inject
+    lateinit var extensionLoader: ExtensionLoader
+
+    @Inject
     lateinit var downloader: Downloader
 
     @Inject
@@ -62,8 +66,10 @@ class EchoApplication : Application(), SingletonImageLoader.Factory, Configurati
         //UI
         applyLocale(settings)
         applyUiChanges(this, settings)
-        cleanupTempApks()
 
+        //Extensions
+        cleanupTempApks()
+        extensionLoader.initialize()
         downloader.start()
 
 //        //Crash Handling

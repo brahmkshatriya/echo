@@ -45,6 +45,8 @@ import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
 import dev.brahmkshatriya.echo.ui.extension.ExtensionsAddListBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference.Companion.prefId
+import dev.brahmkshatriya.echo.utils.getFromCache
+import dev.brahmkshatriya.echo.utils.saveToCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -152,12 +154,18 @@ class ExtensionViewModel @Inject constructor(
         flow.first { it != null }!!
     }.flatten()
 
-    private var checkedForUpdates = false
-    fun updateExtensions(context: FragmentActivity) {
-        if (checkedForUpdates) return
-        checkedForUpdates = true
+    private val updateTime = 1000 * 60 * 60 * 6
+    private fun shouldCheckForUpdates(): Boolean {
         val check = settings.getBoolean("check_for_extension_updates", true)
-        if (check) viewModelScope.launch {
+        if (!check) return false
+        val lastUpdateCheck = app.getFromCache<Long>("last_update_check") ?: 0
+        return System.currentTimeMillis() - lastUpdateCheck > updateTime
+    }
+
+    fun updateExtensions(context: FragmentActivity) {
+        if (!shouldCheckForUpdates()) return
+        app.saveToCache("last_update_check", System.currentTimeMillis())
+        viewModelScope.launch {
             allExtensions().forEach {
                 updateExtension(context, it)
             }

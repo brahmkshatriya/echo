@@ -16,9 +16,9 @@ import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
-import dev.brahmkshatriya.echo.ui.common.MainFragment
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.first
-import dev.brahmkshatriya.echo.ui.common.MainFragment.Companion.scrollTo
+import dev.brahmkshatriya.echo.ui.MainFragment
+import dev.brahmkshatriya.echo.ui.MainFragment.Companion.first
+import dev.brahmkshatriya.echo.ui.MainFragment.Companion.scrollTo
 import dev.brahmkshatriya.echo.ui.common.configureFeedUI
 import dev.brahmkshatriya.echo.ui.common.configureMainMenu
 import dev.brahmkshatriya.echo.ui.common.openFragment

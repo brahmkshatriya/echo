@@ -137,7 +137,6 @@ class PlayerService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
         setListener(MediaSessionServiceListener())
-        extensionLoader.initialize()
 
         val extListFlow = extensionLoader.extensions
         val extFlow = extensionLoader.current

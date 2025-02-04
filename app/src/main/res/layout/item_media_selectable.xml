@@ -39,7 +39,7 @@
 
         <include
             android:id="@+id/cover"
-            layout="@layout/item_lists_cover" />
+            layout="@layout/item_cover_lists" />
     </FrameLayout>
 
     <TextView

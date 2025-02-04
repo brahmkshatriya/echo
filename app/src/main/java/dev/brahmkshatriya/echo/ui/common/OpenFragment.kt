@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
+import dev.brahmkshatriya.echo.ui.MainFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel

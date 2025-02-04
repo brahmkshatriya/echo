@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.db.models.TrackDownloadTaskEntity
 import dev.brahmkshatriya.echo.download.notifications.NotificationUtil
+import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.isClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 
@@ -39,9 +41,13 @@ class DownloadWorker @AssistedInject constructor(
 
     @OptIn(FlowPreview::class)
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        extensionsList.first { it != null }
-        val downloadExtension = miscList.value?.first { it.isClient<DownloadClient>() }
+        miscList.first { it != null }
+        val downloadExtension = miscList.value?.find { it.isClient<DownloadClient>() }
             ?: return@withContext Result.failure()
+
+        val semaphore = Semaphore(downloadExtension.get<DownloadClient, Int>(throwableFlow) {
+            concurrentDownloads
+        } ?: return@withContext Result.failure())
 
         val actionJob = launch { actions.collect { performAction(it) } }
         val notificationJob = launch {
@@ -51,15 +57,14 @@ class DownloadWorker @AssistedInject constructor(
             }
         }
         tracksFlow.value = dao.getTracks()
-
         val trackJob = launch {
             dao.getTrackFlow().collect { tasks ->
                 tracksFlow.value = tasks
                 tasks.forEach { task ->
                     trackTaskMap.getOrPut(task.id) {
-                        TrackDownloadTask(task, dao, extensionsList, downloadExtension).apply {
-                            launch { await().forEach { throwableFlow.emit(it) } }
-                        }
+                        TrackDownloadTask(
+                            task, dao, semaphore, extensionsList, downloadExtension
+                        ).apply { launch { await().forEach { throwableFlow.emit(it) } } }
                     }
                 }
             }

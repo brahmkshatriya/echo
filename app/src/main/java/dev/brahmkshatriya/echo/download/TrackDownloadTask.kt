@@ -19,12 +19,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.sync.Semaphore
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 class TrackDownloadTask(
     val entity: TrackDownloadTaskEntity,
     private val dao: DownloadDao,
+    private val semaphore: Semaphore,
     private val extensionsList: MutableStateFlow<List<MusicExtension>?>,
     private val downloadExtension: MiscExtension,
 ) {
@@ -47,7 +49,7 @@ class TrackDownloadTask(
             download(downloadContext, it, file)
         }
         tasks[id] = task
-        return task.await()
+        return task.await(semaphore)
     }
 
     private suspend fun <T : Any> get(ids: List<Long>, block: suspend (MediaTask<*>) -> T) =
@@ -85,7 +87,7 @@ class TrackDownloadTask(
         val context = entity.contextId?.let { dao.getMediaItemEntity(it) }
         val server = LoadDataTask(dao, entity, context, extensionsList, downloadExtension)
             .also { loadTask = it }
-            .await().getOrElse {
+            .await(semaphore).getOrElse {
                 return@coroutineScope ifCancelled(it)
             }
         val trackEntity = dao.getTrackEntity(entity.id)
@@ -109,7 +111,7 @@ class TrackDownloadTask(
         )
         val mergedFile = FiledTask(dao, mergeEntity, downloadExtension) {
             merge(downloadContext, mergeFiles, folder)
-        }.also { mergeTask = it }.await().getOrElse {
+        }.also { mergeTask = it }.await(semaphore).getOrElse {
             return@coroutineScope ifCancelled(it)
         }
 
@@ -118,7 +120,7 @@ class TrackDownloadTask(
         )
         FiledTask(dao, taggingEntity, downloadExtension) {
             tag(downloadContext, mergedFile)
-        }.also { taggingTask = it }.await().getOrElse {
+        }.also { taggingTask = it }.await(semaphore).getOrElse {
             return@coroutineScope ifCancelled(it)
         }
 
