@@ -20,6 +20,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -49,7 +50,7 @@ class TrackDownloadTask(
             download(downloadContext, it, file)
         }
         tasks[id] = task
-        return task.await(semaphore)
+        return task.await()
     }
 
     private suspend fun <T : Any> get(ids: List<Long>, block: suspend (MediaTask<*>) -> T) =
@@ -62,16 +63,8 @@ class TrackDownloadTask(
 
     suspend fun await(): List<Throwable> {
         val success = start()
-        if (success) {
-            dao.deleteTrackEntity(entity)
-            entity.contextId?.let {
-                val shouldDeleteContext = dao.getAllTracksForContext(it).isEmpty()
-                if (!shouldDeleteContext) return@let
-                val mediaEntity = dao.getMediaItemEntity(it)
-                dao.deleteMediaItemEntity(mediaEntity)
-            }
-        }
-        return errors.map { it.toDownloadException(entity) }
+        return if (success) emptyList()
+        else errors.map { it.toDownloadException(entity) }
     }
 
     @OptIn(InternalAPI::class)
@@ -84,47 +77,66 @@ class TrackDownloadTask(
     }
 
     suspend fun start(): Boolean = coroutineScope {
-        val context = entity.contextId?.let { dao.getMediaItemEntity(it) }
-        val server = LoadDataTask(dao, entity, context, extensionsList, downloadExtension)
-            .also { loadTask = it }
-            .await(semaphore).getOrElse {
+        semaphore.withPermit {
+            val context = entity.contextId?.let { dao.getMediaItemEntity(it) }
+            val server = LoadDataTask(dao, entity, context, extensionsList, downloadExtension)
+                .also { loadTask = it }
+                .await().getOrElse {
+                    return@coroutineScope ifCancelled(it)
+                }
+
+            val trackEntity = dao.getTrackEntity(entity.id) ?: return@coroutineScope false
+            val downloadContext =
+                trackEntity.run {
+                    DownloadContext(
+                        extensionId,
+                        track,
+                        sortOrder,
+                        context?.mediaItem
+                    )
+                }
+            val folder = File(trackEntity.folderPath!!)
+            val toMergeFiles = server.sources.filterIndexed { i, _ -> i in trackEntity.indexes }
+                .mapIndexed { i, it ->
+                    async {
+                        download(
+                            i,
+                            it,
+                            downloadContext,
+                            trackEntity,
+                            folder,
+                            downloadExtension
+                        )
+                    }
+                }.awaitAll()
+
+            val allCancelled = toMergeFiles.map {
+                ifCancelled(it.exceptionOrNull())
+            }
+            if (allCancelled.all { it }) return@coroutineScope true
+
+            val mergeFiles = toMergeFiles.mapNotNull { it.getOrNull() }
+            if (mergeFiles.isEmpty()) return@coroutineScope false
+            val mergeEntity = MediaTaskEntity(
+                "${entity.id}_merge".hashCode().toLong(), entity.id, TaskType.MERGE
+            )
+            val mergedFile = FiledTask(dao, mergeEntity, downloadExtension) {
+                merge(downloadContext, mergeFiles, folder)
+            }.also { mergeTask = it }.await().getOrElse {
                 return@coroutineScope ifCancelled(it)
             }
-        val trackEntity = dao.getTrackEntity(entity.id)
-        val downloadContext =
-            trackEntity.run { DownloadContext(extensionId, track, sortOrder, context?.mediaItem) }
-        val folder = File(trackEntity.folderPath!!)
-        val toMergeFiles = server.sources.filterIndexed { i, _ -> i in trackEntity.indexes }
-            .mapIndexed { i, it ->
-                async { download(i, it, downloadContext, trackEntity, folder, downloadExtension) }
-            }.awaitAll()
 
-        val allCancelled = toMergeFiles.map {
-            ifCancelled(it.exceptionOrNull())
+            val taggingEntity = MediaTaskEntity(
+                "${entity.id}_tag".hashCode().toLong(), entity.id, TaskType.TAGGING
+            )
+            FiledTask(dao, taggingEntity, downloadExtension) {
+                tag(downloadContext, mergedFile)
+            }.also { taggingTask = it }.await().getOrElse {
+                return@coroutineScope ifCancelled(it)
+            }
+
+            true
         }
-        if (allCancelled.all { it }) return@coroutineScope true
-
-        val mergeFiles = toMergeFiles.mapNotNull { it.getOrNull() }
-        if (mergeFiles.isEmpty()) return@coroutineScope false
-        val mergeEntity = MediaTaskEntity(
-            "${entity.id}_merge".hashCode().toLong(), entity.id, TaskType.MERGE
-        )
-        val mergedFile = FiledTask(dao, mergeEntity, downloadExtension) {
-            merge(downloadContext, mergeFiles, folder)
-        }.also { mergeTask = it }.await(semaphore).getOrElse {
-            return@coroutineScope ifCancelled(it)
-        }
-
-        val taggingEntity = MediaTaskEntity(
-            "${entity.id}_tag".hashCode().toLong(), entity.id, TaskType.TAGGING
-        )
-        FiledTask(dao, taggingEntity, downloadExtension) {
-            tag(downloadContext, mergedFile)
-        }.also { taggingTask = it }.await(semaphore).getOrElse {
-            return@coroutineScope ifCancelled(it)
-        }
-
-        return@coroutineScope true
     }
 
     suspend fun cancel(taskIds: List<Long>) {

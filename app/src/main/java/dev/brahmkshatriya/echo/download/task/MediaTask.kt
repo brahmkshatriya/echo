@@ -13,8 +13,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 
 abstract class MediaTask<T>(
     private val dao: DownloadDao
@@ -33,7 +31,7 @@ abstract class MediaTask<T>(
 
     private var flow: MutableSharedFlow<Progress<T>>? = null
 
-    suspend fun await(semaphore: Semaphore): Result<T> = semaphore.withPermit {
+    suspend fun await(): Result<T> {
         val flow = runCatching { initialize() }.getOrElse {
             val entity = runCatching { entity }.getOrNull()
             return Result.failure(entity?.let { it1 -> it.toTaskException(it1) } ?: it)

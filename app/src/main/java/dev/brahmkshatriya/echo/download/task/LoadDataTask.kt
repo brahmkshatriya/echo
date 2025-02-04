@@ -47,7 +47,7 @@ class LoadDataTask(
         progress = 0
 
         val extension = extensionsList.getExtensionOrThrow(trackEntity.extensionId)
-        trackEntity = dao.getTrackEntity(trackEntity.id)
+        trackEntity = dao.getTrackEntity(trackEntity.id) ?: throw Exception("Track not found")
         val streamables = if (!trackEntity.loaded) {
             val (track, streamables) =
                 extension.get<TrackClient, Pair<Track, List<Streamable>>> {

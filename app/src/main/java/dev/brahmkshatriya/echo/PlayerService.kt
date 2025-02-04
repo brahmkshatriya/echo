@@ -12,6 +12,7 @@ import android.os.Build
 import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.os.bundleOf
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.TrackSelectionParameters
@@ -22,6 +23,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.logEvent
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.Message
@@ -196,12 +199,21 @@ class PlayerService : MediaLibraryService() {
     }
 
     private inner class MediaSessionServiceListener : Listener {
+        val analytics = FirebaseAnalytics.getInstance(this@PlayerService)
         override fun onForegroundServiceStartNotAllowedException() {
+
             if (
                 Build.VERSION.SDK_INT >= 33 &&
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED
             ) return
+            analytics.logEvent("foreground_service_not_allowed") {
+                bundleOf(
+                    "type" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) this@PlayerService.foregroundServiceType else null,
+                    "player" to exoPlayer.mediaItemCount,
+                    "wasPlaying" to exoPlayer.isPlaying
+                )
+            }
             val notificationManagerCompat = NotificationManagerCompat.from(this@PlayerService)
             ensureNotificationChannel(notificationManagerCompat)
             val builder = NotificationCompat.Builder(this@PlayerService, CHANNEL_ID)

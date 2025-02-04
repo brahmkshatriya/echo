@@ -4,7 +4,7 @@ import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Metadata
-import dev.brahmkshatriya.echo.db.DownloadDao
+import dev.brahmkshatriya.echo.db.models.EchoMediaItemEntity
 import dev.brahmkshatriya.echo.db.models.MediaTaskEntity
 import dev.brahmkshatriya.echo.db.models.Status
 import dev.brahmkshatriya.echo.db.models.TrackDownloadTaskEntity
@@ -17,6 +17,7 @@ sealed class DownloadItem {
     abstract val isPlaying: Boolean
     abstract val progress: Long
     abstract val total: Long?
+    abstract val trackId: Long
     abstract val taskIds: List<Long>
 
     data class Track(
@@ -28,6 +29,7 @@ sealed class DownloadItem {
         override val progress: Long,
         override val total: Long?,
         override val taskIds: List<Long>,
+        override val trackId: Long = trackEntity.id,
     ) : DownloadItem()
 
     data class Task(
@@ -36,41 +38,32 @@ sealed class DownloadItem {
         override val supportsPausing: Boolean = taskEntity.supportsPause,
         override val progress: Long = taskEntity.progress,
         override val total: Long? = taskEntity.size,
-        override val taskIds: List<Long> = listOf(taskEntity.id)
+        override val taskIds: List<Long> = listOf(taskEntity.id),
+        override val trackId: Long = taskEntity.trackId,
     ) : DownloadItem()
 
     companion object {
-        suspend fun fromTasks(
-            dao: DownloadDao,
+        fun from(
+            contexts: List<EchoMediaItemEntity>,
+            tracks: List<TrackDownloadTaskEntity>,
             tasks: List<MediaTaskEntity>,
             extensionList: MutableStateFlow<List<MusicExtension>?>
         ): List<DownloadItem> {
-            val contexts = mutableMapOf<Long?, EchoMediaItem?>()
-            val tracks =
-                mutableMapOf<Long, Pair<TrackDownloadTaskEntity, MutableList<MediaTaskEntity>>>()
-            tasks.forEach { task ->
-                val trackId = task.trackId
-                val track = tracks.getOrPut(trackId) {
-                    val trackEntity = dao.getTrackEntity(trackId)
-                    trackEntity to mutableListOf()
-                }
-                track.second.add(task)
+            val map = tracks.associate {
+                it.id to (it to mutableListOf<MediaTaskEntity>())
             }
-            return tracks.values.map { (track, task) ->
+            tasks.forEach { map[it.trackId]?.second?.add(it) }
+
+            return map.values.map { (track, task) ->
                 val taskIds = task.map { it.id }
                 val extension = extensionList.getExtension(track.extensionId)?.metadata
-                val context = contexts.getOrPut(track.contextId) {
-                    if (track.contextId == null) null
-                    else dao.getMediaItemEntity(track.contextId).mediaItem
-                }
-                val pause = tasks.any { !it.supportsPause }.not()
-                val isPlaying = task.any { it.status != Status.Paused }
-                val progress = tasks.sumOf { it.progress }
-                val total = tasks.mapNotNull { it.size }.sum().takeIf { it != 0L }
+                val context = contexts.firstOrNull { it.id == track.contextId }?.mediaItem
+                val pause = task.takeIf { it.isNotEmpty() }?.any { !it.supportsPause }?.not() ?: false
+                val isPlaying = task.takeIf { it.isNotEmpty() }?.any { it.status != Status.Paused } ?: false
+                val progress = task.sumOf { it.progress }
+                val total = task.mapNotNull { it.size }.sum().takeIf { it != 0L }
                 listOf(
-                    Track(
-                        track, extension, context, pause, isPlaying, progress, total, taskIds
-                    )
+                    Track(track, extension, context, pause, isPlaying, progress, total, taskIds)
                 ) + task.map { Task(it) }
             }.flatten()
         }

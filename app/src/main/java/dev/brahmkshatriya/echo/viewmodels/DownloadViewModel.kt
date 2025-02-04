@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
+import dev.brahmkshatriya.echo.ui.extension.ExtensionsAddListBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,23 +35,26 @@ class DownloadViewModel @Inject constructor(
     throwableFlow: MutableSharedFlow<Throwable>,
 ) : CatchingViewModel(throwableFlow) {
 
-    private suspend fun add(clientId: String, item: EchoMediaItem) {
-        val downloadExt = downloadList.value?.firstOrNull { it.isClient<DownloadClient>() }
-        downloadExt
-            ?: return messageFlow.emit(Message(context.getString(R.string.no_download_extension)))
-
-        val downloads = downloadExt.get<DownloadClient, List<DownloadContext>>(throwableFlow) {
-            getDownloadTracks(clientId, item)
-        } ?: return
-        downloader.add(downloads)
-    }
-
     fun addToDownload(
         activity: FragmentActivity, clientId: String, item: EchoMediaItem
     ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
             messageFlow.emit(Message(getString(R.string.downloading_item, item.title)))
-            add(clientId, item)
+            val downloadExt = downloadList.value?.firstOrNull { it.isClient<DownloadClient>() }
+            downloadExt ?: return@with messageFlow.emit(
+                Message(
+                    context.getString(R.string.no_download_extension),
+                    Message.Action(getString(R.string.add_extension)) {
+                        ExtensionsAddListBottomSheet.LinkFile().show(supportFragmentManager, null)
+                    }
+                )
+            )
+
+            val downloads = downloadExt.get<DownloadClient, List<DownloadContext>>(throwableFlow) {
+                getDownloadTracks(clientId, item)
+            } ?: return@with
+
+            downloader.add(downloads)
             messageFlow.emit(
                 Message(
                     getString(R.string.download_started),
@@ -78,5 +82,8 @@ class DownloadViewModel @Inject constructor(
     val dao = downloader.dao
 
     fun getOfflineDownloads() = extensionLoader.offline.getDownloads()
+    fun cancelTrackDownload(trackId: Long) {
+        downloader.cancelTrackDownload(listOf(trackId))
+    }
 
 }

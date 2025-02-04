@@ -1,7 +1,11 @@
 package dev.brahmkshatriya.echo.builtin
 
 import android.content.Context
+import dev.brahmkshatriya.echo.common.MusicExtension
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.helpers.FileProgress
 import dev.brahmkshatriya.echo.common.helpers.FileTask
 import dev.brahmkshatriya.echo.common.helpers.ImportType
@@ -11,14 +15,20 @@ import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
-import kotlinx.coroutines.flow.MutableStateFlow
+import dev.brahmkshatriya.echo.extensions.get
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import java.io.File
 
 class DownloadExtension(
     val context: Context
-) : DownloadClient {
+) : DownloadClient, MusicExtensionsProvider {
 
     companion object {
         val metadata = Metadata(
@@ -33,7 +43,7 @@ class DownloadExtension(
         )
     }
 
-    override val concurrentDownloads = 4
+    override val concurrentDownloads = 2
 
     override suspend fun getDownloadDir(context: DownloadContext): File {
         return this.context.cacheDir
@@ -63,30 +73,54 @@ class DownloadExtension(
     ): List<DownloadContext> {
         return when (item) {
             is EchoMediaItem.TrackItem -> listOf(DownloadContext(extensionId, item.track))
-            else -> TODO()
+            is EchoMediaItem.Lists -> {
+                val ext = exts.first { it.id == extensionId }
+                val tracks = when (item) {
+                    is EchoMediaItem.Lists.AlbumItem -> ext.get<AlbumClient, List<Track>> {
+                        val album = loadAlbum(item.album)
+                        val tracks = loadTracks(album).loadAll()
+                        tracks
+                    }
+
+                    is EchoMediaItem.Lists.PlaylistItem -> ext.get<PlaylistClient, List<Track>> {
+                        val album = loadPlaylist(item.playlist)
+                        val tracks = loadTracks(album).loadAll()
+                        tracks
+                    }
+
+                    is EchoMediaItem.Lists.RadioItem -> ext.get<RadioClient, List<Track>> {
+                        loadTracks(item.radio).loadAll()
+                    }
+                }.getOrThrow()
+                tracks.mapIndexed { index, track ->
+                    DownloadContext(extensionId, track, index, item)
+                }
+            }
+
+            else -> listOf()
         }
     }
 
     class TestTask(
         val file: File, val name: String
     ) : FileTask {
-        private val command =
-            "-f lavfi -i color=size=1280x720:rate=25:color=black -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -t 10 \"${file.absolutePath}.mp4\""
-        override val progressFlow = MutableStateFlow<FileProgress>(Progress.Initialized(null))
-
-        //        private var session: FFmpegSession? = null
+        override val progressFlow = MutableSharedFlow<FileProgress>()
+        private var job: Job? = null
         override val start = SuspendedFunction {
-//            session = FFmpegKit.executeAsync(command, {
-//                println("$name Completed: $it")
-//                progressFlow.value = Progress.Final.Completed(0, file)
-//            }, null, {
-//                println("$name: $it")
-//            })
+            job = launch {
+                progressFlow.emit(Progress.Initialized(100))
+                repeat(10) {
+                    println("Progress: ${it * 10L}")
+                    progressFlow.emit(Progress.InProgress(it * 10L, null))
+                    delay(1000)
+                }
+                progressFlow.emit(Progress.Final.Completed(0L, file))
+            }
         }
 
         override val cancel = SuspendedFunction {
-//            session?.cancel()
-            progressFlow.value = Progress.Final.Cancelled()
+            job?.cancel()
+            progressFlow.emit(Progress.Final.Cancelled())
         }
         override val pause = null
         override val resume = null
@@ -95,4 +129,10 @@ class DownloadExtension(
     override suspend fun onExtensionSelected() {}
     override val settingItems: List<Setting> = listOf()
     override fun setSettings(settings: Settings) {}
+    override val requiredMusicExtensions = listOf<String>()
+
+    private lateinit var exts: List<MusicExtension>
+    override fun setMusicExtensions(extensions: List<MusicExtension>) {
+        exts = extensions
+    }
 }

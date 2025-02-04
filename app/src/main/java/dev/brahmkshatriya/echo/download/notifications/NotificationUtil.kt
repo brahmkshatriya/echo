@@ -1,11 +1,14 @@
 package dev.brahmkshatriya.echo.download.notifications
 
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
 import androidx.annotation.OptIn
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media3.common.util.NotificationUtil
@@ -36,17 +39,49 @@ object NotificationUtil {
         val total = progressing.sumOf { it.size ?: 0 } / progressing.size
         val title = if (progressing.size == 1) {
             progressing.first().run {
-                title ?: dao.getTrackEntity(trackId).track.title
-            }
+                title ?: dao.getTrackEntity(trackId)?.track?.title
+            } ?: "???"
         } else {
             context.getString(R.string.items, progressing.size)
         }
         return createNotification(context, notificationId, title, total, progress, speed)
     }
 
+    @OptIn(UnstableApi::class)
+    fun create(context: Context, text: String) {
+        createNotificationChannel(
+            context, CHANNEL_ID, R.string.downloads, 0,
+            NotificationUtil.IMPORTANCE_DEFAULT
+        )
+        val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val notif = notificationBuilder
+            .setSmallIcon(R.drawable.ic_download_for_offline)
+            .setContentIntent(getMainIntent(context))
+            .setContentTitle(text)
+            .build()
+
+        if (
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) return
+
+        NotificationManagerCompat.from(context).notify(notif.hashCode(), notif)
+    }
+
     private const val CHANNEL_ID = "download_channel"
-    const val ACTION_PAUSE_ALL = "PAUSE_ALL"
+    private const val PROGRESS_CHANNEL_ID = "download_progress_channel"
     const val ACTION_CANCEL_ALL = "CANCEL_ALL"
+
+    private fun getMainIntent(context: Context) = PendingIntent.getActivity(
+        context,
+        0,
+        Intent(context, MainActivity::class.java).apply {
+            putExtra("fromDownload", true)
+        },
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+    )
 
     @OptIn(UnstableApi::class)
     private fun createNotification(
@@ -58,10 +93,10 @@ object NotificationUtil {
         speed: Long
     ): ForegroundInfo {
         createNotificationChannel(
-            context, CHANNEL_ID, R.string.downloads, 0,
+            context, PROGRESS_CHANNEL_ID, R.string.download_progress, 0,
             NotificationUtil.IMPORTANCE_DEFAULT
         )
-        val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val notificationBuilder = NotificationCompat.Builder(context, PROGRESS_CHANNEL_ID)
         val max = max(total, progress)
         val p = if (max > 0) (progress * 100 / max).toInt() else 0
         val indeterminate = total == 0L
@@ -72,14 +107,7 @@ object NotificationUtil {
                 append(convertSpeed(speed))
             }
         }
-        val intent = PendingIntent.getActivity(
-            context,
-            0,
-            Intent(context, MainActivity::class.java).apply {
-                putExtra("fromDownload", true)
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-        )
+        val intent = getMainIntent(context)
 
         val pendingIntentCancel = PendingIntent.getBroadcast(
             context,

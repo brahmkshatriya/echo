@@ -30,7 +30,7 @@ class DownloadItemAdapter(
     private val listener: Listener
 ) : ListAdapter<DownloadItem, DownloadItemAdapter.ViewHolder>(DownloadItem.Diff) {
 
-    sealed class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    sealed class ViewHolder(val itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract val playPause: MaterialCheckBox
         abstract val progress: CircularProgressIndicator
         abstract val cancel: Button
@@ -47,7 +47,8 @@ class DownloadItemAdapter(
 
         private val cancelListener = View.OnClickListener {
             val item = item ?: return@OnClickListener
-            listener.onCancelClick(item.taskIds)
+            if (item.taskIds.isNotEmpty()) listener.onCancelClick(item.taskIds)
+            else listener.onCancelClick(item.trackId)
         }
 
         @CallSuper
@@ -59,13 +60,14 @@ class DownloadItemAdapter(
                 isChecked = item.isPlaying
                 addOnCheckedStateChangedListener(playPauseListener)
             }
-
+            itemView.alpha = if (item.taskIds.isEmpty()) 0.66f else 1f
             progress.run {
+                isVisible = if (item is DownloadItem.Track) item.taskIds.size > 1 else true
                 isIndeterminate = item.total == null
                 progress = item.progress.toInt()
                 max = item.total?.toInt() ?: item.progress.toInt()
             }
-
+            cancel.isVisible = progress.isVisible
             cancel.setOnClickListener(cancelListener)
         }
 
@@ -101,7 +103,6 @@ class DownloadItemAdapter(
 
             override fun bind(item: DownloadItem) {
                 super.bind(item)
-
                 val taskItem = item as? DownloadItem.Task ?: return
                 val task = taskItem.taskEntity
                 binding.taskTitle.text = getTaskType(task)
@@ -143,6 +144,7 @@ class DownloadItemAdapter(
         fun onCancelClick(taskIds: List<Long>)
         fun onPauseClick(taskIds: List<Long>)
         fun onResumeClick(taskIds: List<Long>)
+        fun onCancelClick(trackId: Long)
     }
 
     override fun getItemViewType(position: Int): Int {

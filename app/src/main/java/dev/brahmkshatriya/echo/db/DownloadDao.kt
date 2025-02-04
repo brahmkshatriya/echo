@@ -38,13 +38,16 @@ interface DownloadDao {
 
     @Query
     ("SELECT * FROM TrackDownloadTaskEntity WHERE id = :trackId")
-    suspend fun getTrackEntity(trackId: Long): TrackDownloadTaskEntity
+    suspend fun getTrackEntity(trackId: Long): TrackDownloadTaskEntity?
 
     @Delete
     suspend fun deleteTrackEntity(track: TrackDownloadTaskEntity)
 
     @Insert(onConflict = REPLACE)
     suspend fun insertMediaItemEntity(mediaItem: EchoMediaItemEntity) : Long
+
+    @Query("SELECT * FROM EchoMediaItemEntity")
+    fun getMediaItemFlow(): Flow<List<EchoMediaItemEntity>>
 
     @Query("SELECT * FROM EchoMediaItemEntity WHERE id = :id")
     suspend fun getMediaItemEntity(id: Long): EchoMediaItemEntity

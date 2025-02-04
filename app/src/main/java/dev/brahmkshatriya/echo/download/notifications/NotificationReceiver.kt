@@ -18,8 +18,7 @@ class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
         when (intent.action) {
-            NotificationUtil.ACTION_PAUSE_ALL -> emit(TaskAction.All.PauseAll)
-            NotificationUtil.ACTION_CANCEL_ALL -> emit(TaskAction.All.RemoveAll)
+            NotificationUtil.ACTION_CANCEL_ALL -> emit(TaskAction.RemoveAll)
         }
     }
 

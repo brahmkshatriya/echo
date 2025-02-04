@@ -65,6 +65,10 @@ class DownloadingFragment : Fragment() {
                 viewModel.cancelDownload(taskIds)
             }
 
+            override fun onCancelClick(trackId: Long) {
+                viewModel.cancelTrackDownload(trackId)
+            }
+
             override fun onPauseClick(taskIds: List<Long>) {
                 viewModel.pauseDownload(taskIds)
             }
@@ -80,11 +84,13 @@ class DownloadingFragment : Fragment() {
             emptyAdapter,
             downloadAdapter,
         )
+        binding.recyclerView.itemAnimator = null
 
         viewModel.run {
-            observe(downloadsFlow) {
-                downloadAdapter.submitList(DownloadItem.fromTasks(dao, it, extensionListFlow)) {
-                    emptyAdapter.loadState = if (it.isEmpty()) LoadState.Loading
+            observe(downloadsFlow) { (tasks, tracks, contexts) ->
+                val list = DownloadItem.from(contexts, tracks, tasks, extensionListFlow)
+                downloadAdapter.submitList(list) {
+                    emptyAdapter.loadState = if (list.isEmpty()) LoadState.Loading
                     else LoadState.NotLoading(false)
                 }
             }
