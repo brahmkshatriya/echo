@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.builtin
+package dev.brahmkshatriya.echo.builtin.offline
 
 import android.content.Context
 import android.net.Uri
@@ -6,7 +6,6 @@ import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils
 import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.deletePlaylist
@@ -14,10 +13,6 @@ import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.editPlaylist
 import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.searchBy
-import dev.brahmkshatriya.echo.builtin.offline.toAlbum
-import dev.brahmkshatriya.echo.builtin.offline.toArtist
-import dev.brahmkshatriya.echo.builtin.offline.toPlaylist
-import dev.brahmkshatriya.echo.builtin.offline.toShelf
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient

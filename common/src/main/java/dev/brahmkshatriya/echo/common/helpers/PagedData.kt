@@ -79,7 +79,7 @@ sealed class PagedData<T : Any> {
      */
     fun hasNext() = !loaded
 
-    abstract fun <R : Any> map(block: (T) -> R): PagedData<R>
+    abstract fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R>
 
     /**
      * A class representing a single page of data.
@@ -119,9 +119,13 @@ sealed class PagedData<T : Any> {
         override suspend fun loadList(continuation: String?): Page<T> {
             return Page(loadList(), null)
         }
-        override fun invalidate(continuation: String?) { clear() }
-        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
-            return Single { load().map(block) }
+
+        override fun invalidate(continuation: String?) {
+            clear()
+        }
+
+        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
+            return Single { block(runCatching { load() }) }
         }
     }
 
@@ -169,7 +173,10 @@ sealed class PagedData<T : Any> {
             return page
         }
 
-        override fun invalidate(continuation: String?) { itemMap.remove(continuation) }
+        override fun invalidate(continuation: String?) {
+            itemMap.remove(continuation)
+        }
+
         override fun clear() = itemMap.clear()
 
         override suspend fun loadFirst() = loadList(null).data
@@ -187,10 +194,10 @@ sealed class PagedData<T : Any> {
             return list
         }
 
-        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
+        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
             return Continuous { continuation ->
-                val (data, cont) = load(continuation)
-                Page(data.map(block), cont)
+                val result = runCatching { load(continuation) }
+                Page(block(result.map { it.data }), result.getOrNull()?.continuation)
             }
         }
     }
@@ -222,7 +229,7 @@ sealed class PagedData<T : Any> {
         override suspend fun loadFirst(): List<T> = sources.first().loadFirst()
         override suspend fun loadAll(): List<T> = sources.flatMap { it.loadAll() }
 
-        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
+        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
             return Concat(*sources.map { it.map(block) }.toTypedArray())
         }
 
@@ -274,7 +281,7 @@ sealed class PagedData<T : Any> {
             return data().loadAll()
         }
 
-        override fun <R : Any> map(block: (T) -> R): PagedData<R> {
+        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
             return Suspend { data().map(block) }
         }
 

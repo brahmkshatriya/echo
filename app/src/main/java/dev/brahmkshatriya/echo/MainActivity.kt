@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.common.openItemFragmentFromUri
 import dev.brahmkshatriya.echo.ui.download.DownloadingFragment
+import dev.brahmkshatriya.echo.ui.player.PlayerFragment
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.utils.checkAudioPermissions
 import dev.brahmkshatriya.echo.utils.emit
@@ -74,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         navView.menu.forEach {
-            findViewById<View>(it.itemId).setOnClickListener { v ->
+            findViewById<View>(it.itemId).setOnClickListener { _ ->
                 if (uiViewModel.navigation.value == uiViewModel.navIds.indexOf(it.itemId))
                     emit(uiViewModel.navigationReselected) { uiViewModel.navIds.indexOf(it.itemId) }
                 navView.selectedItemId = it.itemId
@@ -92,7 +93,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         supportFragmentManager.addOnBackStackChangedListener {
-            uiViewModel.isMainFragment.value = supportFragmentManager.backStackEntryCount == 0
+            uiViewModel.isMainFragment.value =
+                supportFragmentManager.fragments.lastOrNull() is PlayerFragment
         }
 
         fun applyNav(animate: Boolean) {

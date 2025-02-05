@@ -9,7 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.builtin.OfflineExtension
+import dev.brahmkshatriya.echo.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadingBinding
 import dev.brahmkshatriya.echo.ui.adapter.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.common.openFragment

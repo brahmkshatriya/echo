@@ -55,10 +55,10 @@ class SnackBar @Inject constructor(
                 snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
                 snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     val insets = uiViewModel.systemInsets.value
-                    marginStart = insets.start
-                    marginEnd = insets.end
-                    bottomMargin =
-                        uiViewModel.getCombined().bottom - insets.bottom + 8.dpToPx(this@configureSnackBar)
+                    val pad = 8.dpToPx(this@configureSnackBar)
+                    marginStart = insets.start + pad
+                    marginEnd = insets.end + pad
+                    bottomMargin = uiViewModel.getCombined().bottom - insets.bottom + pad
                 }
                 message.action?.run { snackBar.setAction(name) { handler() } }
                 snackBar.addCallback(object : Snackbar.Callback() {

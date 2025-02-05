@@ -176,21 +176,21 @@ open class ShelfClickListener(
             is Shelf.Lists.Tracks -> openContainer(
                 clientId,
                 shelf.title,
-                shelf.more?.map { track -> track.toMediaItem().toShelf() },
+                shelf.more?.map { track -> track.getOrThrow().map { it.toMediaItem().toShelf() } },
                 transitionView
             )
 
             is Shelf.Lists.Items -> openContainer(
                 clientId,
                 shelf.title,
-                shelf.more?.map { item -> item.toShelf() },
+                shelf.more?.map { item -> item.getOrThrow().map { it.toShelf() } },
                 transitionView
             )
 
             is Shelf.Lists.Categories -> openContainer(
                 clientId,
                 shelf.title,
-                shelf.more?.map { category -> category },
+                shelf.more?.map { category -> category.getOrThrow() },
                 transitionView
             )
         }

@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -33,6 +34,8 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.ArtistItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile.UserItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentItemBinding
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.icon
@@ -72,6 +75,10 @@ class ItemFragment : Fragment() {
                 putString("clientId", clientId)
                 putSerialized("item", item)
             }
+        }
+
+        fun PagedData<Track>.toShelf(): PagedData<Shelf> = map { result ->
+            result.getOrThrow().map { it.toMediaItem().toShelf() }
         }
     }
 
@@ -154,14 +161,14 @@ class ItemFragment : Fragment() {
                 override fun onSearchClicked(album: Album, view: View) {
                     val tracks = viewModel.tracks ?: return
                     listener.onShelfSearchClick(
-                        clientId, album.title, tracks.map { it.toMediaItem().toShelf() }, view
+                        clientId, album.title, tracks.toShelf(), view
                     )
                 }
 
                 override fun onSortClicked(album: Album, view: View) {
                     val tracks = viewModel.tracks ?: return
                     listener.onShelfSortClick(
-                        clientId, album.title, tracks.map { it.toMediaItem().toShelf() }, view
+                        clientId, album.title, tracks.toShelf(), view
                     )
                 }
             }
@@ -178,14 +185,14 @@ class ItemFragment : Fragment() {
                 override fun onSortClicked(playlist: Playlist, view: View) {
                     val tracks = viewModel.tracks ?: return
                     listener.onShelfSortClick(
-                        clientId, playlist.title, tracks.map { it.toMediaItem().toShelf() }, view
+                        clientId, playlist.title, tracks.toShelf(), view
                     )
                 }
 
                 override fun onSearchClicked(playlist: Playlist, view: View) {
                     val tracks = viewModel.tracks ?: return
                     listener.onShelfSearchClick(
-                        clientId, playlist.title, tracks.map { it.toMediaItem().toShelf() }, view
+                        clientId, playlist.title, tracks.toShelf(), view
                     )
                 }
             }

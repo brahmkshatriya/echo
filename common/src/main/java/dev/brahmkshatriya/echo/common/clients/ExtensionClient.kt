@@ -18,9 +18,16 @@ import okhttp3.OkHttpClient
  */
 interface ExtensionClient : SettingsProvider {
     /**
-     * When an extension is selected by the user, prefer using this method over the `init` initializer
+     * Only called when an extension is selected by the user, not when the extension is loaded
+     * Use the `onInitialize` for doing stuff to initialize the extension
      *
      * can be called multiple times, if the user re-selects the extension
      */
-    suspend fun onExtensionSelected()
+    suspend fun onExtensionSelected() {}
+
+    /**
+     * Called when the extension is loaded, called after all the injections are done.
+     * Only called once
+     */
+    suspend fun onInitialize() {}
 }

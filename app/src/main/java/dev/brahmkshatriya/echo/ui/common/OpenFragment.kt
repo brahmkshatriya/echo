@@ -30,7 +30,7 @@ fun Fragment.openFragment(newFragment: Fragment, view: View? = null) {
                 if (arguments == null) arguments = Bundle()
                 arguments!!.putString("transitionName", view.transitionName)
             }
-        }
+        }.getOrElse { it.printStackTrace() }
         setReorderingAllowed(true)
         val oldFragment = this@openFragment
         add(oldFragment.id, newFragment)

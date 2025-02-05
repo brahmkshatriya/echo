@@ -5,9 +5,9 @@ import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
-import dev.brahmkshatriya.echo.builtin.DownloadExtension
-import dev.brahmkshatriya.echo.builtin.OfflineExtension
-import dev.brahmkshatriya.echo.builtin.UnifiedExtension
+import dev.brahmkshatriya.echo.builtin.offline.OfflineExtension
+import dev.brahmkshatriya.echo.builtin.test.DownloadExtension
+import dev.brahmkshatriya.echo.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MiscExtension
@@ -110,7 +110,8 @@ class ExtensionLoader(
 
     private suspend fun Extension<*>.setLoginUser(trigger: Boolean = false) {
         val user = userDao.getCurrentUser(id)
-        inject<LoginClient> {
+        inject<LoginClient>(throwableFlow) {
+            println("$this Setting User: ${user?.name}")
             withTimeout(TIMEOUT) { onSetLoginUser(user?.toUser()) }
         }
         if (trigger) {
@@ -120,12 +121,12 @@ class ExtensionLoader(
     }
 
     private val userMap = mutableMapOf<String, String?>()
-    private suspend fun CurrentUser?.setUser(extension: Extension<*>) {
+    private fun CurrentUser?.setUser(extension: Extension<*>) {
         val last = userMap[extension.id]
         val id = this?.id ?: ""
         if (last == id) return
         userMap[extension.id] = id
-        extension.setLoginUser(extension is MusicExtension)
+        scope.launch { extension.setLoginUser(extension is MusicExtension) }
     }
 
     private val combined = extensionListFlow
@@ -151,7 +152,7 @@ class ExtensionLoader(
                     .collect { (users, extensions) ->
                         extensions.map { ext ->
                             val user = users.find { it.clientId == ext.id }
-                            launch { user.setUser(ext) }
+                            user.setUser(ext)
                         }
                     }
             }
@@ -164,22 +165,22 @@ class ExtensionLoader(
                     val musicExtensions = extensionListFlow.value.orEmpty()
                     val miscExtensions = miscListFlow.value.orEmpty()
                     list.forEach { extension ->
-                        extension.inject<TrackerExtensionsProvider> {
+                        extension.inject<TrackerExtensionsProvider>(throwableFlow) {
                             inject(extension.name, requiredTrackerExtensions, trackerExtensions) {
                                 setTrackerExtensions(it)
                             }
                         }
-                        extension.inject<LyricsExtensionsProvider> {
+                        extension.inject<LyricsExtensionsProvider>(throwableFlow) {
                             inject(extension.name, requiredLyricsExtensions, lyricsExtensions) {
                                 setLyricsExtensions(it)
                             }
                         }
-                        extension.inject<MusicExtensionsProvider> {
+                        extension.inject<MusicExtensionsProvider>(throwableFlow) {
                             inject(extension.name, requiredMusicExtensions, musicExtensions) {
                                 setMusicExtensions(it)
                             }
                         }
-                        extension.inject<MiscExtensionsProvider> {
+                        extension.inject<MiscExtensionsProvider>(throwableFlow) {
                             inject(extension.name, requiredMiscExtensions, miscExtensions) {
                                 setMiscExtensions(it)
                             }
@@ -282,11 +283,7 @@ class ExtensionLoader(
     }
 
     private suspend fun List<Extension<*>>.setExtensions() = coroutineScope {
-        map {
-            async {
-                setExtension(throwableFlow, it)
-            }
-        }.awaitAll()
+        map { async { setExtension(throwableFlow, it) } }.awaitAll()
     }
 
     private suspend fun isExtensionEnabled(type: ExtensionType, metadata: Metadata) =
@@ -319,12 +316,9 @@ class ExtensionLoader(
         }
 
         suspend fun setExtension(
-            throwableFlow: MutableSharedFlow<Throwable>,
-            extension: Extension<*>,
+            throwableFlow: MutableSharedFlow<Throwable>, extension: Extension<*>
         ) = withContext(Dispatchers.IO) {
-            extension.run(throwableFlow) {
-                withTimeout(TIMEOUT) { onExtensionSelected() }
-            }
+            extension.inject<ExtensionClient>(throwableFlow) { onInitialize() }
         }
     }
 }

@@ -23,9 +23,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
+import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.ui.animateTranslation
 import dev.brahmkshatriya.echo.utils.ui.dpToPx
-import dev.brahmkshatriya.echo.utils.observe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -105,7 +105,7 @@ class UiViewModel @Inject constructor(
     fun setPlayerInsets(context: Context, isVisible: Boolean) {
         val insets = if (isVisible) {
             val height = context.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
-            Insets(bottom = height)
+            Insets(bottom = height + 8.dpToPx(context))
         } else Insets()
         playerInsets.value = insets
     }

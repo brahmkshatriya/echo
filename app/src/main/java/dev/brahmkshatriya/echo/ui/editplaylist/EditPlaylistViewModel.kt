@@ -112,7 +112,7 @@ class EditPlaylistViewModel @Inject constructor(
         loadingFlow.emit(true)
         val newActions = computeActions(originalList, currentTracks.value!!)
         if (newActions.isNotEmpty()) {
-            val tracks = originalList.toMutableList()
+            var tracks = originalList
             performedActions.emit(tracks to null)
             client<PlaylistEditorListenerClient>(clientId) {
                 it.onEnterPlaylistEditor(playlist, tracks)
@@ -123,17 +123,19 @@ class EditPlaylistViewModel @Inject constructor(
                     when (action) {
                         is Add -> {
                             client.addTracksToPlaylist(playlist, tracks, action.index, action.items)
-                            tracks.addAll(action.index, action.items)
+                            tracks = client.loadTracks(playlist).loadAll().toMutableList()
                         }
 
                         is Move -> {
                             client.moveTrackInPlaylist(playlist, tracks, action.from, action.to)
-                            tracks.add(action.to, tracks.removeAt(action.from))
+                            tracks = tracks.toMutableList().apply {
+                                add(action.to, removeAt(action.from))
+                            }
                         }
 
                         is Remove -> {
                             client.removeTracksFromPlaylist(playlist, tracks, action.indexes)
-                            action.indexes.forEach { tracks.removeAt(it) }
+                            tracks = client.loadTracks(playlist).loadAll().toMutableList()
                         }
                     }
                 }

@@ -50,7 +50,7 @@ class MediaItemSelectableAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Pair<EchoMediaItem, Boolean>) {
             val mediaItem = item.first
-            val isPlaying = binding.cover.bind(mediaItem as EchoMediaItem.Lists)
+            val isPlaying = binding.cover.bind(mediaItem)
             isPlaying.isVisible = false
             binding.title.text = mediaItem.title
             binding.selected.isVisible = item.second

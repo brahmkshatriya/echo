@@ -2,10 +2,8 @@ package dev.brahmkshatriya.echo.utils.ui
 
 import android.content.Context.MODE_PRIVATE
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
-import androidx.activity.BackEventCompat
-import androidx.activity.OnBackPressedCallback
-import androidx.core.view.animation.PathInterpolatorCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.forEach
@@ -16,8 +14,8 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
-import com.google.android.material.transition.MaterialArcMotion
 import com.google.android.material.transition.MaterialContainerTransform
+import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.ANIMATIONS_KEY
@@ -122,8 +120,6 @@ private val View.sharedElementTransitions
         getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(SHARED_ELEMENT_KEY, true)
     }
 
-private val GestureInterpolator = PathInterpolatorCompat.create(0f, 0f, 0f, 1f)
-
 fun Fragment.setupTransition(view: View) {
     val color = MaterialColors.getColor(view, R.attr.echoBackground, 0)
     view.setBackgroundColor(color)
@@ -135,67 +131,20 @@ fun Fragment.setupTransition(view: View) {
             val transition = MaterialContainerTransform().apply {
                 drawingViewId = id
                 setAllContainerColors(color)
-                setPathMotion(MaterialArcMotion())
                 duration = view.animationDuration
             }
             sharedElementEnterTransition = transition
+            (view as? ViewGroup)?.isTransitionGroup = true
+            exitTransition = MaterialElevationScale(false)
+            reenterTransition = MaterialElevationScale(true)
+        } else {
+            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
+            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
         }
-
-        exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
-        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
         enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
         returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
 
         postponeEnterTransition()
         view.doOnPreDraw { startPostponedEnterTransition() }
-        if (parentFragmentManager.backStackEntryCount == 0) return
-        val predictiveBackMargin = resources.getDimensionPixelSize(R.dimen.predictive_back_margin)
-        var initialTouchY = -1f
-
-        fun reset(){
-            initialTouchY = -1f
-            view.run {
-                alpha = 1f
-                translationX = 0f
-                translationY = 0f
-                scaleX = 1f
-                scaleY = 1f
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    parentFragmentManager.popBackStack()
-                }
-
-                override fun handleOnBackStarted(backEvent: BackEventCompat) {
-                    reset()
-                }
-
-                override fun handleOnBackProgressed(backEvent: BackEventCompat) {
-                    val progress = GestureInterpolator.getInterpolation(backEvent.progress)
-                    if (transitionName == null)
-                        view.alpha = 1 - progress
-                    if (initialTouchY < 0f)
-                        initialTouchY = backEvent.touchY
-                    val progressY = GestureInterpolator.getInterpolation(
-                        (backEvent.touchY - initialTouchY) / view.height
-                    )
-                    val maxTranslationX = (view.width / 20) - predictiveBackMargin
-                    view.translationX = progress * maxTranslationX *
-                            if (backEvent.swipeEdge == BackEventCompat.EDGE_LEFT) 1 else -1
-                    val maxTranslationY = (view.height / 20) - predictiveBackMargin
-                    view.translationY = progressY * maxTranslationY
-                    val scale = 1f - (0.1f * progress)
-                    view.scaleX = scale
-                    view.scaleY = scale
-                }
-
-                override fun handleOnBackCancelled() {
-                    reset()
-                }
-            }
-        )
     }
 }

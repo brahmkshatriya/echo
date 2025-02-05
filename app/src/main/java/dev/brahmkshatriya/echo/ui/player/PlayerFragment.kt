@@ -69,6 +69,7 @@ class PlayerFragment : Fragment() {
             }
         }
         binding.root.clipToOutline = true
+        binding.root.elevation = 4.dpToPx(requireContext()).toFloat()
 
         setupPlayerInfoBehavior(uiViewModel, binding.playerInfoContainer)
         val recycler = binding.viewPager.getChildAt(0) as RecyclerView

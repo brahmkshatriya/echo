@@ -10,6 +10,7 @@
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">1200</item>
 
         <item name="android:colorBackground">?echoBackground</item>
+        <item name="snackbarStyle">@style/EchoSnackBar</item>
         <item name="android:dialogTheme">@style/EchoDialog</item>
         <item name="materialAlertDialogTheme">@style/EchoAlertDialog</item>
         <item name="bottomSheetDialogTheme">@style/EchoBottomSheetDialog</item>

@@ -43,8 +43,13 @@ suspend inline fun <reified C, R> Extension<*>.get(
     }.getOrElse { throw it.toAppException(this) }
 }
 
-suspend inline fun <reified T> Extension<*>.inject(crossinline block: suspend T.() -> Unit) {
+suspend inline fun <reified T> Extension<*>.inject(
+    throwableFlow: MutableSharedFlow<Throwable>,
+    crossinline block: suspend T.() -> Unit
+) = runCatching {
     instance.injectSuspended { (getOrNull() as? T)?.block() }
+}.getOrElse {
+    throwableFlow.emit(it.toAppException(this))
 }
 
 suspend inline fun <reified T> Extension<*>.isClient() = instance.value().getOrNull() is T

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.builtin
+package dev.brahmkshatriya.echo.builtin.test
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.MusicExtension

@@ -322,6 +322,8 @@
     <string name="no_download_extension">No download extension found, use code \"down\"</string>
     <string name="downloaded_x">Downloaded %1$s</string>
     <string name="download_progress">Download Progress</string>
+    <string name="playlists">Playlists</string>
+    <string name="saved">Saved</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

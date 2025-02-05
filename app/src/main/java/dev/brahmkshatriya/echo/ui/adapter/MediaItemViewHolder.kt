@@ -211,7 +211,7 @@ sealed class MediaItemViewHolder(
             return isPlaying
         }
 
-        fun ItemCoverListsBinding.bind(item: EchoMediaItem.Lists): MaterialButton {
+        fun ItemCoverListsBinding.bind(item: EchoMediaItem): MaterialButton {
             playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
             listImageView.clipToOutline = true
             item.cover.loadWith(listImageView, null, item.placeHolder()) { bitmap ->
@@ -221,7 +221,8 @@ sealed class MediaItemViewHolder(
                 listImageContainer1.backgroundTintList = tint
                 listImageContainer2.backgroundTintList = tint
             }
-            albumImage(item.size, listImageContainer1, listImageContainer2)
+            val size = (item as? EchoMediaItem.Lists)?.size ?: 1
+            albumImage(size, listImageContainer1, listImageContainer2)
             return isPlaying
         }
 
