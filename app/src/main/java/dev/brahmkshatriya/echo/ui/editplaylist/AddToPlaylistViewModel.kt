@@ -72,4 +72,15 @@ class AddToPlaylistViewModel @Inject constructor(
         saving = false
         dismiss.emit(Unit)
     }
+
+    fun reload() {
+        val extension = extensionListFlow.getExtension(clientId) ?: return
+        playlists.value = null
+        viewModelScope.launch(Dispatchers.IO) {
+            playlists.value = extension.get<PlaylistEditClient, List<Playlist>>(throwableFlow) {
+                listEditablePlaylists()
+            }
+            if (playlists.value == null) dismiss.emit(Unit)
+        }
+    }
 }

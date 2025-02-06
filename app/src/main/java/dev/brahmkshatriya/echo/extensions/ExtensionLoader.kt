@@ -6,7 +6,6 @@ import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.builtin.offline.OfflineExtension
-import dev.brahmkshatriya.echo.builtin.test.DownloadExtension
 import dev.brahmkshatriya.echo.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
@@ -82,8 +81,8 @@ class ExtensionLoader(
 //    private val test: Pair<Metadata, Injectable<ExtensionClient>> =
 //        TestExtension.metadata to Injectable { TestExtension() }
 
-    private val download: Pair<Metadata, Injectable<ExtensionClient>> =
-        DownloadExtension.metadata to Injectable { DownloadExtension(context) }
+//    private val download: Pair<Metadata, Injectable<ExtensionClient>> =
+//        DownloadExtension.metadata to Injectable { DownloadExtension(context) }
 
     private val musicExtensionRepo =
         MusicExtensionRepo(context, messageFlow, listener, fileListener, offlinePair, unified)
@@ -95,7 +94,7 @@ class ExtensionLoader(
         LyricsExtensionRepo(context, messageFlow, listener, fileListener)
 
     private val miscExtensionRepo =
-        MiscExtensionRepo(context, messageFlow, listener, fileListener, download)
+        MiscExtensionRepo(context, messageFlow, listener, fileListener)
 
     val trackers = trackerListFlow
     val extensions = extensionListFlow

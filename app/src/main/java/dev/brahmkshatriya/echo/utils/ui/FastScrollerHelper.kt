@@ -76,11 +76,13 @@ class FastScrollerHelper(private val mView: View) : AnimationHelper {
         fun applyTo(view: RecyclerView) = FastScrollerBuilder(view).apply {
             useMd2Style()
             setAnimationHelper(FastScrollerHelper(view))
+            view.isVerticalScrollBarEnabled = false
         }.build()
 
         fun applyTo(view: FastScrollNestedScrollView) = FastScrollerBuilder(view).apply {
             useMd2Style()
             setAnimationHelper(FastScrollerHelper(view))
+            view.isVerticalScrollBarEnabled = false
         }.build()
     }
 }

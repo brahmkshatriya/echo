@@ -40,7 +40,9 @@ class DownloadViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
             messageFlow.emit(Message(getString(R.string.downloading_item, item.title)))
-            val downloadExt = downloadList.value?.firstOrNull { it.isClient<DownloadClient>() }
+            val downloadExt = downloadList.value?.firstOrNull {
+                it.metadata.enabled && it.isClient<DownloadClient>()
+            }
             downloadExt ?: return@with messageFlow.emit(
                 Message(
                     context.getString(R.string.no_download_extension),
@@ -53,6 +55,10 @@ class DownloadViewModel @Inject constructor(
             val downloads = downloadExt.get<DownloadClient, List<DownloadContext>>(throwableFlow) {
                 getDownloadTracks(clientId, item)
             } ?: return@with
+
+            if (downloads.isEmpty()) return@with messageFlow.emit(
+                Message(context.getString(R.string.nothing_to_download_in_x, item.title))
+            )
 
             downloader.add(downloads)
             messageFlow.emit(

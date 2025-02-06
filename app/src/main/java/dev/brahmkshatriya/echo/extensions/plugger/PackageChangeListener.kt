@@ -4,13 +4,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import java.util.Collections.synchronizedList
 
 class PackageChangeListener(context: Context) : BroadcastReceiver() {
 
     fun add(listener: Listener) {
         listeners.add(listener)
     }
-    private val listeners = mutableListOf<Listener>()
+    private val listeners = synchronizedList(mutableListOf<Listener>())
 
     interface Listener {
         fun onPackageChanged()

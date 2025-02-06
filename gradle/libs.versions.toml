@@ -2,8 +2,8 @@
 agp = "8.2.2"
 kotlin = "2.0.10"
 okhttp = "5.0.0-alpha.14"
-ktor = "3.0.0-beta-2"
-kotlinx-serialization = "1.7.1"
+ktor = "3.0.1"
+kotlinx-serialization = "1.7.3"
 firebase-bom = "33.8.0"
 androidx-paging = "3.3.5"
 room = "2.6.1"
@@ -41,7 +41,7 @@ media3-hls = { module = "androidx.media3:media3-exoplayer-hls", version.ref = "m
 splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 palette = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 
-material = { module = "com.google.android.material:material", version = "1.13.0-alpha09" }
+material = { module = "com.google.android.material:material", version = "1.13.0-alpha10" }
 
 hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt" }
 hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt" }

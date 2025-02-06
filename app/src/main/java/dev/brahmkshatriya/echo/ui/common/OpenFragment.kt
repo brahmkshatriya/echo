@@ -19,22 +19,25 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.ui.MainFragment
 import dev.brahmkshatriya.echo.ui.item.ItemFragment
+import dev.brahmkshatriya.echo.utils.ui.sharedElementTransitions
 import dev.brahmkshatriya.echo.viewmodels.SnackBar
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
 fun Fragment.openFragment(newFragment: Fragment, view: View? = null) {
     parentFragmentManager.commit {
-        if (view != null) runCatching {
-            addSharedElement(view, view.transitionName)
-            newFragment.run {
-                if (arguments == null) arguments = Bundle()
-                arguments!!.putString("transitionName", view.transitionName)
-            }
-        }.getOrElse { it.printStackTrace() }
-        setReorderingAllowed(true)
         val oldFragment = this@openFragment
+        if (view?.sharedElementTransitions == true) {
+            runCatching {
+                addSharedElement(view, view.transitionName)
+                newFragment.run {
+                    if (arguments == null) arguments = Bundle()
+                    arguments!!.putString("transitionName", view.transitionName)
+                }
+            }.getOrElse { it.printStackTrace() }
+        }
         add(oldFragment.id, newFragment)
         hide(oldFragment)
+        setReorderingAllowed(true)
         addToBackStack(null)
     }
     val uiViewModel by activityViewModels<UiViewModel>()

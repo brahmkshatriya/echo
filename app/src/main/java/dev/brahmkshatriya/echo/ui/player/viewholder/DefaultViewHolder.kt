@@ -449,6 +449,8 @@ class DefaultViewHolder(
 
         collapsedContainer.run {
             collapsedTrackArtist.text = item.track.toMediaItem().subtitleWithE
+            collapsedTrackArtist.isSelected = true
+            collapsedTrackArtist.setHorizontallyScrolling(true)
             collapsedTrackTitle.text = track.title
             collapsedTrackTitle.isSelected = true
             collapsedTrackTitle.setHorizontallyScrolling(true)
@@ -497,6 +499,8 @@ class DefaultViewHolder(
         }
 
         trackArtist.text = spannableString
+        trackArtist.isSelected = true
+        trackArtist.setHorizontallyScrolling(true)
         trackArtist.movementMethod = LinkMovementMethod.getInstance()
     }
 

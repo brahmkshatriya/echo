@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clipToPadding="false"
+    android:gravity="center"
     android:orientation="horizontal"
 
     android:padding="8dp">
@@ -16,7 +17,6 @@
         android:layout_marginEnd="-8dp"
         android:gravity="center"
         android:textStyle="bold"
-        android:visibility="gone"
         tools:text="1." />
 
     <androidx.cardview.widget.CardView
@@ -39,6 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="-8dp"
+        android:gravity="center"
         android:baselineAligned="false"
         android:orientation="horizontal">
 
@@ -53,24 +54,24 @@
 
             <TextView
                 android:id="@+id/itemTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="2"
-                android:textStyle="bold"
-                tools:text="@tools:sample/full_names" />
+                android:ellipsize="end"
+                tools:text="@tools:sample/lorem/random" />
 
             <TextView
                 android:id="@+id/itemSubtitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:alpha="0.66"
-                android:maxLines="1"
-                tools:text="@tools:sample/last_names" />
+                android:ellipsize="end"
+                android:maxLines="2"
+                tools:text="@tools:sample/lorem/random" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/isPlaying"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="-8dp"
             style="@style/NowPlayingButton" />
 

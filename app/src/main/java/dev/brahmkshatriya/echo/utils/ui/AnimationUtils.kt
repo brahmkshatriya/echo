@@ -15,7 +15,6 @@ import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.MaterialContainerTransform
-import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.ANIMATIONS_KEY
@@ -115,9 +114,10 @@ private val View.animations
         getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
     }
 
-private val View.sharedElementTransitions
+val View.sharedElementTransitions
     get() = context.applicationContext.run {
-        getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(SHARED_ELEMENT_KEY, true)
+        getSharedPreferences(packageName, MODE_PRIVATE)
+            .getBoolean(SHARED_ELEMENT_KEY, true)
     }
 
 fun Fragment.setupTransition(view: View) {
@@ -126,7 +126,7 @@ fun Fragment.setupTransition(view: View) {
 
     if (view.animations) {
         val transitionName = arguments?.getString("transitionName")
-        if (transitionName != null && view.sharedElementTransitions) {
+        if (transitionName != null) {
             view.transitionName = transitionName
             val transition = MaterialContainerTransform().apply {
                 drawingViewId = id
@@ -134,15 +134,12 @@ fun Fragment.setupTransition(view: View) {
                 duration = view.animationDuration
             }
             sharedElementEnterTransition = transition
-            (view as? ViewGroup)?.isTransitionGroup = true
-            exitTransition = MaterialElevationScale(false)
-            reenterTransition = MaterialElevationScale(true)
-        } else {
-            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
-            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
         }
-        enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
-        returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
+        (view as? ViewGroup)?.isTransitionGroup = true
+        exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
 
         postponeEnterTransition()
         view.doOnPreDraw { startPostponedEnterTransition() }

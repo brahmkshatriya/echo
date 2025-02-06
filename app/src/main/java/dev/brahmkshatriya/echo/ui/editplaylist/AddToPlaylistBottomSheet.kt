@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,13 +24,12 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
-import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.library.CreatePlaylistFragment
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
-import kotlinx.coroutines.launch
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 
 @AndroidEntryPoint
 class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
@@ -74,17 +75,32 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         }
 
         val createPlaylistAdapter = CreatePlaylistAdapter {
-            requireActivity().openFragment(CreatePlaylistFragment())
-            dismiss()
+            CreatePlaylistFragment().show(parentFragmentManager, null)
         }
 
         observe(viewModel.playlists) { list ->
-            list ?: return@observe
             val visible = viewModel.playlists.value != null || viewModel.saving
             binding.loading.root.isVisible = !visible
             binding.recyclerView.isVisible = visible
             binding.bottomBar.isVisible = visible
+            list ?: return@observe
+            val hasCreate =
+                viewModel.extensionListFlow.getExtension(clientId)?.isClient<PlaylistEditClient>()
+                    ?: false
+            val concatAdapter =
+                if (hasCreate) ConcatAdapter(createPlaylistAdapter, adapter) else adapter
 
+            if (list.isEmpty())
+                binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+            else {
+                val gridLayoutManager = GridLayoutManager(requireContext(), 1)
+                binding.recyclerView.layoutManager = gridLayoutManager
+                binding.recyclerView.mediaItemSpanCount {
+                    gridLayoutManager.spanCount = it
+                }
+            }
+            binding.recyclerView.adapter = concatAdapter
+            createPlaylistAdapter.setWrapContent(list.isEmpty())
             adapter.setItems(
                 list.map { it.toMediaItem() },
                 viewModel.selectedPlaylists.map { it.toMediaItem() }
@@ -92,21 +108,14 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         }
 
         observe(viewModel.dismiss) { dismiss() }
-        lifecycleScope.launch {
-            val hasCreate =
-                viewModel.extensionListFlow.getExtension(clientId)?.isClient<PlaylistEditClient>()
-                    ?: false
-            val concatAdapter =
-                if (hasCreate) ConcatAdapter(createPlaylistAdapter, adapter) else adapter
 
-            binding.recyclerView.adapter = concatAdapter
-            binding.recyclerView.mediaItemSpanCount {
-                (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = it
-            }
-            viewModel.clientId = clientId
-            viewModel.item = item
-            viewModel.onInitialize()
-        }
+        viewModel.clientId = clientId
+        viewModel.item = item
+        viewModel.onInitialize()
+
+        parentFragmentManager.setFragmentResultListener(
+            "createPlaylist", viewLifecycleOwner
+        ) { _, _ -> viewModel.reload() }
     }
 
     class CreatePlaylistAdapter(
@@ -121,8 +130,22 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
             )
         )
 
+        var binding: ItemCreatePlaylistBinding? = null
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            binding = holder.binding
             holder.binding.root.setOnClickListener { onClick() }
+        }
+
+        fun setWrapContent(empty: Boolean) {
+            binding?.root?.apply {
+                updateLayoutParams<MarginLayoutParams> {
+                    width = if (empty) ViewGroup.LayoutParams.WRAP_CONTENT
+                    else ViewGroup.LayoutParams.MATCH_PARENT
+                    val margin = 8.dpToPx(context)
+                    marginStart = if (empty) margin else 0
+                    marginEnd = if (empty) margin else 0
+                }
+            }
         }
 
         class ViewHolder(val binding: ItemCreatePlaylistBinding) :

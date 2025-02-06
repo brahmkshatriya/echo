@@ -324,6 +324,7 @@
     <string name="download_progress">Download Progress</string>
     <string name="playlists">Playlists</string>
     <string name="saved">Saved</string>
+    <string name="nothing_to_download_in_x">Nothing to download in %1$s</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>

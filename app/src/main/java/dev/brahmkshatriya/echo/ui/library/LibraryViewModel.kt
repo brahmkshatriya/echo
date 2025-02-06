@@ -30,14 +30,21 @@ class LibraryViewModel @Inject constructor(
     override fun getFeed(client: ExtensionClient) =
         (client as? LibraryFeedClient)?.getLibraryFeed(tab)?.toFlow()
 
-    val playlistCreatedFlow = MutableSharedFlow<Pair<String, Playlist>>()
-    fun createPlaylist(title: String) {
+    val createPlaylistStateFlow = MutableStateFlow<State>(State.CreatePlaylist)
+    fun createPlaylist(title: String, desc: String?) {
         val extension = extensionFlow.value ?: return
+        createPlaylistStateFlow.value = State.Creating
         viewModelScope.launch(Dispatchers.IO) {
             val playlist = extension.get<PlaylistEditClient, Playlist>(throwableFlow) {
-                createPlaylist(title, null)
+                createPlaylist(title, desc)
             } ?: return@launch
-            playlistCreatedFlow.emit(extension.metadata.id to playlist)
+            createPlaylistStateFlow.value = State.PlaylistCreated(extension.id, playlist)
         }
+    }
+
+    sealed class State {
+        data object CreatePlaylist : State()
+        data object Creating : State()
+        data class PlaylistCreated(val extensionId: String, val playlist: Playlist) : State()
     }
 }
