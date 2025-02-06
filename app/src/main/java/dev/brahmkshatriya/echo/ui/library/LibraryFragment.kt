@@ -75,7 +75,7 @@ class LibraryFragment : Fragment() {
             binding.fabCreatePlaylist.isVisible = it?.isClient<PlaylistEditClient>() ?: false
         }
         binding.fabCreatePlaylist.setOnClickListener {
-            CreatePlaylistFragment().show(parentFragmentManager, null)
+            CreatePlaylistBottomSheet().show(parentFragmentManager, null)
         }
 
         val listener = ShelfAdapter.getListener(parent)

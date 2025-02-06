@@ -8,14 +8,16 @@ import android.os.Build.VERSION.CODENAME
 import android.os.Build.VERSION.RELEASE
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.EchoApplication.Companion.appVersion
 import dev.brahmkshatriya.echo.EchoApplication.Companion.applyLocale
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.copyToClipboard
 import dev.brahmkshatriya.echo.utils.prefs.LongClickPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.prefs.SwitchLongClickPreference
+import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
 
 class AboutFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.about)
@@ -59,7 +61,7 @@ class AboutFragment : BaseSettingsFragment() {
                 screen.addPreference(this)
             }
 
-            SwitchPreferenceCompat(context).apply {
+            SwitchLongClickPreference(context).apply {
                 title = getString(R.string.check_for_extension_updates)
                 summary = getString(R.string.check_for_extension_updates_summary)
                 key = "check_for_extension_updates"
@@ -67,6 +69,10 @@ class AboutFragment : BaseSettingsFragment() {
                 isIconSpaceReserved = false
                 setDefaultValue(true)
                 screen.addPreference(this)
+                setOnLongClickListener {
+                    val extensionViewModel by activityViewModels<ExtensionViewModel>()
+                    extensionViewModel.updateExtensions(requireActivity(), true)
+                }
             }
 
             preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener { pref, key ->

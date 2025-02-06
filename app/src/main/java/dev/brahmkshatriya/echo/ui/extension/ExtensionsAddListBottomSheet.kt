@@ -18,8 +18,10 @@ import dev.brahmkshatriya.echo.databinding.DialogExtensionsAddListBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionAssetResponse
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
+import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.putSerialized
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import dev.brahmkshatriya.echo.viewmodels.SnackBar.Companion.createSnack
 import kotlinx.coroutines.launch
 
 class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
@@ -96,6 +98,7 @@ class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
             return binding.root
         }
 
+        val viewModel by activityViewModels<ExtensionViewModel>()
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             val context = requireActivity()
             binding.topAppBar.setNavigationOnClickListener { dismiss() }
@@ -103,15 +106,45 @@ class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
                 val isLink = group.checkedButtonId == R.id.linkAdd
                 binding.textInputLayout.isVisible = isLink
             }
+
+            binding.editText.setOnEditorActionListener { _, _, _ ->
+                binding.installButton.performClick()
+                true
+            }
+
             binding.installButton.setOnClickListener {
                 val isLink = binding.installationTypeGroup.checkedButtonId == R.id.linkAdd
-                val viewModel by activityViewModels<ExtensionViewModel>()
-                if (!isLink) viewModel.addFromFile(context) else {
+                if (!isLink) {
+                    viewModel.addFromFile(context)
+                    dismiss()
+                } else {
                     val link = binding.editText.text.toString()
                     if (link.isEmpty()) return@setOnClickListener
-                    viewModel.addFromLinkOrCode(context, link)
+                    viewModel.addFromLinkOrCode(link)
                 }
-                dismiss()
+            }
+
+            observe(viewModel.addingFlow) {
+                when (it) {
+                    ExtensionViewModel.AddState.Init -> {
+                        binding.loading.root.isVisible = false
+                        binding.nestedScrollView.isVisible = true
+                    }
+
+                    ExtensionViewModel.AddState.Loading -> {
+                        binding.loading.root.isVisible = true
+                        binding.nestedScrollView.isVisible = false
+                    }
+
+                    is ExtensionViewModel.AddState.AddList -> {
+                        if (it.list != null) {
+                            if (it.list.isEmpty()) createSnack(R.string.list_is_empty)
+                            else newInstance(it.list).show(context.supportFragmentManager, null)
+                        }
+                        viewModel.addingFlow.value = ExtensionViewModel.AddState.Init
+                        dismiss()
+                    }
+                }
             }
         }
     }

@@ -42,7 +42,6 @@ import dev.brahmkshatriya.echo.viewmodels.CatchingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -67,6 +66,7 @@ class ItemViewModel @Inject constructor(
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
             itemFlow.value = null
+            tracks = null
             val mediaItem = when (val item = item!!) {
                 is AlbumItem -> loadItem<AlbumClient, AlbumItem>(
                     item, { loadAlbum(it.album).toMediaItem() }, { getShelves(it.album) }
@@ -112,7 +112,7 @@ class ItemViewModel @Inject constructor(
             viewModelScope.launch {
                 if (!loadRelatedFeed) return@launch
                 relatedFeed = extension?.run(throwableFlow) { loadRelated(loaded) }
-                relatedFeed?.toFlow()?.map { it }?.collectTo(relatedFeedFlow)
+                relatedFeed?.toFlow()?.collectTo(relatedFeedFlow)
             }
             loaded
         }
@@ -131,7 +131,7 @@ class ItemViewModel @Inject constructor(
 
     var tracks: PagedData<Track>? = null
     fun loadAlbumTracks(album: Album) {
-        viewModelScope.launch(Dispatchers.IO) {
+        if (tracks == null) viewModelScope.launch(Dispatchers.IO) {
             getClient<AlbumClient, Unit> {
                 songsFlow.value = null
                 tracks = loadTracks(album)
@@ -141,7 +141,7 @@ class ItemViewModel @Inject constructor(
     }
 
     fun loadPlaylistTracks(playlist: Playlist) {
-        viewModelScope.launch(Dispatchers.IO) {
+        if (tracks == null) viewModelScope.launch(Dispatchers.IO) {
             getClient<PlaylistClient, Unit> {
                 songsFlow.value = null
                 tracks = loadTracks(playlist)
@@ -151,7 +151,7 @@ class ItemViewModel @Inject constructor(
     }
 
     fun loadRadioTracks(radio: Radio) {
-        viewModelScope.launch(Dispatchers.IO) {
+        if (tracks == null) viewModelScope.launch(Dispatchers.IO) {
             getClient<RadioClient, Unit> {
                 songsFlow.value = null
                 tracks = loadTracks(radio)

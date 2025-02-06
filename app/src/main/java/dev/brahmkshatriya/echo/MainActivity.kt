@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
         controllerFuture = playerFuture
 
-        extensionViewModel.updateExtensions(this)
+        extensionViewModel.updateExtensions(this, false)
 
         addOnNewIntentListener { onIntent(it) }
         onIntent(intent)

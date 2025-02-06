@@ -43,7 +43,6 @@ import dev.brahmkshatriya.echo.extensions.with
 import dev.brahmkshatriya.echo.ui.common.ClientLoadingAdapter
 import dev.brahmkshatriya.echo.ui.common.ClientNotSupportedAdapter
 import dev.brahmkshatriya.echo.ui.extension.ClientSelectionViewModel
-import dev.brahmkshatriya.echo.ui.extension.ExtensionsAddListBottomSheet
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference.Companion.prefId
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
@@ -162,10 +161,11 @@ class ExtensionViewModel @Inject constructor(
         return System.currentTimeMillis() - lastUpdateCheck > updateTime
     }
 
-    fun updateExtensions(context: FragmentActivity) {
-        if (!shouldCheckForUpdates()) return
+    fun updateExtensions(context: FragmentActivity, force: Boolean) {
+        if (!shouldCheckForUpdates() && !force) return
         app.saveToCache("last_update_check", System.currentTimeMillis())
         viewModelScope.launch {
+            messageFlow.emit(Message(app.getString(R.string.checking_for_extension_updates)))
             allExtensions().forEach {
                 updateExtension(context, it)
             }
@@ -242,8 +242,17 @@ class ExtensionViewModel @Inject constructor(
         }
     }
 
-    fun addFromLinkOrCode(context: FragmentActivity, link: String) {
+    val addingFlow = MutableStateFlow<AddState>(AddState.Init)
+
+    sealed class AddState {
+        data object Init : AddState()
+        data object Loading : AddState()
+        data class AddList(val list: List<ExtensionAssetResponse>?) : AddState()
+    }
+
+    fun addFromLinkOrCode(link: String) {
         viewModelScope.launch {
+            addingFlow.value = AddState.Loading
             val actualLink = when {
                 link.startsWith("http://") or link.startsWith("https://") -> link
                 else -> "https://v.gd/$link"
@@ -251,14 +260,9 @@ class ExtensionViewModel @Inject constructor(
 
             val list = runCatching { getExtensionList(actualLink, client) }.getOrElse {
                 throwableFlow.emit(it)
-                return@launch
+                null
             }
-            if (list.isEmpty()) {
-                messageFlow.emit(Message(app.getString(R.string.list_is_empty)))
-                return@launch
-            }
-            ExtensionsAddListBottomSheet.newInstance(list)
-                .show(context.supportFragmentManager, null)
+            addingFlow.value = AddState.AddList(list)
         }
     }
 

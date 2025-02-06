@@ -221,6 +221,8 @@ class ExtensionLoader(
                     MusicExtension(metadata, client)
                 }
                 extensionListFlow.value = extensions
+                extensions.setExtensions()
+
                 val id = settings.getString(LAST_EXTENSION_KEY, null)
                 val extension = extensions.find { it.metadata.id == id } ?: extensions.firstOrNull()
                 setupMusicExtension(scope, settings, extensionFlow, throwableFlow, extension)

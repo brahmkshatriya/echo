@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
+import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
@@ -26,6 +27,7 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
@@ -42,11 +44,13 @@ import dev.brahmkshatriya.echo.ui.exception.AppException.Companion.toAppExceptio
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.getSettings
 import dev.brahmkshatriya.echo.utils.saveToCache
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 
 class UnifiedExtension(
     private val context: Context
 ) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
-    PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient,
+    PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient,
     TrackClient, TrackLikeClient, SaveToLibraryClient, PlaylistEditClient {
 
     companion object {
@@ -153,9 +157,17 @@ class UnifiedExtension(
                 val list = result.getOrElse { throw it.toAppException(extension) }
                 list.map { it.withExtensionId(id) }
             }
+
+        private fun Lyrics.withExtensionId(id: String) = copy(
+            extras = extras + mapOf(EXTENSION_ID to id)
+        )
+
+        fun PagedData<Lyrics>.injectLyricsExtId(extension: Extension<*>) = map { result ->
+            val list = result.getOrElse { throw it.toAppException(extension) }
+            list.map { it.withExtensionId(extension.id) }
+        }
     }
 
-    override suspend fun onExtensionSelected() {}
     override val settingItems = listOf(
         SettingSwitch(
             context.getString(R.string.show_tabs),
@@ -170,9 +182,10 @@ class UnifiedExtension(
     private val showTabs get() = settings.getBoolean("show_tabs") ?: true
 
     override val requiredMusicExtensions = listOf<String>()
-    private var extensions = listOf<MusicExtension>()
+    private var extFlow = MutableStateFlow<List<MusicExtension>?>(null)
+    suspend fun extensions() = extFlow.first { it != null }!!
     override fun setMusicExtensions(extensions: List<MusicExtension>) {
-        this.extensions = extensions.filter { it.id != UNIFIED_ID }
+        extFlow.value = extensions.filter { it.id != UNIFIED_ID }
     }
 
     private fun feed(
@@ -190,7 +203,12 @@ class UnifiedExtension(
             listOf(
                 Shelf.Lists.Categories(
                     context.getString(R.string.tabs),
-                    tabs.map { Shelf.Category(it.title, loadFeed(it).injectExtensionId(extension)) },
+                    tabs.map {
+                        Shelf.Category(
+                            it.title,
+                            loadFeed(it).injectExtensionId(extension)
+                        )
+                    },
                     type = Shelf.Lists.Type.Grid
                 )
             )
@@ -198,11 +216,11 @@ class UnifiedExtension(
         shelf
     }
 
-    override suspend fun getHomeTabs() = extensions.map { Tab(it.id, it.name) }
+    override suspend fun getHomeTabs() = extensions().map { Tab(it.id, it.name) }
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> {
         val id = tab?.id ?: return PagedData.empty()
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<HomeFeedClient, PagedData<Shelf>> {
                 feed(extension, { getHomeTabs() }, { getHomeFeed(it) })
             }
@@ -231,13 +249,13 @@ class UnifiedExtension(
         } else listOf()
     }
 
-    override suspend fun searchTabs(query: String) = extensions.map { Tab(it.id, it.name) }
+    override suspend fun searchTabs(query: String) = extensions().map { Tab(it.id, it.name) }
     override fun searchFeed(query: String, tab: Tab?): PagedData<Shelf> {
         if (query.isNotBlank()) saveInHistory(query)
 
         val id = tab?.id ?: return PagedData.empty()
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<SearchFeedClient, PagedData<Shelf>> {
                 feed(extension, { searchTabs(query) }, { searchFeed(query, it) })
             }
@@ -246,8 +264,8 @@ class UnifiedExtension(
 
     override fun loadTracks(radio: Radio): PagedData<Track> {
         val id = radio.extras.extensionId
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<RadioClient, PagedData<Track>> {
                 this.loadTracks(radio).injectExtension(extension)
             }
@@ -256,42 +274,42 @@ class UnifiedExtension(
 
     override suspend fun radio(track: Track, context: EchoMediaItem?): Radio {
         val id = track.extras.extensionId
-        return extensions.get(id).client<RadioClient, Radio> {
+        return extensions().get(id).client<RadioClient, Radio> {
             radio(track, context).withExtensionId(id)
         }
     }
 
     override suspend fun radio(album: Album): Radio {
         val id = album.extras.extensionId
-        return extensions.get(id).client<RadioClient, Radio> {
+        return extensions().get(id).client<RadioClient, Radio> {
             radio(album).withExtensionId(id)
         }
     }
 
     override suspend fun radio(artist: Artist): Radio {
         val id = artist.extras.extensionId
-        return extensions.get(id).client<RadioClient, Radio> {
+        return extensions().get(id).client<RadioClient, Radio> {
             radio(artist).withExtensionId(id)
         }
     }
 
     override suspend fun radio(user: User): Radio {
         val id = user.extras.extensionId
-        return extensions.get(id).client<RadioClient, Radio> {
+        return extensions().get(id).client<RadioClient, Radio> {
             radio(user).withExtensionId(id)
         }
     }
 
     override suspend fun radio(playlist: Playlist): Radio {
         val id = playlist.extras.extensionId
-        return extensions.get(id).client<RadioClient, Radio> {
+        return extensions().get(id).client<RadioClient, Radio> {
             radio(playlist).withExtensionId(id)
         }
     }
 
     override suspend fun loadTrack(track: Track): Track {
         val id = track.extras.extensionId
-        return extensions.get(id).client<TrackClient, Track> {
+        return extensions().get(id).client<TrackClient, Track> {
             loadTrack(track).withExtensionId(id)
         }.copy(isLiked = db.isLiked(track))
     }
@@ -300,15 +318,15 @@ class UnifiedExtension(
         streamable: Streamable, isDownload: Boolean
     ): Streamable.Media {
         val id = streamable.extras.extensionId
-        return extensions.get(id).client<TrackClient, Streamable.Media> {
+        return extensions().get(id).client<TrackClient, Streamable.Media> {
             loadStreamableMedia(streamable, isDownload)
         }
     }
 
     override fun getShelves(track: Track): PagedData<Shelf> {
         val id = track.extras.extensionId
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<TrackClient, PagedData<Shelf>> {
                 getShelves(track).injectExtensionId(extension)
             }
@@ -318,7 +336,7 @@ class UnifiedExtension(
     override suspend fun loadPlaylist(playlist: Playlist): Playlist {
         val extId = playlist.extras.extensionId
         return if (extId == UNIFIED_ID) db.loadPlaylist(playlist)
-        else extensions.get(extId).client<PlaylistClient, Playlist> {
+        else extensions().get(extId).client<PlaylistClient, Playlist> {
             loadPlaylist(playlist).withExtensionId(extId)
         }
     }
@@ -327,7 +345,7 @@ class UnifiedExtension(
         val id = playlist.extras.extensionId
         return if (id == UNIFIED_ID) PagedData.Single { db.getTracks(playlist) }
         else PagedData.Suspend {
-            val extension = extensions.get(id)
+            val extension = extensions().get(id)
             extension.client<PlaylistClient, PagedData<Track>> {
                 loadTracks(playlist).injectExtension(extension)
             }
@@ -338,7 +356,7 @@ class UnifiedExtension(
         val id = playlist.extras.extensionId
         return if (id == UNIFIED_ID) PagedData.empty()
         else PagedData.Suspend {
-            val extension = extensions.get(id)
+            val extension = extensions().get(id)
             extension.client<PlaylistClient, PagedData<Shelf>> {
                 getShelves(playlist).injectExtensionId(extension)
             }
@@ -347,15 +365,15 @@ class UnifiedExtension(
 
     override suspend fun loadAlbum(album: Album): Album {
         val id = album.extras.extensionId
-        return extensions.get(id).client<AlbumClient, Album> {
+        return extensions().get(id).client<AlbumClient, Album> {
             loadAlbum(album).withExtensionId(id)
         }
     }
 
     override fun loadTracks(album: Album): PagedData<Track> {
         val id = album.extras.extensionId
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<AlbumClient, PagedData<Track>> {
                 loadTracks(album).injectExtension(extension)
             }
@@ -364,8 +382,8 @@ class UnifiedExtension(
 
     override fun getShelves(album: Album): PagedData<Shelf> {
         val id = album.extras.extensionId
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<AlbumClient, PagedData<Shelf>> {
                 getShelves(album).injectExtensionId(extension)
             }
@@ -374,15 +392,15 @@ class UnifiedExtension(
 
     override suspend fun loadUser(user: User): User {
         val id = user.extras.extensionId
-        return extensions.get(id).client<UserClient, User> {
+        return extensions().get(id).client<UserClient, User> {
             loadUser(user).withExtensionId(id)
         }
     }
 
     override fun getShelves(user: User): PagedData<Shelf> {
         val id = user.extras.extensionId
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<UserClient, PagedData<Shelf>> {
                 getShelves(user).injectExtensionId(extension)
             }
@@ -391,15 +409,15 @@ class UnifiedExtension(
 
     override suspend fun loadArtist(artist: Artist): Artist {
         val id = artist.extras.extensionId
-        return extensions.get(id).client<ArtistClient, Artist> {
+        return extensions().get(id).client<ArtistClient, Artist> {
             loadArtist(artist).withExtensionId(id)
         }
     }
 
     override fun getShelves(artist: Artist): PagedData<Shelf> {
         val id = artist.extras.extensionId
-        val extension = extensions.get(id)
         return PagedData.Suspend {
+            val extension = extensions().get(id)
             extension.client<ArtistClient, PagedData<Shelf>> {
                 getShelves(artist).injectExtensionId(extension)
             }
@@ -434,8 +452,12 @@ class UnifiedExtension(
         val likedPlaylist = db.getLikedPlaylist()
         val tracks = loadTracks(likedPlaylist).loadAll()
         if (isLiked) addTracksToPlaylist(likedPlaylist, tracks, 0, listOf(track))
-        else removeTracksFromPlaylist(likedPlaylist, tracks, listOf(tracks.indexOfFirst { it.id == track.id }))
-        val extension = extensions.get(track.extras.extensionId)
+        else removeTracksFromPlaylist(
+            likedPlaylist,
+            tracks,
+            listOf(tracks.indexOfFirst { it.id == track.id })
+        )
+        val extension = extensions().get(track.extras.extensionId)
         extension.client<TrackLikeClient, Unit> { likeTrack(track, isLiked) }
     }
 
@@ -473,5 +495,22 @@ class UnifiedExtension(
         playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int
     ) {
         db.moveTrack(playlist, tracks, fromIndex, toIndex)
+    }
+
+    override fun searchTrackLyrics(clientId: String, track: Track) = PagedData.Suspend {
+        val extId = track.extras.extensionId
+        val extension = extensions().get(extId)
+        runCatching {
+            extension.client<LyricsClient, PagedData<Lyrics>> {
+                searchTrackLyrics(clientId, track).injectLyricsExtId(extension)
+            }
+        }.getOrNull() ?: PagedData.empty()
+    }
+
+    override suspend fun loadLyrics(lyrics: Lyrics): Lyrics {
+        val extId = lyrics.extras.extensionId
+        return extensions().get(extId).client<LyricsClient, Lyrics> {
+            loadLyrics(lyrics).withExtensionId(extId)
+        }
     }
 }

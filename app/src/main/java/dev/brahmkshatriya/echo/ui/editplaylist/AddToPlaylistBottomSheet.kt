@@ -24,7 +24,7 @@ import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.extensions.isClient
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
-import dev.brahmkshatriya.echo.ui.library.CreatePlaylistFragment
+import dev.brahmkshatriya.echo.ui.library.CreatePlaylistBottomSheet
 import dev.brahmkshatriya.echo.utils.autoCleared
 import dev.brahmkshatriya.echo.utils.getSerialized
 import dev.brahmkshatriya.echo.utils.observe
@@ -75,7 +75,7 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         }
 
         val createPlaylistAdapter = CreatePlaylistAdapter {
-            CreatePlaylistFragment().show(parentFragmentManager, null)
+            CreatePlaylistBottomSheet().show(parentFragmentManager, null)
         }
 
         observe(viewModel.playlists) { list ->

@@ -1,78 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:fillViewport="true"
+        android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/topAppBar"
+        <LinearLayout
+            android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="-16dp"
-            android:layout_marginTop="-16dp"
-            android:layout_marginEnd="-16dp"
-            android:background="@null"
-            app:navigationIcon="@drawable/ic_close"
-            app:title="@string/add_extensions"
-            app:titleCentered="true" />
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:padding="24dp">
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/installationTypeGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="16dp"
-            app:checkedButton="@+id/linkAdd"
-            app:selectionRequired="true"
-            app:singleSelection="true">
-
-            <Button
-                android:id="@+id/linkAdd"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minHeight="64dp"
-                android:text="@string/link" />
-
-            <Button
-                android:id="@+id/fileAdd"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minHeight="64dp"
-                android:text="@string/file" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
-
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout"
-            style="@style/TextInput">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editText"
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/link_or_code"
-                android:inputType="text"
-                android:singleLine="true" />
+                android:layout_marginStart="-16dp"
+                android:layout_marginTop="-16dp"
+                android:layout_marginEnd="-16dp"
+                android:background="@null"
+                app:navigationIcon="@drawable/ic_close"
+                app:title="@string/add_extensions"
+                app:titleCentered="true" />
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/installationTypeGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="16dp"
+                app:checkedButton="@+id/linkAdd"
+                app:selectionRequired="true"
+                app:singleSelection="true">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/installButton"
-            style="@style/Widget.Material3.Button.UnelevatedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="64dp"
-            android:text="@string/add" />
+                <Button
+                    android:id="@+id/linkAdd"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="64dp"
+                    android:text="@string/link" />
 
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+                <Button
+                    android:id="@+id/fileAdd"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="64dp"
+                    android:text="@string/file" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout"
+                style="@style/TextInput">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/link_or_code"
+                    android:inputType="text"
+                    android:singleLine="true" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/installButton"
+                style="@style/Widget.Material3.Button.UnelevatedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="64dp"
+                android:text="@string/add" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:visibility="gone"
+        android:id="@+id/loading"
+        layout="@layout/item_client_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="48dp" />
+
+</FrameLayout>
