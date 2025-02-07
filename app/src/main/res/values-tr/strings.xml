@@ -55,7 +55,7 @@
     <string name="look_and_feel">Görünüm ve Hissiyat</string>
     <string name="audio">Ses</string>
     <string name="look_and_feel_summary">Arayüz ve Animasyon Ayarları</string>
-    <string name="audio_summary">(Audiophile'ler burada toplanıyor)</string>
+    <string name="audio_summary">(Audiophile\'ler burada toplanıyor)</string>
     <string name="extension_settings_summary">Seçili eklentinin ayarları</string>
     <string name="behavior">Davranış</string>
     <string name="theme">Tema</string>
@@ -243,7 +243,7 @@
     <string name="app">Uygulama</string>
     <string name="file">Dosya</string>
     <string name="installation_type">Yükleme Türü</string>
-    <string name="installation_type_summary">Uygulama yüklemesi, aşağıdaki bağlantıların Echo'da açılmasına izin verecektir:</string>
+    <string name="installation_type_summary">Uygulama yüklemesi, aşağıdaki bağlantıların Echo\'da açılmasına izin verecektir:</string>
     <string name="installation_type_warning">Eklenti bir dosya olarak yüklenirse mevcut değildir.</string>
     <string name="could_not_find_the_file">Dosya bulunamadı.</string>
     <string name="extension_installer">Eklenti Yükleyici</string>
