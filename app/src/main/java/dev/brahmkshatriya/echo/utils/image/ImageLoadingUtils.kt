@@ -68,21 +68,6 @@ fun ImageHolder?.loadWithThumb(
     imageView.enqueue(request)
 }
 
-fun ImageHolder?.loadWith(
-    imageView: ImageView, placeholder: Int? = null,
-    error: Int? = null, onDrawable: (Bitmap?) -> Unit = {}
-) = tryWith {
-    val request = createRequest(imageView.context, placeholder, error)
-    fun setDrawable(image: Image?) {
-        val drawable = image?.asDrawable(imageView.resources)
-        imageView.load(drawable)
-        val bitmap = image?.toBitmap()
-        tryWith(false) { onDrawable(bitmap) }
-    }
-    request.target(::setDrawable, ::setDrawable, ::setDrawable)
-    imageView.enqueue(request)
-}
-
 val circleCrop = CircleCropTransformation()
 val squareCrop = SquareCropTransformation()
 fun <T : View> ImageHolder?.loadAsCircle(
@@ -126,6 +111,10 @@ fun ImageView.load(drawable: Drawable?) = tryWith {
 
 fun ImageView.load(drawable: Drawable?, size: Int) = tryWith {
     load(drawable) { size(size) }
+}
+
+fun ImageView.load(bitmap: Bitmap?) = tryWith {
+    load(bitmap)
 }
 
 fun ImageView.loadBlurred(bitmap: Bitmap?, radius: Float) = tryWith {

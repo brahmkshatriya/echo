@@ -20,8 +20,9 @@ import dev.brahmkshatriya.echo.databinding.NewItemMediaTitleBinding
 import dev.brahmkshatriya.echo.databinding.NewItemMediaTrackBinding
 import dev.brahmkshatriya.echo.playback.Current
 import dev.brahmkshatriya.echo.playback.Current.Companion.isPlaying
+import dev.brahmkshatriya.echo.utils.image.load
 import dev.brahmkshatriya.echo.utils.image.loadInto
-import dev.brahmkshatriya.echo.utils.image.loadWith
+import dev.brahmkshatriya.echo.utils.image.loadWithBitmap
 import dev.brahmkshatriya.echo.utils.ui.animateVisibility
 
 
@@ -214,7 +215,8 @@ sealed class MediaItemViewHolder(
         fun ItemCoverListsBinding.bind(item: EchoMediaItem): MaterialButton {
             playlist.isVisible = item is EchoMediaItem.Lists.PlaylistItem
             listImageView.clipToOutline = true
-            item.cover.loadWith(listImageView, null, item.placeHolder()) { bitmap ->
+            item.cover.loadWithBitmap(listImageView, item.placeHolder()) { bitmap ->
+                listImageView.load(bitmap)
                 val tint = bitmap?.let {
                     ColorStateList.valueOf(getDominantColor(it))
                 }
