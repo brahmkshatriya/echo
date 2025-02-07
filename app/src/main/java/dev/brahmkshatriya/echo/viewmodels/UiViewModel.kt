@@ -293,14 +293,14 @@ class UiViewModel @Inject constructor(
                     val expanded = newState == STATE_EXPANDED
                     behavior.isHideable = !expanded
                     viewModel.playerSheetState.value = newState
-//                    if (newState == STATE_SETTLING || newState == STATE_DRAGGING) return
+                    viewModel.setPlayerInsets(view.context, newState != STATE_HIDDEN)
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
                     viewModel.playerSheetOffset.value = slideOffset
                 }
             })
-
+            viewModel.playerSheetOffset.value = if (behavior.state == STATE_EXPANDED) 1f else 0f
             viewModel.run {
                 observe(fromNotification) {
                     if (!it) return@observe

@@ -12,9 +12,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
@@ -33,7 +33,6 @@ import dev.brahmkshatriya.echo.databinding.DialogMediaItemBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemDialogButtonLoadingBinding
 import dev.brahmkshatriya.echo.extensions.getExtension
-import dev.brahmkshatriya.echo.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.ui.adapter.MediaItemViewHolder.Companion.applyIsPlaying
 import dev.brahmkshatriya.echo.ui.adapter.ShelfViewHolder.Media.Companion.bind
 import dev.brahmkshatriya.echo.ui.common.openFragment
@@ -89,10 +88,9 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        var isPlaying: MaterialButton? = null
-        observe(playerViewModel.currentFlow) {
-            applyIsPlaying(it, item.id, isPlaying)
-        }
+        viewModel.item = item
+        viewModel.extension = extension
+        viewModel.loadRelatedFeed = false
 
         binding.itemContainer.run {
             more.run {
@@ -100,16 +98,16 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 setIconResource(R.drawable.ic_close)
                 contentDescription = context.getString(R.string.close)
             }
-            isPlaying = bind(item)
+            val isPlaying = bind(item)
             if (!loaded) root.setOnClickListener {
                 openItemFragment(item)
                 dismiss()
             }
+            observe(playerViewModel.currentFlow) {
+                applyIsPlaying(it, viewModel.item?.id, isPlaying)
+            }
         }
 
-        viewModel.item = item
-        viewModel.extension = extension
-        viewModel.loadRelatedFeed = false
         lifecycleScope.launch {
             val client = extension?.instance?.value()?.getOrNull() ?: return@launch run {
                 createSnack(requireContext().noClient())
@@ -121,7 +119,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 viewModel.initialize()
                 observe(viewModel.itemFlow) {
                     if (it != null) {
-                        isPlaying = binding.itemContainer.bind(it)
+                        binding.itemContainer.bind(it)
                         binding.recyclerView.adapter = ActionAdapter(getActions(client, it, true))
                     }
                 }
@@ -162,6 +160,9 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
                 if (client is LibraryFeedClient && item.playlist.isEditable)
                     ItemAction.Resource(R.drawable.ic_delete, R.string.delete_playlist) {
                         playerViewModel.deletePlaylist(clientId, item.playlist)
+                        parentFragmentManager.setFragmentResult("deleted", Bundle().apply {
+                            putString("id", item.id)
+                        })
                     }
                 else null,
             ) + item.playlist.authors.map {
@@ -338,6 +339,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
         ) : ItemAction()
     }
 
+    var clicked = false
     inner class ActionAdapter(val list: List<ItemAction>) :
         RecyclerView.Adapter<ActionAdapter.ViewHolder>() {
         inner class ViewHolder(val binding: ItemDialogButtonBinding) :
@@ -345,6 +347,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
             init {
                 binding.root.setOnClickListener {
                     list[bindingAdapterPosition].action()
+                    clicked = true
                     dismiss()
                 }
             }
@@ -405,6 +408,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (!clicked) return
         parentFragmentManager.setFragmentResult("reload", bundleOf("id" to item.id))
     }
 }

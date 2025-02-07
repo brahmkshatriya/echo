@@ -5,17 +5,18 @@ import android.content.Intent
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.forEach
+import androidx.core.view.updateLayoutParams
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.common.util.concurrent.ListenableFuture
@@ -41,7 +42,6 @@ import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isNightMode
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerBehavior
 import kotlin.math.max
-import kotlin.math.min
 
 
 @AndroidEntryPoint
@@ -97,6 +97,9 @@ class MainActivity : AppCompatActivity() {
                 supportFragmentManager.fragments.lastOrNull() is PlayerFragment
         }
 
+        setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
+        configureSnackBar(binding.navView)
+
         fun applyNav(animate: Boolean) {
             val isMainFragment = uiViewModel.isMainFragment.value
             val insets =
@@ -104,20 +107,17 @@ class MainActivity : AppCompatActivity() {
             val isPlayerCollapsed = uiViewModel.playerSheetState.value != STATE_EXPANDED
             navView.animateTranslation(isRail, isMainFragment, isPlayerCollapsed, animate) {
                 uiViewModel.setNavInsets(insets)
+                navView.updateLayoutParams<MarginLayoutParams> {
+                    bottomMargin = -it.toInt()
+                }
             }
         }
 
         applyNav(false)
         observe(uiViewModel.navigation) { navView.selectedItemId = uiViewModel.navIds[it] }
         observe(uiViewModel.isMainFragment) { applyNav(true) }
-        observe(uiViewModel.playerSheetState) {
-            uiViewModel.setPlayerInsets(this, it != STATE_HIDDEN)
-        }
 
-        val collapsedPlayerHeight = resources.getDimension(R.dimen.bottom_player_peek_height)
         observe(uiViewModel.playerSheetOffset) {
-            if (it != 0f && isRail)
-                navView.translationY = -(1 + min(it, 0f)) * collapsedPlayerHeight
             if (!uiViewModel.isMainFragment.value) return@observe
             val offset = max(0f, it)
             if (isRail) navView.translationX = -navView.width * offset
@@ -129,9 +129,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-        setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
-        configureSnackBar(binding.navView)
 
         val sessionToken =
             SessionToken(application, ComponentName(application, PlayerService::class.java))

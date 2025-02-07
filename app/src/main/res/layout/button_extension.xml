@@ -7,4 +7,4 @@
     app:iconPadding="16dp"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    app:iconTint="@null" />
+    app:iconTint="?colorControlActivated" />

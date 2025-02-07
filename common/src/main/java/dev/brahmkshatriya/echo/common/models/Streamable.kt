@@ -11,10 +11,8 @@ import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtit
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Server
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Subtitle
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.ByteStream
-import dev.brahmkshatriya.echo.common.models.Streamable.Source.Channel
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Http
-import io.ktor.utils.io.ByteReadChannel
 import kotlinx.serialization.Serializable
 import java.io.InputStream
 
@@ -167,7 +165,6 @@ data class Streamable(
      * There are three types of sources:
      * - [Http] - To represent a source that contains Audio/Video on a Http Url.
      * - [ByteStream] - To represent a source that contains Audio/Video in a Byte Stream.
-     * - [Channel] - To represent a source that contains Audio/Video in a Byte Read Channel.
      *
      * @property quality The quality of the source, this is used to sort the sources
      * @property title The title of the source
@@ -208,21 +205,6 @@ data class Streamable(
          */
         data class ByteStream(
             val stream: InputStream,
-            val totalBytes: Long,
-            override val quality: Int = 0,
-            override val title: String? = null
-        ) : Source()
-
-        /**
-         * A data class representing a source that contains Audio/Video in a Byte Read Channel.
-         *
-         * @property channel The channel for the source
-         * @property totalBytes The total bytes of the channel
-         *
-         * @see ByteReadChannel
-         */
-        data class Channel(
-            val channel: ByteReadChannel,
             val totalBytes: Long,
             override val quality: Int = 0,
             override val title: String? = null

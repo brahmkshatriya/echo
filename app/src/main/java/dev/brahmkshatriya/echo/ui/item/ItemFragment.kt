@@ -249,10 +249,11 @@ class ItemFragment : Fragment() {
         }
 
         parentFragmentManager.setFragmentResultListener("deleted", this) { _, bundle ->
-            if (bundle.getString("id") == viewModel.itemFlow.value?.id)
+            if (bundle.getString("id") == viewModel.itemFlow.value?.id) {
+                parentFragmentManager.setFragmentResult("reloadLibrary", Bundle())
                 parentFragmentManager.popBackStack()
+            }
         }
-
 
         collect(viewModel.relatedFeedFlow) {
             shelfAdapter?.submit(it)

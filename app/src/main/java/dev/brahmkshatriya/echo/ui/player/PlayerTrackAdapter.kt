@@ -158,6 +158,7 @@ class PlayerTrackAdapter(
         open fun onInfoSheetOffsetChanged(offset: Float) {}
         open fun onInfoSheetStateChanged(state: Int) {}
         open fun onSystemInsetsChanged(insets: UiViewModel.Insets) {}
+        open fun onCombinedInsetsChanged(insets: UiViewModel.Insets) {}
     }
 
     companion object {
@@ -276,6 +277,7 @@ class PlayerTrackAdapter(
                 observe(infoSheetOffset) { onInfoSheetOffsetChanged(it) }
                 observe(infoSheetState) { onInfoSheetStateChanged(it) }
                 observe(systemInsets) { onSystemInsetsChanged(it) }
+                observe(combined) { onCombinedInsetsChanged(it) }
             }
 
             return adapter
@@ -376,5 +378,11 @@ class PlayerTrackAdapter(
     private fun onSystemInsetsChanged(insets: UiViewModel.Insets) {
         systemInsets = insets
         onEachViewHolder { onSystemInsetsChanged(insets) }
+    }
+
+    private var combinedInsets = UiViewModel.Insets(0, 0, 0, 0)
+    private fun onCombinedInsetsChanged(insets: UiViewModel.Insets) {
+        combinedInsets = insets
+        onEachViewHolder { onCombinedInsetsChanged(insets) }
     }
 }

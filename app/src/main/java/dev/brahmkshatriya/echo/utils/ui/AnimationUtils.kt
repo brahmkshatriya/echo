@@ -37,7 +37,7 @@ fun NavigationBarView.animateTranslation(
     isMainFragment: Boolean,
     isPlayerCollapsed: Boolean,
     animate: Boolean = true,
-    action: () -> Unit
+    action: (Float) -> Unit
 ) = doOnLayout {
     val visible = isMainFragment && isPlayerCollapsed
     val value = if (visible) 0f
@@ -45,8 +45,8 @@ fun NavigationBarView.animateTranslation(
     if (animations && animate) {
         var animation = if (isRail) animate().translationX(value)
         else animate().translationY(value)
-        animation = if (visible) animation.withStartAction(action)
-        else animation.withEndAction { action() }
+        animation = if (visible) animation.withStartAction { action(value) }
+        else animation.withEndAction { action(value) }
         startAnimation(this, animation)
 
         val delay = if (!visible) 0L else animationDurationSmall
@@ -67,7 +67,7 @@ fun NavigationBarView.animateTranslation(
                 translationY = 0f
             }
         }
-        action()
+        action(value)
     }
 }
 

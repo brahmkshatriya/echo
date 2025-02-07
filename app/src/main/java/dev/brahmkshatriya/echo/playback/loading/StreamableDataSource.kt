@@ -14,7 +14,6 @@ import dev.brahmkshatriya.echo.playback.loading.StreamableResolver.Companion.cop
 class StreamableDataSource(
     private val defaultDataSourceFactory: Lazy<DefaultDataSource.Factory>,
     private val byteStreamDataSourceFactory: Lazy<ByteStreamDataSource.Factory>,
-    private val byteChannelDataSourceFactory: Lazy<ByteChannelDataSource.Factory>,
 ) : BaseDataSource(true) {
 
     class Factory(
@@ -22,9 +21,8 @@ class StreamableDataSource(
     ) : DataSource.Factory {
         private val defaultDataSourceFactory = lazy { DefaultDataSource.Factory(context) }
         private val byteStreamDataSourceFactory = lazy { ByteStreamDataSource.Factory() }
-        private val byteChannelDataSourceFactory = lazy { ByteChannelDataSource.Factory() }
         override fun createDataSource() = StreamableDataSource(
-            defaultDataSourceFactory, byteStreamDataSourceFactory, byteChannelDataSourceFactory
+            defaultDataSourceFactory, byteStreamDataSourceFactory
         )
     }
 
@@ -45,7 +43,6 @@ class StreamableDataSource(
         val (factory, spec) = when (streamable) {
             null -> defaultDataSourceFactory to dataSpec
             is Streamable.Source.ByteStream -> byteStreamDataSourceFactory to dataSpec
-            is Streamable.Source.Channel -> byteChannelDataSourceFactory to dataSpec
             is Streamable.Source.Http -> {
                 val spec = streamable.request.run {
                     dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)

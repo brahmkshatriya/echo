@@ -12,9 +12,7 @@ import dev.brahmkshatriya.echo.download.DownloadException.Companion.toDownloadEx
 import dev.brahmkshatriya.echo.download.task.FiledTask
 import dev.brahmkshatriya.echo.download.task.LoadDataTask
 import dev.brahmkshatriya.echo.download.task.MediaTask
-import io.ktor.util.collections.ConcurrentSet
-import io.ktor.util.rootCause
-import io.ktor.utils.io.InternalAPI
+import dev.brahmkshatriya.echo.utils.rootCause
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -22,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
+import java.util.Collections.synchronizedList
 import java.util.concurrent.ConcurrentHashMap
 
 class TrackDownloadTask(
@@ -32,7 +31,7 @@ class TrackDownloadTask(
     private val downloadExtension: MiscExtension,
 ) {
 
-    private val errors = ConcurrentSet<Throwable>()
+    private val errors = synchronizedList(listOf<Throwable>())
 
     private suspend fun download(
         i: Int,
@@ -67,7 +66,6 @@ class TrackDownloadTask(
         else errors.map { it.toDownloadException(entity) }
     }
 
-    @OptIn(InternalAPI::class)
     private fun ifCancelled(exception: Throwable?): Boolean {
         if (exception != null) {
             if (exception.rootCause is TaskCancelException) return true

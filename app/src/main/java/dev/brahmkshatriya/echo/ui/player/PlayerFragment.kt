@@ -30,6 +30,7 @@ import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isLandscape
+import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.isRTL
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.setupPlayerInfoBehavior
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -53,18 +54,34 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val maxRound = 8.dpToPx(requireContext())
         val padding = 8.dpToPx(requireContext())
-        val height = 64.dpToPx(requireContext())
+        val height = resources.getDimension(R.dimen.collapsed_cover_size).toInt()
+
         var currHeight = height
         var currRound = maxRound.toFloat()
-        var currPadding = padding
+        var currRight = 0
+        var currLeft = 0
+
+        var leftPadding = 0
+        var rightPadding = 0
+
+        fun updateOutline() {
+            val offset = max(0f, uiViewModel.playerSheetOffset.value)
+            val inv = 1 - offset
+            currHeight = height + ((view.height - height) * offset).toInt()
+            currLeft = ((padding + leftPadding) * inv).toInt()
+            currRight = view.width - ((padding + rightPadding) * inv).toInt()
+            currRound = maxRound * inv
+            binding.root.invalidateOutline()
+        }
+        observe(uiViewModel.combined) {
+            leftPadding = if (view.context.isRTL()) it.end else it.start
+            rightPadding = if (view.context.isRTL()) it.start else it.end
+            updateOutline()
+        }
         binding.root.outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View, outline: Outline) {
                 outline.setRoundRect(
-                    currPadding,
-                    0,
-                    view.width - currPadding,
-                    currHeight,
-                    currRound
+                    currLeft, 0, currRight, currHeight, currRound
                 )
             }
         }
@@ -120,14 +137,9 @@ class PlayerFragment : Fragment() {
         }
 
         observe(uiViewModel.playerSheetOffset) {
+            updateOutline()
             viewModel.browser.value?.volume = 1 + min(0f, it)
             val offset = max(0f, it)
-            val inv = 1 - offset
-            currHeight = height + ((view.height - height) * offset).toInt()
-            currPadding = (padding * inv).toInt()
-            currRound = maxRound * inv
-            binding.root.invalidateOutline()
-
             if (offset < 1)
                 requireActivity().hideSystemUi(false)
             else if (uiViewModel.playerBgVisibleState.value)

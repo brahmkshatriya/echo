@@ -21,7 +21,8 @@ import dev.brahmkshatriya.echo.db.models.UserEntity
         EchoMediaItemEntity::class,
         TrackDownloadTaskEntity::class
     ],
-    version = 5
+    version = 5,
+    exportSchema = false
 )
 abstract class EchoDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao

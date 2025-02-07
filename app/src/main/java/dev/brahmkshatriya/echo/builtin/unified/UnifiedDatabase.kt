@@ -29,6 +29,7 @@ import dev.brahmkshatriya.echo.utils.toJson
         UnifiedDatabase.SavedEntity::class,
     ],
     version = 3,
+    exportSchema = false
 )
 abstract class UnifiedDatabase : RoomDatabase() {
     abstract fun playlistDao(): PlaylistDao

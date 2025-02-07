@@ -115,7 +115,7 @@ class ExceptionFragment : Fragment() {
         }
 
         fun Context.getTitle(throwable: Throwable): String = when (throwable) {
-            is IncompatibleClassChangeError -> getString(R.string.extension_out_of_date)
+            is LinkageError -> getString(R.string.extension_out_of_date)
             is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
             is PlayerException -> throwable.details.title
             is ExtensionLoadingException -> "${getString(R.string.invalid_extension)}: ${throwable.type}"

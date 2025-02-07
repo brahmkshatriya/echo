@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
-import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
+import dev.brahmkshatriya.echo.databinding.DialogExtensionsBinding
 import dev.brahmkshatriya.echo.ui.common.openFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.autoCleared
@@ -32,12 +32,12 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private var binding by autoCleared<DialogExtensionsListBinding>()
+    private var binding by autoCleared<DialogExtensionsBinding>()
     private val args by lazy { requireArguments() }
     private val type by lazy { ExtensionType.valueOf(args.getString("type")!!) }
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
-        binding = DialogExtensionsListBinding.inflate(inflater, parent, false)
+        binding = DialogExtensionsBinding.inflate(inflater, parent, false)
         return binding.root
     }
 
@@ -90,6 +90,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 button.isChecked = metadata.id == viewModel.currentFlow.value
                 metadata.iconUrl?.toImageHolder().loadAsCircle(button, R.drawable.ic_extension) {
                     button.icon = it
+                    if (it != null) button.iconTint = null
                 }
                 button.id = index
                 index to metadata
