@@ -312,4 +312,27 @@
     <string name="sort_date">Data</string>
     <string name="sort_subtitle">Podtytuł</string>
     <string name="sort_descending">%1$s Opadający</string>
+    <string name="cancelled">Anulowano</string>
+    <string name="items">%1$d elementów</string>
+    <string name="downloading_x">Pobieranie %1$s</string>
+    <string name="pause_all">Wstrzymaj wszystko</string>
+    <string name="cancel_all">Anuluj wszystko</string>
+    <string name="progress_x">Postęp: %1$d%%</string>
+    <string name="initialized">Zainicjowano</string>
+    <string name="paused_x">Wstrzymano: %1$d%%</string>
+    <string name="completed">Zakończono</string>
+    <string name="metadata">Metadane</string>
+    <string name="merging">Łączenie</string>
+    <string name="tagging">Otagowywanie</string>
+    <string name="failed">Niepowodzenie</string>
+    <string name="downloading_item">Pobieranie %1$s</string>
+    <string name="misc">Różne</string>
+    <string name="nothing_to_download_in_x">Nic nie do pobrania w %1$s</string>
+    <string name="update_error">Błąd aktualizacji</string>
+    <string name="downloaded_x">Pobrano %1$s</string>
+    <string name="download_progress">Postęp pobierania</string>
+    <string name="playlists">Playlisty</string>
+    <string name="saved">Zapisane</string>
+    <string name="checking_for_extension_updates">Sprawdzanie aktualizacji rozszerzeń</string>
+    <string name="no_download_extension">Nie znaleziono rozszerzenia do pobrania, użyj kodu \"down\"</string>
 </resources>
