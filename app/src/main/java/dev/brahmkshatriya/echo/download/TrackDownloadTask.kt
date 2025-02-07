@@ -31,7 +31,7 @@ class TrackDownloadTask(
     private val downloadExtension: MiscExtension,
 ) {
 
-    private val errors = synchronizedList(listOf<Throwable>())
+    private val errors = synchronizedList(mutableListOf<Throwable>())
 
     private suspend fun download(
         i: Int,

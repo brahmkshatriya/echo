@@ -61,8 +61,8 @@ import dev.brahmkshatriya.echo.ui.player.PlayerTrackAdapter.Listener
 import dev.brahmkshatriya.echo.ui.player.PlayerTrackAdapter.ViewHolder
 import dev.brahmkshatriya.echo.ui.settings.LookFragment
 import dev.brahmkshatriya.echo.utils.image.load
+import dev.brahmkshatriya.echo.utils.image.loadBitmap
 import dev.brahmkshatriya.echo.utils.image.loadBlurred
-import dev.brahmkshatriya.echo.utils.image.loadWithBitmap
 import dev.brahmkshatriya.echo.utils.image.loadWithThumb
 import dev.brahmkshatriya.echo.utils.ui.PlayerItemSpan
 import dev.brahmkshatriya.echo.utils.ui.animateVisibility
@@ -91,7 +91,7 @@ class DefaultViewHolder(
         binding.applyTrackDetails(extensionId, item)
         this.item = item
 
-        item.track.cover.loadWithBitmap(binding.root) { bitmap ->
+        item.track.cover.loadBitmap(binding.root) { bitmap ->
             val colors = binding.root.context.getPlayerColors(bitmap)
             binding.bgGradient.imageTintList = ColorStateList.valueOf(colors.background)
             binding.expandedToolbar.run {

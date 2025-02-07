@@ -1,9 +1,6 @@
 package dev.brahmkshatriya.echo.ui.adapter
 
-import android.annotation.SuppressLint
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -14,7 +11,7 @@ import dev.brahmkshatriya.echo.ui.adapter.ShowButtonViewHolder.Companion.ifShowi
 class ShelfListItemViewAdapter(
     private val clientId: String,
     private val listener: ShelfAdapter.Listener
-) : ListAdapter<Any, ShelfListItemViewHolder>(DiffCallback) {
+) : RecyclerView.Adapter<ShelfListItemViewHolder>() {
 
     var transition: String = ""
     var shelf: Shelf.Lists<*>? = null
@@ -27,22 +24,16 @@ class ShelfListItemViewAdapter(
             }
         }
 
-    object DiffCallback : DiffUtil.ItemCallback<Any>() {
-        override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
-            return when {
-                oldItem is EchoMediaItem && newItem is EchoMediaItem -> oldItem.sameAs(newItem)
-                oldItem is Shelf.Category && newItem is Shelf.Category -> oldItem.sameAs(newItem)
-                oldItem is Track && newItem is Track -> oldItem.id == newItem.id
-                else -> false
-            }
-        }
+    fun getItem(position: Int) = list?.getOrNull(position)
 
-        @SuppressLint("DiffUtilEquals")
-        override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
-            return oldItem == newItem
-        }
-
+    var list: List<Any>? = null
+    fun submitList(list: List<Any>?) {
+        notifyItemRangeRemoved(0, itemCount)
+        this.list = list
+        notifyItemRangeInserted(0, list?.size ?: 0)
     }
+
+    override fun getItemCount() = list?.size ?: 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         -1 -> GridViewHolder.create(parent, listener, clientId)
@@ -62,6 +53,7 @@ class ShelfListItemViewAdapter(
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
+
 
     override fun onBindViewHolder(holder: ShelfListItemViewHolder, position: Int) {
         holder.shelf = shelf ?: return

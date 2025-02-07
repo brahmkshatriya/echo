@@ -56,7 +56,8 @@ class DownloadItemAdapter(
             this.item = item
             playPause.run {
                 removeOnCheckedStateChangedListener(playPauseListener)
-                isVisible = item.supportsPausing
+                isVisible =
+                    if (item is DownloadItem.Track && item.taskIds.size <= 1) false else item.supportsPausing
                 isChecked = item.isPlaying
                 addOnCheckedStateChangedListener(playPauseListener)
             }
