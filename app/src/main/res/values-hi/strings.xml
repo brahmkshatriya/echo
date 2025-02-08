@@ -319,4 +319,12 @@
     <string name="pause_all">सभी को रोकें</string>
     <string name="downloading_x">डाउनलोड हो रहा है %1$s</string>
     <string name="merging">विलय</string>
+    <string name="downloaded_x">डाउनलोड किया %1$s</string>
+    <string name="playlists">प्लेलिस्ट्स</string>
+    <string name="saved">सहेजा गया</string>
+    <string name="nothing_to_download_in_x">%1$s में डाउनलोड करने के लिए कुछ नहीं है</string>
+    <string name="update_error">अपडेट त्रुटि</string>
+    <string name="no_download_extension">कोई डाउनलोड एक्सटेंशन नहीं मिला, कोड \"down\" का उपयोग करें</string>
+    <string name="download_progress">डाउनलोड प्रगति</string>
+    <string name="checking_for_extension_updates">एक्सटेंशन अपडेट की जांच कर रहे हैं</string>
 </resources>
