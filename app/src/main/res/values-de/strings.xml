@@ -292,7 +292,7 @@
     <string name="downloaded_x">Heruntergeladen %1$s</string>
     <string name="download_progress">Download-Fortschritt</string>
     <string name="end_of_track">Ende des Tracks</string>
-    <string name="_1hr">1h</string>
+    <string name="_1hr">1 Std</string>
     <string name="_2hr">2 Std</string>
     <string name="sleep_timer_set_for">Schlaf-Timer auf %1$s gesetzt</string>
     <plurals name="number_hour">
