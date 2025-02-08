@@ -266,7 +266,7 @@
     <string name="liked_track">Mochtet %1$s</string>
     <string name="unliked_track">Nicht mehr gemocht %1$s</string>
     <string name="_15min">15 Min</string>
-    <string name="_30min">30 Min</string>
+    <string name="_30min">30m</string>
     <string name="_45min">45m</string>
     <string name="sleep_timer_desc">Stellen Sie einen Schlaf-Timer ein, um die Wiedergabe nach einer bestimmten Zeit zu stoppen</string>
     <string name="sleep_on_specific_time">Zu einer bestimmten Zeit schlafen</string>
