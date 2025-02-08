@@ -268,7 +268,7 @@
     <string name="_15min">15 Min</string>
     <string name="_30min">30 Min</string>
     <string name="_45min">45 Min</string>
-    <string name="sleep_timer_desc">Stellen Sie einen Schlaf-Timer ein, um die Wiedergabe nach einer bestimmten Zeit zu stoppen</string>
+    <string name="sleep_timer_desc">Stelle einen Schlaf-Timer ein, um die Wiedergabe nach einer bestimmten Zeit zu stoppen</string>
     <string name="sleep_on_specific_time">Zu einer bestimmten Zeit schlafen</string>
     <string name="sleep_timer_canceled">Schlaf-Timer abgebrochen</string>
     <string name="cancelled">Abgebrochen</string>
