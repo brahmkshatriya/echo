@@ -46,8 +46,8 @@
     <string name="pause_all">Pauziraj Sve</string>
     <string name="cancel_all">Откажи све</string>
     <plurals name="number_songs">
-        <item quantity="one"></item>
-        <item quantity="few"></item>
+        <item quantity="one">%1$d Песме</item>
+        <item quantity="few">%1$d Песме</item>
         <item quantity="other">%1$d Песме</item>
     </plurals>
     <string name="blacklist_folder_keywords">Ključne reči za crnu listu foldera</string>
@@ -61,8 +61,8 @@
     <string name="change_pitch_with_speed_desc">Dobijte taj zvuk usporenog snimka</string>
     <string name="audio_fx_summary">Efekti primenjeni na sve pesme</string>
     <plurals name="number_min">
-        <item quantity="one"></item>
-        <item quantity="few"></item>
+        <item quantity="one">%1$d Мин</item>
+        <item quantity="few">%1$d Мин</item>
         <item quantity="other">%1$d Мин</item>
     </plurals>
     <string name="misc">Razno</string>
@@ -89,8 +89,8 @@
     <string name="bass_boost">Povećanje basa</string>
     <string name="playback">Reprodukcija</string>
     <plurals name="number_hour">
-        <item quantity="one"></item>
-        <item quantity="few"></item>
+        <item quantity="one">%1$d sati</item>
+        <item quantity="few">%1$d sati</item>
         <item quantity="other">%1$d sati</item>
     </plurals>
     <string name="extension_updated_successfully">%1$s uspešno ažurirano</string>
@@ -247,8 +247,8 @@
     <string name="saved_item_to_library">Сачувано %1$s у библиотеци</string>
     <string name="track_added_to_queue">%1$s dodat u red</string>
     <plurals name="number_followers">
-        <item quantity="one"></item>
-        <item quantity="few"></item>
+        <item quantity="one">%1$d Pratioci</item>
+        <item quantity="few">%1$d Pratioci</item>
         <item quantity="other">%1$d Pratioci</item>
     </plurals>
     <string name="show_tabs">Prikaži kartice</string>

@@ -166,7 +166,7 @@
     <string name="sleep_timer_desc">Establecer un temporizador de sueño para detener la reproducción después de un cierto tiempo</string>
     <plurals name="number_min">
         <item quantity="one">%1$d Min</item>
-        <item quantity="many"></item>
+        <item quantity="many">%1$d Mins</item>
         <item quantity="other">%1$d Mins</item>
     </plurals>
     <string name="cancelled">Cancelado</string>
@@ -313,7 +313,7 @@
     <string name="checking_for_extension_updates">Buscando actualizaciones de extensiones</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hora</item>
-        <item quantity="many"></item>
+        <item quantity="many">%1$d Horas</item>
         <item quantity="other">%1$d Horas</item>
     </plurals>
     <string name="sort_descending">%1$s Descendiendo</string>

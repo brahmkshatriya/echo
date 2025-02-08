@@ -171,8 +171,8 @@
         <item quantity="zero">%1$d متابعين</item>
         <item quantity="one">%1$d متابع</item>
         <item quantity="two">%1$d متابعين</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
+        <item quantity="few">%1$d متابعين</item>
+        <item quantity="many">%1$d متابعين</item>
         <item quantity="other">%1$d متابعين</item>
     </plurals>
     <string name="blacklist_folder_keywords">كلمات مفتاحية لمجلد القائمة السوداء</string>
@@ -183,8 +183,8 @@
         <item quantity="zero">%1$d دقيقة</item>
         <item quantity="one">%1$d دقيقة</item>
         <item quantity="two">%1$d دقيقة</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
+        <item quantity="few">%1$d دقيقة</item>
+        <item quantity="many">%1$d دقيقة</item>
         <item quantity="other">%1$d دقيقة</item>
     </plurals>
     <string name="downloading_item">جارٍ تنزيل %1$s</string>
@@ -327,8 +327,8 @@
         <item quantity="zero">%1$d ساعات</item>
         <item quantity="one">%1$d ساعة</item>
         <item quantity="two">%1$d ساعات</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
+        <item quantity="few">%1$d ساعات</item>
+        <item quantity="many">%1$d ساعات</item>
         <item quantity="other">%1$d ساعات</item>
     </plurals>
     <string name="show_tabs">عرض علامات التبويب</string>
