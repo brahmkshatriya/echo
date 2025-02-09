@@ -214,6 +214,12 @@ class ExtensionLoader(
     }
 
     private suspend fun getAllPlugins(scope: CoroutineScope) {
+        extensionListFlow.value = null
+        trackerListFlow.value = null
+        lyricsListFlow.value = null
+        miscListFlow.value = null
+        System.gc()
+
         val music = MutableStateFlow<Unit?>(null)
         scope.launch {
             musicExtensionRepo.getPlugins { list ->

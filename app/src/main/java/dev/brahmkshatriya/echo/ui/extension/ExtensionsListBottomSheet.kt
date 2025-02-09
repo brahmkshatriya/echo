@@ -88,9 +88,11 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 button.text = metadata.name
                 binding.buttonToggleGroup.addView(button)
                 button.isChecked = metadata.id == viewModel.currentFlow.value
-                metadata.iconUrl?.toImageHolder().loadAsCircle(button, R.drawable.ic_extension) {
-                    button.icon = it
-                    if (it != null) button.iconTint = null
+                metadata.iconUrl?.toImageHolder().loadAsCircle(button) {
+                    if (it != null) {
+                        button.icon = it
+                        button.iconTint = null
+                    } else button.setIconResource(R.drawable.ic_extension)
                 }
                 button.id = index
                 index to metadata

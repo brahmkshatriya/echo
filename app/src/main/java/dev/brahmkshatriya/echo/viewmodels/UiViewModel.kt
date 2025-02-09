@@ -276,8 +276,9 @@ class UiViewModel @Inject constructor(
             val combined =
                 viewModel.run { playerNavViewInsets.combine(systemInsets) { nav, _ -> nav } }
             observe(combined) {
+                val bottomPadding = 8.dpToPx(view.context)
                 val collapsedCoverSize =
-                    view.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size)
+                    view.resources.getDimensionPixelSize(R.dimen.collapsed_cover_size) + bottomPadding
                 val peekHeight =
                     view.resources.getDimensionPixelSize(R.dimen.bottom_player_peek_height)
                 val height = if (it.bottom == 0) collapsedCoverSize else peekHeight

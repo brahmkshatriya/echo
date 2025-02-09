@@ -72,7 +72,7 @@ class DownloadWorker @AssistedInject constructor(
                 tasks.forEach { track ->
                     trackTaskMap.getOrPut(track.id) {
                         val task = TrackDownloadTask(
-                            track, dao, semaphore, extensionsList, downloadExtension
+                            context, track, dao, semaphore, extensionsList, downloadExtension
                         )
                         launch {
                             val errors = task.await()

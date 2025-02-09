@@ -142,7 +142,12 @@ class ExceptionFragment : Fragment() {
                 }
             }
 
-            is DownloadException -> "${getString(R.string.download)}: ${throwable.trackEntity.track.title}: ${getTitle(throwable.cause)}"
+            is DownloadException -> "${getString(R.string.download)}: ${throwable.trackEntity.track.title}: ${
+                getTitle(
+                    throwable.cause
+                )
+            }"
+
             is TaskException -> "${throwable.taskEntity.run { title ?: id }} - ${getTitle(throwable.cause)}"
             is CancellationException -> getString(R.string.cancelled)
             else -> throwable.message ?: getString(R.string.error)
@@ -163,11 +168,12 @@ Required Extensions : ${throwable.requiredExtensions.joinToString(", ")}
 """.trimIndent()
 
             is AppException -> """
+App Version : ${appVersion()}
+
 Extension : ${throwable.extension.name}
 Id : ${throwable.extension.name}
 Type : ${throwable.extension.type}
 Version : ${throwable.extension.version}
-App Version : ${appVersion()}
 
 ${getDetails(throwable.cause)}
 """.trimIndent()
@@ -183,9 +189,12 @@ Task : ${throwable.taskEntity}
 ${getDetails(throwable.cause)}
 """.trimIndent()
 
-            is UpdateException -> throwable.cause.stackTraceToString()
+            is UpdateException -> getDetails(throwable.cause)
 
-            else -> throwable.stackTraceToString()
+            else -> buildString {
+                appendLine(throwable.message)
+                appendLine(throwable.stackTraceToString())
+            }
         }
 
 

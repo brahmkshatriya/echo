@@ -67,7 +67,12 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
                 ).root
                 button.text = user.name
                 binding.accountListToggleGroup.addView(button)
-                user.cover.loadAsCircle(button, R.drawable.ic_account_circle) { button.icon = it }
+                user.cover.loadAsCircle(button) {
+                    if (it != null) {
+                        button.icon = it
+                        button.iconTint = null
+                    } else button.setIconResource(R.drawable.ic_account_circle)
+                }
                 button.id = index
             }
         }

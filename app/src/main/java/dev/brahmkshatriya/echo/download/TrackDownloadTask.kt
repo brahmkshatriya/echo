@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.download
 
+import android.content.Context
+import android.media.MediaScannerConnection
 import dev.brahmkshatriya.echo.common.MiscExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.DownloadContext
@@ -24,6 +26,7 @@ import java.util.Collections.synchronizedList
 import java.util.concurrent.ConcurrentHashMap
 
 class TrackDownloadTask(
+    private val context: Context,
     val entity: TrackDownloadTaskEntity,
     private val dao: DownloadDao,
     private val semaphore: Semaphore,
@@ -76,8 +79,8 @@ class TrackDownloadTask(
 
     suspend fun start(): Boolean = coroutineScope {
         semaphore.withPermit {
-            val context = entity.contextId?.let { dao.getMediaItemEntity(it) }
-            val server = LoadDataTask(dao, entity, context, extensionsList, downloadExtension)
+            val dContext = entity.contextId?.let { dao.getMediaItemEntity(it) }
+            val server = LoadDataTask(dao, entity, dContext, extensionsList, downloadExtension)
                 .also { loadTask = it }
                 .await().getOrElse {
                     return@coroutineScope ifCancelled(it)
@@ -90,7 +93,7 @@ class TrackDownloadTask(
                         extensionId,
                         track,
                         sortOrder,
-                        context?.mediaItem
+                        dContext?.mediaItem
                     )
                 }
             val folder = File(trackEntity.folderPath!!)
@@ -127,12 +130,15 @@ class TrackDownloadTask(
             val taggingEntity = MediaTaskEntity(
                 "${entity.id}_tag".hashCode().toLong(), entity.id, TaskType.TAGGING
             )
-            FiledTask(dao, taggingEntity, downloadExtension) {
+            val file = FiledTask(dao, taggingEntity, downloadExtension) {
                 tag(downloadContext, mergedFile)
             }.also { taggingTask = it }.await().getOrElse {
                 return@coroutineScope ifCancelled(it)
             }
 
+            MediaScannerConnection.scanFile(
+                context, arrayOf(file.toString()), null, null
+            )
             true
         }
     }

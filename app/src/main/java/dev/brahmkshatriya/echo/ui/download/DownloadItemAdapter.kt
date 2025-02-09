@@ -56,19 +56,27 @@ class DownloadItemAdapter(
             this.item = item
             playPause.run {
                 removeOnCheckedStateChangedListener(playPauseListener)
-                isVisible =
-                    if (item is DownloadItem.Track && item.taskIds.size <= 1) false else item.supportsPausing
+                isVisible = when(item) {
+                    is DownloadItem.Task -> item.supportsPausing
+                    is DownloadItem.Track -> if (item.taskIds.size > 1) false else item.supportsPausing
+                }
                 isChecked = item.isPlaying
                 addOnCheckedStateChangedListener(playPauseListener)
             }
             itemView.alpha = if (item.taskIds.isEmpty()) 0.66f else 1f
             progress.run {
-                isVisible = if (item is DownloadItem.Track) item.taskIds.size > 1 else true
+                isVisible =  when(item) {
+                    is DownloadItem.Task -> item.taskEntity.status != Failed
+                    is DownloadItem.Track -> item.taskIds.size > 1 && item.tasks.any { it.status != Failed }
+                }
                 isIndeterminate = item.total == null
                 progress = item.progress.toInt()
                 max = item.total?.toInt() ?: item.progress.toInt()
             }
-            cancel.isVisible = progress.isVisible
+            cancel.isVisible = when(item) {
+                is DownloadItem.Task -> true
+                is DownloadItem.Track -> item.taskIds.size > 1
+            }
             cancel.setOnClickListener(cancelListener)
         }
 

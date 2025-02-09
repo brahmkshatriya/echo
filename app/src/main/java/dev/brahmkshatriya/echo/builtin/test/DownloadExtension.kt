@@ -21,7 +21,6 @@ import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.get
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.io.File
@@ -109,10 +108,12 @@ class DownloadExtension(
         override val start = SuspendedFunction {
             job = launch {
                 progressFlow.emit(Progress.Initialized(100))
-                repeat(10) {
+                var it = 0
+                while(it < 10) {
                     println("Progress: ${it * 10L}")
+                    Thread.sleep(1000)
                     progressFlow.emit(Progress.InProgress(it * 10L, null))
-                    delay(1000)
+                    it++
                 }
                 progressFlow.emit(Progress.Final.Completed(0L, file))
             }
