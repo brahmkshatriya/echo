@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.extensions.plugger
 
 import android.content.Context
 import android.os.Build
-import dalvik.system.DexClassLoader
 import dev.brahmkshatriya.echo.common.models.Metadata
 import tel.jeelpa.plugger.PluginLoader
 import java.io.File
@@ -13,20 +12,20 @@ class AndroidPluginLoader<TPlugin>(
     private val context: Context
 ) : PluginLoader<Metadata, TPlugin> {
 
-    private fun getClassLoader(path: String, libFolder: String) = DexClassLoader(
-        path,
-        null,
-        libFolder,
-        context.classLoader
+    private fun getClassLoader(
+        preservedPackages: List<String>, path: String, libFolder: String
+    ) = ClassLoaderWithPreserved(
+        preservedPackages, path, null, libFolder, context.classLoader
     )
 
     @Suppress("UNCHECKED_CAST")
     override fun loadPlugin(pluginMetadata: Metadata): TPlugin {
         val libFolder = unloadLibraries(pluginMetadata)
-        return getClassLoader(pluginMetadata.path, libFolder.absolutePath)
-            .loadClass(pluginMetadata.className)
-            .getConstructor()
-            .newInstance() as TPlugin
+        return getClassLoader(
+            pluginMetadata.preservedPackages,
+            pluginMetadata.path,
+            libFolder.absolutePath
+        ).loadClass(pluginMetadata.className).getConstructor().newInstance() as TPlugin
     }
 
     private fun unloadLibraries(

@@ -43,10 +43,12 @@ import dev.brahmkshatriya.echo.playback.loading.StreamableMediaSource
 import dev.brahmkshatriya.echo.playback.render.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.render.RenderersFactory
 import dev.brahmkshatriya.echo.ui.settings.AudioFragment.AudioPreference.Companion.CLOSE_PLAYER
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @OptIn(UnstableApi::class)
@@ -83,7 +85,7 @@ class PlayerService : MediaLibraryService() {
     @Inject
     lateinit var currentServers: MutableStateFlow<Map<String, Streamable.Media.Server>>
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("PlayerService")
 
     @OptIn(UnstableApi::class)
     private fun createExoplayer(extListFlow: MutableStateFlow<List<MusicExtension>?>) = run {

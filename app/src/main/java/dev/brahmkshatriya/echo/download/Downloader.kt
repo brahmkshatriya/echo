@@ -39,7 +39,6 @@ class Downloader(
     fun add(
         tracks: List<DownloadContext>
     ) = scope.launch {
-
         val contexts = tracks.mapNotNull { it.context }.distinctBy { it.id }.associate {
             it.id to dao.insertMediaItemEntity(EchoMediaItemEntity(0, it.toJson()))
         }

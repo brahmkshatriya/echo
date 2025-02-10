@@ -26,7 +26,6 @@
     <string name="search">Suche</string>
     <string name="play_pause">Abspielen/Pausieren</string>
     <string name="retry">Erneut Versuchen</string>
-    <string name="app_name">Echo</string>
     <string name="failed_loading">Ladevorgang Fehlgeschlagen</string>
     <string name="repeat">Wiederholen</string>
     <string name="clear_playlist">Playliste leeren</string>
@@ -288,7 +287,7 @@
     <string name="downloading_item">Lade %1$s herunter</string>
     <string name="misc">Sonstiges</string>
     <string name="update_error">Aktualisierungsfehler</string>
-    <string name="no_download_extension">Keine Download-Erweiterung gefunden, verwenden Sie den Code \"down\"</string>
+    <string name="no_download_extension">Keine Download-Erweiterung gefunden, verwenden Sie den Code \"echodown\"</string>
     <string name="downloaded_x">%1$s heruntergeladen</string>
     <string name="download_progress">Download-Fortschritt</string>
     <string name="end_of_track">Ende des Tracks</string>

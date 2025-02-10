@@ -190,7 +190,7 @@
     <string name="downloading_item">جارٍ تنزيل %1$s</string>
     <string name="misc">متنوع</string>
     <string name="update_error">خطأ في التحديث</string>
-    <string name="no_download_extension">لم يتم العثور على إضافة تنزيل، استخدم الرمز \"down\"</string>
+    <string name="no_download_extension">لم يتم العثور على إضافة تنزيل، استخدم الرمز \"echodown\"</string>
     <string name="downloaded_x">تم تنزيل %1$s</string>
     <string name="download_progress">تقدم التنزيل</string>
     <string name="playlists">قوائم التشغيل</string>

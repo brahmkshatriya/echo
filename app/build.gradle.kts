@@ -47,6 +47,7 @@ android {
 dependencies {
     implementation(project(":common"))
     implementation(libs.plugger)
+    implementation("org.smali:dexlib2:2.5.2")
 
     implementation(libs.appcompat)
 

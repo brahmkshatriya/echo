@@ -17,6 +17,9 @@
             android:layout_height="wrap_content"
             android:background="@null"
             app:navigationIcon="@drawable/ic_close"
+            app:menu="@menu/extensions_list_menu"
+            android:paddingEnd="8dp"
+            android:paddingStart="0dp"
             app:title="@string/extensions"
             app:titleCentered="true" />
 
@@ -37,31 +40,15 @@
             app:selectionRequired="true"
             app:singleSelection="true" />
 
-        <com.google.android.material.button.MaterialButtonGroup
-            style="@style/Widget.Material3.MaterialButtonGroup.Connected"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addExtension"
+            style="@style/Widget.Material3.Button.UnelevatedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:icon="@drawable/ic_add_circle"
             android:layout_marginHorizontal="24dp"
-            android:spacing="8dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/addExtension"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minHeight="64dp"
-                android:text="@string/add_extension" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/manageExtensions"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minHeight="64dp"
-                android:text="@string/manage_extensions" />
-        </com.google.android.material.button.MaterialButtonGroup>
+            android:minHeight="64dp"
+            android:text="@string/add_extension" />
 
     </LinearLayout>
 

@@ -17,7 +17,6 @@
     <string name="extension_disabled">%1$s (असमर्थितम्)</string>
     <string name="enabled">समर्थितम्</string>
     <string name="disabled">असमर्थितम्</string>
-    <string name="app_name">इको</string>
     <string name="home">गृहम्</string>
     <string name="library">पुस्तकालयः</string>
     <string name="search">अन्वेषणम्</string>
@@ -303,7 +302,7 @@
     <string name="downloading_item">%1$s डाउनलोड् करणम्</string>
     <string name="misc">विविधाः</string>
     <string name="update_error">अद्यतन त्रुटि</string>
-    <string name="no_download_extension">कोऽपि डाउनलोड् विस्तारः न प्राप्तः, \"down\" इति कोडस्य उपयोगं कुर्वन्तु</string>
+    <string name="no_download_extension">कोऽपि डाउनलोड् विस्तारः न प्राप्तः, \"echodown\" इति कोडस्य उपयोगं कुर्वन्तु</string>
     <string name="downloaded_x">%1$s डाउनलोड् कृतम्</string>
     <string name="download_progress">प्रगतिः डाउनलोड् कुर्वन्तु</string>
     <string name="playlists">प्लेलिस्ट्स</string>

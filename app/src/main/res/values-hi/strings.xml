@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ईको</string>
     <string name="library">लाइब्रेरी</string>
     <plurals name="number_songs">
         <item quantity="one">%1$d गाना</item>

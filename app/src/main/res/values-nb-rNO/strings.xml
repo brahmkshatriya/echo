@@ -43,7 +43,6 @@
     <string name="username">Brukernavn</string>
     <string name="confirm">Bekreft</string>
     <string name="animations">Animasjoner</string>
-    <string name="app_name">Echo</string>
     <string name="songs">Sanger</string>
     <string name="radio">Radio</string>
     <string name="view">Vis</string>
@@ -162,7 +161,7 @@
     <string name="add_extensions">Legg til utvidelser</string>
     <string name="invalid_extension_list">Ugyldig liste over filtyper</string>
     <string name="update_error">Oppdateringsfeil</string>
-    <string name="no_download_extension">Ingen nedlastingsutvidelse funnet, bruk koden \"down\"</string>
+    <string name="no_download_extension">Ingen nedlastingsutvidelse funnet, bruk koden \"echodown\"</string>
     <string name="downloaded_x">Lastet ned %1$s</string>
     <string name="download_progress">Nedlastingsprogresjon</string>
     <string name="playlists">Spillelister</string>

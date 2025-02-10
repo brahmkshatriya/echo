@@ -14,6 +14,8 @@ class ApkManifestParser(
 
         Metadata(
             path = data.path,
+            preservedPackages = getOrNull("preserved_packages")
+                .orEmpty().split(",").map { it.trim() },
             className = get("class"),
             importType = importType,
             id = get("id"),

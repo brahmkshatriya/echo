@@ -174,7 +174,6 @@
     <string name="enabled">已启用</string>
     <string name="manage_extensions">管理扩展</string>
     <string name="disabled">已禁用</string>
-    <string name="app_name">Echo</string>
     <string name="amoled">黑色主题</string>
     <string name="seekbar">播放进度条</string>
     <string name="audio_qualities">音频质量</string>

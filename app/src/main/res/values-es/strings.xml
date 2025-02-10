@@ -186,7 +186,7 @@
     <string name="downloading_item">Descargando %1$s</string>
     <string name="misc">Varios</string>
     <string name="update_error">Error de Actualización</string>
-    <string name="no_download_extension">No se encontró la extensión de descarga, usa el código \"down\"</string>
+    <string name="no_download_extension">No se encontró la extensión de descarga, usa el código \"echodown\"</string>
     <string name="downloaded_x">Descargado %1$s</string>
     <string name="download_progress">Progreso de Descarga</string>
     <string name="playlists">Listas de reproducción</string>

@@ -47,10 +47,18 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
             dismiss()
             ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
         }
-        binding.manageExtensions.setOnClickListener {
-            dismiss()
-            requireActivity().openFragment(ManageExtensionsFragment())
+
+        binding.topAppBar.setOnMenuItemClickListener {
+            when(it.itemId){
+               R.id.menu_manage_ext -> {
+                   dismiss()
+                   requireActivity().openFragment(ManageExtensionsFragment())
+                   true
+               }
+                else -> false
+            }
         }
+
         val viewModel = when (type) {
             ExtensionType.LYRICS -> activityViewModels<LyricsViewModel>().value
             ExtensionType.MUSIC -> activityViewModels<ExtensionViewModel>().value

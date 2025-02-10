@@ -102,7 +102,7 @@
     <string name="add_extensions">Dodaj Ekstenzije</string>
     <string name="invalid_extension_list">Nevažeća lista ekstenzija</string>
     <string name="update_error">Грешка при ажурирању</string>
-    <string name="no_download_extension">Nema pronađene ekstenzije za preuzimanje, koristi kod \"down\"</string>
+    <string name="no_download_extension">Nema pronađene ekstenzije za preuzimanje, koristi kod \"echodown\"</string>
     <string name="downloaded_x">Preuzeto %1$s</string>
     <string name="download_progress">Napredak preuzimanja</string>
     <string name="playlists">Playliste</string>

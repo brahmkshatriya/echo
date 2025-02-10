@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.helpers.ImportType
  * @property iconUrl The icon URL of the extension
  * @property repoUrl The repository URL of the extension
  * @property updateUrl The update URL of the extension
+ * @property preservedPackages The packages to preserve, ideally for extensions that use native libraries
  * @property enabled Whether the extension is enabled
  */
 data class Metadata(
@@ -32,5 +33,6 @@ data class Metadata(
     val iconUrl: String? = null,
     val repoUrl: String? = null,
     val updateUrl: String? = null,
+    val preservedPackages: List<String> = listOf(),
     val enabled: Boolean = true
 )

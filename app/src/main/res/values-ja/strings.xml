@@ -74,7 +74,6 @@
     <string name="could_not_find_anything">%1$sに関連するものが見つかりませんでした</string>
     <string name="animation">アニメーション</string>
     <string name="restart">再起動</string>
-    <string name="app_name">Echo</string>
     <string name="home">ホーム</string>
     <string name="library">ライブラリ</string>
     <string name="search">検索</string>

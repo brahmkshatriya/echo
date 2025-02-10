@@ -11,7 +11,6 @@
     <string name="str_copy">Kopiuj</string>
     <string name="artist">Artysta</string>
     <string name="lyrics">Tekst</string>
-    <string name="app_name">Echo</string>
     <string name="home">Strona główna</string>
     <string name="library">Biblioteka</string>
     <string name="search">Szukaj</string>
@@ -334,5 +333,5 @@
     <string name="playlists">Playlisty</string>
     <string name="saved">Zapisane</string>
     <string name="checking_for_extension_updates">Sprawdzanie aktualizacji rozszerzeń</string>
-    <string name="no_download_extension">Nie znaleziono rozszerzenia do pobrania, użyj kodu \"down\"</string>
+    <string name="no_download_extension">Nie znaleziono rozszerzenia do pobrania, użyj kodu \"echodown\"</string>
 </resources>

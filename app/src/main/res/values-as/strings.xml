@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ইক\'</string>
     <string name="home">ঘৰ</string>
     <string name="library">পুথিভঁৰাল</string>
     <string name="album">আলবাম</string>
@@ -325,6 +324,6 @@
     <string name="playlists">প্লেলিস্টসমূহ</string>
     <string name="saved">সংৰক্ষিত</string>
     <string name="nothing_to_download_in_x">%1$s ত একো ডাউনলোড কৰিবলৈ নাই</string>
-    <string name="no_download_extension">কোনো ডাউনলোড এক্সটেনচন পোৱা নগ\'ল, কোড \"down\" ব্যৱহাৰ কৰক</string>
+    <string name="no_download_extension">কোনো ডাউনলোড এক্সটেনচন পোৱা নগ\'ল, কোড \"echodown\" ব্যৱহাৰ কৰক</string>
     <string name="checking_for_extension_updates">এক্সটেনচন আপডেটৰ বাবে পৰীক্ষা কৰা হৈছে</string>
 </resources>

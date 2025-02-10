@@ -109,7 +109,6 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val tracks = dao.getTracks(entity.id).associateBy { it.eid }
         if (tracks.isEmpty()) return emptyList()
         var last = entity.last
-        println("${entity.last}: ${tracks.map { it.value.after to it.value.eid }}")
         while (last != null) {
             val track = tracks[last]!!
             new.add(track.track)

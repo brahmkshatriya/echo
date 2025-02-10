@@ -57,25 +57,17 @@ sealed class DownloadItem {
 
             return map.values.map { (track, task) ->
                 val taskIds = task.map { it.id }
-                val extension = extensionList.getExtension(track.extensionId)?.metadata
+                val ext = extensionList.getExtension(track.extensionId)?.metadata
                 val context = contexts.firstOrNull { it.id == track.contextId }?.mediaItem
                 val pause =
                     task.takeIf { it.isNotEmpty() }?.any { !it.supportsPause }?.not() ?: false
-                val isPlaying =
+                val playing =
                     task.takeIf { it.isNotEmpty() }?.any { it.status != Status.Paused } ?: false
                 val progress = task.sumOf { it.progress }
                 val total = task.mapNotNull { it.size }.sum().takeIf { it != 0L }
                 listOf(
                     Track(
-                        track,
-                        extension,
-                        context,
-                        task,
-                        pause,
-                        isPlaying,
-                        progress,
-                        total,
-                        taskIds
+                        track, ext, context, task, pause, playing, progress, total, taskIds
                     )
                 ) + task.map { Task(it) }
             }.flatten()

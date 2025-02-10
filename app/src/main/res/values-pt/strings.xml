@@ -121,7 +121,6 @@
         <item quantity="many">%1$d Seguidores</item>
         <item quantity="other">%1$d Seguidores</item>
     </plurals>
-    <string name="app_name">Echo</string>
     <string name="close">Fechar</string>
     <string name="add_extension">Adicionar Extensão</string>
     <string name="shuffle">Misturar</string>

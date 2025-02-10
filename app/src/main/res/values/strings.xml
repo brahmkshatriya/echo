@@ -319,7 +319,7 @@
     <string name="merging">Merging</string>
     <string name="tagging">Tagging</string>
     <string name="update_error">Update Error</string>
-    <string name="no_download_extension">No download extension found, use code \"down\"</string>
+    <string name="no_download_extension">No download extension found, use code \"echodown\"</string>
     <string name="downloaded_x">Downloaded %1$s</string>
     <string name="download_progress">Download Progress</string>
     <string name="playlists">Playlists</string>

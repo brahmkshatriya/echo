@@ -110,7 +110,6 @@ class DownloadExtension(
                 progressFlow.emit(Progress.Initialized(100))
                 var it = 0
                 while(it < 10) {
-                    println("Progress: ${it * 10L}")
                     Thread.sleep(1000)
                     progressFlow.emit(Progress.InProgress(it * 10L, null))
                     it++

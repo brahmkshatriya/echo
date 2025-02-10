@@ -58,7 +58,7 @@ class DownloadItemAdapter(
                 removeOnCheckedStateChangedListener(playPauseListener)
                 isVisible = when(item) {
                     is DownloadItem.Task -> item.supportsPausing
-                    is DownloadItem.Track -> if (item.taskIds.size > 1) false else item.supportsPausing
+                    is DownloadItem.Track -> if (item.taskIds.size > 1) item.supportsPausing else false
                 }
                 isChecked = item.isPlaying
                 addOnCheckedStateChangedListener(playPauseListener)
@@ -75,7 +75,7 @@ class DownloadItemAdapter(
             }
             cancel.isVisible = when(item) {
                 is DownloadItem.Task -> true
-                is DownloadItem.Track -> item.taskIds.size > 1
+                is DownloadItem.Track -> item.taskIds.size != 1
             }
             cancel.setOnClickListener(cancelListener)
         }
