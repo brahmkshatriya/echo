@@ -15,6 +15,7 @@ import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Date.Companion.toDate
@@ -358,7 +359,8 @@ object MediaStoreUtils {
                 extras = mapOf(
                     "genre" to (genre ?: context.getString(R.string.unknown)),
                     "addDate" to addDate.toString(),
-                    "trackNumber" to trackNumber.toString()
+                    "trackNumber" to trackNumber.toString(),
+                    EXTENSION_ID to OfflineExtension.metadata.id
                 )
             )
 

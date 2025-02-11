@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.builtin.offline
 
 import android.content.Context
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -19,13 +20,15 @@ fun MediaStoreUtils.MAlbum.toAlbum() = Album(
     artists.map { it.toArtist() },
     songList.size,
     songList.sumOf { it.duration ?: 0 },
-    albumYear?.toDate()
+    albumYear?.toDate(),
+    extras = mapOf(EXTENSION_ID to OfflineExtension.metadata.id)
 )
 
 fun MediaStoreUtils.MArtist?.toArtist() = Artist(
     this?.id.toString(),
     this?.title ?: "Unknown",
-    this?.songList?.firstOrNull()?.cover
+    this?.songList?.firstOrNull()?.cover,
+    extras = mapOf(EXTENSION_ID to OfflineExtension.metadata.id)
 )
 
 fun MediaStoreUtils.MPlaylist.toPlaylist() = Playlist(
@@ -37,7 +40,8 @@ fun MediaStoreUtils.MPlaylist.toPlaylist() = Playlist(
     songList.size,
     songList.sumOf { it.duration ?: 0 },
     modifiedDate.toDate(),
-    description
+    description,
+    extras = mapOf(EXTENSION_ID to OfflineExtension.metadata.id)
 )
 
 //coverts epoch seconds long to Date
@@ -74,5 +78,5 @@ fun MediaStoreUtils.Genre.toShelf(): Shelf = Shelf.Lists.Items(
     songList.map { it.toMediaItem() }.take(10),
     more = PagedData.Single {
         songList.map { it.toMediaItem() }
-    }
+    },
 )

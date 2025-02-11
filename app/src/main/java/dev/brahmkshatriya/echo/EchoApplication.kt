@@ -20,7 +20,6 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
-import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.cleanupTempApks
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.getDetails
@@ -68,7 +67,6 @@ class EchoApplication : Application(), SingletonImageLoader.Factory, Configurati
         applyUiChanges(this, settings)
 
         //Extensions
-        cleanupTempApks()
         extensionLoader.initialize()
         downloader.start()
 

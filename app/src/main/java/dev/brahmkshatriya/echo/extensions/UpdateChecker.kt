@@ -13,9 +13,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.use
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 
 suspend fun <T> runIOCatching(
     block: suspend () -> T
@@ -45,7 +42,7 @@ suspend fun getUpdateFileUrl(
     client: OkHttpClient
 ) = runIOCatching {
     if (updateUrl.isEmpty()) return@runIOCatching null
-    if (updateUrl.startsWith("https://api.github.com")) {
+    if (updateUrl.startsWith("https://api.github.com/repos/")) {
         getGithubUpdateUrl(currentVersion, updateUrl, client).getOrThrow()
     } else {
         throw Exception("Unsupported update url")
@@ -53,17 +50,23 @@ suspend fun getUpdateFileUrl(
 }
 
 
+val githubRegex = Regex("https://api\\.github\\.com/repos/([^/]*)/([^/]*)/")
 suspend fun getGithubUpdateUrl(
     currentVersion: String,
     updateUrl: String,
     client: OkHttpClient
 ) = runIOCatching {
-    val request = Request.Builder().url(updateUrl).build()
-    val res = client.newCall(request).await().use {
-        it.body.string().toData<List<GithubResponse>>()
-    }.maxByOrNull {
-        dateFormat.parse(it.createdAt)?.time ?: 0
-    } ?: return@runIOCatching null
+    val (user, repo) = githubRegex.find(updateUrl)?.destructured
+        ?: throw Exception("Invalid Github URL")
+    val url = "https://api.github.com/repos/$user/$repo/releases/latest"
+    val request = Request.Builder().url(url).build()
+    val res = runCatching {
+        client.newCall(request).await().use {
+            it.body.string().toData<GithubResponse>()
+        }
+    }.getOrElse {
+        throw Exception("Failed to fetch latest release", it)
+    }
     if (res.tagName != currentVersion) {
         res.assets.sortedByDescending {
             it.name.contains(Build.SUPPORTED_ABIS.first())
@@ -73,10 +76,6 @@ suspend fun getGithubUpdateUrl(
     } else {
         null
     }
-}
-
-val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.ENGLISH).apply {
-    timeZone = TimeZone.getTimeZone("UTC")
 }
 
 @Serializable

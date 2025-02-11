@@ -15,6 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.builtin.offline.OfflineExtension
+import dev.brahmkshatriya.echo.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
@@ -291,7 +292,7 @@ class ItemBottomSheet : BottomSheetDialogFragment() {
 
     private fun downloadButton(
         client: ExtensionClient, item: EchoMediaItem
-    ) = if (client !is OfflineExtension && client is TrackClient)
+    ) = if (item.extras[EXTENSION_ID] != OfflineExtension.metadata.id && client is TrackClient)
         ItemAction.Resource(R.drawable.ic_download_for_offline, R.string.download) {
             downloadViewModel.addToDownload(requireActivity(), clientId, item)
         }

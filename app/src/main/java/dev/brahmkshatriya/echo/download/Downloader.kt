@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.common.models.DownloadContext
@@ -73,21 +72,11 @@ class Downloader(
 
     private val workManager = WorkManager.getInstance(context)
     fun start() {
-        if (isWorkerWorking()) return
         val request = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setConstraints(Constraints(NetworkType.CONNECTED, requiresStorageNotLow = true))
             .addTag(TAG)
             .build()
-        workManager.enqueue(request)
-    }
-
-    private fun isWorkerWorking(): Boolean {
-        val workInfo = workManager.getWorkInfosByTag(TAG).get()
-        workInfo.forEach { work ->
-            if (work.state == WorkInfo.State.ENQUEUED || work.state == WorkInfo.State.RUNNING)
-                return true
-        }
-        return false
+        workManager.enqueueUniqueWork(TAG, androidx.work.ExistingWorkPolicy.KEEP, request)
     }
 
     fun cancelTrackDownload(trackIds: List<Long>) = scope.launch {

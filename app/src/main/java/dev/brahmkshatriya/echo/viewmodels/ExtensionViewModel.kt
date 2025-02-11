@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.brahmkshatriya.echo.EchoDatabase
 import dev.brahmkshatriya.echo.ExtensionOpenerActivity
+import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.cleanupTempApks
 import dev.brahmkshatriya.echo.ExtensionOpenerActivity.Companion.installExtension
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
@@ -165,6 +166,7 @@ class ExtensionViewModel @Inject constructor(
         if (!shouldCheckForUpdates() && !force) return
         app.saveToCache("last_update_check", System.currentTimeMillis())
         viewModelScope.launch {
+            context.cleanupTempApks()
             messageFlow.emit(Message(app.getString(R.string.checking_for_extension_updates)))
             allExtensions().forEach {
                 updateExtension(context, it)

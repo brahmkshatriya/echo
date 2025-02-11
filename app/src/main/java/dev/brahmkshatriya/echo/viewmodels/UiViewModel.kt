@@ -306,6 +306,7 @@ class UiViewModel @Inject constructor(
                 observe(fromNotification) {
                     if (!it) return@observe
                     fromNotification.value = false
+                    if (playerSheetState.value == STATE_HIDDEN) return@observe
                     changePlayerState(STATE_EXPANDED)
                     changeInfoState(STATE_COLLAPSED)
                 }
