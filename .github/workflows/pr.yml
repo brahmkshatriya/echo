@@ -3,6 +3,7 @@ name: pr build
 on:
   pull_request:
     branches: [ main ]
+  workflow_dispatch: {}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,4 +28,4 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          path: app/build/outputs/apk/release/app-debug.apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
