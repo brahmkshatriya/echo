@@ -15,7 +15,7 @@ class AndroidPluginLoader<TPlugin>(
     private fun getClassLoader(
         preservedPackages: List<String>, path: String, libFolder: String
     ) = ClassLoaderWithPreserved(
-        preservedPackages, path, null, libFolder, context.classLoader
+        preservedPackages, path, "", libFolder, context.classLoader
     )
 
     @Suppress("UNCHECKED_CAST")
