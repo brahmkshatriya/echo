@@ -60,6 +60,11 @@ class Downloader(
         actions.emit(TaskAction.Remove(downloadIds))
     }
 
+    fun retry(trackId: Long) = scope.launch {
+        start()
+        actions.emit(TaskAction.RetryTrack(trackId))
+    }
+
     fun pause(downloadIds: List<Long>) = scope.launch {
         start()
         actions.emit(TaskAction.Pause(downloadIds))

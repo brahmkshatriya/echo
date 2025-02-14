@@ -103,6 +103,19 @@
                 </FrameLayout>
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/taskRetry"
+                    android:visibility="gone"
+                    style="?attr/materialIconButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/retry"
+                    android:padding="8dp"
+                    app:icon="@drawable/ic_refresh"
+                    app:iconSize="24dp"
+                    app:iconTint="@color/button_player"
+                    tools:ignore="DuplicateClickableBoundsCheck" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/trackCancel"
                     style="?attr/materialIconButtonStyle"
                     android:layout_width="wrap_content"

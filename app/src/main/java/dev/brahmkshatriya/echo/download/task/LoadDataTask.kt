@@ -96,9 +96,12 @@ class LoadDataTask(
             val sources = withDownloadExtension { selectSources(downloadContext, server) }
             sources.map { server.sources.indexOf(it) }
         }
+        if (indexes.isEmpty()) throw Exception("No files to download")
         trackEntity = trackEntity.copy(indexesData = indexes.toJson())
         dao.insertTrackEntity(trackEntity)
         progress++
+
+        println("track entity: $trackEntity")
 
         return server
     }

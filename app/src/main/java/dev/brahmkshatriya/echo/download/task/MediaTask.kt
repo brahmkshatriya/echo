@@ -12,6 +12,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 abstract class MediaTask<T>(
@@ -23,6 +24,16 @@ abstract class MediaTask<T>(
     abstract suspend fun cancel()
     abstract suspend fun pause()
     abstract suspend fun resume()
+
+    suspend fun ensureCancel() {
+        println("${entity.id} ensureCancel ${scope.isActive}")
+        if (scope.isActive) {
+            cancel()
+            scope.cancel()
+        }
+        dao.deleteDownload(entity.id)
+        println("${entity.id} ensureCancel ${scope.isActive}")
+    }
 
     private val scope = CoroutineScope(Dispatchers.IO)
     fun <R> launch(block: suspend MediaTask<T>.() -> R): Job {
@@ -38,16 +49,19 @@ abstract class MediaTask<T>(
         }
         this.flow = flow
         dao.insertDownload(entity)
-        launch {
-            var size: Long? = null
-            flow.collect {
-                when (it) {
-                    is Progress.Initialized -> {
-                        size = it.size
-                        dao.insertDownload(entity.copy(status = Status.Initialized, size = size))
-                    }
+        var size: Long? = null
+        launch { start() }
 
-                    is Progress.InProgress -> dao.insertDownload(
+        val final = flow.first {
+            val final = when (it) {
+                is Progress.Initialized -> {
+                    size = it.size
+                    dao.insertDownload(entity.copy(status = Status.Initialized, size = size))
+                    null
+                }
+
+                is Progress.InProgress -> {
+                    dao.insertDownload(
                         entity.copy(
                             status = Status.Progressing,
                             progress = it.downloaded,
@@ -55,8 +69,11 @@ abstract class MediaTask<T>(
                             size = size
                         )
                     )
+                    null
+                }
 
-                    is Progress.Paused -> dao.insertDownload(
+                is Progress.Paused -> {
+                    dao.insertDownload(
                         entity.copy(
                             status = Status.Paused,
                             progress = it.downloaded,
@@ -64,25 +81,25 @@ abstract class MediaTask<T>(
                             size = size
                         )
                     )
+                    null
+                }
 
-                    is Progress.Final -> {
-                        dao.insertDownload(
-                            entity.copy(
-                                status = when (it) {
-                                    is Progress.Final.Completed -> Status.Completed
-                                    is Progress.Final.Cancelled -> Status.Cancelled
-                                    is Progress.Final.Failed -> Status.Failed
-                                }
-                            )
+                is Progress.Final -> {
+                    dao.insertDownload(
+                        entity.copy(
+                            status = when (it) {
+                                is Progress.Final.Completed -> Status.Completed
+                                is Progress.Final.Cancelled -> Status.Cancelled
+                                is Progress.Final.Failed -> Status.Failed
+                            }
                         )
-                    }
+                    )
+                    scope.cancel()
+                    it
                 }
             }
-        }
-        launch { start() }
-
-        val final = flow.first { it is Progress.Final } as Progress.Final<T>
-        scope.cancel()
+            final != null
+        } as Progress.Final<T>
 
         return when (final) {
             is Progress.Final.Failed -> Result.failure(final.reason.toTaskException(entity))

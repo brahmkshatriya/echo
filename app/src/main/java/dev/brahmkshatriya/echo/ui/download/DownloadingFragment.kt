@@ -77,6 +77,10 @@ class DownloadingFragment : Fragment() {
                 viewModel.resumeDownload(taskIds)
             }
 
+            override fun onRetryClick(trackId: Long) {
+                viewModel.retryDownload(trackId)
+            }
+
         })
 
         val emptyAdapter = ShelfEmptyAdapter()

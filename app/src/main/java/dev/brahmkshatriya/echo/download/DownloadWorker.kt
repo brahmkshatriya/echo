@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
@@ -49,24 +50,26 @@ class DownloadWorker @AssistedInject constructor(
 
     @OptIn(FlowPreview::class)
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        println("DownloadWorker: doWork")
         extensionsList.first { it != null }
         miscList.first { it != null }
-        val downloadExtension = miscList.value?.find { it.isClient<DownloadClient>() }
-            ?: return@withContext Result.failure()
+        val downloadExtension =
+            miscList.value?.find { it.isClient<DownloadClient>() && it.metadata.enabled }
+                ?: return@withContext Result.failure()
 
         val semaphore = Semaphore(downloadExtension.get<DownloadClient, Int>(throwableFlow) {
             concurrentDownloads
         } ?: return@withContext Result.failure())
 
-        val actionJob = scope.launch { actions.collect { performAction(it) } }
-        val notificationJob = scope.launch {
+        scope.launch { actions.collect { performAction(it) } }
+        scope.launch {
             dao.getCurrentDownloadsFlow().debounce(100L).collect {
                 val info = NotificationUtil.create(context, dao, it) ?: return@collect
                 setForeground(info)
             }
         }
         tracksFlow.value = dao.getTracks()
-        val trackJob = scope.launch {
+        scope.launch {
             dao.getTrackFlow().collect { tasks ->
                 tracksFlow.value = tasks
                 tasks.forEach { track ->
@@ -74,11 +77,7 @@ class DownloadWorker @AssistedInject constructor(
                         val task = TrackDownloadTask(
                             context, track, dao, semaphore, extensionsList, downloadExtension
                         )
-                        launch {
-                            val errors = task.await()
-                            if (errors.isNotEmpty()) errors.forEach { throwableFlow.emit(it) }
-                            else performAction(TaskAction.RemoveTrack(track, true))
-                        }
+                        start(task)
                         task
                     }
                 }
@@ -87,17 +86,19 @@ class DownloadWorker @AssistedInject constructor(
 
         tracksFlow.first { it.isEmpty() }
 
-        actionJob.cancel()
-        notificationJob.cancel()
-        trackJob.cancel()
+        println("DownloadWorker: doWork complete")
+        scope.cancel()
         Result.success()
     }
 
     private suspend fun performAction(action: TaskAction) {
+        println("performAction: $action")
         when (action) {
             is TaskAction.Pause -> pause(action.ids)
             is TaskAction.Remove -> cancel(action.ids)
             is TaskAction.Resume -> resume(action.ids)
+
+            is TaskAction.RetryTrack -> retryTrack(action.id)
             is TaskAction.RemoveTrack -> {
                 val entity = action.track
                 if (action.success) onDownloadComplete(entity)
@@ -139,5 +140,22 @@ class DownloadWorker @AssistedInject constructor(
 
     private suspend fun cancel(taskIds: List<Long>) {
         trackTaskMap.values.forEach { it.cancel(taskIds) }
+    }
+
+    private fun start(task: TrackDownloadTask) {
+        scope.launch {
+            dao.getAllDownloadsFor(task.entity.id).forEach { dao.deleteDownload(it.id) }
+            val errors = task.await()
+            if (errors.isNotEmpty()) errors.forEach { throwableFlow.emit(it) }
+            else {
+                val entity = dao.getTrackEntity(task.entity.id)!!
+                performAction(TaskAction.RemoveTrack(entity, entity.finalFile != null))
+            }
+        }
+    }
+
+    private fun retryTrack(trackId: Long) {
+        val task = trackTaskMap[trackId] ?: return
+        start(task)
     }
 }

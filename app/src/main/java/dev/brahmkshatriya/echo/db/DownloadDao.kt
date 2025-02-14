@@ -24,6 +24,9 @@ interface DownloadDao {
     @Query("SELECT * FROM MediaTaskEntity")
     suspend fun getAllDownloadEntities(): List<MediaTaskEntity>
 
+    @Query("SELECT * FROM MediaTaskEntity WHERE trackId = :trackId")
+    suspend fun getAllDownloadsFor(trackId: Long) : List<MediaTaskEntity>
+
     @Insert(onConflict = REPLACE)
     suspend fun insertTrackEntity(track: TrackDownloadTaskEntity): Long
 

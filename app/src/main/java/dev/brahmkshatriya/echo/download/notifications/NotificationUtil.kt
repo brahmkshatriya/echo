@@ -130,11 +130,8 @@ object NotificationUtil {
                 .setOngoing(true)
                 .addAction(-1, context.getString(R.string.cancel_all), pendingIntentCancel)
                 .build(),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            } else {
-                0
-            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) 0
+            else FOREGROUND_SERVICE_TYPE_DATA_SYNC
         )
     }
 

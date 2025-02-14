@@ -47,8 +47,10 @@ class DownloadItemAdapter(
 
         private val cancelListener = View.OnClickListener {
             val item = item ?: return@OnClickListener
-            if (item.taskIds.isNotEmpty()) listener.onCancelClick(item.taskIds)
-            else listener.onCancelClick(item.trackId)
+            when(item) {
+                is DownloadItem.Task -> listener.onCancelClick(item.taskIds)
+                is DownloadItem.Track -> listener.onCancelClick(item.trackId)
+            }
         }
 
         @CallSuper
@@ -74,8 +76,10 @@ class DownloadItemAdapter(
                 max = item.total?.toInt() ?: item.progress.toInt()
             }
             cancel.isVisible = when(item) {
-                is DownloadItem.Task -> true
-                is DownloadItem.Track -> item.taskIds.size != 1
+                is DownloadItem.Task -> item.taskEntity.status != Failed
+                is DownloadItem.Track -> item.taskIds.size != 1 || item.tasks.all {
+                    it.status == Failed
+                }
             }
             cancel.setOnClickListener(cancelListener)
         }
@@ -99,6 +103,10 @@ class DownloadItemAdapter(
                 track.cover.loadInto(binding.trackCover, R.drawable.art_music)
                 binding.trackTitle.text = track.title
                 binding.trackContext.text = trackItem.context?.title
+                binding.taskRetry.isVisible = !trackItem.tasks.all { it.status != Failed }
+                binding.taskRetry.setOnClickListener {
+                    listener.onRetryClick(trackItem.trackEntity.id)
+                }
             }
         }
 
@@ -153,6 +161,7 @@ class DownloadItemAdapter(
         fun onCancelClick(taskIds: List<Long>)
         fun onPauseClick(taskIds: List<Long>)
         fun onResumeClick(taskIds: List<Long>)
+        fun onRetryClick(trackId: Long)
         fun onCancelClick(trackId: Long)
     }
 

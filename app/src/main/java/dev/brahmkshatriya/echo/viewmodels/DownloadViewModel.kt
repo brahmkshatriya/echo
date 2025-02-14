@@ -84,6 +84,10 @@ class DownloadViewModel @Inject constructor(
         downloader.cancel(downloadIds)
     }
 
+    fun retryDownload(trackId: Long) {
+        downloader.retry(trackId)
+    }
+
     val downloadsFlow = downloader.downloadsFlow
     val dao = downloader.dao
 

@@ -17,6 +17,9 @@ data class TrackDownloadTaskEntity(
     val folderPath: String? = null,
     val streamableId: String? = null,
     val indexesData: String? = null,
+    val toMergeFiles: String? = null,
+    val toTagFile: String? = null,
+    val finalFile: String? = null,
 ) {
     val track by lazy { data.toData<Track>() }
     val indexes by lazy { indexesData?.toData<List<Int>>().orEmpty() }

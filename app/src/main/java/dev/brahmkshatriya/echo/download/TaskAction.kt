@@ -8,4 +8,5 @@ sealed class TaskAction {
     data class Remove(val ids: List<Long>) : TaskAction()
     data class Pause(val ids: List<Long>) : TaskAction()
     data class Resume(val ids: List<Long>) : TaskAction()
+    data class RetryTrack(val id: Long) : TaskAction()
 }
