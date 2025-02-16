@@ -70,7 +70,7 @@ class PlayerFragment : Fragment() {
             currHeight = height + ((view.height - height) * offset).toInt()
             currLeft = ((padding + leftPadding) * inv).toInt()
             currRight = view.width - ((padding + rightPadding) * inv).toInt()
-            currRound = maxRound * inv
+            currRound = max(maxRound * inv, maxRound * uiViewModel.playerBackProgress.value)
             binding.root.invalidateOutline()
         }
         observe(uiViewModel.combined) {
@@ -144,6 +144,10 @@ class PlayerFragment : Fragment() {
                 requireActivity().hideSystemUi(false)
             else if (uiViewModel.playerBgVisibleState.value)
                 requireActivity().hideSystemUi(true)
+        }
+
+        observe(uiViewModel.playerBackProgress) {
+            updateOutline()
         }
 
         observe(uiViewModel.infoSheetState) {

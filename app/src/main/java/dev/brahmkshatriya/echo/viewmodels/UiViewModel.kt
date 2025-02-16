@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.combine
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import kotlin.math.max
+import kotlin.math.min
 
 @HiltViewModel
 class UiViewModel @Inject constructor(
@@ -120,6 +121,7 @@ class UiViewModel @Inject constructor(
     val playerSheetOffset = MutableStateFlow(
         if (playerSheetState.value == STATE_EXPANDED) 1f else 0f
     )
+    val playerBackProgress = MutableStateFlow(0f)
     val infoSheetOffset = MutableStateFlow(
         if (infoSheetState.value == STATE_EXPANDED) 1f else 0f
     )
@@ -252,26 +254,37 @@ class UiViewModel @Inject constructor(
             activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPress)
         }
 
-        private fun BottomSheetBehavior<View>.backPressCallback() =
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackStarted(backEvent: BackEventCompat) =
-                    startBackProgress(backEvent)
-
-                override fun handleOnBackProgressed(backEvent: BackEventCompat) =
-                    updateBackProgress(backEvent)
-
-                override fun handleOnBackPressed() =
-                    handleBackInvoked()
-
-                override fun handleOnBackCancelled() =
-                    cancelBackProgress()
+        private fun BottomSheetBehavior<View>.backPressCallback(
+            onProgress: (Float) -> Unit = {},
+        ) = object : OnBackPressedCallback(true) {
+            override fun handleOnBackStarted(backEvent: BackEventCompat) {
+                startBackProgress(backEvent)
+                onProgress(0f)
             }
+
+            override fun handleOnBackProgressed(backEvent: BackEventCompat) {
+                updateBackProgress(backEvent)
+                onProgress(min(1f, backEvent.progress * 2))
+            }
+
+            override fun handleOnBackPressed() {
+                handleBackInvoked()
+                onProgress(0f)
+            }
+
+            override fun handleOnBackCancelled() {
+                cancelBackProgress()
+                onProgress(0f)
+            }
+        }
 
         fun LifecycleOwner.setupPlayerBehavior(viewModel: UiViewModel, view: View) {
             val behavior = BottomSheetBehavior.from(view)
             viewModel.playerBehaviour = WeakReference(behavior)
             observe(viewModel.infoSheetState) { behavior.isDraggable = it == STATE_COLLAPSED }
-            viewModel.playerBackPressCallback = behavior.backPressCallback()
+            viewModel.playerBackPressCallback = behavior.backPressCallback {
+                viewModel.playerBackProgress.value = it
+            }
 
             val combined =
                 viewModel.run { playerNavViewInsets.combine(systemInsets) { nav, _ -> nav } }
