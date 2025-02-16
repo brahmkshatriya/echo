@@ -128,6 +128,26 @@ class UnifiedExtension(
         private fun Shelf.Category.withExtensionId(extension: Extension<*>): Shelf.Category =
             copy(items = items?.injectExtensionId(extension))
 
+        private fun PagedData<Shelf.Category>.injectedPageCategory(extension: Extension<*>) =
+            map { result ->
+                val list = result.getOrElse { throw it.toAppException(extension) }
+                list.map { it.withExtensionId(extension) }
+            }
+
+        private fun PagedData<EchoMediaItem>.injectedPageItems(extension: Extension<*>) =
+            map { result ->
+                val id = extension.id
+                val list = result.getOrElse { throw it.toAppException(extension) }
+                list.map { it.withExtensionId(id) }
+            }
+
+        private fun PagedData<Track>.injectedPageTracks(extension: Extension<*>) =
+            map { result ->
+                val id = extension.id
+                val list = result.getOrElse { throw it.toAppException(extension) }
+                list.map { it.withExtensionId(id) }
+            }
+
         fun PagedData<Shelf>.injectExtensionId(extension: Extension<*>): PagedData<Shelf> =
             map { result ->
                 val id = extension.id
@@ -137,15 +157,18 @@ class UnifiedExtension(
                         is Shelf.Category -> it.withExtensionId(extension)
                         is Shelf.Item -> it.withExtensionId(id)
                         is Shelf.Lists.Categories -> it.copy(
-                            list = it.list.map { category -> category.withExtensionId(extension) }
+                            list = it.list.map { category -> category.withExtensionId(extension) },
+                            more = it.more?.injectedPageCategory(extension)
                         )
 
                         is Shelf.Lists.Items -> it.copy(
-                            list = it.list.map { item -> item.withExtensionId(id) }
+                            list = it.list.map { item -> item.withExtensionId(id) },
+                            more = it.more?.injectedPageItems(extension)
                         )
 
                         is Shelf.Lists.Tracks -> it.copy(
-                            list = it.list.map { track -> track.withExtensionId(id) }
+                            list = it.list.map { track -> track.withExtensionId(id) },
+                            more = it.more?.injectedPageTracks(extension)
                         )
                     }
                 }
