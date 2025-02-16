@@ -5,9 +5,9 @@ import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.helpers.Page
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
@@ -48,7 +48,10 @@ class Radio(
         data object Empty : State()
         data object Loading : State()
         data class Loaded(
-            val clientId: String, val radio: Radio, val tracks: List<Track>, val played: Int
+            val clientId: String,
+            val radio: Radio,
+            val cont: String?,
+            val tracks: suspend (String?) -> Page<Track>?
         ) : State()
     }
 
@@ -60,8 +63,7 @@ class Radio(
             extensionListFlow: StateFlow<List<MusicExtension>?>,
             clientId: String,
             item: EchoMediaItem,
-            itemContext: EchoMediaItem?,
-            play: Int = -1
+            itemContext: EchoMediaItem?
         ): State.Loaded? {
             val list = extensionListFlow.first { it != null }
             val extension = list?.find { it.metadata.id == clientId }
@@ -87,37 +89,42 @@ class Radio(
                             is Profile.UserItem -> client.radio(item.user)
                             is Lists.RadioItem -> throw IllegalStateException("Radio inside radio")
                         }
-                    }
-
-                    if (radio != null) {
-                        val tracks = tryIO { client.loadTracks(radio).loadFirst() }
-                        val state = if (!tracks.isNullOrEmpty())
-                            State.Loaded(clientId, radio, tracks, play)
-                        else {
-                            messageFlow.emit(
-                                Message(context.getString(R.string.radio_empty))
-                            )
-                            null
-                        }
-                        return state
-                    }
+                    } ?: return null
+                    val tracks = tryIO { client.loadTracks(radio) } ?: return null
+                    val state =
+                        State.Loaded(clientId, radio, null) { tryIO { tracks.loadList(it) } }
+                    return state
                 }
             }
             return null
         }
+
+        suspend fun play(
+            player: Player,
+            settings: SharedPreferences,
+            stateFlow: MutableStateFlow<State>,
+            loaded: State.Loaded
+        ) {
+            stateFlow.value = State.Loading
+            val tracks = loaded.tracks(loaded.cont) ?: return
+
+            stateFlow.value = if (tracks.continuation == null) State.Empty
+            else loaded.copy(cont = tracks.continuation)
+
+            val item = tracks.data.map {
+                MediaItemUtils.build(
+                    settings, it, loaded.clientId, loaded.radio.toMediaItem()
+                )
+            }
+
+            withContext(Dispatchers.Main) {
+                player.addMediaItems(item)
+                player.prepare()
+                player.playWhenReady = true
+            }
+        }
     }
 
-    private suspend fun play(loaded: State.Loaded, play: Int): Boolean =
-        withContext(Dispatchers.Main) {
-            val track = loaded.tracks.getOrNull(play) ?: return@withContext false
-            val item = MediaItemUtils.build(
-                settings, track, loaded.clientId, loaded.radio.toMediaItem()
-            )
-            player.addMediaItem(item)
-            player.prepare()
-            player.playWhenReady = true
-            true
-        }
 
     private suspend fun loadPlaylist() {
         val mediaItem = withContext(Dispatchers.Main) { player.currentMediaItem } ?: return
@@ -126,9 +133,9 @@ class Radio(
         val itemContext = mediaItem.context
         stateFlow.value = State.Loading
         val loaded =
-            start(context, messageFlow, throwFlow, extensionList, client, item, itemContext, 0)
+            start(context, messageFlow, throwFlow, extensionList, client, item, itemContext)
         stateFlow.value = loaded ?: State.Empty
-        if (loaded != null) play(loaded, 0)
+        if (loaded != null) play(player, settings, stateFlow, loaded)
     }
 
     private var autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
@@ -151,13 +158,7 @@ class Radio(
         when (val state = stateFlow.value) {
             is State.Loading -> {}
             is State.Empty -> loadPlaylist()
-            is State.Loaded -> {
-                val toBePlayed = state.played + 1
-                if (toBePlayed == state.tracks.size) loadPlaylist()
-                if (play(state, toBePlayed)) {
-                    stateFlow.value = state.copy(played = toBePlayed)
-                }
-            }
+            is State.Loaded -> play(player, settings, stateFlow, state)
         }
     }
 

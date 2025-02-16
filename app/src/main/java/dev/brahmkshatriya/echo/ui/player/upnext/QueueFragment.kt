@@ -12,11 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistBinding
-import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.utils.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.utils.observe
+import dev.brahmkshatriya.echo.utils.ui.dpToPx
 import dev.brahmkshatriya.echo.viewmodels.PlayerViewModel
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel
 
@@ -112,10 +111,10 @@ class QueueFragment : Fragment() {
 
         observe(viewModel.radioStateFlow) { state ->
             radioLoaderAdapter.setLoading(state is Radio.State.Loading)
-            val list = if (state is Radio.State.Loaded) state.tracks.drop(state.played + 1).map {
-                false to MediaItemUtils.build(null, it, state.clientId, null)
-            } else emptyList()
-            radioAdapter.submitList(list)
+//            val list = if (state !is Radio.State.Loaded) emptyList() else {
+//                state.tracks(state.cont)?.data
+//            } ?: emptyList()
+            radioAdapter.submitList(emptyList())
         }
 
         val manager = binding.root.layoutManager as LinearLayoutManager

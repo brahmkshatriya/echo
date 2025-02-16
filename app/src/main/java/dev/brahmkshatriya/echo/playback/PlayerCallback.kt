@@ -27,7 +27,6 @@ import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.extensions.getExtension
@@ -126,18 +125,10 @@ class PlayerCallback(
         val item = args.getSerialized<EchoMediaItem>("item") ?: return@future error
         radioFlow.value = Radio.State.Loading
         val loaded = Radio.start(
-            context, messageFlow, throwableFlow, extensionList, clientId, item, null, 0
+            context, messageFlow, throwableFlow, extensionList, clientId, item, null
         )
-        radioFlow.value = loaded ?: Radio.State.Empty
         if (loaded == null) return@future error
-        val mediaItem = MediaItemUtils.build(
-            settings, loaded.tracks[0], loaded.clientId, loaded.radio.toMediaItem()
-        )
-        withContext(Dispatchers.Main) {
-            player.setMediaItem(mediaItem)
-            player.prepare()
-            player.playWhenReady = true
-        }
+        Radio.play(player, settings, radioFlow, loaded)
         SessionResult(RESULT_SUCCESS)
     }
 

@@ -20,7 +20,6 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -187,13 +186,13 @@ class PlayerViewModel @Inject constructor(
     fun radioPlay(subIndex: Int) {
         val state = radioStateFlow.value
         if (state !is Radio.State.Loaded) return
-        state.run {
-            val index = played + subIndex + 1
-            val trackList = tracks.take(index + 1).drop(played + 1).ifEmpty { null } ?: return
-            radioStateFlow.value = state.copy(played = index)
-            addToQueue(clientId, radio.toMediaItem(), trackList, true)
-            withBrowser { play(it.mediaItemCount - 1) }
-        }
+//        state.run {
+//            val index = played + subIndex + 1
+//            val trackList = tracks.take(index + 1).drop(played + 1).ifEmpty { null } ?: return
+//            radioStateFlow.value = state.copy(played = index)
+//            addToQueue(clientId, radio.toMediaItem(), trackList, true)
+//            withBrowser { play(it.mediaItemCount - 1) }
+//        }
     }
 
     companion object {

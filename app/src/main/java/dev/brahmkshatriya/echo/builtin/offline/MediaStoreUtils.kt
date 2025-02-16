@@ -661,19 +661,22 @@ object MediaStoreUtils {
     }
 
     fun <E> List<E>.searchBy(query: String, block: (E) -> List<String?>) = map { item ->
-        val qLower = query.lowercase()
+        val qLower = query.lowercase().split(" ").ifEmpty { return@map 5 to item }
         val titles = block(item).flatMap {
             it?.split(" ") ?: listOf()
         }.mapNotNull {
             it.takeIf { it.isNotBlank() }?.lowercase()
-        }.ifEmpty { return@map 0 to item }
-        val selected = titles.map {
-            val distance = wagnerFischer(it, qLower)
-            val bonus = if (it.contains(qLower)) -20 else 0
-            (distance + bonus) to it
+        }.ifEmpty { return@map 5 to item }
+        val selected = titles.map { t ->
+            val distance = qLower.sumOf {
+                val distance = wagnerFischer(t, it)
+                val bonus = if (t.contains(it)) -t.length else 0
+                distance + bonus
+            } / qLower.size
+            distance to t
         }.minBy { it.first }
         selected.first to item
-    }.filter { it.first <= 0 }.sortedBy { it.first }
+    }.filter { it.first <= 3 }.sortedBy { it.first }
 
     // taken from https://gist.github.com/jmarchesini/e330088e03daa394cf03ddedb8956fbe
     private fun wagnerFischer(s: String, t: String): Int {

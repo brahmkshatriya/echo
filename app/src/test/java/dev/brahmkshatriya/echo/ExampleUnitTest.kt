@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo
 
+import dev.brahmkshatriya.echo.builtin.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel
 import dev.brahmkshatriya.echo.ui.editplaylist.EditPlaylistViewModel.Companion.computeActions
 import org.junit.Test
@@ -85,5 +86,17 @@ class ExampleUnitTest {
         val old = listOf("A", "B", "C", "D", "E")
         val new = listOf("E", "D", "C", "B", "A")
         test(old, new)
+    }
+
+    @Test
+    fun testSearch() {
+        val searchList = listOf(
+            "Slushii",
+            "Skrillex",
+            "Happy Anarchy",
+            "Anna",
+            "Vump"
+        ).searchBy("happy an") { listOf(it) }
+        println(searchList)
     }
 }
