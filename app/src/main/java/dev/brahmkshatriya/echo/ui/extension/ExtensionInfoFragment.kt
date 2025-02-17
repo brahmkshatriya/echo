@@ -174,11 +174,13 @@ class ExtensionInfoFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            if (extension.isClient<LoginClient>()) {
-                val loginViewModel by activityViewModels<LoginUserViewModel>()
-                loginViewModel.currentExtension.value = extension
-                binding.extensionLoginUser.bind(this@ExtensionInfoFragment) {}
-            } else binding.extensionLoginUser.root.isVisible = false
+            runCatching {
+                if (extension.isClient<LoginClient>()) {
+                    val loginViewModel by activityViewModels<LoginUserViewModel>()
+                    loginViewModel.currentExtension.value = extension
+                    binding.extensionLoginUser.bind(this@ExtensionInfoFragment) {}
+                } else binding.extensionLoginUser.root.isVisible = false
+            }
         }
         binding.extensionSettings.transitionName = "setting_${metadata.id}"
         binding.extensionSettings.setOnClickListener {

@@ -14,7 +14,6 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
-import com.google.android.material.transition.MaterialContainerTransform
 import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.settings.LookFragment.Companion.ANIMATIONS_KEY
@@ -125,16 +124,16 @@ fun Fragment.setupTransition(view: View) {
     view.setBackgroundColor(color)
 
     if (view.animations) {
-        val transitionName = arguments?.getString("transitionName")
-        if (transitionName != null) {
-            view.transitionName = transitionName
-            val transition = MaterialContainerTransform().apply {
-                drawingViewId = id
-                setAllContainerColors(color)
-                duration = view.animationDuration
-            }
-            sharedElementEnterTransition = transition
-        }
+//        val transitionName = arguments?.getString("transitionName")
+//        if (transitionName != null) {
+//            view.transitionName = transitionName
+//            val transition = MaterialContainerTransform().apply {
+//                drawingViewId = id
+//                setAllContainerColors(color)
+//                duration = view.animationDuration
+//            }
+//            sharedElementEnterTransition = transition
+//        }
         (view as? ViewGroup)?.isTransitionGroup = true
         exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
         reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)

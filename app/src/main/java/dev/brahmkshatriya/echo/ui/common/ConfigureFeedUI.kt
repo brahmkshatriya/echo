@@ -9,7 +9,6 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.ui.adapter.ShelfAdapter
-import dev.brahmkshatriya.echo.utils.collect
 import dev.brahmkshatriya.echo.utils.observe
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.configure
@@ -57,13 +56,13 @@ inline fun <reified T> Fragment.configureFeedUI(
     viewModel.initialize()
     var shelfAdapter: ShelfAdapter? = null
     var job: Job? = null
-    if (clientId == null) collect(viewModel.extensionFlow) {
+    if (clientId == null) observe(viewModel.extensionFlow) {
         job?.cancel()
         val adapter = applyClient<T>(recyclerView, swipeRefresh, id, it)
         job = adapter?.applyCurrent(this, recyclerView)
         shelfAdapter = adapter
     }
-    else collect(viewModel.extensionListFlow) {
+    else observe(viewModel.extensionListFlow) {
         job?.cancel()
         val extension = viewModel.extensionListFlow.getExtension(clientId)
         val adapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)

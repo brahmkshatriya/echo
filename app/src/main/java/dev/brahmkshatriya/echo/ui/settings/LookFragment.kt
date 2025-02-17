@@ -127,15 +127,15 @@ class LookFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-                SwitchPreferenceCompat(context).apply {
-                    key = SHARED_ELEMENT_KEY
-                    title = getString(R.string.shared_element_transitions)
-                    summary = getString(R.string.shared_element_transitions_summary)
-                    layoutResource = R.layout.preference_switch
-                    isIconSpaceReserved = false
-                    setDefaultValue(true)
-                    addPreference(this)
-                }
+//                SwitchPreferenceCompat(context).apply {
+//                    key = SHARED_ELEMENT_KEY
+//                    title = getString(R.string.shared_element_transitions)
+//                    summary = getString(R.string.shared_element_transitions_summary)
+//                    layoutResource = R.layout.preference_switch
+//                    isIconSpaceReserved = false
+//                    setDefaultValue(true)
+//                    addPreference(this)
+//                }
             }
         }
 
