@@ -15,7 +15,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.extensions.getPackageName
 import dev.brahmkshatriya.echo.ui.extension.ExtensionInstallerBottomSheet
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.coroutines.resume
@@ -70,13 +69,16 @@ class ExtensionOpenerActivity : Activity() {
         }
 
         fun FragmentActivity.openExtensionInstaller(uri: Uri) {
-            lifecycleScope.launch(Dispatchers.IO) {
+            lifecycleScope.launch {
                 installExtension(uri.toString())
             }
         }
 
         suspend fun FragmentActivity.installExtension(fileString: String) = suspendCoroutine {
-            supportFragmentManager.setFragmentResultListener(EXTENSION_INSTALLER, this) { _, b ->
+            supportFragmentManager.setFragmentResultListener(
+                EXTENSION_INSTALLER,
+                this
+            ) { _, b ->
                 val file = b.getString("file")?.toUri()?.toFile()
                 val install = b.getBoolean("install")
                 val installAsApk = b.getBoolean("installAsApk")
