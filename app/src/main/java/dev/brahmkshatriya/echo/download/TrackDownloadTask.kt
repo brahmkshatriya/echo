@@ -86,8 +86,10 @@ class TrackDownloadTask(
         val taggingEntity = MediaTaskEntity(
             "${this.entity.id}_tag".hashCode().toLong(), this.entity.id, TaskType.TAGGING
         )
-        val file = FiledTask(dao, taggingEntity, downloadExtension) {
-            tag(downloadContext, tagFile)
+        val file = coroutineScope {
+            FiledTask(dao, this, taggingEntity, downloadExtension) {
+                tag(downloadContext, tagFile)
+            }
         }.also { taggingTask = it }.await().getOrElse {
             errors.add(it)
             return
@@ -117,8 +119,10 @@ class TrackDownloadTask(
         val mergeEntity = MediaTaskEntity(
             "${entity.id}_merge".hashCode().toLong(), entity.id, TaskType.MERGE
         )
-        val mergedFile = FiledTask(dao, mergeEntity, downloadExtension) {
-            merge(downloadContext, toMergeFiles, folder)
+        val mergedFile = coroutineScope {
+            FiledTask(dao, this, mergeEntity, downloadExtension) {
+                merge(downloadContext, toMergeFiles, folder)
+            }
         }.also { mergeTask = it }.await().getOrElse {
             errors.add(it)
             return
@@ -135,7 +139,7 @@ class TrackDownloadTask(
     ) = coroutineScope {
         val entity = dao.getTrackEntity(entity.id) ?: return@coroutineScope
         if (!entity.toMergeFiles?.toData<List<String>>().isNullOrEmpty()) return@coroutineScope
-        val server = LoadDataTask(dao, entity, context, extensionsList, downloadExtension)
+        val server = LoadDataTask(this, dao, entity, context, extensionsList, downloadExtension)
             .also { loadTask = it }
             .await().getOrElse {
                 errors.add(it)
@@ -172,8 +176,10 @@ class TrackDownloadTask(
         val title = it.title ?: "${trackEntity.streamableId.hashCode()}-$i"
         val taskEntity = MediaTaskEntity(id, entity.id, TaskType.DOWNLOAD, title)
         val file = File(folderPath, title)
-        val task = FiledTask(dao, taskEntity, downloadExtension) {
-            download(downloadContext, it, file)
+        val task = coroutineScope {
+            FiledTask(dao, this, taskEntity, downloadExtension) {
+                download(downloadContext, it, file)
+            }
         }
         tasks[id] = task
         return task.await()

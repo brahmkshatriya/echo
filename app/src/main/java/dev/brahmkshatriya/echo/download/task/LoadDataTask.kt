@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.db.models.TrackDownloadTaskEntity
 import dev.brahmkshatriya.echo.extensions.get
 import dev.brahmkshatriya.echo.extensions.getExtensionOrThrow
 import dev.brahmkshatriya.echo.utils.toJson
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,12 +28,13 @@ import java.io.File
 typealias MediaProgress = Progress<Streamable.Media.Server>
 
 class LoadDataTask(
+    scope: CoroutineScope,
     private val dao: DownloadDao,
     private var trackEntity: TrackDownloadTaskEntity,
     private var context: EchoMediaItemEntity?,
     private val extensionsList: MutableStateFlow<List<MusicExtension>?>,
     private val downloadExtension: MiscExtension,
-) : MediaTask<Streamable.Media.Server>(dao) {
+) : MediaTask<Streamable.Media.Server>(dao, scope) {
 
     override val entity =
         MediaTaskEntity(trackEntity.id, trackEntity.id, TaskType.METADATA, null, true)
@@ -100,8 +102,6 @@ class LoadDataTask(
         trackEntity = trackEntity.copy(indexesData = indexes.toJson())
         dao.insertTrackEntity(trackEntity)
         progress++
-
-        println("track entity: $trackEntity")
 
         return server
     }

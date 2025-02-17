@@ -14,6 +14,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.getFromCache
 import dev.brahmkshatriya.echo.utils.saveToCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object ResumptionUtils {
 
@@ -25,16 +27,18 @@ object ResumptionUtils {
     private const val POSITION = "position"
 
     private fun Player.mediaItems() = (0 until mediaItemCount).map { getMediaItemAt(it) }
-    fun saveQueue(context: Context, player: Player) = runCatching {
-        val list = player.mediaItems()
-        val currentIndex = player.currentMediaItemIndex
-        val tracks = list.map { it.track }
-        val extensionIds = list.map { it.extensionId }
-        val contexts = list.map { it.context }
-        context.saveToCache(TRACKS, tracks, FOLDER)
-        context.saveToCache(CONTEXTS, contexts, FOLDER)
-        context.saveToCache(EXTENSIONS, extensionIds, FOLDER)
-        context.saveToCache(INDEX, currentIndex, FOLDER)
+    suspend fun saveQueue(context: Context, player: Player) = runCatching {
+        withContext(Dispatchers.IO) {
+            val list = player.mediaItems()
+            val currentIndex = player.currentMediaItemIndex
+            val tracks = list.map { it.track }
+            val extensionIds = list.map { it.extensionId }
+            val contexts = list.map { it.context }
+            context.saveToCache(TRACKS, tracks, FOLDER)
+            context.saveToCache(CONTEXTS, contexts, FOLDER)
+            context.saveToCache(EXTENSIONS, extensionIds, FOLDER)
+            context.saveToCache(INDEX, currentIndex, FOLDER)
+        }
     }
 
     fun saveCurrentPos(context: Context, position: Long) {

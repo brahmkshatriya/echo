@@ -6,17 +6,21 @@ import dev.brahmkshatriya.echo.db.models.MediaTaskEntity
 import dev.brahmkshatriya.echo.db.models.Status
 import dev.brahmkshatriya.echo.download.TaskCancelException
 import dev.brahmkshatriya.echo.download.TaskException.Companion.toTaskException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 
 abstract class MediaTask<T>(
-    private val dao: DownloadDao
+    private val dao: DownloadDao,
+    private val downloadScope: CoroutineScope
 ) {
     abstract val entity: MediaTaskEntity
     abstract suspend fun initialize(): MutableSharedFlow<Progress<T>>
@@ -26,16 +30,18 @@ abstract class MediaTask<T>(
     abstract suspend fun resume()
 
     suspend fun ensureCancel() {
-        println("${entity.id} ensureCancel ${scope.isActive}")
         if (scope.isActive) {
             cancel()
             scope.cancel()
         }
         dao.deleteDownload(entity.id)
-        println("${entity.id} ensureCancel ${scope.isActive}")
     }
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(Dispatchers.IO) + CoroutineExceptionHandler { _, throwable ->
+        throwable.printStackTrace()
+        downloadScope.launch { flow?.emit(Progress.Final.Failed(throwable)) }
+    }
+
     fun <R> launch(block: suspend MediaTask<T>.() -> R): Job {
         return scope.launch { block() }
     }
@@ -43,7 +49,9 @@ abstract class MediaTask<T>(
     private var flow: MutableSharedFlow<Progress<T>>? = null
 
     suspend fun await(): Result<T> {
-        val flow = runCatching { initialize() }.getOrElse {
+        val flow = scope.async {
+            runCatching { initialize() }
+        }.await().getOrElse {
             val entity = runCatching { entity }.getOrNull()
             return Result.failure(entity?.let { it1 -> it.toTaskException(it1) } ?: it)
         }

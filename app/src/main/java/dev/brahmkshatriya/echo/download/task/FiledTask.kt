@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.common.helpers.Progress
 import dev.brahmkshatriya.echo.db.DownloadDao
 import dev.brahmkshatriya.echo.db.models.MediaTaskEntity
 import dev.brahmkshatriya.echo.extensions.get
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -16,10 +17,11 @@ import java.io.File
 
 class FiledTask(
     dao: DownloadDao,
+    scope: CoroutineScope,
     private val taskEntity: MediaTaskEntity,
     private val downloadExtension: MiscExtension,
     private val getter: suspend DownloadClient.() -> FileTask,
-) : MediaTask<File>(dao) {
+) : MediaTask<File>(dao, scope) {
 
     private suspend fun <T> withDownloadExtension(block: suspend DownloadClient.() -> T) =
         downloadExtension.get<DownloadClient, T> { block() }

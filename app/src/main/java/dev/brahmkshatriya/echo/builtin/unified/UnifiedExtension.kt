@@ -63,9 +63,9 @@ class UnifiedExtension(
             UNIFIED_ID,
             "Unified Extension",
             "1.0.0",
-            "Beta extension to test unified home feed",
+            "All your extensions in one place!",
             "Echo",
-            enabled = false
+            enabled = true
         )
 
         suspend inline fun <reified C, T> Extension<*>.client(block: C.() -> T): T = runCatching {
@@ -189,6 +189,8 @@ class UnifiedExtension(
             val list = result.getOrElse { throw it.toAppException(extension) }
             list.map { it.withExtensionId(extension.id) }
         }
+
+        fun Tab.injectId(id: String) = copy(extras = extras + mapOf(EXTENSION_ID to id))
     }
 
     override val settingItems = listOf(
@@ -208,10 +210,10 @@ class UnifiedExtension(
     private var extFlow = MutableStateFlow<List<MusicExtension>?>(null)
     suspend fun extensions() = extFlow.first { it != null }!!
     override fun setMusicExtensions(extensions: List<MusicExtension>) {
-        extFlow.value = extensions.filter { it.id != UNIFIED_ID }
+        extFlow.value = extensions.filter { it.id != UNIFIED_ID && it.metadata.enabled }
     }
 
-    private fun feed(
+    private fun loadFeed(
         extension: Extension<*>,
         loadTabs: suspend () -> List<Tab>,
         getFeed: (Tab?) -> PagedData<Shelf>
@@ -239,16 +241,35 @@ class UnifiedExtension(
         shelf
     }
 
-    override suspend fun getHomeTabs() = extensions().map { Tab(it.id, it.name) }
-    override fun getHomeFeed(tab: Tab?): PagedData<Shelf> {
-        val id = tab?.id ?: return PagedData.empty()
+    private suspend inline fun <reified T> tabs(
+        loadTabs: T.() -> List<Tab>
+    ): List<Tab> {
+        val exts = extensions()
+        return if (exts.size == 1) {
+            val ext = exts.first()
+            ext.client<T, List<Tab>> { loadTabs() }.map { it.injectId(ext.id) }
+        } else exts.map { Tab(it.id, it.name).injectId(it.id) }
+    }
+
+    private inline fun <reified T : Any> feed(
+        tab: Tab?,
+        crossinline loadTabs: suspend T.() -> List<Tab>,
+        crossinline getFeed: T.(Tab?) -> PagedData<Shelf>
+    ): PagedData<Shelf> {
+        val id = tab?.extras?.extensionId ?: return PagedData.empty()
         return PagedData.Suspend {
             val extension = extensions().get(id)
-            extension.client<HomeFeedClient, PagedData<Shelf>> {
-                feed(extension, { getHomeTabs() }, { getHomeFeed(it) })
+            extension.client<T, PagedData<Shelf>> {
+                loadFeed(extension, { loadTabs() }, { getFeed(it) })
             }
         }
     }
+
+    override suspend fun getHomeTabs() =
+        tabs<HomeFeedClient> { getHomeTabs() }
+
+    override fun getHomeFeed(tab: Tab?) =
+        feed<HomeFeedClient>(tab, { getHomeTabs() }, { getHomeFeed(it) })
 
     override suspend fun deleteQuickSearch(item: QuickSearchItem) {
         val history = getHistory().toMutableList()
@@ -272,17 +293,10 @@ class UnifiedExtension(
         } else listOf()
     }
 
-    override suspend fun searchTabs(query: String) = extensions().map { Tab(it.id, it.name) }
+    override suspend fun searchTabs(query: String) = tabs<SearchFeedClient> { searchTabs(query) }
     override fun searchFeed(query: String, tab: Tab?): PagedData<Shelf> {
         if (query.isNotBlank()) saveInHistory(query)
-
-        val id = tab?.id ?: return PagedData.empty()
-        return PagedData.Suspend {
-            val extension = extensions().get(id)
-            extension.client<SearchFeedClient, PagedData<Shelf>> {
-                feed(extension, { searchTabs(query) }, { searchFeed(query, it) })
-            }
-        }
+        return feed<SearchFeedClient>(tab, { searchTabs(query) }, { searchFeed(query, it) })
     }
 
     override fun loadTracks(radio: Radio): PagedData<Track> {

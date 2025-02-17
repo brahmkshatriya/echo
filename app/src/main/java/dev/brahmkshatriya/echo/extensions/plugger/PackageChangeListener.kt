@@ -4,17 +4,22 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import java.util.Collections.synchronizedList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
-class PackageChangeListener(context: Context) : BroadcastReceiver() {
+class PackageChangeListener(
+    context: Context,
+    val scope: CoroutineScope
+) : BroadcastReceiver() {
 
     fun add(listener: Listener) {
-        listeners.add(listener)
+        listeners = listeners + listener
     }
-    private val listeners = synchronizedList(mutableListOf<Listener>())
+
+    private var listeners = listOf<Listener>()
 
     interface Listener {
-        fun onPackageChanged()
+        suspend fun onPackageChanged()
     }
 
     init {
@@ -29,6 +34,6 @@ class PackageChangeListener(context: Context) : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        listeners.forEach { it.onPackageChanged() }
+        listeners.forEach { scope.launch { it.onPackageChanged() } }
     }
 }

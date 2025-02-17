@@ -52,7 +52,7 @@ class DownloadingFragment : Fragment() {
         downloadsMenu.transitionName = "downloads"
         downloadsMenu.setOnClickListener {
             val vm by activityViewModels<ShelfViewModel>()
-            vm.shelves = viewModel.getOfflineDownloads()
+            vm.shelves = viewModel.getOfflineDownloads() ?: return@setOnClickListener
             openFragment(
                 ShelfFragment.newInstance(
                     OfflineExtension.metadata.id, getString(R.string.downloads)

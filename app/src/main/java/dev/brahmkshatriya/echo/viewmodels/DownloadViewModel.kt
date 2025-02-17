@@ -91,7 +91,10 @@ class DownloadViewModel @Inject constructor(
     val downloadsFlow = downloader.downloadsFlow
     val dao = downloader.dao
 
-    fun getOfflineDownloads() = extensionLoader.offline.getDownloads()
+    fun getOfflineDownloads() = runCatching { extensionLoader.offline.getDownloads() }.getOrElse {
+        viewModelScope.launch { throwableFlow.emit(it) }
+        null
+    }
     fun cancelTrackDownload(trackId: Long) {
         downloader.cancelTrackDownload(listOf(trackId))
     }

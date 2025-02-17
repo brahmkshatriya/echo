@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -17,6 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.extensions.getPackageName
 import dev.brahmkshatriya.echo.ui.extension.ExtensionInstallerBottomSheet
 import dev.brahmkshatriya.echo.viewmodels.ExtensionViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.coroutines.resume
@@ -71,17 +70,12 @@ class ExtensionOpenerActivity : Activity() {
         }
 
         fun FragmentActivity.openExtensionInstaller(uri: Uri) {
-            lifecycleScope.launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 installExtension(uri.toString())
             }
         }
 
         suspend fun FragmentActivity.installExtension(fileString: String) = suspendCoroutine {
-            Handler(Looper.getMainLooper()).post {
-                ExtensionInstallerBottomSheet.newInstance(fileString)
-                    .show(supportFragmentManager, null)
-            }
-
             supportFragmentManager.setFragmentResultListener(EXTENSION_INSTALLER, this) { _, b ->
                 val file = b.getString("file")?.toUri()?.toFile()
                 val install = b.getBoolean("install")
@@ -100,7 +94,7 @@ class ExtensionOpenerActivity : Activity() {
                     }
                 }
             }
-
+            ExtensionInstallerBottomSheet.newInstance(fileString).show(supportFragmentManager, null)
         }
 
         private suspend fun Context.createLinksDialog(

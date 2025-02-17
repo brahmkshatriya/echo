@@ -68,7 +68,7 @@ class ExtensionLoader(
     private val extensionFlow: MutableStateFlow<MusicExtension?>,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Extension Loader")
-    private val listener = PackageChangeListener(context)
+    private val listener = PackageChangeListener(context, scope)
     val fileListener = FileChangeListener(scope)
 
     val offline by lazy { OfflineExtension(context, cache) }
@@ -85,7 +85,7 @@ class ExtensionLoader(
 //        DownloadExtension.metadata to Injectable { DownloadExtension(context) }
 
     private val musicExtensionRepo =
-        MusicExtensionRepo(context, messageFlow, listener, fileListener, offlinePair, unified)
+        MusicExtensionRepo(context, messageFlow, listener, fileListener, unified, offlinePair)
 
     private val trackerExtensionRepo =
         TrackerExtensionRepo(context, messageFlow, listener, fileListener)

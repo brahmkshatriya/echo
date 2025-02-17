@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
-import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.autoCleared
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.onAppBarChangeListener
 import dev.brahmkshatriya.echo.utils.ui.setupTransition
 import dev.brahmkshatriya.echo.viewmodels.UiViewModel.Companion.applyBackPressCallback
@@ -47,11 +47,13 @@ abstract class BaseSettingsFragment : Fragment() {
             .commit()
 
         view.post {
-            binding.fragmentContainer.getFragment<PreferenceFragmentCompat>().listView?.apply {
-                clipToPadding = false
-                applyInsets { applyContentInsets(it) }
-                isVerticalScrollBarEnabled = false
-                FastScrollerHelper.applyTo(this)
+            runCatching {
+                binding.fragmentContainer.getFragment<PreferenceFragmentCompat>().listView?.apply {
+                    clipToPadding = false
+                    applyInsets { applyContentInsets(it) }
+                    isVerticalScrollBarEnabled = false
+                    FastScrollerHelper.applyTo(this)
+                }
             }
         }
     }
