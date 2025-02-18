@@ -46,7 +46,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @OptIn(UnstableApi::class)
@@ -183,7 +182,7 @@ class PlayerService : MediaLibraryService() {
 
     override fun onDestroy() {
         mediaSession?.run {
-            runBlocking { ResumptionUtils.saveQueue(this@PlayerService, player) }
+            ResumptionUtils.saveQueue(this@PlayerService, player)
             effects.release()
             player.release()
             release()

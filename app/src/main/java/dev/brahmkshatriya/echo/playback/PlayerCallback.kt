@@ -32,6 +32,8 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.extensions.getExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverRepeat
+import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverShuffle
 import dev.brahmkshatriya.echo.playback.listeners.Radio
 import dev.brahmkshatriya.echo.ui.exception.ExceptionFragment.Companion.toExceptionDetails
 import dev.brahmkshatriya.echo.utils.future
@@ -170,6 +172,8 @@ class PlayerCallback(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaItemsWithStartPosition> {
+        mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
+        mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
         return Futures.immediateFuture(ResumptionUtils.recoverPlaylist(context))
     }
 

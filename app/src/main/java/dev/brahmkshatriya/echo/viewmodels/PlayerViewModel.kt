@@ -203,15 +203,16 @@ class PlayerViewModel @Inject constructor(
         ) {
             viewModel.browser.value = player
             player.addListener(PlayerUiListener(player, viewModel))
-
-            viewModel.run {
-                val keepQueue = settings.getBoolean(KEEP_QUEUE, true)
-                if (keepQueue && !player.isPlaying) viewModelScope.launch {
-                    extensionListFlow.first { it != null }
-                    ResumptionUtils.recoverPlaylist(app).apply {
+            viewModel.viewModelScope.launch {
+                val keepQueue = viewModel.settings.getBoolean(KEEP_QUEUE, true)
+                if (keepQueue) {
+                    viewModel.extensionListFlow.first { it != null }
+                    ResumptionUtils.recoverPlaylist(viewModel.app).apply {
                         player.setMediaItems(mediaItems, startIndex, startPositionMs)
                         player.prepare()
                     }
+//                    player.shuffleModeEnabled = viewModel.app.recoverShuffle() ?: false
+//                    player.repeatMode = viewModel.app.recoverRepeat() ?: REPEAT_MODE_OFF
                 }
             }
         }
