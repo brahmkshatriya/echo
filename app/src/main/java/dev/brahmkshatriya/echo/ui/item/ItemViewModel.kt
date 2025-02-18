@@ -87,7 +87,9 @@ class ItemViewModel @Inject constructor(
                 )
 
                 is TrackItem -> loadItem<TrackClient, TrackItem>(
-                    item, { loadTrack(it.track).toMediaItem() }, { getTrackShelves(it.track, app) }
+                    item,
+                    { loadTrack(it.track).toMediaItem() },
+                    { app.getTrackShelves(this, it.track) }
                 )
 
                 is RadioItem -> loadItem<RadioClient, RadioItem>(item, { it }, { null })
@@ -212,29 +214,29 @@ class ItemViewModel @Inject constructor(
 
     companion object {
 
-        fun Any.getTrackShelves(
-            track: Track, context: Context
+        fun Context.getTrackShelves(
+            ext: Any, track: Track
         ): PagedData.Concat<Shelf> {
             val album = track.album
             val artists = track.artists
             return PagedData.Concat(
                 if (album != null) PagedData.Single {
-                    val a = if (this !is AlbumClient) album
-                    else loadAlbum(album)
+                    val a = if (ext !is AlbumClient) album
+                    else ext.loadAlbum(album)
                     listOf(a.toMediaItem().toShelf())
                 } else PagedData.empty(),
                 if (artists.isNotEmpty()) PagedData.Single {
                     listOf(
                         Shelf.Lists.Items(
-                            context.getString(R.string.artists),
-                            if (this is ArtistClient) artists.map {
-                                val artist = loadArtist(it)
+                            getString(R.string.artists),
+                            if (ext is ArtistClient) artists.map {
+                                val artist = ext.loadArtist(it)
                                 artist.toMediaItem()
                             } else artists.map { it.toMediaItem() }
                         )
                     )
                 } else PagedData.empty(),
-                if (this is TrackClient) getShelves(track) else PagedData.empty()
+                if (ext is TrackClient) ext.getShelves(track) else PagedData.empty()
             )
         }
     }

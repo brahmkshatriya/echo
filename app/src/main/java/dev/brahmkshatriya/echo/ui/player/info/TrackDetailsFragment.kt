@@ -416,7 +416,7 @@ class TrackDetailsFragment : Fragment() {
             val extension = extensionListFlow.getExtension(clientId) ?: return
             viewModelScope.launch {
                 shelves = extension.run(throwableFlow) {
-                    getTrackShelves(track, app)
+                    app.getTrackShelves(this, track)
                 } ?: return@launch
                 shelves?.toFlow()?.collectTo(itemsFlow)
             }

@@ -38,7 +38,7 @@ import java.lang.ref.WeakReference
 class ShelfAdapter(
     fragment: Fragment,
     private val title: String,
-    private val transition: String,
+    private val transition: String?,
     private val extension: Extension<*>,
     val listener: Listener = getListener(fragment)
 ) : PagingDataAdapter<Shelf, ShelfViewHolder>(DiffCallback) {

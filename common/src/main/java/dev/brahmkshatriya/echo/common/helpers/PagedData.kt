@@ -248,9 +248,8 @@ sealed class PagedData<T : Any> {
             val (index, token) = splitContinuation(continuation)
             val source = sources.getOrNull(index) ?: return Page(emptyList(), null)
             val page = source.loadList(token)
-            if (page.continuation != null) Page(page.data, combine(index, page.continuation))
+            return if (page.continuation != null) Page(page.data, combine(index, page.continuation))
             else Page(page.data, combine(index + 1, null))
-            return page
         }
 
         override fun invalidate(continuation: String?) {
