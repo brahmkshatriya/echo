@@ -1,0 +1,3 @@
+<resources>
+    <style name="Default.Theme.Echo" parent="Base.Theme.Echo"/>
+</resources>

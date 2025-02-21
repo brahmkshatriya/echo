@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?echoBackground">
+
+    <!--    <androidx.fragment.app.FragmentContainerView-->
+    <!--        android:id="@+id/navHostFragment"-->
+    <!--        android:name="dev.brahmkshatriya.echo.ui.MainFragment"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent" />-->
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/playerFragmentContainer"
+        android:name="dev.brahmkshatriya.echo.ui.player.upnext.QueueFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_player" />
+    <!--        app:behavior_hideable="true"-->
+    <!--        app:behavior_peekHeight="@dimen/bottom_player_peek_height"-->
+    <!--        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"-->
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
