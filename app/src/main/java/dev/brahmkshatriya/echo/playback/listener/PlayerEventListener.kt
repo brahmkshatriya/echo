@@ -60,6 +60,7 @@ class PlayerEventListener(
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         updateCurrentFlow()
         updateCustomLayout()
+        ResumptionUtils.saveIndex(context, player.currentMediaItemIndex)
     }
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {

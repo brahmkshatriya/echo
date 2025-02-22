@@ -26,7 +26,11 @@ object ResumptionUtils {
     private const val REPEAT = "repeat"
 
     private fun Player.mediaItems() = (0 until mediaItemCount).map { getMediaItemAt(it) }
-    fun saveQueue(context: Context, player: Player) = runCatching {
+    fun saveIndex(context: Context, index: Int) {
+        context.saveToCache(INDEX, index, FOLDER)
+    }
+
+    fun saveQueue(context: Context, player: Player) {
         val list = player.mediaItems()
         val currentIndex = player.currentMediaItemIndex
         val extensionIds = list.map { it.extensionId }
@@ -36,7 +40,7 @@ object ResumptionUtils {
         context.saveToCache(EXTENSIONS, extensionIds, FOLDER)
         context.saveToCache(TRACKS, tracks, FOLDER)
         context.saveToCache(CONTEXTS, contexts, FOLDER)
-    }.getOrElse { println(it.stackTraceToString()) }
+    }
 
     fun saveCurrentPos(context: Context, position: Long) {
         context.saveToCache(POSITION, position, FOLDER)

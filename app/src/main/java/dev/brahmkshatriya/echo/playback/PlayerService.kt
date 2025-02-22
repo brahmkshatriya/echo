@@ -102,6 +102,7 @@ class PlayerService : MediaLibraryService() {
 
     override fun onDestroy() {
         mediaSession?.run {
+            ResumptionUtils.saveQueue(this@PlayerService, player)
             player.release()
             release()
             mediaSession = null
@@ -134,9 +135,7 @@ class PlayerService : MediaLibraryService() {
             .setIsSpeedChangeSupportRequired(true)
             .build()
 
-        val factory = StreamableMediaSource.Factory(
-            this, scope, app.settings, state.servers, extensionLoader.extensions.music, cache
-        )
+        val factory = StreamableMediaSource.Factory(this, state, extensions, cache)
 
         ExoPlayer.Builder(this, factory)
             .setRenderersFactory(RenderersFactory(this))
@@ -190,10 +189,10 @@ class PlayerService : MediaLibraryService() {
         else -1
 
         private fun <E> List<E>.select(settings: SharedPreferences?, quality: (E) -> Int) =
-            when (settings?.getString(STREAM_QUALITY, "medium")) {
-                "highest" -> maxBy { quality(it) }
-                "medium" -> sortedBy { quality(it) }[size / 2]
-                "lowest" -> minBy { quality(it) }
+            when (settings?.getString(STREAM_QUALITY, streamQualities[1])) {
+                streamQualities[0] -> maxBy { quality(it) }
+                streamQualities[1] -> sortedBy { quality(it) }[size / 2]
+                streamQualities[2] -> minBy { quality(it) }
                 else -> first()
             }
 

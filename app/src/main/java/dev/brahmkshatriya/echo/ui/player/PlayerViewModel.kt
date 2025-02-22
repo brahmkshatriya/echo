@@ -11,7 +11,6 @@ import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverRepeat
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverShuffle
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -40,11 +39,8 @@ class PlayerViewModel(
         if (player.mediaItemCount != 0) return@getController
         if (!settings.getBoolean(KEEP_QUEUE, true)) return@getController
 
-        viewModelScope.launch {
-            delay(1000)
-            player.shuffleModeEnabled = app.recoverShuffle() == true
-            player.repeatMode = app.recoverRepeat() ?: 0
-        }
+        player.shuffleModeEnabled = app.recoverShuffle() == true
+        player.repeatMode = app.recoverRepeat() ?: 0
         val (items, index, pos) = app.recoverPlaylist()
         player.setMediaItems(items, index, pos)
         player.prepare()

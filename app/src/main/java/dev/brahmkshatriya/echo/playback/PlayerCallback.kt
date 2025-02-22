@@ -32,10 +32,8 @@ import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.util.Timer
@@ -161,11 +159,8 @@ class PlayerCallback(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaItemsWithStartPosition> {
-        scope.launch(Dispatchers.Main) {
-            delay(1000)
-            mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
-            mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
-        }
+        mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
+        mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
         val (items, index, pos) = context.recoverPlaylist()
         return Futures.immediateFuture(MediaItemsWithStartPosition(items, index, pos))
     }

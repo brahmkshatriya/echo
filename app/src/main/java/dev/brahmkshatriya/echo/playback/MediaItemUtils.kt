@@ -187,7 +187,7 @@ object MediaItemUtils {
 
     val MediaMetadata.isLoaded by delegated { extras?.getBoolean("loaded") ?: false }
     val MediaMetadata.track by delegated { requireNotNull(extras?.getSerialized<Track>("track")) }
-    val MediaMetadata.clientId by delegated { requireNotNull(extras?.getString("extensionId")) }
+    val MediaMetadata.extensionId by delegated { requireNotNull(extras?.getString("extensionId")) }
     val MediaMetadata.context by delegated { extras?.getSerialized<EchoMediaItem?>("context") }
     val MediaMetadata.sourcesIndex by delegated { extras?.getInt("serverIndex") ?: -1 }
     val MediaMetadata.sourceIndex by delegated { extras?.getInt("sourceIndex") ?: -1 }
@@ -200,7 +200,7 @@ object MediaItemUtils {
     val MediaMetadata.retries by delegated { extras?.getInt("retries") ?: 0 }
 
     val MediaItem.track get() = mediaMetadata.track
-    val MediaItem.extensionId get() = mediaMetadata.clientId
+    val MediaItem.extensionId get() = mediaMetadata.extensionId
     val MediaItem.context get() = mediaMetadata.context
     val MediaItem.isLoaded get() = mediaMetadata.isLoaded
     val MediaItem.sourcesIndex get() = mediaMetadata.sourcesIndex
@@ -218,7 +218,7 @@ object MediaItemUtils {
     }
 
     private fun ImageHolder.toUriWithJson(): Uri {
-        val main = when(this) {
+        val main = when (this) {
             is ImageHolder.UriImageHolder -> uri
             is ImageHolder.UrlRequestImageHolder -> request.url
         }.toUri()
