@@ -86,11 +86,16 @@ object MediaItemUtils {
 
 
     fun withRetry(item: MediaItem): MediaItem {
-        val bundle = item.mediaMetadata.extras!!
-        val retries = bundle.getInt("retries") + 1
-        bundle.putBoolean("loaded", false)
-        bundle.putInt("retries", retries)
-        return buildWithBundle(item, bundle)
+        val bundle = Bundle().apply {
+            putAll(item.mediaMetadata.extras!!)
+            val retries = getInt("retries") + 1
+            putBoolean("loaded", false)
+            putInt("retries", retries)
+        }
+        return buildWithBundle(item, bundle).also {
+            println("what: ${item.equals(it)}")
+            println("na retries: ${it.retries} ${it.mediaMetadata.extras?.getInt("retries")}")
+        }
     }
 
     private fun buildWithBundle(mediaItem: MediaItem, bundle: Bundle) = run {
@@ -165,8 +170,10 @@ object MediaItemUtils {
         .setUserRating(
             if (isLiked) ThumbRating(true) else ThumbRating()
         )
-        .setExtras(bundle.apply {
+        .setExtras(Bundle().apply {
+            putAll(bundle)
             putSerialized("track", this@toMetaData)
+            putSerialized("unloadedCover", bundle.trackNullable?.cover)
             putString("extensionId", extensionId)
             putSerialized("context", context)
             putBoolean("loaded", loaded)
@@ -185,31 +192,34 @@ object MediaItemUtils {
     private fun Bundle.indexes() =
         "${getInt("serverIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
 
-    val MediaMetadata.isLoaded by delegated { extras?.getBoolean("loaded") ?: false }
-    val MediaMetadata.track by delegated { requireNotNull(extras?.getSerialized<Track>("track")) }
-    val MediaMetadata.extensionId by delegated { requireNotNull(extras?.getString("extensionId")) }
-    val MediaMetadata.context by delegated { extras?.getSerialized<EchoMediaItem?>("context") }
-    val MediaMetadata.sourcesIndex by delegated { extras?.getInt("serverIndex") ?: -1 }
-    val MediaMetadata.sourceIndex by delegated { extras?.getInt("sourceIndex") ?: -1 }
-    val MediaMetadata.backgroundIndex by delegated { extras?.getInt("backgroundIndex") ?: -1 }
-    val MediaMetadata.subtitleIndex by delegated { extras?.getInt("subtitleIndex") ?: -1 }
-    val MediaMetadata.isLiked by delegated { (userRating as? ThumbRating)?.isThumbsUp == true }
-    val MediaMetadata.background by delegated {
-        extras?.getSerialized<Streamable.Media.Background?>("background")
+    private val Bundle?.trackNullable by delegated { this?.getSerialized<Track>("track") }
+    val Bundle?.track get() = requireNotNull(trackNullable)
+    val Bundle?.isLoaded by delegated { this?.getBoolean("loaded") ?: false }
+    val Bundle?.extensionId by delegated { requireNotNull(this?.getString("extensionId")) }
+    val Bundle?.context by delegated { this?.getSerialized<EchoMediaItem?>("context") }
+    val Bundle?.sourcesIndex by delegated { this?.getInt("serverIndex") ?: -1 }
+    val Bundle?.sourceIndex by delegated { this?.getInt("sourceIndex") ?: -1 }
+    val Bundle?.backgroundIndex by delegated { this?.getInt("backgroundIndex") ?: -1 }
+    val Bundle?.subtitleIndex by delegated { this?.getInt("subtitleIndex") ?: -1 }
+    val Bundle?.background by delegated {
+        this?.getSerialized<Streamable.Media.Background?>("background")
     }
-    val MediaMetadata.retries by delegated { extras?.getInt("retries") ?: 0 }
+    val Bundle?.retries by delegated { this?.getInt("retries") ?: 0 }
+    val Bundle?.unloadedCover by delegated { this?.getSerialized<ImageHolder?>("unloadedCover") }
 
-    val MediaItem.track get() = mediaMetadata.track
-    val MediaItem.extensionId get() = mediaMetadata.extensionId
-    val MediaItem.context get() = mediaMetadata.context
-    val MediaItem.isLoaded get() = mediaMetadata.isLoaded
-    val MediaItem.sourcesIndex get() = mediaMetadata.sourcesIndex
-    val MediaItem.sourceIndex get() = mediaMetadata.sourceIndex
-    val MediaItem.backgroundIndex get() = mediaMetadata.backgroundIndex
-    val MediaItem.subtitleIndex get() = mediaMetadata.subtitleIndex
-    val MediaItem.background get() = mediaMetadata.background
+    val MediaItem.track get() = mediaMetadata.extras.track
+    val MediaItem.extensionId get() = mediaMetadata.extras.extensionId
+    val MediaItem.context get() = mediaMetadata.extras.context
+    val MediaItem.isLoaded get() = mediaMetadata.extras.isLoaded
+    val MediaItem.sourcesIndex get() = mediaMetadata.extras.sourcesIndex
+    val MediaItem.sourceIndex get() = mediaMetadata.extras.sourceIndex
+    val MediaItem.backgroundIndex get() = mediaMetadata.extras.backgroundIndex
+    val MediaItem.subtitleIndex get() = mediaMetadata.extras.subtitleIndex
+    val MediaItem.background get() = mediaMetadata.extras.background
+    val MediaMetadata.isLiked by delegated { (userRating as? ThumbRating)?.isThumbsUp == true }
     val MediaItem.isLiked get() = mediaMetadata.isLiked
-    val MediaItem.retries get() = mediaMetadata.retries
+    val MediaItem.retries get() = mediaMetadata.extras.retries
+    val MediaItem.unloadedCover get() = mediaMetadata.extras.unloadedCover
 
     private fun Streamable.SubtitleType.toMimeType() = when (this) {
         Streamable.SubtitleType.VTT -> MimeTypes.TEXT_VTT

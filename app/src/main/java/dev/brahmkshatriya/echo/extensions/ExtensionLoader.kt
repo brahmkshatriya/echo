@@ -13,8 +13,10 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import java.io.File
 
 @OptIn(UnstableApi::class)
 class ExtensionLoader(
@@ -24,6 +26,10 @@ class ExtensionLoader(
 ) {
     val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("ExtensionLoader")
 
+    val fileIgnoreFlow = MutableSharedFlow<File?>()
+    val extensions = Extensions(app.settings, scope, app.throwFlow)
+    val updater = Updater(this)
+
     val offline by lazy { OfflineExtension(app.context, cache) }
     private val extensionRepo = ExtensionsRepo(
         this,
@@ -32,7 +38,6 @@ class ExtensionLoader(
 //        TestExtension.metadata to Injectable { TestExtension() }
     )
 
-    val extensions = Extensions(app.settings, scope, app.throwFlow)
     private var job: Job? = null
     private fun loadExtensions() {
         job?.cancel()

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/state_on"
+        android:drawable="@drawable/ic_heart_filled_40dp"
+        android:state_checked="true"/>
+
+    <item android:id="@+id/state_off"
+        android:drawable="@drawable/ic_heart_outline_40dp"
+        android:state_checked="false"
+        />
+    <transition
+        android:drawable="@drawable/ic_heart_filled_to_outline_40dp"
+        android:fromId="@+id/state_on"
+        android:toId="@+id/state_off"
+        />
+    <transition
+        android:drawable="@drawable/ic_heart_outline_to_filled_40dp"
+        android:fromId="@+id/state_off"
+        android:toId="@+id/state_on"
+        />
+</animated-selector>

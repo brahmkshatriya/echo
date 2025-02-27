@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.retries
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
@@ -108,6 +109,8 @@ class StreamableMediaSource(
 
     override fun canUpdateMediaItem(mediaItem: MediaItem) = run {
         this.mediaItem.apply {
+            println("burh: $retries - ${mediaItem.retries}")
+            if (retries != mediaItem.retries) return@run false
             if (sourcesIndex != mediaItem.sourcesIndex) return@run false
             if (sourceIndex != mediaItem.sourceIndex) return@run false
             if (backgroundIndex != mediaItem.backgroundIndex) return@run false

@@ -19,6 +19,8 @@ import dev.brahmkshatriya.echo.playback.PlayerCommands.getLikeButton
 import dev.brahmkshatriya.echo.playback.PlayerCommands.getRepeatButton
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.ResumptionUtils
+import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
+import dev.brahmkshatriya.echo.utils.Serializer.rootCause
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -51,6 +53,9 @@ class PlayerEventListener(
     }
 
     private fun updateCurrentFlow() {
+        if (player.currentMediaItem == null && player.mediaItemCount > 0) {
+            throw Exception("This is possible")
+        }
         currentFlow.value = player.currentMediaItem?.let {
             val isPlaying = player.isPlaying && player.playbackState == Player.STATE_READY
             PlayerState.Current(player.currentMediaItemIndex, it, it.isLoaded, isPlaying)
@@ -98,24 +103,25 @@ class PlayerEventListener(
     }
 
     private val maxRetries = 3
+    private val maxSingleItemRetries = 1
     private var currentRetries = 0
     private var last: KClass<*>? = null
     override fun onPlayerError(error: PlaybackException) {
         val cause = error.cause ?: error
-        scope.launch { throwableFlow.emit(cause) }
+        val mediaItem = player.currentMediaItem
+        scope.launch { throwableFlow.emit(PlayerException(mediaItem, cause)) }
 
         val old = last
-        last = cause::class
-        if (old != null && old::class == last) currentRetries++
+        last = cause.rootCause::class
+        if (old != null && old == last) currentRetries++
         else currentRetries = 0
 
-        if (currentRetries >= maxRetries) return
-        if (!player.playWhenReady) return
-
-        val mediaItem = player.currentMediaItem ?: return
+        if (mediaItem == null) return
         val index = player.currentMediaItemIndex
         val retries = mediaItem.retries
-        if (retries >= maxRetries) {
+
+        if (currentRetries >= maxRetries) return
+        if (retries >= maxSingleItemRetries) {
             val hasMore = index < player.mediaItemCount - 1
             if (!hasMore) return
             player.seekToNextMediaItem()

@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingVertical="8dp">
+
+        <include
+            android:id="@android:id/icon_frame"
+            layout="@layout/preference_common" />
+    </LinearLayout>
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/preferences_slider"
+        android:layout_width="match_parent"
+        android:value="0.4"
+        android:layout_marginHorizontal="8dp"
+        android:layout_height="wrap_content" />
+</LinearLayout>

@@ -22,6 +22,17 @@ interface UserDao {
     @Query("SELECT * FROM UserEntity WHERE type = :type AND extId = :extId")
     suspend fun getAllUsers(type: ExtensionType, extId: String): List<UserEntity>
 
+    @Query(
+        """
+        SELECT UserEntity.* FROM UserEntity
+        INNER JOIN CurrentUser 
+        ON UserEntity.extId = CurrentUser.extId
+        AND UserEntity.type = CurrentUser.type
+        WHERE CurrentUser.extId = :clientId
+    """
+    )
+    suspend fun getCurrentUser(clientId: String?): UserEntity?
+
     @Delete
     suspend fun deleteUser(user: UserEntity)
 

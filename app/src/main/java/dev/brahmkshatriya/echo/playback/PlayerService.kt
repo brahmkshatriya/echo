@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.playback
 import android.app.Application
 import android.app.PendingIntent
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.annotation.OptIn
@@ -164,7 +165,7 @@ class PlayerService : MediaLibraryService() {
         const val CLOSE_PLAYER = "close_player"
         const val SKIP_SILENCE = "skip_silence"
 
-        private const val CACHE_SIZE = "cache_size"
+        const val CACHE_SIZE = "cache_size"
 
         @OptIn(UnstableApi::class)
         fun getCache(
@@ -180,7 +181,7 @@ class PlayerService : MediaLibraryService() {
             )
         }
 
-        private const val STREAM_QUALITY = "stream_quality"
+        const val STREAM_QUALITY = "stream_quality"
         val streamQualities = arrayOf("highest", "medium", "lowest")
 
         fun selectSourceIndex(
@@ -203,13 +204,13 @@ class PlayerService : MediaLibraryService() {
             select(settings) { it.quality }
 
         fun getController(
-            app: Application,
+            context: Context,
             block: (MediaController) -> Unit
         ): () -> Unit {
             val sessionToken =
-                SessionToken(app, ComponentName(app, PlayerService::class.java))
-            val playerFuture = MediaController.Builder(app, sessionToken).buildAsync()
-            app.listenFuture(playerFuture) { result ->
+                SessionToken(context, ComponentName(context, PlayerService::class.java))
+            val playerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+            context.listenFuture(playerFuture) { result ->
                 val controller = result.getOrElse {
                     return@listenFuture it.printStackTrace()
                 }

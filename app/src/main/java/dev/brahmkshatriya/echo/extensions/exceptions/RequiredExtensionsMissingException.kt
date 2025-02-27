@@ -1,5 +1,4 @@
 package dev.brahmkshatriya.echo.extensions.exceptions
 
-class RequiredExtensionsMissingException(required: List<String>) : Exception(
-    "Missing required extensions: ${required.joinToString(", ")}"
-)
+class RequiredExtensionsMissingException(val required: List<String>) :
+    Exception("Missing required extensions: ${required.joinToString(", ")}")

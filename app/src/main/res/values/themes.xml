@@ -1,6 +1,19 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Base.Theme.Echo" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">
+            @color/amoled_bg
+        </item>
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">
+            @drawable/art_splash_anim
+        </item>
+        <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">900</item>
+        <item name="android:windowSplashScreenBehavior" tools:targetApi="TIRAMISU">
+            icon_preferred
+        </item>
+        <item name="android:windowSplashScreenBrandingImage" tools:targetApi="s">
+            @drawable/art_brand
+        </item>
         <item name="android:colorBackground">?echoBackground</item>
         <item name="snackbarStyle">@style/EchoSnackBar</item>
         <item name="android:dialogTheme">@style/EchoDialog</item>
@@ -10,6 +23,7 @@
         <item name="actionButtonStyle">@style/EchoActionButton</item>
         <item name="collapsingToolbarLayoutStyle">@style/EchoCollapsingBar</item>
         <item name="cardViewStyle">@style/EchoCardView</item>
+        <item name="tabStyle">@style/EchoTabLayout</item>
 
         <item name="echoBackground">?colorSurface</item>
         <item name="navBackground">?colorSurfaceContainer</item>

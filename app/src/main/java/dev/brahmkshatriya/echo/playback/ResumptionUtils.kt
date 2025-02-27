@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 
 object ResumptionUtils {
 
+    private const val CLEARED = "cleared"
     private const val FOLDER = "queue"
     private const val TRACKS = "queue_tracks"
     private const val CONTEXTS = "queue_contexts"
@@ -32,6 +33,8 @@ object ResumptionUtils {
 
     fun saveQueue(context: Context, player: Player) {
         val list = player.mediaItems()
+        context.saveToCache(CLEARED, list.isEmpty())
+        if (list.isEmpty()) return
         val currentIndex = player.currentMediaItemIndex
         val extensionIds = list.map { it.extensionId }
         val tracks = list.map { it.track }
@@ -46,8 +49,9 @@ object ResumptionUtils {
         context.saveToCache(POSITION, position, FOLDER)
     }
 
-    private fun Context.recoverQueue(): List<MediaItem>? {
+    private fun Context.recoverQueue(withClear: Boolean = false): List<MediaItem>? {
         val settings = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (withClear && getFromCache<Boolean>(CLEARED) != false) return null
         val tracks = getFromCache<List<Track>>(TRACKS, FOLDER)
         val extensionIds = getFromCache<List<String>>(EXTENSIONS, FOLDER)
         val contexts = getFromCache<List<EchoMediaItem>>(CONTEXTS, FOLDER)
@@ -73,8 +77,8 @@ object ResumptionUtils {
     }
 
     @OptIn(UnstableApi::class)
-    fun Context.recoverPlaylist(): Triple<List<MediaItem>, Int, Long> {
-        val items = recoverQueue() ?: emptyList()
+    fun Context.recoverPlaylist(withClear: Boolean = false): Triple<List<MediaItem>, Int, Long> {
+        val items = recoverQueue(withClear) ?: emptyList()
         val index = recoverIndex() ?: C.INDEX_UNSET
         val position = recoverPosition() ?: 0L
         return Triple(items, index, position)

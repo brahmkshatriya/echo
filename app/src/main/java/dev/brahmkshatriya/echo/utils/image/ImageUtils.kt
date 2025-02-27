@@ -55,15 +55,22 @@ object ImageUtils {
         imageView.enqueue(request)
     }
 
-    @Suppress("UNUSED_PARAMETER")
+    fun ImageHolder.getCachedDrawable(context: Context): Drawable? {
+        val key = hashCode().toString()
+        return context.imageLoader.diskCache?.openSnapshot(key)?.use {
+            Drawable.createFromPath(it.data.toFile().absolutePath)
+        }
+    }
+
     fun ImageHolder?.loadWithThumb(
-        imageView: ImageView, thumbnail: ImageHolder? = null,
+        imageView: ImageView, thumbnail: Drawable? = null,
         error: Int? = null, onDrawable: (Drawable?) -> Unit = {}
-    ) = tryWith {
+    ) = tryWith(true) {
+        thumbnail?.let { imageView.setImageDrawable(it) }
         val request = createRequest(imageView.context, null, error)
         fun setDrawable(image: Image?) {
             val drawable = image?.asDrawable(imageView.resources)
-            imageView.load(drawable)
+            imageView.setImageDrawable(drawable)
             tryWith(false) { onDrawable(drawable) }
         }
         request.target(::setDrawable, ::setDrawable, ::setDrawable)
@@ -148,6 +155,7 @@ object ImageUtils {
         imageHolder: ImageHolder,
         builder: ImageRequest.Builder,
     ) = imageHolder.run {
+        val key = hashCode().toString()
         when (this) {
             is ImageHolder.UriImageHolder -> builder.data(uri)
             is ImageHolder.UrlRequestImageHolder -> {
@@ -157,7 +165,7 @@ object ImageUtils {
                     }.build())
                 builder.data(request.url)
             }
-        }
+        }.diskCacheKey(key)
     }
 
     private fun ImageHolder?.createRequest(

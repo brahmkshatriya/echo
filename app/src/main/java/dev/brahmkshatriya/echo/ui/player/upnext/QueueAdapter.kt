@@ -10,13 +10,19 @@ import androidx.media3.common.MediaItem
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonItemQueueBinding
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 
-class PlaylistAdapter(
+class QueueAdapter(
     private val listener: Listener,
     private val inactive: Boolean = false
-) : ListAdapter<Pair<Boolean?, MediaItem>, PlaylistAdapter.ViewHolder>(DiffCallback) {
+) : ListAdapter<Pair<Boolean?, MediaItem>, QueueAdapter.ViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<Pair<Boolean?, MediaItem>>() {
         override fun areItemsTheSame(
@@ -51,7 +57,7 @@ class PlaylistAdapter(
                 listener.onItemClicked(bindingAdapterPosition)
             }
 
-            binding.playlistItemDragHandle.setOnTouchListener { _, event ->
+            binding.playlistItemDrag.setOnTouchListener { _, event ->
                 if (event.actionMasked != MotionEvent.ACTION_DOWN) return@setOnTouchListener false
                 listener.onDragHandleTouched(this)
                 true
@@ -73,27 +79,29 @@ class PlaylistAdapter(
         val (current, item) = getItem(position)
         val isCurrent = current != null
         val isPlaying = current == true
-//        val track = item.track
+        val track = item.track
 
         binding.playlistItem.alpha = if (inactive) 0.5f else 1f
 
-        binding.playlistItemTitle.text = item.mediaMetadata.title//track.title
-//        track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
-        var subtitle = ""
-//        track.duration?.toTimeString()?.let {
-//            subtitle += it
-//        }
-//        track.artists.joinToString(", ") { it.name }.let {
-//            if (it.isNotBlank()) subtitle += if (subtitle.isNotBlank()) " • $it" else it
-//        }
+        binding.playlistItemTitle.text = track.title
+        binding.playlistItemTitle.isSelected = true
+
+        track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_problem)
+        val subtitle = buildString {
+            track.duration?.toTimeString()?.let {
+                append("$it • ")
+            }
+            append(track.toMediaItem().subtitleWithE)
+        }
         binding.playlistItemAuthor.isVisible = subtitle.isNotEmpty()
         binding.playlistItemAuthor.text = subtitle
+        binding.playlistItemAuthor.isSelected = true
 
         binding.playlistItemClose.isVisible = !inactive
-        binding.playlistItemDragImg.isVisible = !inactive
+        binding.playlistItemDrag.isVisible = !inactive
 
         binding.playlistCurrentItem.isVisible = isCurrent
-//        binding.playlistProgressBar.isVisible = isCurrent && !item.isLoaded
+        binding.playlistProgressBar.isVisible = isCurrent && !item.isLoaded
         binding.playlistItemNowPlaying.isVisible = isPlaying
         (binding.playlistItemNowPlaying.drawable as Animatable).start()
     }

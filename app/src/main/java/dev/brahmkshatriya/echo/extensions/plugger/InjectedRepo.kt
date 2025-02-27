@@ -56,7 +56,7 @@ class InjectedRepo(
 
     private fun Injectable<ExtensionClient>.injected(
         metadata: Metadata
-    ) = inject {
+    ) = injectIfNotInitialized {
         verifyType(metadata.type)
         if (this is MetadataProvider) setMetadata(metadata)
         if (this is MessageFlowProvider) setMessageFlow(extensionLoader.app.messageFlow)

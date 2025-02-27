@@ -7,20 +7,30 @@
     android:layout_height="match_parent"
     android:background="?echoBackground">
 
-    <!--    <androidx.fragment.app.FragmentContainerView-->
-    <!--        android:id="@+id/navHostFragment"-->
-    <!--        android:name="dev.brahmkshatriya.echo.ui.MainFragment"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent" />-->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/navHostFragment"
+        android:name="dev.brahmkshatriya.echo.ui.main.MainFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_home" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/playerFragmentContainer"
-        android:name="dev.brahmkshatriya.echo.ui.player.upnext.QueueFragment"
+        android:name="dev.brahmkshatriya.echo.ui.player.PlayerFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="@dimen/bottom_player_peek_height"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         tools:layout="@layout/fragment_player" />
-    <!--        app:behavior_hideable="true"-->
-    <!--        app:behavior_peekHeight="@dimen/bottom_player_peek_height"-->
-    <!--        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"-->
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navView"
+        style="@style/NavView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:minHeight="@dimen/nav_height"
+        app:menu="@menu/nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

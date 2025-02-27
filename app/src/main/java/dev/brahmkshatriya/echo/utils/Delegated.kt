@@ -7,6 +7,7 @@ class Delegated<R, T>(private val initializer: R.() -> T) {
 
     private val map = WeakHashMap<R, Result<T>>()
     operator fun getValue(thisRef: R, property: KProperty<*>): T {
+//        println("${thisRef.hashCode()} ${property.name} : ${map[thisRef]?.getOrThrow()} - ${initializer(thisRef)}")
         return map.getOrPut(thisRef) {
             runCatching { initializer(thisRef) }
         }.getOrThrow()

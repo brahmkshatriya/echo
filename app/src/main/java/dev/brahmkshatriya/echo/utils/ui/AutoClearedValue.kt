@@ -10,17 +10,7 @@ class AutoClearedValue<T : Any>(val fragment: Fragment) : ReadWriteProperty<Frag
     private var _value: T? = null
 
     init {
-        fragment.lifecycle.addObserver(object: DefaultLifecycleObserver {
-            override fun onCreate(owner: LifecycleOwner) {
-                fragment.viewLifecycleOwnerLiveData.observe(fragment) { viewLifecycleOwner ->
-                    viewLifecycleOwner?.lifecycle?.addObserver(object: DefaultLifecycleObserver {
-                        override fun onDestroy(owner: LifecycleOwner) {
-                            _value = null
-                        }
-                    })
-                }
-            }
-        })
+        addObserver(fragment) { _value = null }
     }
 
     override fun getValue(thisRef: Fragment, property: KProperty<*>): T {
@@ -33,7 +23,34 @@ class AutoClearedValue<T : Any>(val fragment: Fragment) : ReadWriteProperty<Frag
         _value = value
     }
 
+    class Nullable<T : Any>(val fragment: Fragment) : ReadWriteProperty<Fragment, T?> {
+        private var _value: T? = null
+
+        override fun getValue(thisRef: Fragment, property: KProperty<*>) = _value
+
+        override fun setValue(thisRef: Fragment, property: KProperty<*>, value: T?) {
+            _value = value
+        }
+
+    }
+
     companion object {
+        private fun addObserver(fragment: Fragment, onDestroy: () -> Unit) {
+            fragment.lifecycle.addObserver(object : DefaultLifecycleObserver {
+                override fun onCreate(owner: LifecycleOwner) {
+                    fragment.viewLifecycleOwnerLiveData.observe(fragment) { viewLifecycleOwner ->
+                        viewLifecycleOwner?.lifecycle?.addObserver(object :
+                            DefaultLifecycleObserver {
+                            override fun onDestroy(owner: LifecycleOwner) {
+                                onDestroy()
+                            }
+                        })
+                    }
+                }
+            })
+        }
+
         fun <T : Any> Fragment.autoCleared() = AutoClearedValue<T>(this)
+        fun <T : Any> Fragment.autoClearedNullable() = Nullable<T>(this)
     }
 }

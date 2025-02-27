@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?colorPrimary">
+
+    <FrameLayout
+        android:id="@+id/bg_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:translationZ="-2dp">
+
+        <com.flaviofaria.kenburnsview.KenBurnsView
+            android:id="@+id/bg_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toTopOf="@+id/bg_gradient"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/player_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="false"
+            android:visibility="gone"
+            app:use_controller="false" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/fg_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/bg_gradient"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:translationZ="-2dp"
+            app:layout_constraintBottom_toTopOf="@+id/view_pager"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintTop_toBottomOf="@+id/bg_image"
+            app:srcCompat="@drawable/gradient_track"
+            app:tint="@color/amoled_bg" />
+
+        <View
+            android:id="@+id/bg_collapsed"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/collapsed_cover_size"
+            android:layout_margin="8dp"
+            android:background="@drawable/rounded_rectangle_8dp"
+            android:backgroundTint="?colorSurfaceContainerHigh"
+            android:translationZ="-1dp" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraint_layout"
+                style="@style/PlayerExpandedConstraintLayout">
+
+                <View
+                    android:id="@+id/player_track_cover_placeholder"
+                    style="@style/PlayerTrackCoverContainer"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/expanded_toolbar"
+                    style="@style/PlayerToolbarStyle" />
+
+                <include
+                    android:id="@+id/player_controls"
+                    layout="@layout/item_player_controls"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/player_more_container"
+                    android:name="dev.brahmkshatriya.echo.ui.player.PlayerMoreFragment"
+                    style="@style/Widget.Material3.BottomSheet"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:outlineProvider="none"
+                    app:backgroundTint="@android:color/transparent"
+                    app:behavior_hideable="false"
+                    app:behavior_peekHeight="@dimen/player_info_peek_height"
+                    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+                    tools:layout="@layout/fragment_player_more" />
+
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/player_collapsed_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/rounded_rectangle_8dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/collapsed_cover_size"
+                android:layout_gravity="end"
+                android:padding="8dp">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center">
+
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/collapsedProgressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"
+                        android:visibility="gone"
+                        app:indicatorColor="?attr/colorTertiary" />
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/collapsedTrackPlayPause"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="0.5dp"
+                        android:layout_marginTop="0.5dp"
+                        android:background="@drawable/ripple_44dp"
+                        android:button="@drawable/anim_play_pause"
+                        android:contentDescription="@string/play"
+                        app:buttonTint="@color/button_player" />
+
+                </FrameLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/player_close"
+                    style="?attr/materialIconButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/close"
+                    android:padding="8dp"
+                    app:icon="@drawable/ic_close"
+                    app:iconSize="24dp"
+                    app:iconTint="@color/button_player"
+                    tools:ignore="DuplicateClickableBoundsCheck" />
+            </LinearLayout>
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/collapsed_buffer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:alpha="0.5"
+                android:progress="40"
+                app:indicatorColor="?attr/colorTertiary"
+                app:indicatorTrackGapSize="0dp"
+                app:trackColor="?attr/colorOnSurface"
+                app:trackThickness="2dp" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/collapsed_seekbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:progress="20"
+                app:indicatorColor="?attr/colorTertiary"
+                app:trackColor="@android:color/transparent"
+                app:trackThickness="2dp" />
+        </FrameLayout>
+
+    </FrameLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

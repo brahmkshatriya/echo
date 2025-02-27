@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Selectable"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/collapsed_cover_size">
+
+    <LinearLayout
+        android:id="@+id/collapsedPlayerInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="@dimen/collapsed_cover_size"
+            android:layout_height="@dimen/collapsed_cover_size" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:baselineAligned="false"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/collapsedTrackTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:maxLines="1"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                tools:text="@tools:sample/lorem/random" />
+
+            <TextView
+                android:id="@+id/collapsedTrackArtist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:maxLines="1"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="@tools:sample/lorem/random" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="112dp"
+            android:layout_height="@dimen/collapsed_cover_size" />
+    </LinearLayout>
+</FrameLayout>

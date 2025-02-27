@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="20dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/addColor"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginHorizontal="8dp"
+        app:cardBackgroundColor="?colorSurfaceContainer"
+        app:cardCornerRadius="24dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/add_color"
+            app:srcCompat="@drawable/ic_add_20dp"
+            app:tint="?colorOnSurface" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recentColors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/custom_colors"
+        android:orientation="horizontal"
+        android:requiresFadingEdge="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_color_card" />
+
+</LinearLayout>

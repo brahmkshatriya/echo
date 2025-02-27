@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="CollapsingBar" parent="TopCollapsingBar">
+
+    <style name="EchoCollapsingBar" parent="TopCollapsingBar">
         <item name="layout_scrollFlags">scroll|exitUntilCollapsed</item>
+    </style>
+
+    <style name="PlayerTrackCoverContainer" parent="BasePlayerTrackCoverContainer">
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginEnd">0dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <style name="PlayerExpandedConstraintLayout">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:layout_marginEnd">-24dp</item>
     </style>
 </resources>

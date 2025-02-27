@@ -27,7 +27,7 @@ class ExtensionsRepo(
     private val scope = extensionLoader.scope
 
     private val injectedRepo by lazy {
-        val fileSource = FilePluginSource(context, scope)
+        val fileSource = FilePluginSource(context, scope, extensionLoader.fileIgnoreFlow)
         val fileParser = FileParser(context.packageManager, ApkManifestParser(ImportType.File))
 
         val installedAppSource = InstalledAppSource(context, scope)

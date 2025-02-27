@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extensions
 
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MiscExtension
@@ -12,6 +13,7 @@ import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,11 +22,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class Extensions(
-    settings: SharedPreferences,
+    private val settings: SharedPreferences,
     private val scope: CoroutineScope,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) {
     fun flush() {
+        current.value = null
         music.value = null
         tracker.value = null
         lyrics.value = null
@@ -65,16 +68,32 @@ class Extensions(
             }
             allList.add(extension)
         }
-
         music.value = musicList.sorted(ExtensionType.MUSIC)
         tracker.value = trackerList.sorted(ExtensionType.TRACKER)
         lyrics.value = lyricsList.sorted(ExtensionType.LYRICS)
         misc.value = miscList.sorted(ExtensionType.MISC)
         all.value = allList
+        setCurrentExtension()
+    }
+
+    private fun setCurrentExtension() {
+        val last = settings.getString(LAST_EXTENSION_KEY, null)
+        val list = music.value ?: return
+        val extension = list.find { it.id == last && it.isEnabled }
+            ?: list.firstOrNull { it.isEnabled }
+            ?: return
+        setupMusicExtension(extension)
+    }
+
+    fun setupMusicExtension(extension: MusicExtension): Boolean {
+        settings.edit { putString(LAST_EXTENSION_KEY, extension.id) }
+        current.value = extension
+        scope.launch { extension.run(throwableFlow) { onExtensionSelected() } }
+        return true
     }
 
     val all = MutableStateFlow<List<Extension<*>>?>(null)
-
+    val current = MutableStateFlow<MusicExtension?>(null)
     val music = MutableStateFlow<List<MusicExtension>?>(null)
     val tracker = MutableStateFlow<List<TrackerExtension>?>(null)
     val lyrics = MutableStateFlow<List<LyricsExtension>?>(null)
@@ -92,6 +111,13 @@ class Extensions(
         return sortedBy { priority.indexOf(it.metadata.id) }
     }
 
+    fun getFlow(type: ExtensionType) = when (type) {
+        ExtensionType.MUSIC -> music
+        ExtensionType.TRACKER -> tracker
+        ExtensionType.LYRICS -> lyrics
+        ExtensionType.MISC -> misc
+    }
+
     init {
         priorityMap.forEach { (type, flow) ->
             scope.launch {
@@ -107,6 +133,7 @@ class Extensions(
         }
     }
 
+
     companion object {
 
         private operator fun <T> List<T>?.plus(other: List<T>?): List<T> {
@@ -117,5 +144,7 @@ class Extensions(
         }
 
         fun ExtensionType.priorityKey() = "priority_${this.feature}"
+
+        const val LAST_EXTENSION_KEY = "last_extension"
     }
 }

@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.ExtensionEntity
@@ -27,10 +26,6 @@ abstract class ExtensionDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
     abstract fun extensionDao(): ExtensionDao
-
-    suspend fun getUser(metadata: Metadata): User? {
-        return null
-    }
 
     suspend fun getUser(current: CurrentUser): User? {
         return userDao.getUser(current.type, current.extId, current.userId)?.user

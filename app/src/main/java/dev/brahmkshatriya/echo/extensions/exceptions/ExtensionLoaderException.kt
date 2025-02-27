@@ -1,3 +1,7 @@
 package dev.brahmkshatriya.echo.extensions.exceptions
 
-class ExtensionLoaderException(override val cause: Throwable) : Exception()
+class ExtensionLoaderException(
+    val clazz: String,
+    val source: String,
+    override val cause: Throwable
+) : Exception()

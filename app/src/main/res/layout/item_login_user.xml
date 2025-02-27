@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/userContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp">
+
+        <androidx.cardview.widget.CardView
+            app:cardCornerRadius="64dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/currentUserAvatar"
+                tools:srcCompat="@tools:sample/avatars"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:importantForAccessibility="no" />
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:id="@+id/currentUserName"
+                tools:text="@tools:sample/full_names"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/currentUserSubTitle"
+                tools:text="@tools:sample/lorem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.66" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/notLoggedInContainer"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp">
+
+        <TextView
+            android:id="@+id/notLoggedIn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:alpha="0.66"
+            android:gravity="center"
+            android:minHeight="64dp"
+            android:text="@string/not_logged_in"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp">
+
+            <Button
+                android:id="@+id/login"
+                style="@style/DialogHorizontalButton"
+                app:icon="@drawable/ic_login"
+                android:text="@string/login" />
+
+            <Button
+                android:id="@+id/logout"
+                style="@style/DialogHorizontalButton"
+                app:icon="@drawable/ic_logout"
+                android:text="@string/logout" />
+
+            <Button
+                android:id="@+id/switchAccount"
+                style="@style/DialogHorizontalButton"
+                app:icon="@drawable/ic_account_circle"
+                android:text="@string/switch_account" />
+
+            <Button
+                android:id="@+id/incognito"
+                style="@style/DialogHorizontalButton"
+                app:icon="@drawable/ic_incognito"
+                android:text="@string/incognito" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+</LinearLayout>

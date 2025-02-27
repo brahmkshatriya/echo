@@ -98,7 +98,7 @@ object PermsUtils {
         launcher?.launch(perms.map { it.first }.toTypedArray())
     }
 
-    private fun <I, O> ComponentActivity.registerActivityResultLauncher(
+    fun <I, O> ComponentActivity.registerActivityResultLauncher(
         contract: ActivityResultContract<I, O>,
         block: (O) -> Unit
     ): ActivityResultLauncher<I> {

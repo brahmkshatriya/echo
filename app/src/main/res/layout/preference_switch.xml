@@ -1,0 +1,21 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:paddingVertical="20dp">
+
+    <include
+        android:id="@android:id/icon_frame"
+        layout="@layout/preference_common" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switchWidget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="24dp"
+        android:clickable="false" />
+
+</LinearLayout>

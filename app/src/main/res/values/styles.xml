@@ -55,12 +55,192 @@
         <item name="android:layout_height">?actionBarSize</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="layout_collapseMode">pin</item>
-<!--        <item name="navigationContentDescription">@string/back</item>-->
-<!--        <item name="navigationIcon">@drawable/ic_back</item>-->
+        <item name="navigationContentDescription">@string/back</item>
+        <item name="navigationIcon">@drawable/ic_back</item>
     </style>
 
     <style name="EchoSnackBar" parent="Widget.Material3.Snackbar">
         <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Small</item>
     </style>
+
+    <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:width">56dp</item>
+        <item name="android:height">24dp</item>
+        <item name="android:color">?attr/colorPrimaryInverse</item>
+    </style>
+
+    <style name="NavView" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">?attr/navBackground</item>
+        <item name="itemActiveIndicatorStyle">@style/BottomNavbarActiveIndicator</item>
+        <item name="itemIconTint">@color/nav_bar_icon</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemPaddingBottom">8dp</item>
+        <item name="itemPaddingTop">12dp</item>
+        <item name="activeIndicatorLabelPadding">2dp</item>
+        <item name="itemMinHeight">@dimen/nav_height</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+    </style>
+
+    <style name="AppBarOutline">
+        <item name="android:outlineProvider">none</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">-1dp</item>
+        <item name="android:translationZ">1dp</item>
+        <item name="android:alpha">0</item>
+        <item name="android:background">?colorOutlineVariant</item>
+    </style>
+
+    <style name="EchoTabLayout" parent="Widget.Material3.TabLayout">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="tabIndicator">@drawable/tab_indicator</item>
+        <item name="tabGravity">start</item>
+        <item name="tabIndicatorFullWidth">true</item>
+        <item name="tabMinWidth">0dp</item>
+        <item name="tabMode">scrollable</item>
+        <item name="tabPaddingEnd">16dp</item>
+        <item name="tabPaddingStart">16dp</item>
+    </style>
+
+    <style name="TextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="errorEnabled">true</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+    </style>
+
+    <style name="OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="iconPadding">24dp</item>
+    </style>
+
+    <style name="Selectable">
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">@drawable/ripple_item_container</item>
+    </style>
+
+    <style name="DialogHorizontalButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="iconSize">20dp</item>
+    </style>
+
+    <style name="PlayerMoreTopShape" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">8dp</item>
+        <item name="cornerSizeTopLeft">8dp</item>
+        <item name="cornerSizeBottomRight">8dp</item>
+        <item name="cornerSizeBottomLeft">8dp</item>
+    </style>
+
+    <style name="PlayerMoreBottomShape" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">8dp</item>
+        <item name="cornerSizeTopLeft">8dp</item>
+        <item name="cornerSizeBottomRight">8dp</item>
+        <item name="cornerSizeBottomLeft">8dp</item>
+    </style>
+
+    <style name="PlayerMoreSelected" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="backgroundTint">@color/button_player_more</item>
+    </style>
+
+    <style name="PlayerMoreBackgroundButton" parent="PlayerMoreSelected">
+        <item name="android:clickable">false</item>
+        <item name="android:enabled">false</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="backgroundTint">?echoBackground</item>
+    </style>
+
+    <style name="PlayerMoreToggleGroup">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:clickable">false</item>
+        <item name="android:spacing">6dp</item>
+        <item name="innerCornerSize">8dp</item>
+        <item name="shapeAppearance">@style/PlayerMoreTopShape</item>
+    </style>
+
+    <style name="PlayerTheme">
+        <item name="colorControlNormal">@color/amoled_fg</item>
+        <item name="colorControlActivated">@color/amoled_fg</item>
+        <item name="colorControlHighlight">@color/amoled_fg</item>
+    </style>
+
+    <style name="PlayerToolbarStyle">
+        <item name="android:theme">@style/PlayerTheme</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+        <item name="menu">@menu/more_menu</item>
+        <item name="navigationIcon">@drawable/ic_expand_more</item>
+        <item name="navigationIconTint">@color/amoled_fg</item>
+        <item name="navigationContentDescription">@string/close</item>
+        <item name="subtitle">@string/extensions</item>
+        <item name="subtitleCentered">true</item>
+        <item name="subtitleTextAppearance">@style/TextAppearance.Material3.TitleMedium</item>
+        <item name="subtitleTextColor">@color/button_player</item>
+        <item name="title">@string/playing_from</item>
+        <item name="titleCentered">true</item>
+        <item name="titleTextAppearance">@style/TextAppearance.AppCompat.Small</item>
+        <item name="titleTextColor">?colorOnSurface</item>
+    </style>
+
+    <style name="BasePlayerTrackCoverContainer">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:transformPivotX">0dp</item>
+        <item name="android:transformPivotY">0dp</item>
+        <item name="layout_constraintDimensionRatio">1,1</item>
+        <item name="layout_constraintHeight_min">@dimen/collapsed_cover_size</item>
+        <item name="layout_constraintWidth_min">@dimen/collapsed_cover_size</item>
+        <item name="layout_constraintHeight_max">@dimen/max_cover_size</item>
+        <item name="layout_constraintWidth_max">@dimen/max_cover_size</item>
+    </style>
+
+    <style name="PlayerTrackCoverContainer" parent="BasePlayerTrackCoverContainer">
+        <item name="android:layout_marginStart">24dp</item>
+        <item name="android:layout_marginEnd">24dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <style name="PlayerExpandedConstraintLayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:paddingTop">64dp</item>
+        <item name="android:paddingBottom">64dp</item>
+        <item name="layout_constraintVertical_chainStyle">spread</item>
+    </style>
+
 
 </resources>

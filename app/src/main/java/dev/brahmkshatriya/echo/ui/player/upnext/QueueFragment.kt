@@ -7,16 +7,17 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
+import dev.brahmkshatriya.echo.databinding.FragmentQueueBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
-import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
+import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoClearedNullable
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class QueueFragment : Fragment() {
 
-    private var binding by autoCleared<FragmentPlayerBinding>()
+    private var binding by autoClearedNullable<FragmentQueueBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
 
     override fun onCreateView(
@@ -24,13 +25,28 @@ class QueueFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentPlayerBinding.inflate(inflater, container, false)
-        return binding.root
+        binding = FragmentQueueBinding.inflate(inflater, container, false)
+        return binding!!.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        var queueAdapter: PlaylistAdapter? = null
-        val callback = object : ItemTouchHelper.SimpleCallback(
+    private val queueAdapter by lazy {
+        QueueAdapter(object : QueueAdapter.Listener() {
+            override fun onDragHandleTouched(viewHolder: RecyclerView.ViewHolder) {
+                touchHelper.startDrag(viewHolder)
+            }
+
+            override fun onItemClicked(position: Int) {
+                viewModel.play(position)
+            }
+
+            override fun onItemClosedClicked(position: Int) {
+                viewModel.removeQueueItem(position)
+            }
+        })
+    }
+
+    private val touchHelper by lazy {
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
             ItemTouchHelper.START
         ) {
@@ -39,9 +55,6 @@ class QueueFragment : Fragment() {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                if (viewHolder.bindingAdapter != queueAdapter) return false
-                if (target.bindingAdapter != queueAdapter) return false
-
                 val fromPos = viewHolder.bindingAdapterPosition
                 val toPos = target.bindingAdapterPosition
                 viewModel.moveQueueItems(fromPos, toPos)
@@ -57,32 +70,21 @@ class QueueFragment : Fragment() {
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder
             ): Int {
-                return if (viewHolder.bindingAdapter == queueAdapter) makeMovementFlags(
+                return makeMovementFlags(
                     ItemTouchHelper.UP or ItemTouchHelper.DOWN,
                     ItemTouchHelper.START
-                ) else 0
-            }
-        }
-        val touchHelper = ItemTouchHelper(callback)
-
-        queueAdapter = PlaylistAdapter(object : PlaylistAdapter.Listener() {
-            override fun onDragHandleTouched(viewHolder: RecyclerView.ViewHolder) {
-                touchHelper.startDrag(viewHolder)
-            }
-
-            override fun onItemClicked(position: Int) {
-                viewModel.play(position)
-            }
-
-            override fun onItemClosedClicked(position: Int) {
-                viewModel.removeQueueItem(position)
+                )
             }
         })
+    }
 
-        val radioLoaderAdapter = PlaylistAdapter.Loader()
-        binding.root.adapter = ConcatAdapter(queueAdapter, radioLoaderAdapter)
-        touchHelper.attachToRecyclerView(binding.root)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val radioLoaderAdapter = QueueAdapter.Loader()
+        val recyclerView = binding!!.root
+        recyclerView.adapter = ConcatAdapter(queueAdapter, radioLoaderAdapter)
+        touchHelper.attachToRecyclerView(recyclerView)
+        val manager = recyclerView.layoutManager as LinearLayoutManager
+        val screenHeight = view.resources.displayMetrics.heightPixels / 3
 
         fun submit() {
             val current = viewModel.playerState.current.value
@@ -91,10 +93,16 @@ class QueueFragment : Fragment() {
                 if (currentIndex == index) current.isPlaying to current.mediaItem
                 else null to mediaItem
             }
-            queueAdapter.submitList(it)
+            queueAdapter.submitList(it) {
+                currentIndex ?: return@submitList
+                binding?.root?.scrollToPosition(currentIndex)
+            }
         }
 
         observe(viewModel.playerState.current) { submit() }
         observe(viewModel.queueFlow) { submit() }
+
+        val index = viewModel.playerState.current.value?.index ?: return
+        manager.scrollToPositionWithOffset(index + 1, screenHeight)
     }
 }

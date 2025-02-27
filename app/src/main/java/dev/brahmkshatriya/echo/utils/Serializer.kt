@@ -27,4 +27,7 @@ object Serializer {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             getSerializable(key, T::class.java)
         else getSerializable(key) as T
+
+    val Throwable.rootCause: Throwable
+        get() = generateSequence(this) { it.cause }.last()
 }

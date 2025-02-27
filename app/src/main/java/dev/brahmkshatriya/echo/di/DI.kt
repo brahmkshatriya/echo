@@ -7,7 +7,13 @@ import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.playback.PlayerService
 import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.ui.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.SnackBarHandler
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
+import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
+import dev.brahmkshatriya.echo.ui.extensions.login.LoginViewModel
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.workmanager.dsl.workerOf
@@ -19,20 +25,20 @@ object DI {
 
     private val baseModule = module {
         single { androidApplication().getSettings() }
-        single { App(get(), get()) }
+        singleOf(::App)
     }
 
     private val extensionModule = module {
         includes(baseModule)
-        singleOf(::ExtensionLoader)
         singleOf(ExtensionDatabase::create)
+        singleOf(::ExtensionLoader)
     }
 
     private val downloadModule = module {
         includes(extensionModule)
+        singleOf(DownloadDatabase::create)
         singleOf(::Downloader)
         workerOf(::DownloadWorker)
-        singleOf(DownloadDatabase::create)
     }
 
     private val playerModule = module {
@@ -41,8 +47,14 @@ object DI {
         single { PlayerState() }
     }
 
-    private val viewModelModules = module {
+    private val uiModules = module {
+        singleOf(::SnackBarHandler)
         viewModelOf(::PlayerViewModel)
+        viewModelOf(::LyricsViewModel)
+        viewModelOf(::UiViewModel)
+        viewModelOf(::ExtensionsViewModel)
+        viewModelOf(::LoginUserListViewModel)
+        viewModelOf(::LoginViewModel)
     }
 
     val appModule = module {
@@ -50,6 +62,6 @@ object DI {
         includes(extensionModule)
         includes(playerModule)
         includes(downloadModule)
-        includes(viewModelModules)
+        includes(uiModules)
     }
 }

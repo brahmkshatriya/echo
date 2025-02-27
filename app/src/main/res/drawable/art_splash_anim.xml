@@ -1,0 +1,122 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="vector"
+            android:width="40dp"
+            android:height="40dp"
+            android:viewportWidth="40"
+            android:viewportHeight="40">
+            <path
+                android:name="bg"
+                android:pathData="M 20 33 C 12.8 33 7 27.2 7 20 C 7 12.9 12.8 7 20 7 C 27.1 7 33 12.8 33 20 C 33 27.2 27.2 33 20 33 Z"
+                android:fillColor="@color/ic_launcher_background"
+                android:strokeWidth="1"/>
+            <path
+                android:name="outer"
+                android:pathData="M 20 10.6 C 25.2 10.6 29.5 14.8 29.5 20 C 29.5 25.2 25.3 29.5 20 29.5 C 14.7 29.5 10.6 25.3 10.6 20 C 10.6 14.7 14.8 10.6 20 10.6 M 20 9.5 C 14.2 9.5 9.5 14.2 9.5 20 C 9.5 25.8 14.2 30.5 20 30.5 C 25.8 30.5 30.5 25.8 30.5 20 C 30.5 14.2 25.8 9.5 20 9.5 Z"
+                android:fillColor="#000"
+                android:strokeWidth="1"/>
+            <path
+                android:name="inner"
+                android:pathData="M 20 13.2 C 23.8 13.2 26.8 16.2 26.8 20 C 26.8 23.8 23.8 26.8 20 26.8 C 16.2 26.8 13.2 23.8 13.2 20 C 13.2 16.2 16.2 13.2 20 13.2 M 20 11.6 C 15.4 11.6 11.6 15.4 11.6 20 C 11.6 24.6 15.4 28.4 20 28.4 C 24.6 28.4 28.4 24.6 28.4 20 C 28.4 15.4 24.6 11.6 20 11.6 Z"
+                android:fillColor="#000"
+                android:strokeWidth="1"/>
+            <clip-path
+                android:name="mask"
+                android:pathData="M 20 11.6 C 18.226 11.6 16.498 12.162 15.063 13.204 C 13.628 14.247 12.559 15.717 12.011 17.404 C 11.463 19.091 11.463 20.909 12.011 22.596 C 12.559 24.283 13.628 25.753 15.063 26.796 C 16.498 27.838 18.226 28.4 20 28.4 C 21.774 28.4 23.502 27.838 24.937 26.796 C 26.372 25.753 27.441 24.283 27.989 22.596 C 28.537 20.909 28.537 19.091 27.989 17.404 C 27.441 15.717 26.372 14.247 24.937 13.204 C 23.502 12.162 21.774 11.6 20 11.6 Z"/>
+            <group android:name="group">
+                <path
+                    android:name="music"
+                    android:pathData="M 24.2 15.8 L 24.2 17.9 C 24.2 18.5 23.8 19 23.1 19 L 21 19 L 21 22.7 C 21 24.2 19.8 25.3 18.4 25.3 C 16.9 25.3 15.8 24.1 15.8 22.7 C 15.8 21.3 17 20 18.4 20 L 20 20 L 20 16.9 C 20 16.3 20.4 15.8 21 15.8 L 24.2 15.8 Z"
+                    android:fillColor="#000"
+                    android:strokeWidth="1"/>
+            </group>
+            <group
+                android:name="group_1"
+                android:pivotX="20"
+                android:pivotY="20">
+                <path
+                    android:name="extension"
+                    android:pathData="M 15.6 21.1 C 15.345 21.101 15.097 21.013 14.899 20.851 C 14.701 20.69 14.566 20.465 14.515 20.214 C 14.465 19.964 14.503 19.704 14.623 19.479 C 14.743 19.253 14.938 19.076 15.173 18.978 C 15.409 18.88 15.672 18.867 15.916 18.941 C 16.16 19.015 16.372 19.171 16.514 19.383 C 16.656 19.596 16.72 19.851 16.695 20.105 C 16.67 20.359 16.557 20.596 16.377 20.777 C 16.276 20.881 16.156 20.963 16.022 21.019 C 15.888 21.074 15.745 21.102 15.6 21.1 Z M 16.122 23.08 L 17.745 21.457 C 17.848 21.359 17.985 21.305 18.128 21.306 C 18.27 21.308 18.406 21.365 18.507 21.466 C 18.607 21.566 18.665 21.703 18.666 21.845 C 18.668 21.987 18.613 22.125 18.515 22.227 L 16.892 23.85 C 16.79 23.948 16.652 24.003 16.51 24.001 C 16.368 24 16.231 23.942 16.131 23.842 C 16.03 23.741 15.973 23.605 15.971 23.463 C 15.97 23.32 16.024 23.183 16.122 23.08 Z M 17.773 18.515 L 16.15 16.892 C 16.052 16.79 15.997 16.652 15.999 16.51 C 16 16.368 16.058 16.231 16.158 16.131 C 16.259 16.03 16.395 15.973 16.537 15.971 C 16.68 15.97 16.817 16.024 16.92 16.122 L 18.543 17.745 C 18.641 17.848 18.695 17.985 18.694 18.128 C 18.692 18.27 18.635 18.406 18.534 18.507 C 18.434 18.607 18.297 18.665 18.155 18.666 C 18.013 18.668 17.875 18.613 17.773 18.515 Z M 20 25.5 C 19.745 25.501 19.497 25.413 19.299 25.251 C 19.101 25.09 18.966 24.865 18.915 24.614 C 18.865 24.364 18.903 24.104 19.023 23.879 C 19.143 23.653 19.338 23.476 19.573 23.378 C 19.809 23.28 20.072 23.267 20.316 23.341 C 20.56 23.415 20.772 23.571 20.914 23.783 C 21.056 23.996 21.12 24.251 21.095 24.505 C 21.07 24.759 20.957 24.996 20.777 25.177 C 20.676 25.281 20.556 25.363 20.422 25.419 C 20.288 25.474 20.145 25.502 20 25.5 Z M 20 16.7 C 19.745 16.701 19.497 16.613 19.299 16.451 C 19.101 16.29 18.966 16.065 18.915 15.814 C 18.865 15.564 18.903 15.304 19.023 15.079 C 19.143 14.853 19.338 14.676 19.573 14.578 C 19.809 14.48 20.072 14.467 20.316 14.541 C 20.56 14.615 20.772 14.771 20.914 14.983 C 21.056 15.196 21.12 15.451 21.095 15.705 C 21.07 15.959 20.957 16.196 20.777 16.377 C 20.676 16.481 20.556 16.563 20.422 16.619 C 20.288 16.674 20.145 16.702 20 16.7 Z M 21.457 17.745 L 23.108 16.122 C 23.208 16.022 23.344 15.965 23.486 15.964 C 23.558 15.961 23.631 15.974 23.699 16.001 C 23.766 16.028 23.827 16.07 23.878 16.122 C 23.975 16.227 24.029 16.365 24.029 16.508 C 24.029 16.65 23.975 16.788 23.878 16.892 L 22.241 18.529 C 22.173 18.599 22.087 18.649 21.993 18.675 C 21.899 18.7 21.8 18.7 21.705 18.675 C 21.611 18.649 21.526 18.599 21.457 18.529 C 21.358 18.422 21.302 18.283 21.299 18.137 C 21.296 18.064 21.309 17.991 21.336 17.924 C 21.363 17.856 21.405 17.795 21.457 17.745 Z M 23.108 23.85 L 21.485 22.227 C 21.387 22.125 21.332 21.987 21.334 21.845 C 21.335 21.703 21.393 21.566 21.493 21.466 C 21.594 21.365 21.73 21.308 21.872 21.306 C 22.015 21.305 22.152 21.359 22.255 21.457 L 23.878 23.08 C 23.976 23.183 24.03 23.32 24.029 23.463 C 24.027 23.605 23.97 23.741 23.869 23.842 C 23.769 23.942 23.632 24 23.49 24.001 C 23.348 24.003 23.21 23.948 23.108 23.85 Z M 24.4 21.1 C 24.145 21.101 23.897 21.013 23.699 20.851 C 23.501 20.69 23.366 20.465 23.315 20.214 C 23.265 19.964 23.303 19.704 23.423 19.479 C 23.543 19.253 23.738 19.076 23.973 18.978 C 24.209 18.88 24.472 18.867 24.716 18.941 C 24.96 19.015 25.172 19.171 25.314 19.383 C 25.456 19.596 25.52 19.851 25.495 20.105 C 25.47 20.359 25.357 20.596 25.177 20.777 C 25.076 20.881 24.956 20.963 24.822 21.019 C 24.688 21.074 24.545 21.102 24.4 21.1 Z"
+                    android:fillColor="#000"
+                    android:fillAlpha="0"
+                    android:strokeWidth="1"/>
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="outer">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:propertyName="pathData"
+                android:startOffset="450"
+                android:duration="450"
+                android:valueFrom="M 20 10.6 C 25.2 10.6 29.5 14.8 29.5 20 C 29.5 25.2 25.3 29.5 20 29.5 C 14.7 29.5 10.6 25.3 10.6 20 C 10.6 14.7 14.8 10.6 20 10.6 M 20 9.5 C 14.2 9.5 9.5 14.2 9.5 20 C 9.5 25.8 14.2 30.5 20 30.5 C 25.8 30.5 30.5 25.8 30.5 20 C 30.5 14.2 25.8 9.5 20 9.5 Z"
+                android:valueTo="M 20 13.2 C 23.8 13.2 26.8 16.2 26.8 20 C 26.8 23.8 23.8 26.8 20 26.8 C 16.2 26.8 13.2 23.8 13.2 20 C 13.2 16.2 16.2 13.2 20 13.2 M 20 11.6 C 15.4 11.6 11.6 15.4 11.6 20 C 11.6 24.6 15.4 28.4 20 28.4 C 24.6 28.4 28.4 24.6 28.4 20 C 28.4 15.4 24.6 11.6 20 11.6 Z"
+                android:valueType="pathType"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+    <target android:name="group">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="translateY"
+                android:startOffset="300"
+                android:duration="600"
+                android:valueFrom="0"
+                android:valueTo="-10"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+    <target android:name="music">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="fillAlpha"
+                android:startOffset="300"
+                android:duration="600"
+                android:valueFrom="1"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+    <target android:name="extension">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="fillAlpha"
+                android:startOffset="450"
+                android:duration="600"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+    <target android:name="group_1">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="translateY"
+                    android:startOffset="450"
+                    android:duration="600"
+                    android:valueFrom="10"
+                    android:valueTo="0"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"/>
+                <objectAnimator
+                    android:propertyName="rotation"
+                    android:startOffset="900"
+                    android:duration="900"
+                    android:valueFrom="0"
+                    android:repeatCount="infinite"
+                    android:valueTo="90"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"/>
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

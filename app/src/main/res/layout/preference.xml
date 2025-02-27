@@ -1,0 +1,13 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:paddingVertical="20dp">
+
+    <include
+        android:id="@android:id/icon_frame"
+        layout="@layout/preference_common" />
+
+</LinearLayout>

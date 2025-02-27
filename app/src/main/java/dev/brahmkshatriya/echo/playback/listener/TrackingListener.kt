@@ -100,7 +100,7 @@ class TrackingListener(
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
         val mediaItem = player.currentMediaItem ?: return
-        if (mediaItem.track.id != mediaMetadata.track.id) return
+        if (mediaItem.track.id != mediaMetadata.extras.track.id) return
         if (current?.mediaId == mediaItem.mediaId) return
 
         if (mediaItem.isLoaded) onTrackStart(mediaItem)

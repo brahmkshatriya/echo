@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:theme="@style/PlayerTheme">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:gravity="center"
+        android:paddingHorizontal="24dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/trackTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:gravity="bottom"
+                android:maxLines="1"
+                android:minHeight="32dp"
+                android:text="@string/tracker"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/trackArtist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:maxLines="1"
+                android:minHeight="32dp"
+                android:text="@string/add_color"
+                android:textColorLink="@color/button_player"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/trackHeart"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="-20dp"
+            android:background="@drawable/ripple_60dp"
+            android:button="@drawable/anim_heart_40dp"
+            android:contentDescription="@string/like"
+            app:buttonTint="@color/button_player" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-12dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="12dp">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp">
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/bufferBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="12dp"
+                android:alpha="0.5"
+                android:progress="40"
+                app:indicatorColor="?attr/colorTertiary"
+                app:indicatorTrackGapSize="0dp"
+                app:trackColor="?attr/colorOnSurface"
+                app:trackThickness="2dp" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginStart="-4dp"
+                android:layout_marginEnd="-4dp"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="@string/seekbar"
+                android:value="0.2"
+                app:labelBehavior="gone"
+                app:thumbColor="?attr/colorTertiary"
+                app:thumbHeight="16dp"
+                app:thumbWidth="16dp"
+                app:trackColorActive="?attr/colorTertiary"
+                app:trackColorInactive="@android:color/transparent"
+                app:trackHeight="2dp"
+                app:trackIconActiveEnd="?attr/colorTertiary"
+                app:trackIconInactiveEnd="@android:color/transparent" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/trackCurrentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="24dp"
+            android:elevation="1dp"
+            android:maxLines="1"
+            android:padding="12dp"
+            tools:text="00:00" />
+
+        <TextView
+            android:id="@+id/trackTotalTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:alpha="0.66"
+            android:elevation="1dp"
+            android:maxLines="1"
+            android:padding="12dp"
+            tools:text="00:00" />
+    </FrameLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-16dp"
+        android:paddingHorizontal="4dp">
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/trackShuffle"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/ripple_60dp"
+            android:button="@drawable/anim_shuffle"
+            android:contentDescription="@string/shuffle"
+            android:elevation="2dp"
+            android:outlineProvider="none"
+            app:buttonTint="@color/button_player"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/trackPrevious"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/previous"
+            android:enabled="false"
+            android:outlineProvider="none"
+            app:elevation="1dp"
+            app:icon="@drawable/ic_skip_previous_40dp"
+            app:iconSize="40dp"
+            app:iconTint="@color/button_player"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/playPauseContainer"
+            app:layout_constraintStart_toEndOf="@+id/trackShuffle"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <FrameLayout
+            android:id="@+id/playPauseContainer"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:elevation="3dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.loadingindicator.LoadingIndicator
+                android:id="@+id/progressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:indeterminate="true"
+                app:containerColor="?colorTertiaryContainer"
+                app:indicatorColor="?colorTertiary"
+
+                app:indicatorSize="64dp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/trackPlayPause"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/ripple_68dp"
+                android:button="@drawable/anim_play_pause_48dp"
+                android:contentDescription="@string/play"
+                app:buttonTint="@color/button_player"
+                tools:ignore="DuplicateSpeakableTextCheck" />
+        </FrameLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/trackNext"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/next"
+            android:enabled="false"
+            android:outlineProvider="none"
+            app:elevation="1dp"
+            app:icon="@drawable/ic_skip_next_40dp"
+            app:iconSize="40dp"
+            app:iconTint="@color/button_player"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/trackRepeat"
+            app:layout_constraintStart_toEndOf="@id/playPauseContainer"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/trackRepeat"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="@string/repeat"
+            android:elevation="2dp"
+            android:outlineProvider="none"
+            android:padding="12dp"
+            app:icon="@drawable/ic_repeat_to_repeat_one_40dp"
+            app:iconSize="32dp"
+            app:iconTint="@color/amoled_fg"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="48dp"
+        android:layout_marginTop="16dp"
+        android:alpha="0.66"
+        android:ellipsize="marquee"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="@string/animations_summary"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:textSize="16sp" />
+</LinearLayout>

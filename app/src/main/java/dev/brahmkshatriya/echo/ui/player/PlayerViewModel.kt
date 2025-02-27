@@ -1,11 +1,11 @@
 package dev.brahmkshatriya.echo.ui.player
 
-import android.app.Application
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaController
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getController
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
@@ -17,12 +17,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class PlayerViewModel(
-    app: Application,
+    val app: App,
     val playerState: PlayerState,
     val settings: SharedPreferences
 ) : ViewModel() {
 
-    private val browser = MutableStateFlow<MediaController?>(null)
+    val browser = MutableStateFlow<MediaController?>(null)
     private fun withBrowser(block: (MediaController) -> Unit) {
         viewModelScope.launch {
             val browser = browser.first { it != null }!!
@@ -32,16 +32,17 @@ class PlayerViewModel(
 
     var queue: List<MediaItem> = emptyList()
     val queueFlow = MutableSharedFlow<Unit>()
-    val controllerFutureRelease = getController(app) { player ->
+    private val context = app.context
+    val controllerFutureRelease = getController(context) { player ->
         browser.value = player
         player.addListener(PlayerUiListener(player, this))
 
         if (player.mediaItemCount != 0) return@getController
         if (!settings.getBoolean(KEEP_QUEUE, true)) return@getController
 
-        player.shuffleModeEnabled = app.recoverShuffle() == true
-        player.repeatMode = app.recoverRepeat() ?: 0
-        val (items, index, pos) = app.recoverPlaylist()
+        player.shuffleModeEnabled = context.recoverShuffle() == true
+        player.repeatMode = context.recoverRepeat() ?: 0
+        val (items, index, pos) = context.recoverPlaylist(true)
         player.setMediaItems(items, index, pos)
         player.prepare()
     }
@@ -58,12 +59,20 @@ class PlayerViewModel(
         }
     }
 
+    fun seek(position: Int) {
+        withBrowser { it.seekTo(position, 0) }
+    }
+
     fun removeQueueItem(position: Int) {
         withBrowser { it.removeMediaItem(position) }
     }
 
     fun moveQueueItems(fromPos: Int, toPos: Int) {
         withBrowser { it.moveMediaItem(fromPos, toPos) }
+    }
+
+    fun clearQueue() {
+        withBrowser { it.clearMediaItems() }
     }
 
     val progress = MutableStateFlow(0 to 0)

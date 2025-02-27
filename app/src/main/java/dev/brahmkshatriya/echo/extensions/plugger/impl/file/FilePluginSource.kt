@@ -13,11 +13,11 @@ import java.io.File
 class FilePluginSource(
     context: Context,
     scope: CoroutineScope,
+    private val fileIgnoreFlow: MutableSharedFlow<File?>
 ) : PluginSource<File> {
 
     private val folder = context.getPluginFileDir()
     private var ignoreFile: File? = null
-    val fileIgnoreFlow = MutableSharedFlow<File?>()
 
     private fun loadAllPlugins() = run {
         folder.setReadOnly()

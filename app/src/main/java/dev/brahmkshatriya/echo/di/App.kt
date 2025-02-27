@@ -11,9 +11,10 @@ import kotlinx.coroutines.launch
 data class App(
     val context: Application,
     val settings: SharedPreferences,
-    val throwFlow: MutableSharedFlow<Throwable> = MutableSharedFlow(),
-    val messageFlow: MutableSharedFlow<Message> = MutableSharedFlow()
 ) {
+    val throwFlow = MutableSharedFlow<Throwable>()
+    val messageFlow = MutableSharedFlow<Message>()
+
     init {
         @Suppress("OPT_IN_USAGE")
         GlobalScope.launch {

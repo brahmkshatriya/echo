@@ -51,7 +51,7 @@ object ExtensionUtils {
         throwableFlow: MutableSharedFlow<Throwable>,
         block: suspend ExtensionClient.() -> Unit
     ) = runCatching {
-        instance.injectSuspended { block() }
+        instance.injectOrRun { block() }
     }.getOrElse {
         throwableFlow.emit(it.toAppException(this))
     }
@@ -60,7 +60,7 @@ object ExtensionUtils {
         throwableFlow: MutableSharedFlow<Throwable>,
         crossinline block: suspend T.() -> Unit
     ) = runCatching {
-        instance.injectSuspended { if (this is T) block() }
+        instance.injectOrRun { if (this is T) block() }
     }.getOrElse {
         throwableFlow.emit(it.toAppException(this))
     }
@@ -70,8 +70,8 @@ object ExtensionUtils {
         return first { it != null }!!
     }
     suspend fun StateFlow<List<Extension<*>>?>.getExtension(id: String?) =
-        await().find { it.metadata.id == id }
+        await().find { it.id == id }
 
     fun StateFlow<List<Extension<*>>?>.getExtensionOrThrow(id: String?) =
-        value?.find { it.metadata.id == id } ?: throw ExtensionNotFoundException(id)
+        value?.find { it.id == id } ?: throw ExtensionNotFoundException(id)
 }

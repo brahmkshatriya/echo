@@ -2,7 +2,11 @@ package dev.brahmkshatriya.echo
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import androidx.core.os.LocaleListCompat
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -75,6 +79,9 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
             ThemeUtils.applyThemeOverlay(it, theme)
         }
 
+        fun Context.defaultColor() =
+            ContextCompat.getColor(this, R.color.ic_launcher_background)
+
         fun applyUiChanges(app: Application) {
             val settings = app.getSettings()
             val mode = when (settings.getString(THEME_KEY, "system")) {
@@ -86,13 +93,20 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
 
             theme = if (settings.getBoolean(AMOLED_KEY, false)) R.style.Amoled else null
 
-            val customColor = if (!settings.getBoolean(CUSTOM_THEME_KEY, false)) null
-            else settings.getInt(COLOR_KEY, -1).takeIf { it != -1 }
+            val customColor = if (!settings.getBoolean(CUSTOM_THEME_KEY, true)) null
+            else settings.getInt(COLOR_KEY, app.defaultColor()).takeIf { it != -1 }
 
             val builder = DynamicColorsOptions.Builder()
             builder.setOnAppliedCallback(onAppliedCallback)
             customColor?.let { builder.setContentBasedSource(it) }
             DynamicColors.applyToActivitiesIfAvailable(app, builder.build())
+        }
+
+        fun applyLocale(sharedPref: SharedPreferences) {
+            val value = sharedPref.getString("language", "system") ?: "system"
+            val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()
+            else LocaleListCompat.forLanguageTags(value)
+            AppCompatDelegate.setApplicationLocales(locale)
         }
     }
 }

@@ -4,69 +4,54 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?echoBackground">
+    android:layout_marginVertical="4dp"
+    android:background="@drawable/rounded_rectangle_8dp"
+    android:backgroundTint="?echoBackground">
 
-    <androidx.cardview.widget.CardView
+    <View
         android:id="@+id/playlistCurrentItem"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/collapsed_cover_size"
         android:alpha="0.25"
-        android:visibility="gone"
-        app:cardBackgroundColor="?colorTertiary"
-        app:cardCornerRadius="0dp" />
+        android:background="@drawable/rounded_rectangle_8dp"
+        android:backgroundTint="?colorTertiary" />
 
     <LinearLayout
         android:id="@+id/playlistItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingVertical="8dp">
+        android:orientation="horizontal">
 
-        <FrameLayout
-            android:id="@+id/playlistItemDragHandle"
+        <androidx.cardview.widget.CardView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="?itemCorner">
 
             <ImageView
-                android:id="@+id/playlistItemDragImg"
-                android:layout_width="24dp"
+                android:id="@+id/playlistItemImageView"
+                android:layout_width="@dimen/collapsed_cover_size"
                 android:layout_height="@dimen/collapsed_cover_size"
+                android:background="?attr/colorSurfaceContainerHigh"
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                tools:src="@tools:sample/avatars" />
+
+            <ImageView
+                android:id="@+id/playlistItemNowPlaying"
+                android:layout_width="@dimen/collapsed_cover_size"
+                android:layout_height="@dimen/collapsed_cover_size"
+                android:alpha="0.66"
+                android:background="@color/amoled_bg"
                 android:importantForAccessibility="no"
                 android:scaleType="center"
-                app:srcCompat="@drawable/ic_drag_20dp"
-                app:tint="?colorOnSurface" />
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                app:cardCornerRadius="?itemCorner">
-
-                <ImageView
-                    android:id="@+id/playlistItemImageView"
-                    android:layout_width="@dimen/collapsed_cover_size"
-                    android:layout_height="@dimen/collapsed_cover_size"
-                    android:background="?attr/colorSurfaceContainerHigh"
-                    android:importantForAccessibility="no"
-                    android:scaleType="fitCenter"
-                    tools:src="@tools:sample/avatars" />
-
-                <ImageView
-                    android:id="@+id/playlistItemNowPlaying"
-                    android:layout_width="@dimen/collapsed_cover_size"
-                    android:layout_height="@dimen/collapsed_cover_size"
-                    android:alpha="0.66"
-                    android:background="@color/amoled_bg"
-                    android:scaleType="center"
-                    app:srcCompat="@drawable/anim_now_playing"
-                    app:tint="@color/amoled_fg" />
-            </androidx.cardview.widget.CardView>
-
-        </FrameLayout>
+                app:srcCompat="@drawable/anim_now_playing"
+                app:tint="@color/amoled_fg" />
+        </androidx.cardview.widget.CardView>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/collapsed_cover_size"
+            android:layout_marginEnd="8dp"
             android:baselineAligned="false"
             android:gravity="center"
             android:orientation="horizontal">
@@ -82,23 +67,25 @@
 
                 <TextView
                     android:id="@+id/playlistItemTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:ellipsize="marquee"
                     android:maxLines="1"
-                    android:textStyle="bold"
                     tools:text="Nice Track Title" />
 
                 <TextView
                     android:id="@+id/playlistItemAuthor"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:alpha="0.66"
+                    android:ellipsize="marquee"
                     android:maxLines="1"
                     tools:text="Author" />
             </LinearLayout>
 
             <FrameLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content">
 
                 <com.google.android.material.progressindicator.CircularProgressIndicator
                     android:id="@+id/playlistProgressBar"
@@ -114,13 +101,22 @@
                     style="?attr/materialIconButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
                     android:contentDescription="@string/remove"
                     android:padding="8dp"
                     app:icon="@drawable/ic_close_small"
                     app:iconSize="24dp"
                     app:iconTint="?colorOnSurface" />
             </FrameLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/playlistItemDrag"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                app:icon="@drawable/ic_drag_20dp"
+                app:iconSize="24dp"
+                app:iconTint="?colorOnSurface" />
 
         </LinearLayout>
     </LinearLayout>

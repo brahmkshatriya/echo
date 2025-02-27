@@ -51,6 +51,12 @@ dependencies {
     implementation(libs.bundles.koin)
     implementation(libs.bundles.media3)
     implementation(libs.bundles.coil)
+
+    implementation(libs.pikolo)
+    implementation(libs.fadingedgelayout)
+    implementation(libs.fastscroll)
+    implementation(libs.kenburnsview)
+    implementation(libs.nestedscrollwebview)
 }
 
 fun execute(vararg command: String): String {
