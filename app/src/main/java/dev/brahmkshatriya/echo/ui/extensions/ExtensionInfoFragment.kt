@@ -32,7 +32,7 @@ import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.PlayerItemSpan
+import dev.brahmkshatriya.echo.utils.ui.SimpleItemSpan
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -140,12 +140,11 @@ class ExtensionInfoFragment : Fragment() {
         val span = SpannableString("$typeString\n\n${metadata.description}\n\n$byAuthor")
         val authUrl = metadata.authorUrl
         if (authUrl != null) {
-            span.setSpan(
-                PlayerItemSpan(requireContext(), authUrl) {
-                    requireActivity().openLink(it)
-                },
-                span.length - metadata.author.length, span.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
+            val itemSpan = SimpleItemSpan(requireContext()) {
+                requireActivity().openLink(authUrl)
+            }
+            val start = span.length - metadata.author.length
+            span.setSpan(itemSpan, start, span.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         binding.extensionDescription.text = span
         binding.extensionDescription.movementMethod = LinkMovementMethod.getInstance()

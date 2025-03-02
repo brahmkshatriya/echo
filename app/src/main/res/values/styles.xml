@@ -106,6 +106,14 @@
         <item name="tabPaddingStart">16dp</item>
     </style>
 
+    <style name="EchoCircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
+        <item name="showAnimationBehavior">outward</item>
+    </style>
+
+    <style name="EchoLinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
+        <item name="showAnimationBehavior">outward</item>
+    </style>
+
     <style name="TextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -240,6 +248,14 @@
         <item name="android:paddingTop">64dp</item>
         <item name="android:paddingBottom">64dp</item>
         <item name="layout_constraintVertical_chainStyle">spread</item>
+    </style>
+
+    <style name="TertiaryButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
     </style>
 
 

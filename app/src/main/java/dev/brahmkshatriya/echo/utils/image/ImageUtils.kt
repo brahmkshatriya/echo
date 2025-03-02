@@ -62,19 +62,18 @@ object ImageUtils {
         }
     }
 
-    fun ImageHolder?.loadWithThumb(
-        imageView: ImageView, thumbnail: Drawable? = null,
-        error: Int? = null, onDrawable: (Drawable?) -> Unit = {}
+    fun <T: View> ImageHolder?.loadWithThumb(
+        view: T, thumbnail: Drawable? = null,
+        error: Int? = null, onDrawable: T.(Drawable?) -> Unit
     ) = tryWith(true) {
-        thumbnail?.let { imageView.setImageDrawable(it) }
-        val request = createRequest(imageView.context, null, error)
+        thumbnail?.let { tryWith(false) { onDrawable(view, thumbnail) } }
+        val request = createRequest(view.context, null, error)
         fun setDrawable(image: Image?) {
-            val drawable = image?.asDrawable(imageView.resources)
-            imageView.setImageDrawable(drawable)
-            tryWith(false) { onDrawable(drawable) }
+            val drawable = image?.asDrawable(view.resources)
+            tryWith(false) { onDrawable(view, drawable) }
         }
         request.target(::setDrawable, ::setDrawable, ::setDrawable)
-        imageView.enqueue(request)
+        view.enqueue(request)
     }
 
     private val circleCrop = CircleCropTransformation()
@@ -145,6 +144,7 @@ object ImageUtils {
     }
 
     fun ImageView.loadBlurred(bitmap: Bitmap?, radius: Float) = tryWith {
+        if (bitmap == null) setImageDrawable(null)
         load(bitmap) {
             transformations(BlurTransformation(context, radius))
             crossfade(false)

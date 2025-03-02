@@ -3,9 +3,11 @@ package dev.brahmkshatriya.echo.ui.player
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C.TIME_UNSET
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.launch
 
@@ -17,6 +19,7 @@ class PlayerUiListener(
     init {
         updateList()
         with(viewModel) {
+            tracks.value = player.currentTracks
             isPlaying.value = player.isPlaying
             buffering.value = player.playbackState == Player.STATE_BUFFERING
             shuffleMode.value = player.shuffleModeEnabled
@@ -45,8 +48,8 @@ class PlayerUiListener(
 
     private fun updateProgress() {
         viewModel.progress.value =
-            player.currentPosition.toInt() to player.bufferedPosition.toInt()
-        viewModel.totalDuration.value = player.duration.toInt()
+            player.currentPosition to player.bufferedPosition
+        viewModel.totalDuration.value = player.duration.takeIf { it != TIME_UNSET }
 
         handler.removeCallbacks(updateProgressRunnable)
         val playbackState = player.playbackState
@@ -107,5 +110,9 @@ class PlayerUiListener(
     override fun onPlayerError(error: PlaybackException) {
         viewModel.isPlaying.value = false
         viewModel.buffering.value = false
+    }
+
+    override fun onTracksChanged(tracks: Tracks) {
+        viewModel.tracks.value = tracks
     }
 }

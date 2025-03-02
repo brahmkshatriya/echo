@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:background="@null"
             app:navigationIcon="@drawable/ic_close"
-            app:menu="@menu/extensions_list_menu"
+            app:menu="@menu/settings_menu"
             android:paddingEnd="8dp"
             android:paddingStart="0dp"
             app:title="@string/extensions"

@@ -328,7 +328,7 @@ object MediaStoreUtils {
                 duration = duration,
                 releaseDate = year?.toDate(),
                 isLiked = liked,
-                streamables = listOf(Streamable.server(path, 0)),
+                streamables = listOf(Streamable.server(path, 0, path)),
                 extras = mapOf(
                     "genre" to (genre ?: context.getString(R.string.unknown)),
                     "addDate" to addDate.toString(),

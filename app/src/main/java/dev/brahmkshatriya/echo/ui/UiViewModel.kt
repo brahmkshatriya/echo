@@ -14,6 +14,7 @@ import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
@@ -22,7 +23,9 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
 import dev.brahmkshatriya.echo.ui.main.MainFragment
+import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -33,13 +36,16 @@ import dev.brahmkshatriya.echo.utils.ui.UiUtils.isRTL
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.lang.ref.WeakReference
 import kotlin.math.max
 import kotlin.math.min
 
-class UiViewModel : ViewModel() {
+class UiViewModel(
+    private val context: Context
+) : ViewModel() {
 
     data class Insets(
         val top: Int = 0,
@@ -118,7 +124,7 @@ class UiViewModel : ViewModel() {
         playerInsets.value = insets
     }
 
-    val playerBgVisibleState = MutableStateFlow(false)
+    val playerBgVisible = MutableStateFlow(false)
     val playerSheetState = MutableStateFlow(STATE_COLLAPSED)
     val playerSheetOffset = MutableStateFlow(0f)
     val moreSheetState = MutableStateFlow(STATE_COLLAPSED)
@@ -147,11 +153,9 @@ class UiViewModel : ViewModel() {
         }
     }
 
-    fun collapsePlayer() {
-        if (playerSheetState.value == STATE_EXPANDED) {
-            changePlayerState(STATE_COLLAPSED)
-            changeMoreState(STATE_COLLAPSED)
-        }
+    fun collapsePlayer(state: Int = STATE_COLLAPSED) {
+        changePlayerState(state)
+        changeMoreState(STATE_COLLAPSED)
     }
 
     private var playerBehaviour = WeakReference<BottomSheetBehavior<View>>(null)
@@ -169,8 +173,9 @@ class UiViewModel : ViewModel() {
 
     var lastMoreTab = R.id.upNext
     var playerControlsHeight = MutableStateFlow(0)
+    val playerColors = MutableStateFlow(context.defaultPlayerColors())
     fun changeBgVisible(show: Boolean) {
-        playerBgVisibleState.value = show
+        playerBgVisible.value = show
         if (!show && moreSheetState.value == STATE_EXPANDED)
             changeMoreState(STATE_COLLAPSED)
     }
@@ -368,11 +373,13 @@ class UiViewModel : ViewModel() {
 //                    openFragment(DownloadingFragment())
 //                    return
 //                }
-//                val uri = intent.data
-//                when (uri?.scheme) {
+                val uri = intent.data
+                when (uri?.scheme) {
 //                    "echo" -> openItemFragmentFromUri(uri)
-//                    "file" -> openExtensionInstaller(uri)
-//                }
+                    "file" -> lifecycleScope.launch {
+                        installExtension(uri.toString())
+                    }
+                }
             }
             addOnNewIntentListener { onIntent(it) }
             onIntent(intent)

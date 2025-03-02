@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.player
+package dev.brahmkshatriya.echo.ui.player.audiofx
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -17,7 +17,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.PagerSnapHelper
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.databinding.DialogAudioFxBinding
+import dev.brahmkshatriya.echo.databinding.DialogPlayerAudioFxBinding
 import dev.brahmkshatriya.echo.databinding.FragmentAudioFxBinding
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.BASS_BOOST
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.CHANGE_PITCH
@@ -27,6 +27,7 @@ import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.delet
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.getFxPrefs
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.globalFx
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.speedRange
+import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.PermsUtils.registerActivityResultLauncher
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -34,17 +35,16 @@ import dev.brahmkshatriya.echo.utils.ui.RulerAdapter
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
-
 class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
 
-    var binding by autoCleared<DialogAudioFxBinding>()
+    var binding by autoCleared<DialogPlayerAudioFxBinding>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogAudioFxBinding.inflate(inflater, container, false)
+        binding = DialogPlayerAudioFxBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -68,7 +68,7 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
         binding.topAppBar.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.reset -> {
+                R.id.menu_refresh -> {
                     val context = requireContext()
                     val id = mediaId ?: return@setOnMenuItemClickListener false
                     context.deleteFxPrefs(id)

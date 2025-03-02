@@ -37,6 +37,7 @@ import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
 
@@ -46,7 +47,8 @@ class StreamableMediaSource(
     private val context: Context,
     private val state: PlayerState,
     private val loader: StreamableLoader,
-    private val factories: Factories
+    private val factories: Factories,
+    private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>? = null
 ) : CompositeMediaSource<Nothing>() {
 
     private var error: Throwable? = null
@@ -64,6 +66,7 @@ class StreamableMediaSource(
                 return@runBlocking null
             }
         } ?: return
+        runBlocking { changeFlow?.emit(mediaItem to new) }
         mediaItem = new
         state.servers.apply {
             value = value.toMutableMap().apply { set(new.mediaId, server) }
@@ -109,7 +112,6 @@ class StreamableMediaSource(
 
     override fun canUpdateMediaItem(mediaItem: MediaItem) = run {
         this.mediaItem.apply {
-            println("burh: $retries - ${mediaItem.retries}")
             if (retries != mediaItem.retries) return@run false
             if (sourcesIndex != mediaItem.sourcesIndex) return@run false
             if (sourceIndex != mediaItem.sourceIndex) return@run false
@@ -146,7 +148,8 @@ class StreamableMediaSource(
         private val context: Context,
         private val state: PlayerState,
         extensions: Extensions,
-        cache: SimpleCache
+        cache: SimpleCache,
+        private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>? = null
     ) : MediaSource.Factory {
 
         private val loader = StreamableLoader(context.getSettings(), extensions.music)
@@ -195,6 +198,6 @@ class StreamableMediaSource(
         }
 
         override fun createMediaSource(mediaItem: MediaItem) =
-            StreamableMediaSource(mediaItem, context, state, loader, factories)
+            StreamableMediaSource(mediaItem, context, state, loader, factories, changeFlow)
     }
 }

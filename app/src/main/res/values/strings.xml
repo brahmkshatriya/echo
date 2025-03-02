@@ -236,5 +236,35 @@
     <string name="close">Close</string>
     <string name="no_lyrics">No Lyrics</string>
 
+    <string name="sleep_timer">Sleep Timer</string>
+    <string name="end_of_track">End of Track</string>
+    <string name="_15min">15m</string>
+    <string name="_30min">30m</string>
+    <string name="_45min">45m</string>
+    <string name="_1hr">1h</string>
+    <string name="_2hr">2h</string>
+    <string name="sleep_timer_desc">Set a sleep timer to stop playback after a certain amount of time</string>
+    <string name="sleep_on_specific_time">Sleep on specific time</string>
+    <string name="sleep_timer_cancelled">Sleep timer cancelled</string>
+    <string name="sleep_timer_set_for">Sleep timer set for %1$s</string>
+    <string name="search_x">Search %1$s</string>
+    <plurals name="number_hour">
+        <item quantity="one">%1$d Hour</item>
+        <item quantity="other">%1$d Hours</item>
+    </plurals>
+    <plurals name="number_min">
+        <item quantity="one">%1$d Min</item>
+        <item quantity="other">%1$d Mins</item>
+    </plurals>
 
+    <string name="servers">Servers</string>
+    <string name="sources">Sources</string>
+    <string name="backgrounds">Backgrounds</string>
+    <string name="subtitles">Subtitles</string>
+    <string name="audio_selection">Audio Selection</string>
+    <string name="video_selection">Video Selection</string>
+    <string name="subtitle_selection">Subtitle Selection</string>
+    <string name="quality_selection">Quality Selection</string>
+    <string name="quality_x">Quality %1$d</string>
+    <string name="off">Off</string>
 </resources>

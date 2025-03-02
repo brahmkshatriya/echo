@@ -21,7 +21,7 @@
             android:paddingStart="0dp"
             android:paddingEnd="8dp"
             app:layout_scrollFlags="scroll|snap"
-            app:menu="@menu/audio_fx"
+            app:menu="@menu/refresh_menu"
             app:navigationIcon="@drawable/ic_close"
             app:title="@string/audio_fx"
             app:titleCentered="true" />

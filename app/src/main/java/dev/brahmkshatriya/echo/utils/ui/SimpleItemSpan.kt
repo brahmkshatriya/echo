@@ -6,14 +6,13 @@ import android.text.style.ClickableSpan
 import android.view.View
 import dev.brahmkshatriya.echo.R
 
-class PlayerItemSpan<T>(
+class SimpleItemSpan(
     val context: Context,
-    val item: T,
-    private val onItemClicked: (T) -> Unit
+    private val onItemClicked: () -> Unit
 ) : ClickableSpan() {
 
     override fun onClick(widget: View) {
-        onItemClicked(item)
+        onItemClicked()
     }
 
     override fun updateDrawState(ds: TextPaint) {

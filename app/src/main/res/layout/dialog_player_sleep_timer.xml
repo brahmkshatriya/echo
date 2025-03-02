@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-16dp"
+            android:layout_marginTop="-16dp"
+            android:layout_marginEnd="-16dp"
+            android:background="@null"
+            android:paddingStart="0dp"
+            android:paddingEnd="8dp"
+            app:menu="@menu/sleep_timer_menu"
+            app:navigationIcon="@drawable/ic_close"
+            app:title="@string/sleep_timer"
+            app:titleCentered="true" />
+
+        <TextView
+            android:id="@+id/sleepTimerDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:alpha="0.66"
+            android:gravity="center"
+            android:text="@string/sleep_timer_desc"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/sleepTimerValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="?colorPrimary"
+            android:textSize="18sp"
+            app:drawableBottomCompat="@drawable/ic_expand_more"
+            app:drawableTint="?colorPrimary"
+            tools:text="1 hour" />
+
+        <com.bosphere.fadingedgelayout.FadingEdgeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            app:fel_edge="left|right"
+            app:fel_size_left="80dp"
+            app:fel_size_right="80dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/sleepTimerRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                tools:listitem="@layout/item_ruler"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        </com.bosphere.fadingedgelayout.FadingEdgeLayout>
+
+        <com.google.android.material.button.MaterialButtonGroup
+            style="@style/Widget.Material3.MaterialButtonGroup.Connected"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spacing="8dp">
+
+            <Button
+                android:id="@+id/min15"
+                style="@style/TertiaryButton"
+                android:text="@string/_15min" />
+
+            <Button
+                android:id="@+id/min30"
+                style="@style/TertiaryButton"
+                android:text="@string/_30min" />
+
+            <Button
+                android:id="@+id/min45"
+                style="@style/TertiaryButton"
+                android:text="@string/_45min" />
+
+            <Button
+                android:id="@+id/hr1"
+                style="@style/TertiaryButton"
+                android:text="@string/_1hr" />
+
+            <Button
+                android:id="@+id/hr2"
+                style="@style/TertiaryButton"
+                android:text="@string/_2hr" />
+
+        </com.google.android.material.button.MaterialButtonGroup>
+
+        <com.google.android.material.button.MaterialButtonGroup
+            style="@style/Widget.Material3.MaterialButtonGroup.Connected"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spacing="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/endOfTrack"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="64dp"
+                android:text="@string/end_of_track" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/okay"
+                style="@style/Widget.Material3.Button.UnelevatedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="64dp"
+                android:text="@string/okay" />
+        </com.google.android.material.button.MaterialButtonGroup>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-16dp"
+            android:layout_marginTop="-16dp"
+            android:layout_marginEnd="-16dp"
+            android:background="@null"
+            android:paddingStart="0dp"
+            android:paddingEnd="8dp"
+            app:menu="@menu/settings_menu"
+            app:navigationIcon="@drawable/ic_close"
+            app:title="@string/quality_selection"
+            app:titleCentered="true" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-24dp"
+            android:layout_marginEnd="-24dp"
+            android:indeterminate="true" />
+
+        <TextView
+            android:id="@+id/streamableInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingVertical="8dp"
+            tools:text="@tools:sample/full_names" />
+
+        <TextView
+            android:id="@+id/streamable_server"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/servers"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/streamable_server_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/streamableSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/sources"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/streamableSourceGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/streamableBackgrounds"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/backgrounds"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/streamableBackgroundGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/streamableSubtitles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/subtitles"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/streamableSubtitleGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/trackAudios"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/audio_selection"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/trackAudiosGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/trackVideos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/video_selection"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/trackVideosGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/trackSubtitles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/subtitle_selection"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/trackSubtitlesGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

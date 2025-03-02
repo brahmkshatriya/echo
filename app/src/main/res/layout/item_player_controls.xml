@@ -88,7 +88,7 @@
                 android:layout_marginEnd="-4dp"
                 android:layout_marginBottom="20dp"
                 android:contentDescription="@string/seekbar"
-                android:value="0.2"
+                android:value="0"
                 app:labelBehavior="gone"
                 app:thumbColor="?attr/colorTertiary"
                 app:thumbHeight="16dp"
@@ -96,8 +96,7 @@
                 app:trackColorActive="?attr/colorTertiary"
                 app:trackColorInactive="@android:color/transparent"
                 app:trackHeight="2dp"
-                app:trackIconActiveEnd="?attr/colorTertiary"
-                app:trackIconInactiveEnd="@android:color/transparent" />
+                app:trackStopIndicatorSize="0dp" />
         </FrameLayout>
 
         <TextView
@@ -172,15 +171,12 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <com.google.android.material.loadingindicator.LoadingIndicator
-                android:id="@+id/progressBar"
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/playingIndicator"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clickable="false"
                 android:indeterminate="true"
-                app:containerColor="?colorTertiaryContainer"
-                app:indicatorColor="?colorTertiary"
-
                 app:indicatorSize="64dp" />
 
             <com.google.android.material.checkbox.MaterialCheckBox
@@ -189,6 +185,7 @@
                 android:layout_height="72dp"
                 android:background="@drawable/ripple_68dp"
                 android:button="@drawable/anim_play_pause_48dp"
+                android:checked="true"
                 android:contentDescription="@string/play"
                 app:buttonTint="@color/button_player"
                 tools:ignore="DuplicateSpeakableTextCheck" />
@@ -232,11 +229,12 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
+        android:id="@+id/trackSubtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="48dp"
-        android:layout_marginTop="16dp"
-        android:alpha="0.66"
+        android:paddingVertical="16dp"
+        style="@style/Selectable"
         android:ellipsize="marquee"
         android:gravity="center"
         android:maxLines="1"

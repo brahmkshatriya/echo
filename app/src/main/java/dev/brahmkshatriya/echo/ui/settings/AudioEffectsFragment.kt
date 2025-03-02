@@ -13,8 +13,8 @@ import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.delet
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.player.AudioEffectsBottomSheet.Companion.bind
-import dev.brahmkshatriya.echo.ui.player.AudioEffectsBottomSheet.Companion.onEqualizerClicked
+import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet.Companion.bind
+import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet.Companion.onEqualizerClicked
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
@@ -47,18 +47,12 @@ class AudioEffectsFragment : Fragment() {
         childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, fragment)
             .commit()
 
-        binding.title.inflateMenu(R.menu.audio_fx)
+        binding.title.inflateMenu(R.menu.refresh_menu)
         binding.title.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.reset -> {
-                    val context = requireContext()
-                    context.deleteGlobalFx()
-                    fragment.bind()
-                    true
-                }
-
-                else -> false
-            }
+            val context = requireContext()
+            context.deleteGlobalFx()
+            fragment.bind()
+            true
         }
     }
 

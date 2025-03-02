@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverRepeat
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverShuffle
+import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
@@ -125,7 +126,7 @@ class PlayerCallback(
     ): ListenableFuture<SessionResult> {
         return if (rating !is ThumbRating) super.onSetRating(session, controller, rating)
         else scope.future {
-            val item = withContext(Dispatchers.Main) { session.player.currentMediaItem }
+            val item = withContext(Dispatchers.Main) { session.player.currentMediaItem }!!
                 ?: return@future SessionResult(SessionError.ERROR_IO)
             val track = item.track
             runCatching {
@@ -134,13 +135,9 @@ class PlayerCallback(
                     likeTrack(track, rating.isThumbsUp)
                 }
             }.getOrElse {
-                return@future SessionResult(
-                    SessionError.ERROR_UNKNOWN,
-                    bundleOf(
-                        "error" to it,
-                        "trace" to it.stackTraceToString()
-                    )
-                )
+                println("Error: $it")
+                throwableFlow.emit(PlayerException(item, it))
+                return@future SessionResult(SessionError.ERROR_UNKNOWN)
             }
             val liked = rating.isThumbsUp
             val newItem = item.run {

@@ -43,8 +43,8 @@ class ShufflePlayer(
     private fun changeQueue(list: List<MediaItem>) {
         log("Change queue")
         if (list.size <= 1) return
-        val currentMediaItem = player.currentMediaItem!!
-        val index = list.find { it == currentMediaItem }?.let { list.indexOf(it) }!!
+        val currentMediaItem = list.first { it.mediaId == currentMediaItem?.mediaId }
+        val index = list.indexOf(currentMediaItem)
         val before = list.take(index) - currentMediaItem
         val after = list.takeLast(list.size - index) - currentMediaItem
         if (currentMediaItemIndex > 0) player.removeMediaItems(0, currentMediaItemIndex)
@@ -53,47 +53,58 @@ class ShufflePlayer(
         player.addMediaItems(currentMediaItemIndex + 1, after)
     }
 
+    fun onMediaItemChanged(old: MediaItem, new: MediaItem) {
+        original = original.toMutableList().apply {
+            set(indexOf(old), new)
+        }
+        log("Change media item")
+    }
+
     override fun addMediaItem(mediaItem: MediaItem) {
-        if (isShuffled) original = original + mediaItem
+        original = original + mediaItem
         player.addMediaItem(mediaItem)
         log("Add media item")
     }
 
     override fun addMediaItems(mediaItems: MutableList<MediaItem>) {
-        if (isShuffled) original = original + mediaItems
+        original = original + mediaItems
         player.addMediaItems(mediaItems)
         log("Add media items")
     }
 
     override fun addMediaItem(index: Int, mediaItem: MediaItem) {
-        if (isShuffled) original = original + mediaItem
+        original = original + mediaItem
         player.addMediaItem(index, mediaItem)
         log("Add media item at $index")
     }
 
     override fun addMediaItems(index: Int, mediaItems: MutableList<MediaItem>) {
-        if (isShuffled) original = original + mediaItems
+        original = original + mediaItems
         player.addMediaItems(index, mediaItems)
         log("Add media items at $index")
     }
 
+    private fun getItemAt(index: Int) = player.getMediaItemAt(index).let {
+        original.first { item -> item.mediaId == it.mediaId }
+    }
+
     override fun removeMediaItem(index: Int) {
-        if (isShuffled) original = original - getMediaItemAt(index)
+        original = original - getItemAt(index)
         player.removeMediaItem(index)
         log("Remove media item at $index")
     }
 
     override fun removeMediaItems(fromIndex: Int, toIndex: Int) {
-        if (isShuffled) original =
-            original - (fromIndex until toIndex).map { getMediaItemAt(it) }.toSet()
+        original =
+            original - (fromIndex until toIndex).map { getItemAt(it) }.toSet()
         player.removeMediaItems(fromIndex, toIndex)
         log("Remove media items from $fromIndex to $toIndex")
     }
 
     override fun replaceMediaItem(index: Int, mediaItem: MediaItem) {
-        if (isShuffled) original = original.toMutableList().apply {
-            val originalIndex = indexOf(getMediaItemAt(index))
-            if (originalIndex != -1) set(originalIndex, mediaItem)
+        original = original.toMutableList().apply {
+            val originalIndex = indexOf(getItemAt(index)).takeIf { it != -1 }!!
+            set(originalIndex, mediaItem)
         }
         player.replaceMediaItem(index, mediaItem)
         log("Replace media item at $index")
@@ -102,10 +113,12 @@ class ShufflePlayer(
     override fun replaceMediaItems(
         fromIndex: Int, toIndex: Int, mediaItems: MutableList<MediaItem>
     ) {
-        if (isShuffled) original = original.toMutableList().apply {
-            val originalIndexes = (fromIndex until toIndex).map { indexOf(getMediaItemAt(it)) }
+        original = original.toMutableList().apply {
+            val originalIndexes = (fromIndex until toIndex).map { i ->
+                indexOf(getItemAt(i)).takeIf { it != -1 }!!
+            }
             originalIndexes.forEachIndexed { i, originalIndex ->
-                if (originalIndex != -1) set(originalIndex, mediaItems[i])
+                set(originalIndex, mediaItems[i])
             }
         }
         player.replaceMediaItems(fromIndex, toIndex, mediaItems)
@@ -113,31 +126,31 @@ class ShufflePlayer(
     }
 
     override fun setMediaItem(mediaItem: MediaItem) {
-        if (isShuffled) original = listOf(mediaItem)
+        original = listOf(mediaItem)
         player.setMediaItem(mediaItem)
         log("Set media item")
     }
 
     override fun setMediaItem(mediaItem: MediaItem, resetPosition: Boolean) {
-        if (isShuffled) original = listOf(mediaItem)
+        original = listOf(mediaItem)
         player.setMediaItem(mediaItem, resetPosition)
         log("Set media item")
     }
 
     override fun setMediaItem(mediaItem: MediaItem, startPositionMs: Long) {
-        if (isShuffled) original = listOf(mediaItem)
+        original = listOf(mediaItem)
         player.setMediaItem(mediaItem, startPositionMs)
         log("Set media item")
     }
 
     override fun setMediaItems(mediaItems: MutableList<MediaItem>) {
-        if (isShuffled) original = mediaItems
+        original = mediaItems
         player.setMediaItems(mediaItems)
         log("Set media items")
     }
 
     override fun setMediaItems(mediaItems: MutableList<MediaItem>, resetPosition: Boolean) {
-        if (isShuffled) original = mediaItems
+        original = mediaItems
         player.setMediaItems(mediaItems, resetPosition)
         log("Set media items")
     }
@@ -147,7 +160,7 @@ class ShufflePlayer(
         startIndex: Int,
         startPositionMs: Long
     ) {
-        if (isShuffled) original = mediaItems
+        original = mediaItems
         player.setMediaItems(mediaItems, startIndex, startPositionMs)
         log("Set media items")
     }
@@ -157,4 +170,5 @@ class ShufflePlayer(
         player.clearMediaItems()
         log("Clear media items")
     }
+
 }

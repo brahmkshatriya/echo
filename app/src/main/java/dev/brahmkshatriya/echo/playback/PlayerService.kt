@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.TrackSelectionParameters
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
 import androidx.media3.common.util.UnstableApi
@@ -39,6 +40,8 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.listenFuture
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import org.koin.android.ext.android.inject
 import java.io.File
@@ -70,6 +73,10 @@ class PlayerService : MediaLibraryService() {
         setListener(MediaSessionServiceListener(this, intent))
 
         val player = ShufflePlayer(exoPlayer)
+        scope.launch(Dispatchers.Main) {
+            mediaChangeFlow.collect { (o, n) -> player.onMediaItemChanged(o, n) }
+        }
+
         val callback =
             PlayerCallback(this, scope, app.throwFlow, extensions, state.radio)
 
@@ -123,6 +130,8 @@ class PlayerService : MediaLibraryService() {
 
     private val cache by inject<SimpleCache>()
 
+    private val mediaChangeFlow = MutableSharedFlow<Pair<MediaItem, MediaItem>>()
+
     @OptIn(UnstableApi::class)
     private fun createExoplayer() = run {
         val audioAttributes = AudioAttributes.Builder()
@@ -136,7 +145,7 @@ class PlayerService : MediaLibraryService() {
             .setIsSpeedChangeSupportRequired(true)
             .build()
 
-        val factory = StreamableMediaSource.Factory(this, state, extensions, cache)
+        val factory = StreamableMediaSource.Factory(this, state, extensions, cache, mediaChangeFlow)
 
         ExoPlayer.Builder(this, factory)
             .setRenderersFactory(RenderersFactory(this))

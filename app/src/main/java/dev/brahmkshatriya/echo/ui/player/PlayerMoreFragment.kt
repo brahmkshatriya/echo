@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.player
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,12 +9,14 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
+import androidx.fragment.app.commitNow
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerMoreBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
+import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsFragment
 import dev.brahmkshatriya.echo.ui.player.upnext.QueueFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -33,6 +36,7 @@ class PlayerMoreFragment : Fragment() {
     }
 
     private val queueFragment by lazy { QueueFragment() }
+    private val lyricsFragment by lazy { LyricsFragment() }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         var topInset = 0
@@ -61,6 +65,39 @@ class PlayerMoreFragment : Fragment() {
             else binding.buttonToggleGroup.check(uiViewModel.lastMoreTab)
         }
 
+        observe(uiViewModel.playerColors) { colors ->
+            binding.buttonToggleGroupBg.children.forEach {
+                it as MaterialButton
+                it.backgroundTintList = ColorStateList.valueOf(colors.background)
+            }
+
+            val textColorStateList = ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_checked),
+                    intArrayOf(-android.R.attr.state_checked)
+                ),
+                intArrayOf(
+                    colors.background,
+                    colors.onBackground
+                )
+            )
+            val foregroundColorStateList = ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_checked),
+                    intArrayOf(-android.R.attr.state_checked)
+                ),
+                intArrayOf(
+                    colors.onBackground,
+                    android.graphics.Color.TRANSPARENT
+                )
+            )
+            binding.buttonToggleGroup.children.forEach {
+                it as MaterialButton
+                it.setTextColor(textColorStateList)
+                it.backgroundTintList = foregroundColorStateList
+            }
+        }
+
         binding.buttonToggleGroup.addOnButtonCheckedListener { group, _, _ ->
             uiViewModel.run {
                 val current = moreSheetState.value
@@ -86,14 +123,14 @@ class PlayerMoreFragment : Fragment() {
 
         val fragment = when (checkedId) {
             R.id.upNext -> queueFragment
-            R.id.lyrics -> null
+            R.id.lyrics -> lyricsFragment
             R.id.info -> null
             else -> null
         }
 
-        childFragmentManager.commit {
+        childFragmentManager.commitNow {
             childFragmentManager.fragments.forEach { hide(it) }
-            if (fragment == null) return@commit
+            if (fragment == null) return@commitNow
             val tag = fragment::class.java.name
             val existing = childFragmentManager.findFragmentByTag(tag)
             if (existing != null) show(existing)

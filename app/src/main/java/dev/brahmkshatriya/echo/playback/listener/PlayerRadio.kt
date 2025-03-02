@@ -85,7 +85,6 @@ class PlayerRadio(
             withContext(Dispatchers.Main) {
                 player.addMediaItems(item)
                 player.prepare()
-                player.playWhenReady = true
             }
         }
     }

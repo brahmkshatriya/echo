@@ -27,7 +27,7 @@ paging-common = { module = "androidx.paging:paging-common-ktx", version.ref = "a
 paging-runtime = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging" }
 
 
-material = { group = "com.google.android.material", name = "material", version = "1.13.0-alpha10" }
+material = { group = "com.google.android.material", name = "material", version = "1.13.0-alpha11" }
 
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

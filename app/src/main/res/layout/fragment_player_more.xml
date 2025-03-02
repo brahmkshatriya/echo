@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:translationY="-72dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:translationY="0dp">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -65,10 +65,6 @@
             android:id="@+id/player_more_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="-4dp"
-            android:layout_marginTop="-4dp"
-            android:layout_marginEnd="-4dp"
-            tools:layout="@layout/fragment_queue"
-            android:layout_marginBottom="-4dp" />
+            tools:layout="@layout/fragment_player_queue" />
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

@@ -50,14 +50,20 @@ class QueueAdapter(
 
         init {
             binding.playlistItemClose.setOnClickListener {
-                listener.onItemClosedClicked(bindingAdapterPosition)
+                val pos = bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return@setOnClickListener
+                listener.onItemClosedClicked(pos)
             }
 
             binding.root.setOnClickListener {
-                listener.onItemClicked(bindingAdapterPosition)
+                val pos = bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return@setOnClickListener
+                listener.onItemClicked(pos)
             }
 
             binding.playlistItemDrag.setOnTouchListener { _, event ->
+                val pos = bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return@setOnTouchListener false
                 if (event.actionMasked != MotionEvent.ACTION_DOWN) return@setOnTouchListener false
                 listener.onDragHandleTouched(this)
                 true
@@ -83,8 +89,11 @@ class QueueAdapter(
 
         binding.playlistItem.alpha = if (inactive) 0.5f else 1f
 
-        binding.playlistItemTitle.text = track.title
-        binding.playlistItemTitle.isSelected = true
+        binding.playlistItemTitle.run {
+            text = track.title
+            isSelected = true
+            setHorizontallyScrolling(true)
+        }
 
         track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_problem)
         val subtitle = buildString {
@@ -93,10 +102,12 @@ class QueueAdapter(
             }
             append(track.toMediaItem().subtitleWithE)
         }
-        binding.playlistItemAuthor.isVisible = subtitle.isNotEmpty()
-        binding.playlistItemAuthor.text = subtitle
-        binding.playlistItemAuthor.isSelected = true
-
+        binding.playlistItemAuthor.run {
+            isVisible = subtitle.isNotEmpty()
+            text = subtitle
+            isSelected = true
+            setHorizontallyScrolling(true)
+        }
         binding.playlistItemClose.isVisible = !inactive
         binding.playlistItemDrag.isVisible = !inactive
 

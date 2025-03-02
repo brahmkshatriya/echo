@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.databinding.FragmentQueueBinding
+import dev.brahmkshatriya.echo.databinding.FragmentPlayerQueueBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoClearedNullable
@@ -17,7 +17,7 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class QueueFragment : Fragment() {
 
-    private var binding by autoClearedNullable<FragmentQueueBinding>()
+    private var binding by autoClearedNullable<FragmentPlayerQueueBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
 
     override fun onCreateView(
@@ -25,7 +25,7 @@ class QueueFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentQueueBinding.inflate(inflater, container, false)
+        binding = FragmentPlayerQueueBinding.inflate(inflater, container, false)
         return binding!!.root
     }
 

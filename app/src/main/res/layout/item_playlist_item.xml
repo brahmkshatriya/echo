@@ -6,15 +6,16 @@
     android:layout_height="wrap_content"
     android:layout_marginVertical="4dp"
     android:background="@drawable/rounded_rectangle_8dp"
-    android:backgroundTint="?echoBackground">
+    android:backgroundTint="?navBackground">
 
     <View
         android:id="@+id/playlistCurrentItem"
         android:layout_width="match_parent"
         android:layout_height="@dimen/collapsed_cover_size"
-        android:alpha="0.25"
+        android:alpha="0.15"
+        android:visibility="gone"
         android:background="@drawable/rounded_rectangle_8dp"
-        android:backgroundTint="?colorTertiary" />
+        android:backgroundTint="?colorPrimary" />
 
     <LinearLayout
         android:id="@+id/playlistItem"

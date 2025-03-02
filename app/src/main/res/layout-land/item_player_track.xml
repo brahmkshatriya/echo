@@ -46,4 +46,8 @@
             android:layout_weight="1" />
 
     </LinearLayout>
+
+    <include
+        android:id="@+id/click_panel"
+        layout="@layout/item_click_panels" />
 </FrameLayout>

@@ -82,6 +82,8 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
         fun Context.defaultColor() =
             ContextCompat.getColor(this, R.color.ic_launcher_background)
 
+        fun Context.isAmoled() = getSettings().getBoolean(AMOLED_KEY, false)
+
         fun applyUiChanges(app: Application) {
             val settings = app.getSettings()
             val mode = when (settings.getString(THEME_KEY, "system")) {

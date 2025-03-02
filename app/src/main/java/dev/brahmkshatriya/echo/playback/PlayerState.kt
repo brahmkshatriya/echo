@@ -23,13 +23,13 @@ data class PlayerState(
         val isPlaying: Boolean,
     ) {
 
-        val context = lazy { mediaItem.context }
-        val track = lazy { mediaItem.track }
+        val context by lazy { mediaItem.context }
+        val track by lazy { mediaItem.track }
         fun isPlaying(id: String?): Boolean {
             val same = mediaItem.mediaId == id
-                    || context.value?.id == id
-                    || track.value.album?.id == id
-                    || track.value.artists.any { it.id == id }
+                    || context?.id == id
+                    || track.album?.id == id
+                    || track.artists.any { it.id == id }
             return isPlaying && same
         }
 

@@ -42,4 +42,8 @@
             app:layout_constraintTop_toBottomOf="@+id/player_track_cover_container" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <include
+        android:id="@+id/click_panel"
+        layout="@layout/item_click_panels" />
 </FrameLayout>

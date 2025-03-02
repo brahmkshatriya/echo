@@ -24,6 +24,8 @@
         <item name="collapsingToolbarLayoutStyle">@style/EchoCollapsingBar</item>
         <item name="cardViewStyle">@style/EchoCardView</item>
         <item name="tabStyle">@style/EchoTabLayout</item>
+        <item name="circularProgressIndicatorStyle">@style/EchoCircularProgressIndicator</item>
+        <item name="linearProgressIndicatorStyle">@style/EchoLinearProgressIndicator</item>
 
         <item name="echoBackground">?colorSurface</item>
         <item name="navBackground">?colorSurfaceContainer</item>

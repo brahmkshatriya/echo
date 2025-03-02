@@ -60,13 +60,13 @@ class TrackingListener(
     private val timers = mutableMapOf<String, PauseCountDown>()
     private fun onTrackStart(mediaItem: MediaItem?) {
         current = mediaItem
+        val isPlaying = player.isPlaying
         timers.forEach { (_, timer) -> timer.pause() }
         timers.clear()
-
         trackMedia { extension, it ->
             onTrackChanged(it)
-
             it ?: return@trackMedia
+            onPlayingStateChanged(it, isPlaying)
             val duration = markAsPlayedDuration ?: return@trackMedia
             val timer = object : PauseCountDown(duration) {
                 override fun onTimerTick(millisUntilFinished: Long) {}
