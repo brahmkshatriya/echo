@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,11 +6,12 @@
     android:paddingVertical="8dp">
 
     <View
-        android:background="@drawable/rounded_rectangle_item_corner"
-        android:backgroundTint="?attr/colorSurfaceContainerHighest"
         android:layout_width="@dimen/collapsed_cover_size"
         android:layout_height="@dimen/collapsed_cover_size"
-        android:layout_marginStart="24dp" />
+        android:layout_marginStart="24dp"
+        android:alpha="0.15"
+        android:background="@drawable/shape_rounded_item_corner"
+        android:backgroundTint="@color/amoled_fg" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -27,12 +26,16 @@
             android:layout_width="108dp"
             android:layout_height="20sp"
             android:layout_marginBottom="4dp"
-            android:background="@drawable/rounded_rectangle_4dp" />
+            android:alpha="0.15"
+            android:background="@drawable/shape_rounded_4dp"
+            android:backgroundTint="@color/amoled_fg" />
 
         <View
             android:layout_width="80dp"
             android:layout_height="20sp"
-            android:background="@drawable/rounded_rectangle_4dp" />
+            android:alpha="0.15"
+            android:background="@drawable/shape_rounded_4dp"
+            android:backgroundTint="@color/amoled_fg" />
 
     </LinearLayout>
 

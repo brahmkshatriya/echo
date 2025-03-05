@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.shelf.adapter.lists
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.Animatable
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +14,7 @@ import androidx.core.view.isVisible
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
-import dev.brahmkshatriya.echo.databinding.ItemShelfListMediaBinding
+import dev.brahmkshatriya.echo.databinding.ItemShelfListsMediaBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemShelfViewHolder.Companion.icon
@@ -23,7 +24,7 @@ import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadWithThumb
 
 class MediaItemShelfListsViewHolder(
     val listener: ShelfListsAdapter.Listener,
-    val binding: ItemShelfListMediaBinding
+    val binding: ItemShelfListsMediaBinding
 ) : ShelfListsAdapter.ViewHolder(binding.root) {
 
     var item: EchoMediaItem? = null
@@ -76,13 +77,14 @@ class MediaItemShelfListsViewHolder(
     override fun onCurrentChanged(current: PlayerState.Current?) {
         binding.isPlaying.visibility =
             if (current.isPlaying(item?.id)) View.VISIBLE else View.INVISIBLE
+        (binding.isPlaying.icon as Animatable).start()
     }
 
     companion object {
         fun create(
             listener: ShelfAdapter.Listener, inflater: LayoutInflater, parent: ViewGroup
         ): MediaItemShelfListsViewHolder {
-            val binding = ItemShelfListMediaBinding.inflate(inflater, parent, false)
+            val binding = ItemShelfListsMediaBinding.inflate(inflater, parent, false)
             return MediaItemShelfListsViewHolder(listener, binding)
         }
 

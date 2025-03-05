@@ -125,7 +125,7 @@ object ExceptionUtils {
         else -> null
     }
 
-    private fun Context.getFinalTitle(throwable: Throwable): String? =
+    fun Context.getFinalTitle(throwable: Throwable): String? =
         getTitle(throwable) ?: throwable.cause?.let { getFinalTitle(it) }
 
 
@@ -171,7 +171,7 @@ object ExceptionUtils {
         openFragment<ExceptionFragment>(view, ExceptionFragment.getBundle(data))
     }
 
-    private fun FragmentActivity.openLoginException(
+    fun FragmentActivity.openLoginException(
         it: AppException.LoginRequired, view: View? = null
     ) {
         if (it is AppException.Unauthorized) {

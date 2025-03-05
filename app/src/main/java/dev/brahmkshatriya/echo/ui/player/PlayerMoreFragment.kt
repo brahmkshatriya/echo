@@ -9,14 +9,14 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
+import androidx.fragment.app.add
+import androidx.fragment.app.commitNow
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerMoreBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
-import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.info.InfoFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsFragment
@@ -38,8 +38,13 @@ class PlayerMoreFragment : Fragment() {
         return binding.root
     }
 
-    private inline fun <reified F : Fragment> Fragment.addIfNull(tag: String): String {
-        addIfNull<F>(R.id.player_more_fragment_container, tag)
+    private inline fun <reified F : Fragment> Fragment.addIfNull(): String {
+        val tag = F::class.java.simpleName
+        childFragmentManager.run {
+            if (findFragmentByTag(tag) == null) commitNow {
+                add<F>(R.id.player_more_fragment_container, tag)
+            }
+        }
         return tag
     }
 
@@ -127,12 +132,12 @@ class PlayerMoreFragment : Fragment() {
     private fun showFragment() {
         val checkedId = binding.buttonToggleGroup.checkedButtonId
         val toShow = when (checkedId) {
-            R.id.queue -> addIfNull<QueueFragment>("queue")
-            R.id.lyrics -> addIfNull<LyricsFragment>("lyrics")
-            R.id.info -> addIfNull<InfoFragment>("info")
+            R.id.queue -> addIfNull<QueueFragment>()
+            R.id.lyrics -> addIfNull<LyricsFragment>()
+            R.id.info -> addIfNull<InfoFragment>()
             else -> null
         }
-        childFragmentManager.commit {
+        childFragmentManager.commitNow {
             childFragmentManager.fragments.forEach { fragment ->
                 if (fragment.tag != toShow) hide(fragment)
                 else show(fragment)

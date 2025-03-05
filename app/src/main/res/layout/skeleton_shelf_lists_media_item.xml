@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:padding="4dp">
+
+    <View
+        android:layout_width="?itemCoverSize"
+        android:layout_height="?itemCoverSize"
+        android:alpha="0.15"
+        android:background="@drawable/rounded_rectangle_cover"
+        android:backgroundTint="@color/amoled_fg" />
+
+    <FrameLayout
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:paddingEnd="24dp"
+        tools:ignore="RtlSymmetry">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="24sp"
+            android:layout_marginTop="8dp"
+            android:alpha="0.15"
+            android:background="@drawable/shape_rounded_4dp"
+            android:backgroundTint="@color/amoled_fg" />
+
+    </FrameLayout>
+
+</LinearLayout>

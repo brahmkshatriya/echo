@@ -76,7 +76,7 @@ abstract class FeedViewModel(
                 feed.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
                 return@launch
             }
-            data.toFlow().collectWith(throwableFlow) {
+            data.toFlow(extension).collectWith(throwableFlow) {
                 feed.value = PagingUtils.Data(extension, data, it)
             }
         }
@@ -93,7 +93,7 @@ abstract class FeedViewModel(
             swipeRefresh.configure { viewModel.refresh(true) }
             val listener = ShelfClickListener(requireActivity().supportFragmentManager)
             val adapter = getShelfAdapter(listener)
-            recyclerView.adapter = adapter
+            recyclerView.adapter = adapter.withLoaders(this)
             observe(viewModel.feed) { (extension, shelf, feed) ->
                 adapter.submit(extension?.id, shelf, feed)
             }

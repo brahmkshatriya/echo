@@ -8,8 +8,10 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <include layout="@layout/skeleton_shelf_lists" />
+
         <include
-            layout="@layout/skeleton_item_playlist"
+            layout="@layout/skeleton_track"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -18,7 +20,7 @@
             android:layout_height="match_parent"
             android:alpha="0.66">
 
-            <include layout="@layout/skeleton_item_playlist" />
+            <include layout="@layout/skeleton_track" />
         </FrameLayout>
 
         <FrameLayout
@@ -26,7 +28,7 @@
             android:layout_height="match_parent"
             android:alpha="0.33">
 
-            <include layout="@layout/skeleton_item_playlist" />
+            <include layout="@layout/skeleton_track" />
 
         </FrameLayout>
     </LinearLayout>

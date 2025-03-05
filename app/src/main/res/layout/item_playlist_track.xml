@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="4dp"
-    android:background="@drawable/rounded_rectangle_item_corner"
+    android:background="@drawable/shape_rounded_item_corner"
     android:backgroundTint="?navBackground">
 
     <View
@@ -14,7 +14,7 @@
         android:layout_height="@dimen/collapsed_cover_size"
         android:alpha="0.15"
         android:visibility="gone"
-        android:background="@drawable/rounded_rectangle_item_corner"
+        android:background="@drawable/shape_rounded_item_corner"
         android:backgroundTint="?colorPrimary" />
 
     <LinearLayout

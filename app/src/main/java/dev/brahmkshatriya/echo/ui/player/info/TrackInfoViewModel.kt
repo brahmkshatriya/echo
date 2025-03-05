@@ -47,7 +47,7 @@ class TrackInfoViewModel(
             val shelves = extension.run(app.throwFlow) {
                 app.context.getTrackShelves(this, current.track)
             } ?: return@launch
-            shelves.toFlow().collectWith(app.throwFlow, itemsFlow)
+            shelves.toFlow(extension).collectWith(app.throwFlow, itemsFlow)
         }
     }
 

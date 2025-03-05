@@ -10,15 +10,20 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.ShelfListsAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyScaleAnimation
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -170,6 +175,35 @@ class ShelfAdapter(
             stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
         }
     }
+
+    fun getTracks() = snapshot().items.filterIsInstance<Shelf.Item>()
+        .mapNotNull { (it.media as? EchoMediaItem.TrackItem)?.track }
+
+
+    fun withLoaders(
+        fragment: Fragment,
+        vararg adapters: RecyclerView.Adapter<*>,
+        onStateChanged: (loading: Boolean) -> Unit = {}
+    ): ConcatAdapter {
+        val listener = fragment.createListener { retry() }
+        val footer = ShelfLoadingAdapter(listener)
+        val header = ShelfLoadingAdapter(listener)
+        val empty = ShelfEmptyAdapter()
+        addLoadStateListener { loadStates ->
+            onStateChanged(loadStates.refresh is LoadState.Loading || itemCount == 0)
+            empty.loadState =
+                if (loadStates.refresh is LoadState.NotLoading && itemCount == 0) LoadState.Loading
+                else LoadState.NotLoading(false)
+            header.loadState = loadStates.refresh
+            footer.loadState = loadStates.append
+        }
+        return ConcatAdapter(empty, header, *adapters, this, footer)
+    }
+
+//    fun withSearchHeaderAndLoaders(shelves: () -> PagedData<Shelf>?): ConcatAdapter {
+//        val search = ShelfHeaderAdapter(extension.id, title, listener)
+//        return withLoaders(search) { loading -> search.setShelf(shelves().takeIf { !loading }) }
+//    }
 
     companion object {
         fun Fragment.getShelfAdapter(

@@ -23,8 +23,8 @@ import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.exceptions.RequiredExtensionsMissingException
 import dev.brahmkshatriya.echo.extensions.plugger.interfaces.PluginRepo
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.collectWith
-import dev.brahmkshatriya.echo.utils.Delegated.Companion.delegated
 import dev.brahmkshatriya.echo.utils.SettingsUtils.getSettings
+import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -79,14 +79,12 @@ class InjectedRepo(
                     list?.forEach { ext ->
                         val newCurr = users.getUser(ext)
                         val stickyUser = ext.instance.stickyUser
-                        println("item: ${ext.id} $stickyUser")
                         val shouldInject = !stickyUser.initialized || stickyUser.current != newCurr
                         if (!shouldInject) return@forEach
                         stickyUser.initialized = true
                         stickyUser.current = newCurr
                         scope.launch {
                             ext.injectWith<LoginClient>(app.throwFlow) {
-                                println("Injecting ${newCurr?.userId} for ${ext.metadata.id}")
                                 val user = newCurr?.let { db.getUser(it) }
                                 onSetLoginUser(user)
                             }
@@ -118,7 +116,7 @@ class InjectedRepo(
                 throw Exception("${this::class.simpleName} needs to be $className")
         }
 
-        private val Injectable<*>.stickyUser by delegated { StickyUser(false) }
+        private val Injectable<*>.stickyUser by sticky { StickyUser(false) }
 
         private fun <T, R : Extension<*>> T.inject(
             required: List<String>,

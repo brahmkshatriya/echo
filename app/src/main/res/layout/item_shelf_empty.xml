@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="48dp"
+    android:gravity="center"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:textAlignment="center"
+        android:typeface="monospace"
+        android:textAppearance="@style/TextAppearance.Material3.DisplayLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="2"
+        android:text="@string/crying_af" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:maxLines="2"
+        android:text="@string/so_empty" />
+
+</LinearLayout>

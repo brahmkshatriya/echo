@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.shelf.adapter
 
+import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,8 +9,10 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
+import dev.brahmkshatriya.echo.databinding.ItemShelfTrackBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
+import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
 
 sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view) {
@@ -27,13 +30,53 @@ sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view
     abstract fun bind(mediaItem: EchoMediaItem?, loadTracks: Boolean)
     abstract fun onIsPlayingChanged(isPlaying: Boolean)
 
-    class Track(view: View) : MediaItemShelfViewHolder(view) {
+    class Track(
+        val adapter: ShelfAdapter,
+        val listener: ShelfAdapter.Listener,
+        val binding: ItemShelfTrackBinding
+    ) : MediaItemShelfViewHolder(binding.root) {
+
+        constructor(
+            adapter: ShelfAdapter,
+            listener: ShelfAdapter.Listener,
+            inflater: LayoutInflater,
+            parent: ViewGroup
+        ) : this(
+            adapter,
+            listener,
+            ItemShelfTrackBinding.inflate(inflater, parent, false)
+        )
+
+        init {
+            binding.root.setOnClickListener {
+                val track = (item?.media as? EchoMediaItem.TrackItem)?.track
+                val tracks = adapter.getTracks()
+                val index = tracks.indexOf(track)
+                listener.onTrackClicked(extensionId, tracks, index, null, it)
+            }
+            binding.root.setOnLongClickListener {
+                val track = (item?.media as? EchoMediaItem.TrackItem)?.track
+                val tracks = adapter.getTracks()
+                val index = tracks.indexOf(track)
+                listener.onTrackLongClicked(extensionId, tracks, index, null, it)
+                true
+            }
+            binding.more.setOnClickListener {
+                binding.root.performLongClick()
+            }
+        }
+
         override fun bind(mediaItem: EchoMediaItem?, loadTracks: Boolean) {
-            TODO("Not yet implemented")
+            mediaItem ?: return
+            binding.title.text = mediaItem.title
+            binding.subtitle.text = mediaItem.subtitleWithE
+            binding.subtitle.isVisible = !mediaItem.subtitleWithE.isNullOrBlank()
+            mediaItem.cover.loadInto(binding.cover, mediaItem.placeHolder)
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            TODO("Not yet implemented")
+            binding.isPlaying.isVisible = isPlaying
+            (binding.isPlaying.drawable as Animatable).start()
         }
     }
 
@@ -93,28 +136,25 @@ sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view
             parent: ViewGroup,
             viewType: Int
         ) = when (viewType) {
-//            1 -> Track(view)
+            1 -> Track(adapter, listener, inflater, parent)
 //            2 -> List(view)
 //            3 -> Profile(view)
 //            else -> error("unknown view type")
-            else -> Test(listener, adapter, inflater, parent)
+            else -> Test(listener, inflater, parent)
         }
     }
 
     class Test(
         listener: ShelfAdapter.Listener,
-        adapter: ShelfAdapter,
         val binding: ItemShelfCategoryBinding
     ) : MediaItemShelfViewHolder(binding.root) {
 
         constructor(
             listener: ShelfAdapter.Listener,
-            adapter: ShelfAdapter,
             inflater: LayoutInflater,
             parent: ViewGroup
         ) : this(
             listener,
-            adapter,
             ItemShelfCategoryBinding.inflate(inflater, parent, false)
         )
 

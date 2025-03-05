@@ -65,14 +65,25 @@ class LyricsFragment : Fragment() {
             true
         }
         val menu = binding.searchBar.menu
-        val extension = binding.searchBar.findViewById<View>(R.id.menu_lyrics)
+        val extMenu = binding.searchBar.findViewById<View>(R.id.menu_lyrics)
         var lyricsItemAdapter: LyricsItemAdapter? = null
         observe(viewModel.currentSelectionFlow) { current ->
             binding.searchBar.hint = current?.name
             current?.metadata?.icon
-                .loadAsCircle(extension, R.drawable.ic_extension_48dp) {
+                .loadAsCircle(extMenu, R.drawable.ic_extension_48dp) {
                     menu.findItem(R.id.menu_lyrics).icon = it
                 }
+
+            extMenu.setOnLongClickListener {
+                val ext = current ?: return@setOnLongClickListener false
+                val all = viewModel.extensionsFlow.value
+                val index = all.indexOf(ext)
+                val nextIndex = (index + 1) % all.size
+                if (nextIndex == index) return@setOnLongClickListener false
+                viewModel.selectExtension(nextIndex)
+                true
+            }
+
             val isSearchable = current?.isClient<LyricsSearchClient>() ?: false
             binding.searchBar.setNavigationIcon(
                 when (isSearchable) {

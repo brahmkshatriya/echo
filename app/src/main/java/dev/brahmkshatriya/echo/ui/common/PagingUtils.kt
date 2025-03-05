@@ -11,6 +11,7 @@ import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.helpers.Page
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -21,8 +22,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 object PagingUtils {
-    fun <T : Any> PagedData<T>.toFlow() =
-        ContinuationSource({ loadList(it) }, { invalidate(it) }).toFlow()
+    fun <T : Any> PagedData<T>.toFlow(extension: Extension<*>) =
+        ContinuationSource(extension, { loadList(it) }, { invalidate(it) }).toFlow()
 
     fun <T : Any> errorPagingData(throwable: Throwable) = PagingData.empty<T>(
         LoadStates(
@@ -52,6 +53,7 @@ object PagingUtils {
     ) = coroutineScope { cachedIn(this).catch { throwableFlow.emit(it) }.collect(collector) }
 
     private class ContinuationSource<Value : Any>(
+        private val extension: Extension<*>,
         private val load: suspend (token: String?) -> Page<Value>,
         private val invalidate: (token: String?) -> Unit
     ) : PagingSource<String, Value>() {
@@ -64,10 +66,10 @@ object PagingUtils {
         override val keyReuseSupported = true
 
         override suspend fun load(params: LoadParams<String>): LoadResult<String, Value> {
-            return try {
+            return runCatching {
                 withContext(Dispatchers.IO) { loadData(params) }
-            } catch (e: Throwable) {
-                LoadResult.Error(e)
+            }.getOrElse {
+                LoadResult.Error(it.toAppException(extension))
             }
         }
 

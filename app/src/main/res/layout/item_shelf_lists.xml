@@ -46,7 +46,7 @@
                     android:alpha="0.66"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:visibility="visible"
+                    android:visibility="gone"
                     tools:text="@tools:sample/first_names" />
 
             </LinearLayout>
@@ -77,6 +77,6 @@
         android:paddingBottom="12dp"
         android:orientation="horizontal"
         tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_shelf_list_media" />
+        tools:listitem="@layout/item_shelf_lists_media" />
 
 </LinearLayout>

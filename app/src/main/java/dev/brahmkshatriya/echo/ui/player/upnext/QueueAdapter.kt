@@ -12,8 +12,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
-import dev.brahmkshatriya.echo.databinding.SkeletonItemQueueBinding
+import dev.brahmkshatriya.echo.databinding.ItemPlaylistTrackBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
@@ -46,7 +45,7 @@ class QueueAdapter(
 
     @SuppressLint("ClickableViewAccessibility")
     inner class ViewHolder(
-        val binding: ItemPlaylistItemBinding
+        val binding: ItemPlaylistTrackBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         init {
@@ -75,7 +74,7 @@ class QueueAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return ViewHolder(ItemPlaylistItemBinding.inflate(inflater, parent, false))
+        return ViewHolder(ItemPlaylistTrackBinding.inflate(inflater, parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -116,23 +115,23 @@ class QueueAdapter(
         (binding.playlistItemNowPlaying.drawable as Animatable).start()
     }
 
-    class Loader : RecyclerView.Adapter<Loader.ViewHolder>() {
-        inner class ViewHolder(binding: SkeletonItemQueueBinding) :
-            RecyclerView.ViewHolder(binding.root)
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val inflater = LayoutInflater.from(parent.context)
-            val binding = SkeletonItemQueueBinding.inflate(inflater, parent, false)
-            return ViewHolder(binding)
-        }
-
-        private var loading = false
-        override fun getItemCount() = if (loading) 1 else 0
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {}
-        fun setLoading(loading: Boolean) {
-            if (this.loading == loading) return
-            this.loading = loading
-            if (loading) notifyItemInserted(0) else notifyItemRemoved(0)
-        }
-    }
+//    class Loader : RecyclerView.Adapter<Loader.ViewHolder>() {
+//        inner class ViewHolder(binding: SkeletonItemQueueBinding) :
+//            RecyclerView.ViewHolder(binding.root)
+//
+//        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+//            val inflater = LayoutInflater.from(parent.context)
+//            val binding = SkeletonItemQueueBinding.inflate(inflater, parent, false)
+//            return ViewHolder(binding)
+//        }
+//
+//        private var loading = false
+//        override fun getItemCount() = if (loading) 1 else 0
+//        override fun onBindViewHolder(holder: ViewHolder, position: Int) {}
+//        fun setLoading(loading: Boolean) {
+//            if (this.loading == loading) return
+//            this.loading = loading
+//            if (loading) notifyItemInserted(0) else notifyItemRemoved(0)
+//        }
+//    }
 }

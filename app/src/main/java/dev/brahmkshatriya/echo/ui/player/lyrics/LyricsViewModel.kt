@@ -45,6 +45,7 @@ class LyricsViewModel(
 
         val id = app.settings.getString(LAST_LYRICS_KEY, null)
         val extension = extensionsFlow.getExtension(id) ?: trackExtension ?: return
+        currentSelectionFlow.value = extension
         onExtensionSelected(extension)
     }
 
@@ -69,7 +70,7 @@ class LyricsViewModel(
                     val unloaded = data.loadFirst().firstOrNull() ?: return@get null
                     loadLyrics(unloaded)
                 }?.let { State.Loaded(it) } ?: State.Empty
-                data.toFlow().collectWith(app.throwFlow, searchResults)
+                data.toFlow(extension).collectWith(app.throwFlow, searchResults)
             }
         }
     }
@@ -86,8 +87,9 @@ class LyricsViewModel(
 
     fun search(query: String?) {
         viewModelScope.launch(Dispatchers.IO) {
+            val extension = currentSelectionFlow.value ?: return@launch
             val data = onSearch(query)
-            if (data != null) data.toFlow().collectWith(app.throwFlow, searchResults)
+            if (data != null) data.toFlow(extension).collectWith(app.throwFlow, searchResults)
             else searchResults.value = null
         }
     }
@@ -97,6 +99,7 @@ class LyricsViewModel(
         data object Empty : State
         data class Loaded(val lyrics: Lyrics) : State
     }
+
     val lyricsState = MutableStateFlow<State>(State.Empty)
     fun onLyricsSelected(lyricsItem: Lyrics) {
         val extension = currentSelectionFlow.value ?: return

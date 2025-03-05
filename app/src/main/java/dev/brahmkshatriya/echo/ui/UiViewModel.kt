@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.ui
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.BackEventCompat
@@ -49,7 +48,6 @@ import java.lang.ref.WeakReference
 import kotlin.math.max
 import kotlin.math.min
 
-@OptIn(ExperimentalStdlibApi::class)
 class UiViewModel(
     context: Context,
     playerState: PlayerState,
@@ -194,12 +192,7 @@ class UiViewModel(
                 extensionColor.value =
                     extension?.metadata?.icon?.loadDrawable(context)?.let {
                         val bitmap = it.toBitmap()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            println("bitmap: ${bitmap.width}x${bitmap.height} ${bitmap.getColor(0, 0).toArgb().toHexString()}")
-                        }
-                        PlayerColors.getDominantColor(bitmap).also {
-                            println("Extension color: ${it?.toHexString()}")
-                        }
+                        PlayerColors.getDominantColor(bitmap)
                     }
             }
         }

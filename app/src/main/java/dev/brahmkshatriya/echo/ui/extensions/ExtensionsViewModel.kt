@@ -22,7 +22,6 @@ import dev.brahmkshatriya.echo.extensions.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionListViewModel
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference.Companion.prefId
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
@@ -33,7 +32,7 @@ class ExtensionsViewModel(
 ) : ExtensionListViewModel<MusicExtension>() {
     val extensions = extensionLoader.extensions
     override val extensionsFlow = extensions.music
-    override val currentSelectionFlow = MutableStateFlow(extensions.current.value)
+    override val currentSelectionFlow = extensions.current
     override fun onExtensionSelected(extension: MusicExtension) {
         extensions.setupMusicExtension(extension)
     }

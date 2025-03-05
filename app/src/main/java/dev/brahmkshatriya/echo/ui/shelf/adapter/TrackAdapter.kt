@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.databinding.ItemPlaylistItemBinding
+import dev.brahmkshatriya.echo.databinding.ItemPlaylistTrackBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
@@ -53,7 +53,7 @@ class TrackAdapter(
     }
 
     inner class ViewHolder(
-        val binding: ItemPlaylistItemBinding
+        val binding: ItemPlaylistTrackBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
@@ -78,7 +78,7 @@ class TrackAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return ViewHolder(ItemPlaylistItemBinding.inflate(inflater, parent, false))
+        return ViewHolder(ItemPlaylistTrackBinding.inflate(inflater, parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {

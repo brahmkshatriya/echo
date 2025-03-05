@@ -75,7 +75,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 group: MaterialButtonToggleGroup?, checkedId: Int, isChecked: Boolean
             ) {
                 if (isChecked && enabled) {
-                    viewModel.onExtensionSelected(checkedId)
+                    viewModel.selectExtension(checkedId)
                     dismiss()
                 }
             }

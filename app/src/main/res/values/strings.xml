@@ -268,4 +268,8 @@
     <string name="quality_x">Quality %1$d</string>
     <string name="off">Off</string>
     <string name="unknown_quality">Unknown Quality</string>
+
+    <string name="crying_af" translatable="false">(;-;)</string>
+    <string name="so_empty">So empty…</string>
+    <string name="not_loading">Not Loading</string>
 </resources>

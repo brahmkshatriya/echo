@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +16,10 @@ import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoClearedNu
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class QueueFragment : Fragment() {
+
+    init {
+        println("QueueFragment init $this")
+    }
 
     private var binding by autoClearedNullable<FragmentPlayerQueueBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
@@ -81,9 +84,8 @@ class QueueFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view, false)
-        val radioLoaderAdapter = QueueAdapter.Loader()
         val recyclerView = binding!!.root
-        recyclerView.adapter = ConcatAdapter(queueAdapter, radioLoaderAdapter)
+        recyclerView.adapter = queueAdapter
         touchHelper.attachToRecyclerView(recyclerView)
         val manager = recyclerView.layoutManager as LinearLayoutManager
         val screenHeight = view.resources.displayMetrics.heightPixels / 3

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 abstract class ExtensionListViewModel<T : Extension<*>> : ViewModel() {
     abstract val extensionsFlow: StateFlow<List<T>?>
     abstract val currentSelectionFlow: MutableStateFlow<T?>
-    fun onExtensionSelected(index: Int) {
+    fun selectExtension(index: Int) {
         val extension = extensionsFlow.value?.get(index) ?: return
         currentSelectionFlow.value = extension
         onExtensionSelected(extension)

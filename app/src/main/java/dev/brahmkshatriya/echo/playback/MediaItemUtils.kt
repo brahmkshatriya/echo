@@ -18,7 +18,7 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.selectSourceIndex
-import dev.brahmkshatriya.echo.utils.Delegated.Companion.delegated
+import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.toData
@@ -192,20 +192,20 @@ object MediaItemUtils {
     private fun Bundle.indexes() =
         "${getInt("serverIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
 
-    private val Bundle?.trackNullable by delegated { this?.getSerialized<Track>("track") }
+    private val Bundle?.trackNullable by sticky { this?.getSerialized<Track>("track") }
     val Bundle?.track get() = requireNotNull(trackNullable)
-    val Bundle?.isLoaded by delegated { this?.getBoolean("loaded") ?: false }
-    val Bundle?.extensionId by delegated { requireNotNull(this?.getString("extensionId")) }
-    val Bundle?.context by delegated { this?.getSerialized<EchoMediaItem?>("context") }
-    val Bundle?.sourcesIndex by delegated { this?.getInt("serverIndex") ?: -1 }
-    val Bundle?.sourceIndex by delegated { this?.getInt("sourceIndex") ?: -1 }
-    val Bundle?.backgroundIndex by delegated { this?.getInt("backgroundIndex") ?: -1 }
-    val Bundle?.subtitleIndex by delegated { this?.getInt("subtitleIndex") ?: -1 }
-    val Bundle?.background by delegated {
+    val Bundle?.isLoaded by sticky { this?.getBoolean("loaded") ?: false }
+    val Bundle?.extensionId by sticky { requireNotNull(this?.getString("extensionId")) }
+    val Bundle?.context by sticky { this?.getSerialized<EchoMediaItem?>("context") }
+    val Bundle?.sourcesIndex by sticky { this?.getInt("serverIndex") ?: -1 }
+    val Bundle?.sourceIndex by sticky { this?.getInt("sourceIndex") ?: -1 }
+    val Bundle?.backgroundIndex by sticky { this?.getInt("backgroundIndex") ?: -1 }
+    val Bundle?.subtitleIndex by sticky { this?.getInt("subtitleIndex") ?: -1 }
+    val Bundle?.background by sticky {
         this?.getSerialized<Streamable.Media.Background?>("background")
     }
-    val Bundle?.retries by delegated { this?.getInt("retries") ?: 0 }
-    val Bundle?.unloadedCover by delegated { this?.getSerialized<ImageHolder?>("unloadedCover") }
+    val Bundle?.retries by sticky { this?.getInt("retries") ?: 0 }
+    val Bundle?.unloadedCover by sticky { this?.getSerialized<ImageHolder?>("unloadedCover") }
 
     val MediaItem.track get() = mediaMetadata.extras.track
     val MediaItem.extensionId get() = mediaMetadata.extras.extensionId
@@ -216,7 +216,7 @@ object MediaItemUtils {
     val MediaItem.backgroundIndex get() = mediaMetadata.extras.backgroundIndex
     val MediaItem.subtitleIndex get() = mediaMetadata.extras.subtitleIndex
     val MediaItem.background get() = mediaMetadata.extras.background
-    val MediaMetadata.isLiked by delegated { (userRating as? ThumbRating)?.isThumbsUp == true }
+    val MediaMetadata.isLiked by sticky { (userRating as? ThumbRating)?.isThumbsUp == true }
     val MediaItem.isLiked get() = mediaMetadata.isLiked
     val MediaItem.retries get() = mediaMetadata.extras.retries
     val MediaItem.unloadedCover get() = mediaMetadata.extras.unloadedCover
