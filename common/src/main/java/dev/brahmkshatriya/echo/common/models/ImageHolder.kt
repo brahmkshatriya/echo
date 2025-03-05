@@ -41,6 +41,15 @@ sealed class ImageHolder {
     @Serializable
     data class UriImageHolder(val uri: String, override val crop: Boolean) : ImageHolder()
 
+    /**
+     * A data class representing an image from a resource
+     *
+     * @param resId The resource ID of the image
+     * @param crop Whether to crop the image
+     */
+    @Serializable
+    data class ResourceImageHolder(val resId: Int, override val crop: Boolean) : ImageHolder()
+
     companion object {
 
         /**
@@ -60,5 +69,12 @@ sealed class ImageHolder {
          * @param crop Whether to crop the image
          */
         fun String.toUriImageHolder(crop: Boolean = false) = UriImageHolder(this, crop)
+
+        /**
+         * Converts an integer to a [ResourceImageHolder]
+         *
+         * @param crop Whether to crop the image
+         */
+        fun Int.toResourceImageHolder(crop: Boolean = false) = ResourceImageHolder(this, crop)
     }
 }

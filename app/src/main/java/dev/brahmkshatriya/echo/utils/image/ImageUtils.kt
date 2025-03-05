@@ -11,19 +11,15 @@ import coil3.imageLoader
 import coil3.load
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
-import coil3.request.Disposable
 import coil3.request.ImageRequest
-import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
 import coil3.request.target
 import coil3.request.transformations
-import coil3.toBitmap
 import coil3.transform.CircleCropTransformation
 import coil3.transform.Transformation
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 
-@Suppress("unused")
 object ImageUtils {
 
     private fun <T> tryWith(print: Boolean = false, block: () -> T): T? {
@@ -93,65 +89,17 @@ object ImageUtils {
         view.enqueue(request)
     }
 
-    fun ImageHolder?.loadWithBitmap(
-        imageView: ImageView, placeholder: Int? = null,
-        error: Int? = null, onDrawable: (Bitmap?) -> Unit = {}
-    ) = tryWith {
-        val request = createRequest(imageView.context, placeholder, error)
-        fun setDrawable(image: Image?) {
-            val drawable = image?.asDrawable(imageView.resources)
-            imageView.load(drawable)
-            val bitmap = image?.toBitmap()
-            tryWith(false) { onDrawable(bitmap) }
-        }
-        request.target(::setDrawable, ::setDrawable, ::setDrawable)
-        imageView.enqueue(request)
-    }
-
-    fun ImageHolder?.loadBitmap(
-        view: View, placeholder: Int? = null, onBitmap: (Bitmap?) -> Unit
-    ) = tryWith {
-        val request = createRequest(view.context, null, placeholder)
-        fun setBitmap(image: Image?) {
-            val bitmap = image?.toBitmap()
-            tryWith(false) { onBitmap(bitmap) }
-        }
-        request.target(::setBitmap, ::setBitmap, ::setBitmap)
-        view.enqueue(request)
-    }
-
-    suspend fun ImageHolder?.loadBitmap(
-        context: Context, placeholder: Int? = null
+    suspend fun ImageHolder?.loadDrawable(
+        context: Context
     ) = tryWithSuspend {
-        val request = createRequest(context, null, placeholder)
-        context.imageLoader.execute(request.build()).image?.toBitmap()
-    }
-
-    fun ImageView.load(placeHolder: Int): Disposable? = tryWith {
-        load(placeHolder)
-    }
-
-    fun ImageView.load(drawable: Drawable?): Disposable? = tryWith {
-        load(drawable)
-    }
-
-    fun ImageView.load(drawable: Drawable?, placeholder: Int) = tryWith {
-        val builder = ImageRequest.Builder(context)
-        builder.data(drawable)
-        builder.placeholder(placeholder)
-        builder.target(this)
-        context.imageLoader.enqueue(builder.build())
-    }
-
-    fun ImageView.load(bitmap: Bitmap?): Disposable? = tryWith {
-        load(bitmap)
+        val request = createRequest(context, null, null)
+        context.imageLoader.execute(request.build()).image?.asDrawable(context.resources)
     }
 
     fun ImageView.loadBlurred(bitmap: Bitmap?, radius: Float) = tryWith {
         if (bitmap == null) setImageDrawable(null)
         load(bitmap) {
             transformations(BlurTransformation(context, radius))
-            crossfade(false)
         }
     }
 
@@ -169,6 +117,8 @@ object ImageUtils {
                     }.build())
                 builder.data(request.url)
             }
+
+            is ImageHolder.ResourceImageHolder -> builder.data(resId)
         }.diskCacheKey(key)
     }
 

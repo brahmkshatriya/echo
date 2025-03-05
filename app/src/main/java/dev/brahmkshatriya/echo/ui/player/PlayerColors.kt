@@ -60,5 +60,10 @@ data class PlayerColors(
             )
             return PlayerColors(background, primary, onPrimary, onSurface)
         }
+
+        fun getDominantColor(bitmap: Bitmap?): Int? {
+            bitmap ?: return null
+            return Palette.from(bitmap).generate().getDominantColor(0)
+        }
     }
 }

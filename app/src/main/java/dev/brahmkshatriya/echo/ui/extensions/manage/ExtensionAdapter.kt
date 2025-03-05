@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 
@@ -52,7 +51,7 @@ ExtensionAdapter(
             }
             binding.extensionVersion.text = "${metadata.version} • ${metadata.importType.name}"
             binding.itemExtension.apply {
-                metadata.iconUrl?.toImageHolder().loadAsCircle(this, R.drawable.ic_extension) {
+                metadata.icon.loadAsCircle(this, R.drawable.ic_extension_48dp) {
                     setImageDrawable(it)
                 }
             }

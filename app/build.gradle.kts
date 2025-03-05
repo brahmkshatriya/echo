@@ -7,9 +7,9 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
 }
 
-val version = "1.0.0"
-//val gitHash = execute("git", "rev-parse", "HEAD").take(7)
-//val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
+val version = "2.0."
+val gitHash = execute("git", "rev-parse", "HEAD").take(7)
+val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
 
 android {
     namespace = "dev.brahmkshatriya.echo"
@@ -19,8 +19,12 @@ android {
         applicationId = "dev.brahmkshatriya.echo2"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "v$version"
+        versionCode = gitCount
+        versionName = "v$version$gitCount($gitHash)"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     compileOptions {

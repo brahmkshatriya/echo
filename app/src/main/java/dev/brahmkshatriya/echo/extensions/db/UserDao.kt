@@ -28,10 +28,12 @@ interface UserDao {
         INNER JOIN CurrentUser 
         ON UserEntity.extId = CurrentUser.extId
         AND UserEntity.type = CurrentUser.type
-        WHERE CurrentUser.extId = :clientId
+        AND UserEntity.id = CurrentUser.userId
+        WHERE CurrentUser.extId = :extId
+        AND CurrentUser.type = :type
     """
     )
-    suspend fun getCurrentUser(clientId: String?): UserEntity?
+    suspend fun getCurrentUser(type: ExtensionType, extId: String): UserEntity?
 
     @Delete
     suspend fun deleteUser(user: UserEntity)

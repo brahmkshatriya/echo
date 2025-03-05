@@ -16,7 +16,7 @@ import dev.brahmkshatriya.echo.common.helpers.ImportType
  * @property description The description of the extension
  * @property author The author of the extension
  * @property authorUrl The author's site to open
- * @property iconUrl The icon URL of the extension
+ * @property icon The icon of the extension
  * @property repoUrl The repository URL of the extension
  * @property updateUrl The update URL of the extension
  * @property preservedPackages The packages to preserve, ideally for extensions that use native libraries
@@ -33,7 +33,7 @@ data class Metadata(
     val description: String,
     val author: String,
     val authorUrl: String? = null,
-    val iconUrl: String? = null,
+    val icon: ImageHolder? = null,
     val repoUrl: String? = null,
     val updateUrl: String? = null,
     val preservedPackages: List<String> = listOf(),

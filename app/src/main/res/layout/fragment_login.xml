@@ -31,7 +31,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:contentDescription="@string/login"
-                    app:srcCompat="@drawable/ic_extension" />
+                    app:srcCompat="@drawable/ic_extension_48dp" />
 
             </FrameLayout>
 

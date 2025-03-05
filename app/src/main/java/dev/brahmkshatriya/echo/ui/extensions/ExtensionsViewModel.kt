@@ -118,12 +118,16 @@ class ExtensionsViewModel(
         }
     }
 
+    fun updateExtensions(activity: FragmentActivity, force: Boolean) {
+        viewModelScope.launch {
+            extensionLoader.updater.updateExtensions(activity, force)
+        }
+    }
+
     companion object {
         fun FragmentActivity.updateExtensions(force: Boolean = false) {
             val viewModel by viewModel<ExtensionsViewModel>()
-            viewModel.viewModelScope.launch {
-                viewModel.extensionLoader.updater.updateExtensions(this@updateExtensions, force)
-            }
+            viewModel.updateExtensions(this, force)
         }
     }
 }

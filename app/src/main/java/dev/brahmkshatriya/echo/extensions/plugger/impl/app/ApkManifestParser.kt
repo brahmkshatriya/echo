@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extensions.plugger.impl.app
 
 import dev.brahmkshatriya.echo.common.helpers.ImportType
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.extensions.plugger.impl.AppInfo
 import dev.brahmkshatriya.echo.extensions.plugger.interfaces.ManifestParser
@@ -22,7 +23,7 @@ class ApkManifestParser(
             type = data.type,
             id = get("id"),
             version = get("version"),
-            iconUrl = getOrNull("icon_url"),
+            icon = getOrNull("icon_url")?.toImageHolder(),
             name = get("name"),
             description = get("description"),
             author = get("author"),

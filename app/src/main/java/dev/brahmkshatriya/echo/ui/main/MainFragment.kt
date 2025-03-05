@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.FragmentMainBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
@@ -31,6 +31,7 @@ import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
+import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class MainFragment : Fragment() {
@@ -77,8 +78,14 @@ class MainFragment : Fragment() {
         fun Fragment.applyPlayerBg(view: View, appBar: View) {
             val uiViewModel by activityViewModel<UiViewModel>()
             appBar.setBackgroundColor(Color.TRANSPARENT)
-            observe(uiViewModel.playerColors) {
-                view.background = GradientDrawable.createBg(view, it.accent)
+            val combined = uiViewModel.run {
+                playerColors.combine(extensionColor) { a, b -> a?.accent ?: b }
+            }
+            observe(combined) {
+                val color = it ?: MaterialColors.getColor(
+                    view, com.google.android.material.R.attr.colorPrimary
+                )
+                view.background = GradientDrawable.createBg(view, color)
             }
         }
 
@@ -91,11 +98,10 @@ class MainFragment : Fragment() {
             extMenu.transitionName = "extensions"
 
             fragment.observe(extVM.extensions.current) { extension ->
-                extension?.metadata?.iconUrl?.toImageHolder()
-                    .loadAsCircle(extMenu, R.drawable.ic_extension) {
-                        menu.findItem(R.id.menu_extensions).icon = it
-                    }
                 loginUserViewModel.currentExtension.value = extension
+                extension?.metadata?.icon.loadAsCircle(extMenu, R.drawable.ic_extension_48dp) {
+                    menu.findItem(R.id.menu_extensions).icon = it
+                }
             }
             extMenu.setOnClickListener {
                 ExtensionsListBottomSheet.newInstance(ExtensionType.MUSIC)
@@ -123,12 +129,12 @@ class MainFragment : Fragment() {
                     settingsMenu.setOnClickListener {
                         LoginUserBottomSheet().show(fragment.parentFragmentManager, null)
                     }
-                    settingsMenu.setOnLongClickListener {
-                        val ext = extension ?: return@setOnLongClickListener false
-                        val index = all?.indexOf(user) ?: return@setOnLongClickListener false
-                        if (index == -1) return@setOnLongClickListener false
+                    settingsMenu.setOnLongClickListener LongClick@{
+                        val ext = extension ?: return@LongClick false
+                        val index = all?.indexOf(user) ?: return@LongClick false
+                        if (index == -1) return@LongClick false
                         val next = all[(index + 1) % all.size]
-                        if (next == user) return@setOnLongClickListener false
+                        if (next == user) return@LongClick false
                         loginUserViewModel.setLoginUser(next.toEntity(ext.type, ext.id))
                         true
                     }

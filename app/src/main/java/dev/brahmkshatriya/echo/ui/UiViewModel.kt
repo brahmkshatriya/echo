@@ -2,10 +2,12 @@ package dev.brahmkshatriya.echo.ui
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
@@ -15,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
@@ -23,13 +26,15 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.main.MainFragment
-import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
+import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateTranslation
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
@@ -44,9 +49,11 @@ import java.lang.ref.WeakReference
 import kotlin.math.max
 import kotlin.math.min
 
+@OptIn(ExperimentalStdlibApi::class)
 class UiViewModel(
     context: Context,
-    playerState: PlayerState
+    playerState: PlayerState,
+    extensionLoader: ExtensionLoader
 ) : ViewModel() {
 
     data class Insets(
@@ -177,7 +184,27 @@ class UiViewModel(
 
     var lastMoreTab = R.id.queue
     var playerControlsHeight = MutableStateFlow(0)
-    val playerColors = MutableStateFlow(context.defaultPlayerColors())
+    val playerColors = MutableStateFlow<PlayerColors?>(null)
+    val extensionColor = MutableStateFlow<Int?>(null)
+
+    init {
+        viewModelScope.launch {
+            extensionLoader.extensions.current.collect { extension ->
+                extensionColor.value = null
+                extensionColor.value =
+                    extension?.metadata?.icon?.loadDrawable(context)?.let {
+                        val bitmap = it.toBitmap()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            println("bitmap: ${bitmap.width}x${bitmap.height} ${bitmap.getColor(0, 0).toArgb().toHexString()}")
+                        }
+                        PlayerColors.getDominantColor(bitmap).also {
+                            println("Extension color: ${it?.toHexString()}")
+                        }
+                    }
+            }
+        }
+    }
+
     fun changeBgVisible(show: Boolean) {
         playerBgVisible.value = show
         if (!show && moreSheetState.value == STATE_EXPANDED)

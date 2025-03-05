@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ImportType
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.DialogExtensionInstallerBinding
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.EXTENSION_INSTALLER
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionLoaderException
@@ -78,8 +77,8 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.extensionTitle.text = metadata.name
-        metadata.iconUrl?.toImageHolder()
-            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
+        metadata.icon
+            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
                 binding.extensionIcon.setImageDrawable(it)
             }
         binding.extensionDetails.text = metadata.version

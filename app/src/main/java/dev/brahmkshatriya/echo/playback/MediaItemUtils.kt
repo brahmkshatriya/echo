@@ -231,6 +231,7 @@ object MediaItemUtils {
         val main = when (this) {
             is ImageHolder.UriImageHolder -> uri
             is ImageHolder.UrlRequestImageHolder -> request.url
+            is ImageHolder.ResourceImageHolder -> "res://$resId"
         }.toUri()
         val json = toJson()
         return main.buildUpon().appendQueryParameter("actual_data", json).build()

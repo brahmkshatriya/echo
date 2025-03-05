@@ -456,7 +456,6 @@ class PlayerFragment : Fragment() {
     private val likeListener = CheckBoxListener { viewModel.likeCurrent(it) }
 
     private fun configureColors() {
-        uiViewModel.playerColors.value = requireContext().defaultPlayerColors()
         observe(viewModel.playerState.current) { adapter.onCurrentUpdated() }
         var last: Result<Bitmap?> = Result.failure(Exception())
         adapter.currentBitmapListener = { bitmap ->
@@ -464,12 +463,13 @@ class PlayerFragment : Fragment() {
                 last = Result.success(bitmap)
                 val context = requireContext()
                 val colors = if (context.isDynamic()) context.getColorsFrom(bitmap) else null
-                uiViewModel.playerColors.value = colors ?: context.defaultPlayerColors()
+                uiViewModel.playerColors.value = colors
                 if (context.showBackground()) binding?.bgImage?.loadBlurred(bitmap, 12f)
                 else binding?.bgImage?.setImageDrawable(null)
             }
         }
-        observe(uiViewModel.playerColors) { colors ->
+        observe(uiViewModel.playerColors) {
+            val colors = it ?: requireContext().defaultPlayerColors()
             val binding = binding!!
             adapter.onColorsUpdated()
 

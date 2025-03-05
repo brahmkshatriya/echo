@@ -20,13 +20,13 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerLyricsBinding
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionsListBottomSheet
+import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
@@ -69,8 +69,8 @@ class LyricsFragment : Fragment() {
         var lyricsItemAdapter: LyricsItemAdapter? = null
         observe(viewModel.currentSelectionFlow) { current ->
             binding.searchBar.hint = current?.name
-            current?.metadata?.iconUrl?.toImageHolder()
-                .loadAsCircle(extension, R.drawable.ic_extension) {
+            current?.metadata?.icon
+                .loadAsCircle(extension, R.drawable.ic_extension_48dp) {
                     menu.findItem(R.id.menu_lyrics).icon = it
                 }
             val isSearchable = current?.isClient<LyricsSearchClient>() ?: false
@@ -156,10 +156,11 @@ class LyricsFragment : Fragment() {
 
         observe(uiViewModel.playerColors) {
             lyricAdapter.updateColors()
-            binding.noLyrics.setTextColor(it.onBackground)
+            val colors = it ?: requireContext().defaultPlayerColors()
+            binding.noLyrics.setTextColor(colors.onBackground)
             binding.loading.apply {
-                progress.setIndicatorColor(it.accent)
-                textView.setTextColor(it.onBackground)
+                progress.setIndicatorColor(colors.accent)
+                textView.setTextColor(colors.onBackground)
             }
         }
 

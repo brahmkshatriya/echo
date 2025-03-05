@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
+import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 
 class LyricAdapter(
     val uiViewModel: UiViewModel,
@@ -37,8 +38,10 @@ class LyricAdapter(
     }
 
     private fun ViewHolder.updateColors() {
-        val colors = uiViewModel.playerColors.value
-        binding.root.setTextColor(colors.onBackground)
+        binding.root.run {
+            val colors = uiViewModel.playerColors.value ?: context.defaultPlayerColors()
+            setTextColor(colors.onBackground)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

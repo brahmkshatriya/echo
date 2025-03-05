@@ -20,7 +20,7 @@
             android:layout_marginHorizontal="8dp"
             android:contentDescription="@string/extension"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/ic_extension" />
+            app:srcCompat="@drawable/ic_extension_48dp" />
 
     </FrameLayout>
 

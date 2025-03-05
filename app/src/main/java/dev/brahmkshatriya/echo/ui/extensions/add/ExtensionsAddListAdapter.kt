@@ -44,7 +44,7 @@ class ExtensionsAddListAdapter(
         else binding.root.context.getString(R.string.extension_installed, item.name)
         binding.extensionSubtitle.text = item.subtitle ?: item.id
         binding.itemExtension.apply {
-            item.iconUrl?.toImageHolder().loadAsCircle(this, R.drawable.ic_extension) {
+            item.iconUrl?.toImageHolder().loadAsCircle(this, R.drawable.ic_extension_48dp) {
                 setImageDrawable(it)
             }
         }

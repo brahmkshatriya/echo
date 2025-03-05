@@ -10,7 +10,6 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
@@ -99,11 +98,11 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 button.text = extension.name
                 binding.buttonToggleGroup.addView(button)
                 button.isChecked = extension == viewModel.currentSelectionFlow.value
-                extension.metadata.iconUrl?.toImageHolder().loadAsCircle(button) {
+                extension.metadata.icon.loadAsCircle(button) {
                     if (it != null) {
                         button.icon = it
                         button.iconTint = null
-                    } else button.setIconResource(R.drawable.ic_extension)
+                    } else button.setIconResource(R.drawable.ic_extension_48dp)
                 }
                 button.id = index
             }

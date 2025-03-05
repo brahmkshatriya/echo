@@ -38,8 +38,6 @@ class Updater(
     val client = OkHttpClient()
     private val extensions = extensionLoader.extensions
 
-
-
     private val updateTime = 1000 * 60 * 60 * 6
     private fun Context.shouldCheckForUpdates(): Boolean {
         val check = settings.getBoolean("check_for_extension_updates", true)
@@ -48,18 +46,18 @@ class Updater(
         return System.currentTimeMillis() - lastUpdateCheck > updateTime
     }
 
-    suspend fun updateExtensions(context: FragmentActivity, force: Boolean) {
-        if (!context.shouldCheckForUpdates() && !force) return
-        context.saveToCache("last_update_check", System.currentTimeMillis())
-        context.cleanupTempApks()
-        messageFlow.emit(Message(context.getString(R.string.checking_for_extension_updates)))
+    suspend fun updateExtensions(activity: FragmentActivity, force: Boolean) {
+        if (!activity.shouldCheckForUpdates() && !force) return
+        activity.saveToCache("last_update_check", System.currentTimeMillis())
+        activity.cleanupTempApks()
+        messageFlow.emit(Message(activity.getString(R.string.checking_for_extension_updates)))
         extensions.all.await().forEach {
-            updateExtension(context, it)
+            updateExtension(activity, it)
         }
     }
 
     private suspend fun updateExtension(
-        context: FragmentActivity,
+        activity: FragmentActivity,
         extension: Extension<*>
     ) {
         val currentVersion = extension.version
@@ -71,20 +69,20 @@ class Updater(
 
         messageFlow.emit(
             Message(
-                context.getString(R.string.downloading_update_for_extension, extension.name)
+                activity.getString(R.string.downloading_update_for_extension, extension.name)
             )
         )
         val file = extension.with(throwableFlow) {
-            downloadUpdate(context, url, client).getOrThrow()
+            downloadUpdate(activity, url, client).getOrThrow()
         } ?: return
         val installAsApk = extension.metadata.importType == ImportType.App
-        val result = InstallationUtils.installExtension(context, file, installAsApk).getOrElse {
+        val successful = InstallationUtils.installExtension(activity, file, installAsApk).getOrElse {
             throwableFlow.emit(it)
             false
         }
-        if (result) messageFlow.emit(
+        if (successful) messageFlow.emit(
             Message(
-                context.getString(R.string.extension_updated_successfully, extension.name)
+                activity.getString(R.string.extension_updated_successfully, extension.name)
             )
         )
     }

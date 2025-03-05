@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerMoreBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
+import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.info.InfoFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsFragment
 import dev.brahmkshatriya.echo.ui.player.upnext.QueueFragment
@@ -69,7 +70,8 @@ class PlayerMoreFragment : Fragment() {
             else binding.buttonToggleGroup.check(uiViewModel.lastMoreTab)
         }
 
-        observe(uiViewModel.playerColors) { colors ->
+        observe(uiViewModel.playerColors) { colorsNullable ->
+            val colors = colorsNullable ?: requireContext().defaultPlayerColors()
             binding.buttonToggleGroupBg.children.forEach {
                 it as MaterialButton
                 it.backgroundTintList = ColorStateList.valueOf(colors.background)

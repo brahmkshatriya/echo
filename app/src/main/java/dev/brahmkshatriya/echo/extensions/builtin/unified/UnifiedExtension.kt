@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.extensions.builtin.unified
 
 import android.content.Context
 import androidx.room.Room
+import dev.brahmkshatriya.echo.BuildConfig
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
@@ -63,7 +64,7 @@ class UnifiedExtension(
             ExtensionType.MUSIC,
             UNIFIED_ID,
             "Unified Extension",
-            "1.0.0",
+            version = BuildConfig.VERSION_NAME,
             "All your extensions in one place!",
             "Echo",
             isEnabled = true

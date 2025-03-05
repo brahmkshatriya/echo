@@ -78,13 +78,15 @@ class InjectedRepo(
                 extensions.all.collectWith(db.currentUsersFlow) { list, users ->
                     list?.forEach { ext ->
                         val newCurr = users.getUser(ext)
-                        val item = ext.instance.user
-                        val shouldInject = !item.initialized || item.current != newCurr
+                        val stickyUser = ext.instance.stickyUser
+                        println("item: ${ext.id} $stickyUser")
+                        val shouldInject = !stickyUser.initialized || stickyUser.current != newCurr
                         if (!shouldInject) return@forEach
-                        item.initialized = true
-                        item.current = newCurr
+                        stickyUser.initialized = true
+                        stickyUser.current = newCurr
                         scope.launch {
                             ext.injectWith<LoginClient>(app.throwFlow) {
+                                println("Injecting ${newCurr?.userId} for ${ext.metadata.id}")
                                 val user = newCurr?.let { db.getUser(it) }
                                 onSetLoginUser(user)
                             }
@@ -95,7 +97,7 @@ class InjectedRepo(
         }
     }
 
-    private class UserExt(
+    private data class StickyUser(
         var initialized: Boolean = false,
         var current: CurrentUser? = null
     )
@@ -116,7 +118,7 @@ class InjectedRepo(
                 throw Exception("${this::class.simpleName} needs to be $className")
         }
 
-        private val Injectable<*>.user by delegated { UserExt(false) }
+        private val Injectable<*>.stickyUser by delegated { StickyUser(false) }
 
         private fun <T, R : Extension<*>> T.inject(
             required: List<String>,

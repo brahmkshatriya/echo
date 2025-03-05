@@ -25,8 +25,10 @@ class LoginUserListViewModel(
     init {
         suspend fun update() {
             val currentExt = currentExtension.value
-            val user = withContext(Dispatchers.IO) { userDao.getCurrentUser(currentExt?.id) }
-            currentUser.value = currentExt to user?.user
+            val user = currentExt?.let {
+                withContext(Dispatchers.IO) { userDao.getCurrentUser(it.type, it.id) }
+            }?.user
+            currentUser.value = currentExt to user
         }
         viewModelScope.launch {
             launch { currentExtension.collect { update() } }
@@ -34,7 +36,7 @@ class LoginUserListViewModel(
         }
     }
 
-    val allUsers = currentExtension.map { extension ->
+    val allUsers = currentUser.map { (extension) ->
         withContext(Dispatchers.IO) {
             extension to extension?.let { ext ->
                 userDao.getAllUsers(ext.type, ext.id).map { it.user }

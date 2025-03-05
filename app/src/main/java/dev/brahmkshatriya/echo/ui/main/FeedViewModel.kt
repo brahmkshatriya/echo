@@ -64,12 +64,14 @@ abstract class FeedViewModel(
     private var job: Job? = null
     fun refresh(reset: Boolean = false) {
         job?.cancel()
+        feed.value = PagingUtils.Data(current.value, null, null)
         val extension = current.value ?: return
         job = viewModelScope.launch(Dispatchers.IO) {
-            loading.emit(true)
-            if (reset) loadTabs(extension)
-            loading.emit(false)
-            feed.value = PagingUtils.Data(extension, null, null)
+            if (reset) {
+                loading.emit(true)
+                loadTabs(extension)
+                loading.emit(false)
+            }
             val data = getFeed(extension).getOrElse {
                 feed.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
                 return@launch

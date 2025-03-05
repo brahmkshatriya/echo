@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.playback
 
+import android.content.ContentResolver
 import android.content.Context
+import android.content.res.Resources
 import android.net.Uri
 import androidx.annotation.CallSuper
 import androidx.annotation.OptIn
@@ -36,7 +38,6 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -239,9 +240,19 @@ abstract class AndroidAutoCallback(
         private const val PLAYLIST = "playlist"
         private const val RADIO = "radio"
 
-        private fun ImageHolder.toUri() = when (this) {
+        private fun Resources.getUri(int: Int): Uri {
+            val scheme = ContentResolver.SCHEME_ANDROID_RESOURCE
+            val pkg = getResourcePackageName(int)
+            val type = getResourceTypeName(int)
+            val name = getResourceEntryName(int)
+            val uri = "$scheme://$pkg/$type/$name"
+            return Uri.parse(uri)
+        }
+
+        private fun ImageHolder.toUri(context: Context) = when (this) {
             is ImageHolder.UriImageHolder -> uri.toUri()
             is ImageHolder.UrlRequestImageHolder -> request.url.toUri()
+            is ImageHolder.ResourceImageHolder -> context.resources.getUri(resId)
         }
 
         private fun browsableItem(
@@ -279,7 +290,7 @@ abstract class AndroidAutoCallback(
                         .setTitle(title)
                         .setArtist(toMediaItem().subtitleWithE)
                         .setAlbumTitle(album?.title)
-                        .setArtworkUri(cover?.toUri())
+                        .setArtworkUri(cover?.toUri(context))
                         .build()
                 ).build()
         }
@@ -287,7 +298,7 @@ abstract class AndroidAutoCallback(
         private suspend fun Extension<*>.toMediaItem(context: Context) = browsableItem(
             "$ROOT/$id", name, context.getString(R.string.extension),
             instance.value().isSuccess,
-            metadata.iconUrl?.toImageHolder()?.toUri()
+            metadata.icon?.toUri(context)
         )
 
         @OptIn(UnstableApi::class)
@@ -331,7 +342,12 @@ abstract class AndroidAutoCallback(
                     else -> throw IllegalStateException("Invalid type")
                 }
                 browsableItem(
-                    "$ROOT/$extId/$page/$id", title, subtitleWithE, true, cover?.toUri(), type
+                    "$ROOT/$extId/$page/$id",
+                    title,
+                    subtitleWithE,
+                    true,
+                    cover?.toUri(context),
+                    type
                 )
             }
         }

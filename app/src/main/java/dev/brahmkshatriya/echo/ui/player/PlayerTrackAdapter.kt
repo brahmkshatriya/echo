@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyHorizontalInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.getCachedDrawable
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadWithThumb
 import dev.brahmkshatriya.echo.utils.ui.GestureListener
@@ -124,8 +125,8 @@ class PlayerTrackAdapter(
         }
 
         fun updateColors() {
-            val colors = uiViewModel.playerColors.value
             binding.playerCollapsed.run {
+                val colors = uiViewModel.playerColors.value ?: context.defaultPlayerColors()
                 collapsedTrackTitle.setTextColor(colors.onBackground)
                 collapsedTrackArtist.setTextColor(colors.onBackground)
             }

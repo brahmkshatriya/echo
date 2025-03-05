@@ -22,7 +22,6 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
@@ -132,8 +131,8 @@ class LoginFragment : Fragment() {
                 return@launch
             }
 
-            metadata.iconUrl?.toImageHolder()
-                .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension) {
+            metadata.icon
+                .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
                     binding.extensionIcon.setImageDrawable(it)
                 }
 
