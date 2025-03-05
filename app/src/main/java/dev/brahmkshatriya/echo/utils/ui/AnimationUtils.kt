@@ -1,9 +1,16 @@
 package dev.brahmkshatriya.echo.utils.ui
 
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.view.animation.AnimationSet
+import android.view.animation.Interpolator
+import android.view.animation.ScaleAnimation
+import android.view.animation.TranslateAnimation
 import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.forEach
@@ -19,17 +26,19 @@ import dev.brahmkshatriya.echo.R
 
 object AnimationUtils {
 
-    fun startAnimation(
+    private fun startAnimation(
         view: View, animation: ViewPropertyAnimator, durationMultiplier: Float = 1f
     ) = view.run {
         clearAnimation()
-        val interpolator = MotionUtils.resolveThemeInterpolator(
-            context, com.google.android.material.R.attr.motionEasingStandardInterpolator,
-            FastOutSlowInInterpolator()
-        )
+        val interpolator = getInterpolator(context)
         val duration = animationDuration * durationMultiplier
         animation.setInterpolator(interpolator).setDuration(duration.toLong()).start()
     }
+
+    private fun getInterpolator(context: Context) = MotionUtils.resolveThemeInterpolator(
+        context, com.google.android.material.R.attr.motionEasingStandardInterpolator,
+        FastOutSlowInInterpolator()
+    )
 
     fun NavigationBarView.animateTranslation(
         isRail: Boolean,
@@ -122,9 +131,11 @@ object AnimationUtils {
                 .getBoolean(SHARED_ELEMENT_KEY, true)
         }
 
-    fun Fragment.setupTransition(view: View) {
-        val color = MaterialColors.getColor(view, R.attr.echoBackground, 0)
-        view.setBackgroundColor(color)
+    fun Fragment.setupTransition(view: View, applyBackground: Boolean = true) {
+        if (applyBackground) {
+            val color = MaterialColors.getColor(view, R.attr.echoBackground, 0)
+            view.setBackgroundColor(color)
+        }
 
         if (view.animations) {
 //        val transitionName = arguments?.getString("transitionName")
@@ -138,13 +149,61 @@ object AnimationUtils {
 //            sharedElementEnterTransition = transition
 //        }
             (view as? ViewGroup)?.isTransitionGroup = true
-            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
-            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
-            enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
-            returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
+            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
+            enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
+            returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
 
             postponeEnterTransition()
             view.doOnPreDraw { startPostponedEnterTransition() }
+        }
+    }
+
+    private fun animatedWithAlpha(view: View, translate: Animation) =
+        AnimationSet(false).apply {
+            if (view.animations) {
+                val alpha = AlphaAnimation(0.0f, 1.0f)
+                val interpolator = getInterpolator(view.context) as Interpolator?
+                alpha.duration = view.animationDurationSmall
+                alpha.interpolator = interpolator
+                addAnimation(alpha)
+                translate.duration = view.animationDuration
+                translate.interpolator = interpolator
+                addAnimation(translate)
+            }
+        }
+
+    fun View.slideUpAnimation(): AnimationSet {
+        val translate = TranslateAnimation(
+            Animation.RELATIVE_TO_SELF, 0.0f,
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, 1.0f,
+            Animation.RELATIVE_TO_SELF, 0f
+        )
+        return animatedWithAlpha(this, translate)
+    }
+
+    fun View.slideInAnimation(): AnimationSet {
+        val translate = TranslateAnimation(
+            Animation.RELATIVE_TO_SELF, 1.0f,
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, 0.0f,
+            Animation.RELATIVE_TO_SELF, 0f
+        )
+        return animatedWithAlpha(this, translate)
+    }
+
+    fun View.applyScaleAnimation(
+        list: List<Float> = listOf(0.5f, 1.0f, 0.5f, 1.0f),
+        pivot: Pair<Float, Float> = 0.5f to 0.5f
+    ) {
+        if (animations) {
+            val anim = ScaleAnimation(
+                list[0], list[1], list[2], list[3],
+                Animation.RELATIVE_TO_SELF, pivot.first,
+                Animation.RELATIVE_TO_SELF, pivot.second
+            )
+            this.startAnimation(animatedWithAlpha(this, anim))
         }
     }
 }

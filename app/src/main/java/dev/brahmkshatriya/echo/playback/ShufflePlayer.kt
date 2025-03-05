@@ -55,7 +55,8 @@ class ShufflePlayer(
 
     fun onMediaItemChanged(old: MediaItem, new: MediaItem) {
         original = original.toMutableList().apply {
-            set(indexOf(old), new)
+            val index = indexOf(old).takeIf { it != -1 } ?: return
+            set(index, new)
         }
         log("Change media item")
     }

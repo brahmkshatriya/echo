@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="24dp"
             android:contentDescription="@string/add_extensions"
-            app:srcCompat="@drawable/ic_add_20dp" />
+            app:srcCompat="@drawable/ic_add_circle" />
 
     </FrameLayout>
 

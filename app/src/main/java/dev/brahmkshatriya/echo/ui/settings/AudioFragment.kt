@@ -124,14 +124,15 @@ class AudioFragment : BaseSettingsFragment() {
         }
 
         override fun onPreferenceTreeClick(preference: Preference): Boolean {
-            val fragment = when (preference.key) {
-                AUDIO_FX -> AudioEffectsFragment()
-                else -> return false
-            }
-
             val view = listView.findViewById<View>(preference.key.hashCode())
-            parentFragment?.openFragment(fragment, view)
-            return true
+            return when (preference.key) {
+                AUDIO_FX -> {
+                    parentFragment?.openFragment<AudioEffectsFragment>(view)
+                    true
+                }
+
+                else -> false
+            }
         }
     }
 }

@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsetsMain
 import dev.brahmkshatriya.echo.ui.main.MainFragment
+import dev.brahmkshatriya.echo.ui.main.MainFragment.Companion.applyPlayerBg
 import dev.brahmkshatriya.echo.ui.main.MainFragment.Companion.configureMainMenu
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -23,9 +24,10 @@ import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class SearchFragment : Fragment() {
-    private val parent get() = parentFragment as Fragment
     var binding by autoCleared<FragmentSearchBinding>()
     private val uiViewModel by activityViewModel<UiViewModel>()
+
+    private val isMain by lazy { arguments?.getBoolean("isMain", true) ?: true }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -36,6 +38,7 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
+        applyPlayerBg(view, binding.appBarLayout)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
             binding.quickSearchView.updatePaddingRelative(start = it.start, end = it.end)
             binding.quickSearchRecyclerView.updatePaddingRelative(bottom = it.bottom)
@@ -49,8 +52,7 @@ class SearchFragment : Fragment() {
             binding.searchBar.alpha = 1 - offset
             binding.toolBar.alpha = 1 - offset
         }
-        val main = parent as? MainFragment
-        if (main != null) binding.toolBar.configureMainMenu(main)
+        if (isMain) binding.toolBar.configureMainMenu(parentFragment as MainFragment)
         else {
             binding.toolBar.isVisible = false
             binding.searchBar.updateLayoutParams<MarginLayoutParams> {

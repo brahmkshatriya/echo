@@ -57,7 +57,7 @@
             android:layout_height="@dimen/collapsed_cover_size"
             android:layout_margin="8dp"
             android:alpha="0.5"
-            android:background="@drawable/rounded_rectangle_8dp"
+            android:background="@drawable/rounded_rectangle_item_corner"
             android:backgroundTint="?colorSurfaceContainerHigh"
             android:translationZ="-1dp" />
 

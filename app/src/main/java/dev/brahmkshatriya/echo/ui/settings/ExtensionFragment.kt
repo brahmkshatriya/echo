@@ -10,12 +10,8 @@ import androidx.preference.PreferenceGroup
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
-import dev.brahmkshatriya.echo.common.LyricsExtension
-import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingCategory
 import dev.brahmkshatriya.echo.common.settings.SettingItem
@@ -46,30 +42,14 @@ class ExtensionFragment : BaseSettingsFragment() {
     override val creator = { ExtensionPreference.newInstance(id, type) }
 
     companion object {
-        fun newInstance(name: String, id: String, type: ExtensionType): ExtensionFragment {
-            val bundle = Bundle().apply {
-                putString("name", name)
-                putString("id", id)
-                putString("type", type.name)
-            }
-            return ExtensionFragment().apply {
-                arguments = bundle
-            }
+        fun getBundle(name: String, id: String, type: ExtensionType) = Bundle().apply {
+            putString("name", name)
+            putString("id", id)
+            putString("type", type.name)
         }
 
-        fun newInstance(
-            metadata: Metadata,
-            extensionType: ExtensionType
-        ) = newInstance(metadata.name, metadata.id, extensionType)
-
-        fun newInstance(extension: MusicExtension) =
-            newInstance(extension.metadata, ExtensionType.MUSIC)
-
-        fun newInstance(extension: TrackerExtension) =
-            newInstance(extension.metadata, ExtensionType.TRACKER)
-
-        fun newInstance(extension: LyricsExtension) =
-            newInstance(extension.metadata, ExtensionType.LYRICS)
+        fun getBundle(extension: Extension<*>) =
+            getBundle(extension.name, extension.id, extension.type)
     }
 
     class ExtensionPreference : PreferenceFragmentCompat() {

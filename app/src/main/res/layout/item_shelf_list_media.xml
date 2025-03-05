@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Selectable"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:padding="4dp">
+
+    <FrameLayout
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-4dp"
+        android:clipToPadding="false"
+        android:paddingTop="4dp">
+
+        <View
+            android:id="@+id/listBg2"
+            android:layout_width="match_parent"
+            android:layout_height="?itemCoverSize"
+            android:layout_marginHorizontal="6dp"
+            android:layout_marginTop="-4dp"
+            android:alpha="0.35"
+            android:background="@drawable/rounded_rectangle_cover" />
+
+        <View
+            android:id="@+id/listBg1"
+            android:layout_width="match_parent"
+            android:layout_height="?itemCoverSize"
+            android:layout_marginHorizontal="3dp"
+            android:layout_marginTop="-3dp"
+            android:alpha="0.35"
+            android:background="@drawable/rounded_rectangle_cover" />
+
+        <ImageView
+            android:id="@+id/cover"
+            android:layout_width="?itemCoverSize"
+            android:layout_height="?itemCoverSize"
+            android:background="@drawable/rounded_rectangle_cover"
+            android:importantForAccessibility="no" />
+
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="bottom"
+            android:layout_margin="4dp"
+            android:alpha="0.66"
+            android:background="@drawable/rounded_rectangle_24dp"
+            android:backgroundTint="?navBackground"
+            android:importantForAccessibility="no"
+            android:padding="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_queue_music"
+            app:tint="?attr/colorOnSurface" />
+
+
+    </FrameLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/isPlaying"
+        style="@style/SmallNowPlayingButton"
+        android:layout_marginTop="-32dp"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="2"
+        tools:text="@tools:sample/full_names" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="?itemCoverSize"
+        android:layout_height="wrap_content"
+        android:alpha="0.66"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="2"
+        android:textSize="12sp"
+        tools:text="@tools:sample/full_names" />
+
+</LinearLayout>

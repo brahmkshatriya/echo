@@ -1,11 +1,14 @@
 package dev.brahmkshatriya.echo.ui.common
 
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.helpers.Page
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import kotlinx.coroutines.Dispatchers
@@ -21,12 +24,34 @@ object PagingUtils {
     fun <T : Any> PagedData<T>.toFlow() =
         ContinuationSource({ loadList(it) }, { invalidate(it) }).toFlow()
 
+    fun <T : Any> errorPagingData(throwable: Throwable) = PagingData.empty<T>(
+        LoadStates(
+            LoadState.Error(throwable),
+            LoadState.NotLoading(false),
+            LoadState.NotLoading(true)
+        )
+    )
+
+    fun <T : Any> loadingPagingData() = PagingData.empty<T>(
+        LoadStates(
+            LoadState.Loading,
+            LoadState.NotLoading(false),
+            LoadState.NotLoading(true)
+        )
+    )
+
+    data class Data<T : Any>(
+        val extension: Extension<*>?,
+        val pagedData: PagedData<T>?,
+        val pagingData: PagingData<T>?
+    )
+
     suspend fun <T : Any> Flow<PagingData<T>>.collectWith(
         throwableFlow: MutableSharedFlow<Throwable>,
         collector: FlowCollector<PagingData<T>>
     ) = coroutineScope { cachedIn(this).catch { throwableFlow.emit(it) }.collect(collector) }
 
-    class ContinuationSource<Value : Any>(
+    private class ContinuationSource<Value : Any>(
         private val load: suspend (token: String?) -> Page<Value>,
         private val invalidate: (token: String?) -> Unit
     ) : PagingSource<String, Value>() {

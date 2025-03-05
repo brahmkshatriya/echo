@@ -22,10 +22,8 @@ import kotlinx.coroutines.launch
 
 class ExceptionFragment : Fragment() {
     companion object {
-        fun newInstance(data: ExceptionUtils.Data) = ExceptionFragment().apply {
-            arguments = Bundle().apply {
-                putSerialized("data", data)
-            }
+        fun getBundle(data: ExceptionUtils.Data) = Bundle().apply {
+            putSerialized("data", data)
         }
     }
 

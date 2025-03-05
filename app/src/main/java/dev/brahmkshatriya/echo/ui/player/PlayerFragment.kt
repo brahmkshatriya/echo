@@ -60,6 +60,7 @@ import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.hideSystemUi
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isLandscape
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isRTL
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 import dev.brahmkshatriya.echo.utils.ui.ViewPager2Utils.registerOnUserPageChangeCallback
 import dev.brahmkshatriya.echo.utils.ui.ViewPager2Utils.supportBottomSheetBehavior
@@ -446,7 +447,7 @@ class PlayerFragment : Fragment() {
                 QualitySelectionBottomSheet().show(parentFragmentManager, null)
             }
             observe(viewModel.tracks) { tracks ->
-                trackSubtitle.text = tracks?.getDetails()
+                trackSubtitle.text = tracks?.getDetails(requireContext())
                     ?.joinToString(" ⦿ ")?.takeIf { it.isNotBlank() }
             }
         }
@@ -522,8 +523,7 @@ class PlayerFragment : Fragment() {
         }
         playerControls.run {
             trackTitle.text = track.title
-            trackTitle.isSelected = true
-            trackTitle.setHorizontallyScrolling(true)
+            trackTitle.marquee()
             val artists = track.artists
             val artistNames = track.toMediaItem().subtitleWithE ?: ""
             val span = SpannableString(artistNames)
@@ -538,8 +538,7 @@ class PlayerFragment : Fragment() {
             }
 
             trackArtist.text = span
-            trackArtist.isSelected = true
-            trackArtist.setHorizontallyScrolling(true)
+            trackArtist.marquee()
             trackArtist.movementMethod = LinkMovementMethod.getInstance()
             likeListener.enabled = false
             trackHeart.isChecked = item.isLiked

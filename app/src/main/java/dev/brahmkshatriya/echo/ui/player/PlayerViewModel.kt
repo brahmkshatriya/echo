@@ -11,7 +11,9 @@ import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
 import androidx.media3.session.MediaController
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
@@ -114,8 +116,11 @@ class PlayerViewModel(
         withBrowser { it.seekToPreviousMediaItem() }
     }
 
-    fun setShuffle(isShuffled: Boolean) {
-        withBrowser { it.shuffleModeEnabled = isShuffled }
+    fun setShuffle(isShuffled: Boolean, changeCurrent: Boolean = false) {
+        withBrowser {
+            it.shuffleModeEnabled = isShuffled
+            if (changeCurrent) it.seekTo(0,0)
+        }
     }
 
     fun setRepeat(repeatMode: Int) {
@@ -181,6 +186,14 @@ class PlayerViewModel(
     fun changeCurrentSource(index: Int) {
         val item = playerState.current.value?.mediaItem ?: return
         changeCurrent(MediaItemUtils.buildSource(item, index))
+    }
+
+    fun setQueue(id: String, list: List<Track>, index: Int, context: EchoMediaItem?) {
+        val mediaItems = list.map { MediaItemUtils.build(settings, it, id, context) }
+        withBrowser {
+            it.setMediaItems(mediaItems, index, 0)
+            it.prepare()
+        }
     }
 
     val progress = MutableStateFlow(0L to 0L)

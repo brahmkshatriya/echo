@@ -29,11 +29,11 @@ object MediaItemUtils {
     fun build(
         settings: SharedPreferences?,
         track: Track,
-        clientId: String,
+        extensionId: String,
         context: EchoMediaItem?,
     ): MediaItem {
         val item = MediaItem.Builder()
-        val metadata = track.toMetaData(bundleOf(), clientId, context, false, settings)
+        val metadata = track.toMetaData(bundleOf(), extensionId, context, false, settings)
         item.setMediaMetadata(metadata)
         item.setMediaId(track.id)
         item.setUri(track.id)

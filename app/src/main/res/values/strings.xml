@@ -267,4 +267,5 @@
     <string name="quality_selection">Quality Selection</string>
     <string name="quality_x">Quality %1$d</string>
     <string name="off">Off</string>
+    <string name="unknown_quality">Unknown Quality</string>
 </resources>

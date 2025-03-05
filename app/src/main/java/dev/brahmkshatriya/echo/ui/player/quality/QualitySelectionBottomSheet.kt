@@ -55,7 +55,7 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
         binding.topAppBar.setOnMenuItemClickListener {
             dismiss()
             uiViewModel.collapsePlayer()
-            requireActivity().openFragment(AudioFragment())
+            requireActivity().openFragment<AudioFragment>()
             true
         }
 
@@ -105,7 +105,7 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
         }
 
         observe(viewModel.tracks) { tracks ->
-            val details = tracks?.getDetails()?.joinToString("\n")
+            val details = tracks?.getDetails(requireContext())?.joinToString("\n")
             binding.streamableInfo.text = details
             binding.streamableInfo.isVisible = !details.isNullOrBlank()
 

@@ -1,15 +1,12 @@
 package dev.brahmkshatriya.echo.ui.main
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
-import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.fragment.app.commit
 import com.google.android.material.appbar.MaterialToolbar
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
@@ -19,6 +16,7 @@ import dev.brahmkshatriya.echo.databinding.FragmentMainBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionsListBottomSheet
@@ -32,12 +30,18 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
+import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class MainFragment : Fragment() {
 
+    init {
+        println("MainFragment init $this")
+    }
+
     private var binding by autoCleared<FragmentMainBinding>()
     private val viewModel by activityViewModel<UiViewModel>()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -45,44 +49,36 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupTransition(view)
-        val adapter = MainAdapter(this)
-        binding.root.adapter = adapter
-        binding.root.isUserInputEnabled = false
-        val backCallback = object : OnBackPressedCallback(false) {
-            override fun handleOnBackPressed() {
-                viewModel.navigation.value = 0
-            }
-        }
-        observe(viewModel.navigation) {
-            backCallback.isEnabled = it != 0
-            binding.root.setCurrentItem(it, false)
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(backCallback)
+    private inline fun <reified F : Fragment> Fragment.addIfNull(tag: String): String {
+        addIfNull<F>(R.id.main_fragment_container_view, tag)
+        return tag
     }
 
-    class MainAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-        override fun getItemCount(): Int = 3
-        override fun createFragment(position: Int): Fragment {
-            return when (position) {
-                0 -> HomeFragment()
-                1 -> SearchFragment()
-                2 -> LibraryFragment()
-                else -> throw IllegalArgumentException("Invalid position")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupTransition(view)
+        observe(viewModel.navigation) {
+            val toShow = when (it) {
+                1 -> addIfNull<SearchFragment>("search")
+                2 -> addIfNull<LibraryFragment>("library")
+                else -> addIfNull<HomeFragment>("home")
+            }
+
+            childFragmentManager.commit {
+                childFragmentManager.fragments.forEach { fragment ->
+                    if (fragment.tag != toShow) hide(fragment)
+                    else show(fragment)
+                }
+                setReorderingAllowed(true)
             }
         }
     }
 
     companion object {
-        fun RecyclerView.first() =
-            (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-
-        fun RecyclerView.scrollTo(position: Int, block: (Int) -> Unit) = doOnLayout {
-            if (position < 1) return@doOnLayout
-            (layoutManager as LinearLayoutManager).run {
-                scrollToPositionWithOffset(position, 0)
-                post { runCatching { block(findFirstVisibleItemPosition()) } }
+        fun Fragment.applyPlayerBg(view: View, appBar: View) {
+            val uiViewModel by activityViewModel<UiViewModel>()
+            appBar.setBackgroundColor(Color.TRANSPARENT)
+            observe(uiViewModel.playerColors) {
+                view.background = GradientDrawable.createBg(view, it.accent)
             }
         }
 
@@ -139,7 +135,7 @@ class MainFragment : Fragment() {
                 } else {
                     menu.findItem(R.id.menu_settings).setIcon(R.drawable.ic_settings_outline)
                     settingsMenu.setOnClickListener {
-                        fragment.openFragment(SettingsFragment(), settingsMenu)
+                        fragment.openFragment<SettingsFragment>(settingsMenu)
                     }
                     settingsMenu.setOnLongClickListener(null)
                 }

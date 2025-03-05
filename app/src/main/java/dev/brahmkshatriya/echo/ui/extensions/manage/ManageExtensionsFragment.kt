@@ -100,7 +100,9 @@ class ManageExtensionsFragment : Fragment() {
         val touchHelper = ItemTouchHelper(callback)
         val extensionAdapter = ExtensionAdapter(object : ExtensionAdapter.Listener {
             override fun onClick(extension: Extension<*>, view: View) {
-                openFragment(ExtensionInfoFragment.newInstance(extension), view)
+                openFragment<ExtensionInfoFragment>(
+                    view, ExtensionInfoFragment.getBundle(extension)
+                )
             }
 
             override fun onDragHandleTouched(viewHolder: ExtensionAdapter.ViewHolder) {

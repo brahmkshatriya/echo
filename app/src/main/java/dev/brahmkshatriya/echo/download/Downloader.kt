@@ -83,8 +83,8 @@ class Downloader(
 
     private val workManager = WorkManager.getInstance(app.context)
     private suspend fun startWorker() {
-        val tasks = dao.getTracks()
-        if (tasks.isEmpty()) return
+//        val tasks = dao.getTracks()
+//        if (tasks.isEmpty()) return
         val request = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setConstraints(Constraints(NetworkType.CONNECTED, requiresStorageNotLow = true))
             .addTag(TAG)

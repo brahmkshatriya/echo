@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerQueueBinding
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoClearedNullable
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
@@ -79,6 +80,7 @@ class QueueFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupTransition(view, false)
         val radioLoaderAdapter = QueueAdapter.Loader()
         val recyclerView = binding!!.root
         recyclerView.adapter = ConcatAdapter(queueAdapter, radioLoaderAdapter)

@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.databinding.SkeletonItemQueueBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 
 class QueueAdapter(
@@ -91,8 +92,7 @@ class QueueAdapter(
 
         binding.playlistItemTitle.run {
             text = track.title
-            isSelected = true
-            setHorizontallyScrolling(true)
+            marquee()
         }
 
         track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_problem)
@@ -105,8 +105,7 @@ class QueueAdapter(
         binding.playlistItemAuthor.run {
             isVisible = subtitle.isNotEmpty()
             text = subtitle
-            isSelected = true
-            setHorizontallyScrolling(true)
+            marquee()
         }
         binding.playlistItemClose.isVisible = !inactive
         binding.playlistItemDrag.isVisible = !inactive

@@ -56,7 +56,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
             when (it.itemId) {
                 R.id.menu_settings -> {
                     dismiss()
-                    requireActivity().openFragment(ManageExtensionsFragment())
+                    requireActivity().openFragment<ManageExtensionsFragment>()
                     true
                 }
 

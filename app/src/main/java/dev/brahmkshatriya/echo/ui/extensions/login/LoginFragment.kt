@@ -46,17 +46,15 @@ import kotlin.coroutines.suspendCoroutine
 
 class LoginFragment : Fragment() {
     companion object {
-        fun newInstance(clientId: String, clientName: String, extensionType: ExtensionType) =
-            LoginFragment().apply {
-                arguments = Bundle().apply {
-                    putString("clientId", clientId)
-                    putString("clientName", clientName)
-                    putString("extensionType", extensionType.name)
-                }
+        fun getBundle(clientId: String, clientName: String, extensionType: ExtensionType) =
+            Bundle().apply {
+                putString("clientId", clientId)
+                putString("clientName", clientName)
+                putString("extensionType", extensionType.name)
             }
 
-        fun newInstance(error: AppException.LoginRequired) =
-            newInstance(error.extension.id, error.extension.name, error.extension.type)
+        fun getBundle(error: AppException.LoginRequired) =
+            getBundle(error.extension.id, error.extension.name, error.extension.type)
 
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 2; Jeff Bezos) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36"

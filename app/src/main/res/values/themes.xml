@@ -31,7 +31,6 @@
         <item name="navBackground">?colorSurfaceContainer</item>
 
         <item name="itemCoverSize">96dp</item>
-        <item name="itemContainerCorner">14dp</item>
         <item name="itemCorner">8dp</item>
     </style>
 

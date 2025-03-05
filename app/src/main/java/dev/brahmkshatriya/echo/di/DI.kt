@@ -12,7 +12,11 @@ import dev.brahmkshatriya.echo.ui.common.SnackBarHandler
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginViewModel
+import dev.brahmkshatriya.echo.ui.main.home.HomeFeedViewModel
+import dev.brahmkshatriya.echo.ui.main.library.LibraryViewModel
+import dev.brahmkshatriya.echo.ui.main.search.SearchViewModel
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.player.info.TrackInfoViewModel
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import org.koin.android.ext.koin.androidApplication
@@ -49,12 +53,19 @@ object DI {
 
     private val uiModules = module {
         singleOf(::SnackBarHandler)
+        viewModelOf(::UiViewModel)
+
         viewModelOf(::PlayerViewModel)
         viewModelOf(::LyricsViewModel)
-        viewModelOf(::UiViewModel)
+        viewModelOf(::TrackInfoViewModel)
+
         viewModelOf(::ExtensionsViewModel)
         viewModelOf(::LoginUserListViewModel)
         viewModelOf(::LoginViewModel)
+
+        viewModelOf(::HomeFeedViewModel)
+        viewModelOf(::LibraryViewModel)
+        viewModelOf(::SearchViewModel)
     }
 
     val appModule = module {

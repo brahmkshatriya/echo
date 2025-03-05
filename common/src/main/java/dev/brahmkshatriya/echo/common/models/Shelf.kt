@@ -136,6 +136,7 @@ sealed class Shelf {
      */
     data class Item(
         val media: EchoMediaItem,
+        //TODO: rename this to also be useful for showing Track with full width (without loading)
         val loadTracks: Boolean = false
     ) : Shelf()
 

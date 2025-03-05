@@ -61,16 +61,14 @@ class SettingsFragment : BaseSettingsFragment() {
         }
 
         override fun onPreferenceTreeClick(preference: Preference): Boolean {
-            val fragment = when (preference.key) {
-                "misc" -> MiscFragment()
-                "audio" -> AudioFragment()
-                "manage_extensions" -> ManageExtensionsFragment()
-                "look" -> LookFragment()
+            val view = listView.findViewById<View>(preference.key.hashCode())
+            when (preference.key) {
+                "misc" -> parentFragment?.openFragment<MiscFragment>(view)
+                "audio" -> parentFragment?.openFragment<AudioFragment>(view)
+                "manage_extensions" -> parentFragment?.openFragment<ManageExtensionsFragment>(view)
+                "look" -> parentFragment?.openFragment<LookFragment>(view)
                 else -> return false
             }
-
-            val view = listView.findViewById<View>(preference.key.hashCode())
-            parentFragment?.openFragment(fragment, view)
             return true
         }
     }

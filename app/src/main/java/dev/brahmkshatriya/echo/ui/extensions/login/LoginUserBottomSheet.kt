@@ -34,7 +34,7 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.settings.setOnClickListener {
             dismiss()
-            requireActivity().openFragment(SettingsFragment())
+            requireActivity().openFragment<SettingsFragment>()
         }
         val extension = viewModel.currentExtension.value ?: return
         viewModel.currentExtension.value = extension
@@ -61,8 +61,9 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
                 val metadata = extensionData?.metadata
                 binding.login.setOnClickListener {
                     metadata?.run {
-                        requireActivity().openFragment(
-                            LoginFragment.newInstance(id, name, extensionData.type)
+                        requireActivity().openFragment<LoginFragment>(
+                            null,
+                            LoginFragment.getBundle(id, name, extensionData.type)
                         )
                     }
                     dismiss()

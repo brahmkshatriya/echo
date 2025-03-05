@@ -39,18 +39,16 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ExtensionInfoFragment : Fragment() {
     companion object {
-        fun newInstance(
+        private fun getBundle(
             clientId: String, clientName: String, extensionType: ExtensionType
-        ) = ExtensionInfoFragment().apply {
-            arguments = Bundle().apply {
-                putString("clientId", clientId)
-                putString("clientName", clientName)
-                putString("extensionType", extensionType.name)
-            }
+        ) = Bundle().apply {
+            putString("clientId", clientId)
+            putString("clientName", clientName)
+            putString("extensionType", extensionType.name)
         }
 
-        fun newInstance(extension: Extension<*>) =
-            newInstance(extension.id, extension.name, extension.type)
+        fun getBundle(extension: Extension<*>) =
+            getBundle(extension.id, extension.name, extension.type)
 
         fun getType(type: ExtensionType) = when (type) {
             ExtensionType.MUSIC -> R.string.music
@@ -174,7 +172,7 @@ class ExtensionInfoFragment : Fragment() {
         }
         binding.extensionSettings.transitionName = "setting_${metadata.id}"
         binding.extensionSettings.setOnClickListener {
-            openFragment(ExtensionFragment.newInstance(metadata, extensionType), it)
+            openFragment<ExtensionFragment>(it, ExtensionFragment.getBundle(extension))
         }
     }
 

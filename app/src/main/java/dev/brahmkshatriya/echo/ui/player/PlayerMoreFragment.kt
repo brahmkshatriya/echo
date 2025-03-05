@@ -9,13 +9,15 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commitNow
+import androidx.fragment.app.commit
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerMoreBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
+import dev.brahmkshatriya.echo.ui.player.info.InfoFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsFragment
 import dev.brahmkshatriya.echo.ui.player.upnext.QueueFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -35,8 +37,10 @@ class PlayerMoreFragment : Fragment() {
         return binding.root
     }
 
-    private val queueFragment by lazy { QueueFragment() }
-    private val lyricsFragment by lazy { LyricsFragment() }
+    private inline fun <reified F : Fragment> Fragment.addIfNull(tag: String): String {
+        addIfNull<F>(R.id.player_more_fragment_container, tag)
+        return tag
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         var topInset = 0
@@ -98,6 +102,7 @@ class PlayerMoreFragment : Fragment() {
             }
         }
 
+        showFragment()
         binding.buttonToggleGroup.addOnButtonCheckedListener { group, _, _ ->
             uiViewModel.run {
                 val current = moreSheetState.value
@@ -106,7 +111,7 @@ class PlayerMoreFragment : Fragment() {
                     if (group.checkedButtonId != -1) STATE_EXPANDED else STATE_COLLAPSED
                 )
             }
-            setFragment()
+            showFragment()
         }
 
         @SuppressLint("ClickableViewAccessibility")
@@ -117,24 +122,20 @@ class PlayerMoreFragment : Fragment() {
         binding.buttonToggleGroup.children.forEach { it.setOnTouchListener(touchListener) }
     }
 
-    private fun setFragment() {
+    private fun showFragment() {
         val checkedId = binding.buttonToggleGroup.checkedButtonId
-        uiViewModel.lastMoreTab = checkedId
-
-        val fragment = when (checkedId) {
-            R.id.upNext -> queueFragment
-            R.id.lyrics -> lyricsFragment
-            R.id.info -> null
+        val toShow = when (checkedId) {
+            R.id.queue -> addIfNull<QueueFragment>("queue")
+            R.id.lyrics -> addIfNull<LyricsFragment>("lyrics")
+            R.id.info -> addIfNull<InfoFragment>("info")
             else -> null
         }
-
-        childFragmentManager.commitNow {
-            childFragmentManager.fragments.forEach { hide(it) }
-            if (fragment == null) return@commitNow
-            val tag = fragment::class.java.name
-            val existing = childFragmentManager.findFragmentByTag(tag)
-            if (existing != null) show(existing)
-            else add(R.id.player_more_fragment_container, fragment, tag)
+        childFragmentManager.commit {
+            childFragmentManager.fragments.forEach { fragment ->
+                if (fragment.tag != toShow) hide(fragment)
+                else show(fragment)
+            }
+            setReorderingAllowed(true)
         }
     }
 }

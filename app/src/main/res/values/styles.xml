@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="EchoActionButton" parent="Widget.AppCompat.ActionButton">
         <item name="android:paddingStart">4dp</item>
@@ -39,7 +39,7 @@
     <style name="EchoCollapsingBar" parent="TopCollapsingBar" />
 
     <style name="EchoCardView">
-        <item name="cardCornerRadius">?itemContainerCorner</item>
+        <item name="cardCornerRadius">?itemCorner</item>
         <item name="cardBackgroundColor">?echoBackground</item>
     </style>
 
@@ -104,6 +104,7 @@
         <item name="tabMode">scrollable</item>
         <item name="tabPaddingEnd">16dp</item>
         <item name="tabPaddingStart">16dp</item>
+        <item name="tabUnboundedRipple">true</item>
     </style>
 
     <style name="EchoCircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
@@ -258,5 +259,30 @@
         <item name="android:layout_height">wrap_content</item>
     </style>
 
+    <style name="IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="iconTint">?colorOnSurface</item>
+        <item name="iconSize">24dp</item>
+        <item name="android:padding">8dp</item>
+    </style>
 
+    <style name="NowPlayingButton" parent="IconButton">
+        <item name="android:tooltipText" tools:ignore="NewApi">@string/currently_playing</item>
+        <item name="android:contentDescription">@string/currently_playing</item>
+        <item name="icon">@drawable/anim_now_playing</item>
+    </style>
+
+    <style name="SmallNowPlayingButton" parent="NowPlayingButton">
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:alpha">0.66</item>
+        <item name="android:padding">3dp</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="backgroundTint">@color/amoled_bg</item>
+    </style>
+
+    <string name="currently_playing">Currently Playing</string>
 </resources>

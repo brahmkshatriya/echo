@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
 import com.google.android.material.navigation.NavigationBarView
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
@@ -14,6 +16,8 @@ import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.setupPlayerBehavior
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.setupSnackBar
 import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.setupExceptionHandler
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.updateExtensions
+import dev.brahmkshatriya.echo.ui.main.MainFragment
+import dev.brahmkshatriya.echo.ui.player.PlayerFragment
 import dev.brahmkshatriya.echo.utils.PermsUtils.checkAppPermissions
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isNightMode
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -39,5 +43,10 @@ class MainActivity : AppCompatActivity() {
         setupExceptionHandler(setupSnackBar(uiViewModel, binding.root))
         checkAppPermissions()
         updateExtensions()
+        supportFragmentManager.commit {
+            if (savedInstanceState != null) return@commit
+            add<MainFragment>(R.id.navHostFragment, "main")
+            add<PlayerFragment>(R.id.playerFragmentContainer, "player")
+        }
     }
 }

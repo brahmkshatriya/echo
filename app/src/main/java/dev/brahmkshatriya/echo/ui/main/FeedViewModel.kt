@@ -1,0 +1,131 @@
+package dev.brahmkshatriya.echo.ui.main
+
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.tabs.TabLayout
+import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Tab
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.ui.common.PagingUtils
+import dev.brahmkshatriya.echo.ui.common.PagingUtils.collectWith
+import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
+import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener
+import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configure
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+
+abstract class FeedViewModel(
+    private val throwableFlow: MutableSharedFlow<Throwable>,
+    extensionLoader: ExtensionLoader
+) : ViewModel() {
+    open val current = extensionLoader.extensions.current
+
+    abstract suspend fun getTabs(extension: Extension<*>): Result<List<Tab>>
+    abstract suspend fun getFeed(extension: Extension<*>): Result<PagedData<Shelf>>
+
+    val feed = MutableStateFlow<PagingUtils.Data<Shelf>>(
+        PagingUtils.Data(null, null, null)
+    )
+    val loading = MutableSharedFlow<Boolean>()
+    val tabs = MutableStateFlow<List<Tab>?>(null)
+    var tab: Tab? = null
+
+    init {
+        viewModelScope.launch {
+            current.collect { refresh(true) }
+        }
+        viewModelScope.launch {
+            extensionLoader.db.currentUsersFlow.collect { refresh(true) }
+        }
+    }
+
+    private suspend fun loadTabs(extension: Extension<*>) {
+        tabs.value = null
+        val list = getTabs(extension).getOrElse {
+            throwableFlow.emit(it)
+            listOf()
+        }
+        if (!list.any { it.id == tab?.id }) tab = list.firstOrNull()
+        tabs.value = list
+    }
+
+    private var job: Job? = null
+    fun refresh(reset: Boolean = false) {
+        job?.cancel()
+        val extension = current.value ?: return
+        job = viewModelScope.launch(Dispatchers.IO) {
+            loading.emit(true)
+            if (reset) loadTabs(extension)
+            loading.emit(false)
+            feed.value = PagingUtils.Data(extension, null, null)
+            val data = getFeed(extension).getOrElse {
+                feed.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+                return@launch
+            }
+            data.toFlow().collectWith(throwableFlow) {
+                feed.value = PagingUtils.Data(extension, data, it)
+            }
+        }
+    }
+
+    companion object {
+        fun Fragment.configureFeed(
+            viewModel: FeedViewModel,
+            recyclerView: RecyclerView,
+            swipeRefresh: SwipeRefreshLayout,
+            tabLayout: TabLayout
+        ): ShelfClickListener {
+            FastScrollerHelper.applyTo(recyclerView)
+            swipeRefresh.configure { viewModel.refresh(true) }
+            val listener = ShelfClickListener(requireActivity().supportFragmentManager)
+            val adapter = getShelfAdapter(listener)
+            recyclerView.adapter = adapter
+            observe(viewModel.feed) { (extension, shelf, feed) ->
+                adapter.submit(extension?.id, shelf, feed)
+            }
+            val tabListener = object : TabLayout.OnTabSelectedListener {
+                var enabled = true
+                var tabs: List<Tab> = emptyList()
+                override fun onTabSelected(tab: TabLayout.Tab) {
+                    if (!enabled) return
+                    val genre = tabs[tab.position]
+                    if (viewModel.tab == genre) return
+                    viewModel.tab = genre
+                    viewModel.refresh()
+                }
+
+                override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+                override fun onTabReselected(tab: TabLayout.Tab) = Unit
+            }
+
+            tabLayout.addOnTabSelectedListener(tabListener)
+            observe(viewModel.tabs) {
+                tabListener.enabled = it != null
+                tabLayout.removeAllTabs()
+                val tabs = it ?: return@observe
+                tabListener.tabs = tabs
+                tabLayout.isVisible = tabs.isNotEmpty()
+                tabs.forEach { genre ->
+                    val tab = tabLayout.newTab()
+                    tab.text = genre.title
+                    val selected = viewModel.tab?.id == genre.id
+                    tabLayout.addTab(tab, selected)
+                }
+            }
+            observe(viewModel.loading) { swipeRefresh.isRefreshing = it }
+            return listener
+        }
+    }
+}

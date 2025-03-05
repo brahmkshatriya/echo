@@ -168,7 +168,7 @@ object ExceptionUtils {
     }
 
     private fun FragmentActivity.openException(data: Data, view: View? = null) {
-        openFragment(ExceptionFragment.newInstance(data), view)
+        openFragment<ExceptionFragment>(view, ExceptionFragment.getBundle(data))
     }
 
     private fun FragmentActivity.openLoginException(
@@ -178,7 +178,7 @@ object ExceptionUtils {
             val model by viewModel<LoginUserListViewModel>()
             model.logout(UserEntity(it.extension.type, it.extension.id, it.userId, ""))
         }
-        openFragment(LoginFragment.newInstance(it), view)
+        openFragment<LoginFragment>(view, LoginFragment.getBundle(it))
     }
 
 

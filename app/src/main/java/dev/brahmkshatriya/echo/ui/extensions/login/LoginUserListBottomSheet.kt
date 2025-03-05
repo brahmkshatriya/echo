@@ -45,8 +45,9 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
             binding.title.text = getString(R.string.select_x_account, extension.name)
             binding.addAccount.setOnClickListener {
                 dismiss()
-                requireActivity().openFragment(
-                    LoginFragment.newInstance(
+                requireActivity().openFragment<LoginFragment>(
+                    null,
+                    LoginFragment.getBundle(
                         extension.id, extension.name, ExtensionType.MUSIC
                     )
                 )

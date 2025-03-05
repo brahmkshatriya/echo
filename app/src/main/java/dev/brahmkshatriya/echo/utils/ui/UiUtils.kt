@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.UI_MODE_NIGHT_MASK
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.text.TextUtils
 import android.view.View
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -65,4 +67,11 @@ object UiUtils {
         }
     }
 
+    fun TextView.marquee() {
+        isSelected = true
+        ellipsize = TextUtils.TruncateAt.MARQUEE
+        maxLines = 1
+        marqueeRepeatLimit = -1
+        setHorizontallyScrolling(true)
+    }
 }

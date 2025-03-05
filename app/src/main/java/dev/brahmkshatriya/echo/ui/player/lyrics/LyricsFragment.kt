@@ -30,6 +30,7 @@ import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionsListBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.util.Timer
@@ -51,6 +52,7 @@ class LyricsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupTransition(view, false)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, _ -> CONSUMED }
         observe(uiViewModel.moreSheetState) {
             binding.root.keepScreenOn = it == BottomSheetBehavior.STATE_EXPANDED

@@ -150,7 +150,7 @@ class PlayerTrackAdapter(
             val old = item?.unloadedCover?.getCachedDrawable(binding.root.context)
             item?.track?.cover.loadWithThumb(binding.playerTrackCover, old) {
                 val image = it
-                    ?: ResourcesCompat.getDrawable(resources, R.drawable.art_problem, context.theme)
+                    ?: ResourcesCompat.getDrawable(resources, R.drawable.art_music, context.theme)
                 setImageDrawable(image)
                 bitmap = Result.success(it?.toBitmap())
                 applyBitmap()
@@ -221,7 +221,11 @@ class PlayerTrackAdapter(
     fun systemInsetsUpdated() = onEachViewHolder { updateInsets() }
     fun playerControlsHeightUpdated() = onEachViewHolder { updateInsets() }
     fun onColorsUpdated() = onEachViewHolder { updateColors() }
-    fun onCurrentUpdated() = onEachViewHolder { applyBitmap() }
+    fun onCurrentUpdated() {
+        onEachViewHolder { applyBitmap() }
+        if (current.value == null) currentBitmapListener?.invoke(null)
+    }
+
     var currentBitmapListener: ((Bitmap?) -> Unit)? = null
 
     companion object {

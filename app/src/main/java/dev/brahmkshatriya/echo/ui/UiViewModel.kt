@@ -24,13 +24,14 @@ import com.google.android.material.navigationrail.NavigationRailView
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
+import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateTranslation
-import dev.brahmkshatriya.echo.utils.ui.GradientNavDrawable
+import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isRTL
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -44,7 +45,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 class UiViewModel(
-    private val context: Context
+    context: Context,
+    playerState: PlayerState
 ) : ViewModel() {
 
     data class Insets(
@@ -125,7 +127,9 @@ class UiViewModel(
     }
 
     val playerBgVisible = MutableStateFlow(false)
-    val playerSheetState = MutableStateFlow(STATE_COLLAPSED)
+    val playerSheetState = MutableStateFlow(
+        if (playerState.current.value != null) STATE_COLLAPSED else STATE_HIDDEN
+    )
     val playerSheetOffset = MutableStateFlow(0f)
     val moreSheetState = MutableStateFlow(STATE_COLLAPSED)
     val moreSheetOffset = MutableStateFlow(0f)
@@ -171,7 +175,7 @@ class UiViewModel(
         behavior.state = state
     }
 
-    var lastMoreTab = R.id.upNext
+    var lastMoreTab = R.id.queue
     var playerControlsHeight = MutableStateFlow(0)
     val playerColors = MutableStateFlow(context.defaultPlayerColors())
     fun changeBgVisible(show: Boolean) {
@@ -205,7 +209,7 @@ class UiViewModel(
             }
         }
 
-        fun View.applyContentInsets(insets: Insets, paddingDp: Int = 8) {
+        fun View.applyContentInsets(insets: Insets, paddingDp: Int = 12) {
             val verticalPadding = paddingDp.dpToPx(context)
             updatePaddingRelative(
                 top = verticalPadding,
@@ -312,7 +316,7 @@ class UiViewModel(
                 uiViewModel.setSystemInsets(this, insets)
                 val navBarSize = uiViewModel.systemInsets.value.bottom
                 val full = getSettings().getBoolean(NAVBAR_GRADIENT, true)
-                GradientNavDrawable.apply(navView, isRail, navBarSize, !full)
+                GradientDrawable.applyNav(navView, isRail, navBarSize, !full)
                 insets
             }
 

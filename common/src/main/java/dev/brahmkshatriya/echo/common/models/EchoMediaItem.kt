@@ -157,15 +157,16 @@ sealed class EchoMediaItem {
             is Lists.RadioItem -> radio.title
         }
 
-    val isExplicit
-        get() = when (this) {
+    val isExplicit by lazy {
+        when (this) {
             is TrackItem -> track.isExplicit
             is Lists.AlbumItem -> album.isExplicit
             else -> false
         }
+    }
 
-    val cover
-        get() = when (this) {
+    val cover by lazy {
+        when (this) {
             is TrackItem -> track.cover
             is Profile.ArtistItem -> artist.cover
             is Profile.UserItem -> user.cover
@@ -173,12 +174,14 @@ sealed class EchoMediaItem {
             is Lists.PlaylistItem -> playlist.cover
             is Lists.RadioItem -> radio.cover
         }
+    }
 
-    val subtitleWithE
-        get() = if (isExplicit) "\uD83C\uDD74 " + (subtitle ?: "") else subtitle
+    val subtitleWithE by lazy {
+        if (isExplicit) "\uD83C\uDD74 " + (subtitle ?: "") else subtitle
+    }
 
-    val subtitle
-        get() = when (this) {
+    val subtitle by lazy {
+        when (this) {
             is TrackItem -> track.run { subtitle ?: artists.joinToString(", ") { it.name } }
             is Profile.ArtistItem -> artist.subtitle
             is Profile.UserItem -> null
@@ -188,6 +191,7 @@ sealed class EchoMediaItem {
                 subtitle ?: authors.joinToString(", ") { it.name }
             }
         }
+    }
 
     val extras
         get() = when (this) {

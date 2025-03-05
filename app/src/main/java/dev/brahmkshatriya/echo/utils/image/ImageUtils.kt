@@ -62,7 +62,7 @@ object ImageUtils {
         }
     }
 
-    fun <T: View> ImageHolder?.loadWithThumb(
+    fun <T : View> ImageHolder?.loadWithThumb(
         view: T, thumbnail: Drawable? = null,
         error: Int? = null, onDrawable: T.(Drawable?) -> Unit
     ) = tryWith(true) {
@@ -135,8 +135,12 @@ object ImageUtils {
         load(drawable)
     }
 
-    fun ImageView.load(drawable: Drawable?, size: Int) = tryWith {
-        load(drawable) { size(size) }
+    fun ImageView.load(drawable: Drawable?, placeholder: Int) = tryWith {
+        val builder = ImageRequest.Builder(context)
+        builder.data(drawable)
+        builder.placeholder(placeholder)
+        builder.target(this)
+        context.imageLoader.enqueue(builder.build())
     }
 
     fun ImageView.load(bitmap: Bitmap?): Disposable? = tryWith {

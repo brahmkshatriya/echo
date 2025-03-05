@@ -1,10 +1,12 @@
 package dev.brahmkshatriya.echo.ui.player.quality
 
+import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
+import dev.brahmkshatriya.echo.R
 
 object FormatUtils {
     @OptIn(UnstableApi::class)
@@ -53,7 +55,7 @@ object FormatUtils {
         return trackGroups to select
     }
 
-    fun Tracks.getDetails(): List<String> {
+    fun Tracks.getDetails(context: Context): List<String> {
         val audios = groups.filter { it.type == C.TRACK_TYPE_AUDIO }
         val videos = groups.filter { it.type == C.TRACK_TYPE_VIDEO }
         val subtitles = groups.filter { it.type == C.TRACK_TYPE_TEXT }
@@ -61,6 +63,6 @@ object FormatUtils {
             audios.getSelectedFormat()?.toAudioDetails(),
             videos.getSelectedFormat()?.toVideoDetails(),
             subtitles.getSelectedFormat()?.toSubtitleDetails()
-        )
+        ).ifEmpty { listOf(context.getString(R.string.unknown_quality)) }
     }
 }
