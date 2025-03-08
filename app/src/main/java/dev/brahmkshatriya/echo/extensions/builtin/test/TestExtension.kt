@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
@@ -66,9 +67,10 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         private fun createTrack(id: String, title: String, streamables: List<Streamable>) = Track(
             id,
             title,
+            cover = "https://picsum.photos/480/270".toImageHolder(),
             isExplicit = Random.nextBoolean(),
             streamables = streamables
-        ).toMediaItem().toShelf()
+        ).toMediaItem().toShelf(true)
     }
 
     override suspend fun onExtensionSelected() {}

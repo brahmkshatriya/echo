@@ -9,30 +9,28 @@ import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 
 class LyricAdapter(
-    val uiViewModel: UiViewModel,
-    val listener: Listener
-) : ListAdapter<Pair<Boolean, Lyrics.Item>, LyricAdapter.ViewHolder>(DiffCallback) {
+    val uiViewModel: UiViewModel, val listener: Listener
+) : ListAdapter<Lyrics.Item, LyricAdapter.ViewHolder>(DiffCallback) {
     fun interface Listener {
         fun onLyricSelected(adapter: LyricAdapter, lyric: Lyrics.Item)
     }
 
-    object DiffCallback : DiffUtil.ItemCallback<Pair<Boolean, Lyrics.Item>>() {
-        override fun areItemsTheSame(
-            oldItem: Pair<Boolean, Lyrics.Item>, newItem: Pair<Boolean, Lyrics.Item>
-        ) = oldItem.second.text == newItem.second.text
+    object DiffCallback : DiffUtil.ItemCallback<Lyrics.Item>() {
+        override fun areItemsTheSame(oldItem: Lyrics.Item, newItem: Lyrics.Item) =
+            oldItem.text == newItem.text
 
-        override fun areContentsTheSame(
-            oldItem: Pair<Boolean, Lyrics.Item>, newItem: Pair<Boolean, Lyrics.Item>
-        ) = oldItem == newItem
+        override fun areContentsTheSame(oldItem: Lyrics.Item, newItem: Lyrics.Item) =
+            oldItem == newItem
     }
 
     inner class ViewHolder(val binding: ItemLyricBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
                 val lyrics = getItem(bindingAdapterPosition) ?: return@setOnClickListener
-                listener.onLyricSelected(this@LyricAdapter, lyrics.second)
+                listener.onLyricSelected(this@LyricAdapter, lyrics)
             }
         }
     }
@@ -40,8 +38,18 @@ class LyricAdapter(
     private fun ViewHolder.updateColors() {
         binding.root.run {
             val colors = uiViewModel.playerColors.value ?: context.defaultPlayerColors()
-            setTextColor(colors.onBackground)
+            val alphaStrippedColor = colors.onBackground or -0x1000000
+            setTextColor(alphaStrippedColor)
         }
+    }
+
+    private fun getItemOrNull(position: Int) = if (position >= 0) getItem(position) else null
+
+    private var currentPos = -1
+    private fun ViewHolder.updateCurrent() {
+        val currentTime = getItemOrNull(currentPos)?.startTime ?: 0
+        val time = getItemOrNull(bindingAdapterPosition)?.startTime ?: 0
+        binding.root.alpha = if (currentTime >= time) 1f else 0.5f
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -51,24 +59,32 @@ class LyricAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val (current, lyric) = getItem(position) ?: return
-        holder.binding.root.apply {
-            text = lyric.text.trim()
-            alpha = if (current) 1f else 0.33f
-        }
+        val lyric = getItem(position) ?: return
+        holder.binding.root.text = lyric.text.trim().trim('\n').ifEmpty { "♪" }
         holder.updateColors()
+        holder.updateCurrent()
+        holder.itemView.applyTranslationYAnimation(scrollAmount)
     }
 
     override fun onViewAttachedToWindow(holder: ViewHolder) {
         holder.updateColors()
     }
 
+    private var scrollAmount: Int = 0
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            scrollAmount = dy
+        }
+    }
+
     var recyclerView: RecyclerView? = null
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         this.recyclerView = recyclerView
+        recyclerView.addOnScrollListener(scrollListener)
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        recyclerView.removeOnScrollListener(scrollListener)
         this.recyclerView = null
     }
 
@@ -83,5 +99,10 @@ class LyricAdapter(
 
     fun updateColors() {
         onEachViewHolder { updateColors() }
+    }
+
+    fun updateCurrent(currentPos: Int) {
+        this.currentPos = currentPos
+        onEachViewHolder { updateCurrent() }
     }
 }

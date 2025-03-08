@@ -30,6 +30,7 @@
 
                 <TextView
                     android:id="@+id/title"
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -53,6 +54,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/shuffle"
+                android:visibility="gone"
                 style="@style/IconButton"
                 android:contentDescription="@string/shuffle"
                 app:icon="@drawable/ic_shuffle" />

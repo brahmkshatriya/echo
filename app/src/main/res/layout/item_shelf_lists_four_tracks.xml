@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/track1"
+        layout="@layout/item_shelf_media" />
+
+    <include
+        android:id="@+id/track2"
+        layout="@layout/item_shelf_media" />
+
+    <include
+        android:id="@+id/track3"
+        layout="@layout/item_shelf_media" />
+
+</LinearLayout>

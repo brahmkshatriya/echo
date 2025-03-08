@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:theme="@style/PlayerTheme">
+    android:background="@drawable/shape_rounded_item_corner"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,6 +13,13 @@
         android:clipToPadding="false"
         android:gravity="center"
         android:paddingHorizontal="24dp">
+
+        <View
+            android:visibility="gone"
+            android:id="@+id/trackCoverPlaceHolder"
+            android:layout_width="@dimen/collapsed_cover_size"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="12dp" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -28,9 +35,9 @@
                 android:gravity="bottom"
                 android:maxLines="1"
                 android:minHeight="32dp"
-                android:text="@string/tracker"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:text="Bruh" />
 
             <TextView
                 android:id="@+id/trackArtist"
@@ -39,9 +46,9 @@
                 android:ellipsize="marquee"
                 android:maxLines="1"
                 android:minHeight="32dp"
-                android:text="@string/add_color"
                 android:textColorLink="@color/button_player"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                tools:text="burhhh" />
         </LinearLayout>
 
         <com.google.android.material.checkbox.MaterialCheckBox
@@ -149,8 +156,10 @@
             style="?attr/materialIconButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/ripple_60dp"
             android:contentDescription="@string/previous"
             android:enabled="false"
+
             android:outlineProvider="none"
             app:elevation="1dp"
             app:icon="@drawable/ic_skip_previous_40dp"
@@ -165,7 +174,6 @@
             android:id="@+id/playPauseContainer"
             android:layout_width="72dp"
             android:layout_height="72dp"
-            android:elevation="3dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -196,6 +204,7 @@
             style="?attr/materialIconButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/ripple_60dp"
             android:contentDescription="@string/next"
             android:enabled="false"
             android:outlineProvider="none"
@@ -213,6 +222,7 @@
             style="?attr/materialIconButtonStyle"
             android:layout_width="64dp"
             android:layout_height="64dp"
+            android:background="@drawable/ripple_60dp"
             android:contentDescription="@string/repeat"
             android:elevation="2dp"
             android:outlineProvider="none"
@@ -230,15 +240,14 @@
 
     <TextView
         android:id="@+id/trackSubtitle"
+        style="@style/Selectable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="48dp"
-        android:paddingVertical="16dp"
-        style="@style/Selectable"
         android:ellipsize="marquee"
         android:gravity="center"
         android:maxLines="1"
-        android:text="@string/animations_summary"
+        android:paddingVertical="16dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textSize="16sp" />
 </LinearLayout>

@@ -219,7 +219,7 @@ class PlayerTrackAdapter(
     fun moreOffsetUpdated() = onEachViewHolder { updateCollapsed() }
     fun playerOffsetUpdated() = onEachViewHolder { updateCollapsed() }
     fun playerSheetStateUpdated() = onEachViewHolder { updateInsets() }
-    fun systemInsetsUpdated() = onEachViewHolder { updateInsets() }
+    fun insetsUpdated() = onEachViewHolder { updateInsets() }
     fun playerControlsHeightUpdated() = onEachViewHolder { updateInsets() }
     fun onColorsUpdated() = onEachViewHolder { updateColors() }
     fun onCurrentUpdated() {

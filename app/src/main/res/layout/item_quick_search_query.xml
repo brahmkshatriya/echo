@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Selectable"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/history"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        app:cardBackgroundColor="?colorSurfaceContainer"
+        app:cardCornerRadius="24dp"
+        app:contentPadding="6dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_history" />
+
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/query"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        tools:text="@tools:sample/full_names" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/insert"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/more"
+        android:padding="12dp"
+        android:rotation="45"
+        app:icon="@drawable/ic_back"
+        app:iconSize="24dp"
+        app:iconTint="?colorOnSurface" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/delete"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:contentDescription="@string/close"
+        android:padding="12dp"
+        app:icon="@drawable/ic_close"
+        app:iconSize="24dp"
+        app:iconTint="?colorOnSurface" />
+</LinearLayout>

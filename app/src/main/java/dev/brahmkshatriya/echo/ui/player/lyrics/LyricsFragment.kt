@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.ui.player.lyrics
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat.CONSUMED
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -32,9 +33,11 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import java.util.Timer
-import java.util.TimerTask
 
 
 class LyricsFragment : Fragment() {
@@ -51,8 +54,43 @@ class LyricsFragment : Fragment() {
         return binding.root
     }
 
+    private var currentLyricsPos = -1
+    private var currentLyrics: Lyrics.Lyric? = null
+    private val lyricAdapter by lazy {
+        LyricAdapter(uiViewModel) { adapter, lyric ->
+            if (adapter.itemCount <= 1) return@LyricAdapter
+            currentLyricsPos = -1
+            playerVM.seekTo(lyric.startTime)
+            updateLyrics(lyric.startTime)
+        }
+    }
+
+    private var shouldAutoScroll = true
+    val layoutManager by lazy {
+        binding.lyricsRecyclerView.layoutManager as LinearLayoutManager
+    }
+
+    private fun updateLyrics(current: Long) {
+        val lyrics = currentLyrics as? Lyrics.Timed ?: return
+        val currentTime = lyrics.list.getOrNull(currentLyricsPos)?.endTime ?: -1
+        if (currentTime < current || current <= 0) {
+            val currentIndex = lyrics.list.indexOfLast { lyric ->
+                lyric.startTime <= current
+            }
+            lyricAdapter.updateCurrent(currentIndex)
+            if (!shouldAutoScroll) return
+            binding.appBarLayout.setExpanded(false)
+            slideDown()
+            if (currentIndex < 0) return
+            val smoothScroller = CenterSmoothScroller(requireContext())
+            smoothScroller.targetPosition = currentIndex
+            layoutManager.startSmoothScroll(smoothScroller)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view, false)
+        FastScrollerHelper.applyTo(binding.lyricsRecyclerView)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, _ -> CONSUMED }
         observe(uiViewModel.moreSheetState) {
             binding.root.keepScreenOn = it == BottomSheetBehavior.STATE_EXPANDED
@@ -66,24 +104,25 @@ class LyricsFragment : Fragment() {
         }
         val menu = binding.searchBar.menu
         val extMenu = binding.searchBar.findViewById<View>(R.id.menu_lyrics)
-        var lyricsItemAdapter: LyricsItemAdapter? = null
+        extMenu.setOnLongClickListener {
+            val ext = viewModel.currentSelectionFlow.value ?: return@setOnLongClickListener false
+            val all = viewModel.extensionsFlow.value
+            val index = all.indexOf(ext)
+            val nextIndex = (index + 1) % all.size
+            if (nextIndex == index) return@setOnLongClickListener false
+            viewModel.selectExtension(nextIndex)
+            true
+        }
+        val lyricsItemAdapter = LyricsItemAdapter { lyrics ->
+            viewModel.onLyricsSelected(lyrics)
+            binding.searchView.hide()
+        }
+        binding.searchRecyclerView.adapter = lyricsItemAdapter.withLoaders(this)
         observe(viewModel.currentSelectionFlow) { current ->
             binding.searchBar.hint = current?.name
-            current?.metadata?.icon
-                .loadAsCircle(extMenu, R.drawable.ic_extension_48dp) {
-                    menu.findItem(R.id.menu_lyrics).icon = it
-                }
-
-            extMenu.setOnLongClickListener {
-                val ext = current ?: return@setOnLongClickListener false
-                val all = viewModel.extensionsFlow.value
-                val index = all.indexOf(ext)
-                val nextIndex = (index + 1) % all.size
-                if (nextIndex == index) return@setOnLongClickListener false
-                viewModel.selectExtension(nextIndex)
-                true
+            current?.metadata?.icon.loadAsCircle(extMenu, R.drawable.ic_extension_48dp) {
+                menu.findItem(R.id.menu_lyrics).icon = it
             }
-
             val isSearchable = current?.isClient<LyricsSearchClient>() ?: false
             binding.searchBar.setNavigationIcon(
                 when (isSearchable) {
@@ -95,13 +134,6 @@ class LyricsFragment : Fragment() {
             binding.searchView.hint = if (isSearchable)
                 getString(R.string.search_x, current?.name)
             else current?.name
-            lyricsItemAdapter = current?.let {
-                LyricsItemAdapter(this, it) { lyrics ->
-                    viewModel.onLyricsSelected(lyrics)
-                    binding.searchView.hide()
-                }
-            }
-            binding.searchRecyclerView.adapter = lyricsItemAdapter?.withLoaders()
         }
 
         binding.searchView.editText.setOnEditorActionListener { v, _, _ ->
@@ -112,58 +144,21 @@ class LyricsFragment : Fragment() {
 
         binding.searchRecyclerView.adapter = lyricsItemAdapter
         observe(viewModel.searchResults) {
-            lyricsItemAdapter?.submitData(it ?: PagingData.empty())
+            lyricsItemAdapter.submitData(it ?: PagingData.empty())
         }
 
-        var currentItem: Lyrics.Item? = null
-        var currentLyrics: Lyrics.Lyric? = null
-        var lyricAdapter: LyricAdapter? = null
-
-        val layoutManager = binding.lyricsRecyclerView.layoutManager as LinearLayoutManager
-        var shouldAutoScroll = true
-        var timer = Timer()
+        var job: Job? = null
         binding.lyricsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (dy < 0) {
-                    shouldAutoScroll = false
-                    timer.cancel()
-                    timer = Timer()
-                    timer.schedule(object : TimerTask() {
-                        override fun run() {
-                            shouldAutoScroll = true
-                        }
-                    }, 3000)
+                if (dy > 0) return
+                shouldAutoScroll = false
+                job?.cancel()
+                job = lifecycleScope.launch {
+                    delay(3500)
+                    shouldAutoScroll = true
                 }
             }
         })
-
-        fun updateLyrics(current: Long) {
-            val lyrics = currentLyrics as? Lyrics.Timed ?: return
-            if ((currentItem?.endTime ?: 0) < current || current <= 0) {
-                val list = lyrics.list.map { lyric ->
-                    val isCurrent = lyric.startTime <= current
-                    if (isCurrent) currentItem = lyric
-                    isCurrent to lyric
-                }
-                lyricAdapter?.submitList(list)
-                val currentIndex = list.indexOfLast { it.first }
-                    .takeIf { it != -1 } ?: return
-
-                if (shouldAutoScroll) {
-                    val smoothScroller = CenterSmoothScroller(binding.lyricsRecyclerView)
-                    smoothScroller.targetPosition = currentIndex
-                    layoutManager.startSmoothScroll(smoothScroller)
-                    binding.appBarLayout.setExpanded(false)
-                    slideDown()
-                }
-            }
-        }
-        lyricAdapter = LyricAdapter(uiViewModel) { adapter, lyric ->
-            if (adapter.itemCount <= 1) return@LyricAdapter
-            currentItem = null
-            playerVM.seekTo(lyric.startTime)
-            updateLyrics(lyric.startTime)
-        }
 
         observe(uiViewModel.playerColors) {
             lyricAdapter.updateColors()
@@ -180,11 +175,11 @@ class LyricsFragment : Fragment() {
         observe(viewModel.lyricsState) {
             val lyricsItem = (it as? LyricsViewModel.State.Loaded)?.lyrics
             binding.lyricsItem.bind(lyricsItem)
-            currentItem = null
+            currentLyricsPos = -1
             currentLyrics = lyricsItem?.lyrics
             val list = when (val lyrics = currentLyrics) {
-                is Lyrics.Simple -> listOf(true to Lyrics.Item(lyrics.text, 0, 0))
-                is Lyrics.Timed -> lyrics.list.map { lyric -> false to lyric }
+                is Lyrics.Simple -> listOf(Lyrics.Item(lyrics.text, 0, 0))
+                is Lyrics.Timed -> lyrics.list
                 null -> emptyList()
             }
             lyricAdapter.submitList(list)
@@ -209,30 +204,17 @@ class LyricsFragment : Fragment() {
         setSubtitle(lyrics.subtitle)
     }
 
-    class CenterSmoothScroller(private val recyclerView: RecyclerView) :
-        LinearSmoothScroller(recyclerView.context) {
-
+    class CenterSmoothScroller(context: Context) : LinearSmoothScroller(context) {
         override fun calculateDtToFit(
-            viewStart: Int, viewEnd: Int,
-            boxStart: Int, boxEnd: Int, snapPreference: Int
+            viewStart: Int, viewEnd: Int, boxStart: Int, boxEnd: Int, snapPreference: Int
         ): Int {
-            val midPoint = recyclerView.height / 2
+            val midPoint = boxEnd / 2
             val targetMidPoint = ((viewEnd - viewStart) / 2) + viewStart
             return midPoint - targetMidPoint
         }
 
-        override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics): Float {
-            return 100f / displayMetrics.densityDpi
-        }
-
-        override fun calculateTimeForScrolling(dx: Int): Int {
-            val time = super.calculateTimeForScrolling(dx)
-            return (time * 1.5f).toInt()
-        }
-
-        override fun calculateTimeForDeceleration(dx: Int): Int {
-            return (super.calculateTimeForDeceleration(dx) * 1.5f).toInt()
-        }
+        override fun getVerticalSnapPreference() = SNAP_TO_START
+        override fun calculateTimeForDeceleration(dx: Int) = 650
     }
 
     @SuppressLint("WrongConstant")

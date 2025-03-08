@@ -16,11 +16,11 @@ import dev.brahmkshatriya.echo.ui.main.MainFragment.Companion.configureMainMenu
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
-import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
     private var binding by autoCleared<FragmentHomeBinding>()
-    private val viewModel by activityViewModel<HomeFeedViewModel>()
+    private val viewModel by viewModel<HomeFeedViewModel>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {

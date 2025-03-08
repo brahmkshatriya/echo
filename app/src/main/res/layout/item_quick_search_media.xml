@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Selectable"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/coverContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:cardBackgroundColor="?colorSurfaceContainer"
+        app:cardCornerRadius="?itemCorner">
+
+        <ImageView
+            android:id="@+id/cover"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:importantForAccessibility="no"
+            tools:src="@tools:sample/avatars" />
+
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textSize="16sp"
+            tools:ignore="TextSizeCheck"
+            tools:text="@tools:sample/full_names" />
+
+        <TextView
+            android:id="@+id/subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.66"
+            android:ellipsize="end"
+            android:maxLines="2"
+            tools:text="@tools:sample/first_names" />
+
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/insert"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/more"
+        android:padding="12dp"
+        android:rotation="45"
+        app:icon="@drawable/ic_back"
+        app:iconSize="24dp"
+        app:iconTint="?colorOnSurface" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/delete"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:contentDescription="@string/close"
+        android:padding="12dp"
+        app:icon="@drawable/ic_close"
+        app:iconSize="24dp"
+        app:iconTint="?colorOnSurface" />
+</LinearLayout>

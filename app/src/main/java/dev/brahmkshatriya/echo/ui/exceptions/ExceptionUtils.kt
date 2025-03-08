@@ -126,7 +126,7 @@ object ExceptionUtils {
     }
 
     fun Context.getFinalTitle(throwable: Throwable): String? =
-        getTitle(throwable) ?: throwable.cause?.let { getFinalTitle(it) }
+        getTitle(throwable) ?: throwable.cause?.let { getFinalTitle(it) } ?: throwable.message
 
 
     private fun getFinalDetails(throwable: Throwable): String = buildString {

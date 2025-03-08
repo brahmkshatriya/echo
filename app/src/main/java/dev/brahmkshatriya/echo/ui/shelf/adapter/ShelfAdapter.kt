@@ -18,14 +18,13 @@ import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
-import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.ShelfListsAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
-import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyScaleAnimation
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.lang.ref.WeakReference
 
@@ -40,6 +39,7 @@ class ShelfAdapter(
 
     abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var extensionId: String? = null
+        open var scrollAmount: Int = 0
         open fun onCurrentChanged(current: PlayerState.Current?) {}
         abstract fun bind(item: Shelf?)
     }
@@ -52,9 +52,9 @@ class ShelfAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.scrollAmount = scrollY
         holder.bind(getItem(position))
         holder.onCurrentChanged(current)
-        holder.itemView.applyScaleAnimation(listOf(0.9f, 1f, 0.9f, 1f))
         if (holder !is ListsShelfViewHolder) return
         stateViewModel.visibleScrollableViews[position] = WeakReference(holder)
         holder.layoutManager?.apply {
@@ -99,12 +99,22 @@ class ShelfAdapter(
         holder.extensionId = extensionId
     }
 
+    private var scrollY: Int = 0
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            scrollY = dy
+            onEachViewHolder { scrollAmount = dy }
+        }
+    }
+
     var recyclerView: RecyclerView? = null
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         this.recyclerView = recyclerView
+        recyclerView.addOnScrollListener(scrollListener)
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        recyclerView.removeOnScrollListener(scrollListener)
         this.recyclerView = null
     }
 

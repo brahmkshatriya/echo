@@ -47,6 +47,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/close"
             android:padding="8dp"
+            android:background="@drawable/ripple_44dp"
             app:icon="@drawable/ic_close"
             app:iconSize="24dp"
             app:iconTint="@color/button_player"

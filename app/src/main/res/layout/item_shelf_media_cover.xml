@@ -1,0 +1,66 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/collapsed_cover_size"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:paddingVertical="4dp">
+
+    <View
+        android:id="@+id/listBg2"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/collapsed_cover_size"
+        android:layout_marginHorizontal="6dp"
+        android:layout_marginTop="-4dp"
+        android:alpha="0.35"
+        android:background="@drawable/rounded_rectangle_cover"
+        tools:backgroundTint="#8B9DFE" />
+
+    <View
+        android:id="@+id/listBg1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/collapsed_cover_size"
+        android:layout_marginHorizontal="2.5dp"
+        android:layout_marginTop="-2.5dp"
+        android:alpha="0.35"
+        android:background="@drawable/rounded_rectangle_cover"
+        tools:backgroundTint="#8B9DFE" />
+
+    <ImageView
+        android:id="@+id/cover"
+        android:layout_width="@dimen/collapsed_cover_size"
+        android:layout_height="@dimen/collapsed_cover_size"
+        android:background="@drawable/rounded_rectangle_cover"
+        android:importantForAccessibility="no"
+        tools:clipToOutline="true"
+        tools:src="@tools:sample/avatars[2]" />
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="bottom"
+        android:layout_margin="4dp"
+        android:alpha="0.66"
+        android:background="@drawable/rounded_rectangle_24dp"
+        android:backgroundTint="?navBackground"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_queue_music"
+        app:tint="?attr/colorOnSurface" />
+
+    <ImageView
+        android:id="@+id/isPlaying"
+        android:layout_width="@dimen/collapsed_cover_size"
+        android:layout_height="@dimen/collapsed_cover_size"
+        android:alpha="0.66"
+        android:background="@drawable/shape_rounded_item_corner"
+        android:backgroundTint="@color/amoled_bg"
+        android:importantForAccessibility="no"
+        android:scaleType="center"
+        android:visibility="gone"
+        app:srcCompat="@drawable/anim_now_playing"
+        app:tint="@color/amoled_fg" />
+
+</FrameLayout>

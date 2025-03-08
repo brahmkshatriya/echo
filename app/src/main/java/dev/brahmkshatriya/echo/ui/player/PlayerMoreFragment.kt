@@ -55,7 +55,7 @@ class PlayerMoreFragment : Fragment() {
             val offset = uiViewModel.moreSheetOffset.value
             val inverted = 1 - offset
             binding.root.translationY = -topInset * inverted
-            binding.viewCard.translationY =
+            binding.playerMoreFragmentContainer.translationY =
                 (1 - offset) * 2 * uiViewModel.systemInsets.value.bottom
         }
 

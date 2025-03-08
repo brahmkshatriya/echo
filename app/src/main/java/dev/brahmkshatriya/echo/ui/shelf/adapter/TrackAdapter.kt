@@ -9,13 +9,17 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.databinding.ItemPlaylistTrackBinding
+import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
-import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
+import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.MediaItemShelfListsViewHolder.Companion.applyCover
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 
 class TrackAdapter(
     private val listener: Listener
@@ -53,7 +57,7 @@ class TrackAdapter(
     }
 
     inner class ViewHolder(
-        val binding: ItemPlaylistTrackBinding
+        val binding: ItemShelfMediaBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
@@ -71,24 +75,44 @@ class TrackAdapter(
             val position = bindingAdapterPosition
             val item = getItem(position)
             val playing = current.isPlaying(item?.id)
-            binding.playlistItemNowPlaying.isVisible = playing
-            (binding.playlistItemNowPlaying.drawable as Animatable).start()
+            binding.coverContainer.isPlaying.isVisible = playing
+            (binding.coverContainer.isPlaying.drawable as Animatable).start()
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return ViewHolder(ItemPlaylistTrackBinding.inflate(inflater, parent, false))
+        return ViewHolder(ItemShelfMediaBinding.inflate(inflater, parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position) ?: return
-        val binding = holder.binding
-        binding.playlistItemTitle.text = item.title
-        val subtitle = item.toMediaItem().subtitleWithE
-        binding.playlistItemAuthor.text = subtitle
-        binding.playlistItemAuthor.isVisible = !subtitle.isNullOrBlank()
-        item.cover.loadInto(binding.playlistItemImageView)
+        holder.binding.bindTrack(item, true, position)
+        holder.itemView.applyTranslationYAnimation(scrollAmount)
+        holder.onCurrentChanged(current)
+    }
+
+    companion object {
+        fun ItemShelfMediaBinding.bindTrack(track: Track, isNumbered: Boolean, position: Int) {
+            title.text = if (!isNumbered) track.title
+            else root.context.getString(R.string.n_dot_x, position + 1, track.title)
+            val item = track.toMediaItem()
+            val subtitleText = item.subtitleWithDuration()
+            subtitle.text = subtitleText
+            subtitle.isVisible = !subtitleText.isNullOrBlank()
+            play.isVisible = false
+            coverContainer.run { applyCover(item, cover, listBg1, listBg2, icon) }
+        }
+
+        fun EchoMediaItem.subtitleWithDuration() = when (this) {
+            is TrackItem -> buildString {
+                track.duration?.toTimeString()?.let { append(it) }
+                subtitleWithE?.let { if (isNotBlank()) append(" • $it") else append(it) }
+            }
+
+            else -> subtitleWithE
+        }
+
     }
 
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
@@ -99,12 +123,21 @@ class TrackAdapter(
         holder.onCurrentChanged(current)
     }
 
+    private var scrollAmount: Int = 0
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            scrollAmount = dy
+        }
+    }
+
     var recyclerView: RecyclerView? = null
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         this.recyclerView = recyclerView
+        recyclerView.addOnScrollListener(scrollListener)
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        recyclerView.removeOnScrollListener(scrollListener)
         this.recyclerView = null
     }
 

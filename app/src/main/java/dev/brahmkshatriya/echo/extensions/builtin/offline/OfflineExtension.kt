@@ -157,7 +157,7 @@ class OfflineExtension(
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> {
         if (refreshLibrary) refreshLibrary()
         fun List<EchoMediaItem>.sorted() = sortedBy { it.title.lowercase() }
-            .map { it.toShelf(true) }.toPaged()
+            .map { it.toShelf(false) }.toPaged()
         return when (tab?.id) {
             "Songs" -> library.songList.map { it.toMediaItem() }.sorted()
             "Albums" -> library.albumList.map { it.toAlbum().toMediaItem() }.sorted()

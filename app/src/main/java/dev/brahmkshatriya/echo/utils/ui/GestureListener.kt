@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.utils.ui
 
+import android.graphics.drawable.RippleDrawable
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -26,6 +27,7 @@ interface GestureListener {
                     val onDoubleClick = listener.onDoubleClick ?: return false
                     isPressed = true
                     isPressed = false
+                    (background as? RippleDrawable)?.setHotspot(e.x, e.y)
                     onDoubleClick.invoke()
                     beingDoubleClicked = true
                     timer?.cancel()

@@ -51,7 +51,7 @@
             android:orientation="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="10"
-            tools:layout="@layout/item_shelf_track" />
+            tools:layout="@layout/item_shelf_media" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

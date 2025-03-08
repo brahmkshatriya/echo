@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Selectable"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingVertical="4dp">
+
+        <include
+            android:id="@+id/coverContainer"
+            layout="@layout/item_shelf_media_cover"
+            android:layout_width="@dimen/collapsed_cover_size"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-4dp"
+            android:layout_marginBottom="-4dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textSize="14sp"
+                tools:ignore="TextSizeCheck"
+                tools:text="@tools:sample/full_names" />
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0.66"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:visibility="gone"
+                tools:text="@tools:sample/first_names" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

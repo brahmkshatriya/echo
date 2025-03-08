@@ -9,6 +9,7 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.AnimationSet
 import android.view.animation.Interpolator
+import android.view.animation.RotateAnimation
 import android.view.animation.ScaleAnimation
 import android.view.animation.TranslateAnimation
 import androidx.core.view.doOnLayout
@@ -23,6 +24,8 @@ import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 object AnimationUtils {
 
@@ -159,51 +162,54 @@ object AnimationUtils {
         }
     }
 
-    private fun animatedWithAlpha(view: View, translate: Animation) =
-        AnimationSet(false).apply {
-            if (view.animations) {
-                val alpha = AlphaAnimation(0.0f, 1.0f)
-                val interpolator = getInterpolator(view.context) as Interpolator?
-                alpha.duration = view.animationDurationSmall
-                alpha.interpolator = interpolator
-                addAnimation(alpha)
-                translate.duration = view.animationDuration
-                translate.interpolator = interpolator
-                addAnimation(translate)
-            }
-        }
-
-    fun View.slideUpAnimation(): AnimationSet {
-        val translate = TranslateAnimation(
-            Animation.RELATIVE_TO_SELF, 0.0f,
-            Animation.RELATIVE_TO_SELF, 0f,
-            Animation.RELATIVE_TO_SELF, 1.0f,
-            Animation.RELATIVE_TO_SELF, 0f
-        )
-        return animatedWithAlpha(this, translate)
+    private fun View.animatedWithAlpha(delay: Long = 0, vararg anim: Animation) {
+        if (!animations) return
+        val set = AnimationSet(true)
+        set.interpolator = getInterpolator(context) as Interpolator
+        val alpha = AlphaAnimation(0.0f, 1.0f)
+        alpha.duration = animationDurationSmall
+        alpha.startOffset = delay
+        set.addAnimation(alpha)
+        anim.forEach { set.addAnimation(it) }
+        startAnimation(set)
     }
 
-    fun View.slideInAnimation(): AnimationSet {
-        val translate = TranslateAnimation(
-            Animation.RELATIVE_TO_SELF, 1.0f,
-            Animation.RELATIVE_TO_SELF, 0f,
-            Animation.RELATIVE_TO_SELF, 0.0f,
-            Animation.RELATIVE_TO_SELF, 0f
-        )
-        return animatedWithAlpha(this, translate)
-    }
-
-    fun View.applyScaleAnimation(
-        list: List<Float> = listOf(0.5f, 1.0f, 0.5f, 1.0f),
-        pivot: Pair<Float, Float> = 0.5f to 0.5f
+    fun View.applyTranslationAndScaleAnimation(
+        amount: Int, delay: Long = 0
     ) {
-        if (animations) {
-            val anim = ScaleAnimation(
-                list[0], list[1], list[2], list[3],
-                Animation.RELATIVE_TO_SELF, pivot.first,
-                Animation.RELATIVE_TO_SELF, pivot.second
-            )
-            this.startAnimation(animatedWithAlpha(this, anim))
-        }
+        val multiplier = amount.sign
+        val rotateAnimation = RotateAnimation(
+            5f * multiplier, 0f,
+            width.toFloat() / 2, height.toFloat() / 2
+        )
+        rotateAnimation.duration = animationDuration
+        val translate = TranslateAnimation(
+            Animation.RELATIVE_TO_SELF, multiplier * 0.5f,
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, 0f,
+        )
+        translate.duration = animationDuration
+        val from = 1f - 0.5f * multiplier.absoluteValue
+        val scale = ScaleAnimation(
+            from, 1f, from, 1f,
+            Animation.RELATIVE_TO_SELF, 0.5f,
+            Animation.RELATIVE_TO_SELF, 0.5f
+        )
+        scale.duration = animationDuration
+        animatedWithAlpha(delay, rotateAnimation, translate, scale)
+    }
+
+    fun View.applyTranslationYAnimation(amount: Int, delay: Long = 0) {
+        val multiplier = amount.sign
+        val translate = TranslateAnimation(
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, multiplier * 1.5f,
+            Animation.RELATIVE_TO_SELF, 0f,
+        )
+        translate.duration = animationDuration
+        translate.startOffset = delay
+        animatedWithAlpha(delay, translate)
     }
 }

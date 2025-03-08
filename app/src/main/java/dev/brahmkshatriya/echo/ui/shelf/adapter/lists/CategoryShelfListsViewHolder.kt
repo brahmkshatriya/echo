@@ -11,16 +11,19 @@ import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
-import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isNightMode
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
 
 class CategoryShelfListsViewHolder(
-    val listener: ShelfAdapter.Listener,
-    val binding: ItemShelfCategoryBinding
+    listener: ShelfAdapter.Listener,
+    private val matchParent: Boolean,
+    inflater: LayoutInflater,
+    parent: ViewGroup,
+    val binding: ItemShelfCategoryBinding =
+        ItemShelfCategoryBinding.inflate(inflater, parent, false)
 ) : ShelfListsAdapter.ViewHolder(binding.root) {
 
     private var category: Shelf.Category? = null
@@ -35,20 +38,13 @@ class CategoryShelfListsViewHolder(
         }
         binding.title.marquee()
         binding.root.updateLayoutParams<MarginLayoutParams> {
-            width = 112.dpToPx(binding.root.context)
+            if (!matchParent) width = 112.dpToPx(binding.root.context)
             marginStart = 4.dpToPx(binding.root.context)
             marginEnd = marginStart
         }
     }
 
     companion object {
-        fun create(
-            listener: ShelfAdapter.Listener, inflater: LayoutInflater, parent: ViewGroup
-        ): CategoryShelfListsViewHolder {
-            val binding = ItemShelfCategoryBinding.inflate(inflater, parent, false)
-            return CategoryShelfListsViewHolder(listener, binding)
-        }
-
         fun View.randomColor(seed: String?): Int {
             val hue = seed.hashCode().rem(360)
             val sat = if (context.isNightMode()) (35f + seed.hashCode().rem(25)) / 100 else 0.2f
@@ -59,39 +55,19 @@ class CategoryShelfListsViewHolder(
         }
     }
 
-    var itemId: String? = null
-    override fun bind(shelf: Shelf.Lists<*>?, position: Int) {
-        itemId = when (shelf) {
-            is Shelf.Lists.Categories -> shelf.list[position].id
-            is Shelf.Lists.Items -> shelf.list[position].id
-            is Shelf.Lists.Tracks -> shelf.list[position].id
-            null -> null
-        }
-
-        val title = when (shelf) {
-            is Shelf.Lists.Categories -> shelf.list[position].title
-            is Shelf.Lists.Items -> shelf.list[position].title
-            is Shelf.Lists.Tracks -> shelf.list[position].title
-            null -> null
-        }
-
-        val subtitle = when (shelf) {
-            is Shelf.Lists.Categories -> shelf.list[position].subtitle
-            is Shelf.Lists.Items -> shelf.list[position].subtitle
-            is Shelf.Lists.Tracks -> shelf.list[position].subtitle
-            null -> null
-        }
-
+    override fun bind(shelf: Shelf.Lists<*>?, position: Int, xScroll: Int, yScroll: Int) {
+        val categories = shelf as? Shelf.Lists.Categories ?: return
+        val category = categories.list.getOrNull(position) ?: return
+        this.category = category
         binding.root.apply {
-            setCardBackgroundColor(randomColor(itemId))
+            setCardBackgroundColor(randomColor(category.id))
         }
-        binding.title.text = title
-        binding.subtitle.text = subtitle
-        binding.subtitle.isVisible = !subtitle.isNullOrBlank()
-        binding.root.isClickable = category?.items != null
-    }
-
-    override fun onCurrentChanged(current: PlayerState.Current?) {
-        binding.root.alpha = if (current.isPlaying(itemId)) 0.5f else 1f
+        binding.title.text = category.title
+        binding.subtitle.text = category.subtitle
+        binding.subtitle.isVisible = !category.subtitle.isNullOrBlank()
+        binding.root.isClickable = category.items != null
+//        if (!matchParent) binding.root.applyTranslationAndScaleAnimation(xScroll)
+//        else
+            binding.root.applyTranslationYAnimation(yScroll)
     }
 }

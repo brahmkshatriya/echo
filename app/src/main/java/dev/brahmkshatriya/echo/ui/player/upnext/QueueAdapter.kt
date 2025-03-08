@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.databinding.ItemPlaylistTrackBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 
@@ -79,6 +80,7 @@ class QueueAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.onBind(position)
+        holder.itemView.applyTranslationYAnimation(scrollAmount)
     }
 
     private fun ViewHolder.onBind(position: Int) {
@@ -134,4 +136,22 @@ class QueueAdapter(
 //            if (loading) notifyItemInserted(0) else notifyItemRemoved(0)
 //        }
 //    }
+
+    private var scrollAmount: Int = 0
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            scrollAmount = dy
+        }
+    }
+
+    var recyclerView: RecyclerView? = null
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView = recyclerView
+        recyclerView.addOnScrollListener(scrollListener)
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        recyclerView.removeOnScrollListener(scrollListener)
+        this.recyclerView = null
+    }
 }

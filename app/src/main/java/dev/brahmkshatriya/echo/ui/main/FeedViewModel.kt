@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 abstract class FeedViewModel(
-    private val throwableFlow: MutableSharedFlow<Throwable>,
+    val throwableFlow: MutableSharedFlow<Throwable>,
     extensionLoader: ExtensionLoader
 ) : ViewModel() {
     open val current = extensionLoader.extensions.current

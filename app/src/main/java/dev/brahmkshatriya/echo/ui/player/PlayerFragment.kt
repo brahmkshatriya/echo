@@ -29,7 +29,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPS
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.slider.Slider
-import dev.brahmkshatriya.echo.MainApplication.Companion.isAmoled
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
@@ -208,20 +207,21 @@ class PlayerFragment : Fragment() {
         }
 
         view.doOnLayout { updateCollapsed() }
-        observe(uiViewModel.systemInsets) {
-            binding.constraintLayout.applyInsets(it, 64, 0)
-            binding.expandedToolbar.applyInsets(it)
+        observe(uiViewModel.combined) {
+            val system = uiViewModel.systemInsets.value
+            binding.constraintLayout.applyInsets(system, 64, 0)
+            binding.expandedToolbar.applyInsets(system)
             val insets = uiViewModel.run {
-                if (playerSheetState.value == STATE_EXPANDED) systemInsets.value
+                if (playerSheetState.value == STATE_EXPANDED) system
                 else getCombined()
             }
             binding.playerCollapsedContainer.root.applyHorizontalInsets(insets)
-            val left = if (requireContext().isRTL()) it.end + extraEndPadding else it.start
+            val left = if (requireContext().isRTL()) system.end + extraEndPadding else system.start
             leftPadding = collapsedTopPadding + left
-            val right = if (requireContext().isRTL()) it.start else it.end + extraEndPadding
+            val right = if (requireContext().isRTL()) system.start else system.end + extraEndPadding
             rightPadding = collapsedTopPadding + right
             updateCollapsed()
-            adapter.systemInsetsUpdated()
+            adapter.insetsUpdated()
         }
 
         observe(uiViewModel.moreSheetOffset) {
@@ -474,9 +474,7 @@ class PlayerFragment : Fragment() {
             adapter.onColorsUpdated()
 
             binding.run {
-                root.setBackgroundColor(
-                    if (requireContext().isAmoled()) colors.background else colors.accent
-                )
+                root.setBackgroundColor(colors.accent)
                 val backgroundState = ColorStateList.valueOf(colors.background)
                 bgGradient.imageTintList = backgroundState
                 bgCollapsed.backgroundTintList = backgroundState
@@ -565,7 +563,7 @@ class PlayerFragment : Fragment() {
     companion object {
         const val SHOW_BACKGROUND = "show_background"
         const val DYNAMIC_PLAYER = "dynamic_player"
-        fun Context.showBackground() =
+        private fun Context.showBackground() =
             getSettings().getBoolean(SHOW_BACKGROUND, true)
 
         private fun Context.isDynamic() =

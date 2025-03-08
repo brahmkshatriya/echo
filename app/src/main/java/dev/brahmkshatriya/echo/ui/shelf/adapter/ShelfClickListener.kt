@@ -78,6 +78,10 @@ class ShelfClickListener(
         }
     }
 
+    override fun onMediaItemPlayClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
+        todo()
+    }
+
     override fun onCategoryClicked(extensionId: String?, category: Shelf.Category?, view: View) {
         todo()
         onClick?.invoke(true)

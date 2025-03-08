@@ -19,33 +19,39 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingVertical="80dp"
+            android:paddingVertical="72dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_lyric" />
+
     </com.bosphere.fadingedgelayout.FadingEdgeLayout>
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/amoled_bg"
-        app:liftOnScroll="false">
+        android:backgroundTint="@android:color/transparent"
+        android:clipToPadding="false"
+        app:liftOnScroll="false"
+        app:liftOnScrollColor="@android:color/transparent">
 
         <com.google.android.material.search.SearchBar
             android:id="@+id/searchBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="2dp"
+            android:layout_marginVertical="6dp"
             android:hint="@string/search"
+            android:paddingEnd="8dp"
             app:backgroundTint="@color/amoled_bg"
             app:layout_scrollFlags="scroll|enterAlways"
             app:menu="@menu/lyrics_menu"
-            app:navigationIcon="@drawable/ic_search_outline" />
+            app:navigationIcon="@drawable/ic_search_outline"
+            tools:ignore="RtlSymmetry" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <TextView
         android:id="@+id/noLyrics"
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -53,7 +59,8 @@
         android:text="@string/no_lyrics"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
-        android:textColor="@color/amoled_fg" />
+        android:textColor="@color/amoled_fg"
+        android:visibility="gone" />
 
     <include
         android:id="@+id/lyricsItem"
@@ -76,7 +83,8 @@
         android:layout_height="match_parent"
         android:hint="@string/search"
         app:backgroundTint="@color/amoled_bg"
-        app:layout_anchor="@id/searchBar">
+        app:layout_anchor="@id/searchBar"
+        tools:visibility="gone">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/searchRecyclerView"

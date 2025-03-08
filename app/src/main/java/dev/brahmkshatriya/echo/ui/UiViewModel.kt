@@ -314,9 +314,18 @@ class UiViewModel(
         const val NAVBAR_GRADIENT = "navbar_gradient"
         fun MainActivity.setupNavBarAndInsets(
             uiViewModel: UiViewModel,
-            view: View,
+            root: View,
             navView: NavigationBarView
         ) {
+            val isRail = navView is NavigationRailView
+            ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+                uiViewModel.setSystemInsets(this, insets)
+                val navBarSize = uiViewModel.systemInsets.value.bottom
+                val full = getSettings().getBoolean(NAVBAR_GRADIENT, true)
+                GradientDrawable.applyNav(navView, isRail, navBarSize, !full)
+                insets
+            }
+
             navView.setOnItemSelectedListener {
                 uiViewModel.navigation.value = uiViewModel.navIds.indexOf(it.itemId)
                 true
@@ -329,15 +338,6 @@ class UiViewModel(
                     }
                     navView.selectedItemId = it.itemId
                 }
-            }
-
-            val isRail = navView is NavigationRailView
-            ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
-                uiViewModel.setSystemInsets(this, insets)
-                val navBarSize = uiViewModel.systemInsets.value.bottom
-                val full = getSettings().getBoolean(NAVBAR_GRADIENT, true)
-                GradientDrawable.applyNav(navView, isRail, navBarSize, !full)
-                insets
             }
 
             fun animateNav(animate: Boolean) {

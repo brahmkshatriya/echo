@@ -3,17 +3,18 @@ package dev.brahmkshatriya.echo.ui.player.lyrics
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.paging.LoadState
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
 
 class LyricsItemAdapter(
-    fragment: Fragment,
-    private val info: Extension<*>,
     private val listener: Listener
 ) : PagingDataAdapter<Lyrics, LyricsItemAdapter.ViewHolder>(DiffCallback) {
 
@@ -43,20 +44,19 @@ class LyricsItemAdapter(
         }
     }
 
-//    private val loadingListener = ShelfLoadingAdapter.createListener(fragment) { retry() }
-    fun withLoaders(): ConcatAdapter {
-//        val footer = ShelfLoadingAdapter(info, loadingListener)
-//        val header = ShelfLoadingAdapter(info, loadingListener)
-//        val empty = ShelfEmptyAdapter()
-//        addLoadStateListener { loadStates ->
-//            empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
-//                LoadState.Loading
-//            else LoadState.NotLoading(false)
-//            header.loadState = loadStates.refresh
-//            footer.loadState = loadStates.append
-//        }
-//        return ConcatAdapter(empty, header, this, footer)
-        return ConcatAdapter(this)
+    fun withLoaders(fragment: Fragment): ConcatAdapter {
+        val listener = fragment.createListener { retry() }
+        val footer = ShelfLoadingAdapter(listener)
+        val header = ShelfLoadingAdapter(listener)
+        val empty = ShelfEmptyAdapter()
+        addLoadStateListener { loadStates ->
+            empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
+                LoadState.Loading
+            else LoadState.NotLoading(false)
+            header.loadState = loadStates.refresh
+            footer.loadState = loadStates.append
+        }
+        return ConcatAdapter(empty, header, this, footer)
     }
 
 }
