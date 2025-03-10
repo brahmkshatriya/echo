@@ -25,7 +25,8 @@ An Extension-based Music Player for Android, designed with a clean and intuitive
 - This project is created strictly for educational purposes.
 
 ## Support Us
-<a href='https://ko-fi.com/I2I5C3UUV' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+<a href='https://ko-fi.com/I2I5C3UUV' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a> <a href='https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=brahmkshatriya@apl&tn=Thanks%20for%20this%20amazing%20app!%20Much%20love%20to%20Echo.  
+' target='_blank'><img height='36' src='https://files.catbox.moe/q8yq5o.png' border='0' alt='UPI' /></a>
 > ⭐ **Star This Repository To Support The Developer And Encourage The Development Of The Application!**
 <details>
   <summary>Star History</summary>
