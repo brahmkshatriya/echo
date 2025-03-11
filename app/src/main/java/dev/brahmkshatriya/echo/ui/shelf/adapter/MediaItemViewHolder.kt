@@ -18,7 +18,14 @@ import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.MediaItemShelfListsViewHol
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 
-sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view) {
+sealed class MediaItemViewHolder(view: View) : ShelfAdapter.ViewHolder(view) {
+
+    interface Listener : TrackAdapter.Listener {
+        fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View)
+        fun onMediaItemLongClicked(extensionId: String?, item: EchoMediaItem?, it: View) {}
+        fun onMediaItemPlayClicked(extensionId: String?, item: EchoMediaItem?, it: View) {}
+    }
+
     var item: Shelf.Item? = null
     override fun bind(item: Shelf?) {
         val shelfItem = (item as? Shelf.Item)
@@ -34,20 +41,23 @@ sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view
     abstract fun onIsPlayingChanged(isPlaying: Boolean)
 
     class Small(
-        adapter: ShelfAdapter,
-        listener: ShelfAdapter.Listener,
+        private val adapter: ShelfAdapter?,
+        listener: Listener,
         inflater: LayoutInflater,
         parent: ViewGroup,
         val binding: ItemShelfMediaBinding =
             ItemShelfMediaBinding.inflate(inflater, parent, false)
-    ) : MediaItemShelfViewHolder(binding.root) {
+    ) : MediaItemViewHolder(binding.root) {
 
         init {
+            binding.coverContainer.cover.clipToOutline = true
+            binding.more.isVisible = adapter != null
             binding.root.setOnClickListener {
-                when (val item = item?.media) {
+                val tracks = adapter?.getTracks()
+                if (tracks == null) listener.onMediaItemClicked(extensionId, item?.media, it)
+                else when (val item = item?.media) {
                     is EchoMediaItem.TrackItem -> {
                         val track = item.track
-                        val tracks = adapter.getTracks()
                         val index = tracks.indexOf(track)
                         listener.onTrackClicked(extensionId, tracks, index, null, it)
                     }
@@ -55,41 +65,39 @@ sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view
                     else -> listener.onMediaItemClicked(extensionId, item, it)
                 }
             }
-            binding.root.setOnLongClickListener {
-                when (val item = item?.media) {
-                    is EchoMediaItem.TrackItem -> {
-                        val track = item.track
-                        val tracks = adapter.getTracks()
-                        val index = tracks.indexOf(track)
-                        listener.onTrackLongClicked(extensionId, tracks, index, null, it)
-                        true
-                    }
+            if (adapter != null) {
+                binding.root.setOnLongClickListener {
+                    val tracks = adapter.getTracks()
+                    when (val item = item?.media) {
+                        is EchoMediaItem.TrackItem -> {
+                            val track = item.track
+                            val index = tracks.indexOf(track)
+                            listener.onTrackLongClicked(extensionId, tracks, index, null, it)
+                            true
+                        }
 
-                    null -> false
-                    else -> {
-                        listener.onMediaItemClicked(extensionId, item, it)
-                        true
+                        null -> false
+                        else -> {
+                            listener.onMediaItemLongClicked(extensionId, item, it)
+                            true
+                        }
                     }
                 }
+
+                binding.play.setOnClickListener {
+                    listener.onMediaItemPlayClicked(extensionId, item?.media, it)
+                }
+                binding.more.setOnClickListener {
+                    binding.root.performLongClick()
+                }
             }
-            binding.play.setOnClickListener {
-                listener.onMediaItemPlayClicked(extensionId, item?.media, it)
-            }
-            binding.more.setOnClickListener {
-                binding.root.performLongClick()
-            }
-            binding.coverContainer.cover.clipToOutline = true
         }
 
         override fun bind(mediaItem: EchoMediaItem?, loadTracks: Boolean) {
             binding.root.applyTranslationYAnimation(scrollAmount)
             mediaItem ?: return
-            binding.title.text = mediaItem.title
-            val subtitle = mediaItem.subtitleWithDuration()
-            binding.subtitle.text = subtitle
-            binding.subtitle.isVisible = !subtitle.isNullOrBlank()
-            binding.play.isVisible = mediaItem !is EchoMediaItem.TrackItem
-            binding.coverContainer.run { applyCover(mediaItem, cover, listBg1, listBg2, icon) }
+            binding.bind(mediaItem)
+            binding.play.isVisible = adapter != null && mediaItem !is EchoMediaItem.TrackItem
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -99,12 +107,12 @@ sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view
     }
 
     class TrackCard(
-        listener: ShelfAdapter.Listener,
+        listener: Listener,
         inflater: LayoutInflater,
         parent: ViewGroup,
         val binding: ItemShelfTrackCardBinding =
             ItemShelfTrackCardBinding.inflate(inflater, parent, false)
-    ) : MediaItemShelfViewHolder(binding.root) {
+    ) : MediaItemViewHolder(binding.root) {
 
         init {
             binding.root.setOnClickListener {
@@ -172,6 +180,14 @@ sealed class MediaItemShelfViewHolder(view: View) : ShelfAdapter.ViewHolder(view
                 is EchoMediaItem.Lists.PlaylistItem -> R.drawable.ic_library_music
                 is EchoMediaItem.Lists.RadioItem -> R.drawable.ic_sensors
             }
+
+        fun ItemShelfMediaBinding.bind(item: EchoMediaItem) {
+            title.text = item.title
+            val subtitleText = item.subtitleWithDuration()
+            subtitle.text = subtitleText
+            subtitle.isVisible = !subtitleText.isNullOrBlank()
+            coverContainer.run { applyCover(item, cover, listBg1, listBg2, icon) }
+        }
 
         fun getViewType(item: Shelf.Item): Int {
             return if (!item.loadTracks) 0 else when (item.media) {

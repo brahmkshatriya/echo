@@ -50,8 +50,8 @@ import kotlin.math.min
 
 class UiViewModel(
     context: Context,
-    playerState: PlayerState,
-    extensionLoader: ExtensionLoader
+    extensionLoader: ExtensionLoader,
+    private val playerState: PlayerState
 ) : ViewModel() {
 
     data class Insets(
@@ -132,9 +132,9 @@ class UiViewModel(
     }
 
     val playerBgVisible = MutableStateFlow(false)
-    val playerSheetState = MutableStateFlow(
+    private fun getState() =
         if (playerState.current.value != null) STATE_COLLAPSED else STATE_HIDDEN
-    )
+    val playerSheetState = MutableStateFlow(getState())
     val playerSheetOffset = MutableStateFlow(0f)
     val moreSheetState = MutableStateFlow(STATE_COLLAPSED)
     val moreSheetOffset = MutableStateFlow(0f)
@@ -162,8 +162,8 @@ class UiViewModel(
         }
     }
 
-    fun collapsePlayer(state: Int = STATE_COLLAPSED) {
-        changePlayerState(state)
+    fun collapsePlayer() {
+        changePlayerState(getState())
         changeMoreState(STATE_COLLAPSED)
     }
 

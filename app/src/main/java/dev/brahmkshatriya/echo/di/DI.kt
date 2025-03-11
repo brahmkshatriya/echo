@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.ui.extensions.login.LoginViewModel
 import dev.brahmkshatriya.echo.ui.main.home.HomeFeedViewModel
 import dev.brahmkshatriya.echo.ui.main.library.LibraryViewModel
 import dev.brahmkshatriya.echo.ui.main.search.SearchViewModel
+import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.info.TrackInfoViewModel
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
@@ -66,6 +67,8 @@ object DI {
         viewModelOf(::HomeFeedViewModel)
         viewModelOf(::LibraryViewModel)
         viewModelOf(::SearchViewModel)
+
+        viewModelOf(::MediaViewModel)
     }
 
     val appModule = module {

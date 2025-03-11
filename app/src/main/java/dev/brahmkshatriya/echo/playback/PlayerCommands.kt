@@ -15,6 +15,9 @@ object PlayerCommands {
     val repeatCommand = SessionCommand("repeat", Bundle.EMPTY)
     val repeatOffCommand = SessionCommand("repeat_off", Bundle.EMPTY)
     val repeatOneCommand = SessionCommand("repeat_one", Bundle.EMPTY)
+    val playCommand = SessionCommand("play", Bundle.EMPTY)
+    val addToQueueCommand = SessionCommand("add_to_queue", Bundle.EMPTY)
+    val addToNextCommand = SessionCommand("add_to_next", Bundle.EMPTY)
     val radioCommand = SessionCommand("radio", Bundle.EMPTY)
     val sleepTimer = SessionCommand("sleep_timer", Bundle.EMPTY)
 

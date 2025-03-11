@@ -66,7 +66,7 @@ class ShelfAdapter(
 
     override fun getItemViewType(position: Int): Int {
         val (type, extra) = when (val item = getItem(position)) {
-            is Shelf.Item -> 1 to MediaItemShelfViewHolder.getViewType(item)
+            is Shelf.Item -> 1 to MediaItemViewHolder.getViewType(item)
             is Shelf.Category -> 2 to null
             is Shelf.Lists<*> -> 3 to null
             null -> error("null shelf item")
@@ -79,7 +79,7 @@ class ShelfAdapter(
         val inflater = LayoutInflater.from(parent.context)
         val (type, extra) = viewType / 10 to viewType % 10
         val viewHolder = when (type) {
-            1 -> MediaItemShelfViewHolder.create(listener, this, inflater, parent, extra)
+            1 -> MediaItemViewHolder.create(listener, this, inflater, parent, extra)
             2 -> CategoryShelfViewHolder.create(listener, inflater, parent)
             3 -> ListsShelfViewHolder.create(sharedPool, listener, inflater, parent)
             else -> error("unknown view type")

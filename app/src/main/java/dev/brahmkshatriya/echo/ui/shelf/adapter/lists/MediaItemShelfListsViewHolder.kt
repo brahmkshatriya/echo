@@ -18,8 +18,8 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfListsMediaBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
-import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemShelfViewHolder.Companion.icon
-import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemShelfViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder.Companion.icon
+import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadWithThumb
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationAndScaleAnimation
 
@@ -35,10 +35,22 @@ class MediaItemShelfListsViewHolder(
 
     init {
         binding.root.setOnClickListener {
-            listener.onMediaItemClicked(extensionId, item, it)
+            when (val item = item) {
+                is EchoMediaItem.TrackItem -> listener.onTrackClicked(
+                    extensionId, listOf(item.track), 0, null, it
+                )
+
+                else -> listener.onMediaItemClicked(extensionId, item, it)
+            }
         }
         binding.root.setOnLongClickListener {
-            listener.onMediaItemLongClicked(extensionId, item, it)
+            when (val item = item) {
+                is EchoMediaItem.TrackItem -> listener.onTrackLongClicked(
+                    extensionId, listOf(item.track), 0, null, it
+                )
+
+                else -> listener.onMediaItemLongClicked(extensionId, item, it)
+            }
             true
         }
         binding.cover.clipToOutline = true

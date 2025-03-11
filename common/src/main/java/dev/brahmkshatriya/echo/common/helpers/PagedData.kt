@@ -80,6 +80,14 @@ sealed class PagedData<T : Any> {
     fun hasNext() = !loaded
 
     abstract fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R>
+    suspend fun load(pages: Int): List<T> {
+        val list = mutableListOf<T>()
+        repeat(pages) {
+            val page = loadNext() ?: return list
+            list.addAll(page)
+        }
+        return list
+    }
 
     /**
      * A class representing a single page of data.

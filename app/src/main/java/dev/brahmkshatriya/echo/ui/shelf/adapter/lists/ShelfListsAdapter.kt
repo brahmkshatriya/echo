@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.TrackAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.ThreeTrackShelfListsViewHolder.Companion.MULTIPLIER
@@ -16,11 +17,7 @@ class ShelfListsAdapter(
     private val listener: ShelfAdapter.Listener
 ) : RecyclerView.Adapter<ShelfListsAdapter.ViewHolder>() {
 
-    interface Listener : TrackAdapter.Listener {
-        fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View)
-        fun onMediaItemLongClicked(extensionId: String?, item: EchoMediaItem?, it: View)
-        fun onMediaItemPlayClicked(extensionId: String?, item: EchoMediaItem?, it: View)
-
+    interface Listener : MediaItemViewHolder.Listener {
         fun onCategoryClicked(extensionId: String?, category: Shelf.Category?, view: View)
         fun onCategoryLongClicked(extensionId: String?, category: Shelf.Category?, view: View)
     }

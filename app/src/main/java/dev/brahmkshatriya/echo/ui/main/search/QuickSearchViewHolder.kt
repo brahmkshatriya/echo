@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
-import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemShelfViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 
 sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

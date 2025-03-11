@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
+import androidx.fragment.app.replace
 import dev.brahmkshatriya.echo.R
 
 object FragmentUtils {
@@ -13,16 +14,15 @@ object FragmentUtils {
         view: View? = null, bundle: Bundle? = null,
     ) {
         parentFragmentManager.commit {
-            hide(this@openFragment)
-            add<T>(id, args = bundle)
+            replace<T>(id, args = bundle)
             addToBackStack(null)
         }
     }
 
     inline fun <reified T : Fragment> FragmentActivity.openFragment(
-        view: View? = null, bundle: Bundle? = null
+        view: View? = null, bundle: Bundle? = null, cont: Int = R.id.navHostFragment
     ) {
-        val oldFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment)!!
+        val oldFragment = supportFragmentManager.findFragmentById(cont)!!
         oldFragment.openFragment<T>(view, bundle)
     }
 

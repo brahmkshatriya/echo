@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -13,7 +14,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
@@ -42,12 +43,10 @@ class PlayerRadio(
         const val AUTO_START_RADIO = "auto_start_radio"
         suspend fun start(
             throwableFlow: MutableSharedFlow<Throwable>,
-            extensionListFlow: StateFlow<List<MusicExtension>?>,
-            extId: String,
+            extension: Extension<*>,
             item: EchoMediaItem,
             itemContext: EchoMediaItem?
         ): PlayerState.Radio.Loaded? {
-            val extension = extensionListFlow.getExtensionOrThrow(extId)
             return extension.get<RadioClient, PlayerState.Radio.Loaded?>(throwableFlow) {
                 val radio = when (item) {
                     is TrackItem -> radio(item.track, itemContext)
@@ -58,7 +57,7 @@ class PlayerRadio(
                     is Lists.RadioItem -> throw IllegalStateException()
                 }
                 val tracks = loadTracks(radio)
-                PlayerState.Radio.Loaded(extId, radio, null) {
+                PlayerState.Radio.Loaded(extension.id, radio.toMediaItem(), null) {
                     extension.run(throwableFlow) { tracks.loadList(it) }
                 }
             }
@@ -78,7 +77,7 @@ class PlayerRadio(
 
             val item = tracks.data.map {
                 MediaItemUtils.build(
-                    settings, it, loaded.clientId, loaded.radio.toMediaItem()
+                    settings, it, loaded.clientId, loaded.context
                 )
             }
 
@@ -93,11 +92,12 @@ class PlayerRadio(
 
     private suspend fun loadPlaylist() {
         val mediaItem = withContext(Dispatchers.Main) { player.currentMediaItem } ?: return
-        val client = mediaItem.extensionId
+        val extensionId = mediaItem.extensionId
         val item = mediaItem.track.toMediaItem()
         val itemContext = mediaItem.context
         stateFlow.value = PlayerState.Radio.Loading
-        val loaded = start(throwFlow, extensionList, client, item, itemContext)
+        val extension = extensionList.getExtension(extensionId) ?: return
+        val loaded = start(throwFlow, extension, item, itemContext)
         stateFlow.value = loaded ?: PlayerState.Radio.Empty
         if (loaded != null) play(player, settings, stateFlow, loaded)
     }

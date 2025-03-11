@@ -2,12 +2,12 @@ package dev.brahmkshatriya.echo.playback
 
 import androidx.media3.common.MediaItem
 import dev.brahmkshatriya.echo.common.helpers.Page
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import kotlinx.coroutines.flow.MutableStateFlow
-import dev.brahmkshatriya.echo.common.models.Radio as EchoRadio
 
 data class PlayerState(
     val current: MutableStateFlow<Current?> = MutableStateFlow(null),
@@ -43,7 +43,7 @@ data class PlayerState(
         data object Loading : Radio()
         data class Loaded(
             val clientId: String,
-            val radio: EchoRadio,
+            val context: EchoMediaItem,
             val cont: String?,
             val tracks: suspend (String?) -> Page<Track>?
         ) : Radio()

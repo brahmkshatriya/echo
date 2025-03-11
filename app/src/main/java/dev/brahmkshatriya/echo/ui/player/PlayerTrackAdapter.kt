@@ -95,11 +95,19 @@ class PlayerTrackAdapter(
                 alpha = offset
             }
             if (isLandscape) binding.clickPanel.root.scaleX = 0.5f + 0.5f * inv
+            val extraY = if (!isPlayerVisible) 0f else {
+                val toMoveY = binding.playerControlsPlaceholder.top - cover.top - collapsedPadding
+                toMoveY * inv
+            }
+            val extraX = if (!isPlayerVisible) 0f else {
+                val toMoveX = binding.playerControlsPlaceholder.left - cover.left
+                toMoveX * inv
+            }
             cover.run {
-                scaleX = 1 + (targetScale - 1) * offset
+                scaleX = if (!isPlayerVisible) 1 + (targetScale - 1) * offset else targetScale
                 scaleY = scaleX
-                translationX = targetX * offset
-                translationY = targetY * offset
+                translationX = targetX * offset + extraX
+                translationY = targetY * offset + extraY
                 translationZ = targetZ * (1 - offset)
                 currCoverRound = collapsedPadding / scaleX
                 invalidateOutline()
@@ -225,6 +233,12 @@ class PlayerTrackAdapter(
     fun onCurrentUpdated() {
         onEachViewHolder { applyBitmap() }
         if (current.value == null) currentBitmapListener?.invoke(null)
+    }
+
+    private var isPlayerVisible = false
+    fun updatePlayerVisibility(visible: Boolean) {
+        isPlayerVisible = visible
+        onEachViewHolder { updateInsets() }
     }
 
     var currentBitmapListener: ((Bitmap?) -> Unit)? = null

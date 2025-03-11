@@ -33,11 +33,11 @@ class TrackAdapter(
     interface Listener {
         fun onTrackClicked(
             extensionId: String?, list: List<Track>, index: Int, context: EchoMediaItem?, view: View
-        )
+        ) {}
 
         fun onTrackLongClicked(
             extensionId: String?, list: List<Track>, index: Int, context: EchoMediaItem?, view: View
-        )
+        ) {}
     }
 
     var id: String? = null

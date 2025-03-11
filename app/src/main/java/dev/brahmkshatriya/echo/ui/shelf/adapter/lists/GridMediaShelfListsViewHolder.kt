@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.shelf.adapter.lists
 
+import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -92,5 +93,6 @@ class GridMediaShelfListsViewHolder(
             else -> null
         }
         binding.coverContainer.isPlaying.isVisible = current.isPlaying(itemId)
+        (binding.coverContainer.isPlaying.drawable as Animatable).start()
     }
 }

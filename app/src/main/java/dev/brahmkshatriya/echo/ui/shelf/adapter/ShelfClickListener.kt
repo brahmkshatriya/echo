@@ -5,10 +5,14 @@ import androidx.fragment.app.FragmentManager
 import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.media.MediaFragment
+import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import org.koin.android.ext.android.inject
@@ -49,33 +53,17 @@ class ShelfClickListener(
     }
 
     override fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
-        when (item) {
-            is EchoMediaItem.Lists.AlbumItem -> todo()
-            is EchoMediaItem.Lists.PlaylistItem -> todo()
-            is EchoMediaItem.Lists.RadioItem -> todo()
-            is EchoMediaItem.Profile.ArtistItem -> todo()
-            is EchoMediaItem.Profile.UserItem -> todo()
-            is EchoMediaItem.TrackItem -> {
-                return onTrackClicked(extensionId, listOf(item.track), 0, null, it)
-            }
-
-            null -> Unit
-        }
+        extensionId ?: return
+        item ?: return
+        fragment.openFragment<MediaFragment>(it, MediaFragment.getBundle(extensionId, item, false))
         onClick?.invoke(true)
     }
 
     override fun onMediaItemLongClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
-        when (item) {
-            is EchoMediaItem.Lists.AlbumItem -> todo()
-            is EchoMediaItem.Lists.PlaylistItem -> todo()
-            is EchoMediaItem.Lists.RadioItem -> todo()
-            is EchoMediaItem.Profile.ArtistItem -> todo()
-            is EchoMediaItem.Profile.UserItem -> todo()
-            is EchoMediaItem.TrackItem ->
-                onTrackLongClicked(extensionId, listOf(item.track), 0, null, it)
-
-            null -> Unit
-        }
+        extensionId ?: return
+        item ?: return
+        MediaMoreBottomSheet.newInstance(fragmentContainerId, extensionId, item, false)
+            .show(fragmentManager, null)
     }
 
     override fun onMediaItemPlayClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
@@ -106,6 +94,7 @@ class ShelfClickListener(
     override fun onTrackLongClicked(
         extensionId: String?, list: List<Track>, index: Int, context: EchoMediaItem?, view: View
     ) {
-        todo()
+        val track = list.getOrNull(index) ?: return
+        onMediaItemLongClicked(extensionId, track.toMediaItem(), view)
     }
 }

@@ -33,8 +33,8 @@ class ThreeTrackShelfListsViewHolder(
             mediaBinding.root.setOnClickListener {
                 val position = bindingAdapterPosition * MULTIPLIER + index
                 val shelf = shelf ?: return@setOnClickListener
-                if (!shelf.isNumbered) listener.onMediaItemClicked(
-                    extensionId, shelf.list.getOrNull(position)?.toMediaItem(), it
+                if (!shelf.isNumbered) listener.onTrackClicked(
+                    extensionId, listOfNotNull(shelf.list.getOrNull(position)), 0, null, it
                 )
                 else listener.onTrackClicked(
                     extensionId, shelf.list, position, null, it
@@ -43,14 +43,15 @@ class ThreeTrackShelfListsViewHolder(
             mediaBinding.root.setOnLongClickListener {
                 val position = bindingAdapterPosition * MULTIPLIER + index
                 val shelf = shelf ?: return@setOnLongClickListener false
-                if (!shelf.isNumbered) listener.onMediaItemLongClicked(
-                    extensionId, shelf.list.getOrNull(position)?.toMediaItem(), it
+                if (!shelf.isNumbered) listener.onTrackLongClicked(
+                    extensionId, listOfNotNull(shelf.list.getOrNull(position)), 0, null, it
                 )
                 else listener.onTrackLongClicked(
                     extensionId, shelf.list, position, null, it
                 )
                 true
             }
+            mediaBinding.play.isVisible = false
             mediaBinding.more.setOnClickListener {
                 val position = bindingAdapterPosition * MULTIPLIER + index
                 val shelf = shelf ?: return@setOnClickListener

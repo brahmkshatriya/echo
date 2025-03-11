@@ -14,7 +14,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -25,6 +27,14 @@ import androidx.media3.common.Player
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -32,16 +42,22 @@ import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyHorizontalInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.isFinalState
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.setupPlayerMoreBehavior
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.media.MediaFragment
+import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.getColorsFrom
 import dev.brahmkshatriya.echo.ui.player.PlayerTrackAdapter.Companion.configureClicking
@@ -90,8 +106,9 @@ class PlayerFragment : Fragment() {
         setupPlayerMoreBehavior(uiViewModel, binding.playerMoreContainer)
         configureOutline(binding.root)
         configureCollapsing(binding)
-        configurePlayer()
         configureColors()
+        configurePlayerControls()
+        configureBackgroundPlayerView()
     }
 
     private val collapseHeight by lazy {
@@ -257,7 +274,7 @@ class PlayerFragment : Fragment() {
         }
         binding.bgPanel.configureClicking(adapterListener, uiViewModel)
         binding.playerCollapsedContainer.playerClose.setOnClickListener {
-            uiViewModel.collapsePlayer(STATE_HIDDEN)
+            uiViewModel.changePlayerState(STATE_HIDDEN)
         }
         binding.expandedToolbar.setNavigationOnClickListener {
             uiViewModel.collapsePlayer()
@@ -288,7 +305,7 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun configurePlayer() {
+    private fun configurePlayerControls() {
         val viewPager = binding!!.viewPager
         viewPager.adapter = adapter
         viewPager.registerOnUserPageChangeCallback { pos, isUser ->
@@ -443,6 +460,7 @@ class PlayerFragment : Fragment() {
             }
             observe(viewModel.repeatMode) { changeRepeatDrawable(it) }
 
+            trackSubtitle.marquee()
             trackSubtitle.setOnClickListener {
                 QualitySelectionBottomSheet().show(parentFragmentManager, null)
             }
@@ -549,16 +567,62 @@ class PlayerFragment : Fragment() {
     }
 
     private fun openItem(extension: String, item: EchoMediaItem) {
-//        openFragment()
-        TODO()
+        requireActivity().openFragment<MediaFragment>(
+            null, MediaFragment.getBundle(extension, item, false)
+        )
     }
 
     private fun onMoreClicked(item: MediaItem) {
-        TODO()
+        MediaMoreBottomSheet.newInstance(
+            R.id.navHostFragment, item.extensionId, item.track.toMediaItem(), item.isLoaded, true
+        ).show(parentFragmentManager, null)
     }
 
     private fun Player?.hasVideo() =
         this?.currentTracks?.groups.orEmpty().any { it.type == C.TRACK_TYPE_VIDEO }
+
+    private fun applyVideoVisibility(visible: Boolean) {
+        binding?.playerView?.isVisible = visible
+        binding?.bgImage?.isVisible = !visible
+        if (requireContext().isLandscape()) return
+        binding?.playerControls?.trackCoverPlaceHolder?.isVisible = visible
+        adapter.updatePlayerVisibility(visible)
+    }
+
+    private var oldBg: Streamable.Media.Background? = null
+    private var backgroundPlayer: Player? = null
+
+    @OptIn(UnstableApi::class)
+    private fun applyPlayer() {
+        val mainPlayer = viewModel.browser.value
+        val background = viewModel.playerState.current.value?.mediaItem?.background
+        val visible = if (mainPlayer.hasVideo()) {
+            binding?.playerView?.player = mainPlayer
+            binding?.playerView?.resizeMode = RESIZE_MODE_FIT
+            backgroundPlayer?.release()
+            backgroundPlayer = null
+            true
+        } else if (background != null) {
+            if (oldBg != background) {
+                oldBg = background
+                backgroundPlayer?.release()
+                backgroundPlayer = getPlayer(requireContext(), viewModel.cache, background)
+            }
+            binding?.playerView?.player = backgroundPlayer
+            binding?.playerView?.resizeMode = RESIZE_MODE_ZOOM
+            true
+        } else {
+            backgroundPlayer?.release()
+            backgroundPlayer = null
+            false
+        }
+        applyVideoVisibility(visible)
+    }
+
+    private fun configureBackgroundPlayerView() {
+        observe(viewModel.playerState.current) { applyPlayer() }
+        observe(viewModel.tracks) { applyPlayer() }
+    }
 
     companion object {
         const val SHOW_BACKGROUND = "show_background"
@@ -568,5 +632,26 @@ class PlayerFragment : Fragment() {
 
         private fun Context.isDynamic() =
             getSettings().getBoolean(DYNAMIC_PLAYER, true)
+
+        @OptIn(UnstableApi::class)
+        fun getPlayer(
+            context: Context, cache: SimpleCache, video: Streamable.Media.Background
+        ): ExoPlayer {
+            val cacheFactory = CacheDataSource
+                .Factory().setCache(cache)
+                .setUpstreamDataSourceFactory(
+                    DefaultHttpDataSource.Factory()
+                        .setDefaultRequestProperties(video.request.headers)
+                )
+            val factory = DefaultMediaSourceFactory(context)
+                .setDataSourceFactory(cacheFactory)
+            val player = ExoPlayer.Builder(context).setMediaSourceFactory(factory).build()
+            player.setMediaItem(MediaItem.fromUri(video.request.url.toUri()))
+            player.repeatMode = ExoPlayer.REPEAT_MODE_ONE
+            player.volume = 0f
+            player.prepare()
+            player.play()
+            return player
+        }
     }
 }
