@@ -191,7 +191,7 @@ class LoginFragment : Fragment() {
             override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
                 callback.isEnabled = webView.canGoBack()
                 url ?: return
-                if (loginWebViewStopUrlRegex.find(url) != null) {
+                if (runCatching { loginWebViewStopUrlRegex.find(url) }.getOrNull() != null) {
                     webView.stopLoading()
                     lifecycleScope.launch {
                         val data = webView.loadData(url, client)

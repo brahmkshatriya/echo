@@ -19,4 +19,6 @@ class MediaFragment : Fragment() {
     private val extensionId by lazy { args.getString("extensionId")!! }
     private val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
     private val loaded by lazy { args.getBoolean("loaded") }
+
+
 }

@@ -76,10 +76,11 @@ class Updater(
             downloadUpdate(activity, url, client).getOrThrow()
         } ?: return
         val installAsApk = extension.metadata.importType == ImportType.App
-        val successful = InstallationUtils.installExtension(activity, file, installAsApk).getOrElse {
-            throwableFlow.emit(it)
-            false
-        }
+        val successful =
+            InstallationUtils.installExtension(activity, file, installAsApk).getOrElse {
+                throwableFlow.emit(it)
+                false
+            }
         if (successful) messageFlow.emit(
             Message(
                 activity.getString(R.string.extension_updated_successfully, extension.name)

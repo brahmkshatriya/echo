@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionInstallerBottomSheet
 import dev.brahmkshatriya.echo.utils.PermsUtils.registerActivityResultLauncher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
 import kotlin.coroutines.resume
@@ -144,7 +145,6 @@ object InstallationUtils {
 
     suspend fun addExtensions(
         viewModel: ExtensionsViewModel,
-        context: FragmentActivity,
         extensions: List<ExtensionAssetResponse>
     ) {
         val updater = viewModel.extensionLoader.updater
@@ -156,42 +156,46 @@ object InstallationUtils {
             } ?: return@forEach
             app.messageFlow.emit(
                 Message(
-                    context.getString(R.string.downloading_update_for_extension, extension.name)
+                    app.context.getString(R.string.downloading_update_for_extension, extension.name)
                 )
             )
-            val file = updater.downloadUpdate(context, url, updater.client).getOrElse {
+            val file = updater.downloadUpdate(app.context, url, updater.client).getOrElse {
                 app.throwFlow.emit(it)
                 return@forEach
             }
-            context.installExtension(file.toUri().toString())
+            viewModel.installExtension.emit(file.toUri().toString())
         }
     }
 
     const val EXTENSION_INSTALLER = "extensionInstaller"
-    suspend fun FragmentActivity.installExtension(fileString: String) = suspendCoroutine {
-        supportFragmentManager.setFragmentResultListener(
-            EXTENSION_INSTALLER,
-            this
-        ) { _, b ->
-            val file = b.getString("file")?.toUri()?.toFile()
-            val install = b.getBoolean("install")
-            val installAsApk = b.getBoolean("installAsApk")
-            val links = b.getStringArrayList("links").orEmpty()
-            val context = this
-            if (install && file != null) {
-                val extensionViewModel by viewModel<ExtensionsViewModel>()
-                lifecycleScope.launch {
-                    val result = extensionViewModel.install(context, file, installAsApk)
-                    if (result && installAsApk) {
-                        context.createLinksDialog(file, links)
+    suspend fun FragmentActivity.installExtension(fileString: String) =
+        suspendCancellableCoroutine {
+            it.invokeOnCancellation {
+                supportFragmentManager.clearFragmentResultListener(EXTENSION_INSTALLER)
+            }
+            supportFragmentManager.setFragmentResultListener(
+                EXTENSION_INSTALLER,
+                this
+            ) { _, b ->
+                val file = b.getString("file")?.toUri()?.toFile()
+                val install = b.getBoolean("install")
+                val installAsApk = b.getBoolean("installAsApk")
+                val links = b.getStringArrayList("links").orEmpty()
+                val context = this
+                if (install && file != null) {
+                    val extensionViewModel by viewModel<ExtensionsViewModel>()
+                    lifecycleScope.launch {
+                        val result = extensionViewModel.install(context, file, installAsApk)
+                        if (result && installAsApk) {
+                            context.createLinksDialog(file, links)
+                        }
+                        supportFragmentManager.clearFragmentResultListener(EXTENSION_INSTALLER)
+                        it.resume(result)
                     }
-                    supportFragmentManager.clearFragmentResultListener(EXTENSION_INSTALLER)
-                    it.resume(result)
                 }
             }
+            ExtensionInstallerBottomSheet.newInstance(fileString).show(supportFragmentManager, null)
         }
-        ExtensionInstallerBottomSheet.newInstance(fileString).show(supportFragmentManager, null)
-    }
 
     private suspend fun Context.createLinksDialog(
         file: File, links: List<String>

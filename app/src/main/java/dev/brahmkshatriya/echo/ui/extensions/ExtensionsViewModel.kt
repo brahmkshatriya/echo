@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.extensions
 
 import androidx.core.content.edit
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
@@ -21,7 +22,9 @@ import dev.brahmkshatriya.echo.extensions.Updater
 import dev.brahmkshatriya.echo.extensions.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionListViewModel
 import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference.Companion.prefId
+import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
@@ -30,6 +33,7 @@ class ExtensionsViewModel(
     val extensionLoader: ExtensionLoader,
     val app: App
 ) : ExtensionListViewModel<MusicExtension>() {
+    val installExtension = MutableSharedFlow<String>()
     val extensions = extensionLoader.extensions
     override val extensionsFlow = extensions.music
     override val currentSelectionFlow = extensions.current
@@ -98,13 +102,11 @@ class ExtensionsViewModel(
     }
 
     fun addExtensions(
-        requireActivity: FragmentActivity,
         selectedExtensions: MutableList<Updater.ExtensionAssetResponse>
     ) {
         viewModelScope.launch {
             InstallationUtils.addExtensions(
                 this@ExtensionsViewModel,
-                requireActivity,
                 selectedExtensions
             )
         }
@@ -118,15 +120,18 @@ class ExtensionsViewModel(
     }
 
     fun updateExtensions(activity: FragmentActivity, force: Boolean) {
-        viewModelScope.launch {
+        activity.lifecycleScope.launch {
             extensionLoader.updater.updateExtensions(activity, force)
         }
     }
 
     companion object {
-        fun FragmentActivity.updateExtensions(force: Boolean = false) {
+        fun FragmentActivity.configureExtensionsUpdater(force: Boolean = false) {
             val viewModel by viewModel<ExtensionsViewModel>()
             viewModel.updateExtensions(this, force)
+            observe(viewModel.installExtension) {
+                installExtension(it)
+            }
         }
     }
 }

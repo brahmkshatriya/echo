@@ -28,6 +28,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
 import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openItemFragmentFromUri
 import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
@@ -399,7 +400,7 @@ class UiViewModel(
 //                }
                 val uri = intent.data
                 when (uri?.scheme) {
-//                    "echo" -> openItemFragmentFromUri(uri)
+                    "echo" -> openItemFragmentFromUri(uri)
                     "file" -> lifecycleScope.launch {
                         installExtension(uri.toString())
                     }

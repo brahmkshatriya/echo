@@ -2,6 +2,8 @@ package dev.brahmkshatriya.echo.ui.extensions.add
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
@@ -12,15 +14,22 @@ import dev.brahmkshatriya.echo.extensions.Updater
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 
 class ExtensionsAddListAdapter(
-    val map: List<Item>,
     val listener: Listener
-) : RecyclerView.Adapter<ExtensionsAddListAdapter.ViewHolder>() {
+) : ListAdapter<ExtensionsAddListAdapter.Item, ExtensionsAddListAdapter.ViewHolder>(DiffCallback) {
 
     data class Item(
         val item: Updater.ExtensionAssetResponse,
         val isChecked: Boolean,
         val isInstalled: Boolean
     )
+
+    object DiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item) =
+            oldItem.item.id == newItem.item.id
+
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) =
+            oldItem == newItem
+    }
 
     fun interface Listener {
         fun onChecked(item: Updater.ExtensionAssetResponse, isChecked: Boolean)
@@ -35,10 +44,8 @@ class ExtensionsAddListAdapter(
         return ViewHolder(binding)
     }
 
-    override fun getItemCount() = map.size
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val (item, isChecked, isInstalled) = map[position]
+        val (item, isChecked, isInstalled) = getItem(position)
         val binding = holder.binding
         binding.extensionName.text = if (!isInstalled) item.name
         else binding.root.context.getString(R.string.extension_installed, item.name)
@@ -62,8 +69,9 @@ class ExtensionsAddListAdapter(
         val listener: Listener
     ) : RecyclerView.Adapter<Header.ViewHolder>() {
 
-        fun interface Listener {
+        interface Listener {
             fun onClose()
+            fun onSelectAllChanged(select: Boolean)
         }
 
         class ViewHolder(val binding: ItemExtensionAddHeaderBinding) :
@@ -72,14 +80,16 @@ class ExtensionsAddListAdapter(
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)
             val binding = ItemExtensionAddHeaderBinding.inflate(inflater, parent, false)
+            binding.toolBar.setNavigationOnClickListener { listener.onClose() }
+            binding.selectAll.setOnCheckedChangeListener { _, isChecked ->
+                listener.onSelectAllChanged(isChecked)
+            }
             return ViewHolder(binding)
         }
 
         override fun getItemCount() = 1
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.binding.root.setOnClickListener { listener.onClose() }
-        }
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {}
 
     }
 

@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.setupNavBarAndInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.setupPlayerBehavior
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.setupSnackBar
 import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.setupExceptionHandler
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.updateExtensions
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.configureExtensionsUpdater
 import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment
 import dev.brahmkshatriya.echo.utils.PermsUtils.checkAppPermissions
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         setupIntents(uiViewModel)
         setupExceptionHandler(setupSnackBar(uiViewModel, binding.root))
         checkAppPermissions()
-        updateExtensions()
+        configureExtensionsUpdater()
         supportFragmentManager.commit {
             if (savedInstanceState != null) return@commit
             add<MainFragment>(R.id.navHostFragment, "main")

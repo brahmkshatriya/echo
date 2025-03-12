@@ -11,7 +11,7 @@ import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.MainApplication.Companion.applyLocale
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.updateExtensions
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.configureExtensionsUpdater
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
 import dev.brahmkshatriya.echo.utils.ContextUtils.copyToClipboard
@@ -71,7 +71,7 @@ class MiscFragment : BaseSettingsFragment() {
                 setDefaultValue(true)
                 screen.addPreference(this)
                 setOnLongClickListener {
-                    requireActivity().updateExtensions(true)
+                    requireActivity().configureExtensionsUpdater(true)
                 }
             }
 

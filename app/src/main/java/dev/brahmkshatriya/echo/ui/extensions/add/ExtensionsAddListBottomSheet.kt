@@ -28,11 +28,12 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
-        fun newInstance(list: List<Updater.ExtensionAssetResponse>) = ExtensionsAddListBottomSheet().apply {
-            arguments = Bundle().apply {
-                putSerialized("list", list)
+        fun newInstance(list: List<Updater.ExtensionAssetResponse>) =
+            ExtensionsAddListBottomSheet().apply {
+                arguments = Bundle().apply {
+                    putSerialized("list", list)
+                }
             }
-        }
     }
 
     var binding by autoCleared<DialogExtensionsAddListBinding>()
@@ -49,6 +50,11 @@ class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
         val list: List<Updater.ExtensionAssetResponse>,
         private val installed: List<String>,
     ) : ViewModel() {
+        fun selectAll(select: Boolean) {
+            selectedExtensions.clear()
+            if (select) selectedExtensions.addAll(list)
+        }
+
         val selectedExtensions = list.mapNotNull {
             if (it.id !in installed) it else null
         }.toMutableList()
@@ -69,17 +75,29 @@ class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
         lifecycleScope.launch {
             val installed = extensionViewModel.extensions.all.await().map { it.id }
             val viewModel by viewModels<AddViewModel> { AddViewModel.Factory(list, installed) }
-            val extensionListAdapter = ExtensionsAddListAdapter(list.map {
-                val isInstalled = it.id in installed
-                val isChecked = it in viewModel.selectedExtensions
-                ExtensionsAddListAdapter.Item(it, isChecked, isInstalled)
-            }) { item, isChecked ->
+            val extensionListAdapter = ExtensionsAddListAdapter { item, isChecked ->
                 if (isChecked) viewModel.selectedExtensions.add(item)
                 else viewModel.selectedExtensions.remove(item)
             }
-            val headerAdapter = ExtensionsAddListAdapter.Header { dismiss() }
+            fun submitList() {
+                extensionListAdapter.submitList(list.map {
+                    val isInstalled = it.id in installed
+                    val isChecked = it in viewModel.selectedExtensions
+                    ExtensionsAddListAdapter.Item(it, isChecked, isInstalled)
+                })
+            }
+            submitList()
+            val headerAdapter = ExtensionsAddListAdapter.Header(
+                object : ExtensionsAddListAdapter.Header.Listener {
+                    override fun onClose() = dismiss()
+                    override fun onSelectAllChanged(select: Boolean) {
+                        viewModel.selectAll(select)
+                        submitList()
+                    }
+                }
+            )
             val footerAdapter = ExtensionsAddListAdapter.Footer {
-                extensionViewModel.addExtensions(requireActivity(), viewModel.selectedExtensions)
+                extensionViewModel.addExtensions(viewModel.selectedExtensions)
                 dismiss()
             }
             binding.root.adapter =
