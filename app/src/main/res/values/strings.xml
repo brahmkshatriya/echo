@@ -312,4 +312,8 @@
     <string name="playing_x">Playing %1$s</string>
     <string name="adding_x_to_queue">Adding %1$s to queue</string>
     <string name="adding_x_to_next">Adding %1$s to next</string>
+    <string name="background_gradient">Background Gradient</string>
+    <string name="background_gradient_summary">A gradient color tint in  background depending on the context</string>
+    <string name="all">All</string>
+    <string name="edit_playlist">Edit Playlist</string>
 </resources>

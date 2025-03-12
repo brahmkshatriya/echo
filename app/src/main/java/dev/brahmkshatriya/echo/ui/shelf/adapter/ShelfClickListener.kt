@@ -67,7 +67,10 @@ class ShelfClickListener(
     }
 
     override fun onMediaItemPlayClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
-        todo()
+        val id = extensionId ?: return
+        val mediaItem = item ?: return
+        val playerViewModel by fragment.activityViewModel<PlayerViewModel>()
+        playerViewModel.play(id, mediaItem, false)
     }
 
     override fun onCategoryClicked(extensionId: String?, category: Shelf.Category?, view: View) {

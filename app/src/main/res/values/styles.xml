@@ -28,7 +28,7 @@
     </style>
 
     <style name="TopCollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
-        <item name="contentScrim">?navBackground</item>
+<!--        <item name="contentScrim">?navBackground</item>-->
         <item name="expandedTitleMarginBottom">20dp</item>
         <item name="expandedTitleMarginEnd">24dp</item>
         <item name="expandedTitleMarginStart">24dp</item>
@@ -282,6 +282,18 @@
         <item name="iconPadding">0dp</item>
         <item name="iconSize">18dp</item>
         <item name="backgroundTint">@color/amoled_bg</item>
+    </style>
+
+    <style name="ItemCover">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+        <item name="layout_constraintDimensionRatio">1,1</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+        <item name="layout_constraintHeight_max">@dimen/max_cover_size</item>
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+        <item name="layout_constraintWidth_max">@dimen/max_cover_size</item>
     </style>
 
     <string name="currently_playing">Currently Playing</string>

@@ -51,8 +51,8 @@ import kotlinx.coroutines.flow.first
 class UnifiedExtension(
     private val context: Context
 ) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
-    PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient,
-    TrackClient, TrackLikeClient, SaveToLibraryClient, PlaylistEditClient {
+    PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient, TrackClient,
+    TrackLikeClient, SaveToLibraryClient, PlaylistEditClient {
 
     companion object {
         const val UNIFIED_ID = "unified"
@@ -79,15 +79,17 @@ class UnifiedExtension(
         private fun List<Extension<*>>.get(id: String?) =
             find { it.id == id } ?: throw Exception("Extension $id not found")
 
+        private fun List<Extension<*>>.getOrNull(id: String?) =
+            find { it.id == id }
+
         val Map<String, String>.extensionId
             get() = this[EXTENSION_ID] ?: throw Exception("Extension id not found")
 
-        private fun Track.withExtensionId(id: String) = copy(
-            extras = extras + mapOf(EXTENSION_ID to id),
-            album = album?.withExtensionId(id),
-            artists = artists.map { it.withExtensionId(id) },
-            streamables = streamables.map { it.copy(extras = it.extras + mapOf(EXTENSION_ID to id)) }
-        )
+        private fun Track.withExtensionId(id: String) =
+            copy(extras = extras + mapOf(EXTENSION_ID to id),
+                album = album?.withExtensionId(id),
+                artists = artists.map { it.withExtensionId(id) },
+                streamables = streamables.map { it.copy(extras = it.extras + mapOf(EXTENSION_ID to id)) })
 
         private fun Album.withExtensionId(id: String) = copy(
             artists = artists.map { it.withExtensionId(id) },
@@ -143,12 +145,11 @@ class UnifiedExtension(
                 list.map { it.withExtensionId(id) }
             }
 
-        private fun PagedData<Track>.injectedPageTracks(extension: Extension<*>) =
-            map { result ->
-                val id = extension.id
-                val list = result.getOrElse { throw it.toAppException(extension) }
-                list.map { it.withExtensionId(id) }
-            }
+        private fun PagedData<Track>.injectedPageTracks(extension: Extension<*>) = map { result ->
+            val id = extension.id
+            val list = result.getOrElse { throw it.toAppException(extension) }
+            list.map { it.withExtensionId(id) }
+        }
 
         fun PagedData<Shelf>.injectExtensionId(extension: Extension<*>): PagedData<Shelf> =
             map { result ->
@@ -215,60 +216,61 @@ class UnifiedExtension(
         extFlow.value = extensions.filter { it.id != UNIFIED_ID && it.metadata.isEnabled }
     }
 
-    private fun loadFeed(
-        extension: Extension<*>,
+    private fun Extension<*>.loadFeed(
+        extensions: List<Extension<*>>,
         loadTabs: suspend () -> List<Tab>,
         getFeed: (Tab?) -> PagedData<Shelf>
     ): PagedData<Shelf> = PagedData.Suspend {
-        val tabs = runCatching { loadTabs() }.getOrElse { throw it.toAppException(extension) }
+        val tabs = runCatching { loadTabs() }.getOrElse { throw it.toAppException(this) }
         val loadFeed: (Tab?) -> PagedData<Shelf> =
-            { runCatching { getFeed(it) }.getOrElse { throw it.toAppException(extension) } }
-
-        val shelf: PagedData<Shelf> = if (!showTabs || tabs.isEmpty())
-            loadFeed(tabs.firstOrNull()).injectExtensionId(extension)
-        else PagedData.Single {
-            listOf(
-                Shelf.Lists.Categories(
-                    context.getString(R.string.tabs),
-                    tabs.map {
-                        Shelf.Category(
-                            it.title,
-                            loadFeed(it).injectExtensionId(extension)
-                        )
-                    },
-                    type = Shelf.Lists.Type.Grid
-                )
+            { runCatching { getFeed(it) }.getOrElse { throw it.toAppException(this) } }
+        val shelf: PagedData<Shelf> =
+            if (extensions.size == 1 || !showTabs || tabs.isEmpty()) loadFeed(tabs.firstOrNull()).injectExtensionId(
+                this
             )
-        }
+            else PagedData.Single {
+                listOf(
+                    Shelf.Lists.Categories(
+                        context.getString(R.string.tabs), tabs.map {
+                            Shelf.Category(
+                                it.title, loadFeed(it).injectExtensionId(this)
+                            )
+                        }, type = Shelf.Lists.Type.Grid
+                    )
+                )
+            }
         shelf
     }
 
     private suspend inline fun <reified T> tabs(
         loadTabs: T.() -> List<Tab>
     ): List<Tab> {
-        val exts = extensions()
-        return if (exts.size == 1) {
-            val ext = exts.first()
+        val extensions = extensions()
+        return if (extensions.size == 1) {
+            val ext = extensions.first()
             ext.client<T, List<Tab>> { loadTabs() }.map { it.injectId(ext.id) }
-        } else exts.map { Tab(it.id, it.name).injectId(it.id) }
+        } else extensions.map { Tab(it.id, it.name).injectId(it.id) }
     }
+
 
     private inline fun <reified T : Any> feed(
         tab: Tab?,
         crossinline loadTabs: suspend T.() -> List<Tab>,
         crossinline getFeed: T.(Tab?) -> PagedData<Shelf>
     ): PagedData<Shelf> {
-        val id = tab?.extras?.extensionId ?: return PagedData.empty()
         return PagedData.Suspend {
-            val extension = extensions().get(id)
+            val extensions = extensions()
+            val id = tab?.extras?.extensionId
+                ?: extensions.firstOrNull()?.id
+                ?: return@Suspend PagedData.empty()
+            val extension = extensions.get(id)
             extension.client<T, PagedData<Shelf>> {
-                loadFeed(extension, { loadTabs() }, { getFeed(it) })
+                extension.loadFeed(extensions, { loadTabs() }, { getFeed(it) })
             }
         }
     }
 
-    override suspend fun getHomeTabs() =
-        tabs<HomeFeedClient> { getHomeTabs() }
+    override suspend fun getHomeTabs() = tabs<HomeFeedClient> { getHomeTabs() }
 
     override fun getHomeFeed(tab: Tab?) =
         feed<HomeFeedClient>(tab, { getHomeTabs() }, { getHomeFeed(it) })
@@ -279,9 +281,9 @@ class UnifiedExtension(
         context.saveToCache("search_history", history, "offline")
     }
 
-    private fun getHistory() = context.getFromCache<List<String>>("search_history", "offline")
-        ?.distinct()?.take(5)
-        ?: emptyList()
+    private fun getHistory() =
+        context.getFromCache<List<String>>("search_history", "offline")?.distinct()?.take(5)
+            ?: emptyList()
 
     private fun saveInHistory(query: String) {
         val history = getHistory().toMutableList()
@@ -468,14 +470,32 @@ class UnifiedExtension(
     ).fallbackToDestructiveMigration().build()
 
     override suspend fun getLibraryTabs() = listOf(
-        Tab("Playlists", context.getString(R.string.playlists)),
-        Tab("Saved", context.getString(R.string.saved))
-    )
+        Tab("Unified", context.getString(R.string.all))
+    ) + extensions().map { Tab(it.id, it.name) }
 
-    override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
-        return when (tab?.id) {
-            "Saved" -> PagedData.Single { db.getSaved().map { it.toShelf() } }
-            else -> PagedData.Single { db.getPlaylists().map { it.toMediaItem().toShelf() } }
+    override fun getLibraryFeed(tab: Tab?) = PagedData.Suspend {
+        val extension = extensions().getOrNull(tab?.id) ?: return@Suspend PagedData.Single {
+            Shelf.Category(
+                context.getString(R.string.saved),
+                PagedData.Single { db.getSaved().map { it.toShelf() } })
+            db.getPlaylists().map { it.toMediaItem().toShelf() }
+        }
+        extension.client<LibraryFeedClient, PagedData<Shelf>> {
+            val tabs = getLibraryTabs()
+            if (!showTabs || tabs.isEmpty())
+                getLibraryFeed(tabs.firstOrNull()).injectExtensionId(extension)
+            else PagedData.Single {
+                listOf(
+                    Shelf.Lists.Categories(
+                        context.getString(R.string.tabs), tabs.map {
+                            Shelf.Category(
+                                it.title, getLibraryFeed(it).injectExtensionId(extension)
+                            )
+                        }, type = Shelf.Lists.Type.Grid
+                    )
+                )
+            }
+
         }
     }
 
@@ -492,9 +512,7 @@ class UnifiedExtension(
         val tracks = loadTracks(likedPlaylist).loadAll()
         if (isLiked) addTracksToPlaylist(likedPlaylist, tracks, 0, listOf(track))
         else removeTracksFromPlaylist(
-            likedPlaylist,
-            tracks,
-            listOf(tracks.indexOfFirst { it.id == track.id })
+            likedPlaylist, tracks, listOf(tracks.indexOfFirst { it.id == track.id })
         )
         val extension = extensions().get(track.extras.extensionId)
         extension.client<TrackLikeClient, Unit> { likeTrack(track, isLiked) }

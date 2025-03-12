@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationAndScaleAnimation
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isNightMode
@@ -66,8 +67,7 @@ class CategoryShelfListsViewHolder(
         binding.subtitle.text = category.subtitle
         binding.subtitle.isVisible = !category.subtitle.isNullOrBlank()
         binding.root.isClickable = category.items != null
-//        if (!matchParent) binding.root.applyTranslationAndScaleAnimation(xScroll)
-//        else
-            binding.root.applyTranslationYAnimation(yScroll)
+        if (!matchParent) binding.root.applyTranslationAndScaleAnimation(xScroll)
+        else binding.root.applyTranslationYAnimation(yScroll)
     }
 }

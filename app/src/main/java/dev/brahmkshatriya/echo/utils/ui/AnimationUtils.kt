@@ -24,6 +24,7 @@ import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
@@ -125,12 +126,12 @@ object AnimationUtils {
 
     private val View.animations
         get() = context.applicationContext.run {
-            getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
+            getSharedPreferences(SETTINGS_NAME, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
         }
 
     val View.sharedElementTransitions
         get() = context.applicationContext.run {
-            getSharedPreferences(packageName, MODE_PRIVATE)
+            getSharedPreferences(SETTINGS_NAME, MODE_PRIVATE)
                 .getBoolean(SHARED_ELEMENT_KEY, true)
         }
 
@@ -177,6 +178,7 @@ object AnimationUtils {
     fun View.applyTranslationAndScaleAnimation(
         amount: Int, delay: Long = 0
     ) {
+        if (!animations) return
         val multiplier = amount.sign
         val rotateAnimation = RotateAnimation(
             5f * multiplier, 0f,
@@ -201,6 +203,7 @@ object AnimationUtils {
     }
 
     fun View.applyTranslationYAnimation(amount: Int, delay: Long = 0) {
+        if (!animations) return
         val multiplier = amount.sign
         val translate = TranslateAnimation(
             Animation.RELATIVE_TO_SELF, 0f,

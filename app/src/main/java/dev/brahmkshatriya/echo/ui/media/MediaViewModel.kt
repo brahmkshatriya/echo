@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.media
 
-import androidx.core.app.ShareCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
@@ -30,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MediaViewModel(
     val extensionId: String,
@@ -86,18 +86,10 @@ class MediaViewModel(
         }
     }
 
-    fun onShare() {
-        viewModelScope.launch(Dispatchers.IO) {
-            createMessage(context.getString(R.string.sharing_x, itemFlow.value.title))
-            val extension = extensionFlow.value ?: return@launch
-            val url = extension.get<ShareClient, String>(throwFlow) {
-                onShare(itemFlow.value)
-            } ?: return@launch
-            ShareCompat.IntentBuilder(context)
-                .setType("text/plain")
-                .setChooserTitle("${extension.name} - ${itemFlow.value.title}")
-                .setText(url)
-                .startChooser()
+    suspend fun onShare(): String? = withContext(Dispatchers.IO) {
+        createMessage(context.getString(R.string.sharing_x, itemFlow.value.title))
+        extensionFlow.value?.get<ShareClient, String>(throwFlow) {
+            onShare(itemFlow.value)
         }
     }
 

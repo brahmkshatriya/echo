@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ShareCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
@@ -38,6 +40,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -282,7 +285,14 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             R.drawable.ic_forward,
             R.string.share
         ) {
-            vm.onShare()
+            lifecycleScope.launch {
+                val url = vm.onShare()
+                ShareCompat.IntentBuilder(requireActivity())
+                    .setType("text/plain")
+                    .setChooserTitle("${vm.extensionFlow.value?.name} - ${vm.itemFlow.value.title}")
+                    .setText(url)
+                    .startChooser()
+            }
         } else null
 
     private fun saveToLibraryButton(

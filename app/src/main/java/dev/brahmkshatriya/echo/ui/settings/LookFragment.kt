@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.prefs.ColorListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.ANIMATIONS_KEY
+import dev.brahmkshatriya.echo.utils.ui.GradientDrawable.BACKGROUND_GRADIENT
 
 
 class LookFragment : BaseSettingsFragment() {
@@ -94,6 +95,16 @@ class LookFragment : BaseSettingsFragment() {
                     key = NAVBAR_GRADIENT
                     title = getString(R.string.navbar_gradient)
                     summary = getString(R.string.navbar_gradient_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = BACKGROUND_GRADIENT
+                    title = getString(R.string.background_gradient)
+                    summary = getString(R.string.background_gradient_summary)
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(true)

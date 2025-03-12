@@ -44,6 +44,9 @@ object GradientDrawable {
         }
     }
 
+    const val BACKGROUND_GRADIENT = "bg_gradient"
+    private const val RATIO = 0.33f
+    private const val INVERTED = 1f - RATIO
     fun createBg(view: View, color: Int): Drawable {
         val echoBackgroundColor = MaterialColors.getColor(view, R.attr.echoBackground)
         val primary = MaterialColors.getColor(view, com.google.android.material.R.attr.colorPrimary)
@@ -52,11 +55,17 @@ object GradientDrawable {
             setShape(RectShape())
             shaderFactory = object : ShapeDrawable.ShaderFactory() {
                 override fun resize(width: Int, height: Int): Shader {
+                    fun mix(color: (Int) -> Int): Int {
+                        val mixed =
+                            RATIO * color(harmonized) + INVERTED * color(echoBackgroundColor)
+                        return mixed.toInt()
+                    }
+
                     val mixedColor = Color.argb(
                         255,
-                        (Color.red(harmonized) + Color.red(echoBackgroundColor)) / 2,
-                        (Color.green(harmonized) + Color.green(echoBackgroundColor)) / 2,
-                        (Color.blue(harmonized) + Color.blue(echoBackgroundColor)) / 2
+                        mix { Color.red(it) },
+                        mix { Color.green(it) },
+                        mix { Color.blue(it) },
                     )
                     return LinearGradient(
                         0f, 0f, 0f, height.toFloat(),

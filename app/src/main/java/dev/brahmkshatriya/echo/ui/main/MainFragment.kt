@@ -26,19 +26,17 @@ import dev.brahmkshatriya.echo.ui.main.home.HomeFragment
 import dev.brahmkshatriya.echo.ui.main.library.LibraryFragment
 import dev.brahmkshatriya.echo.ui.main.search.SearchFragment
 import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
+import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
+import dev.brahmkshatriya.echo.utils.ui.GradientDrawable.BACKGROUND_GRADIENT
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class MainFragment : Fragment() {
-
-    init {
-        println("MainFragment init $this")
-    }
 
     private var binding by autoCleared<FragmentMainBinding>()
     private val viewModel by activityViewModel<UiViewModel>()
@@ -77,14 +75,18 @@ class MainFragment : Fragment() {
     companion object {
         fun Fragment.applyPlayerBg(view: View, appBar: View) {
             val uiViewModel by activityViewModel<UiViewModel>()
-            appBar.setBackgroundColor(Color.TRANSPARENT)
             val combined = uiViewModel.run {
                 playerColors.combine(extensionColor) { a, b -> a?.accent ?: b }
             }
+            val settings = requireContext().getSettings()
+            val defaultBg = appBar.background
             observe(combined) {
-                val color = it ?: MaterialColors.getColor(
+                val isGradient = settings.getBoolean(BACKGROUND_GRADIENT, true)
+                if (isGradient) appBar.setBackgroundColor(Color.TRANSPARENT)
+                else appBar.background = defaultBg
+                val color = if (isGradient) it ?: MaterialColors.getColor(
                     view, com.google.android.material.R.attr.colorPrimary
-                )
+                ) else MaterialColors.getColor(view, R.attr.echoBackground)
                 view.background = GradientDrawable.createBg(view, color)
             }
         }
