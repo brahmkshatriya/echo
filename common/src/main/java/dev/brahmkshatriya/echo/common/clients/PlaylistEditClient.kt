@@ -56,7 +56,7 @@ interface PlaylistEditClient : PlaylistClient {
      * Adds tracks to a playlist.
      *
      * @param playlist the playlist to add the tracks to.
-     * @param tracks the tracks to add.
+     * @param tracks the tracks in the playlist.
      * @param index the index to add the tracks at.
      * @param new the new tracks to add.
      */
@@ -68,7 +68,7 @@ interface PlaylistEditClient : PlaylistClient {
      * Removes tracks from a playlist.
      *
      * @param playlist the playlist to remove the tracks from.
-     * @param tracks the tracks to remove.
+     * @param tracks the tracks in the playlist.
      * @param indexes the indexes of the tracks to remove.
      */
     suspend fun removeTracksFromPlaylist(
@@ -79,7 +79,7 @@ interface PlaylistEditClient : PlaylistClient {
      * Moves a track in a playlist.
      *
      * @param playlist the playlist to move the track in.
-     * @param tracks the tracks to move.
+     * @param tracks the tracks in the playlist.
      * @param fromIndex the index to move the tracks from.
      * @param toIndex the index to move the tracks to.
      */
