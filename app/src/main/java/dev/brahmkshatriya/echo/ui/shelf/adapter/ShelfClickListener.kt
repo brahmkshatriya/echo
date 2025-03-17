@@ -4,6 +4,7 @@ import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
@@ -14,6 +15,8 @@ import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.shelf.ShelfFragment
+import dev.brahmkshatriya.echo.ui.shelf.ShelfViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -33,7 +36,19 @@ class ShelfClickListener(
     }
 
     override fun onMoreClicked(extensionId: String?, shelf: Shelf.Lists<*>?, view: View) {
-        todo()
+        val data = when (shelf) {
+            is Shelf.Lists.Categories -> shelf.more
+            is Shelf.Lists.Items -> shelf.more?.map { result ->
+                result.getOrThrow().map { it.toShelf() }
+            }
+
+            is Shelf.Lists.Tracks -> shelf.more?.map { result ->
+                result.getOrThrow().map { it.toMediaItem().toShelf() }
+            }
+
+            null -> null
+        }
+        openShelf(extensionId, shelf?.title ?: "", data ?: return, view)
         onClick?.invoke(true)
     }
 
@@ -74,8 +89,23 @@ class ShelfClickListener(
     }
 
     override fun onCategoryClicked(extensionId: String?, category: Shelf.Category?, view: View) {
-        todo()
+        extensionId ?: return
+        category ?: return
+        openShelf(extensionId, category.title, category.items ?: return, view)
         onClick?.invoke(true)
+    }
+
+    private fun openShelf(
+        extensionId: String?,
+        title: String,
+        items: PagedData<out Shelf>,
+        view: View
+    ) {
+        val activityVm by fragment.activityViewModel<ShelfViewModel>()
+        activityVm.id = extensionId
+        activityVm.title = title
+        activityVm.data = items.map { it.getOrThrow() }
+        fragment.openFragment<ShelfFragment>(view)
     }
 
     override fun onCategoryLongClicked(

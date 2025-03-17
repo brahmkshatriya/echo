@@ -222,11 +222,6 @@ class ShelfAdapter(
         return withLoaders(fragment)
     }
 
-//    fun withSearchHeaderAndLoaders(shelves: () -> PagedData<Shelf>?): ConcatAdapter {
-//        val search = ShelfHeaderAdapter(extension.id, title, listener)
-//        return withLoaders(search) { loading -> search.setShelf(shelves().takeIf { !loading }) }
-//    }
-
     companion object {
         fun Fragment.getShelfAdapter(
             listener: Listener

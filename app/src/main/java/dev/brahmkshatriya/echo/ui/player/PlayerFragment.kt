@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.widget.ProgressBar
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.net.toUri
@@ -486,6 +487,8 @@ class PlayerFragment : Fragment() {
                 else binding?.bgImage?.setImageDrawable(null)
             }
         }
+        val bufferView =
+            binding!!.playerView.findViewById<ProgressBar>(androidx.media3.ui.R.id.exo_buffering)!!
         observe(uiViewModel.playerColors) {
             val colors = it ?: requireContext().defaultPlayerColors()
             val binding = binding!!
@@ -496,6 +499,7 @@ class PlayerFragment : Fragment() {
                 val backgroundState = ColorStateList.valueOf(colors.background)
                 bgGradient.imageTintList = backgroundState
                 bgCollapsed.backgroundTintList = backgroundState
+                bufferView.indeterminateDrawable.setTint(colors.accent)
                 expandedToolbar.run {
                     setTitleTextColor(colors.onBackground)
                     setSubtitleTextColor(colors.onBackground)

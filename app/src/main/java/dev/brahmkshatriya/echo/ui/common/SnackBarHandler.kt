@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import java.util.WeakHashMap
 
 class SnackBarHandler(
     val app: App,
@@ -39,9 +40,8 @@ class SnackBarHandler(
         ): SnackBarHandler {
             val handler by inject<SnackBarHandler>()
             val padding = 8.dpToPx(this@setupSnackBar)
-            fun createSnackBar(message: Message) {
-                val snackBar = Snackbar.make(root, message.message, Snackbar.LENGTH_LONG)
-                snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
+            val snackBars = WeakHashMap<Int, Snackbar>()
+            fun updateInsets(snackBar: Snackbar) {
                 snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     val insets = uiViewModel.systemInsets.value
                     val snackbarInsets = uiViewModel.getSnackbarInsets()
@@ -49,9 +49,16 @@ class SnackBarHandler(
                     marginEnd = insets.end + snackbarInsets.end + padding
                     bottomMargin = snackbarInsets.bottom + padding
                 }
+            }
+            fun createSnackBar(message: Message) {
+                val snackBar = Snackbar.make(root, message.message, Snackbar.LENGTH_LONG)
+                snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
+                updateInsets(snackBar)
                 message.action?.run { snackBar.setAction(name) { handler() } }
+                snackBars[message.hashCode()] = snackBar
                 snackBar.addCallback(object : Snackbar.Callback() {
                     override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                        snackBars.remove(message.hashCode())
                         lifecycleScope.launch {
                             handler.remove(message, event != DISMISS_EVENT_MANUAL)
                         }
@@ -62,6 +69,9 @@ class SnackBarHandler(
 
             observe(handler.messageFlow) { message ->
                 createSnackBar(message)
+            }
+            observe(uiViewModel.combined) { _ ->
+                snackBars.values.forEach { updateInsets(it) }
             }
             return handler
         }

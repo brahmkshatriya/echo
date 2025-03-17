@@ -75,7 +75,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             playerViewModel.playerState.current,
             object : MediaItemViewHolder.Listener {
                 override fun onMediaItemClicked(
-                    extensionId: String?, item: EchoMediaItem?, it: View
+                    extensionId: String?, item: EchoMediaItem?, it: View?
                 ) {
                     openItemFragment(extensionId, item)
                     dismiss()

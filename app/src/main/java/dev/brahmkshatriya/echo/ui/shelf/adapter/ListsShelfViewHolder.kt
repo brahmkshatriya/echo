@@ -37,7 +37,7 @@ class ListsShelfViewHolder(
 
     init {
         binding.more.setOnClickListener {
-            listener.onMoreClicked(extensionId, shelf as? Shelf.Lists.Tracks, binding.titleCard)
+            listener.onMoreClicked(extensionId, shelf, binding.titleCard)
         }
         binding.shuffle.setOnClickListener {
             listener.onShuffleClicked(extensionId, shelf as? Shelf.Lists.Tracks, binding.titleCard)

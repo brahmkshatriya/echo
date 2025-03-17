@@ -4,10 +4,9 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import com.google.android.material.color.MaterialColors
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
 
 class CategoryShelfViewHolder(
@@ -35,10 +34,8 @@ class CategoryShelfViewHolder(
         binding.subtitle.text = category.subtitle
         binding.subtitle.isVisible = !category.subtitle.isNullOrBlank()
         binding.root.isClickable = category.items != null
-        val color = MaterialColors.getColor(binding.root, R.attr.navBackground)
-        binding.root.setCardBackgroundColor(
-            if (category.items != null) color else Color.TRANSPARENT
-        )
+        binding.root.setCardBackgroundColor(Color.TRANSPARENT)
+        binding.root.applyTranslationYAnimation(scrollAmount)
     }
 
     companion object {
