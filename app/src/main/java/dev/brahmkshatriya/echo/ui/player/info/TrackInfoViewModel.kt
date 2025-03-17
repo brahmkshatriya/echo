@@ -1,10 +1,7 @@
 package dev.brahmkshatriya.echo.ui.player.info
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -14,12 +11,13 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.collectWith
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,25 +32,33 @@ class TrackInfoViewModel(
     private val extensions = extensionLoader.extensions
     val currentFlow = playerState.current
     private var previous: Track? = null
-    val itemsFlow = MutableStateFlow<PagingData<Shelf>?>(null)
+    val itemsFlow = MutableStateFlow<PagingUtils.Data<Shelf>>(
+        PagingUtils.Data(null, null, null)
+    )
 
     fun load() {
         if (previous?.id == currentFlow.value?.mediaItem?.track?.id) return
         val current = currentFlow.value?.mediaItem ?: return
+        itemsFlow.value = PagingUtils.Data(null, null, null)
         if (!current.isLoaded) return
         viewModelScope.launch {
-            val extension = extensions.music.getExtension(current.extensionId) ?: return@launch
-            itemsFlow.value = null
+            val extension = extensions.music.getExtension(current.extensionId)
+            itemsFlow.value = PagingUtils.Data(extension, null, null)
             previous = current.track
-            val shelves = extension.run(app.throwFlow) {
-                app.context.getTrackShelves(this, current.track)
+            val shelves = extension?.get<TrackClient, PagedData<Shelf>> {
+                getTrackShelves(this, current.track)
+            }?.getOrElse {
+                itemsFlow.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+                return@launch
             } ?: return@launch
-            shelves.toFlow(extension).collectWith(app.throwFlow, itemsFlow)
+            shelves.toFlow(extension).collectWith(app.throwFlow) {
+                itemsFlow.value = PagingUtils.Data(extension, shelves, it)
+            }
         }
     }
 
     companion object {
-        fun Context.getTrackShelves(
+        fun getTrackShelves(
             ext: Any, track: Track
         ): PagedData.Concat<Shelf> {
             val album = track.album
@@ -63,17 +69,16 @@ class TrackInfoViewModel(
                     else ext.loadAlbum(album)
                     listOf(a.toMediaItem().toShelf())
                 } else PagedData.empty(),
-                if (artists.isNotEmpty()) PagedData.Single {
-                    listOf(
-                        Shelf.Lists.Items(
-                            getString(R.string.artists),
-                            if (ext is ArtistClient) artists.map {
+                *artists.map {
+                    PagedData.Single<Shelf> {
+                        listOf(
+                            if (ext is ArtistClient) {
                                 val artist = ext.loadArtist(it)
-                                artist.toMediaItem()
-                            } else artists.map { it.toMediaItem() }
+                                artist.toMediaItem().toShelf()
+                            } else it.toMediaItem().toShelf()
                         )
-                    )
-                } else PagedData.empty(),
+                    }
+                }.toTypedArray(),
                 if (ext is TrackClient) ext.getShelves(track) else PagedData.empty()
             )
         }

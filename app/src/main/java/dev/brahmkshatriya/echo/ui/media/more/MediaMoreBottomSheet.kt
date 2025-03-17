@@ -68,7 +68,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
     private var binding by autoCleared<DialogMediaMoreBinding>()
     private val playerViewModel by activityViewModel<PlayerViewModel>()
     private val uiViewModel by activityViewModel<UiViewModel>()
-    private val vm by viewModel<MediaViewModel> { parametersOf(extensionId, item, loaded) }
+    private val vm by viewModel<MediaViewModel> { parametersOf(extensionId, item, loaded, false) }
 
     private val itemAdapter by lazy {
         GenericItemAdapter(
@@ -106,12 +106,13 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             itemAdapter.submitList(extensionId, listOf(item))
         }
         observe(playerViewModel.playerState.current) { itemAdapter.onCurrentChanged() }
+        loadingAdapter.setLoading(vm.isLoading)
         observe(vm.loadingFlow) { loadingAdapter.setLoading(it) }
         vm.run {
             observe(itemFlow.combine(extensionFlow) { _, _ -> }.combine(savedState) { _, _ -> }) {
                 val client = extensionFlow.value?.instance?.value()?.getOrNull()
                 actionAdapter.submitList(
-                    getActions(client, itemFlow.value, isLoaded)
+                    getActions(client, itemFlow.value, !isLoading)
                 )
             }
         }

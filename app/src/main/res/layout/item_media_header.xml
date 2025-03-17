@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="24dp"
+    android:layout_marginVertical="8dp"
+    android:orientation="vertical">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/follow"
+        style="@style/Widget.Material3.Button.UnelevatedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="-4dp"
+        android:minHeight="64dp"
+        android:text="@string/follow"
+        app:icon="@drawable/ic_heart_outline_40dp"
+        app:iconGravity="end" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/unfollow"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="-4dp"
+        android:minHeight="64dp"
+        android:text="@string/unfollow"
+        app:icon="@drawable/ic_heart_filled_40dp"
+        app:iconGravity="end" />
+
+    <com.google.android.material.button.MaterialButtonGroup
+        style="@style/Widget.Material3.MaterialButtonGroup.Connected"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:spacing="4dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/radio"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="56dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="64dp"
+            android:text="@string/radio"
+            android:visibility="gone"
+            app:icon="@drawable/ic_sensors" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/play"
+            style="@style/Widget.Material3.Button.UnelevatedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="64dp"
+            android:text="@string/play"
+            app:icon="@drawable/ic_play" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/shuffle"
+            style="@style/Widget.Material3.Button.UnelevatedButton"
+            android:layout_width="56dp"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/shuffle"
+            android:minHeight="64dp"
+            android:padding="18dp"
+            app:icon="@drawable/ic_shuffle" />
+
+    </com.google.android.material.button.MaterialButtonGroup>
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="16dp"
+        android:textColor="?colorOnSurfaceVariant"
+        android:textColorLink="?colorPrimary"
+        tools:text="@tools:sample/lorem" />
+</LinearLayout>

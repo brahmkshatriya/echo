@@ -52,7 +52,7 @@ class ShelfClickListener(
         todo()
     }
 
-    override fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
+    override fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View?) {
         extensionId ?: return
         item ?: return
         fragment.openFragment<MediaFragment>(it, MediaFragment.getBundle(extensionId, item, false))

@@ -11,6 +11,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.TrackSelectionParameters
+import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
@@ -62,7 +63,12 @@ class PlayerService : MediaLibraryService() {
     @OptIn(UnstableApi::class)
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
         when (key) {
-            SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, false)
+            SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, true)
+            MORE_BRAIN_CAPACITY -> exoPlayer.trackSelectionParameters =
+                exoPlayer.trackSelectionParameters
+                    .buildUpon()
+                    .setAudioOffloadPreferences(offloadPreferences(prefs.getBoolean(key, false)))
+                    .build()
         }
     }
     private val effects by lazy { EffectsListener(exoPlayer, this, state.session) }
@@ -133,17 +139,23 @@ class PlayerService : MediaLibraryService() {
     private val mediaChangeFlow = MutableSharedFlow<Pair<MediaItem, MediaItem>>()
 
     @OptIn(UnstableApi::class)
+    private fun offloadPreferences(moreBrainCapacity: Boolean) =
+        TrackSelectionParameters.AudioOffloadPreferences.Builder()
+            .setAudioOffloadMode(
+                if (moreBrainCapacity) AUDIO_OFFLOAD_MODE_DISABLED else AUDIO_OFFLOAD_MODE_ENABLED
+            ).setIsGaplessSupportRequired(true)
+            .setIsSpeedChangeSupportRequired(true)
+            .build()
+
+    @OptIn(UnstableApi::class)
     private fun createExoplayer() = run {
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
-        val audioOffloadPreferences = TrackSelectionParameters.AudioOffloadPreferences.Builder()
-            .setAudioOffloadMode(AUDIO_OFFLOAD_MODE_ENABLED)
-            .setIsGaplessSupportRequired(true)
-            .setIsSpeedChangeSupportRequired(true)
-            .build()
+        val audioOffloadPreferences =
+            offloadPreferences(app.settings.getBoolean(MORE_BRAIN_CAPACITY, false))
 
         val factory = StreamableMediaSource.Factory(this, state, extensions, cache, mediaChangeFlow)
 
@@ -159,7 +171,7 @@ class PlayerService : MediaLibraryService() {
                     .setAudioOffloadPreferences(audioOffloadPreferences)
                     .build()
                 it.preloadConfiguration = ExoPlayer.PreloadConfiguration(0)
-                it.skipSilenceEnabled = app.settings.getBoolean(SKIP_SILENCE, false)
+                it.skipSilenceEnabled = app.settings.getBoolean(SKIP_SILENCE, true)
             }
     }
 
@@ -171,6 +183,7 @@ class PlayerService : MediaLibraryService() {
     }
 
     companion object {
+        const val MORE_BRAIN_CAPACITY = "offload"
         const val CLOSE_PLAYER = "close_player"
         const val SKIP_SILENCE = "skip_silence"
 

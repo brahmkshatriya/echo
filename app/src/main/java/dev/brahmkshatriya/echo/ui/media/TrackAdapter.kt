@@ -1,23 +1,33 @@
-package dev.brahmkshatriya.echo.ui.shelf.adapter
+package dev.brahmkshatriya.echo.ui.media
 
 import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.paging.LoadState
+import androidx.paging.LoadStateAdapter
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
+import dev.brahmkshatriya.echo.databinding.ItemSpaceBinding
+import dev.brahmkshatriya.echo.databinding.ItemTrackListHeaderBinding
+import dev.brahmkshatriya.echo.databinding.SkeletonTrackListBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.MediaItemShelfListsViewHolder.Companion.applyCover
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 
@@ -33,21 +43,26 @@ class TrackAdapter(
     interface Listener {
         fun onTrackClicked(
             extensionId: String?, list: List<Track>, index: Int, context: EchoMediaItem?, view: View
-        ) {}
+        ) {
+        }
 
         fun onTrackLongClicked(
             extensionId: String?, list: List<Track>, index: Int, context: EchoMediaItem?, view: View
-        ) {}
+        ) {
+        }
     }
 
-    var id: String? = null
-    var context: EchoMediaItem? = null
+    private var id: String? = null
+    private var context: EchoMediaItem? = null
+    private var paged: PagedData<Track>? = null
     suspend fun submit(
-        id: String?, context: EchoMediaItem?, data: PagingData<Track>
+        id: String?, context: EchoMediaItem?, paged: PagedData<Track>?, data: PagingData<Track>?
     ) {
         this.id = id
         this.context = context
-        submitData(data)
+        this.paged = paged
+        val page = data ?: PagingData.empty()
+        submitData(page)
     }
 
     var current: PlayerState.Current? = null
@@ -60,6 +75,7 @@ class TrackAdapter(
         val binding: ItemShelfMediaBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         init {
+            binding.coverContainer.cover.clipToOutline = true
             binding.root.setOnClickListener {
                 val position = bindingAdapterPosition
                 listener.onTrackClicked(id, snapshot().items, position, context, it)
@@ -73,7 +89,7 @@ class TrackAdapter(
 
         fun onCurrentChanged(current: PlayerState.Current?) {
             val position = bindingAdapterPosition
-            val item = getItem(position)
+            val item = if (position >= 0) getItem(position) else null
             val playing = current.isPlaying(item?.id)
             binding.coverContainer.isPlaying.isVisible = playing
             (binding.coverContainer.isPlaying.drawable as Animatable).start()
@@ -147,6 +163,57 @@ class TrackAdapter(
                 val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? ViewHolder
                 holder?.action()
             }
+        }
+    }
+
+    fun withHeaders(fragment: Fragment): ConcatAdapter {
+        val listener = fragment.createListener { retry() }
+        val bottom = ShelfLoadingAdapter(TrackAdapter::Loading, listener)
+        val top = ShelfLoadingAdapter(TrackAdapter::Loading, listener)
+        val header = Header()
+        val footer = Footer()
+        addLoadStateListener { loadStates ->
+            val loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
+                LoadState.NotLoading(false)
+            else LoadState.Loading
+            header.loadState = loadState
+            footer.loadState = loadState
+            top.loadState = loadStates.refresh
+            bottom.loadState = loadStates.append
+        }
+        return ConcatAdapter(header, top, this, bottom, footer)
+    }
+
+    data class Loading(
+        val inflater: LayoutInflater,
+        val parent: ViewGroup,
+        val binding: SkeletonTrackListBinding =
+            SkeletonTrackListBinding.inflate(inflater, parent, false)
+    ) : ShelfLoadingAdapter.ViewHolder(binding.root)
+
+    class Header : LoadStateAdapter<Header.ViewHolder>() {
+        class ViewHolder(binding: ItemTrackListHeaderBinding) :
+            RecyclerView.ViewHolder(binding.root)
+
+        override fun onBindViewHolder(holder: ViewHolder, loadState: LoadState) {}
+
+        override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            val binding = ItemTrackListHeaderBinding.inflate(inflater, parent, false)
+            return ViewHolder(binding)
+        }
+    }
+
+    class Footer : LoadStateAdapter<Footer.ViewHolder>() {
+        class ViewHolder(binding: ItemSpaceBinding) :
+            RecyclerView.ViewHolder(binding.root)
+
+        override fun onBindViewHolder(holder: ViewHolder, loadState: LoadState) {}
+
+        override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            val binding = ItemSpaceBinding.inflate(inflater, parent, false)
+            return ViewHolder(binding)
         }
     }
 }

@@ -10,6 +10,7 @@ import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.CACHE_SIZE
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.CLOSE_PLAYER
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.MORE_BRAIN_CAPACITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
@@ -96,6 +97,16 @@ class AudioFragment : BaseSettingsFragment() {
                     key = SKIP_SILENCE
                     title = getString(R.string.skip_silence)
                     summary = getString(R.string.skip_silence_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = MORE_BRAIN_CAPACITY
+                    title = getString(R.string.more_brain_capacity)
+                    summary = getString(R.string.more_brain_capacity_summary)
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(false)

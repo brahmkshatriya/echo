@@ -11,7 +11,7 @@ coil = "3.0.0-rc01"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
-androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.0" }
+androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.1" }
 
 recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 swiperefresh = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }

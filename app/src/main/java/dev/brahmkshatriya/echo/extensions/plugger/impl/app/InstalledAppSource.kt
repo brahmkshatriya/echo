@@ -29,11 +29,17 @@ class InstalledAppSource(
             val packages = runCatching {
                 packageManager.getInstalledPackages(PACKAGE_FLAGS).filter {
                     it.reqFeatures.orEmpty().any { featureInfo ->
-                        featureInfo.name.startsWith(FEATURE)
+                        featureInfo?.name?.startsWith(FEATURE) ?: false
                     }
                 }
             }.getOrNull().orEmpty()
-            packages.mapNotNull { AppInfo(it) }
+            packages.mapNotNull { info ->
+                runCatching { AppInfo(info) }.getOrElse {
+                    println("Failed to parse ${info.packageName}")
+                    it.printStackTrace()
+                    null
+                }
+            }
         }
 
     private fun onPackageChanged() {

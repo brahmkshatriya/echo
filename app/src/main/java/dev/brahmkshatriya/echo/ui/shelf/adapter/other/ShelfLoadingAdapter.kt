@@ -10,13 +10,13 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemShelfErrorBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfNotLoadingBinding
-import dev.brahmkshatriya.echo.databinding.SkeletonShelfBinding
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
 import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.getFinalTitle
 import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.getMessage
 import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.openLoginException
 
 class ShelfLoadingAdapter(
+    val loadingAdapter: (LayoutInflater, ViewGroup) -> ViewHolder,
     val listener: Listener? = null
 ) : LoadStateAdapter<ShelfLoadingAdapter.ViewHolder>() {
 
@@ -26,8 +26,8 @@ class ShelfLoadingAdapter(
         fun onLoginRequired(view: View, error: AppException.LoginRequired)
     }
 
-    sealed class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        abstract fun bind(loadState: LoadState)
+    abstract class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        open fun bind(loadState: LoadState) {}
     }
 
     data class NotLoading(
@@ -42,15 +42,6 @@ class ShelfLoadingAdapter(
                 listener?.onRetry()
             }
         }
-    }
-
-    data class Loading(
-        val inflater: LayoutInflater,
-        val parent: ViewGroup,
-        val binding: SkeletonShelfBinding =
-            SkeletonShelfBinding.inflate(inflater, parent, false)
-    ) : ViewHolder(binding.root) {
-        override fun bind(loadState: LoadState) {}
     }
 
     data class Error(
@@ -99,7 +90,7 @@ class ShelfLoadingAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (getStateViewType(loadState)) {
-            0 -> Loading(inflater, parent)
+            0 -> loadingAdapter(inflater, parent)
             1 -> NotLoading(inflater, parent, listener)
             2 -> Error(inflater, parent, listener)
             3 -> LoginRequired(inflater, parent, listener)

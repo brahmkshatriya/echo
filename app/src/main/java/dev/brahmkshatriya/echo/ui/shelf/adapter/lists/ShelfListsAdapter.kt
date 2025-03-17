@@ -10,7 +10,6 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter
-import dev.brahmkshatriya.echo.ui.shelf.adapter.TrackAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.ThreeTrackShelfListsViewHolder.Companion.MULTIPLIER
 
 class ShelfListsAdapter(

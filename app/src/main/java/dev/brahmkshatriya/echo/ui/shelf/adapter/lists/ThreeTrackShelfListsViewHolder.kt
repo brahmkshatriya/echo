@@ -7,7 +7,7 @@ import androidx.core.view.updateLayoutParams
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfListsFourTracksBinding
-import dev.brahmkshatriya.echo.ui.shelf.adapter.TrackAdapter.Companion.bindTrack
+import dev.brahmkshatriya.echo.ui.media.TrackAdapter.Companion.bindTrack
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import kotlin.math.sign

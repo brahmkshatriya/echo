@@ -10,9 +10,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricsItemBinding
+import dev.brahmkshatriya.echo.databinding.SkeletonShelfBinding
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.ViewHolder
 
 class LyricsItemAdapter(
     private val listener: Listener
@@ -44,10 +46,17 @@ class LyricsItemAdapter(
         }
     }
 
+    data class Loading(
+        val inflater: LayoutInflater,
+        val parent: ViewGroup,
+        val binding: SkeletonShelfBinding =
+            SkeletonShelfBinding.inflate(inflater, parent, false)
+    ) : ShelfLoadingAdapter.ViewHolder(binding.root)
+
     fun withLoaders(fragment: Fragment): ConcatAdapter {
         val listener = fragment.createListener { retry() }
-        val footer = ShelfLoadingAdapter(listener)
-        val header = ShelfLoadingAdapter(listener)
+        val footer = ShelfLoadingAdapter(::Loading, listener)
+        val header = ShelfLoadingAdapter(::Loading, listener)
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
             empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)

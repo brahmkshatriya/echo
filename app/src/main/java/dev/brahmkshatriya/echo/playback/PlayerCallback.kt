@@ -171,6 +171,7 @@ class PlayerCallback(
         val extId = args.getString("extId") ?: return@future error
         val item = args.getSerialized<EchoMediaItem>("item") ?: return@future error
         val loaded = args.getBoolean("loaded", false)
+        val shuffle = args.getBoolean("shuffle", false)
         val extension = extensions.music.getExtension(extId) ?: return@future error
         when (item) {
             is EchoMediaItem.TrackItem -> {
@@ -191,9 +192,16 @@ class PlayerCallback(
                 val radio = PlayerState.Radio.Loaded(extension.id, item, null) {
                     extension.run(throwableFlow) { tracks.loadList(it) }
                 }
-                player.with { player.clearMediaItems() }
+                player.with {
+                    clearMediaItems()
+                    shuffleModeEnabled = false
+                }
                 PlayerRadio.play(player, settings, radioFlow, radio)
-                player.with { play() }
+                player.with {
+                    seekTo((0 until mediaItemCount).random(), 0)
+                    play()
+                    shuffleModeEnabled = shuffle
+                }
             }
         }
         SessionResult(RESULT_SUCCESS)

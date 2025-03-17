@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="8dp"
+    android:minHeight="48dp"
+    android:paddingVertical="8dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="16dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/songs"
+        android:textSize="20sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSearch"
+        style="@style/IconButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/search"
+        app:icon="@drawable/ic_search_outline" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSort"
+        style="@style/IconButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/sort"
+        android:scaleX="-1"
+        app:icon="@drawable/ic_sort" />
+
+</LinearLayout>

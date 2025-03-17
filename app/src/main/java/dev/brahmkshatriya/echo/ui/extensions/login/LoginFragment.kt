@@ -96,6 +96,7 @@ class LoginFragment : Fragment() {
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
+            binding.iconContainer.alpha = 1 - offset
         }
         binding.toolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()

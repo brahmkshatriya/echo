@@ -8,24 +8,32 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackHideClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
+import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
+import dev.brahmkshatriya.echo.ui.common.PagingUtils
+import dev.brahmkshatriya.echo.ui.common.PagingUtils.collectWith
+import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
+import dev.brahmkshatriya.echo.ui.player.info.TrackInfoViewModel.Companion.getTrackShelves
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -35,9 +43,11 @@ class MediaViewModel(
     val extensionId: String,
     val item: EchoMediaItem,
     val loaded: Boolean,
+    val loadOther: Boolean,
     app: App,
     extensionLoader: ExtensionLoader,
 ) : ViewModel() {
+
 
     val extensions = extensionLoader.extensions.music
     val throwFlow = app.throwFlow
@@ -45,13 +55,14 @@ class MediaViewModel(
     val context = app.context
 
     val itemFlow = MutableStateFlow(item)
-    var isLoaded = loaded
+    var isLoading = !loaded
     val extensionFlow = MutableStateFlow<Extension<*>?>(null)
 
-    val loadingFlow = MutableStateFlow(false)
+    val loadingFlow = MutableSharedFlow<Boolean>()
     private suspend fun loadItem(force: Boolean = false) = runCatching {
-        if (isLoaded && !force) return@runCatching item
-        loadingFlow.value = true
+        if (!isLoading && !force) return@runCatching item
+        isLoading = true
+        loadingFlow.emit(true)
         val extension = extensions.getExtensionOrThrow(extensionId)
         val item = when (item) {
             is EchoMediaItem.Lists.RadioItem -> Result.success(item)
@@ -75,8 +86,8 @@ class MediaViewModel(
                 loadTrack(item.track).toMediaItem()
             }
         }
-        isLoaded = true
-        loadingFlow.value = false
+        isLoading = false
+        loadingFlow.emit(false)
         item.getOrThrow()
     }
 
@@ -190,18 +201,89 @@ class MediaViewModel(
         TODO("Not yet implemented")
     }
 
+
+    val tracks = MutableStateFlow<PagingUtils.Data<Track>>(
+        PagingUtils.Data(null, null, null)
+    )
+
+    private suspend fun loadTracks() {
+        val extension = extensionFlow.value
+        tracks.value = PagingUtils.Data(extension, null, null)
+        val data = when (val item = itemFlow.value) {
+            is EchoMediaItem.Lists.AlbumItem ->
+                extension?.get<AlbumClient, PagedData<Track>> { loadTracks(item.album) }
+
+            is EchoMediaItem.Lists.PlaylistItem ->
+                extension?.get<PlaylistClient, PagedData<Track>> { loadTracks(item.playlist) }
+
+            is EchoMediaItem.Lists.RadioItem ->
+                extension?.get<RadioClient, PagedData<Track>> { loadTracks(item.radio) }
+
+            else -> null
+        }?.getOrElse {
+            tracks.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+            return
+        } ?: return
+        data.toFlow(extension!!).collectWith(throwFlow) {
+            tracks.value = PagingUtils.Data(extension, data, it)
+        }
+    }
+
+    val feed = MutableStateFlow<PagingUtils.Data<Shelf>>(
+        PagingUtils.Data(null, null, null)
+    )
+
+    private suspend fun loadShelves() {
+        val extension = extensionFlow.value
+        feed.value = PagingUtils.Data(extension, null, null)
+        val data = when (val item = itemFlow.value) {
+            is EchoMediaItem.Profile.ArtistItem ->
+                extension?.get<ArtistClient, PagedData<Shelf>> { getShelves(item.artist) }
+
+            is EchoMediaItem.Profile.UserItem ->
+                extension?.get<UserClient, PagedData<Shelf>> { getShelves(item.user) }
+
+            is EchoMediaItem.Lists.AlbumItem ->
+                extension?.get<AlbumClient, PagedData<Shelf>> { getShelves(item.album) }
+
+            is EchoMediaItem.Lists.PlaylistItem ->
+                extension?.get<PlaylistClient, PagedData<Shelf>> { getShelves(item.playlist) }
+
+            is EchoMediaItem.TrackItem -> extension?.get<TrackClient, PagedData<Shelf>> {
+                getTrackShelves(this, item.track)
+            }
+
+            else -> null
+        }?.getOrElse {
+            feed.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+            return
+        } ?: return
+        data.toFlow(extension!!).collectWith(throwFlow) {
+            feed.value = PagingUtils.Data(extension, data, it)
+        }
+    }
+
+    fun refresh(force: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            itemFlow.value = loadItem(force).getOrElse {
+                throwFlow.emit(it)
+                item
+            }
+            loadSavedState()
+            if (loadOther) {
+                launch { loadTracks() }
+                launch { loadShelves() }
+            }
+        }
+    }
+
+
     init {
         viewModelScope.launch {
             extensions.collectLatest {
                 extensionFlow.value = extensions.getExtension(extensionId)
             }
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            itemFlow.value = loadItem().getOrElse {
-                throwFlow.emit(it)
-                item
-            }
-            loadSavedState()
-        }
+        refresh(false)
     }
 }

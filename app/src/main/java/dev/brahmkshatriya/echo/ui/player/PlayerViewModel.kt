@@ -230,9 +230,25 @@ class PlayerViewModel(
                 putString("extId", id)
                 putSerialized("item", item)
                 putBoolean("loaded", loaded)
+                putBoolean("shuffle", false)
             })
         }
     }
+
+    fun shuffle(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
+        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+            Message(app.context.getString(R.string.shuffling_x, item.title))
+        )
+        withBrowser {
+            it.sendCustomCommand(playCommand, Bundle().apply {
+                putString("extId", id)
+                putSerialized("item", item)
+                putBoolean("loaded", loaded)
+                putBoolean("shuffle", true)
+            })
+        }
+    }
+
 
     fun addToQueue(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
         if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(

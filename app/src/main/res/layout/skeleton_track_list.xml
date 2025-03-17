@@ -8,14 +8,11 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <include layout="@layout/skeleton_shelf_lists" />
-
         <include
             layout="@layout/skeleton_track"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="12dp" />
+            android:layout_marginHorizontal="24dp" />
 
         <FrameLayout
             android:layout_width="match_parent"

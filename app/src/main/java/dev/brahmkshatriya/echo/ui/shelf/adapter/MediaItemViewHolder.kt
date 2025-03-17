@@ -13,7 +13,8 @@ import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfTrackCardBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
-import dev.brahmkshatriya.echo.ui.shelf.adapter.TrackAdapter.Companion.subtitleWithDuration
+import dev.brahmkshatriya.echo.ui.media.TrackAdapter
+import dev.brahmkshatriya.echo.ui.media.TrackAdapter.Companion.subtitleWithDuration
 import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.MediaItemShelfListsViewHolder.Companion.applyCover
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
@@ -21,7 +22,7 @@ import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimatio
 sealed class MediaItemViewHolder(view: View) : ShelfAdapter.ViewHolder(view) {
 
     interface Listener : TrackAdapter.Listener {
-        fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View)
+        fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View?)
         fun onMediaItemLongClicked(extensionId: String?, item: EchoMediaItem?, it: View) {}
         fun onMediaItemPlayClicked(extensionId: String?, item: EchoMediaItem?, it: View) {}
     }

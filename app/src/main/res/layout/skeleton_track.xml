@@ -3,12 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingVertical="8dp">
+    android:paddingVertical="4dp">
 
     <View
         android:layout_width="@dimen/collapsed_cover_size"
         android:layout_height="@dimen/collapsed_cover_size"
-        android:layout_marginStart="24dp"
         android:alpha="0.15"
         android:background="@drawable/shape_rounded_item_corner"
         android:backgroundTint="@color/amoled_fg" />
