@@ -113,7 +113,7 @@
     <string name="extension_out_of_date">擴充元件已過時</string>
     <string name="playlist_favourite">喜歡的歌曲</string>
     <string name="playlist_favourite_desc">所有您喜歡的歌曲都集中在這裡.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   </string>
-    <string name="add_to_queue新增至佇列</string>
+    <string name="add_to_queue">新增至佇列</string>
     <string name="play_next">播放下一首</string>
     <string name="save_to_playlist">儲存至播放清單</string>
     <string name="share">分享</string>
