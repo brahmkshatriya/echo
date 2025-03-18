@@ -49,5 +49,6 @@ class InfoFragment : Fragment() {
             trackInfoAdapter,
             shelfAdapter.withHeaders(this)
         )
+        shelfAdapter.getTouchHelper().attachToRecyclerView(binding.root)
     }
 }

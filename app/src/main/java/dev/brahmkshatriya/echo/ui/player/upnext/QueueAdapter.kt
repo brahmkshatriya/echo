@@ -96,7 +96,7 @@ class QueueAdapter(
             marquee()
         }
 
-        track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_problem)
+        track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
         val subtitle = buildString {
             track.duration?.toTimeString()?.let {
                 append("$it • ")

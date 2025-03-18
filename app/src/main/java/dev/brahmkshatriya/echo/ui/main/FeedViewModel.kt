@@ -92,6 +92,7 @@ abstract class FeedViewModel(
             val listener = ShelfClickListener(requireActivity().supportFragmentManager)
             val adapter = getShelfAdapter(listener)
             recyclerView.adapter = adapter.withLoaders(this)
+            adapter.getTouchHelper().attachToRecyclerView(recyclerView)
             observe(viewModel.feed) { (extension, shelf, feed) ->
                 adapter.submit(extension?.id, shelf, feed)
             }

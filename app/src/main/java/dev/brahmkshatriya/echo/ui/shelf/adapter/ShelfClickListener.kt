@@ -130,4 +130,13 @@ class ShelfClickListener(
         val track = list.getOrNull(index) ?: return
         onMediaItemLongClicked(extensionId, track.toMediaItem(), view)
     }
+
+    override fun onTrackSwiped(
+        extensionId: String?, list: List<Track>, index: Int, context: EchoMediaItem?, view: View
+    ) {
+        val id = extensionId ?: return
+        val track = list.getOrNull(index) ?: return
+        val playerViewModel by fragment.activityViewModel<PlayerViewModel>()
+        playerViewModel.addToNext(id, track.toMediaItem(), false)
+    }
 }

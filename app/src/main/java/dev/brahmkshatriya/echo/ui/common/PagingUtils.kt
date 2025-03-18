@@ -73,7 +73,12 @@ object PagingUtils {
             }
         }
 
-        private val config = PagingConfig(pageSize = 10, enablePlaceholders = false)
+        private val config = PagingConfig(
+            pageSize = 50,
+            enablePlaceholders = false,
+            prefetchDistance = 100
+        )
+
         private suspend fun loadData(params: LoadParams<String>): LoadResult.Page<String, Value> {
             val token = params.key
             val page = load(token)

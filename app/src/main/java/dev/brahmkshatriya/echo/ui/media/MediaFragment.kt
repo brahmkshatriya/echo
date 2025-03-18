@@ -165,5 +165,7 @@ class MediaFragment : Fragment() {
             listAdapter.withHeaders(this),
             shelfAdapter.withHeaders(this)
         )
+        listAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)
+        shelfAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)
     }
 }

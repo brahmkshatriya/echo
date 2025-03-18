@@ -12,6 +12,7 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import dev.brahmkshatriya.echo.common.helpers.PagedData
@@ -220,6 +221,36 @@ class ShelfAdapter(
 
     fun withHeaders(fragment: Fragment): ConcatAdapter {
         return withLoaders(fragment)
+    }
+
+    private fun getItemOrNull(i: Int) = if (i in 0 until itemCount) getItem(i) else null
+    fun getTouchHelper(): ItemTouchHelper {
+        val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START) {
+            override fun getMovementFlags(
+                recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
+            ): Int {
+                val mediaItem = getItemOrNull(viewHolder.bindingAdapterPosition) as? Shelf.Item
+                    ?: return 0
+                return if (mediaItem.media !is EchoMediaItem.TrackItem) 0
+                else makeMovementFlags(0, ItemTouchHelper.START)
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val mediaItem = getItemOrNull(viewHolder.bindingAdapterPosition) as? Shelf.Item
+                    ?: return
+                val track = (mediaItem.media as? EchoMediaItem.TrackItem)?.track ?: return
+                listener.onTrackSwiped(extensionId, listOf(track), 0, null, viewHolder.itemView)
+                notifyItemChanged(viewHolder.bindingAdapterPosition)
+            }
+
+            override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder) = 0.25f
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ) = false
+        }
+        return ItemTouchHelper(callback)
     }
 
     companion object {
