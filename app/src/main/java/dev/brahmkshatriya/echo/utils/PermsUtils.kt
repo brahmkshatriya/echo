@@ -47,7 +47,7 @@ object PermsUtils {
                 getString(R.string.read_storage),
                 getString(R.string.audio_permission_summary)
             ),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) Triple(
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) Triple(
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 getString(R.string.write_storage),
                 getString(R.string.write_storage_permission_summary)

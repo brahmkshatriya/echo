@@ -39,12 +39,12 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/radio"
             style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="56dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:maxLines="1"
             android:minHeight="64dp"
             android:text="@string/radio"
-            android:visibility="gone"
             app:icon="@drawable/ic_sensors" />
 
         <com.google.android.material.button.MaterialButton
@@ -53,17 +53,19 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:maxLines="1"
             android:minHeight="64dp"
             android:text="@string/play"
             app:icon="@drawable/ic_play" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/shuffle"
-            style="@style/Widget.Material3.Button.UnelevatedButton"
+            style="?attr/materialSplitButtonIconFilledStyle"
             android:layout_width="56dp"
             android:layout_height="wrap_content"
             android:contentDescription="@string/shuffle"
             android:minHeight="64dp"
+            android:insetRight="0dp"
             android:padding="18dp"
             app:icon="@drawable/ic_shuffle" />
 
@@ -73,7 +75,8 @@
         android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingVertical="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
         android:textColor="?colorOnSurfaceVariant"
         android:textColorLink="?colorPrimary"
         tools:text="@tools:sample/lorem" />

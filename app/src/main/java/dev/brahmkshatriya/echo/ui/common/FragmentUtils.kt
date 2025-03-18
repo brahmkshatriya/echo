@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
-import androidx.fragment.app.replace
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -24,7 +23,8 @@ object FragmentUtils {
         view: View? = null, bundle: Bundle? = null,
     ) {
         parentFragmentManager.commit {
-            replace<T>(id, args = bundle)
+            add<T>(id, args = bundle)
+            hide(this@openFragment)
             addToBackStack(null)
         }
     }

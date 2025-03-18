@@ -85,6 +85,9 @@ class TrackAdapter(
                 listener.onTrackLongClicked(id, snapshot().items, position, context, it)
                 true
             }
+            binding.more.setOnClickListener {
+                binding.root.performLongClick()
+            }
         }
 
         fun onCurrentChanged(current: PlayerState.Current?) {

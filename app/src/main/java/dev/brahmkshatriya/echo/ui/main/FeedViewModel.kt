@@ -52,13 +52,15 @@ abstract class FeedViewModel(
     }
 
     private suspend fun loadTabs(extension: Extension<*>) {
+        loading.emit(true)
         tabs.value = null
         val list = getTabs(extension).getOrElse {
             throwableFlow.emit(it)
             listOf()
         }
-        if (!list.any { it.id == tab?.id }) tab = list.firstOrNull()
+        tab = list.find { it.id == tab?.id } ?: list.firstOrNull()
         tabs.value = list
+        loading.emit(false)
     }
 
     private var job: Job? = null
@@ -67,11 +69,7 @@ abstract class FeedViewModel(
         feed.value = PagingUtils.Data(current.value, null, null)
         val extension = current.value ?: return
         job = viewModelScope.launch(Dispatchers.IO) {
-            if (reset) {
-                loading.emit(true)
-                loadTabs(extension)
-                loading.emit(false)
-            }
+            if (reset) loadTabs(extension)
             val data = getFeed(extension).getOrElse {
                 feed.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
                 return@launch

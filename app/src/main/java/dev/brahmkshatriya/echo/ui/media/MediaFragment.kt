@@ -60,7 +60,11 @@ class MediaFragment : Fragment() {
     private val playerViewModel by activityViewModel<PlayerViewModel>()
     private val vm by viewModel<MediaViewModel> { parametersOf(extensionId, item, loaded, true) }
 
-    private val headerListener by lazy { MediaHeaderAdapter.getListener(this) }
+    private val headerListener by lazy {
+        MediaHeaderAdapter.getListener(this) { id, item ->
+            listener.onMediaItemClicked(id, item, null)
+        }
+    }
     private val headerAdapter by lazy { MediaHeaderAdapter(headerListener) }
 
     private val listener by lazy { ShelfClickListener(requireActivity().supportFragmentManager) }
@@ -97,7 +101,7 @@ class MediaFragment : Fragment() {
             when (it.itemId) {
                 R.id.menu_more -> {
                     MediaMoreBottomSheet.newInstance(
-                        id, extensionId, vm.itemFlow.value, vm.isLoading, false
+                        id, extensionId, vm.itemFlow.value, !vm.loadingFlow.value, false
                     ).show(parentFragmentManager, null)
                     true
                 }
@@ -140,7 +144,6 @@ class MediaFragment : Fragment() {
         }
 
         binding.swipeRefresh.setOnRefreshListener { vm.refresh(true) }
-        binding.swipeRefresh.isRefreshing = vm.isLoading
         observe(vm.loadingFlow) {
             binding.swipeRefresh.isRefreshing = it
         }

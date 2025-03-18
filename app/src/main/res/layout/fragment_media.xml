@@ -38,8 +38,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingHorizontal="24dp"
-                android:paddingTop="64dp"
-                android:paddingBottom="72dp">
+                android:paddingTop="72dp"
+                android:paddingBottom="88dp">
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/coverContainer"
@@ -86,6 +86,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
+            tools:listitem="@layout/item_media_header"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

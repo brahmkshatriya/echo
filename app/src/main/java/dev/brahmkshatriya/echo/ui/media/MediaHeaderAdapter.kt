@@ -8,9 +8,11 @@ import android.text.Spanned
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -85,9 +87,10 @@ class MediaHeaderAdapter(
         radio.isVisible = isRadioSupported && item !is EchoMediaItem.Lists.RadioItem
         shuffle.isVisible = item !is EchoMediaItem.TrackItem
         val isFollowing = item is EchoMediaItem.Profile.ArtistItem && item.artist.isFollowing
-        follow.isVisible = isFollowing && isFollowSupported
-        unfollow.isVisible = !isFollowing && isFollowSupported
+        follow.isVisible = !isFollowing && isFollowSupported
+        unfollow.isVisible = isFollowing && isFollowSupported
         text.text = root.context.getSpan(true, item, extensionId, listener::openMediaItem)
+        text.isVisible = !text.text.isNullOrBlank()
     }
 
     companion object {
@@ -233,7 +236,10 @@ class MediaHeaderAdapter(
             }
         }
 
-        fun getListener(fragment: Fragment): Listener {
+        fun getListener(
+            fragment: Fragment,
+            openMediaItem: (String?, EchoMediaItem?) -> Unit
+        ): Listener {
             val playerVM by fragment.activityViewModel<PlayerViewModel>()
             val vm by fragment.viewModel<MediaViewModel>()
             return object : Listener {
@@ -248,11 +254,25 @@ class MediaHeaderAdapter(
                 }
 
                 override fun onTextClicked(id: String?, item: EchoMediaItem?, view: View) {
-                    TODO("Not yet implemented")
+                    item ?: return
+                    id ?: return
+                    val context = fragment.requireContext()
+                    var dialog: AlertDialog? = null
+                    val builder = MaterialAlertDialogBuilder(context)
+                        .setTitle(item.title)
+                        .setMessage(context.getSpan(false, item, id) { m, n ->
+                            openMediaItem(m, n)
+                            dialog?.dismiss()
+                        })
+                        .setPositiveButton(fragment.getString(R.string.okay)) { d, _ ->
+                            d.dismiss()
+                        }
+                    dialog = builder.create()
+                    dialog.show()
                 }
 
                 override fun openMediaItem(id: String?, item: EchoMediaItem?) {
-                    TODO("Not yet implemented")
+                    openMediaItem(id, item)
                 }
 
                 override fun onRadioClicked(id: String?, item: EchoMediaItem?, view: View) {
@@ -264,13 +284,13 @@ class MediaHeaderAdapter(
                 override fun onShuffleClicked(id: String?, item: EchoMediaItem?, view: View) {
                     id ?: return
                     item ?: return
-                    playerVM.shuffle(id, item, !vm.isLoading)
+                    playerVM.shuffle(id, item, !vm.loadingFlow.value)
                 }
 
                 override fun onPlayClicked(id: String?, item: EchoMediaItem?, view: View) {
                     id ?: return
                     item ?: return
-                    playerVM.play(id, item, !vm.isLoading)
+                    playerVM.play(id, item, !vm.loadingFlow.value)
                 }
             }
         }

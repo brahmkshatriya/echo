@@ -131,7 +131,12 @@ class PlayerCallback(
             throwableFlow, extension, item, null
         )
         if (loaded == null) return@future error
+        player.with {
+            clearMediaItems()
+            shuffleModeEnabled = false
+        }
         PlayerRadio.play(player, settings, radioFlow, loaded)
+        player.with { play() }
         SessionResult(RESULT_SUCCESS)
     }
 
@@ -198,9 +203,9 @@ class PlayerCallback(
                 }
                 PlayerRadio.play(player, settings, radioFlow, radio)
                 player.with {
-                    seekTo((0 until mediaItemCount).random(), 0)
-                    play()
                     shuffleModeEnabled = shuffle
+                    seekTo(0, 0)
+                    play()
                 }
             }
         }
@@ -265,7 +270,7 @@ class PlayerCallback(
     ): ListenableFuture<SessionResult> {
         return if (rating !is ThumbRating) super.onSetRating(session, controller, rating)
         else scope.future {
-            val item = withContext(Dispatchers.Main) { session.player.currentMediaItem }!!
+            val item = session.player.with { currentMediaItem }!!
             val track = item.track
             runCatching {
                 val extension = extensions.music.getExtensionOrThrow(item.extensionId)
@@ -282,8 +287,8 @@ class PlayerCallback(
                     mediaMetadata.buildUpon().setUserRating(ThumbRating(liked)).build()
                 )
             }.build()
-            withContext(Dispatchers.Main) {
-                session.player.replaceMediaItem(session.player.currentMediaItemIndex, newItem)
+            session.player.with {
+                replaceMediaItem(currentMediaItemIndex, newItem)
             }
             SessionResult(RESULT_SUCCESS, bundleOf("liked" to liked))
         }

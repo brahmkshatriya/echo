@@ -33,17 +33,16 @@ import dev.brahmkshatriya.echo.ui.common.PagingUtils.collectWith
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
 import dev.brahmkshatriya.echo.ui.player.info.TrackInfoViewModel.Companion.getTrackShelves
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MediaViewModel(
-    val extensionId: String,
-    val item: EchoMediaItem,
-    val loaded: Boolean,
-    val loadOther: Boolean,
+    private val extensionId: String,
+    private val item: EchoMediaItem,
+    loaded: Boolean,
+    private val loadOther: Boolean,
     app: App,
     extensionLoader: ExtensionLoader,
 ) : ViewModel() {
@@ -55,13 +54,11 @@ class MediaViewModel(
     val context = app.context
 
     val itemFlow = MutableStateFlow(item)
-    var isLoading = !loaded
     val extensionFlow = MutableStateFlow<Extension<*>?>(null)
 
-    val loadingFlow = MutableSharedFlow<Boolean>()
+    val loadingFlow = MutableStateFlow(!loaded)
     private suspend fun loadItem(force: Boolean = false) = runCatching {
-        if (!isLoading && !force) return@runCatching item
-        isLoading = true
+        if (!loadingFlow.value && !force) return@runCatching item
         loadingFlow.emit(true)
         val extension = extensions.getExtensionOrThrow(extensionId)
         val item = when (item) {
@@ -86,7 +83,6 @@ class MediaViewModel(
                 loadTrack(item.track).toMediaItem()
             }
         }
-        isLoading = false
         loadingFlow.emit(false)
         item.getOrThrow()
     }

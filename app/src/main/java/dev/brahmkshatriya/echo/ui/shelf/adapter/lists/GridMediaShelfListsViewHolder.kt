@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemShelfListsMediaGridBinding
@@ -26,13 +27,17 @@ class GridMediaShelfListsViewHolder(
     init {
         binding.root.setOnClickListener {
             when (val shelf = shelf) {
-                is Shelf.Lists.Items -> listener.onMediaItemPlayClicked(
-                    extensionId, shelf.list.getOrNull(bindingAdapterPosition), it
-                )
+                is Shelf.Lists.Items -> {
+                    val item = shelf.list.getOrNull(bindingAdapterPosition)
+                    if (item is EchoMediaItem.Lists.RadioItem)
+                        listener.onMediaItemPlayClicked(extensionId, item, it)
+                    else
+                        listener.onMediaItemClicked(extensionId, item, it)
+                }
 
                 is Shelf.Lists.Tracks -> if (shelf.isNumbered) listener.onTrackClicked(
                     extensionId, shelf.list, bindingAdapterPosition, null, it
-                ) else listener.onMediaItemPlayClicked(
+                ) else listener.onMediaItemClicked(
                     extensionId, shelf.list.getOrNull(bindingAdapterPosition)?.toMediaItem(), it
                 )
 

@@ -40,7 +40,11 @@ class MediaItemShelfListsViewHolder(
                     extensionId, listOf(item.track), 0, null, it
                 )
 
-                else -> listener.onMediaItemClicked(extensionId, item, it)
+                is EchoMediaItem.Lists.RadioItem ->
+                    listener.onMediaItemPlayClicked(extensionId, item, it)
+
+                else ->
+                    listener.onMediaItemClicked(extensionId, item, it)
             }
         }
         binding.root.setOnLongClickListener {

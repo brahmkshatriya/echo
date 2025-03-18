@@ -328,9 +328,10 @@ class PlayerFragment : Fragment() {
         binding.playerControls.trackHeart.addOnCheckedStateChangedListener(likeListener)
         observe(viewModel.playerState.current) {
             uiViewModel.run {
+                if (it == null) return@run changePlayerState(STATE_HIDDEN)
+                if (!isFinalState(playerSheetState.value)) return@run
                 changePlayerState(
-                    if (it == null) STATE_HIDDEN
-                    else if (playerSheetState.value != STATE_EXPANDED) STATE_COLLAPSED
+                    if (playerSheetState.value != STATE_EXPANDED) STATE_COLLAPSED
                     else STATE_EXPANDED
                 )
             }
@@ -571,6 +572,7 @@ class PlayerFragment : Fragment() {
     }
 
     private fun openItem(extension: String, item: EchoMediaItem) {
+        uiViewModel.collapsePlayer()
         requireActivity().openFragment<MediaFragment>(
             null, MediaFragment.getBundle(extension, item, false)
         )

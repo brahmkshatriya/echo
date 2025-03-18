@@ -106,13 +106,12 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             itemAdapter.submitList(extensionId, listOf(item))
         }
         observe(playerViewModel.playerState.current) { itemAdapter.onCurrentChanged() }
-        loadingAdapter.setLoading(vm.isLoading)
         observe(vm.loadingFlow) { loadingAdapter.setLoading(it) }
         vm.run {
             observe(itemFlow.combine(extensionFlow) { _, _ -> }.combine(savedState) { _, _ -> }) {
                 val client = extensionFlow.value?.instance?.value()?.getOrNull()
                 actionAdapter.submitList(
-                    getActions(client, itemFlow.value, !isLoading)
+                    getActions(client, itemFlow.value, !vm.loadingFlow.value)
                 )
             }
         }
@@ -290,7 +289,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
                 val url = vm.onShare()
                 ShareCompat.IntentBuilder(requireActivity())
                     .setType("text/plain")
-                    .setChooserTitle("${vm.extensionFlow.value?.name} - ${vm.itemFlow.value.title}")
+                    .setChooserTitle("${vm.extensionFlow.value?.name} - ${item.title}")
                     .setText(url)
                     .startChooser()
             }
