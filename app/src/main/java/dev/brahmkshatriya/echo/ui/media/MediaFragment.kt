@@ -113,7 +113,6 @@ class MediaFragment : Fragment() {
         FastScrollerHelper.applyTo(binding.recyclerView)
         observe(playerViewModel.playerState.current) {
             listAdapter.onCurrentChanged(it)
-            shelfAdapter.onCurrentChanged(it)
         }
         observe(vm.itemFlow) { item ->
             if (item is EchoMediaItem.Profile) binding.coverContainer.run {
@@ -162,7 +161,7 @@ class MediaFragment : Fragment() {
 
         binding.recyclerView.adapter = ConcatAdapter(
             headerAdapter,
-            listAdapter.withHeaders(this),
+            listAdapter.withHeaders(this, vm, vm.tracks),
             shelfAdapter.withHeaders(this)
         )
         listAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)

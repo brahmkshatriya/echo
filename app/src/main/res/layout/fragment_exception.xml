@@ -37,7 +37,6 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/exceptionMessage"
                 style="@style/Toolbar"
-                app:menu="@menu/exception_menu"
                 tools:title="@tools:sample/lorem/random" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -69,10 +68,27 @@
                 android:paddingHorizontal="24dp"
                 android:paddingVertical="12dp"
                 android:textIsSelectable="true"
+                tools:text="@tools:sample/lorem/random"
                 android:typeface="monospace" />
 
         </HorizontalScrollView>
 
     </androidx.core.widget.NestedScrollView>
+
+    <FrameLayout
+        android:id="@+id/fabContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom">
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fabCopy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            android:text="@string/str_copy"
+            app:icon="@drawable/ic_copy" />
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

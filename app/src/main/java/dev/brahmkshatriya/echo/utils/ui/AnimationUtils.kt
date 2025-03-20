@@ -122,17 +122,17 @@ object AnimationUtils {
         }
 
     const val ANIMATIONS_KEY = "animations"
-    const val SHARED_ELEMENT_KEY = "shared_element"
+    const val SCROLL_ANIMATIONS_KEY = "shared_element"
 
     private val View.animations
         get() = context.applicationContext.run {
             getSharedPreferences(SETTINGS_NAME, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
         }
 
-    val View.sharedElementTransitions
+    private val View.scrollAnimations
         get() = context.applicationContext.run {
             getSharedPreferences(SETTINGS_NAME, MODE_PRIVATE)
-                .getBoolean(SHARED_ELEMENT_KEY, true)
+                .getBoolean(SCROLL_ANIMATIONS_KEY, false)
         }
 
     fun Fragment.setupTransition(view: View, applyBackground: Boolean = true) {
@@ -204,6 +204,7 @@ object AnimationUtils {
 
     fun View.applyTranslationYAnimation(amount: Int, delay: Long = 0) {
         if (!animations) return
+        if (!scrollAnimations) return
         val multiplier = amount.sign
         val translate = TranslateAnimation(
             Animation.RELATIVE_TO_SELF, 0f,

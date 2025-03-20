@@ -20,6 +20,7 @@ import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.collectWith
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -36,12 +37,14 @@ class TrackInfoViewModel(
         PagingUtils.Data(null, null, null)
     )
 
+    private var job: Job? = null
     fun load() {
         if (previous?.id == currentFlow.value?.mediaItem?.track?.id) return
         val current = currentFlow.value?.mediaItem ?: return
+        job?.cancel()
         itemsFlow.value = PagingUtils.Data(null, null, null)
         if (!current.isLoaded) return
-        viewModelScope.launch {
+        job = viewModelScope.launch {
             val extension = extensions.music.getExtension(current.extensionId)
             itemsFlow.value = PagingUtils.Data(extension, null, null)
             previous = current.track

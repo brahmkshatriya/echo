@@ -72,7 +72,7 @@ class UnifiedExtension(
 
         suspend inline fun <reified C, T> Extension<*>.client(block: C.() -> T): T = runCatching {
             val client = instance.value().getOrThrow() as? C
-                ?: throw ClientException.NotSupported(C::class.java.name)
+                ?: throw ClientException.NotSupported(C::class.run { simpleName ?: java.name })
             client.block()
         }.getOrElse { throw it.toAppException(this) }
 

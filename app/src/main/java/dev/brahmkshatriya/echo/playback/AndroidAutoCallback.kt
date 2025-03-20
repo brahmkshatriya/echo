@@ -387,13 +387,12 @@ abstract class AndroidAutoCallback(
             context: Context, id: String, extId: String
         ): List<MediaItem> {
             val shelf = shelvesMap[id]!!
-            val list = shelf.loadNext() ?: emptyList()
-            val hasMore = shelf.hasNext()
+            val list = shelf.loadList(null).data
             return listOfNotNull(
                 *list.map { it.toMediaItem(context, extId) }.toTypedArray(),
-                if (hasMore)
-                    browsableItem("$ROOT/$extId/$SHELF/$id", context.getString(R.string.more))
-                else null
+//                if (hasMore)
+//                    browsableItem("$ROOT/$extId/$SHELF/$id", context.getString(R.string.more))
+//                else null
             )
         }
 

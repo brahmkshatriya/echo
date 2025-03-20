@@ -215,6 +215,21 @@ class PlayerCallback(
     private suspend fun <T> Player.with(block: Player.() -> T): T =
         withContext(Dispatchers.Main) { block() }
 
+    private suspend fun <T : Any> PagedData<T>.load(
+        pages: Int = 5
+    ) = runCatching {
+        val list = mutableListOf<T>()
+        var page = loadList(null)
+        list.addAll(page.data)
+        var count = 0
+        while (page.continuation != null && count < pages) {
+            page = loadList(page.continuation)
+            list.addAll(page.data)
+            count++
+        }
+        list
+    }
+
     private fun addToQueue(player: Player, args: Bundle) = scope.future {
         val error = SessionResult(SessionError.ERROR_UNKNOWN)
         val extId = args.getString("extId") ?: return@future error
@@ -224,7 +239,10 @@ class PlayerCallback(
         val tracks = listTracks(extension, item, loaded).getOrElse {
             throwableFlow.emit(it)
             return@future error
-        }.load(5)
+        }.load().getOrElse {
+            throwableFlow.emit(it)
+            return@future error
+        }
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
             MediaItemUtils.build(settings, track, extId, null)
@@ -248,7 +266,10 @@ class PlayerCallback(
         val tracks = listTracks(extension, item, loaded).getOrElse {
             throwableFlow.emit(it)
             return@future error
-        }.load(5)
+        }.load().getOrElse {
+            throwableFlow.emit(it)
+            return@future error
+        }
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
             MediaItemUtils.build(settings, track, extId, null)

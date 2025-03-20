@@ -62,32 +62,9 @@ sealed class PagedData<T : Any> {
     abstract suspend fun loadList(continuation: String?): Page<T>
     abstract fun invalidate(continuation: String?)
 
-    private var loaded = false
-    private var lastContinuation: String? = null
-    suspend fun loadNext(): List<T>? {
-        if (loaded) return null
-        val page = loadList(lastContinuation)
-        loaded = page.continuation == null
-        lastContinuation = page.continuation
-        return page.data
-    }
-
-    /**
-     * To load the next page of data
-     *
-     * @return A list of the next page of data
-     */
-    fun hasNext() = !loaded
-
     abstract fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R>
-    suspend fun load(pages: Int): List<T> {
-        val list = mutableListOf<T>()
-        repeat(pages) {
-            val page = loadNext() ?: return list
-            list.addAll(page)
-        }
-        return list
-    }
+
+    abstract fun getLoaded(): List<T>
 
     /**
      * A class representing a single page of data.
@@ -99,7 +76,7 @@ sealed class PagedData<T : Any> {
     ) : PagedData<T>() {
         private var loaded = false
         val items = mutableListOf<T>()
-        suspend fun loadList(): List<T> {
+        private suspend fun loadList(): List<T> {
             if (loaded) return items
             items.addAll(load())
             loaded = true
@@ -130,6 +107,10 @@ sealed class PagedData<T : Any> {
 
         override fun invalidate(continuation: String?) {
             clear()
+        }
+
+        override fun getLoaded(): List<T> {
+            return items
         }
 
         override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
@@ -183,6 +164,16 @@ sealed class PagedData<T : Any> {
 
         override fun invalidate(continuation: String?) {
             itemMap.remove(continuation)
+        }
+
+        override fun getLoaded(): List<T> {
+            val list = mutableListOf<T>()
+            var page = itemMap[null]
+            while (page?.continuation != null) {
+                list.addAll(page.data)
+                page = itemMap[page.continuation]
+            }
+            return list
         }
 
         override fun clear() = itemMap.clear()
@@ -265,6 +256,10 @@ sealed class PagedData<T : Any> {
             val source = sources.getOrNull(index)
             source?.invalidate(token)
         }
+
+        override fun getLoaded(): List<T> {
+            return sources.flatMap { it.getLoaded() }
+        }
     }
 
     class Suspend<T : Any>(
@@ -298,6 +293,10 @@ sealed class PagedData<T : Any> {
 
         override fun invalidate(continuation: String?) {
             _data?.invalidate(continuation)
+        }
+
+        override fun getLoaded(): List<T> {
+            return _data?.getLoaded() ?: emptyList()
         }
     }
 

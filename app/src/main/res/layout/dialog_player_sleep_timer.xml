@@ -16,12 +16,12 @@
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="-16dp"
-            android:layout_marginTop="-16dp"
-            android:layout_marginEnd="-16dp"
+            android:layout_marginStart="-20dp"
+            android:layout_marginTop="-24dp"
+            android:layout_marginEnd="-20dp"
             android:background="@null"
             android:paddingStart="0dp"
-            android:paddingEnd="8dp"
+            android:paddingEnd="4dp"
             app:menu="@menu/sleep_timer_menu"
             app:navigationIcon="@drawable/ic_close"
             app:title="@string/sleep_timer"
@@ -62,8 +62,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                tools:listitem="@layout/item_ruler"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_ruler" />
 
         </com.bosphere.fadingedgelayout.FadingEdgeLayout>
 

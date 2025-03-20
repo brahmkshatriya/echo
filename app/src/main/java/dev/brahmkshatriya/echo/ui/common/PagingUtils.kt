@@ -22,8 +22,20 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 object PagingUtils {
-    fun <T : Any> PagedData<T>.toFlow(extension: Extension<*>) =
-        ContinuationSource(extension, { loadList(it) }, { invalidate(it) }).toFlow()
+
+    data class Data<T : Any>(
+        val extension: Extension<*>?,
+        val pagedData: PagedData<T>?,
+        val pagingData: PagingData<T>?
+    )
+
+    suspend fun <T : Any> PagedData<T>.load(extension: Extension<*>, token: String?) = runCatching {
+        runCatching {
+            loadList(token)
+        }.getOrElse {
+            throw it.toAppException(extension)
+        }
+    }
 
     fun <T : Any> errorPagingData(throwable: Throwable) = PagingData.empty<T>(
         LoadStates(
@@ -41,11 +53,8 @@ object PagingUtils {
         )
     )
 
-    data class Data<T : Any>(
-        val extension: Extension<*>?,
-        val pagedData: PagedData<T>?,
-        val pagingData: PagingData<T>?
-    )
+    fun <T : Any> PagedData<T>.toFlow(extension: Extension<*>) =
+        ContinuationSource(extension, { loadList(it) }, { invalidate(it) }).toFlow()
 
     suspend fun <T : Any> Flow<PagingData<T>>.collectWith(
         throwableFlow: MutableSharedFlow<Throwable>,

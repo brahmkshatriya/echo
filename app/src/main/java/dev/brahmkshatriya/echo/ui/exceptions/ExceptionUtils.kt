@@ -57,15 +57,11 @@ object ExceptionUtils {
         )
 
         is AppException -> when (throwable) {
-            is AppException.Unauthorized -> getString(
-                R.string.unauthorized_access_in_x,
-                throwable.extension.name
-            )
+            is AppException.Unauthorized ->
+                getString(R.string.account_session_expired_in_x, throwable.extension.name)
 
-            is AppException.LoginRequired -> getString(
-                R.string.x_login_required,
-                throwable.extension.name
-            )
+            is AppException.LoginRequired ->
+                getString(R.string.x_login_required, throwable.extension.name)
 
             is AppException.NotSupported -> getString(
                 R.string.x_is_not_supported_in_x,
@@ -147,13 +143,19 @@ object ExceptionUtils {
     fun FragmentActivity.getMessage(throwable: Throwable, view: View?): Message {
         val title = getFinalTitle(throwable) ?: getString(
             R.string.error_x,
-            throwable.message ?: throwable::class.simpleName
+            throwable.message ?: throwable::class.run { simpleName ?: java.name }
         )
         val root = throwable.rootCause
         val uiViewModel by viewModel<UiViewModel>()
         return Message(
             message = title,
             when (root) {
+                is AppException.Unauthorized ->
+                    Message.Action(getString(R.string.logout_and_login)) {
+                        uiViewModel.collapsePlayer()
+                        openLoginException(root, view)
+                    }
+
                 is AppException.LoginRequired -> Message.Action(getString(R.string.login)) {
                     uiViewModel.collapsePlayer()
                     openLoginException(root, view)

@@ -69,7 +69,7 @@ class ShufflePlayer(
 
     override fun addMediaItems(mediaItems: MutableList<MediaItem>) {
         original = original + mediaItems
-        player.addMediaItems(if (shuffleModeEnabled) mediaItems.shuffled() else mediaItems)
+        player.addMediaItems(mediaItems)
         log("Add media items")
     }
 
@@ -81,7 +81,7 @@ class ShufflePlayer(
 
     override fun addMediaItems(index: Int, mediaItems: MutableList<MediaItem>) {
         original = original + mediaItems
-        player.addMediaItems(index, if (shuffleModeEnabled) mediaItems.shuffled() else mediaItems)
+        player.addMediaItems(index, mediaItems)
         log("Add media items at $index")
     }
 
@@ -146,16 +146,13 @@ class ShufflePlayer(
 
     override fun setMediaItems(mediaItems: MutableList<MediaItem>) {
         original = mediaItems
-        player.setMediaItems(if (shuffleModeEnabled) mediaItems.shuffled() else mediaItems)
+        player.setMediaItems(mediaItems)
         log("Set media items")
     }
 
     override fun setMediaItems(mediaItems: MutableList<MediaItem>, resetPosition: Boolean) {
         original = mediaItems
-        player.setMediaItems(
-            if (shuffleModeEnabled) mediaItems.shuffled() else mediaItems,
-            resetPosition
-        )
+        player.setMediaItems(mediaItems, resetPosition)
         log("Set media items")
     }
 
@@ -165,11 +162,7 @@ class ShufflePlayer(
         startPositionMs: Long
     ) {
         original = mediaItems
-        player.setMediaItems(
-            if (shuffleModeEnabled) mediaItems.shuffled() else mediaItems,
-            startIndex,
-            startPositionMs
-        )
+        player.setMediaItems(mediaItems, startIndex, startPositionMs)
         log("Set media items")
     }
 

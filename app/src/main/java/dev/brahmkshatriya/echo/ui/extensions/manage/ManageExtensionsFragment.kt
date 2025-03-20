@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsetsMain
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
@@ -45,7 +45,7 @@ class ManageExtensionsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
-            binding.fabContainer.applyContentInsets(it)
+            binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->

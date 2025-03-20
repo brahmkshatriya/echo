@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-20dp"
+            android:layout_marginTop="-24dp"
+            android:layout_marginEnd="-20dp"
+            android:background="@null"
+            android:paddingStart="0dp"
+            android:paddingEnd="4dp"
+            app:menu="@menu/refresh_menu"
+            app:navigationIcon="@drawable/ic_close"
+            app:title="@string/sort_and_filter"
+            app:titleCentered="true" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-24dp"
+            android:layout_marginEnd="-24dp"
+            android:indeterminate="true" />
+
+        <LinearLayout
+            android:id="@+id/reversedContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-24dp"
+            android:layout_marginEnd="-24dp"
+            android:background="?selectableItemBackground"
+            android:baselineAligned="false"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/reversed"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="18sp" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/reversedSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:clickable="false" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/sort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/sort"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/sort_chip_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="-8dp"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/filter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="@string/filter"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/filter_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+        <LinearLayout
+            android:id="@+id/save_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-24dp"
+            android:layout_marginEnd="-24dp"
+            android:background="?selectableItemBackground"
+            android:baselineAligned="false"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="@string/save"
+                android:textColor="?attr/colorOnSurface" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/save_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:clickable="false" />
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/apply"
+            style="@style/Widget.Material3.Button.UnelevatedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="64dp"
+            android:text="@string/apply" />
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

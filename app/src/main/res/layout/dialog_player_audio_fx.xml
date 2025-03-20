@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         app:liftOnScroll="false"
         android:background="@android:color/transparent"
-        android:padding="8dp">
+        android:paddingHorizontal="4dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:paddingStart="0dp"
-            android:paddingEnd="8dp"
+            android:paddingEnd="4dp"
             app:layout_scrollFlags="scroll|snap"
             app:menu="@menu/refresh_menu"
             app:navigationIcon="@drawable/ic_close"

@@ -29,6 +29,8 @@
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
+    <uses-permission android:name="android.permission.DETECT_SCREEN_CAPTURE" />
+
     <application
         android:name=".MainApplication"
         android:appCategory="audio"

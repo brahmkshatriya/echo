@@ -58,6 +58,8 @@
     <string name="downloads">Downloads</string>
     <string name="x_items">%1$d Items</string>
     <string name="downloaded_x">Downloaded %1$s</string>
+
+    <string name="logout_and_login">Logout and Login</string>
     <string name="login">Login</string>
     <string name="view">View</string>
 
@@ -68,7 +70,7 @@
     <string name="required_extensions_missing_x">Required extensions missing: %1$s</string>
     <string name="x_login_required">%1$s login required</string>
     <string name="x_is_not_supported_in_x">%1$s is not supported in %2$s</string>
-    <string name="unauthorized_access_in_x">Unauthorized access in %1$s</string>
+    <string name="account_session_expired_in_x">Account session expired in %1$s</string>
     <string name="no_servers_found">No servers found</string>
     <string name="no_source_found">No source found</string>
     <string name="task_cancelled">Task cancelled</string>
@@ -328,4 +330,20 @@
         <item quantity="other">%1$d Songs</item>
     </plurals>
     <string name="shuffling_x">Shuffling %1$s</string>
+    <string name="copying_the_error">Copying the error</string>
+    <string name="sort_and_filter">Sort and Filter</string>
+    <string name="filter">Filter</string>
+    <string name="reversed">Reversed</string>
+    <string name="remember">Remember</string>
+    <string name="apply">Apply</string>
+    <string name="save">Save</string>
+    <string name="sort_title">Title</string>
+    <string name="sort_date">Date</string>
+    <string name="sort_duration">Duration</string>
+    <string name="sort_artist">Artist</string>
+    <string name="sort_album">Album</string>
+    <string name="sort_plays">Plays</string>
+    <string name="sort_explicit">Explicit</string>
+    <string name="scroll_animations">Scroll Animations</string>
+    <string name="scroll_animations_summary">Animations when you scroll stuff</string>
 </resources>

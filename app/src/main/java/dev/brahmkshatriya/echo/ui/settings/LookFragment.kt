@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.prefs.ColorListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.ANIMATIONS_KEY
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.SCROLL_ANIMATIONS_KEY
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable.BACKGROUND_GRADIENT
 
 
@@ -149,15 +150,15 @@ class LookFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-//                SwitchPreferenceCompat(context).apply {
-//                    key = SHARED_ELEMENT_KEY
-//                    title = getString(R.string.shared_element_transitions)
-//                    summary = getString(R.string.shared_element_transitions_summary)
-//                    layoutResource = R.layout.preference_switch
-//                    isIconSpaceReserved = false
-//                    setDefaultValue(true)
-//                    addPreference(this)
-//                }
+                SwitchPreferenceCompat(context).apply {
+                    key = SCROLL_ANIMATIONS_KEY
+                    title = getString(R.string.scroll_animations)
+                    summary = getString(R.string.scroll_animations_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
+                    addPreference(this)
+                }
             }
         }
 
@@ -171,14 +172,14 @@ class LookFragment : BaseSettingsFragment() {
 
         override fun onResume() {
             super.onResume()
-            preferenceManager.sharedPreferences!!.registerOnSharedPreferenceChangeListener(listener)
+            preferenceManager.sharedPreferences!!
+                .registerOnSharedPreferenceChangeListener(listener)
         }
 
         override fun onPause() {
             super.onPause()
-            preferenceManager.sharedPreferences!!.unregisterOnSharedPreferenceChangeListener(
-                listener
-            )
+            preferenceManager.sharedPreferences!!
+                .unregisterOnSharedPreferenceChangeListener(listener)
         }
     }
 

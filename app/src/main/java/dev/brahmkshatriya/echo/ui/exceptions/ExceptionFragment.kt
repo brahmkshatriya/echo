@@ -1,16 +1,21 @@
 package dev.brahmkshatriya.echo.ui.exceptions
 
+import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentExceptionBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.getPasteLink
 import dev.brahmkshatriya.echo.utils.ContextUtils.copyToClipboard
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
@@ -43,6 +48,7 @@ class ExceptionFragment : Fragment() {
         setupTransition(view)
         applyInsets {
             binding.nestedScrollView.applyContentInsets(it)
+            binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
@@ -55,19 +61,38 @@ class ExceptionFragment : Fragment() {
 
         binding.exceptionMessage.title = data.title
         binding.exceptionDetails.text = data.trace
+        binding.fabCopy.setOnClickListener {
+            copyException()
+        }
 
-        binding.exceptionMessage.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.exception_copy -> {
-                    lifecycleScope.launch {
-                        val toCopy = getPasteLink(data).getOrElse { data.trace }
-                        requireContext().copyToClipboard("Error", toCopy)
-                    }
-                    true
-                }
+        requireActivity().run {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return@run
+            registerScreenCaptureCallback(mainExecutor, screenCaptureCallback)
+        }
+    }
 
-                else -> false
-            }
+    private fun copyException() {
+        createSnack(R.string.copying_the_error)
+        lifecycleScope.launch {
+            val toCopy = getPasteLink(data).getOrElse { data.trace }
+            requireContext().copyToClipboard("Error", toCopy)
+        }
+    }
+
+    private val screenCaptureCallback = Activity.ScreenCaptureCallback {
+        copyException()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        requireActivity().run {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return@run
+            unregisterScreenCaptureCallback(screenCaptureCallback)
         }
     }
 }
