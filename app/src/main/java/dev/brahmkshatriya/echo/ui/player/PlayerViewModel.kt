@@ -118,7 +118,10 @@ class PlayerViewModel(
     }
 
     fun setPlaying(isPlaying: Boolean) {
-        withBrowser { it.playWhenReady = isPlaying }
+        withBrowser {
+            it.prepare()
+            it.playWhenReady = isPlaying
+        }
     }
 
     fun next() {

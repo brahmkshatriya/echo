@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.media
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
 
-enum class Sort(
+enum class TrackSort(
     val title: Int,
     val sorter: (List<Track>) -> List<Track>
 ) {
@@ -28,7 +28,7 @@ enum class Sort(
         list.sortedBy { it.isExplicit }
     });
 
-    fun shouldBeVisible(data: List<Track>): Sort? {
+    fun shouldBeVisible(data: List<Track>): TrackSort? {
         val take = when (this) {
             Title -> data.any { it.title.isNotEmpty() }
             Date -> data.any { it.releaseDate != null }
@@ -46,13 +46,13 @@ enum class Sort(
     }
 
     data class State(
-        val sort: Sort? = null,
+        val trackSort: TrackSort? = null,
         val reversed: Boolean = false,
         val save: Boolean = false,
     )
 
     companion object {
-        fun getSorts(data: List<Track>): List<Sort> {
+        fun getSorts(data: List<Track>): List<TrackSort> {
             return entries.filter { it.shouldBeVisible(data) != null }
         }
     }

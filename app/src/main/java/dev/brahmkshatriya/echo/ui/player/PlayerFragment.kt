@@ -524,7 +524,6 @@ class PlayerFragment : Fragment() {
                 trackTotalTime.setTextColor(colors.onBackground)
                 trackTitle.setTextColor(colors.onBackground)
                 trackArtist.setTextColor(colors.onBackground)
-                trackSubtitle.setTextColor(colors.onBackground)
             }
         }
     }

@@ -79,8 +79,7 @@ class UnifiedExtension(
         private fun List<Extension<*>>.get(id: String?) =
             find { it.id == id } ?: throw Exception("Extension $id not found")
 
-        private fun List<Extension<*>>.getOrNull(id: String?) =
-            find { it.id == id }
+        private fun List<Extension<*>>.getOrNull(id: String?) = find { it.id == id }
 
         val Map<String, String>.extensionId
             get() = this[EXTENSION_ID] ?: throw Exception("Extension id not found")
@@ -260,9 +259,8 @@ class UnifiedExtension(
     ): PagedData<Shelf> {
         return PagedData.Suspend {
             val extensions = extensions()
-            val id = tab?.extras?.extensionId
-                ?: extensions.firstOrNull()?.id
-                ?: return@Suspend PagedData.empty()
+            val id = tab?.extras?.extensionId ?: extensions.firstOrNull()?.id
+            ?: return@Suspend PagedData.empty()
             val extension = extensions.get(id)
             extension.client<T, PagedData<Shelf>> {
                 extension.loadFeed(extensions, { loadTabs() }, { getFeed(it) })
@@ -474,16 +472,13 @@ class UnifiedExtension(
     ) + extensions().map { Tab(it.id, it.name) }
 
     override fun getLibraryFeed(tab: Tab?) = PagedData.Suspend {
-        val extension = extensions().getOrNull(tab?.id) ?: return@Suspend PagedData.Single {
-            Shelf.Category(
-                context.getString(R.string.saved),
-                PagedData.Single { db.getSaved().map { it.toShelf() } })
-            db.getPlaylists().map { it.toMediaItem().toShelf() }
-        }
-        extension.client<LibraryFeedClient, PagedData<Shelf>> {
+        val extension = extensions().getOrNull(tab?.id)
+        println("extension ${extension?.name}")
+        extension?.client<LibraryFeedClient, PagedData<Shelf>> {
             val tabs = getLibraryTabs()
-            if (!showTabs || tabs.isEmpty())
-                getLibraryFeed(tabs.firstOrNull()).injectExtensionId(extension)
+            if (!showTabs || tabs.isEmpty()) getLibraryFeed(tabs.firstOrNull()).injectExtensionId(
+                extension
+            )
             else PagedData.Single {
                 listOf(
                     Shelf.Lists.Categories(
@@ -495,7 +490,14 @@ class UnifiedExtension(
                     )
                 )
             }
-
+        } ?: PagedData.Single {
+            listOf(
+                Shelf.Category(
+                    context.getString(R.string.saved),
+                    PagedData.Single { db.getSaved().map { it.toShelf() } }
+                ),
+                *db.getPlaylists().map { it.toMediaItem().toShelf() }.toTypedArray()
+            )
         }
     }
 

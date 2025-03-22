@@ -53,7 +53,7 @@ class ShelfFragment : Fragment() {
         }
         binding.swipeRefresh.setOnRefreshListener { vm.load() }
         FastScrollerHelper.applyTo(binding.recyclerView)
-        binding.recyclerView.adapter = adapter.withHeaders(this)
+        binding.recyclerView.adapter = adapter.withHeaders(this, vm, vm.feed)
         adapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)
         observe(vm.feed) { (ext, data, page) ->
             adapter.submit(ext?.id, data, page)

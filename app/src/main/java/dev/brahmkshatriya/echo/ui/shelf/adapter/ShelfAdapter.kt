@@ -26,8 +26,9 @@ import dev.brahmkshatriya.echo.ui.shelf.adapter.lists.ShelfListsAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
-import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.ViewHolder
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfSearchHeaderAdapter
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.lang.ref.WeakReference
 
@@ -202,25 +203,32 @@ class ShelfAdapter(
     fun withLoaders(
         fragment: Fragment,
         vararg adapters: RecyclerView.Adapter<*>,
-        onStateChanged: (loading: Boolean) -> Unit = {}
     ): ConcatAdapter {
         val listener = fragment.createListener { retry() }
         val footer = ShelfLoadingAdapter(::Loading, listener)
         val header = ShelfLoadingAdapter(::Loading, listener)
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
-            onStateChanged(loadStates.refresh is LoadState.Loading || itemCount == 0)
             empty.loadState =
                 if (loadStates.refresh is LoadState.NotLoading && itemCount == 0) LoadState.Loading
                 else LoadState.NotLoading(false)
             header.loadState = loadStates.refresh
             footer.loadState = loadStates.append
         }
-        return ConcatAdapter(empty, header, *adapters, this, footer)
+        return ConcatAdapter(*adapters, empty, header, this, footer)
     }
 
-    fun withHeaders(fragment: Fragment): ConcatAdapter {
-        return withLoaders(fragment)
+    fun withHeaders(
+        fragment: Fragment,
+        viewModel: ViewModel,
+        stateFlow: MutableStateFlow<PagingUtils.Data<Shelf>>
+    ): ConcatAdapter {
+        val header = ShelfSearchHeaderAdapter(fragment, viewModel, stateFlow)
+        addOnPagesUpdatedListener {
+            val visible = shelf != null
+            header.submit(visible)
+        }
+        return withLoaders(fragment, header)
     }
 
     private fun getItemOrNull(i: Int) = if (i in 0 until itemCount) getItem(i) else null

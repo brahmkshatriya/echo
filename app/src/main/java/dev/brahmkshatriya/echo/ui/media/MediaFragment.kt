@@ -162,7 +162,7 @@ class MediaFragment : Fragment() {
         binding.recyclerView.adapter = ConcatAdapter(
             headerAdapter,
             listAdapter.withHeaders(this, vm, vm.tracks),
-            shelfAdapter.withHeaders(this)
+            shelfAdapter.withHeaders(this, vm, vm.feed)
         )
         listAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)
         shelfAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)

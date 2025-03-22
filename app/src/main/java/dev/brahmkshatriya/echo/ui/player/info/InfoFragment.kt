@@ -47,7 +47,7 @@ class InfoFragment : Fragment() {
         }
         binding.root.adapter = ConcatAdapter(
             trackInfoAdapter,
-            shelfAdapter.withHeaders(this)
+            shelfAdapter.withHeaders(this, viewModel, viewModel.itemsFlow)
         )
         shelfAdapter.getTouchHelper().attachToRecyclerView(binding.root)
     }

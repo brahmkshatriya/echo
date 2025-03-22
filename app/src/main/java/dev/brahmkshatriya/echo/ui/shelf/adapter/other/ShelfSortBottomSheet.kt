@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.shelf.adapter.other
 
 import android.content.DialogInterface
 import android.os.Bundle
@@ -11,8 +11,8 @@ import androidx.lifecycle.ViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import dev.brahmkshatriya.echo.databinding.DialogSortBinding
-import dev.brahmkshatriya.echo.ui.media.SearchHeaderAdapter.Companion.loadedTracks
-import dev.brahmkshatriya.echo.ui.media.SearchHeaderAdapter.Companion.trackSortState
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfSearchHeaderAdapter.Companion.loadedShelves
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfSearchHeaderAdapter.Companion.shelfSortState
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.android.ext.android.getKoinScope
@@ -20,7 +20,7 @@ import org.koin.core.annotation.KoinInternalApi
 import org.koin.viewmodel.resolveViewModel
 import kotlin.reflect.KClass
 
-class SortBottomSheet : BottomSheetDialogFragment() {
+class ShelfSortBottomSheet : BottomSheetDialogFragment() {
     private val args by lazy { requireArguments() }
 
     @Suppress("UNCHECKED_CAST")
@@ -37,8 +37,8 @@ class SortBottomSheet : BottomSheetDialogFragment() {
         )
     }
 
-    private val loadedTracks by lazy { vm.loadedTracks }
-    private val sortState by lazy { vm.trackSortState }
+    private val loadedTracks by lazy { vm.loadedShelves }
+    private val sortState by lazy { vm.shelfSortState }
 
     private var binding by autoCleared<DialogSortBinding>()
     override fun onCreateView(
@@ -48,13 +48,13 @@ class SortBottomSheet : BottomSheetDialogFragment() {
         return binding.root
     }
 
-    private var selectedTrackSort: TrackSort? = null
+    private var selectedShelfSort: ShelfSort? = null
     private fun applySorts() {
         val list = loadedTracks.value ?: listOf()
         val state = sortState.value
-        selectedTrackSort = state.trackSort
-        val available = TrackSort.getSorts(list)
-        val checked = available.indexOf(state.trackSort)
+        selectedShelfSort = state.shelfSort
+        val available = getSorts(list)
+        val checked = available.indexOf(state.shelfSort)
         binding.sortChipGroup.run {
             removeAllViews()
             available.forEachIndexed { index, t ->
@@ -67,7 +67,7 @@ class SortBottomSheet : BottomSheetDialogFragment() {
                 if (index == checked) check(chip.id)
             }
             setOnCheckedStateChangeListener { _, checkedIds ->
-                selectedTrackSort = available.getOrNull(checkedIds.firstOrNull() ?: -1)
+                selectedShelfSort = available.getOrNull(checkedIds.firstOrNull() ?: -1)
             }
         }
         binding.filter.isVisible = false
@@ -91,8 +91,8 @@ class SortBottomSheet : BottomSheetDialogFragment() {
             binding.reversedSwitch.isChecked = !binding.reversedSwitch.isChecked
         }
         binding.apply.setOnClickListener {
-            sortState.value = TrackSort.State(
-                trackSort = selectedTrackSort,
+            sortState.value = ShelfSort.State(
+                shelfSort = selectedShelfSort,
                 reversed = binding.reversedSwitch.isChecked,
                 save = binding.saveCheckbox.isChecked
             )
@@ -102,14 +102,14 @@ class SortBottomSheet : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        parentFragmentManager.setFragmentResult("sort", Bundle().apply {
+        parentFragmentManager.setFragmentResult("shelfSort", Bundle().apply {
             putBoolean("changed", true)
         })
     }
 
     companion object {
-        fun newInstance(kClass: KClass<out ViewModel>): SortBottomSheet {
-            return SortBottomSheet().apply {
+        fun newInstance(kClass: KClass<out ViewModel>): ShelfSortBottomSheet {
+            return ShelfSortBottomSheet().apply {
                 arguments = Bundle().apply {
                     putString("vm", kClass.qualifiedName!!)
                 }

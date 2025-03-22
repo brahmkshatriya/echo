@@ -346,4 +346,5 @@
     <string name="sort_explicit">Explicit</string>
     <string name="scroll_animations">Scroll Animations</string>
     <string name="scroll_animations_summary">Animations when you scroll stuff</string>
+    <string name="sort_subtitle">Subtitle</string>
 </resources>

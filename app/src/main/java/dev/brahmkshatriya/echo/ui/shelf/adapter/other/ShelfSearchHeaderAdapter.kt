@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.shelf.adapter.other
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -11,7 +11,8 @@ import androidx.paging.PagingData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.ItemTrackListHeaderBinding
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
@@ -23,29 +24,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @SuppressLint("NotifyDataSetChanged")
-class SearchHeaderAdapter(
+class ShelfSearchHeaderAdapter(
     fragment: Fragment,
     private val viewModel: ViewModel,
-    private val stateFlow: MutableStateFlow<PagingUtils.Data<Track>>
-) : RecyclerView.Adapter<SearchHeaderAdapter.ViewHolder>() {
+    private val stateFlow: MutableStateFlow<PagingUtils.Data<Shelf>>
+) : RecyclerView.Adapter<ShelfSearchHeaderAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemTrackListHeaderBinding) :
         RecyclerView.ViewHolder(binding.root)
 
     companion object {
-        val ViewModel.trackSortState by sticky { MutableStateFlow(TrackSort.State()) }
-        val ViewModel.loadedTracks by sticky { MutableStateFlow<List<Track>?>(null) }
+        val ViewModel.shelfSortState by sticky { MutableStateFlow(ShelfSort.State()) }
+        val ViewModel.loadedShelves by sticky { MutableStateFlow<List<Shelf>?>(null) }
         private val ViewModel.loading by sticky { MutableStateFlow(false) }
         private val ViewModel.searchOpened by sticky { MutableStateFlow(false) }
         private val ViewModel.searchQuery by sticky { MutableStateFlow("") }
         private suspend fun loadTracks(
-            current: MutableStateFlow<List<Track>?>,
-            data: PagingUtils.Data<Track>,
-        ): Result<List<Track>> = runCatching {
+            current: MutableStateFlow<List<Shelf>?>,
+            data: PagingUtils.Data<Shelf>,
+        ): Result<List<Shelf>> = runCatching {
             val extension = data.extension ?: throw IllegalStateException("Extension is null")
             val paged = data.pagedData ?: throw IllegalStateException("PagedData is null")
-            val list = mutableListOf<Track>()
-            val maxCount = 5000
+            val list = mutableListOf<Shelf>()
+            val maxCount = 1000
             var page = paged.load(extension, null).getOrThrow()
             list.addAll(page.data)
             current.value = list.toList()
@@ -57,43 +58,58 @@ class SearchHeaderAdapter(
             list
         }
 
+        private fun List<Shelf>.flatten() = flatMap { shelf ->
+            when (shelf) {
+                is Shelf.Category -> listOf(shelf)
+                is Shelf.Item -> listOf(shelf)
+                is Shelf.Lists.Categories -> shelf.list
+                is Shelf.Lists.Items -> shelf.list.map { it.toShelf() }
+                is Shelf.Lists.Tracks -> shelf.list.map { it.toMediaItem().toShelf() }
+            }
+        }
+
         private fun ViewModel.applyFilterAndSort(
-            stateFlow: MutableStateFlow<PagingUtils.Data<Track>>
+            stateFlow: MutableStateFlow<PagingUtils.Data<Shelf>>
         ) = viewModelScope.launch(Dispatchers.IO) {
             if (loading.value) return@launch
             loading.value = true
             stateFlow.value = stateFlow.value.copy(pagingData = PagingData.empty())
-            var tracks = loadedTracks.value
-            if (tracks == null) {
+            var shelves = loadedShelves.value
+            if (shelves == null) {
                 val data = stateFlow.value
-                tracks = loadTracks(loadedTracks, data).getOrElse {
+                shelves = loadTracks(loadedShelves, data).getOrElse {
                     stateFlow.value =
                         stateFlow.value.copy(pagingData = PagingUtils.errorPagingData(it))
                     return@launch
                 }
             }
             loading.value = false
-            val state = trackSortState.value
-            tracks = state.trackSort?.sorter?.invoke(tracks) ?: tracks
-            if (state.reversed) tracks = tracks.reversed()
+            val state = shelfSortState.value
+            shelves = state.shelfSort?.sorter?.invoke(shelves.flatten()) ?: shelves
+            if (state.reversed) shelves = shelves.reversed()
 
             if (searchQuery.value.isNotBlank()) {
-                tracks = tracks.searchBy(searchQuery.value) { track ->
-                    listOf(track.title, *track.artists.map { it.name }.toTypedArray())
+                shelves = shelves.flatten().searchBy(searchQuery.value) { track ->
+                    when (track) {
+                        is Shelf.Category -> listOfNotNull(track.title, track.subtitle)
+                        is Shelf.Item -> track.media.let { listOfNotNull(it.title, it.subtitle) }
+                        is Shelf.Lists<*> -> throw IllegalStateException()
+                    }
                 }.map { it.second }
             }
 
             stateFlow.value =
-                stateFlow.value.copy(pagingData = PagingData.from(tracks))
+                stateFlow.value.copy(pagingData = PagingData.from(shelves))
         }
     }
+
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
         binding.root.run {
-            val text = if (viewModel.loadedTracks.value == null) context.getString(R.string.songs)
+            val text = if (viewModel.loadedShelves.value == null) null
             else {
-                val count = viewModel.loadedTracks.value?.size ?: 0
+                val count = viewModel.loadedShelves.value?.flatten()?.size ?: 0
                 context.getString(R.string.x_items, count)
             }
             binding.title.text = text
@@ -105,15 +121,15 @@ class SearchHeaderAdapter(
         binding.searchBar.setText(viewModel.searchQuery.value)
         binding.chipGroup.run {
             removeAllViews()
-            val state = viewModel.trackSortState.value
-            if (state.trackSort != null) {
+            val state = viewModel.shelfSortState.value
+            if (state.shelfSort != null) {
                 val chip = Chip(context)
-                chip.text = context.getString(state.trackSort.title)
+                chip.text = context.getString(state.shelfSort.title)
                 chip.isCheckable = true
                 chip.isChecked = true
                 addView(chip)
                 chip.setOnClickListener {
-                    viewModel.trackSortState.value = state.copy(trackSort = null)
+                    viewModel.shelfSortState.value = state.copy(shelfSort = null)
                     viewModel.applyFilterAndSort(stateFlow)
                 }
             }
@@ -124,7 +140,7 @@ class SearchHeaderAdapter(
                 chip.isChecked = true
                 addView(chip)
                 chip.setOnClickListener {
-                    viewModel.trackSortState.value = state.copy(reversed = false)
+                    viewModel.shelfSortState.value = state.copy(reversed = false)
                     viewModel.applyFilterAndSort(stateFlow)
                 }
             }
@@ -138,7 +154,7 @@ class SearchHeaderAdapter(
         val binding = ItemTrackListHeaderBinding.inflate(inflater, parent, false)
         binding.btnSort.setOnClickListener {
             viewModel.applyFilterAndSort(stateFlow)
-            SortBottomSheet.newInstance(viewModel::class).show(fragmentManager, null)
+            ShelfSortBottomSheet.newInstance(viewModel::class).show(fragmentManager, null)
         }
         binding.btnSearch.setOnClickListener {
             viewModel.searchOpened.value = true
@@ -167,10 +183,10 @@ class SearchHeaderAdapter(
     override fun getItemCount() = if (visible) 1 else 0
 
     init {
-        fragment.observe(viewModel.trackSortState) {
+        fragment.observe(viewModel.shelfSortState) {
             notifyDataSetChanged()
         }
-        fragment.observe(viewModel.loadedTracks) {
+        fragment.observe(viewModel.loadedShelves) {
             notifyDataSetChanged()
         }
         fragment.observe(viewModel.loading) {
@@ -182,7 +198,7 @@ class SearchHeaderAdapter(
         fragment.observe(viewModel.searchQuery) {
             notifyDataSetChanged()
         }
-        fragment.childFragmentManager.setFragmentResultListener("sort", fragment) { _, _ ->
+        fragment.childFragmentManager.setFragmentResultListener("shelfSort", fragment) { _, _ ->
             viewModel.applyFilterAndSort(stateFlow)
         }
     }
