@@ -50,6 +50,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.showBackground
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyHorizontalInsets
@@ -496,7 +497,9 @@ class PlayerFragment : Fragment() {
             adapter.onColorsUpdated()
 
             binding.run {
-                root.setBackgroundColor(colors.accent)
+                val color = if (requireContext().isDynamic()) colors.accent
+                else colors.background
+                root.setBackgroundColor(color)
                 val backgroundState = ColorStateList.valueOf(colors.background)
                 bgGradient.imageTintList = backgroundState
                 bgCollapsed.backgroundTintList = backgroundState
@@ -608,7 +611,7 @@ class PlayerFragment : Fragment() {
             backgroundPlayer = null
             true
         } else if (background != null) {
-            if (oldBg != background) {
+            if (oldBg != background || backgroundPlayer == null) {
                 oldBg = background
                 backgroundPlayer?.release()
                 backgroundPlayer = getPlayer(requireContext(), viewModel.cache, background)
@@ -619,6 +622,7 @@ class PlayerFragment : Fragment() {
         } else {
             backgroundPlayer?.release()
             backgroundPlayer = null
+            binding?.playerView?.player = null
             false
         }
         applyVideoVisibility(visible)
@@ -630,11 +634,8 @@ class PlayerFragment : Fragment() {
     }
 
     companion object {
-        const val SHOW_BACKGROUND = "show_background"
+        private fun Context.showBackground() = getSettings().showBackground()
         const val DYNAMIC_PLAYER = "dynamic_player"
-        private fun Context.showBackground() =
-            getSettings().getBoolean(SHOW_BACKGROUND, true)
-
         private fun Context.isDynamic() =
             getSettings().getBoolean(DYNAMIC_PLAYER, true)
 

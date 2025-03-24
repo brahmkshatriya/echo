@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.media
 
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track
+import kotlinx.serialization.Serializable
 
 enum class TrackSort(
     val title: Int,
@@ -45,6 +46,7 @@ enum class TrackSort(
         return map(selector).distinct().size > 1
     }
 
+    @Serializable
     data class State(
         val trackSort: TrackSort? = null,
         val reversed: Boolean = false,

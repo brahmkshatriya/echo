@@ -25,6 +25,7 @@ object PagingUtils {
 
     data class Data<T : Any>(
         val extension: Extension<*>?,
+        val id: String?,
         val pagedData: PagedData<T>?,
         val pagingData: PagingData<T>?
     )
@@ -53,6 +54,17 @@ object PagingUtils {
         )
     )
 
+    fun <T : Any> from(shelves: List<T>): PagingData<T> {
+        return PagingData.from(
+            shelves, LoadStates(
+                LoadState.NotLoading(false),
+                LoadState.NotLoading(false),
+                LoadState.NotLoading(true)
+            )
+        )
+    }
+
+
     fun <T : Any> PagedData<T>.toFlow(extension: Extension<*>) =
         ContinuationSource(extension, { loadList(it) }, { invalidate(it) }).toFlow()
 
@@ -60,6 +72,7 @@ object PagingUtils {
         throwableFlow: MutableSharedFlow<Throwable>,
         collector: FlowCollector<PagingData<T>>
     ) = coroutineScope { cachedIn(this).catch { throwableFlow.emit(it) }.collect(collector) }
+
 
     private class ContinuationSource<Value : Any>(
         private val extension: Extension<*>,

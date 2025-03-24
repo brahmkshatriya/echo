@@ -17,10 +17,6 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class QueueFragment : Fragment() {
 
-    init {
-        println("QueueFragment init $this")
-    }
-
     private var binding by autoClearedNullable<FragmentPlayerQueueBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
 

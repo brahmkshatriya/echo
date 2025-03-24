@@ -36,7 +36,7 @@ abstract class FeedViewModel(
     abstract suspend fun getFeed(extension: Extension<*>): Result<PagedData<Shelf>>
 
     val feed = MutableStateFlow<PagingUtils.Data<Shelf>>(
-        PagingUtils.Data(null, null, null)
+        PagingUtils.Data(null, null, null, null)
     )
     val loading = MutableSharedFlow<Boolean>()
     val tabs = MutableStateFlow<List<Tab>?>(null)
@@ -66,16 +66,17 @@ abstract class FeedViewModel(
     private var job: Job? = null
     fun refresh(reset: Boolean = false) {
         job?.cancel()
-        feed.value = PagingUtils.Data(current.value, null, null)
+        feed.value = PagingUtils.Data(current.value, null, null, null)
         val extension = current.value ?: return
         job = viewModelScope.launch(Dispatchers.IO) {
             if (reset) loadTabs(extension)
             val data = getFeed(extension).getOrElse {
-                feed.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+                feed.value =
+                    PagingUtils.Data(extension, null, null, PagingUtils.errorPagingData(it))
                 return@launch
             }
             data.toFlow(extension).collectWith(throwableFlow) {
-                feed.value = PagingUtils.Data(extension, data, it)
+                feed.value = PagingUtils.Data(extension, null, data, it)
             }
         }
     }
@@ -93,7 +94,7 @@ abstract class FeedViewModel(
             val adapter = getShelfAdapter(listener)
             recyclerView.adapter = adapter.withLoaders(this)
             adapter.getTouchHelper().attachToRecyclerView(recyclerView)
-            observe(viewModel.feed) { (extension, shelf, feed) ->
+            observe(viewModel.feed) { (extension, _, shelf, feed) ->
                 adapter.submit(extension?.id, shelf, feed)
             }
             val tabListener = object : TabLayout.OnTabSelectedListener {

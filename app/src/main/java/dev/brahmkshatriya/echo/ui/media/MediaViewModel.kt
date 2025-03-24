@@ -33,6 +33,7 @@ import dev.brahmkshatriya.echo.ui.common.PagingUtils.collectWith
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
 import dev.brahmkshatriya.echo.ui.player.info.TrackInfoViewModel.Companion.getTrackShelves
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -199,12 +200,12 @@ class MediaViewModel(
 
 
     val tracks = MutableStateFlow<PagingUtils.Data<Track>>(
-        PagingUtils.Data(null, null, null)
+        PagingUtils.Data(null, null, null, null)
     )
 
     private suspend fun loadTracks() {
         val extension = extensionFlow.value
-        tracks.value = PagingUtils.Data(extension, null, null)
+        tracks.value = PagingUtils.Data(extension, item.id, null, null)
         val data = when (val item = itemFlow.value) {
             is EchoMediaItem.Lists.AlbumItem ->
                 extension?.get<AlbumClient, PagedData<Track>> { loadTracks(item.album) }
@@ -217,21 +218,22 @@ class MediaViewModel(
 
             else -> null
         }?.getOrElse {
-            tracks.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+            tracks.value =
+                PagingUtils.Data(extension, item.id, null, PagingUtils.errorPagingData(it))
             return
         } ?: return
         data.toFlow(extension!!).collectWith(throwFlow) {
-            tracks.value = PagingUtils.Data(extension, data, it)
+            tracks.value = PagingUtils.Data(extension, item.id, data, it)
         }
     }
 
     val feed = MutableStateFlow<PagingUtils.Data<Shelf>>(
-        PagingUtils.Data(null, null, null)
+        PagingUtils.Data(null, item.id, null, null)
     )
 
     private suspend fun loadShelves() {
         val extension = extensionFlow.value
-        feed.value = PagingUtils.Data(extension, null, null)
+        feed.value = PagingUtils.Data(extension, item.id, null, null)
         val data = when (val item = itemFlow.value) {
             is EchoMediaItem.Profile.ArtistItem ->
                 extension?.get<ArtistClient, PagedData<Shelf>> { getShelves(item.artist) }
@@ -251,14 +253,16 @@ class MediaViewModel(
 
             else -> null
         }?.getOrElse {
-            feed.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+            feed.value = PagingUtils.Data(extension, item.id, null, PagingUtils.errorPagingData(it))
             return
         } ?: return
         data.toFlow(extension!!).collectWith(throwFlow) {
-            feed.value = PagingUtils.Data(extension, data, it)
+            feed.value = PagingUtils.Data(extension, item.id, data, it)
         }
     }
 
+    val trackJob = MutableStateFlow<Job?>(null)
+    val shelfJob = MutableStateFlow<Job?>(null)
     fun refresh(force: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             itemFlow.value = loadItem(force).getOrElse {
@@ -267,8 +271,10 @@ class MediaViewModel(
             }
             loadSavedState()
             if (loadOther) {
-                launch { loadTracks() }
-                launch { loadShelves() }
+                trackJob.value?.cancel()
+                trackJob.value = launch { loadTracks() }
+                shelfJob.value?.cancel()
+                shelfJob.value = launch { loadShelves() }
             }
         }
     }

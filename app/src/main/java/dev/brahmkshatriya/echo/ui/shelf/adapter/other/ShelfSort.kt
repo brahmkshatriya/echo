@@ -4,6 +4,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfSort.entries
+import kotlinx.serialization.Serializable
 
 fun getSorts(data: List<Shelf>): List<ShelfSort> {
     return entries.filter { it.shouldBeVisible(data) != null }
@@ -76,6 +77,7 @@ enum class ShelfSort(
         return if (take) this else null
     }
 
+    @Serializable
     data class State(
         val shelfSort: ShelfSort? = null,
         val reversed: Boolean = false,

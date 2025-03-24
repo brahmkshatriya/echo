@@ -26,16 +26,16 @@ class ShelfViewModel(
 
     private val music = extensionLoader.extensions.music
     private val throwFlow = app.throwFlow
-    val feed = MutableStateFlow(PagingUtils.Data<Shelf>(null, null, null))
+    val feed = MutableStateFlow(PagingUtils.Data<Shelf>(null, null, null, null))
 
-    private var job: Job? = null
+    var job = MutableStateFlow<Job?>(null)
     fun load() {
-        job?.cancel()
-        job = viewModelScope.launch(Dispatchers.IO) {
+        job.value?.cancel()
+        job.value = viewModelScope.launch(Dispatchers.IO) {
             val extension = music.getExtension(id) ?: return@launch
-            feed.value = PagingUtils.Data(extension, data, null)
+            feed.value = PagingUtils.Data(extension, title, data, null)
             data?.toFlow(extension)?.collectWith(throwFlow) {
-                feed.value = PagingUtils.Data(extension, data, it)
+                feed.value = PagingUtils.Data(extension, title, data, it)
             }
         }
     }

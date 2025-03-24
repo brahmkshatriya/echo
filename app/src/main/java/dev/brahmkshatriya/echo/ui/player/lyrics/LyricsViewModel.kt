@@ -67,7 +67,8 @@ class LyricsViewModel(
             if (data != null) {
                 lyricsState.value = State.Loading
                 lyricsState.value = extension.get<LyricsClient, Lyrics?>(app.throwFlow) {
-                    val unloaded = data.loadFirst().firstOrNull() ?: return@get null
+                    val unloaded = data.loadList(null).data
+                        .firstOrNull() ?: return@get null
                     loadLyrics(unloaded)
                 }?.let { State.Loaded(it) } ?: State.Empty
                 data.toFlow(extension).collectWith(app.throwFlow, searchResults)

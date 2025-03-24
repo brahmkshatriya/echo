@@ -18,11 +18,11 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.selectSourceIndex
-import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
+import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 
 object MediaItemUtils {
 
@@ -92,10 +92,7 @@ object MediaItemUtils {
             putBoolean("loaded", false)
             putInt("retries", retries)
         }
-        return buildWithBundle(item, bundle).also {
-            println("what: ${item.equals(it)}")
-            println("na retries: ${it.retries} ${it.mediaMetadata.extras?.getInt("retries")}")
-        }
+        return buildWithBundle(item, bundle)
     }
 
     private fun buildWithBundle(mediaItem: MediaItem, bundle: Bundle) = run {
@@ -180,7 +177,9 @@ object MediaItemUtils {
             putInt("serverIndex", sourcesIndex ?: selectSourceIndex(settings, servers))
             putInt("subtitleIndex", subtitleIndex ?: 0.takeIf { subtitles.isNotEmpty() } ?: -1)
             putInt(
-                "backgroundIndex", backgroundIndex ?: 0.takeIf { backgrounds.isNotEmpty() } ?: -1
+                "backgroundIndex",
+                backgroundIndex
+                    ?: 0.takeIf { backgrounds.isNotEmpty() && settings.showBackground() } ?: -1
             )
         })
         .setSubtitle(bundle.indexes())
@@ -236,4 +235,7 @@ object MediaItemUtils {
         val json = toJson()
         return main.buildUpon().appendQueryParameter("actual_data", json).build()
     }
+
+    const val SHOW_BACKGROUND = "show_background"
+    fun SharedPreferences?.showBackground() = this?.getBoolean(SHOW_BACKGROUND, true) ?: true
 }

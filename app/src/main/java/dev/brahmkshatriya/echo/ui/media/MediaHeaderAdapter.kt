@@ -118,18 +118,29 @@ class MediaHeaderAdapter(
                         append(resources.getQuantityString(R.plurals.n_songs, tracks, tracks))
                     }
                     if (album.releaseDate != null) {
-                        if (tracks != null) append(" • ")
-                        appendLine(album.releaseDate.toString())
-                    } else appendLine()
-                    if (album.publisher != null) appendLine(album.publisher)
-                    if (album.artists.isNotEmpty()) appendLine(
-                        getString(
-                            R.string.by_x,
-                            album.artists.joinToString(", ") { it.name }
+                        if (tracks != null) append(" • ") else appendLine()
+                        append(album.releaseDate.toString())
+                    }
+                    if (album.publisher != null) {
+                        if (album.releaseDate != null || tracks != null) appendLine()
+                        append(album.publisher)
+                    }
+                    if (album.artists.isNotEmpty()) {
+                        if (album.releaseDate != null || tracks != null || album.publisher != null) {
+                            appendLine()
+                        }
+                        append(
+                            getString(
+                                R.string.by_x,
+                                album.artists.joinToString(", ") { it.name }
+                            )
                         )
-                    )
+                    }
                     if (!album.description.isNullOrBlank()) {
-                        appendLine()
+                        if (album.releaseDate != null || tracks != null || album.publisher != null || album.artists.isNotEmpty()) {
+                            appendLine()
+                            appendLine()
+                        }
                         append(
                             if (compact) album.description?.ellipsize()
                             else album.description
@@ -155,18 +166,31 @@ class MediaHeaderAdapter(
                         append(resources.getQuantityString(R.plurals.n_songs, tracks, tracks))
                     }
                     if (playlist.creationDate != null) {
-                        if (tracks != null) append(" • ")
-                        appendLine(playlist.creationDate.toString())
-                    } else appendLine()
-                    if (playlist.duration != null) appendLine(playlist.duration?.toTimeString())
-                    if (playlist.authors.isNotEmpty()) appendLine(
-                        getString(
-                            R.string.by_x,
-                            playlist.authors.joinToString(", ") { it.name }
+                        if (tracks != null) append(" • ") else appendLine()
+                        append(playlist.creationDate.toString())
+                    }
+                    if (playlist.duration != null) {
+                        if (playlist.creationDate != null) {
+                            appendLine()
+                        }
+                        append(playlist.duration?.toTimeString())
+                    }
+                    if (playlist.authors.isNotEmpty()) {
+                        if (playlist.creationDate != null || playlist.duration != null) {
+                            appendLine()
+                        }
+                        append(
+                            getString(
+                                R.string.by_x,
+                                playlist.authors.joinToString(", ") { it.name }
+                            )
                         )
-                    )
+                    }
                     if (playlist.description != null) {
-                        appendLine()
+                        if (playlist.creationDate != null || playlist.duration != null || playlist.authors.isNotEmpty()) {
+                            appendLine()
+                            appendLine()
+                        }
                         append(
                             if (compact) playlist.description?.ellipsize()
                             else playlist.description
@@ -191,10 +215,13 @@ class MediaHeaderAdapter(
                     if (artist.followers != null) {
                         val formatter = CompactDecimalFormat.getInstance()
                         val formatted = formatter.format(artist.followers)
-                        appendLine(getString(R.string.x_followers, formatted))
+                        append(getString(R.string.x_followers, formatted))
                     }
                     if (artist.description != null) {
-                        appendLine()
+                        if (artist.followers != null) {
+                            appendLine()
+                            appendLine()
+                        }
                         append(
                             if (compact) artist.description?.ellipsize()
                             else artist.description
@@ -214,20 +241,27 @@ class MediaHeaderAdapter(
             return buildString {
                 if (isExplicit) {
                     append("\uD83C\uDD74 ")
-                    appendLine(context.getString(R.string.explicit))
+                    append(context.getString(R.string.explicit))
                 }
-                if (duration != null) append(duration?.toTimeString())
+                if (duration != null) {
+                    appendLine()
+                    append(duration?.toTimeString())
+                }
                 if (releaseDate != null) {
-                    if (duration != null) append(" • ")
-                    appendLine(releaseDate?.toString())
-                } else appendLine()
+                    if (duration != null) append(" • ") else appendLine()
+                    append(releaseDate?.toString())
+                }
                 if (plays != null) {
                     val formatter = CompactDecimalFormat.getInstance()
                     val formatted = formatter.format(plays)
-                    appendLine(context.getString(R.string.x_plays, formatted))
+                    appendLine()
+                    append(context.getString(R.string.x_plays, formatted))
                 }
                 if (description != null) {
-                    appendLine()
+                    if (duration != null || releaseDate != null || plays != null) {
+                        appendLine()
+                        appendLine()
+                    }
                     append(
                         if (compact) description?.ellipsize()
                         else description

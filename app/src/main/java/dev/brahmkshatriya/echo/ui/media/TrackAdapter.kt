@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import androidx.paging.LoadState
-import androidx.paging.LoadStateAdapter
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
@@ -22,7 +20,6 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
-import dev.brahmkshatriya.echo.databinding.ItemSpaceBinding
 import dev.brahmkshatriya.echo.databinding.SkeletonTrackListBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
@@ -32,6 +29,7 @@ import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class TrackAdapter(
@@ -206,24 +204,22 @@ class TrackAdapter(
     fun withHeaders(
         fragment: Fragment,
         viewModel: ViewModel,
-        stateFlow: MutableStateFlow<PagingUtils.Data<Track>>
+        stateFlow: MutableStateFlow<PagingUtils.Data<Track>>,
+        jobFlow: MutableStateFlow<Job?>,
     ): ConcatAdapter {
         val listener = fragment.createListener { retry() }
         val bottom = ShelfLoadingAdapter(TrackAdapter::Loading, listener)
         val top = ShelfLoadingAdapter(TrackAdapter::Loading, listener)
-        val header = SearchHeaderAdapter(fragment, viewModel, stateFlow)
-        val footer = Footer()
+        val header = SearchHeaderAdapter(fragment, viewModel, stateFlow, jobFlow)
         addOnPagesUpdatedListener {
             val visible = paged != null
             header.submit(visible)
-            footer.loadState = if (visible) LoadState.Loading
-            else LoadState.NotLoading(false)
         }
         addLoadStateListener { loadStates ->
             top.loadState = loadStates.refresh
             bottom.loadState = loadStates.append
         }
-        return ConcatAdapter(header, top, this, bottom, footer)
+        return ConcatAdapter(header, top, this, bottom)
     }
 
     data class Loading(
@@ -232,18 +228,5 @@ class TrackAdapter(
         val binding: SkeletonTrackListBinding =
             SkeletonTrackListBinding.inflate(inflater, parent, false)
     ) : ShelfLoadingAdapter.ViewHolder(binding.root)
-
-    class Footer : LoadStateAdapter<Footer.ViewHolder>() {
-        class ViewHolder(binding: ItemSpaceBinding) :
-            RecyclerView.ViewHolder(binding.root)
-
-        override fun onBindViewHolder(holder: ViewHolder, loadState: LoadState) {}
-
-        override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ViewHolder {
-            val inflater = LayoutInflater.from(parent.context)
-            val binding = ItemSpaceBinding.inflate(inflater, parent, false)
-            return ViewHolder(binding)
-        }
-    }
 
 }

@@ -42,12 +42,12 @@ class InfoFragment : Fragment() {
             trackInfoAdapter.submit(it?.mediaItem?.extensionId, it?.track)
             viewModel.load()
         }
-        observe(viewModel.itemsFlow) { (ext, shelves, item) ->
+        observe(viewModel.itemsFlow) { (ext, _, shelves, item) ->
             shelfAdapter.submit(ext?.id, shelves, item)
         }
         binding.root.adapter = ConcatAdapter(
             trackInfoAdapter,
-            shelfAdapter.withHeaders(this, viewModel, viewModel.itemsFlow)
+            shelfAdapter.withLoaders(this)
         )
         shelfAdapter.getTouchHelper().attachToRecyclerView(binding.root)
     }

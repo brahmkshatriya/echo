@@ -1,13 +1,13 @@
 package dev.brahmkshatriya.echo.ui.media
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import dev.brahmkshatriya.echo.R
@@ -16,24 +16,30 @@ import dev.brahmkshatriya.echo.databinding.ItemTrackListHeaderBinding
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.load
+import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
+import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @SuppressLint("NotifyDataSetChanged")
 class SearchHeaderAdapter(
     fragment: Fragment,
     private val viewModel: ViewModel,
-    private val stateFlow: MutableStateFlow<PagingUtils.Data<Track>>
+    private val stateFlow: MutableStateFlow<PagingUtils.Data<Track>>,
+    jobFlow: MutableStateFlow<Job?>
 ) : RecyclerView.Adapter<SearchHeaderAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemTrackListHeaderBinding) :
         RecyclerView.ViewHolder(binding.root)
 
     companion object {
-        val ViewModel.trackSortState by sticky { MutableStateFlow(TrackSort.State()) }
+        val ViewModel.trackSortState by sticky { MutableStateFlow<TrackSort.State?>(null) }
         val ViewModel.loadedTracks by sticky { MutableStateFlow<List<Track>?>(null) }
         private val ViewModel.loading by sticky { MutableStateFlow(false) }
         private val ViewModel.searchOpened by sticky { MutableStateFlow(false) }
@@ -58,11 +64,12 @@ class SearchHeaderAdapter(
         }
 
         private fun ViewModel.applyFilterAndSort(
+            context: Context,
             stateFlow: MutableStateFlow<PagingUtils.Data<Track>>
         ) = viewModelScope.launch(Dispatchers.IO) {
             if (loading.value) return@launch
             loading.value = true
-            stateFlow.value = stateFlow.value.copy(pagingData = PagingData.empty())
+            stateFlow.value = stateFlow.value.copy(pagingData = PagingUtils.loadingPagingData())
             var tracks = loadedTracks.value
             if (tracks == null) {
                 val data = stateFlow.value
@@ -73,7 +80,11 @@ class SearchHeaderAdapter(
                 }
             }
             loading.value = false
-            val state = trackSortState.value
+            val id = stateFlow.value.id
+            if (trackSortState.value == null) {
+                trackSortState.value = getSortState(context, id) ?: TrackSort.State()
+            }
+            val state = trackSortState.value!!
             tracks = state.trackSort?.sorter?.invoke(tracks) ?: tracks
             if (state.reversed) tracks = tracks.reversed()
 
@@ -83,10 +94,18 @@ class SearchHeaderAdapter(
                 }.map { it.second }
             }
 
+            if (state.save) {
+                context.saveToCache(id!!, state, "sort")
+            }
+
             stateFlow.value =
-                stateFlow.value.copy(pagingData = PagingData.from(tracks))
+                stateFlow.value.copy(pagingData = PagingUtils.from(tracks))
         }
+
+        private fun getSortState(context: Context, id: String?) =
+            id?.let { context.getFromCache<TrackSort.State>(it, "sort") }
     }
+
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
@@ -106,7 +125,7 @@ class SearchHeaderAdapter(
         binding.chipGroup.run {
             removeAllViews()
             val state = viewModel.trackSortState.value
-            if (state.trackSort != null) {
+            if (state?.trackSort != null) {
                 val chip = Chip(context)
                 chip.text = context.getString(state.trackSort.title)
                 chip.isCheckable = true
@@ -114,10 +133,10 @@ class SearchHeaderAdapter(
                 addView(chip)
                 chip.setOnClickListener {
                     viewModel.trackSortState.value = state.copy(trackSort = null)
-                    viewModel.applyFilterAndSort(stateFlow)
+                    viewModel.applyFilterAndSort(context, stateFlow)
                 }
             }
-            if (state.reversed) {
+            if (state?.reversed == true) {
                 val chip = Chip(context)
                 chip.text = context.getString(R.string.reversed)
                 chip.isCheckable = true
@@ -125,7 +144,7 @@ class SearchHeaderAdapter(
                 addView(chip)
                 chip.setOnClickListener {
                     viewModel.trackSortState.value = state.copy(reversed = false)
-                    viewModel.applyFilterAndSort(stateFlow)
+                    viewModel.applyFilterAndSort(context, stateFlow)
                 }
             }
         }
@@ -137,21 +156,21 @@ class SearchHeaderAdapter(
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemTrackListHeaderBinding.inflate(inflater, parent, false)
         binding.btnSort.setOnClickListener {
-            viewModel.applyFilterAndSort(stateFlow)
+            viewModel.applyFilterAndSort(parent.context, stateFlow)
             SortBottomSheet.newInstance(viewModel::class).show(fragmentManager, null)
         }
         binding.btnSearch.setOnClickListener {
             viewModel.searchOpened.value = true
-            viewModel.applyFilterAndSort(stateFlow)
+            viewModel.applyFilterAndSort(parent.context, stateFlow)
         }
         binding.searchLayout.setEndIconOnClickListener {
             viewModel.searchOpened.value = false
             viewModel.searchQuery.value = ""
-            viewModel.applyFilterAndSort(stateFlow)
+            viewModel.applyFilterAndSort(parent.context, stateFlow)
         }
         binding.searchBar.setOnEditorActionListener { _, _, _ ->
             viewModel.searchQuery.value = binding.searchBar.text.toString()
-            viewModel.applyFilterAndSort(stateFlow)
+            viewModel.applyFilterAndSort(parent.context, stateFlow)
             true
         }
         return ViewHolder(binding)
@@ -167,6 +186,13 @@ class SearchHeaderAdapter(
     override fun getItemCount() = if (visible) 1 else 0
 
     init {
+        fragment.observe(stateFlow.map { it.pagedData }.distinctUntilChanged()) {
+            if (it == null) return@observe
+            val last = getSortState(fragment.requireContext(), stateFlow.value.id) ?: return@observe
+            if (last.copy(save = false) == TrackSort.State()) return@observe
+            jobFlow.value?.cancel()
+            viewModel.applyFilterAndSort(fragment.requireContext(), stateFlow)
+        }
         fragment.observe(viewModel.trackSortState) {
             notifyDataSetChanged()
         }
@@ -183,7 +209,7 @@ class SearchHeaderAdapter(
             notifyDataSetChanged()
         }
         fragment.childFragmentManager.setFragmentResultListener("sort", fragment) { _, _ ->
-            viewModel.applyFilterAndSort(stateFlow)
+            viewModel.applyFilterAndSort(fragment.requireContext(), stateFlow)
         }
     }
 }

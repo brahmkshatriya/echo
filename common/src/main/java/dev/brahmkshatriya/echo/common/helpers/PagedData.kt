@@ -41,25 +41,27 @@ import kotlinx.coroutines.sync.withLock
 sealed class PagedData<T : Any> {
 
     /**
-     * To cleat the cache of paged data
+     * To clear all the cache of paged data
      */
     abstract fun clear()
-
-    /**
-     * To load the first page of data
-     *
-     * @return A list of the first page of data
-     */
-    abstract suspend fun loadFirst(): List<T>
 
     /**
      * To load all the data
      *
      * @return A list of all the data
      */
-    abstract suspend fun loadAll(): List<T>
+    suspend fun loadAll(): List<T> {
+        return mutex.withLock { loadAllInternal() }
+    }
 
-    abstract suspend fun loadList(continuation: String?): Page<T>
+    abstract suspend fun loadAllInternal(): List<T>
+    abstract suspend fun loadListInternal(continuation: String?): Page<T>
+
+    private val mutex = Mutex()
+    suspend fun loadList(continuation: String?): Page<T> {
+        return mutex.withLock { loadListInternal(continuation) }
+    }
+
     abstract fun invalidate(continuation: String?)
 
     abstract fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R>
@@ -93,15 +95,8 @@ sealed class PagedData<T : Any> {
          *
          * @return A list of all the data
          */
-        override suspend fun loadFirst() = loadList()
-
-        /**
-         * To load all the data
-         *
-         * @return A list of all the data
-         */
-        override suspend fun loadAll() = loadList()
-        override suspend fun loadList(continuation: String?): Page<T> {
+        override suspend fun loadAllInternal() = loadList()
+        override suspend fun loadListInternal(continuation: String?): Page<T> {
             return Page(loadList(), null)
         }
 
@@ -154,7 +149,7 @@ sealed class PagedData<T : Any> {
     ) : PagedData<T>() {
 
         private val itemMap = mutableMapOf<String?, Page<T>>()
-        override suspend fun loadList(continuation: String?): Page<T> {
+        override suspend fun loadListInternal(continuation: String?): Page<T> {
             val page = itemMap.getOrPut(continuation) {
                 val (data, cont) = load(continuation)
                 Page(data, cont)
@@ -178,9 +173,7 @@ sealed class PagedData<T : Any> {
 
         override fun clear() = itemMap.clear()
 
-        override suspend fun loadFirst() = loadList(null).data
-
-        override suspend fun loadAll(): List<T> {
+        override suspend fun loadAllInternal(): List<T> {
             val list = mutableListOf<T>()
             val init = loadList(null)
             list.addAll(init.data)
@@ -225,8 +218,7 @@ sealed class PagedData<T : Any> {
         }
 
         override fun clear() = sources.forEach { it.clear() }
-        override suspend fun loadFirst(): List<T> = sources.first().loadFirst()
-        override suspend fun loadAll(): List<T> = sources.flatMap { it.loadAll() }
+        override suspend fun loadAllInternal(): List<T> = sources.flatMap { it.loadAll() }
 
         override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
             return Concat(*sources.map { it.map(block) }.toTypedArray())
@@ -243,7 +235,7 @@ sealed class PagedData<T : Any> {
             return "${index}_${token ?: ""}"
         }
 
-        override suspend fun loadList(continuation: String?): Page<T> {
+        override suspend fun loadListInternal(continuation: String?): Page<T> {
             val (index, token) = splitContinuation(continuation)
             val source = sources.getOrNull(index) ?: return Page(emptyList(), null)
             val page = source.loadList(token)
@@ -275,11 +267,7 @@ sealed class PagedData<T : Any> {
             _data?.clear()
         }
 
-        override suspend fun loadFirst(): List<T> {
-            return data().loadFirst()
-        }
-
-        override suspend fun loadAll(): List<T> {
+        override suspend fun loadAllInternal(): List<T> {
             return data().loadAll()
         }
 
@@ -287,7 +275,7 @@ sealed class PagedData<T : Any> {
             return Suspend { data().map(block) }
         }
 
-        override suspend fun loadList(continuation: String?): Page<T> {
+        override suspend fun loadListInternal(continuation: String?): Page<T> {
             return data().loadList(continuation)
         }
 

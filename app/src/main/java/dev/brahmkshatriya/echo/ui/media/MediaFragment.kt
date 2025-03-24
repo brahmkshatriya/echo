@@ -151,18 +151,18 @@ class MediaFragment : Fragment() {
             headerAdapter.submit(ext?.id, item, ext?.instance?.value()?.getOrNull())
         }
 
-        observe(vm.tracks) { (extension, data, tracks) ->
+        observe(vm.tracks) { (extension, _, data, tracks) ->
             listAdapter.submit(extension?.id, vm.itemFlow.value, data, tracks)
         }
 
-        observe(vm.feed) { (extension, shelf, feed) ->
+        observe(vm.feed) { (extension, _, shelf, feed) ->
             shelfAdapter.submit(extension?.id, shelf, feed)
         }
 
         binding.recyclerView.adapter = ConcatAdapter(
             headerAdapter,
-            listAdapter.withHeaders(this, vm, vm.tracks),
-            shelfAdapter.withHeaders(this, vm, vm.feed)
+            listAdapter.withHeaders(this, vm, vm.tracks, vm.trackJob),
+            shelfAdapter.withHeaders(this, vm, vm.feed, vm.shelfJob)
         )
         listAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)
         shelfAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)

@@ -28,6 +28,7 @@ import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfSearchHeaderAdapter
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.lang.ref.WeakReference
@@ -209,6 +210,7 @@ class ShelfAdapter(
         val header = ShelfLoadingAdapter(::Loading, listener)
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
+            println("loadStates: $loadStates")
             empty.loadState =
                 if (loadStates.refresh is LoadState.NotLoading && itemCount == 0) LoadState.Loading
                 else LoadState.NotLoading(false)
@@ -221,10 +223,12 @@ class ShelfAdapter(
     fun withHeaders(
         fragment: Fragment,
         viewModel: ViewModel,
-        stateFlow: MutableStateFlow<PagingUtils.Data<Shelf>>
+        stateFlow: MutableStateFlow<PagingUtils.Data<Shelf>>,
+        shelfJob: MutableStateFlow<Job?>
     ): ConcatAdapter {
-        val header = ShelfSearchHeaderAdapter(fragment, viewModel, stateFlow)
+        val header = ShelfSearchHeaderAdapter(fragment, viewModel, stateFlow, shelfJob)
         addOnPagesUpdatedListener {
+            println("updated")
             val visible = shelf != null
             header.submit(visible)
         }

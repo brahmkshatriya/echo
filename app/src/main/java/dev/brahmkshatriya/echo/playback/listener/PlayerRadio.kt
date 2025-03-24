@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Timeline
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
@@ -115,10 +116,12 @@ class PlayerRadio(
 
     private suspend fun startRadio() {
         if (!autoStartRadio) return
-        val hasNext = withContext(Dispatchers.Main) {
-            player.hasNextMediaItem() || player.currentMediaItem == null
+        val shouldNotStart = withContext(Dispatchers.Main) {
+            player.run {
+                currentMediaItem == null || repeatMode != REPEAT_MODE_OFF || hasNextMediaItem()
+            }
         }
-        if (hasNext) return
+        if (shouldNotStart) return
         when (val state = stateFlow.value) {
             is PlayerState.Radio.Loading -> {}
             is PlayerState.Radio.Empty -> loadPlaylist()

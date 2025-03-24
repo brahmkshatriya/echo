@@ -52,9 +52,9 @@ class SortBottomSheet : BottomSheetDialogFragment() {
     private fun applySorts() {
         val list = loadedTracks.value ?: listOf()
         val state = sortState.value
-        selectedTrackSort = state.trackSort
+        selectedTrackSort = state?.trackSort
         val available = TrackSort.getSorts(list)
-        val checked = available.indexOf(state.trackSort)
+        val checked = available.indexOf(state?.trackSort)
         binding.sortChipGroup.run {
             removeAllViews()
             available.forEachIndexed { index, t ->
@@ -81,8 +81,8 @@ class SortBottomSheet : BottomSheetDialogFragment() {
         }
         observe(sortState) {
             applySorts()
-            binding.saveCheckbox.isChecked = it.save
-            binding.reversedSwitch.isChecked = it.reversed
+            binding.saveCheckbox.isChecked = it?.save ?: false
+            binding.reversedSwitch.isChecked = it?.reversed ?: false
         }
         binding.saveContainer.setOnClickListener {
             binding.saveCheckbox.isChecked = !binding.saveCheckbox.isChecked
@@ -96,6 +96,13 @@ class SortBottomSheet : BottomSheetDialogFragment() {
                 reversed = binding.reversedSwitch.isChecked,
                 save = binding.saveCheckbox.isChecked
             )
+            dismiss()
+        }
+        binding.topAppBar.setNavigationOnClickListener {
+            dismiss()
+        }
+        binding.topAppBar.setOnCreateContextMenuListener { _, _, _ ->
+            sortState.value = TrackSort.State()
             dismiss()
         }
     }

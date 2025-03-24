@@ -34,7 +34,7 @@ class TrackInfoViewModel(
     val currentFlow = playerState.current
     private var previous: Track? = null
     val itemsFlow = MutableStateFlow<PagingUtils.Data<Shelf>>(
-        PagingUtils.Data(null, null, null)
+        PagingUtils.Data(null, null, null, null)
     )
 
     private var job: Job? = null
@@ -42,20 +42,22 @@ class TrackInfoViewModel(
         if (previous?.id == currentFlow.value?.mediaItem?.track?.id) return
         val current = currentFlow.value?.mediaItem ?: return
         job?.cancel()
-        itemsFlow.value = PagingUtils.Data(null, null, null)
+        itemsFlow.value = PagingUtils.Data(null, null, null, null)
         if (!current.isLoaded) return
+        val id = current.track.id
         job = viewModelScope.launch {
             val extension = extensions.music.getExtension(current.extensionId)
-            itemsFlow.value = PagingUtils.Data(extension, null, null)
+            itemsFlow.value = PagingUtils.Data(extension, id, null, null)
             previous = current.track
             val shelves = extension?.get<TrackClient, PagedData<Shelf>> {
                 getTrackShelves(this, current.track)
             }?.getOrElse {
-                itemsFlow.value = PagingUtils.Data(extension, null, PagingUtils.errorPagingData(it))
+                itemsFlow.value =
+                    PagingUtils.Data(extension, id, null, PagingUtils.errorPagingData(it))
                 return@launch
             } ?: return@launch
             shelves.toFlow(extension).collectWith(app.throwFlow) {
-                itemsFlow.value = PagingUtils.Data(extension, shelves, it)
+                itemsFlow.value = PagingUtils.Data(extension, id, shelves, it)
             }
         }
     }

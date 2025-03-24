@@ -189,13 +189,13 @@ class PlayerViewModel(
 
     fun changeBackground(background: Streamable?) {
         val item = playerState.current.value?.mediaItem ?: return
-        val index = item.track.backgrounds.indexOf(background).takeIf { it != -1 } ?: return
+        val index = item.track.backgrounds.indexOf(background)
         changeCurrent(MediaItemUtils.buildBackground(item, index))
     }
 
     fun changeSubtitle(subtitle: Streamable?) {
         val item = playerState.current.value?.mediaItem ?: return
-        val index = item.track.subtitles.indexOf(subtitle).takeIf { it != -1 } ?: return
+        val index = item.track.subtitles.indexOf(subtitle)
         changeCurrent(MediaItemUtils.buildSubtitle(item, index))
     }
 
