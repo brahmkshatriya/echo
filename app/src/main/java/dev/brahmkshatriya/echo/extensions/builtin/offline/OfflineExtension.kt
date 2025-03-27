@@ -429,7 +429,10 @@ class OfflineExtension(
         }
     }
 
-    override suspend fun listEditablePlaylists() = library.playlistList.map { it.toPlaylist() }
+    override suspend fun listEditablePlaylists(track: Track?) = library.playlistList.map {
+        val has = it.songList.any { song -> song.id == track?.id }
+        it.toPlaylist() to has
+    }
 
     override suspend fun likeTrack(track: Track, isLiked: Boolean) {
         val library = library

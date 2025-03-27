@@ -43,7 +43,6 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
     override fun onCreate() {
         super.onCreate()
         CoroutineUtils.setDebug()
-        applyUiChanges(this)
         downloader.start()
     }
 
@@ -84,8 +83,8 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
 
         fun Context.isAmoled() = getSettings().getBoolean(AMOLED_KEY, false)
 
-        fun applyUiChanges(app: Application) {
-            val settings = app.getSettings()
+        fun applyUiChanges(context: Context): DynamicColorsOptions {
+            val settings = context.getSettings()
             val mode = when (settings.getString(THEME_KEY, "system")) {
                 "light" -> AppCompatDelegate.MODE_NIGHT_NO
                 "dark" -> AppCompatDelegate.MODE_NIGHT_YES
@@ -95,13 +94,14 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
 
             theme = if (settings.getBoolean(AMOLED_KEY, false)) R.style.Amoled else null
 
-            val customColor = if (!settings.getBoolean(CUSTOM_THEME_KEY, true)) null
-            else settings.getInt(COLOR_KEY, app.defaultColor()).takeIf { it != -1 }
+            val custom = settings.getBoolean(CUSTOM_THEME_KEY, true)
+            val color = settings.getInt(COLOR_KEY, context.defaultColor())
+            val customColor = if (custom) color else null
 
             val builder = DynamicColorsOptions.Builder()
             builder.setOnAppliedCallback(onAppliedCallback)
             customColor?.let { builder.setContentBasedSource(it) }
-            DynamicColors.applyToActivitiesIfAvailable(app, builder.build())
+            return builder.build()
         }
 
         fun applyLocale(sharedPref: SharedPreferences) {

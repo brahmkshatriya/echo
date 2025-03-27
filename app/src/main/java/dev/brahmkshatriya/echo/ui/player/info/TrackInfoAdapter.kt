@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemTrackInfoBinding
-import dev.brahmkshatriya.echo.ui.media.MediaHeaderAdapter.Companion.getInfoString
+import dev.brahmkshatriya.echo.ui.media.adapter.MediaHeaderAdapter.Companion.getInfoString
 
 class TrackInfoAdapter : RecyclerView.Adapter<TrackInfoAdapter.ViewHolder>() {
 

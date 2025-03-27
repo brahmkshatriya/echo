@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.media.adapter
 
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Track

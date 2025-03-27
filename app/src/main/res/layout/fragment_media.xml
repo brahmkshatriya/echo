@@ -5,8 +5,7 @@
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:transitionName="exception">
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -95,8 +94,7 @@
         android:id="@+id/fabContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:visibility="gone">
+        android:layout_gravity="end|bottom">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabEditPlaylist"

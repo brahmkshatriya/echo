@@ -12,6 +12,10 @@ class Sticky<R, T>(private val initializer: R.() -> T) {
         }.getOrThrow()
     }
 
+    operator fun setValue(thisRef: R, property: KProperty<*>, value: T) {
+        map[thisRef] = Result.success(value)
+    }
+
     companion object {
         fun <R, T> sticky(initializer: R.() -> T) = Sticky(initializer)
     }

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.media.adapter
 
 import android.graphics.drawable.Animatable
 import android.view.LayoutInflater

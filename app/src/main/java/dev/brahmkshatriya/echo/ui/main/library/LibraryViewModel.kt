@@ -38,7 +38,7 @@ class LibraryViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val playlist = extension.get<PlaylistEditClient, Playlist>(app.throwFlow) {
                 createPlaylist(title, desc)
-            } ?: return@launch
+            }
             createPlaylistStateFlow.value = State.PlaylistCreated(extension.id, playlist)
         }
     }
@@ -46,6 +46,6 @@ class LibraryViewModel(
     sealed class State {
         data object CreatePlaylist : State()
         data object Creating : State()
-        data class PlaylistCreated(val extensionId: String, val playlist: Playlist) : State()
+        data class PlaylistCreated(val extensionId: String, val playlist: Playlist?) : State()
     }
 }

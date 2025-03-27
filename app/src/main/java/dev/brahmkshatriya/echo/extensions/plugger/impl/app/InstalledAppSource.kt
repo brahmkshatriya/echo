@@ -33,13 +33,7 @@ class InstalledAppSource(
                     }
                 }
             }.getOrNull().orEmpty()
-            packages.mapNotNull { info ->
-                runCatching { AppInfo(info) }.getOrElse {
-                    println("Failed to parse ${info.packageName}")
-                    it.printStackTrace()
-                    null
-                }
-            }
+            packages.mapNotNull { runCatching { AppInfo(it) }.getOrNull() }
         }
 
     private fun onPackageChanged() {

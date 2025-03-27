@@ -520,8 +520,9 @@ class UnifiedExtension(
         extension.client<TrackLikeClient, Unit> { likeTrack(track, isLiked) }
     }
 
-    override suspend fun listEditablePlaylists(): List<Playlist> {
-        return db.getPlaylists()
+    override suspend fun listEditablePlaylists(track: Track?) = db.getPlaylists().map {
+        val has = db.getTracks(it).any { t -> t.id == track?.id }
+        it to has
     }
 
     override suspend fun createPlaylist(title: String, description: String?): Playlist {

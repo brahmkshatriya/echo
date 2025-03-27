@@ -64,13 +64,7 @@ class MediaItemShelfListsViewHolder(
         val items = (shelf as? Shelf.Lists.Items)?.list ?: return
         val item = items.getOrNull(position) ?: return
         this.item = item
-        val gravity = if (item is EchoMediaItem.Profile) Gravity.CENTER else Gravity.NO_GRAVITY
-        binding.title.text = item.title
-        binding.title.gravity = gravity
-        binding.subtitle.text = item.subtitleWithE
-        binding.subtitle.gravity = gravity
-        binding.subtitle.isVisible = !item.subtitleWithE.isNullOrBlank()
-        binding.run { applyCover(item, cover, listBg1, listBg2, icon) }
+        binding.bind(item)
         binding.root.applyTranslationAndScaleAnimation(xScroll)
     }
 
@@ -81,6 +75,17 @@ class MediaItemShelfListsViewHolder(
     }
 
     companion object {
+
+        fun ItemShelfListsMediaBinding.bind(item: EchoMediaItem) {
+            val gravity = if (item is EchoMediaItem.Profile) Gravity.CENTER else Gravity.NO_GRAVITY
+            title.text = item.title
+            title.gravity = gravity
+            subtitle.text = item.subtitleWithE
+            subtitle.gravity = gravity
+            subtitle.isVisible = !item.subtitleWithE.isNullOrBlank()
+            applyCover(item, cover, listBg1, listBg2, icon)
+        }
+
         fun applyCover(
             item: EchoMediaItem,
             cover: ImageView,

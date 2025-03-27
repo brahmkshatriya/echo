@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
@@ -88,10 +89,8 @@ class MediaViewModel(
         item.getOrThrow()
     }
 
-    private fun createMessage(message: String) {
-        viewModelScope.launch {
-            messageFlow.emit(Message(message))
-        }
+    private suspend fun createMessage(message: String) {
+        messageFlow.emit(Message(message))
     }
 
     suspend fun onShare(): String? = withContext(Dispatchers.IO) {
@@ -132,13 +131,13 @@ class MediaViewModel(
     }
 
     fun follow(artist: Artist, follow: Boolean) {
-        createMessage(
-            context.getString(
-                if (follow) R.string.following_x else R.string.unfollowing_x,
-                artist.name
-            )
-        )
         viewModelScope.launch(Dispatchers.IO) {
+            createMessage(
+                context.getString(
+                    if (follow) R.string.following_x else R.string.unfollowing_x,
+                    artist.name
+                )
+            )
             extensionFlow.value?.get<ArtistFollowClient, Unit>(throwFlow) {
                 followArtist(artist, follow)
             }
@@ -153,13 +152,13 @@ class MediaViewModel(
     }
 
     fun hide(track: Track, hide: Boolean) {
-        createMessage(
-            context.getString(
-                if (hide) R.string.hiding_x else R.string.unhiding_x,
-                track.title
-            )
-        )
         viewModelScope.launch(Dispatchers.IO) {
+            createMessage(
+                context.getString(
+                    if (hide) R.string.hiding_x else R.string.unhiding_x,
+                    track.title
+                )
+            )
             extensionFlow.value?.get<TrackHideClient, Unit>(throwFlow) {
                 hideTrack(track, hide)
             }
@@ -174,13 +173,13 @@ class MediaViewModel(
     }
 
     fun like(track: Track, like: Boolean) {
-        createMessage(
-            context.getString(
-                if (like) R.string.liking_x else R.string.unliking_x,
-                track.title
-            )
-        )
         viewModelScope.launch(Dispatchers.IO) {
+            createMessage(
+                context.getString(
+                    if (like) R.string.liking_x else R.string.unliking_x,
+                    track.title
+                )
+            )
             extensionFlow.value?.get<TrackLikeClient, Unit>(throwFlow) {
                 likeTrack(track, like)
             }
@@ -194,10 +193,25 @@ class MediaViewModel(
         }
     }
 
-    fun deletePlaylist(playlist: Playlist) {
-        TODO("Not yet implemented")
+    sealed class State {
+        data object DeletePlaylist : State()
+        data object Deleting : State()
+        data class PlaylistDeleted(val extensionId: String, val playlist: Playlist?) : State()
     }
 
+    val deleteFlow = MutableStateFlow<State>(State.DeletePlaylist)
+    fun deletePlaylist(playlist: Playlist) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteFlow.value = State.Deleting
+            createMessage(context.getString(R.string.deleting_x, playlist.title))
+            val success = extensionFlow.value?.get<PlaylistEditClient, Playlist>(throwFlow) {
+                deletePlaylist(playlist)
+                playlist
+            }
+            createMessage(context.getString(R.string.deleted_x, playlist.title))
+            deleteFlow.value = State.PlaylistDeleted(extensionId, success)
+        }
+    }
 
     val tracks = MutableStateFlow<PagingUtils.Data<Track>>(
         PagingUtils.Data(null, null, null, null)

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:fitsSystemWindows="false"
+    android:paddingBottom="80dp">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="-80dp"
+        android:clipToPadding="false"
+        android:paddingBottom="96dp"
+        android:visibility="gone"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        app:spanCount="3"
+        tools:itemCount="16"
+        tools:listitem="@layout/item_shelf_lists_media"
+        tools:visibility="visible" />
+
+    <include
+        android:id="@+id/loading"
+        layout="@layout/item_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="48dp"
+        android:layout_marginVertical="80dp"
+        android:visibility="visible" />
+
+    <FrameLayout
+        android:id="@+id/fabContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|bottom"
+        android:layout_marginBottom="-80dp"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="12dp"
+            android:translationZ="8dp"
+            app:cardBackgroundColor="?navBackground"
+            app:cardCornerRadius="40dp"
+            app:strokeWidth="0dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/save"
+                style="@style/Widget.Material3.Button.UnelevatedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:minHeight="64dp"
+                android:text="@string/save"
+                app:icon="@drawable/ic_save" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

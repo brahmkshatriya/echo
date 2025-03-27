@@ -24,9 +24,9 @@
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
-            android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -60,15 +60,15 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom">
 
-        <!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-        <!--            android:id="@+id/fabCreatePlaylist"-->
-        <!--            style="?floatingActionButtonTertiaryStyle"-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_margin="24dp"-->
-        <!--            android:contentDescription="@string/create_playlist"-->
-        <!--            android:transitionName="createPlaylist"-->
-        <!--            app:srcCompat="@drawable/ic_playlist_add" />-->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabCreatePlaylist"
+            style="?floatingActionButtonTertiaryStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            android:contentDescription="@string/create_playlist"
+            android:transitionName="createPlaylist"
+            app:srcCompat="@drawable/ic_playlist_add" />
 
     </FrameLayout>
 

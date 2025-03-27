@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media.more
+package dev.brahmkshatriya.echo.ui.media.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

@@ -7,17 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentMediaBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.media.adapter.MediaHeaderAdapter
+import dev.brahmkshatriya.echo.ui.media.adapter.TrackAdapter
 import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
@@ -145,6 +149,24 @@ class MediaFragment : Fragment() {
         binding.swipeRefresh.setOnRefreshListener { vm.refresh(true) }
         observe(vm.loadingFlow) {
             binding.swipeRefresh.isRefreshing = it
+        }
+
+        parentFragmentManager.setFragmentResultListener("delete", this) { _, data ->
+            val playlist = data.getSerialized<Playlist>("playlist")
+                ?: return@setFragmentResultListener
+            vm.deletePlaylist(playlist)
+        }
+
+        parentFragmentManager.setFragmentResultListener("deleted", this) { _, data ->
+            if (data.getString("id") == item.id) parentFragmentManager.popBackStack()
+            parentFragmentManager.setFragmentResult("reloadLibrary", Bundle.EMPTY)
+        }
+
+        observe(vm.deleteFlow) {
+            val deleted = it as? MediaViewModel.State.PlaylistDeleted ?: return@observe
+            val id = deleted.playlist?.id ?: return@observe
+            parentFragmentManager.setFragmentResult("deleted", bundleOf("id" to id))
+            parentFragmentManager.popBackStack()
         }
 
         observe(vm.run { itemFlow.combine(extensionFlow) { a, b -> a to b } }) { (item, ext) ->

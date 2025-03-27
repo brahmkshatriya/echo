@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/coverContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="24dp"
+        android:visibility="gone">
+
+        <androidx.cardview.widget.CardView
+            style="@style/ItemCover"
+            tools:ignore="MissingConstraints">
+
+            <ImageView
+                android:id="@+id/cover"
+                style="@style/Selectable"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                tools:ignore="ImageContrastCheck" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/playlist"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="16dp"
+                app:cardBackgroundColor="?colorSurfaceContainerLowest"
+                app:cardCornerRadius="24dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_add_photo_alternate"
+                    app:tint="?attr/colorOnSurface" />
+
+            </androidx.cardview.widget.CardView>
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/TextInput"
+        android:layout_marginHorizontal="24dp"
+        android:hint="@string/playlist_name"
+        app:startIconDrawable="@drawable/ic_queue_music">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/playlistName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:singleLine="true" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/TextInput"
+        android:layout_marginHorizontal="24dp"
+        android:hint="@string/playlist_description"
+        app:startIconDrawable="@drawable/ic_article">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/playlistDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:singleLine="true" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

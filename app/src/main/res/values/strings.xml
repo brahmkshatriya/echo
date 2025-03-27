@@ -347,4 +347,20 @@
     <string name="scroll_animations">Scroll Animations</string>
     <string name="scroll_animations_summary">Animations when you scroll stuff</string>
     <string name="sort_subtitle">Subtitle</string>
+    <string name="delete">Delete</string>
+    <string name="playlist_name">Playlist Name</string>
+    <string name="playlist_description">Playlist Description</string>
+    <string name="create_playlist">Create Playlist</string>
+    <string name="create">Create</string>
+    <string name="add_song">Add Song</string>
+    <string name="creating_x">Creating %1$s</string>
+    <string name="playlist_name_empty">Playlist name is empty</string>
+    <string name="x_created">%1$s created</string>
+    <string name="deleting_x">Deleting %1$s</string>
+    <string name="deleted_x">Deleted %1$s</string>
+    <string name="loading_x">Loading %1s</string>
+    <string name="saving_x">Saving %1$s</string>
+    <string name="saved_to_x">Saved to %1$s</string>
+    <string name="saved_to_playlists">Saved to playlists</string>
+    <string name="selected_n">Selected %1$d</string>
 </resources>

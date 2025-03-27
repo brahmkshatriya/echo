@@ -11,8 +11,9 @@ import androidx.lifecycle.ViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import dev.brahmkshatriya.echo.databinding.DialogSortBinding
-import dev.brahmkshatriya.echo.ui.media.SearchHeaderAdapter.Companion.loadedTracks
-import dev.brahmkshatriya.echo.ui.media.SearchHeaderAdapter.Companion.trackSortState
+import dev.brahmkshatriya.echo.ui.media.adapter.SearchHeaderAdapter.Companion.loadedTracks
+import dev.brahmkshatriya.echo.ui.media.adapter.SearchHeaderAdapter.Companion.trackSortState
+import dev.brahmkshatriya.echo.ui.media.adapter.TrackSort
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.android.ext.android.getKoinScope

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.media
+package dev.brahmkshatriya.echo.ui.media.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.databinding.ItemTrackListHeaderBinding
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.load
+import dev.brahmkshatriya.echo.ui.media.SortBottomSheet
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -44,6 +45,7 @@ class SearchHeaderAdapter(
         private val ViewModel.loading by sticky { MutableStateFlow(false) }
         private val ViewModel.searchOpened by sticky { MutableStateFlow(false) }
         private val ViewModel.searchQuery by sticky { MutableStateFlow("") }
+
         private suspend fun loadTracks(
             current: MutableStateFlow<List<Track>?>,
             data: PagingUtils.Data<Track>,
@@ -113,7 +115,7 @@ class SearchHeaderAdapter(
             val text = if (viewModel.loadedTracks.value == null) context.getString(R.string.songs)
             else {
                 val count = viewModel.loadedTracks.value?.size ?: 0
-                context.getString(R.string.x_items, count)
+                context.resources.getQuantityString(R.plurals.n_songs, count, count)
             }
             binding.title.text = text
             binding.searchLayout.hint = text

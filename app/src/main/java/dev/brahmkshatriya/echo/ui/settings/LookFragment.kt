@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.settings
 
-import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -12,7 +11,6 @@ import dev.brahmkshatriya.echo.MainApplication.Companion.AMOLED_KEY
 import dev.brahmkshatriya.echo.MainApplication.Companion.COLOR_KEY
 import dev.brahmkshatriya.echo.MainApplication.Companion.CUSTOM_THEME_KEY
 import dev.brahmkshatriya.echo.MainApplication.Companion.THEME_KEY
-import dev.brahmkshatriya.echo.MainApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.MainApplication.Companion.defaultColor
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.SHOW_BACKGROUND
@@ -165,7 +163,7 @@ class LookFragment : BaseSettingsFragment() {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
                 THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY -> {
-                    requireActivity().applyUiChanges()
+                    requireActivity().recreate()
                 }
             }
         }
@@ -180,14 +178,6 @@ class LookFragment : BaseSettingsFragment() {
             super.onPause()
             preferenceManager.sharedPreferences!!
                 .unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
-
-
-    companion object {
-        fun Activity.applyUiChanges() {
-            applyUiChanges(application)
-            recreate()
         }
     }
 }

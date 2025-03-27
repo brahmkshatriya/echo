@@ -6,9 +6,9 @@ import dev.brahmkshatriya.echo.common.models.Track
 /**
  * Used to allow editing of an editable playlist.
  *
- * To allow editing of cover art, use [PlaylistEditCoverClient].
- * To allow editing the privacy of a playlist, use [PlaylistEditPrivacyClient].
- *  To listen to changes in the editable playlists, use [PlaylistEditorListenerClient].
+ * - To allow editing of cover art, use [PlaylistEditCoverClient].
+ * - To allow editing the privacy of a playlist, use [PlaylistEditPrivacyClient].
+ * - To listen to changes in the playlist editor, use [PlaylistEditorListenerClient].
  *
  * @see Playlist.isEditable
  */
@@ -17,11 +17,12 @@ interface PlaylistEditClient : PlaylistClient {
     /**
      * Lists all the editable playlists.
      *
-     * @return the editable playlists.
+     * @param track the track to show the editable playlists for.
+     * @return a list playlists that are editable with a boolean indicating if the track is in the playlist.
      *
      * @see Playlist
      */
-    suspend fun listEditablePlaylists(): List<Playlist>
+    suspend fun listEditablePlaylists(track: Track?): List<Pair<Playlist, Boolean>>
 
     /**
      * Creates a new playlist.
@@ -56,7 +57,7 @@ interface PlaylistEditClient : PlaylistClient {
      * Adds tracks to a playlist.
      *
      * @param playlist the playlist to add the tracks to.
-     * @param tracks the tracks to add.
+     * @param tracks the tracks in the playlist.
      * @param index the index to add the tracks at.
      * @param new the new tracks to add.
      */
@@ -68,7 +69,7 @@ interface PlaylistEditClient : PlaylistClient {
      * Removes tracks from a playlist.
      *
      * @param playlist the playlist to remove the tracks from.
-     * @param tracks the tracks to remove.
+     * @param tracks the tracks in the playlist.
      * @param indexes the indexes of the tracks to remove.
      */
     suspend fun removeTracksFromPlaylist(
@@ -79,7 +80,7 @@ interface PlaylistEditClient : PlaylistClient {
      * Moves a track in a playlist.
      *
      * @param playlist the playlist to move the track in.
-     * @param tracks the tracks to move.
+     * @param tracks the tracks in the playlist.
      * @param fromIndex the index to move the tracks from.
      * @param toIndex the index to move the tracks to.
      */

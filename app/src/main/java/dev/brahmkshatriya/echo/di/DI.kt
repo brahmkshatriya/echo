@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.info.TrackInfoViewModel
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
+import dev.brahmkshatriya.echo.ui.playlist.save.SaveToPlaylistViewModel
 import dev.brahmkshatriya.echo.ui.shelf.ShelfViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import org.koin.android.ext.koin.androidApplication
@@ -71,6 +72,7 @@ object DI {
 
         viewModelOf(::MediaViewModel)
         viewModelOf(::ShelfViewModel)
+        viewModelOf(::SaveToPlaylistViewModel)
     }
 
     val appModule = module {

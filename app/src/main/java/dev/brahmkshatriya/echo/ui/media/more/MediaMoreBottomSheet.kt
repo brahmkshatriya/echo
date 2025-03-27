@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ShareCompat
+import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -29,11 +30,14 @@ import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.MediaViewModel
+import dev.brahmkshatriya.echo.ui.media.adapter.GenericItemAdapter
 import dev.brahmkshatriya.echo.ui.media.more.Action.Companion.resource
+import dev.brahmkshatriya.echo.ui.media.more.Action.ResourceImage
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet
 import dev.brahmkshatriya.echo.ui.player.quality.QualitySelectionBottomSheet
 import dev.brahmkshatriya.echo.ui.player.sleep.SleepTimerBottomSheet
+import dev.brahmkshatriya.echo.ui.playlist.save.SaveToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
@@ -106,14 +110,27 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             itemAdapter.submitList(extensionId, listOf(item))
         }
         observe(playerViewModel.playerState.current) { itemAdapter.onCurrentChanged() }
-        observe(vm.loadingFlow) { loadingAdapter.setLoading(it) }
-        vm.run {
-            observe(itemFlow.combine(extensionFlow) { _, _ -> }.combine(savedState) { _, _ -> }) {
-                val client = extensionFlow.value?.instance?.value()?.getOrNull()
-                actionAdapter.submitList(
-                    getActions(client, itemFlow.value, !vm.loadingFlow.value)
-                )
-            }
+        val loadFlow = vm.loadingFlow.combine(vm.deleteFlow) { a, b ->
+            a || b == MediaViewModel.State.Deleting
+        }
+        observe(loadFlow) { loadingAdapter.setLoading(it) }
+        val actionFlow = vm.run {
+            itemFlow.combine(extensionFlow) { _, _ -> }
+                .combine(savedState) { _, _ -> }
+                .combine(deleteFlow) { _, _ -> }
+        }
+        observe(actionFlow) {
+            val client = vm.extensionFlow.value?.instance?.value()?.getOrNull()
+            val list = if (vm.deleteFlow.value == MediaViewModel.State.Deleting) listOf()
+            else getActions(client, vm.itemFlow.value, !vm.loadingFlow.value)
+            actionAdapter.submitList(list)
+        }
+        observe(vm.deleteFlow) {
+            val deleted = it as? MediaViewModel.State.PlaylistDeleted ?: return@observe
+            val id = deleted.playlist?.id
+            if (id != null)
+                parentFragmentManager.setFragmentResult("deleted", bundleOf("id" to id))
+            dismiss()
         }
     }
 
@@ -123,7 +140,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
         is EchoMediaItem.Lists -> getPlayButtons(client, item, loaded) + when (item) {
             is EchoMediaItem.Lists.AlbumItem -> listOfNotNull(
                 radioButton(client, item, loaded),
-                saveToPlaylist(client, item),
+                saveToPlaylist(client, item, loaded),
                 saveToLibraryButton(client, loaded),
                 downloadButton(client, item),
             ) + item.album.artists.map {
@@ -134,13 +151,15 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
 
             is EchoMediaItem.Lists.PlaylistItem -> listOfNotNull(
                 radioButton(client, item, loaded),
-                saveToPlaylist(client, item),
+                saveToPlaylist(client, item, loaded),
                 saveToLibraryButton(client, loaded),
                 downloadButton(client, item),
-                if (client is LibraryFeedClient && item.playlist.isEditable)
-                    resource(R.drawable.ic_delete, R.string.delete_playlist) {
-                        vm.deletePlaylist(item.playlist)
-                    }
+                if (client is LibraryFeedClient && item.playlist.isEditable) Action(
+                    getString(R.string.delete_playlist),
+                    ResourceImage(R.drawable.ic_delete)
+                ) {
+                    vm.deletePlaylist(item.playlist)
+                }
                 else null,
             ) + item.playlist.authors.map {
                 Action(it.name, Action.CustomImage(it.cover, R.drawable.ic_person, true)) {
@@ -166,7 +185,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             likeButton(client, item.track, loaded),
             hideButton(client, item.track, loaded),
             radioButton(client, item, loaded),
-            saveToPlaylist(client, item),
+            saveToPlaylist(client, item, loaded),
             saveToLibraryButton(client, loaded),
             downloadButton(client, item),
             item.track.album?.let {
@@ -255,12 +274,11 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
     else null
 
     private fun saveToPlaylist(
-        client: ExtensionClient?, item: EchoMediaItem
-    ) = if (client is LibraryFeedClient)
+        client: ExtensionClient?, item: EchoMediaItem, loaded: Boolean
+    ) = if (client is LibraryFeedClient && loaded)
         resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
-            TODO()
-//            AddToPlaylistBottomSheet.newInstance(clientId, item)
-//                .show(parentFragmentManager, null)
+            SaveToPlaylistBottomSheet.newInstance(extensionId, item)
+                .show(parentFragmentManager, null)
         }
     else null
 
@@ -268,7 +286,6 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
         client: ExtensionClient?, item: EchoMediaItem
     ) = if (item.extras[EXTENSION_ID] != OfflineExtension.metadata.id && client is TrackClient)
         resource(R.drawable.ic_download_for_offline, R.string.download) {
-            TODO()
 //            downloadViewModel.addToDownload(requireActivity(), clientId, item)
         }
     else null

@@ -7,7 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
+import com.google.android.material.color.DynamicColors
 import com.google.android.material.navigation.NavigationBarView
+import dev.brahmkshatriya.echo.MainApplication.Companion.applyUiChanges
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.setupIntents
@@ -29,6 +31,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DynamicColors.applyToActivityIfAvailable(this, applyUiChanges(this))
+
         setContentView(binding.root)
 
         enableEdgeToEdge(

@@ -210,7 +210,6 @@ class ShelfAdapter(
         val header = ShelfLoadingAdapter(::Loading, listener)
         val empty = ShelfEmptyAdapter()
         addLoadStateListener { loadStates ->
-            println("loadStates: $loadStates")
             empty.loadState =
                 if (loadStates.refresh is LoadState.NotLoading && itemCount == 0) LoadState.Loading
                 else LoadState.NotLoading(false)
@@ -228,7 +227,6 @@ class ShelfAdapter(
     ): ConcatAdapter {
         val header = ShelfSearchHeaderAdapter(fragment, viewModel, stateFlow, shelfJob)
         addOnPagesUpdatedListener {
-            println("updated")
             val visible = shelf != null
             header.submit(visible)
         }
