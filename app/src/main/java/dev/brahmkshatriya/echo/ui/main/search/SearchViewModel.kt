@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.main.search
 
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
@@ -10,15 +11,29 @@ import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.ui.main.FeedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
     app: App,
     extensionLoader: ExtensionLoader,
+    extensionId: String? = null
 ) : FeedViewModel(app.throwFlow, extensionLoader) {
+
+    override val current = if (extensionId == null) super.current else {
+        MutableStateFlow<MusicExtension?>(null).also { state ->
+            val music = extensionLoader.extensions.music
+            viewModelScope.launch {
+                music.collectLatest {
+                    state.value = music.getExtension(extensionId)
+                }
+            }
+        }
+    }
 
     var query: String? = null
 
@@ -52,4 +67,6 @@ class SearchViewModel(
             quickSearch(query)
         }
     }
+
+    init { init() }
 }

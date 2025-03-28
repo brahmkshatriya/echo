@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.ui.common.PagingUtils.collectWith
 import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener
+import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener.Companion.getShelfListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configure
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 
 abstract class FeedViewModel(
     val throwableFlow: MutableSharedFlow<Throwable>,
-    extensionLoader: ExtensionLoader
+    private val extensionLoader: ExtensionLoader
 ) : ViewModel() {
     open val current = extensionLoader.extensions.current
 
@@ -42,7 +43,7 @@ abstract class FeedViewModel(
     val tabs = MutableStateFlow<List<Tab>?>(null)
     var tab: Tab? = null
 
-    init {
+    fun init() {
         viewModelScope.launch {
             current.collect { refresh(true) }
         }
@@ -90,7 +91,7 @@ abstract class FeedViewModel(
         ): ShelfClickListener {
             FastScrollerHelper.applyTo(recyclerView)
             swipeRefresh.configure { viewModel.refresh(true) }
-            val listener = ShelfClickListener(requireActivity().supportFragmentManager)
+            val listener = getShelfListener()
             val adapter = getShelfAdapter(listener)
             recyclerView.adapter = adapter.withLoaders(this)
             adapter.getTouchHelper().attachToRecyclerView(recyclerView)

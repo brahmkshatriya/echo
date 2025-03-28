@@ -11,6 +11,7 @@ import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener
+import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener.Companion.getShelfListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -25,7 +26,7 @@ class ShelfFragment : Fragment() {
     private val activityVm by activityViewModel<ShelfViewModel>()
     private val vm by viewModel<ShelfViewModel>()
 
-    private val listener by lazy { ShelfClickListener(requireActivity().supportFragmentManager) }
+    private val listener by lazy { getShelfListener() }
     private val adapter by lazy { getShelfAdapter(listener) }
 
     override fun onCreateView(

@@ -193,6 +193,7 @@ class SearchHeaderAdapter(
             val last = getSortState(fragment.requireContext(), stateFlow.value.id) ?: return@observe
             if (last.copy(save = false) == TrackSort.State()) return@observe
             jobFlow.value?.cancel()
+            viewModel.loadedTracks.value = null
             viewModel.applyFilterAndSort(fragment.requireContext(), stateFlow)
         }
         fragment.observe(viewModel.trackSortState) {

@@ -59,6 +59,7 @@ class LibraryFragment : Fragment() {
             CreatePlaylistBottomSheet().show(parent.parentFragmentManager, null)
         }
 
+
         parent.parentFragmentManager.setFragmentResultListener("createPlaylist", this) { _, data ->
             val extensionId = data.getString("extensionId")
             val playlist = data.getSerialized<Playlist>("playlist")

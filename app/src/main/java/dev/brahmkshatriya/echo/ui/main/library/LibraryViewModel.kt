@@ -43,6 +43,8 @@ class LibraryViewModel(
         }
     }
 
+    init { init() }
+
     sealed class State {
         data object CreatePlaylist : State()
         data object Creating : State()

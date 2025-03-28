@@ -473,7 +473,6 @@ class UnifiedExtension(
 
     override fun getLibraryFeed(tab: Tab?) = PagedData.Suspend {
         val extension = extensions().getOrNull(tab?.id)
-        println("extension ${extension?.name}")
         extension?.client<LibraryFeedClient, PagedData<Shelf>> {
             val tabs = getLibraryTabs()
             if (!showTabs || tabs.isEmpty()) getLibraryFeed(tabs.firstOrNull()).injectExtensionId(

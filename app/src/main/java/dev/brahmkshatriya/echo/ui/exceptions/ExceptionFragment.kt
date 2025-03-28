@@ -83,8 +83,10 @@ class ExceptionFragment : Fragment() {
         }
     }
 
-    private val screenCaptureCallback = Activity.ScreenCaptureCallback {
-        copyException()
+    private val screenCaptureCallback by lazy {
+        Activity.ScreenCaptureCallback {
+            copyException()
+        }
     }
 
     override fun onDestroyView() {

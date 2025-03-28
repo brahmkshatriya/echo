@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistTrackBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -88,33 +89,13 @@ class QueueAdapter(
         val isCurrent = current != null
         val isPlaying = current == true
         val track = item.track
-
-        binding.playlistItem.alpha = if (inactive) 0.5f else 1f
-
-        binding.playlistItemTitle.run {
-            text = track.title
-            marquee()
-        }
-
-        track.cover.loadInto(binding.playlistItemImageView, R.drawable.art_music)
-        val subtitle = buildString {
-            track.duration?.toTimeString()?.let {
-                append("$it • ")
-            }
-            append(track.toMediaItem().subtitleWithE)
-        }
-        binding.playlistItemAuthor.run {
-            isVisible = subtitle.isNotEmpty()
-            text = subtitle
-            marquee()
-        }
+        binding.bind(track)
+        binding.isPlaying(isPlaying)
         binding.playlistItemClose.isVisible = !inactive
         binding.playlistItemDrag.isVisible = !inactive
-
         binding.playlistCurrentItem.isVisible = isCurrent
         binding.playlistProgressBar.isVisible = isCurrent && !item.isLoaded
-        binding.playlistItemNowPlaying.isVisible = isPlaying
-        (binding.playlistItemNowPlaying.drawable as Animatable).start()
+        binding.playlistItem.alpha = if (inactive) 0.5f else 1f
     }
 
 //    class Loader : RecyclerView.Adapter<Loader.ViewHolder>() {
@@ -153,5 +134,32 @@ class QueueAdapter(
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         recyclerView.removeOnScrollListener(scrollListener)
         this.recyclerView = null
+    }
+
+    companion object {
+        fun ItemPlaylistTrackBinding.bind(track: Track) {
+            playlistItemTitle.run {
+                text = track.title
+                marquee()
+            }
+
+            track.cover.loadInto(playlistItemImageView, R.drawable.art_music)
+            val subtitle = buildString {
+                track.duration?.toTimeString()?.let {
+                    append("$it • ")
+                }
+                append(track.toMediaItem().subtitleWithE)
+            }
+            playlistItemAuthor.run {
+                isVisible = subtitle.isNotEmpty()
+                text = subtitle
+                marquee()
+            }
+        }
+
+        fun ItemPlaylistTrackBinding.isPlaying(isPlaying: Boolean) {
+            playlistItemNowPlaying.isVisible = isPlaying
+            (playlistItemNowPlaying.drawable as Animatable).start()
+        }
     }
 }

@@ -52,8 +52,6 @@ class ShelfAdapter(
     interface Listener : ShelfListsAdapter.Listener {
         fun onMoreClicked(extensionId: String?, shelf: Shelf.Lists<*>?, view: View)
         fun onShuffleClicked(extensionId: String?, shelf: Shelf.Lists.Tracks?, view: View)
-        fun onShelfSearchClicked(extensionId: String?, shelf: PagingData<Shelf>?, view: View)
-        fun onShelfSortClicked(extensionId: String?, shelf: PagingData<Shelf>?, view: View)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {

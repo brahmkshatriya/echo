@@ -29,12 +29,13 @@ import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class SearchFragment : Fragment() {
     private var binding by autoCleared<FragmentSearchBinding>()
     private val uiViewModel by activityViewModel<UiViewModel>()
 
-    private val isMain by lazy { arguments?.getBoolean("isMain", true) ?: true }
+    private val extensionId by lazy { requireArguments().getString("extensionId") }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -44,7 +45,9 @@ class SearchFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val viewModel by requireParentFragment().viewModel<SearchViewModel>()
+        val viewModel by requireParentFragment().viewModel<SearchViewModel> {
+            parametersOf(extensionId)
+        }
 
         setupTransition(view)
         applyPlayerBg(view, binding.appBarLayout)
@@ -61,13 +64,22 @@ class SearchFragment : Fragment() {
             binding.searchBar.alpha = 1 - offset
             binding.toolBar.alpha = 1 - offset
         }
-        if (isMain) binding.toolBar.configureMainMenu(parentFragment as MainFragment)
+        val main = parentFragment as? MainFragment
+        if (main != null) binding.toolBar.configureMainMenu(main)
         else {
             binding.toolBar.isVisible = false
             binding.searchBar.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = 24.dpToPx(requireContext())
             }
         }
+
+        observe(uiViewModel.navigationReselected) {
+            if (it == 1) binding.quickSearchView.show()
+        }
+
+        val mediaClickListener = configureFeed(
+            viewModel, binding.recyclerView, binding.swipeRefresh, binding.tabLayout
+        )
 
         binding.searchBar.setText(viewModel.query)
         binding.quickSearchView.editText.setText(viewModel.query)
@@ -86,13 +98,6 @@ class SearchFragment : Fragment() {
             }
             false
         }
-
-        observe(uiViewModel.navigationReselected) {
-            if (it == 1) binding.quickSearchView.show()
-        }
-        val mediaClickListener = configureFeed(
-            viewModel, binding.recyclerView, binding.swipeRefresh, binding.tabLayout
-        )
         val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
             override fun onClick(item: QuickSearchItem, transitionView: View) {
                 when (item) {
@@ -141,7 +146,7 @@ class SearchFragment : Fragment() {
             quickSearchAdapter.submitList(it)
         }
 
-        // Need to hide scrim because something weird shit happens when we use Material Transition
+        // Need to hide scrim because some weird shit happens when we use Material Transition
         binding.quickSearchView
             .findViewById<View>(com.google.android.material.R.id.open_search_view_scrim).run {
                 setBackgroundColor(Color.TRANSPARENT)

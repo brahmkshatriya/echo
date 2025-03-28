@@ -32,7 +32,7 @@ class SaveToPlaylistViewModel(
 ) : ViewModel() {
 
     private val extensions = extensionLoader.extensions.music
-    val extensionFlow = MutableStateFlow<Extension<*>?>(null)
+    private val extensionFlow = MutableStateFlow<Extension<*>?>(null)
 
     sealed class SaveState {
         data object Initial : SaveState()

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
@@ -20,15 +21,17 @@ import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.adapter.MediaHeaderAdapter
 import dev.brahmkshatriya.echo.ui.media.adapter.TrackAdapter
 import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.playlist.edit.EditPlaylistFragment
 import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
-import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener
+import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener.Companion.getShelfListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
@@ -71,7 +74,7 @@ class MediaFragment : Fragment() {
     }
     private val headerAdapter by lazy { MediaHeaderAdapter(headerListener) }
 
-    private val listener by lazy { ShelfClickListener(requireActivity().supportFragmentManager) }
+    private val listener by lazy { getShelfListener() }
     private val shelfAdapter by lazy { getShelfAdapter(listener) }
 
     private val listAdapter by lazy { TrackAdapter(listener) }
@@ -105,7 +108,7 @@ class MediaFragment : Fragment() {
             when (it.itemId) {
                 R.id.menu_more -> {
                     MediaMoreBottomSheet.newInstance(
-                        id, extensionId, vm.itemFlow.value, !vm.loadingFlow.value, false
+                        extensionId, vm.itemFlow.value, !vm.loadingFlow.value, false
                     ).show(parentFragmentManager, null)
                     true
                 }
@@ -144,11 +147,25 @@ class MediaFragment : Fragment() {
             }
             binding.toolBar.title = item.title.trim()
             binding.endIcon.setImageResource(item.icon)
+            binding.fabContainer.isVisible =
+                item is EchoMediaItem.Lists.PlaylistItem && !vm.loadingFlow.value
         }
 
         binding.swipeRefresh.setOnRefreshListener { vm.refresh(true) }
         observe(vm.loadingFlow) {
             binding.swipeRefresh.isRefreshing = it
+        }
+
+        parentFragmentManager.setFragmentResultListener("reload", this) { _, data ->
+            if (data.getString("id") == item.id) vm.refresh(true)
+        }
+        binding.fabEditPlaylist.setOnClickListener {
+            openFragment<EditPlaylistFragment>(
+                it, EditPlaylistFragment.getBundle(
+                    extensionId,
+                    (vm.itemFlow.value as EchoMediaItem.Lists.PlaylistItem).playlist
+                )
+            )
         }
 
         parentFragmentManager.setFragmentResultListener("delete", this) { _, data ->

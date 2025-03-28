@@ -93,7 +93,7 @@
                 android:spacing="4dp">
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/radio"
+                    android:id="@+id/add"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -105,7 +105,7 @@
                     app:icon="@drawable/ic_add_circle" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/play"
+                    android:id="@+id/save"
                     style="@style/Widget.Material3.Button.UnelevatedButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

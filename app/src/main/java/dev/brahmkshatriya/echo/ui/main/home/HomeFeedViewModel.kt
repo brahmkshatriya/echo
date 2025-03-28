@@ -24,4 +24,6 @@ class HomeFeedViewModel(
         extension.get<HomeFeedClient, PagedData<Shelf>> {
             getHomeFeed(tab)
         }
+
+    init { init() }
 }

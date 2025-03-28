@@ -63,6 +63,7 @@ class MediaItemSelectableAdapter(
                 val item = item ?: return@setOnClickListener
                 listener.onItemSelected(!binding.selected.isVisible, item)
             }
+            binding.media.cover.clipToOutline = true
         }
 
         fun bind(item: Pair<EchoMediaItem, Boolean>) {

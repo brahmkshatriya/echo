@@ -205,6 +205,7 @@ class ShelfSearchHeaderAdapter(
             val last = getSortState(fragment.requireContext(), stateFlow.value.id) ?: return@observe
             if (last.copy(save = false) == ShelfSort.State()) return@observe
             jobFlow.value?.cancel()
+            viewModel.loadedShelves.value = null
             viewModel.applyFilterAndSort(fragment.requireContext(), stateFlow)
         }
         fragment.observe(viewModel.shelfSortState) {

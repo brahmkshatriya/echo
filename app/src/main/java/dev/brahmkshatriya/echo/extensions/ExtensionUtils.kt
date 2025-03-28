@@ -37,6 +37,15 @@ object ExtensionUtils {
         block(client)
     }
 
+    suspend inline fun <reified C, R> Extension<*>.run(
+        crossinline block: suspend C.() -> R
+    ): Result<R?> = runCatching top@{
+        runCatching {
+            val client = instance.value().getOrThrow() as? C ?: return@runCatching null
+            block(client)
+        }.getOrElse { throw it.toAppException(this) }
+    }
+
     suspend inline fun <reified C, R> Extension<*>.get(
         crossinline block: suspend C.() -> R
     ): Result<R> = runCatching {
@@ -69,9 +78,10 @@ object ExtensionUtils {
     suspend fun <T : Extension<*>> StateFlow<List<T>?>.await(): List<T> {
         return first { it != null }!!
     }
-    suspend fun StateFlow<List<Extension<*>>?>.getExtension(id: String?) =
+
+    suspend fun <T : Extension<*>> StateFlow<List<T>?>.getExtension(id: String?) =
         await().find { it.id == id }
 
-    fun StateFlow<List<Extension<*>>?>.getExtensionOrThrow(id: String?) =
+    fun <T : Extension<*>> StateFlow<List<T>?>.getExtensionOrThrow(id: String?) =
         value?.find { it.id == id } ?: throw ExtensionNotFoundException(id)
 }

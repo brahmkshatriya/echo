@@ -363,4 +363,7 @@
     <string name="saved_to_x">Saved to %1$s</string>
     <string name="saved_to_playlists">Saved to playlists</string>
     <string name="selected_n">Selected %1$d</string>
+    <string name="adding_x">Adding %1$s</string>
+    <string name="moving_x">Moving %1$s</string>
+    <string name="removing_x">Removing %1$s</string>
 </resources>

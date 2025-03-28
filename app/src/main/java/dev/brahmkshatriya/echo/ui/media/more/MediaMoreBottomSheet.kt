@@ -53,14 +53,12 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         fun newInstance(
-            contId: Int,
             extensionId: String,
             item: EchoMediaItem,
             loaded: Boolean,
             fromPlayer: Boolean = false
         ) = MediaMoreBottomSheet().apply {
             arguments = Bundle().apply {
-                putInt("id", contId)
                 putString("extensionId", extensionId)
                 putSerialized("item", item)
                 putBoolean("loaded", loaded)
@@ -91,7 +89,6 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
     private val loadingAdapter by lazy { LoadingAdapter() }
 
     private val args by lazy { requireArguments() }
-    private val contId by lazy { args.getInt("id") }
     private val extensionId by lazy { args.getString("extensionId")!! }
     private val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
     private val loaded by lazy { args.getBoolean("loaded") }
@@ -326,10 +323,9 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
     private fun openItemFragment(extensionId: String?, item: EchoMediaItem?) {
         extensionId ?: return
         item ?: return
-        requireActivity().openFragment<MediaFragment>(
+        parentFragmentManager.fragments.reversed()[1].openFragment<MediaFragment>(
             null,
-            MediaFragment.getBundle(extensionId, item, loaded),
-            contId
+            MediaFragment.getBundle(extensionId, item, loaded)
         )
         dismiss()
         uiViewModel.collapsePlayer()

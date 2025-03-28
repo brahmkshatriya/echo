@@ -1,39 +1,30 @@
 package dev.brahmkshatriya.echo.ui.shelf.adapter
 
 import android.view.View
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.paging.PagingData
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.playlist.edit.search.EditPlaylistSearchClickListener
 import dev.brahmkshatriya.echo.ui.shelf.ShelfFragment
 import dev.brahmkshatriya.echo.ui.shelf.ShelfViewModel
-import dev.brahmkshatriya.echo.utils.ContextUtils.emit
-import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
-class ShelfClickListener(
+open class ShelfClickListener(
     private val fragmentManager: FragmentManager,
     private val fragmentContainerId: Int = R.id.navHostFragment,
     private val onClick: ((opened: Boolean) -> Unit)? = null
 ) : ShelfAdapter.Listener {
 
     val fragment get() = fragmentManager.findFragmentById(fragmentContainerId)!!
-
-    private fun todo() {
-        val fragment = fragment
-        val app by fragment.inject<App>()
-        fragment.emit(app.messageFlow, Message("Not yet implemented"))
-    }
 
     override fun onMoreClicked(extensionId: String?, shelf: Shelf.Lists<*>?, view: View) {
         val data = when (shelf) {
@@ -59,14 +50,6 @@ class ShelfClickListener(
         playerViewModel.setShuffle(true, changeCurrent = true)
     }
 
-    override fun onShelfSearchClicked(extensionId: String?, shelf: PagingData<Shelf>?, view: View) {
-        todo()
-    }
-
-    override fun onShelfSortClicked(extensionId: String?, shelf: PagingData<Shelf>?, view: View) {
-        todo()
-    }
-
     override fun onMediaItemClicked(extensionId: String?, item: EchoMediaItem?, it: View?) {
         extensionId ?: return
         item ?: return
@@ -77,7 +60,7 @@ class ShelfClickListener(
     override fun onMediaItemLongClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
         extensionId ?: return
         item ?: return
-        MediaMoreBottomSheet.newInstance(fragmentContainerId, extensionId, item, false)
+        MediaMoreBottomSheet.newInstance(extensionId, item, false)
             .show(fragmentManager, null)
     }
 
@@ -138,5 +121,15 @@ class ShelfClickListener(
         val track = list.getOrNull(index) ?: return
         val playerViewModel by fragment.activityViewModel<PlayerViewModel>()
         playerViewModel.addToNext(id, track.toMediaItem(), false)
+    }
+
+    companion object {
+        fun Fragment.getShelfListener(): ShelfClickListener {
+            val key = arguments?.getString("itemListener")
+            return when (key) {
+                "search" -> EditPlaylistSearchClickListener(parentFragmentManager)
+                else -> ShelfClickListener(requireActivity().supportFragmentManager)
+            }
+        }
     }
 }
