@@ -1,0 +1,73 @@
+name: nightly
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: $( echo ${{ github.event.head_commit.id }} | cut -c1-7 )
+      COMMIT: $( sed -E "s/(.*) <.*@.*>/\\1/g;t" <<< "${{ github.event.head_commit.message }}" | jq -Rsa . | tail -c +2 | head -c -2 )
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Cook KeyStore
+        run:  echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
+      
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: |
+          ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
+          -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=key0 \
+          -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
+          cp app/build/outputs/apk/release/app-release.apk app/build/${{ env.VERSION }}.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          path: app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload APK to Discord
+        shell: bash
+        env:
+          ROLE: ${{ secrets.DISCORD_PING_ROLE_ID }}
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          message=$(echo "<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n${{ env.COMMIT }}")
+          curl -F "payload_json={\"content\":\"${message}\"}" \
+          -F "echo_beta=@app/build/${{ env.VERSION }}.apk" \
+          ${{ env.WEBHOOK }}
+     
+      - name: Upload APK to Telegram
+        shell: bash
+        env:
+          BOT_ID: ${{ secrets.TELEGRAM_BOT_ID }}
+          CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+        run: |
+          regex='s/[\_\*\[\]\(\)\~\`\>\#\+\-\=\|\{\}\.\!]/\\&/g'
+          message=$(printf "*Nightly Release*\n${{ env.COMMIT }}" | sed -E "$regex")
+          curl -F "chat_id=${{ env.CHANNEL_ID }}" \
+          -F "message_thread_id=${{ env.THREAD_ID }}" \
+          -F "document=@app/build/${{ env.VERSION }}.apk" \
+          -F "caption=${message}" \
+          -F "parse_mode=MarkdownV2" \
+          https://api.telegram.org/bot${{ env.BOT_ID }}/sendDocument
