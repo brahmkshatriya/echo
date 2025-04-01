@@ -1,19 +1,10 @@
 package dev.brahmkshatriya.echo.download.exceptions
 
-import dev.brahmkshatriya.echo.download.db.models.MediaTaskEntity
-import dev.brahmkshatriya.echo.download.db.models.TrackDownloadTaskEntity
+import dev.brahmkshatriya.echo.download.db.models.DownloadEntity
+import dev.brahmkshatriya.echo.download.db.models.TaskType
 
-class DownloadException(
-    val trackEntity: TrackDownloadTaskEntity,
+data class DownloadException(
+    val type: TaskType,
+    val downloadEntity: DownloadEntity,
     override val cause: Throwable
-) : Exception() {
-    companion object {
-        fun Throwable.toDownloadException(
-            trackEntity: TrackDownloadTaskEntity,
-            mediaTaskEntity: MediaTaskEntity? = null
-        ) = DownloadException(
-            trackEntity,
-            mediaTaskEntity?.let { TaskException(it, this) } ?: this
-        )
-    }
-}
+) : Exception()

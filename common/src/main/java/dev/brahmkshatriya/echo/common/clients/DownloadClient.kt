@@ -1,10 +1,10 @@
 package dev.brahmkshatriya.echo.common.clients
 
-import dev.brahmkshatriya.echo.common.helpers.FileTask
 import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.Progress
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Track
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 
 /**
@@ -39,19 +39,6 @@ interface DownloadClient : ExtensionClient {
     val concurrentDownloads: Int
 
     /**
-     * Get the download folder for the given [context]'s track.
-     *
-     * @param context The context of the downloading track.
-     *
-     * @return The download folder.
-     *
-     * @see DownloadContext
-     * @see Track
-     * @see EchoMediaItem
-     */
-    suspend fun getDownloadDir(context: DownloadContext): File
-
-    /**
      * Which server to use for downloading.
      * use this to get the available servers.
      * ```
@@ -81,29 +68,29 @@ interface DownloadClient : ExtensionClient {
     /**
      * Download the given [source].
      *
+     * @param progressFlow The flow to emit the download progress.
      * @param context The context of the downloading track.
      * @param source The source to download.
-     * @param file The file to download the source to.
-     *
-     * @return The [FileTask] object.
-     *
-     * @see FileTask
-     * @see Streamable.Source
      */
-    suspend fun download(context: DownloadContext, source: Streamable.Source, file: File): FileTask
+    suspend fun download(
+        progressFlow: MutableStateFlow<Progress>,
+        context: DownloadContext,
+        source: Streamable.Source
+    ): File
 
     /**
      * Merge the given media [files] into a single file.
      * The old files should be deleted after merging.
      *
+     * @param progressFlow The flow to emit the merge progress.
      * @param context The context of the downloading track.
      * @param files The files to merge.
-     *
-     * @return The [FileTask] object.
-     *
-     * @see FileTask
      */
-    suspend fun merge(context: DownloadContext, files: List<File>, dir: File): FileTask
+    suspend fun merge(
+        progressFlow: MutableStateFlow<Progress>,
+        context: DownloadContext,
+        files: List<File>
+    ): File
 
     /**
      * Tag a file with the given track metadata
@@ -114,9 +101,10 @@ interface DownloadClient : ExtensionClient {
      *
      * @param context The extension that the track belongs to.
      * @param file The file to tag
-     * @return The task that will tag the file
-     *
-     * @see FileTask
      */
-    suspend fun tag(context: DownloadContext, file: File): FileTask
+    suspend fun tag(
+        progressFlow: MutableStateFlow<Progress>,
+        context: DownloadContext,
+        file: File
+    ): File
 }

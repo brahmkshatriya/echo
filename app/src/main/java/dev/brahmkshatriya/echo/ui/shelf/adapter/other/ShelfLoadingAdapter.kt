@@ -11,9 +11,9 @@ import dev.brahmkshatriya.echo.databinding.ItemShelfErrorBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfNotLoadingBinding
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
-import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.getFinalTitle
-import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.getMessage
-import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.openLoginException
+import dev.brahmkshatriya.echo.utils.ExceptionUtils.getFinalTitle
+import dev.brahmkshatriya.echo.utils.ExceptionUtils.getMessage
+import dev.brahmkshatriya.echo.utils.ExceptionUtils.openLoginException
 
 class ShelfLoadingAdapter(
     val loadingAdapter: (LayoutInflater, ViewGroup) -> ViewHolder,

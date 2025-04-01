@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.exceptions
+package dev.brahmkshatriya.echo.utils
 
 import android.content.Context
 import android.view.View
@@ -8,8 +8,8 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.download.exceptions.DownloadException
-import dev.brahmkshatriya.echo.download.exceptions.TaskCancelException
-import dev.brahmkshatriya.echo.download.exceptions.TaskException
+import dev.brahmkshatriya.echo.download.exceptions.DownloaderExtensionNotFoundException
+import dev.brahmkshatriya.echo.download.workers.BaseWorker.Companion.getTitle
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionLoaderException
@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.playback.exceptions.NoServersException
 import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
 import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
 import dev.brahmkshatriya.echo.ui.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginFragment
@@ -79,11 +80,12 @@ object ExceptionUtils {
         is NoServersException -> getString(R.string.no_servers_found)
         is NoSourceException -> getString(R.string.no_source_found)
 
-        is DownloadException ->
-            "\u2B07\uFE0F${throwable.trackEntity.track.title}: ${getFinalTitle(throwable.cause)}"
+        is DownloadException -> {
+            val title = getTitle(throwable.type, throwable.downloadEntity.track.title)
+            "${title}: ${getFinalTitle(throwable.cause)}"
+        }
 
-        is TaskException -> "${throwable.taskEntity.run { title ?: id }} - ${getFinalTitle(throwable.cause)}"
-        is TaskCancelException -> getString(R.string.task_cancelled)
+        is DownloaderExtensionNotFoundException -> getString(R.string.no_download_extension)
 
         else -> null
     }
@@ -115,8 +117,10 @@ object ExceptionUtils {
         """.trimIndent()
         }
 
-        is DownloadException -> "Track: ${throwable.trackEntity.toJson()}"
-        is TaskException -> "Task: ${throwable.taskEntity.toJson()}"
+        is DownloadException -> """
+            Type: ${throwable.type}
+            Track: ${throwable.downloadEntity.toJson()}
+        """.trimIndent()
 
         else -> null
     }
@@ -139,6 +143,15 @@ object ExceptionUtils {
 
     @Serializable
     data class Data(val title: String, val trace: String)
+
+    fun Throwable.toData(context: Context) = run {
+        val title = context.getFinalTitle(this) ?: context.getString(
+            R.string.error_x,
+            message ?: this::class.run { simpleName ?: java.name }
+        )
+        Data(title, context.getStackTrace(this))
+    }
+
 
     fun FragmentActivity.getMessage(throwable: Throwable, view: View?): Message {
         val title = getFinalTitle(throwable) ?: getString(

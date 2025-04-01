@@ -7,11 +7,11 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
-import dev.brahmkshatriya.echo.MainApplication.Companion.AMOLED_KEY
-import dev.brahmkshatriya.echo.MainApplication.Companion.COLOR_KEY
-import dev.brahmkshatriya.echo.MainApplication.Companion.CUSTOM_THEME_KEY
-import dev.brahmkshatriya.echo.MainApplication.Companion.THEME_KEY
-import dev.brahmkshatriya.echo.MainApplication.Companion.defaultColor
+import dev.brahmkshatriya.echo.MainActivity.Companion.AMOLED_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.COLOR_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.CUSTOM_THEME_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.THEME_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.defaultColor
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.SHOW_BACKGROUND
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.NAVBAR_GRADIENT

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.exceptions
+package dev.brahmkshatriya.echo.ui.common
 
 import android.app.Activity
 import android.os.Build
@@ -16,8 +16,9 @@ import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
-import dev.brahmkshatriya.echo.ui.exceptions.ExceptionUtils.getPasteLink
 import dev.brahmkshatriya.echo.utils.ContextUtils.copyToClipboard
+import dev.brahmkshatriya.echo.utils.ExceptionUtils
+import dev.brahmkshatriya.echo.utils.ExceptionUtils.getPasteLink
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition

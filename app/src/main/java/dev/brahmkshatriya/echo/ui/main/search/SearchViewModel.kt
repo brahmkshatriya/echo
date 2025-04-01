@@ -21,15 +21,19 @@ import kotlinx.coroutines.launch
 class SearchViewModel(
     app: App,
     extensionLoader: ExtensionLoader,
-    extensionId: String? = null
+    extensionId: Result<String>
 ) : FeedViewModel(app.throwFlow, extensionLoader) {
 
-    override val current = if (extensionId == null) super.current else {
-        MutableStateFlow<MusicExtension?>(null).also { state ->
-            val music = extensionLoader.extensions.music
-            viewModelScope.launch {
-                music.collectLatest {
-                    state.value = music.getExtension(extensionId)
+    override val current = run {
+        val id = extensionId.getOrNull()
+        if (id == null) super.current
+        else {
+            MutableStateFlow<MusicExtension?>(null).also { state ->
+                val music = extensionLoader.extensions.music
+                viewModelScope.launch {
+                    music.collectLatest {
+                        state.value = music.getExtension(id)
+                    }
                 }
             }
         }
@@ -68,5 +72,7 @@ class SearchViewModel(
         }
     }
 
-    init { init() }
+    init {
+        init()
+    }
 }

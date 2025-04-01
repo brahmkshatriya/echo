@@ -366,4 +366,10 @@
     <string name="adding_x">Adding %1$s</string>
     <string name="moving_x">Moving %1$s</string>
     <string name="removing_x">Removing %1$s</string>
+    <string name="no_download_extension">No download extension found, use code \"echodown\" to get it.</string>
+    <string name="nothing_to_download_in_x">Nothing to download in %1$s</string>
+    <string name="download_started">Download Started</string>
+    <string name="merging_x">Merging %1$s</string>
+    <string name="tagging_x">Tagging %1$s</string>
+    <string name="downloads_summary">All your downloads</string>
 </resources>

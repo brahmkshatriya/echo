@@ -1,12 +1,12 @@
 package dev.brahmkshatriya.echo
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
+import androidx.work.Configuration
+import androidx.work.DelegatingWorkerFactory
+import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -15,35 +15,41 @@ import coil3.disk.directory
 import coil3.memory.MemoryCache
 import coil3.request.allowHardware
 import coil3.request.crossfade
-import com.google.android.material.color.DynamicColors
-import com.google.android.material.color.DynamicColorsOptions
-import com.google.android.material.color.ThemeUtils
 import dev.brahmkshatriya.echo.di.DI
-import dev.brahmkshatriya.echo.download.Downloader
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.CoroutineUtils
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.workmanager.koin.workManagerFactory
+import org.koin.androidx.workmanager.factory.KoinWorkerFactory
 import org.koin.androix.startup.KoinStartup
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinConfiguration
+import java.util.concurrent.ThreadPoolExecutor
 
 @OptIn(KoinExperimentalAPI::class)
 class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory {
 
+    private val executor by inject<ThreadPoolExecutor>()
+
     override fun onKoinStartup() = koinConfiguration {
         androidContext(this@MainApplication)
-        workManagerFactory()
         modules(DI.appModule)
+
+        val factory = DelegatingWorkerFactory().apply {
+            addFactory(KoinWorkerFactory())
+        }
+        val conf = Configuration.Builder()
+            .setWorkerFactory(factory)
+            .setExecutor(executor)
+            .build()
+        WorkManager.initialize(koin.get(), conf)
     }
 
-    private val downloader by inject<Downloader>()
+    private val settings by inject<SharedPreferences>()
 
     override fun onCreate() {
         super.onCreate()
         CoroutineUtils.setDebug()
-        downloader.start()
+        applyLocale(settings)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {
@@ -65,45 +71,6 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
     }
 
     companion object {
-        const val THEME_KEY = "theme"
-        const val AMOLED_KEY = "amoled"
-        const val CUSTOM_THEME_KEY = "custom_theme"
-        const val COLOR_KEY = "color"
-
-        private var theme: Int? = null
-
-        @SuppressLint("RestrictedApi")
-        private val onAppliedCallback = DynamicColors.OnAppliedCallback {
-            val theme = theme ?: return@OnAppliedCallback
-            ThemeUtils.applyThemeOverlay(it, theme)
-        }
-
-        fun Context.defaultColor() =
-            ContextCompat.getColor(this, R.color.ic_launcher_background)
-
-        fun Context.isAmoled() = getSettings().getBoolean(AMOLED_KEY, false)
-
-        fun applyUiChanges(context: Context): DynamicColorsOptions {
-            val settings = context.getSettings()
-            val mode = when (settings.getString(THEME_KEY, "system")) {
-                "light" -> AppCompatDelegate.MODE_NIGHT_NO
-                "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            }
-            AppCompatDelegate.setDefaultNightMode(mode)
-
-            theme = if (settings.getBoolean(AMOLED_KEY, false)) R.style.Amoled else null
-
-            val custom = settings.getBoolean(CUSTOM_THEME_KEY, true)
-            val color = settings.getInt(COLOR_KEY, context.defaultColor())
-            val customColor = if (custom) color else null
-
-            val builder = DynamicColorsOptions.Builder()
-            builder.setOnAppliedCallback(onAppliedCallback)
-            customColor?.let { builder.setContentBasedSource(it) }
-            return builder.build()
-        }
-
         fun applyLocale(sharedPref: SharedPreferences) {
             val value = sharedPref.getString("language", "system") ?: "system"
             val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()

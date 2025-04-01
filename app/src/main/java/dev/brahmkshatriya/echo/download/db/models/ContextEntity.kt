@@ -6,7 +6,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 
 @Entity
-data class EchoMediaItemEntity(
+data class ContextEntity(
     @PrimaryKey(true)
     val id: Long,
     val data: String,

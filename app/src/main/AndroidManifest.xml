@@ -134,7 +134,7 @@
             tools:node="merge" />
 
         <receiver
-            android:name=".download.notifications.NotificationReceiver"
+            android:name=".old.notifications.NotificationReceiver"
             android:exported="false" />
 
         <meta-data

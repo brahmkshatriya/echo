@@ -28,6 +28,7 @@ import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.media.adapter.GenericItemAdapter
@@ -283,7 +284,8 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
         client: ExtensionClient?, item: EchoMediaItem
     ) = if (item.extras[EXTENSION_ID] != OfflineExtension.metadata.id && client is TrackClient)
         resource(R.drawable.ic_download_for_offline, R.string.download) {
-//            downloadViewModel.addToDownload(requireActivity(), clientId, item)
+            val downloadViewModel by activityViewModel<DownloadViewModel>()
+            downloadViewModel.addToDownload(requireActivity(), extensionId, item)
         }
     else null
 

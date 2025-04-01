@@ -8,6 +8,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.download.DownloadFragment
 import dev.brahmkshatriya.echo.ui.extensions.manage.ManageExtensionsFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.prefs.TransitionPreference
@@ -53,6 +54,13 @@ class SettingsFragment : BaseSettingsFragment() {
             }
 
             TransitionPreference(context).add {
+                title = getString(R.string.downloads)
+                key = "downloads"
+                summary = getString(R.string.downloads_summary)
+                icon = AppCompatResources.getDrawable(context, R.drawable.ic_download_for_offline)
+            }
+
+            TransitionPreference(context).add {
                 title = getString(R.string.misc)
                 key = "misc"
                 summary = getString(R.string.misc_summary)
@@ -67,6 +75,7 @@ class SettingsFragment : BaseSettingsFragment() {
                 "audio" -> parentFragment?.openFragment<AudioFragment>(view)
                 "manage_extensions" -> parentFragment?.openFragment<ManageExtensionsFragment>(view)
                 "look" -> parentFragment?.openFragment<LookFragment>(view)
+                "downloads" -> parentFragment?.openFragment<DownloadFragment>(view)
                 else -> return false
             }
             return true

@@ -35,7 +35,7 @@ class SearchFragment : Fragment() {
     private var binding by autoCleared<FragmentSearchBinding>()
     private val uiViewModel by activityViewModel<UiViewModel>()
 
-    private val extensionId by lazy { requireArguments().getString("extensionId") }
+    private val extensionId by lazy { arguments?.getString("extensionId") }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -46,7 +46,7 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val viewModel by requireParentFragment().viewModel<SearchViewModel> {
-            parametersOf(extensionId)
+            parametersOf(runCatching { extensionId!! })
         }
 
         setupTransition(view)
