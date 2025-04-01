@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.extensions
 
 import android.content.Context
-import android.os.Build
 import androidx.fragment.app.FragmentActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
@@ -11,21 +10,20 @@ import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.with
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.cleanupTempApks
-import dev.brahmkshatriya.echo.extensions.InstallationUtils.getTempApkDir
 import dev.brahmkshatriya.echo.extensions.exceptions.InvalidExtensionListException
 import dev.brahmkshatriya.echo.extensions.exceptions.UpdateException
+import dev.brahmkshatriya.echo.utils.AppUpdater
+import dev.brahmkshatriya.echo.utils.AppUpdater.downloadUpdate
+import dev.brahmkshatriya.echo.utils.AppUpdater.updateApp
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okio.use
-import java.io.File
 
 class Updater(
     extensionLoader: ExtensionLoader
@@ -51,6 +49,7 @@ class Updater(
         activity.saveToCache("last_update_check", System.currentTimeMillis())
         activity.cleanupTempApks()
         messageFlow.emit(Message(activity.getString(R.string.checking_for_extension_updates)))
+        activity.updateApp()
         extensions.all.await().forEach {
             updateExtension(activity, it)
         }
@@ -69,11 +68,11 @@ class Updater(
 
         messageFlow.emit(
             Message(
-                activity.getString(R.string.downloading_update_for_extension, extension.name)
+                activity.getString(R.string.downloading_update_for_x, extension.name)
             )
         )
         val file = extension.with(throwableFlow) {
-            downloadUpdate(activity, url, client).getOrThrow()
+            runIOCatching { downloadUpdate(activity, url, client) }.getOrThrow()
         } ?: return
         val installAsApk = extension.metadata.importType == ImportType.App
         val successful =
@@ -88,7 +87,7 @@ class Updater(
         )
     }
 
-    private suspend fun <T> runIOCatching(
+    suspend fun <T> runIOCatching(
         block: suspend () -> T
     ) = withContext(Dispatchers.IO) {
         runCatching {
@@ -96,18 +95,6 @@ class Updater(
         }.getOrElse {
             return@withContext Result.failure<T>(UpdateException(it))
         }.let { Result.success(it) }
-    }
-
-    suspend fun downloadUpdate(
-        context: Context,
-        url: String,
-        client: OkHttpClient
-    ) = runIOCatching {
-        val request = Request.Builder().url(url).build()
-        val res = client.newCall(request).await().body.byteStream()
-        val file = File.createTempFile("temp", ".apk", context.getTempApkDir())
-        res.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
-        file
     }
 
     suspend fun getUpdateFileUrl(
@@ -123,50 +110,10 @@ class Updater(
         }
     }
 
-
-    private val githubRegex = Regex("https://api\\.github\\.com/repos/([^/]*)/([^/]*)/")
     private suspend fun getGithubUpdateUrl(
-        currentVersion: String,
-        updateUrl: String,
-        client: OkHttpClient
-    ) = runIOCatching {
-        val (user, repo) = githubRegex.find(updateUrl)?.destructured
-            ?: throw Exception("Invalid Github URL")
-        val url = "https://api.github.com/repos/$user/$repo/releases/latest"
-        val request = Request.Builder().url(url).build()
-        val res = runCatching {
-            client.newCall(request).await().use {
-                it.body.string().toData<GithubResponse>()
-            }
-        }.getOrElse {
-            throw Exception("Failed to fetch latest release", it)
-        }
-        if (res.tagName != currentVersion) {
-            res.assets.sortedByDescending {
-                it.name.contains(Build.SUPPORTED_ABIS.first())
-            }.firstOrNull {
-                it.name.endsWith(".eapk")
-            }?.browserDownloadUrl ?: throw Exception("No EApk assets found")
-        } else {
-            null
-        }
-    }
+        version: String, updateUrl: String, client: OkHttpClient
+    ) = runIOCatching { AppUpdater.getGithubUpdateUrl(version, updateUrl, client) }
 
-    @Serializable
-    data class GithubResponse(
-        @SerialName("tag_name")
-        val tagName: String,
-        @SerialName("created_at")
-        val createdAt: String,
-        val assets: List<Asset>
-    )
-
-    @Serializable
-    data class Asset(
-        val name: String,
-        @SerialName("browser_download_url")
-        val browserDownloadUrl: String
-    )
 
     suspend fun getExtensionList(
         link: String,

@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.extensions.plugger.impl.app.ApkManifestParser
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionOpenerActivity
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionInstallerBottomSheet
+import dev.brahmkshatriya.echo.utils.AppUpdater.downloadUpdate
 import dev.brahmkshatriya.echo.utils.PermsUtils.registerActivityResultLauncher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -150,19 +151,21 @@ object InstallationUtils {
         val updater = viewModel.extensionLoader.updater
         val app = viewModel.app
         extensions.forEach { extension ->
-            val url = updater.getUpdateFileUrl("", extension.updateUrl, updater.client).getOrElse {
-                app.throwFlow.emit(it)
-                null
-            } ?: return@forEach
+            val url = updater.getUpdateFileUrl("", extension.updateUrl, updater.client)
+                .getOrElse {
+                    app.throwFlow.emit(it)
+                    null
+                } ?: return@forEach
             app.messageFlow.emit(
                 Message(
-                    app.context.getString(R.string.downloading_update_for_extension, extension.name)
+                    app.context.getString(R.string.downloading_update_for_x, extension.name)
                 )
             )
-            val file = updater.downloadUpdate(app.context, url, updater.client).getOrElse {
-                app.throwFlow.emit(it)
-                return@forEach
-            }
+            val file = updater.runIOCatching { downloadUpdate(app.context, url, updater.client) }
+                .getOrElse {
+                    app.throwFlow.emit(it)
+                    return@forEach
+                }
             viewModel.installExtension.emit(file.toUri().toString())
         }
     }
