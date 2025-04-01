@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <style name="CollapsingBar" parent="TopCollapsingBar">
-        <item name="layout_scrollFlags">scroll|exitUntilCollapsed</item>
-    </style>
-</resources>

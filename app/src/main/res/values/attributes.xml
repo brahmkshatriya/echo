@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <attr name="navBackground" format="reference|color" />
-    <attr name="echoBackground" format="reference|color" />
-    <attr name="itemCoverSize" format="dimension" />
-    <attr name="itemContainerCorner" format="dimension" />
-    <attr name="itemCorner" format="dimension" />
-</resources>
