@@ -215,12 +215,12 @@
     <plurals name="number_hour">
         <item quantity="one">%1$d Hora</item>
         <item quantity="many">%1$d Horas</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <plurals name="number_min">
         <item quantity="one">%1$d Minuto</item>
         <item quantity="many">%1$d Minutos</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="servers">Servidores</string>
     <string name="sources">Fuentes</string>
@@ -281,7 +281,7 @@
     <plurals name="n_songs">
         <item quantity="one">%1$d Canción</item>
         <item quantity="many">%1$d Canciones</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="shuffling_x">Reproduciendo al azar %1$s</string>
     <string name="copying_the_error">Copiando el error</string>
