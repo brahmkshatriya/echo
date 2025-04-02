@@ -26,7 +26,7 @@
     <string name="video_permission_summary">Akses video lokal</string>
     <string name="x_radio">%1$s radio</string>
     <string name="read_storage">Baca penyimpanan</string>
-    <string name="write_storage">Rubah penyimpanan</string>
+    <string name="write_storage">Ubah penyimpanan</string>
     <string name="cached_songs">Lagu tercache</string>
     <string name="refresh_library_on_reload">Segarkan library saat mulai ulang</string>
     <string name="notifications_permission_summary">Notifikasi musik dan unduhan</string>
