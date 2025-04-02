@@ -1,2 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="audio_permission_summary">로컬 음악 라이브러리에 액세스</string>
+    <string name="okay">확인</string>
+    <string name="back">뒤로가기</string>
+    <string name="cancel">취소</string>
+    <string name="read_storage">저장소 불러오기</string>
+    <string name="x_permission_required">%1$s권한이 필요합니다</string>
+    <string name="audio">오디오</string>
+    <string name="video">동영상</string>
+    <string name="write_storage">저장소 사용하기</string>
+    <string name="x_was_not_granted">%1$s가 부여되지 않았습니다</string>
+    <string name="video_permission_summary">로컬 동영상 라이브러리에 액세스</string>
+</resources>
