@@ -23,4 +23,19 @@
     <string name="x_radio">%1$s라디오</string>
     <string name="cached_songs">캐싱된 노래</string>
     <string name="cache_playlist_warning">실험적 기능. 듣기 이외의 모든 기능은 지원되지 않습니다.</string>
+    <string name="blacklist_folders_summary">라이브러리에서 제외할 폴더</string>
+    <string name="refresh_library_on_reload">새로고침시 라이브러리 다시 불러오기</string>
+    <string name="blacklist_folders">블랙리스트 폴더</string>
+    <string name="blacklist_folder_keywords">블랙리스트 폴더 키워드</string>
+    <string name="show_tab_summary">확장 프로그램의 탭을 카테고리로 표시합니다</string>
+    <string name="blacklist_folder_keywords_summary">블랙리스트 폴더의 키워드는 쉼표로 구분</string>
+    <string name="duration_filter_summary">지속 시간(초)이 다음 값보다 짧은 오디오 파일을 필터링합니다</string>
+    <string name="show_tabs">탭 표시</string>
+    <string name="duration_filter">기간 필터</string>
+    <string name="refresh_library_on_reload_summary">피드가 로드될 때마다 장치를 스캔합니다</string>
+    <string name="playlists">재생목록</string>
+    <string name="saved">저장됨</string>
+    <string name="tabs">탭</string>
+    <string name="unified_liked_playlist_summary">다양한 확장 프로그램에서 좋아하는 트랙</string>
+    <string name="n_items">%1$d 항목</string>
 </resources>
