@@ -23,7 +23,7 @@
     <string name="write_storage_permission_summary">Para crear y editar listas de reproducción locales</string>
     <string name="notifications">Notificaciones</string>
     <string name="notifications_permission_summary">Para mostrar notificaciones de descargas y música</string>
-    <string name="remove">Eliminar</string>
+    <string name="remove">Quitar</string>
     <string name="more_by_x">Más de %1$s</string>
     <string name="songs">Canciones</string>
     <string name="albums">Álbumes</string>
@@ -85,7 +85,7 @@
     <string name="extensions">Extensiones</string>
     <string name="manage_extensions">Administrar Extensiones</string>
     <string name="choose_a_color">Elegir un color</string>
-    <string name="random">Aleatorio</string>
+    <string name="random">Al azar</string>
     <string name="add">Agregar</string>
     <string name="loading">Cargando…</string>
     <string name="settings">Ajustes</string>
@@ -138,7 +138,7 @@
     <string name="extension_installed_successfully">Extensión instalada correctamente.</string>
     <string name="extension_uninstalled_successfully">Extensión desinstalada correctamente.</string>
     <string name="allow_opening_links">Permitir abrir enlaces</string>
-    <string name="open_links_instruction">Para permitir abrir estos enlaces, necesitas: - Desplazarte hacia abajo y hacer clic en Abrir por defecto - Hacer clic en + Agregar Enlace</string>
+    <string name="open_links_instruction">Para permitir abrir estos enlaces, necesitas:\n- Desplazarte hacia abajo y hacer clic en \"Abrir por Defecto\"\n- Hacer clic en \"+ Agregar Enlace\"</string>
     <string name="extension_requires_following_extensions">%1$s requiere %2$s</string>
     <string name="downloading_update_for_x">Descargando actualización para %1$s</string>
     <string name="extension_installed">%1$s (Instalada)</string>
@@ -215,12 +215,12 @@
     <plurals name="number_hour">
         <item quantity="one">%1$d Hora</item>
         <item quantity="many">%1$d Horas</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d Horas</item>
     </plurals>
     <plurals name="number_min">
         <item quantity="one">%1$d Minuto</item>
         <item quantity="many">%1$d Minutos</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d Minutos</item>
     </plurals>
     <string name="servers">Servidores</string>
     <string name="sources">Fuentes</string>
@@ -281,7 +281,7 @@
     <plurals name="n_songs">
         <item quantity="one">%1$d Canción</item>
         <item quantity="many">%1$d Canciones</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d Canciones</item>
     </plurals>
     <string name="shuffling_x">Reproduciendo al azar %1$s</string>
     <string name="copying_the_error">Copiando el error</string>
@@ -311,14 +311,14 @@
     <string name="x_created">%1$s creado</string>
     <string name="deleting_x">Eliminando %1$s</string>
     <string name="deleted_x">Eliminado %1$s</string>
-    <string name="loading_x">Cargando %1$s</string>
+    <string name="loading_x">Cargando %1s</string>
     <string name="saving_x">Guardando %1$s</string>
     <string name="saved_to_x">Guardado en %1$s</string>
     <string name="saved_to_playlists">Guardado en listas</string>
     <string name="selected_n">Seleccionado %1$d</string>
     <string name="adding_x">Agregando %1$s</string>
     <string name="moving_x">Moviendo %1$s</string>
-    <string name="removing_x">Eliminando %1$s</string>
+    <string name="removing_x">Borrando %1$s</string>
     <string name="no_download_extension">No se encontró extensión de descarga, usa el código echodown para obtenerla.</string>
     <string name="nothing_to_download_in_x">Nada para descargar en %1$s</string>
     <string name="download_started">Descarga Iniciada</string>
