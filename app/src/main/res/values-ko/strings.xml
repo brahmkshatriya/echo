@@ -11,4 +11,16 @@
     <string name="write_storage">저장소 사용하기</string>
     <string name="x_was_not_granted">%1$s가 부여되지 않았습니다</string>
     <string name="video_permission_summary">로컬 동영상 라이브러리에 액세스</string>
+    <string name="notifications_permission_summary">다운로드 및 음악에 대한 알림을 표시</string>
+    <string name="recently_added">최근 추가됨</string>
+    <string name="artists">아티스트</string>
+    <string name="notifications">알림</string>
+    <string name="write_storage_permission_summary">로컬 재생목록을 만들고 편집하기</string>
+    <string name="remove">제거</string>
+    <string name="more_by_x">%1$s만큼 증가</string>
+    <string name="songs">곡</string>
+    <string name="albums">앨범</string>
+    <string name="x_radio">%1$s라디오</string>
+    <string name="cached_songs">캐싱된 노래</string>
+    <string name="cache_playlist_warning">실험적 기능. 듣기 이외의 모든 기능은 지원되지 않습니다.</string>
 </resources>
