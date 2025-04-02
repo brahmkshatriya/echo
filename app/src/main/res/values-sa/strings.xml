@@ -318,9 +318,10 @@
     </plurals>
     <string name="sources">स्रोताः</string>
     <string name="backgrounds">पृष्ठभूमयः</string>
-    <string name="subtitles">उपशीर्षक</string>
+    <string name="subtitles">उपशीर्षकानि</string>
     <string name="off">दूरे</string>
     <string name="not_loading">लोड् न कुर्वन् अस्ति</string>
     <string name="saving_x_to_library">%1$s ग्रन्थालये संरक्ष्यमाणम्</string>
     <string name="more_brain_capacity_summary">एतत् सक्रियं कुर्वन्, ध्वनिलाघवं परिहार्यते तथा च शक्ति उपभोगः वर्धते (ध्वनिअफलोडिंग् निष्क्रियं भवति) ।</string>
+    <string name="downloading_update_for_x">%1$s कृते अद्यतनं डाउनलोड् करणम्</string>
 </resources>
