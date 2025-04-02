@@ -323,4 +323,5 @@
     <string name="downloads_summary">आपके सभी डाउनलोड</string>
     <string name="deleting_x">%1$s मिटा रहे हैं</string>
     <string name="loading_x">%1s लोड हो रहा है</string>
+    <string name="downloading_update_for_x">%1$s के लिए अपडेट डाउनलोड किया जा रहा है</string>
 </resources>
