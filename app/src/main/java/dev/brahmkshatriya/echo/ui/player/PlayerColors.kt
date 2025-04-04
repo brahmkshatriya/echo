@@ -43,7 +43,7 @@ data class PlayerColors(
                 this, R.attr.navBackground, 0
             )
             val primary = MaterialColors.getColor(
-                this, com.google.android.material.R.attr.colorPrimary, 0
+                this, androidx.appcompat.R.attr.colorPrimary, 0
             )
             val onSurface = MaterialColors.getColor(
                 this, com.google.android.material.R.attr.colorOnSurface, 0

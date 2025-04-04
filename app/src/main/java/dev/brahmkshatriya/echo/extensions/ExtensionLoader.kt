@@ -6,6 +6,7 @@ import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
+import dev.brahmkshatriya.echo.extensions.builtin.test.DownloadExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.extensions.plugger.ExtensionsRepo
@@ -30,13 +31,12 @@ class ExtensionLoader(
     val extensions = Extensions(app.settings, scope, app.throwFlow)
     val updater = Updater(this)
 
-    val offline by lazy { OfflineExtension(app.context, cache) }
     private val extensionRepo = ExtensionsRepo(
         this,
         UnifiedExtension.metadata to Injectable { UnifiedExtension(app.context) },
-        OfflineExtension.metadata to Injectable { offline },
+        OfflineExtension.metadata to Injectable { OfflineExtension(app.context, cache) },
 //        TestExtension.metadata to Injectable { TestExtension() },
-//        DownloadExtension.metadata to Injectable { DownloadExtension(app.context) }
+        DownloadExtension.metadata to Injectable { DownloadExtension(app.context) }
     )
 
     private var job: Job? = null

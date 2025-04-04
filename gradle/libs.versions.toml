@@ -4,8 +4,8 @@ kotlin = "2.1.0"
 
 androidx-paging = "3.3.6"
 room = "2.6.1"
-koinAndroid = "4.1.0-Beta5"
-media3 = "1.5.1"
+koinAndroid = "4.1.0-Beta6"
+media3 = "1.6.0"
 coil = "3.0.0-rc01"
 
 [libraries]
@@ -27,7 +27,7 @@ paging-common = { module = "androidx.paging:paging-common-ktx", version.ref = "a
 paging-runtime = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging" }
 
 
-material = { group = "com.google.android.material", name = "material", version = "1.13.0-alpha11" }
+material = { group = "com.google.android.material", name = "material", version = "1.13.0-alpha12" }
 
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

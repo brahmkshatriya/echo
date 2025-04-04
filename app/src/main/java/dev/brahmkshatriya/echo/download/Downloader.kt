@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -75,7 +76,6 @@ class Downloader(
 
     val workManager by lazy { WorkManager.getInstance(app.context) }
     private fun startDownload(id: Long) {
-
         val request = OneTimeWorkRequestBuilder<LoadingWorker>()
             .setInputData(createInputData(id))
             .addTag(id.toString())
@@ -102,6 +102,33 @@ class Downloader(
                 }
                 media
             }.getOrThrow()
+        }
+    }
+
+    fun cancel(trackId: Long) {
+        workManager.cancelUniqueWork(trackId.toString())
+        scope.launch {
+            val entity = dao.getDownloadEntity(trackId) ?: return@launch
+            dao.deleteDownloadEntity(entity)
+            servers.remove(trackId)
+            mutexes.remove(trackId)
+        }
+    }
+
+    fun restart(trackId: Long) {
+        workManager.cancelUniqueWork(trackId.toString())
+        startDownload(trackId)
+    }
+
+    fun cancelAll() {
+        scope.launch {
+            val downloads = dao.getDownloadsFlow().first().filter { it.finalFile == null }
+            downloads.forEach { download ->
+                workManager.cancelUniqueWork(download.id.toString())
+                dao.deleteDownloadEntity(download)
+                servers.remove(download.id)
+                mutexes.remove(download.id)
+            }
         }
     }
 

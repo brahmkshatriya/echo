@@ -71,6 +71,7 @@ class UiViewModel(
         }
     }
 
+    var currentAppColor: Int? = null
     val navigation = MutableStateFlow(0)
     val navigationReselected = MutableSharedFlow<Int>()
     val navIds = listOf(
@@ -135,6 +136,7 @@ class UiViewModel(
     val playerBgVisible = MutableStateFlow(false)
     private fun getState() =
         if (playerState.current.value != null) STATE_COLLAPSED else STATE_HIDDEN
+
     val playerSheetState = MutableStateFlow(getState())
     val playerSheetOffset = MutableStateFlow(0f)
     val moreSheetState = MutableStateFlow(STATE_COLLAPSED)

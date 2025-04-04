@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.SHOW_BACKGROUND
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.DYNAMIC_PLAYER
+import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.prefs.ColorListPreference
 import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
@@ -65,7 +66,7 @@ class LookFragment : BaseSettingsFragment() {
                     summary = getString(R.string.custom_theme_color_summary)
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
-                    setDefaultValue(false)
+                    setDefaultValue(true)
                     onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, it ->
                         screen.findPreference<Preference>(COLOR_KEY)?.isEnabled = it as Boolean
                         true
@@ -117,6 +118,16 @@ class LookFragment : BaseSettingsFragment() {
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(true)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = PLAYER_COLOR
+                    title = getString(R.string.apply_player_color_to_app)
+                    summary = getString(R.string.apply_player_color_to_app_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
                     addPreference(this)
                 }
 

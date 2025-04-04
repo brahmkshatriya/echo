@@ -1,32 +1,86 @@
 package dev.brahmkshatriya.echo.ui.download
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Progress
 import dev.brahmkshatriya.echo.databinding.ItemDownloadBinding
+import dev.brahmkshatriya.echo.databinding.ItemDownloadTaskBinding
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.ContextEntity
 import dev.brahmkshatriya.echo.download.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.download.db.models.TaskType
+import dev.brahmkshatriya.echo.download.workers.BaseWorker.Companion.getTitle
+import dev.brahmkshatriya.echo.utils.ExceptionUtils
+import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 
-class DownloadsAdapter :
-    ListAdapter<DownloadsAdapter.Item, DownloadsAdapter.ViewHolder>(DiffCallback) {
+class DownloadsAdapter(
+    val listener: Listener
+) : ListAdapter<DownloadsAdapter.Item, DownloadsAdapter.ViewHolder>(DiffCallback) {
 
-    inner class ViewHolder(private val binding: ItemDownloadBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Item) {
-            when (item) {
-                is Download -> {
-                    binding.title.text = item.downloadEntity.track.title
-                    binding.subtitle.text = item.context?.mediaItem?.title
+    interface Listener {
+        fun onExceptionClicked(data: ExceptionUtils.Data)
+        fun onCancel(trackId: Long)
+        fun onRestart(trackId: Long)
+    }
+
+    sealed class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    inner class DownloadViewHolder(
+        private val binding: ItemDownloadBinding
+    ) : ViewHolder(binding.root) {
+        init {
+            binding.imageView.clipToOutline = true
+        }
+
+        fun bind(item: Download) {
+            val entity = item.downloadEntity
+            binding.apply {
+                title.text = entity.track.title
+                entity.track.cover.loadInto(imageView, R.drawable.art_music)
+                item.extension?.metadata?.icon?.loadAsCircle(
+                    extensionIcon, R.drawable.ic_extension
+                ) {
+                    extensionIcon.setImageDrawable(it)
+                }
+                val sub = entity.exception?.title ?: item.context?.mediaItem?.title
+                subtitle.text = sub
+                subtitle.isVisible = !sub.isNullOrEmpty()
+                remove.setOnClickListener {
+                    listener.onCancel(entity.id)
                 }
 
-                is Task -> {
-                    binding.title.text = item.taskType.name
-                    binding.subtitle.text = item.progress.toString()
+                retry.isVisible = entity.exception != null
+                retry.setOnClickListener {
+                    listener.onRestart(entity.id)
+                }
+                root.setOnClickListener {
+                    val data = entity.exception ?: return@setOnClickListener
+                    listener.onExceptionClicked(data)
+                }
+            }
+        }
+    }
+
+    inner class TaskViewHolder(
+        private val binding: ItemDownloadTaskBinding
+    ) : ViewHolder(binding.root) {
+
+        fun bind(item: Task) {
+            binding.apply {
+                progressBar.isIndeterminate = item.progress.size == 0L
+                progressBar.max = item.progress.size.toInt()
+                progressBar.progress = item.progress.progress.toInt()
+                subtitle.text = item.progress.toString()
+                title.text = root.context.run {
+                    getTitle(item.taskType, getString(R.string.download))
                 }
             }
         }
@@ -50,23 +104,58 @@ class DownloadsAdapter :
     }
 
     sealed interface Item
-    data class Download(val context: ContextEntity?, val downloadEntity: DownloadEntity) : Item
+    data class Download(
+        val context: ContextEntity?,
+        val downloadEntity: DownloadEntity,
+        val extension: Extension<*>?
+    ) : Item
+
     data class Task(val taskType: TaskType, val progress: Progress, val id: Long) : Item
+
+
+    override fun getItemViewType(position: Int): Int {
+        return when (getItem(position)) {
+            is Download -> 0
+            is Task -> 1
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemDownloadBinding.inflate(inflater, parent, false)
-        return ViewHolder(binding)
+        return when (viewType) {
+            0 -> DownloadViewHolder(
+                ItemDownloadBinding.inflate(inflater, parent, false)
+            )
+
+            1 -> TaskViewHolder(
+                ItemDownloadTaskBinding.inflate(inflater, parent, false)
+            )
+
+            else -> throw IllegalArgumentException("Invalid view type")
+        }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        when (holder) {
+            is DownloadViewHolder -> {
+                val item = getItem(position) as Download
+                holder.bind(item)
+            }
+
+            is TaskViewHolder -> {
+                val item = getItem(position) as Task
+                holder.bind(item)
+            }
+        }
     }
 
     companion object {
-        fun List<Downloader.Info>.toItems() = flatMap { info ->
+        fun List<Downloader.Info>.toItems(extensions: List<Extension<*>>) = filter {
+            it.download.finalFile == null
+        }.flatMap { info ->
             val download = info.download
-            listOf(Download(info.context, download)) + info.workers.map {
+            val extension = extensions.find { it.id == download.extensionId }
+            listOf(Download(info.context, download, extension)) + info.workers.map {
                 Task(it.first, it.second, download.id)
             }
         }

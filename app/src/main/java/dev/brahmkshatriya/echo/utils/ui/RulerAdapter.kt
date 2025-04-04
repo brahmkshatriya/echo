@@ -98,7 +98,7 @@ class RulerAdapter(
         }
 
         private val selectedColor = MaterialColors.getColor(
-            itemView, R.attr.colorPrimary, 0
+            itemView, androidx.appcompat.R.attr.colorPrimary, 0
         )
 
         private val unselectedColor = MaterialColors.getColor(

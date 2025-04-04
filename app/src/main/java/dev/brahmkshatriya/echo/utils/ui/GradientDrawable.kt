@@ -49,7 +49,7 @@ object GradientDrawable {
     private const val INVERTED = 1f - RATIO
     fun createBg(view: View, color: Int): Drawable {
         val echoBackgroundColor = MaterialColors.getColor(view, R.attr.echoBackground)
-        val primary = MaterialColors.getColor(view, com.google.android.material.R.attr.colorPrimary)
+        val primary = MaterialColors.getColor(view, androidx.appcompat.R.attr.colorPrimary)
         val harmonized = MaterialColors.harmonize(color, primary)
         return PaintDrawable().apply {
             setShape(RectShape())

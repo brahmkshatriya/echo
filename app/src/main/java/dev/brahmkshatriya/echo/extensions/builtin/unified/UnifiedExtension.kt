@@ -124,7 +124,7 @@ class UnifiedExtension(
             }
         }
 
-        private fun Shelf.Item.withExtensionId(id: String) = copy(
+        fun Shelf.Item.withExtensionId(id: String) = copy(
             media = media.withExtensionId(id)
         )
 

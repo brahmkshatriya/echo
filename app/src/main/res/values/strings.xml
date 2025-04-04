@@ -373,4 +373,7 @@
     <string name="merging_x">Merging %1$s</string>
     <string name="tagging_x">Tagging %1$s</string>
     <string name="downloads_summary">All your downloads</string>
+
+    <string name="apply_player_color_to_app">Apply Player Color to the Entire App</string>
+    <string name="apply_player_color_to_app_summary">LAG ALERT!!!</string>
 </resources>

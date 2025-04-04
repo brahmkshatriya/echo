@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.download.db
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
@@ -27,4 +28,7 @@ interface DownloadDao {
 
     @Query("SELECT * FROM ContextEntity")
     fun getContextFlow(): Flow<List<ContextEntity>>
+
+    @Delete
+    fun deleteDownloadEntity(download: DownloadEntity)
 }

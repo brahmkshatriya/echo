@@ -1,28 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="8dp"
     android:gravity="center_vertical"
     android:minHeight="44sp"
-    android:orientation="vertical"
-    android:paddingHorizontal="16dp"
+    android:orientation="horizontal"
     android:paddingVertical="8dp">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="?attr/colorOnSurface"
-        tools:text="Title" />
+    <ImageView
+        android:id="@+id/extensionIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_margin="16dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_extension" />
 
-    <TextView
-        android:id="@+id/subtitle"
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/rounded_rectangle_cover"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="Title" />
+
+        <TextView
+            android:id="@+id/subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.66"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            tools:text="Summary" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/retry"
+        style="?attr/materialIconButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:alpha="0.66"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        tools:text="Summary" />
+        android:contentDescription="@string/remove"
+        android:padding="8dp"
+        app:icon="@drawable/ic_refresh"
+        app:iconSize="24dp"
+        app:iconTint="?colorOnSurface" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/remove"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/remove"
+        android:padding="8dp"
+        app:icon="@drawable/ic_close"
+        app:iconSize="24dp"
+        app:iconTint="?colorOnSurface" />
 
 </LinearLayout>

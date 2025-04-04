@@ -85,7 +85,7 @@ class MainFragment : Fragment() {
                 if (isGradient) appBar.setBackgroundColor(Color.TRANSPARENT)
                 else appBar.background = defaultBg
                 val color = if (isGradient) it ?: MaterialColors.getColor(
-                    view, com.google.android.material.R.attr.colorPrimary
+                    view, androidx.appcompat.R.attr.colorPrimary
                 ) else MaterialColors.getColor(view, R.attr.echoBackground)
                 view.background = GradientDrawable.createBg(view, color)
             }

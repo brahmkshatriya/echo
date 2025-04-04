@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.setupSnackBar
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.configureExtensionsUpdater
 import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment
+import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ExceptionUtils.setupExceptionHandler
 import dev.brahmkshatriya.echo.utils.PermsUtils.checkAppPermissions
@@ -37,7 +38,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DynamicColors.applyToActivityIfAvailable(this, applyUiChanges(this))
+        DynamicColors.applyToActivityIfAvailable(
+            this,
+            applyUiChanges(this, uiViewModel)
+        )
 
         setContentView(binding.root)
 
@@ -79,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
         fun Context.isAmoled() = getSettings().getBoolean(AMOLED_KEY, false)
 
-        fun applyUiChanges(context: Context): DynamicColorsOptions {
+        fun applyUiChanges(context: Context, uiViewModel: UiViewModel): DynamicColorsOptions {
             val settings = context.getSettings()
             val mode = when (settings.getString(THEME_KEY, "system")) {
                 "light" -> AppCompatDelegate.MODE_NIGHT_NO
@@ -91,12 +95,17 @@ class MainActivity : AppCompatActivity() {
             theme = if (settings.getBoolean(AMOLED_KEY, false)) R.style.Amoled else null
 
             val custom = settings.getBoolean(CUSTOM_THEME_KEY, true)
-            val color = settings.getInt(COLOR_KEY, context.defaultColor())
-            val customColor = if (custom) color else null
+            val color = if (custom) settings.getInt(COLOR_KEY, context.defaultColor()) else null
+            val playerColor = settings.getBoolean(PLAYER_COLOR, false)
+            val customColor = if (playerColor) {
+                uiViewModel.playerColors.value?.accent.also {
+                    uiViewModel.currentAppColor = it
+                }
+            } else null
 
             val builder = DynamicColorsOptions.Builder()
             builder.setOnAppliedCallback(onAppliedCallback)
-            customColor?.let { builder.setContentBasedSource(it) }
+            (customColor ?: color)?.let { builder.setContentBasedSource(it) }
             return builder.build()
         }
     }
