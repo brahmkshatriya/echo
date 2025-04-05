@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notifications">Уведомления</string>
+    <string name="x_permission_required">%1$s Нужно разрешение</string>
+    <string name="cancel">Отмена</string>
+    <string name="audio_permission_summary">Чтобы получить доступ к вашей локальной библиотеке музыки</string>
+    <string name="back">Назад</string>
+    <string name="audio">Аудио</string>
+    <string name="video">Видео</string>
+    <string name="notifications_permission_summary">Чтобы показать уведомления для скачиваний и музыки</string>
+    <string name="songs">Песни</string>
+    <string name="x_radio">%1$s Радио</string>
+    <string name="cached_songs">Кешированные песни</string>
+    <string name="recently_added">Недавно добавлено</string>
+    <string name="show_tabs">Показать вкладки</string>
+    <string name="remove">Убрать</string>
+    <string name="artists">Исполнители</string>
+    <string name="okay">Ок</string>
+    <string name="video_permission_summary">Чтобы получить доступ к вашей локальной библиотеке видео</string>
+    <string name="write_storage_permission_summary">Чтобы создать или изменить локальные плейлисты</string>
+    <string name="albums">Альбомы</string>
+    <string name="cache_playlist_warning">Экспериментальная функция. Доступно только прослушивание.</string>
+    <string name="duration_filter">Фильтр длительности</string>
+    <string name="duration_filter_summary">Фильтровать аудиофайлы с длительностью меньше указанной</string>
+    <string name="tabs">Вкладки</string>
+    <string name="playlists">Плейлисты</string>
+    <string name="unified_liked_playlist_summary">Ваши лайки из разных расширений</string>
+    <string name="show_tab_summary">Показывает вкладки расширений как категории</string>
+</resources>
