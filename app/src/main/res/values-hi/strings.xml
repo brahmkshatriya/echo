@@ -324,4 +324,6 @@
     <string name="deleting_x">%1$s मिटा रहे हैं</string>
     <string name="loading_x">%1s लोड हो रहा है</string>
     <string name="downloading_update_for_x">%1$s के लिए अपडेट डाउनलोड किया जा रहा है</string>
+    <string name="apply_player_color_to_app">संपूर्ण ऐप पर प्लेयर रंग लागू करें</string>
+    <string name="apply_player_color_to_app_summary">लैग अलर्ट!!!</string>
 </resources>
