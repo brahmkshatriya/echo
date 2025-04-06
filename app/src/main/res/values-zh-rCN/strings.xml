@@ -320,4 +320,6 @@
     <string name="saved_to_x">已保存至 %1$s</string>
     <string name="merging_x">正在合并 %1$s</string>
     <string name="no_download_extension">未找到下载扩展，请使用代码“echodown”获取。</string>
+    <string name="apply_player_color_to_app_summary">延迟警告！！！</string>
+    <string name="apply_player_color_to_app">将播放器颜色应用到整个应用程序</string>
 </resources>
