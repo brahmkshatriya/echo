@@ -320,4 +320,6 @@
     <string name="look_and_feel">Sesuaikan selera</string>
     <string name="sleep_timer_cancelled">Waktu tidur dibatalkan</string>
     <string name="could_not_find_the_file">File tidak ditemukan.</string>
+    <string name="apply_player_color_to_app">Terapkan warna pemutar ke seluruh aplikasi</string>
+    <string name="apply_player_color_to_app_summary">AWAS NGELAG!!!</string>
 </resources>
