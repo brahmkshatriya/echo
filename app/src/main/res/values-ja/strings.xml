@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="playlists">再生</string>
+    <string name="playlists">再生リスト</string>
     <string name="off">オフ</string>
     <string name="albums">アルバム</string>
     <string name="notifications">通知</string>
@@ -57,4 +57,12 @@
     <string name="so_empty">なにもないかな。。。</string>
     <string name="radio">ラジオ</string>
     <string name="all">全部</string>
+    <string name="logout_and_login">ログアウトとログイン</string>
+    <string name="choose_a_color">色を選択します</string>
+    <string name="audio_summary">（オーディオマニアがこちらに集まります）</string>
+    <string name="stream_quality">ストリーム質</string>
+    <string name="skip_silence">音がないところをスキップします</string>
+    <string name="version">バージョン</string>
+    <string name="system">システム</string>
+    <string name="playback_speed">プレイバック速度</string>
 </resources>
