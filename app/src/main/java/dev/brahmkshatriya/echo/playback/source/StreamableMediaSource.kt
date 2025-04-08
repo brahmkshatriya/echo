@@ -21,14 +21,15 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.upstream.Allocator
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.Extensions
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.retries
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.select
@@ -38,6 +39,7 @@ import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
 
@@ -68,9 +70,9 @@ class StreamableMediaSource(
         } ?: return
         runBlocking { changeFlow?.emit(mediaItem to new) }
         mediaItem = new
-        state.servers.apply {
-            value = value.toMutableMap().apply { set(new.mediaId, server) }
-        }
+
+        state.servers[new.mediaId] = server
+        runBlocking { state.serverChanged.emit(Unit) }
 
         if (new.extensionId != OfflineExtension.metadata.id) {
             val track = mediaItem.track
@@ -113,7 +115,7 @@ class StreamableMediaSource(
     override fun canUpdateMediaItem(mediaItem: MediaItem) = run {
         this.mediaItem.apply {
             if (retries != mediaItem.retries) return@run false
-            if (sourcesIndex != mediaItem.sourcesIndex) return@run false
+            if (serverIndex != mediaItem.serverIndex) return@run false
             if (sourceIndex != mediaItem.sourceIndex) return@run false
             if (backgroundIndex != mediaItem.backgroundIndex) return@run false
             if (subtitleIndex != mediaItem.subtitleIndex) return@run false
@@ -149,10 +151,11 @@ class StreamableMediaSource(
         private val state: PlayerState,
         extensions: Extensions,
         cache: SimpleCache,
+        downloadFlow: StateFlow<List<Downloader.Info>>,
         private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>? = null
     ) : MediaSource.Factory {
 
-        private val loader = StreamableLoader(context.getSettings(), extensions.music)
+        private val loader = StreamableLoader(context.getSettings(), extensions.music, downloadFlow)
 
         private val factories = Factories(
             lazily { DashMediaSource.Factory(dataSource) },

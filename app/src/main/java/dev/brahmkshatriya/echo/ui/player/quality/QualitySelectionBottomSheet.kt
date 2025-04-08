@@ -20,8 +20,9 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.databinding.DialogPlayerQualitySelectionBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.UiViewModel
@@ -67,7 +68,8 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
             val track = item.track
             binding.run {
                 applyChips(
-                    track.servers, streamableServer, streamableServerGroup, item.sourcesIndex
+                    item.serverWithDownloads(requireContext()),
+                    streamableServer, streamableServerGroup, item.serverIndex
                 ) {
                     it ?: return@applyChips
                     viewModel.changeServer(it)
@@ -90,8 +92,8 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
-
-        observe(viewModel.playerState.servers) { servers ->
+        fun applyServer() {
+            val servers = viewModel.playerState.servers
             val item = viewModel.playerState.current.value?.mediaItem
             val server = servers[item?.mediaId]
             val list = if (server != null && !server.merged) server.sources else listOf()
@@ -103,6 +105,8 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
+        applyServer()
+        observe(viewModel.playerState.serverChanged) { applyServer() }
 
         observe(viewModel.tracks) { tracks ->
             val details = tracks?.getDetails(requireContext())?.joinToString("\n")
@@ -159,7 +163,7 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
             it?.let {
                 it.title ?: when (it.type) {
                     Streamable.MediaType.Subtitle -> context.getString(R.string.unknown)
-                    else ->  context.getString(R.string.quality_x, it.quality)
+                    else -> context.getString(R.string.quality_x, it.quality)
                 }
             } ?: context.getString(R.string.off)
         }

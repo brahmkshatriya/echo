@@ -44,6 +44,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
@@ -59,7 +60,8 @@ import kotlinx.coroutines.flow.first
 abstract class AndroidAutoCallback(
     open val context: Context,
     open val scope: CoroutineScope,
-    open val extensionList: StateFlow<List<MusicExtension>?>
+    open val extensionList: StateFlow<List<MusicExtension>?>,
+    open val downloadFlow: StateFlow<List<Downloader.Info>>
 ) : MediaLibrarySession.Callback {
 
     @CallSuper
@@ -218,7 +220,7 @@ abstract class AndroidAutoCallback(
                     context.getFromCache<Triple<Track, String, EchoMediaItem?>>(id, "auto")
                         ?: return@mapNotNull null
                 val settings = context.getSettings()
-                MediaItemUtils.build(settings, track, extId, con)
+                MediaItemUtils.build(settings, downloadFlow.value, track, extId, con)
             } else it
         }
         return super.onSetMediaItems(

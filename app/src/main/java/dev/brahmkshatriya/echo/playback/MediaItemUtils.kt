@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.playback
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
@@ -12,12 +13,14 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.playback.PlayerService.Companion.selectSourceIndex
+import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.selectServerIndex
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.toData
@@ -28,12 +31,14 @@ object MediaItemUtils {
 
     fun build(
         settings: SharedPreferences?,
+        downloads: List<Downloader.Info>,
         track: Track,
         extensionId: String,
         context: EchoMediaItem?,
     ): MediaItem {
         val item = MediaItem.Builder()
-        val metadata = track.toMetaData(bundleOf(), extensionId, context, false, settings)
+        val metadata =
+            track.toMetaData(bundleOf(), downloads, extensionId, context, false, settings)
         item.setMediaMetadata(metadata)
         item.setMediaId(track.id)
         item.setUri(track.id)
@@ -41,11 +46,15 @@ object MediaItemUtils {
     }
 
     fun buildLoaded(
-        settings: SharedPreferences?, mediaItem: MediaItem, track: Track
+        settings: SharedPreferences?,
+        downloads: List<Downloader.Info>,
+        mediaItem: MediaItem,
+        track: Track
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
-        val metadata =
-            track.toMetaData(mediaMetadata.extras!!, extensionId, context, true, settings)
+        val metadata = track.toMetaData(
+            mediaMetadata.extras!!, downloads, extensionId, context, true, settings
+        )
         item.setMediaMetadata(metadata)
         return item.build()
     }
@@ -151,11 +160,12 @@ object MediaItemUtils {
     @OptIn(UnstableApi::class)
     private fun Track.toMetaData(
         bundle: Bundle,
+        downloads: List<Downloader.Info>,
         extensionId: String = bundle.getString("clientId")!!,
         context: EchoMediaItem? = bundle.getSerialized("context"),
         loaded: Boolean = bundle.getBoolean("loaded"),
         settings: SharedPreferences? = null,
-        sourcesIndex: Int? = null,
+        serverIndex: Int? = null,
         backgroundIndex: Int? = null,
         subtitleIndex: Int? = null
     ) = MediaMetadata.Builder()
@@ -174,13 +184,15 @@ object MediaItemUtils {
             putString("extensionId", extensionId)
             putSerialized("context", context)
             putBoolean("loaded", loaded)
-            putInt("serverIndex", sourcesIndex ?: selectSourceIndex(settings, servers))
             putInt("subtitleIndex", subtitleIndex ?: 0.takeIf { subtitles.isNotEmpty() } ?: -1)
             putInt(
                 "backgroundIndex",
                 backgroundIndex
                     ?: 0.takeIf { backgrounds.isNotEmpty() && settings.showBackground() } ?: -1
             )
+            val downloaded = downloads.filter { it.download.trackId == id }.mapNotNull { it.download.finalFile }
+            putInt("serverIndex", serverIndex ?: selectServerIndex(settings, servers, downloaded))
+            putSerialized("downloaded", downloaded)
         })
         .setSubtitle(bundle.indexes())
         .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
@@ -196,7 +208,7 @@ object MediaItemUtils {
     val Bundle?.isLoaded by sticky { this?.getBoolean("loaded") ?: false }
     val Bundle?.extensionId by sticky { requireNotNull(this?.getString("extensionId")) }
     val Bundle?.context by sticky { this?.getSerialized<EchoMediaItem?>("context") }
-    val Bundle?.sourcesIndex by sticky { this?.getInt("serverIndex") ?: -1 }
+    val Bundle?.serverIndex by sticky { this?.getInt("serverIndex") ?: -1 }
     val Bundle?.sourceIndex by sticky { this?.getInt("sourceIndex") ?: -1 }
     val Bundle?.backgroundIndex by sticky { this?.getInt("backgroundIndex") ?: -1 }
     val Bundle?.subtitleIndex by sticky { this?.getInt("subtitleIndex") ?: -1 }
@@ -205,12 +217,13 @@ object MediaItemUtils {
     }
     val Bundle?.retries by sticky { this?.getInt("retries") ?: 0 }
     val Bundle?.unloadedCover by sticky { this?.getSerialized<ImageHolder?>("unloadedCover") }
+    val Bundle?.downloaded by sticky { this?.getSerialized<List<String>>("downloaded") }
 
     val MediaItem.track get() = mediaMetadata.extras.track
     val MediaItem.extensionId get() = mediaMetadata.extras.extensionId
     val MediaItem.context get() = mediaMetadata.extras.context
     val MediaItem.isLoaded get() = mediaMetadata.extras.isLoaded
-    val MediaItem.sourcesIndex get() = mediaMetadata.extras.sourcesIndex
+    val MediaItem.serverIndex get() = mediaMetadata.extras.serverIndex
     val MediaItem.sourceIndex get() = mediaMetadata.extras.sourceIndex
     val MediaItem.backgroundIndex get() = mediaMetadata.extras.backgroundIndex
     val MediaItem.subtitleIndex get() = mediaMetadata.extras.subtitleIndex
@@ -219,6 +232,7 @@ object MediaItemUtils {
     val MediaItem.isLiked get() = mediaMetadata.isLiked
     val MediaItem.retries get() = mediaMetadata.extras.retries
     val MediaItem.unloadedCover get() = mediaMetadata.extras.unloadedCover
+    val MediaItem.downloaded get() = mediaMetadata.extras.downloaded
 
     private fun Streamable.SubtitleType.toMimeType() = when (this) {
         Streamable.SubtitleType.VTT -> MimeTypes.TEXT_VTT
@@ -238,4 +252,12 @@ object MediaItemUtils {
 
     const val SHOW_BACKGROUND = "show_background"
     fun SharedPreferences?.showBackground() = this?.getBoolean(SHOW_BACKGROUND, true) ?: true
+
+    fun MediaItem.serverWithDownloads(
+        context: Context
+    ) = track.servers + listOfNotNull(
+        Streamable.server(
+            "DOWNLOADED", Int.MAX_VALUE, context.getString(R.string.downloads)
+        ).takeIf { !downloaded.isNullOrEmpty() }
+    )
 }

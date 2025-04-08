@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
@@ -38,6 +39,7 @@ class PlayerRadio(
     private val throwFlow: MutableSharedFlow<Throwable>,
     private val stateFlow: MutableStateFlow<PlayerState.Radio>,
     private val extensionList: StateFlow<List<MusicExtension>?>,
+    private val downloadFlow: StateFlow<List<Downloader.Info>>
 ) : Player.Listener {
 
     companion object {
@@ -66,6 +68,7 @@ class PlayerRadio(
 
         suspend fun play(
             player: Player,
+            downloadFlow: StateFlow<List<Downloader.Info>>,
             settings: SharedPreferences,
             stateFlow: MutableStateFlow<PlayerState.Radio>,
             loaded: PlayerState.Radio.Loaded
@@ -78,7 +81,7 @@ class PlayerRadio(
 
             val item = tracks.data.map {
                 MediaItemUtils.build(
-                    settings, it, loaded.clientId, loaded.context
+                    settings, downloadFlow.value, it, loaded.clientId, loaded.context
                 )
             }
 
@@ -100,7 +103,7 @@ class PlayerRadio(
         val extension = extensionList.getExtension(extensionId) ?: return
         val loaded = start(throwFlow, extension, item, itemContext)
         stateFlow.value = loaded ?: PlayerState.Radio.Empty
-        if (loaded != null) play(player, settings, stateFlow, loaded)
+        if (loaded != null) play(player, downloadFlow, settings, stateFlow, loaded)
     }
 
     private var autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
@@ -125,7 +128,7 @@ class PlayerRadio(
         when (val state = stateFlow.value) {
             is PlayerState.Radio.Loading -> {}
             is PlayerState.Radio.Empty -> loadPlaylist()
-            is PlayerState.Radio.Loaded -> play(player, settings, stateFlow, state)
+            is PlayerState.Radio.Loaded -> play(player, downloadFlow, settings, stateFlow, state)
         }
     }
 

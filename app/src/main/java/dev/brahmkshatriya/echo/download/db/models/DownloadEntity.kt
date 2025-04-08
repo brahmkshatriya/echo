@@ -13,6 +13,7 @@ data class DownloadEntity(
     @PrimaryKey(true)
     val id: Long,
     val extensionId: String,
+    val trackId: String,
     val contextId: Long?,
     val data: String,
     val sortOrder: Int? = null,

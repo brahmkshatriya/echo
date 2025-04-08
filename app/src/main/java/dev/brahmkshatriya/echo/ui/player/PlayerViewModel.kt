@@ -21,10 +21,12 @@ import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerCommands.addToNextCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.addToQueueCommand
@@ -52,9 +54,11 @@ class PlayerViewModel(
     val playerState: PlayerState,
     val settings: SharedPreferences,
     val cache: SimpleCache,
-    extensionLoader: ExtensionLoader
+    extensionLoader: ExtensionLoader,
+    downloader: Downloader,
 ) : ViewModel() {
     private val extensions = extensionLoader.extensions
+    val downloadFlow = downloader.flow
 
     val browser = MutableStateFlow<MediaController?>(null)
     private fun withBrowser(block: (MediaController) -> Unit) {
@@ -76,7 +80,7 @@ class PlayerViewModel(
 
         player.shuffleModeEnabled = context.recoverShuffle() == true
         player.repeatMode = context.recoverRepeat() ?: 0
-        val (items, index, pos) = context.recoverPlaylist(true)
+        val (items, index, pos) = context.recoverPlaylist(downloadFlow, true)
         player.setMediaItems(items, index, pos)
         player.prepare()
     }
@@ -183,7 +187,8 @@ class PlayerViewModel(
 
     fun changeServer(server: Streamable) {
         val item = playerState.current.value?.mediaItem ?: return
-        val index = item.track.servers.indexOf(server).takeIf { it != -1 } ?: return
+        val index = item.serverWithDownloads(app.context).indexOf(server).takeIf { it != -1 }
+            ?: return
         changeCurrent(MediaItemUtils.buildServer(item, index))
     }
 
@@ -205,7 +210,8 @@ class PlayerViewModel(
     }
 
     fun setQueue(id: String, list: List<Track>, index: Int, context: EchoMediaItem?) {
-        val mediaItems = list.map { MediaItemUtils.build(settings, it, id, context) }
+        val mediaItems =
+            list.map { MediaItemUtils.build(settings, downloadFlow.value, it, id, context) }
         withBrowser {
             it.setMediaItems(mediaItems, index, 0)
             it.prepare()

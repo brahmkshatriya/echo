@@ -27,6 +27,7 @@ import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.listener.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener
@@ -73,6 +74,9 @@ class PlayerService : MediaLibraryService() {
     }
     private val effects by lazy { EffectsListener(exoPlayer, this, state.session) }
 
+    private val downloader by inject<Downloader>()
+    private val downloadFlow by lazy { downloader.flow }
+
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
@@ -83,8 +87,9 @@ class PlayerService : MediaLibraryService() {
             mediaChangeFlow.collect { (o, n) -> player.onMediaItemChanged(o, n) }
         }
 
-        val callback =
-            PlayerCallback(this, scope, app.throwFlow, extensions, state.radio)
+        val callback = PlayerCallback(
+            this, scope, app.throwFlow, extensions, state.radio, downloadFlow
+        )
 
         val session = MediaLibrarySession.Builder(this, player, callback)
             .setBitmapLoader(PlayerBitmapLoader(this, scope))
@@ -96,7 +101,9 @@ class PlayerService : MediaLibraryService() {
             PlayerEventListener(this, scope, session, state.current, extensions, app.throwFlow)
         )
         player.addListener(
-            PlayerRadio(this, scope, player, app.throwFlow, state.radio, extensions.music)
+            PlayerRadio(
+                this, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow
+            )
         )
         player.addListener(
             TrackingListener(player, scope, extensions.music, extensions.tracker, app.throwFlow)
@@ -157,7 +164,9 @@ class PlayerService : MediaLibraryService() {
         val audioOffloadPreferences =
             offloadPreferences(app.settings.getBoolean(MORE_BRAIN_CAPACITY, false))
 
-        val factory = StreamableMediaSource.Factory(this, state, extensions, cache, mediaChangeFlow)
+        val factory = StreamableMediaSource.Factory(
+            this, state, extensions, cache, downloadFlow, mediaChangeFlow
+        )
 
         ExoPlayer.Builder(this, factory)
             .setRenderersFactory(RenderersFactory(this))
@@ -206,9 +215,10 @@ class PlayerService : MediaLibraryService() {
         const val STREAM_QUALITY = "stream_quality"
         val streamQualities = arrayOf("highest", "medium", "lowest")
 
-        fun selectSourceIndex(
-            settings: SharedPreferences?, streamables: List<Streamable>
-        ) = if (streamables.isNotEmpty()) streamables.indexOf(streamables.select(settings))
+        fun selectServerIndex(
+            settings: SharedPreferences?, streamables: List<Streamable>, downloaded: List<String>
+        ) = if (downloaded.isNotEmpty()) streamables.size
+        else if (streamables.isNotEmpty()) streamables.indexOf(streamables.select(settings))
         else -1
 
         private fun <E> List<E>.select(settings: SharedPreferences?, quality: (E) -> Int) =

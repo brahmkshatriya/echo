@@ -7,14 +7,18 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.WeakHashMap
 
 data class PlayerState(
     val current: MutableStateFlow<Current?> = MutableStateFlow(null),
-    val servers: MutableStateFlow<Map<String, Streamable.Media.Server>> = MutableStateFlow(emptyMap()),
     val radio: MutableStateFlow<Radio> = MutableStateFlow(Radio.Empty),
     val session: MutableStateFlow<Int> = MutableStateFlow(0)
 ) {
+
+    val servers: WeakHashMap<String, Streamable.Media.Server> = WeakHashMap()
+    val serverChanged = MutableSharedFlow<Unit>()
 
     data class Current(
         val index: Int,

@@ -8,15 +8,16 @@ import androidx.media3.datasource.ResolvingDataSource.Resolver
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.WeakHashMap
 
 class StreamableResolver(
-    private val current: MutableStateFlow<Map<String, Streamable.Media.Server>>
+    private val current: WeakHashMap<String, Streamable.Media.Server>
 ) : Resolver {
 
     @UnstableApi
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
         val (id, _, index) = dataSpec.uri.toString().toIdAndIndex() ?: return dataSpec
-        val streamable = current.value[id]!!
+        val streamable = current[id]!!
         return dataSpec.copy(
             customData = streamable.sources[index]
         )

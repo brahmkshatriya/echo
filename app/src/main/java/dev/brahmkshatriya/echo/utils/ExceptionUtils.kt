@@ -18,7 +18,7 @@ import dev.brahmkshatriya.echo.extensions.exceptions.InvalidExtensionListExcepti
 import dev.brahmkshatriya.echo.extensions.exceptions.RequiredExtensionsMissingException
 import dev.brahmkshatriya.echo.extensions.exceptions.UpdateException
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourcesIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.exceptions.NoServersException
 import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
@@ -113,7 +113,7 @@ object ExceptionUtils {
             """
             Extension ID: ${it.extensionId}
             Track: ${it.track.toJson()}
-            Stream: ${it.run { track.servers.getOrNull(sourcesIndex)?.toJson() }}
+            Stream: ${it.run { track.servers.getOrNull(serverIndex)?.toJson() }}
         """.trimIndent()
         }
 

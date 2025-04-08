@@ -28,9 +28,11 @@ import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.sync.Mutex
@@ -67,7 +69,12 @@ class Downloader(
         val ids = downloads.map {
             dao.insertDownloadEntity(
                 DownloadEntity(
-                    0, it.extensionId, contexts[it.context?.id], it.track.toJson(), it.sortOrder
+                    0,
+                    it.extensionId,
+                    it.track.id,
+                    contexts[it.context?.id],
+                    it.track.toJson(),
+                    it.sortOrder
                 )
             )
         }
@@ -156,6 +163,6 @@ class Downloader(
                 )
             }.sortedByDescending { it.workers.size }
         }
-    }.flowOn(Dispatchers.IO)
+    }.stateIn(scope, SharingStarted.Eagerly, listOf())
 
 }
