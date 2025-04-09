@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="okay">சரி</string>
+    <string name="back">பின் செல்</string>
+    <string name="x_permission_required">%1$s அனுமதி வேண்டும்</string>
+    <string name="video">படக்காட்சி</string>
+    <string name="cancel">இரத்துசெய்</string>
+    <string name="x_was_not_granted">%1$s அனுமதி அளிக்கவில்லை</string>
+</resources>
