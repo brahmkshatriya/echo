@@ -91,6 +91,18 @@ class DownloadViewModel(
         downloader.cancelAll()
     }
 
+    fun deleteDownload(item: EchoMediaItem) {
+        when(item) {
+            is EchoMediaItem.TrackItem -> downloader.deleteDownload(item.id)
+            else -> downloader.deleteContext(item.id)
+        }
+        viewModelScope.launch {
+            messageFlow.emit(
+                Message(context.getString(R.string.removed_x_from_downloads, item.title))
+            )
+        }
+    }
+
     init {
         viewModelScope.launch {
             flow.collectLatest { infos ->

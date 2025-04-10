@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
+import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
@@ -47,9 +48,10 @@ class MediaViewModel(
     private val loadOther: Boolean,
     app: App,
     extensionLoader: ExtensionLoader,
+    downloader: Downloader,
 ) : ViewModel() {
 
-
+    val downloadsFlow = downloader.flow
     val extensions = extensionLoader.extensions.music
     val throwFlow = app.throwFlow
     val messageFlow = app.messageFlow

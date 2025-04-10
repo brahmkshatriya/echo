@@ -31,7 +31,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -64,7 +63,7 @@ class Downloader(
         executor.corePoolSize = concurrentDownloads
 
         val contexts = downloads.mapNotNull { it.context }.distinctBy { it.id }.associate {
-            it.id to dao.insertContextEntity(ContextEntity(0, it.toJson()))
+            it.id to dao.insertContextEntity(ContextEntity(0, it.id, it.toJson()))
         }
         val ids = downloads.map {
             dao.insertDownloadEntity(
@@ -135,6 +134,30 @@ class Downloader(
                 dao.deleteDownloadEntity(download)
                 servers.remove(download.id)
                 mutexes.remove(download.id)
+            }
+        }
+    }
+
+    fun deleteDownload(id: String) {
+        scope.launch {
+            val downloads = dao.getDownloadsFlow().first().filter { it.trackId == id }
+            downloads.forEach { download ->
+                dao.deleteDownloadEntity(download)
+            }
+        }
+    }
+
+    fun deleteContext(id: String) {
+        scope.launch {
+            val contexts = dao.getContextFlow().first().filter { it.itemId == id }
+            contexts.forEach { context ->
+                dao.deleteContextEntity(context)
+                val downloads = dao.getDownloadsFlow().first().filter {
+                    it.contextId == context.id
+                }
+                downloads.forEach { download ->
+                    dao.deleteDownloadEntity(download)
+                }
             }
         }
     }

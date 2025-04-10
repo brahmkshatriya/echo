@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.toData
 data class ContextEntity(
     @PrimaryKey(true)
     val id: Long,
+    val itemId: String,
     val data: String,
 ) {
     val mediaItem by lazy { data.toData<EchoMediaItem>() }

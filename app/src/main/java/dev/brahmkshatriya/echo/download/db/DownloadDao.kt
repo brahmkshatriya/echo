@@ -31,4 +31,10 @@ interface DownloadDao {
 
     @Delete
     fun deleteDownloadEntity(download: DownloadEntity)
+
+    @Delete
+    fun deleteContextEntity(context: ContextEntity)
+
+    @Query("SELECT * FROM DownloadEntity WHERE contextId = :id")
+    fun getDownloadsForContext(id: String): List<DownloadEntity>
 }

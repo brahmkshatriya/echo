@@ -7,8 +7,8 @@ import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
@@ -39,15 +39,13 @@ class StreamableLoader(
         extensionListFlow.first { it != null }
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.buildLoaded(
-            settings,
-            downloadFlow.value,
-            mediaItem,
-            loadTrack(mediaItem)
+            settings, downloadFlow.value, mediaItem, loadTrack(mediaItem)
         )
 
         val server = async { loadServer(new) }
-        val background = async { if (new.backgroundIndex < 0) null else loadBackground(new) }
-        val subtitle = async { if (new.subtitleIndex < 0) null else loadSubtitle(new) }
+        val background =
+            async { if (new.backgroundIndex < 0) null else loadBackground(new).getOrNull() }
+        val subtitle = async { if (new.subtitleIndex < 0) null else loadSubtitle(new).getOrNull() }
 
         MediaItemUtils.buildWithBackgroundAndSubtitle(
             new, background.await(), subtitle.await()
@@ -57,14 +55,21 @@ class StreamableLoader(
     private suspend fun <T> withClient(
         mediaItem: MediaItem,
         block: suspend TrackClient.() -> T
-    ): T {
+    ): Result<T> {
         val extension = extensionListFlow.getExtensionOrThrow(mediaItem.extensionId)
-        return extension.get<TrackClient, T> { block() }.getOrThrow()
+        return extension.get<TrackClient, T> { block() }
     }
 
-    private suspend fun loadTrack(item: MediaItem) = withClient(item) {
-        loadTrack(item.track).also {
-            it.servers.ifEmpty { throw NoServersException() }
+    private suspend fun loadTrack(item: MediaItem): Track {
+        val track = withClient(item) {
+            loadTrack(item.track).also {
+                it.servers.ifEmpty { throw NoServersException() }
+            }
+        }
+        return track.getOrElse {
+            downloadFlow.value.find { info ->
+                info.download.trackId == item.track.id
+            }?.download?.track ?: throw it
         }
     }
 
@@ -81,10 +86,10 @@ class StreamableLoader(
         val streamable = servers[index]
         return withClient(mediaItem) {
             loadStreamableMedia(streamable, false) as Streamable.Media.Server
-        }
+        }.getOrThrow()
     }
 
-    private suspend fun loadBackground(mediaItem: MediaItem): Streamable.Media.Background {
+    private suspend fun loadBackground(mediaItem: MediaItem): Result<Streamable.Media.Background> {
         val streams = mediaItem.track.backgrounds
         val index = mediaItem.backgroundIndex
         val streamable = streams[index]
@@ -93,7 +98,7 @@ class StreamableLoader(
         }
     }
 
-    private suspend fun loadSubtitle(mediaItem: MediaItem): Streamable.Media.Subtitle {
+    private suspend fun loadSubtitle(mediaItem: MediaItem): Result<Streamable.Media.Subtitle> {
         val streams = mediaItem.track.subtitles
         val index = mediaItem.subtitleIndex
         val streamable = streams[index]

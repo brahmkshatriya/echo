@@ -72,6 +72,7 @@ class DownloadFragment : Fragment() {
         binding.fabCancel.setOnClickListener {
             vm.cancelAll()
         }
+        binding.recyclerView.itemAnimator = null
         binding.recyclerView.adapter = ConcatAdapter(
             downloadsAdapter,
             shelfAdapter.withHeaders(this, vm, vm.downloaded, MutableStateFlow(null))

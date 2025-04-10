@@ -1,13 +1,18 @@
 package dev.brahmkshatriya.echo.download.workers
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+import android.graphics.drawable.Drawable
 import android.os.Build
 import androidx.annotation.OptIn
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.util.NotificationUtil
 import androidx.media3.common.util.NotificationUtil.createNotificationChannel
 import androidx.media3.common.util.UnstableApi
@@ -129,6 +134,8 @@ abstract class BaseWorker(
             TaskType.Merging -> getString(R.string.merging_x, title)
             TaskType.Tagging -> getString(R.string.tagging_x, title)
         }
+
+        private const val DOWNLOAD_CHANNEL_ID = "download_channel"
     }
 
     private fun getMainIntent(context: Context) = PendingIntent.getActivity(
@@ -200,5 +207,35 @@ abstract class BaseWorker(
         }
 
         return "%.2f %s".format(value, units[unitIndex])
+    }
+
+    @OptIn(UnstableApi::class)
+    fun createCompleteNotification(
+        context: Context,
+        title: String,
+        drawable: Drawable?
+    ) {
+        createNotificationChannel(
+            context, DOWNLOAD_CHANNEL_ID, R.string.download_complete, 0,
+            NotificationUtil.IMPORTANCE_DEFAULT
+        )
+        val notificationBuilder = NotificationCompat.Builder(context, DOWNLOAD_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_downloading)
+            .setContentTitle(context.getString(R.string.download_complete))
+            .setContentText(title)
+            .setStyle(
+                NotificationCompat.BigPictureStyle()
+                    .bigPicture(drawable?.toBitmap())
+            )
+            .setContentIntent(getMainIntent(context))
+            .setAutoCancel(true)
+
+        if (ActivityCompat.checkSelfPermission(context, POST_NOTIFICATIONS) != PERMISSION_GRANTED) {
+            return
+        }
+        NotificationManagerCompat.from(context).notify(
+            title.hashCode(),
+            notificationBuilder.build()
+        )
     }
 }

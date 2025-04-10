@@ -250,6 +250,7 @@
         android:layout_marginHorizontal="48dp"
         android:ellipsize="marquee"
         android:maxLines="1"
+        android:paddingBottom="8dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textColor="@color/amoled_fg"
         android:textSize="16sp" />
