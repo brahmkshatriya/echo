@@ -38,7 +38,7 @@ class ExtensionsViewModel(
     override val extensionsFlow = extensions.music
     override val currentSelectionFlow = extensions.current
     override fun onExtensionSelected(extension: MusicExtension) {
-        extensions.setupMusicExtension(extension)
+        extensions.setupMusicExtension(extension, true)
     }
 
     fun onSettingsChanged(extension: Extension<*>, settings: Settings, key: String?) {

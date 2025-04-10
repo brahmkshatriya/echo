@@ -82,11 +82,11 @@ class Extensions(
         val extension = list.find { it.id == last && it.isEnabled }
             ?: list.firstOrNull { it.isEnabled }
             ?: return
-        setupMusicExtension(extension)
+        setupMusicExtension(extension, false)
     }
 
-    fun setupMusicExtension(extension: MusicExtension): Boolean {
-        settings.edit { putString(LAST_EXTENSION_KEY, extension.id) }
+    fun setupMusicExtension(extension: MusicExtension, manual:Boolean): Boolean {
+        if (manual) settings.edit { putString(LAST_EXTENSION_KEY, extension.id) }
         current.value = extension
         scope.launch { extension.run(throwableFlow) { onExtensionSelected() } }
         return true

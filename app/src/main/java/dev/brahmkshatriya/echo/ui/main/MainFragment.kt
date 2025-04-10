@@ -116,7 +116,7 @@ class MainFragment : Fragment() {
                     if (index == -1) return@run false
                     val next = list[(index + 1) % list.size]
                     if (next == current.value) return@run false
-                    setupMusicExtension(next)
+                    setupMusicExtension(next, true)
                     true
                 }
             }
