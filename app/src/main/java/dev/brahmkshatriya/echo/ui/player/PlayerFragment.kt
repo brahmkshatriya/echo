@@ -493,9 +493,13 @@ class PlayerFragment : Fragment() {
             binding!!.playerView.findViewById<ProgressBar>(androidx.media3.ui.R.id.exo_buffering)!!
         observe(uiViewModel.playerColors) {
             val context = requireContext()
-            if (context.isPlayerColor() && context.isDynamic() && uiViewModel.run { currentAppColor != playerColors.value?.accent }) {
-                requireActivity().recreate()
-                return@observe
+            if (context.isPlayerColor() && context.isDynamic()) {
+                if (uiViewModel.currentAppColor != viewModel.playerState.current.value?.track?.id) {
+                    uiViewModel.currentAppColor =
+                        viewModel.playerState.current.value?.track?.id
+                    requireActivity().recreate()
+                    return@observe
+                }
             }
             val colors = it ?: context.defaultPlayerColors()
             val binding = binding!!

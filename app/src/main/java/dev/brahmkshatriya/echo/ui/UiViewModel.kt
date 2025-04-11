@@ -71,7 +71,7 @@ class UiViewModel(
         }
     }
 
-    var currentAppColor: Int? = null
+    var currentAppColor: String? = null
     val navigation = MutableStateFlow(0)
     val navigationReselected = MutableSharedFlow<Int>()
     val navIds = listOf(

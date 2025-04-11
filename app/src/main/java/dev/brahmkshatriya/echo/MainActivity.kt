@@ -97,11 +97,7 @@ class MainActivity : AppCompatActivity() {
             val custom = settings.getBoolean(CUSTOM_THEME_KEY, true)
             val color = if (custom) settings.getInt(COLOR_KEY, context.defaultColor()) else null
             val playerColor = settings.getBoolean(PLAYER_COLOR, false)
-            val customColor = if (playerColor) {
-                uiViewModel.playerColors.value?.accent.also {
-                    uiViewModel.currentAppColor = it
-                }
-            } else null
+            val customColor = uiViewModel.playerColors.value?.accent?.takeIf { playerColor }
 
             val builder = DynamicColorsOptions.Builder()
             builder.setOnAppliedCallback(onAppliedCallback)
