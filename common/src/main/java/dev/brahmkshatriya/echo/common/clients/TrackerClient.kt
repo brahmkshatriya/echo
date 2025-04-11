@@ -48,5 +48,5 @@ interface TrackerClient : ExtensionClient {
      *
      * @param details the details of the track that was playing.
      */
-    suspend fun onPlayingStateChanged(details: TrackDetails, isPlaying: Boolean) {}
+    suspend fun onPlayingStateChanged(details: TrackDetails?, isPlaying: Boolean) {}
 }

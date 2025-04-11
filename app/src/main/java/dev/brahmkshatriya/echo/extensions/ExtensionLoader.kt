@@ -36,6 +36,7 @@ class ExtensionLoader(
         OfflineExtension.metadata to Injectable { OfflineExtension(app.context, cache) },
 //        TestExtension.metadata to Injectable { TestExtension() },
 //        DownloadExtension.metadata to Injectable { DownloadExtension(app.context) }
+//        TrackerTestExtension.metadata to Injectable { TrackerTestExtension() },
     )
 
     private var job: Job? = null

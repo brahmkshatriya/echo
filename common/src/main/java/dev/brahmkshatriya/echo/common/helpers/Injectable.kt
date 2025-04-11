@@ -11,6 +11,9 @@ class Injectable<T>(
 
     private val mutex = Mutex()
     private val injections = mutableListOf<suspend T.() -> Unit>()
+    val value: T?
+        get() = _data.value.getOrNull()
+
     suspend fun value() = runCatching {
         mutex.withLock {
             val t = _data.value.getOrThrow()

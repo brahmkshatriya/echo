@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
@@ -37,6 +38,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.models.TrackDetails
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
@@ -52,7 +54,7 @@ class UnifiedExtension(
     private val context: Context
 ) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient, TrackClient,
-    TrackLikeClient, SaveToLibraryClient, PlaylistEditClient {
+    TrackLikeClient, SaveToLibraryClient, PlaylistEditClient, TrackerClient {
 
     companion object {
         const val UNIFIED_ID = "unified"
@@ -572,4 +574,35 @@ class UnifiedExtension(
             loadLyrics(lyrics).withExtensionId(extId)
         }
     }
+
+    private var current: TrackDetails? = null
+    override suspend fun onTrackChanged(details: TrackDetails?) {
+        current = details
+        val id = details?.extensionId ?: return
+        val extension = extensions().get(id)
+        extension.client<TrackerClient, Unit> { onTrackChanged(details) }
+    }
+
+    override suspend fun onMarkAsPlayed(details: TrackDetails) {
+        val id = details.extensionId
+        val extension = extensions().get(id)
+        extension.client<TrackerClient, Unit> { onMarkAsPlayed(details) }
+    }
+
+    override suspend fun onPlayingStateChanged(details: TrackDetails?, isPlaying: Boolean) {
+        val id = details?.extensionId ?: return
+        val extension = extensions().get(id)
+        extension.client<TrackerClient, Unit> { onPlayingStateChanged(details, isPlaying) }
+    }
+
+    override val markAsPlayedDuration: Long?
+        get() {
+            val extension = extFlow.value?.getOrNull(current?.extensionId) ?: return null
+            return runCatching {
+                extension.instance.value.run {
+                    if (this !is TrackerClient) null
+                    else markAsPlayedDuration
+                }
+            }.getOrElse { throw it.toAppException(extension) }
+        }
 }

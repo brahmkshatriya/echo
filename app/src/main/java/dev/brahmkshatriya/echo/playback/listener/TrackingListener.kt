@@ -1,26 +1,27 @@
 package dev.brahmkshatriya.echo.playback.listener
 
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.Extension
-import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.TrackDetails
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
+import dev.brahmkshatriya.echo.extensions.Extensions
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.utils.PauseCountDown
+import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.utils.PauseTimer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -28,10 +29,13 @@ import kotlinx.coroutines.withContext
 class TrackingListener(
     private val player: Player,
     private val scope: CoroutineScope,
-    private val extensionList: MutableStateFlow<List<MusicExtension>?>,
-    private val trackerList: MutableStateFlow<List<TrackerExtension>?>,
+    extensions: Extensions,
+    private val currentFlow: MutableStateFlow<PlayerState.Current?>,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : Player.Listener {
+
+    private val musicList = extensions.music
+    private val trackerList = extensions.tracker
 
     private var current: MediaItem? = null
 
@@ -42,7 +46,7 @@ class TrackingListener(
             TrackDetails(it.extensionId, it.track, it.context)
         }
         scope.launch {
-            val extension = extensionList.getExtension(details?.extensionId)
+            val extension = musicList.getExtension(details?.extensionId)
             val trackers = trackerList.value?.filter { it.isEnabled } ?: emptyList()
             extension?.get<TrackerClient, Unit>(throwableFlow) {
                 block(extension, details)
@@ -57,69 +61,54 @@ class TrackingListener(
         }
     }
 
-    private val timers = mutableMapOf<String, PauseCountDown>()
-    private fun onTrackStart(mediaItem: MediaItem?) {
+    private val timers = mutableMapOf<String, PauseTimer>()
+    private fun onTrackChanged(mediaItem: MediaItem?) {
         current = mediaItem
-        val isPlaying = player.isPlaying
         timers.forEach { (_, timer) -> timer.pause() }
         timers.clear()
-        trackMedia { extension, it ->
-            onTrackChanged(it)
-            it ?: return@trackMedia
-            onPlayingStateChanged(it, isPlaying)
+        trackMedia { extension, details ->
+            onTrackChanged(details)
+            val isPlaying = withContext(Dispatchers.Main) { player.isPlaying }
+            onPlayingStateChanged(details, isPlaying)
+            details ?: return@trackMedia
             val duration = markAsPlayedDuration ?: return@trackMedia
-            val timer = object : PauseCountDown(duration) {
-                override fun onTimerTick(millisUntilFinished: Long) {}
-                override fun onTimerFinish() {
-                    scope.launch {
-                        extension.get<TrackerClient, Unit>(throwableFlow) { onMarkAsPlayed(it) }
-                    }
+            timers[extension.id] = PauseTimer(scope, duration) {
+                scope.launch {
+                    extension.get<TrackerClient, Unit>(throwableFlow) { onMarkAsPlayed(details) }
                 }
             }
-            timers[extension.id] = timer
-            withContext(Dispatchers.Main) { timer.start() }
         }
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         timers.forEach { (_, timer) ->
-            if (isPlaying) timer.start()
+            if (isPlaying) timer.resume()
             else timer.pause()
         }
         trackMedia { _, it ->
-            it ?: return@trackMedia
             onPlayingStateChanged(it, isPlaying)
         }
     }
 
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (mediaItem?.isLoaded?.not() == true) return
-        if (current?.mediaId == mediaItem?.mediaId) return
-        onTrackStart(mediaItem)
-    }
-
-    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-        val mediaItem = player.currentMediaItem ?: return
-        if (mediaItem.track.id != mediaMetadata.extras.track.id) return
-        if (current?.mediaId == mediaItem.mediaId) return
-
-        if (mediaItem.isLoaded) onTrackStart(mediaItem)
-    }
-
     override fun onPositionDiscontinuity(
-        oldPosition: Player.PositionInfo,
-        newPosition: Player.PositionInfo,
-        reason: Int
+        oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int
     ) {
         if (reason == 2) return
         val mediaItem = newPosition.mediaItem ?: return
         if (oldPosition.mediaItem != mediaItem) return
         if (newPosition.positionMs != 0L) return
 
-        onTrackStart(mediaItem)
+        onTrackChanged(current)
     }
 
     override fun onPlayerError(error: PlaybackException) {
-        onTrackStart(null)
+        onTrackChanged(null)
+    }
+
+    init {
+        scope.launch {
+            currentFlow.map { it?.let { curr -> curr.mediaItem.takeIf { curr.isLoaded } } }
+                .distinctUntilChanged().collectLatest { onTrackChanged(it) }
+        }
     }
 }

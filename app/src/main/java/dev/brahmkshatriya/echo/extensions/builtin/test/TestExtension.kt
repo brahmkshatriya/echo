@@ -220,7 +220,7 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
         println("onTrackChanged : $details")
     }
 
-    override suspend fun onPlayingStateChanged(details: TrackDetails, isPlaying: Boolean) {
+    override suspend fun onPlayingStateChanged(details: TrackDetails?, isPlaying: Boolean) {
         println("onPlayingStateChanged $isPlaying : $details")
     }
 

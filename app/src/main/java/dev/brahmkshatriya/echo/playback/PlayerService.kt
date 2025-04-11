@@ -106,7 +106,7 @@ class PlayerService : MediaLibraryService() {
             )
         )
         player.addListener(
-            TrackingListener(player, scope, extensions.music, extensions.tracker, app.throwFlow)
+            TrackingListener(player, scope, extensions, state.current, app.throwFlow)
         )
         player.addListener(effects)
         app.settings.registerOnSharedPreferenceChangeListener(listener)
