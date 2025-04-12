@@ -96,7 +96,7 @@ class PlayerTrackAdapter(
             }
             if (isLandscape) binding.clickPanel.root.scaleX = 0.5f + 0.5f * inv
             val extraY = if (!isPlayerVisible) 0f else {
-                val toMoveY = binding.playerControlsPlaceholder.top - cover.top - collapsedPadding
+                val toMoveY = binding.playerControlsPlaceholder.top - cover.top
                 toMoveY * inv
             }
             val extraX = if (!isPlayerVisible) 0f else {
