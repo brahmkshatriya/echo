@@ -63,9 +63,10 @@ class DownloadFragment : Fragment() {
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
+            binding.toolbarIconContainer.alpha = 1 - offset
         }
 
-        binding.exceptionMessage.setNavigationOnClickListener {
+        binding.toolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
 

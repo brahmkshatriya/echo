@@ -20,7 +20,7 @@
             app:maxLines="1">
 
             <FrameLayout
-                android:id="@+id/exceptionIconContainer"
+                android:id="@+id/toolbarIconContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingHorizontal="24dp"
@@ -35,7 +35,7 @@
             </FrameLayout>
 
             <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/exceptionMessage"
+                android:id="@+id/toolbar"
                 style="@style/Toolbar"
                 app:title="@string/downloads" />
 

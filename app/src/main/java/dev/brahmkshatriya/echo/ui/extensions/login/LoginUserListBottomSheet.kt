@@ -34,6 +34,9 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.accountListLogin.isEnabled = false
+        binding.title.setNavigationOnClickListener {
+            dismiss()
+        }
 
         observe(viewModel.allUsers) { (extension, list) ->
             binding.accountListLoading.root.isVisible = list == null
@@ -42,7 +45,7 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
 
             extension ?: return@observe
             list ?: return@observe
-            binding.title.text = getString(R.string.select_x_account, extension.name)
+            binding.title.title = getString(R.string.select_x_account, extension.name)
             binding.addAccount.setOnClickListener {
                 dismiss()
                 requireActivity().openFragment<LoginFragment>(

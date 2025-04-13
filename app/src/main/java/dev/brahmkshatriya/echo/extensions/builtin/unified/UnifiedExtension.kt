@@ -78,6 +78,12 @@ class UnifiedExtension(
             client.block()
         }.getOrElse { throw it.toAppException(this) }
 
+        suspend inline fun <reified C, T> Extension<*>.clientOrNull(block: C.() -> T): T? =
+            runCatching {
+                val client = instance.value().getOrThrow() as? C
+                client?.block()
+            }.getOrElse { throw it.toAppException(this) }
+
         private fun List<Extension<*>>.get(id: String?) =
             find { it.id == id } ?: throw Exception("Extension $id not found")
 
@@ -575,29 +581,29 @@ class UnifiedExtension(
         }
     }
 
-    private var current: TrackDetails? = null
+    private var current: Track? = null
     override suspend fun onTrackChanged(details: TrackDetails?) {
-        current = details
-        val id = details?.extensionId ?: return
+        current = details?.track
+        val id = details?.track?.extras?.extensionId ?: return
         val extension = extensions().get(id)
-        extension.client<TrackerClient, Unit> { onTrackChanged(details) }
+        extension.clientOrNull<TrackerClient, Unit> { onTrackChanged(details) }
     }
 
     override suspend fun onMarkAsPlayed(details: TrackDetails) {
-        val id = details.extensionId
+        val id = details.track.extras.extensionId
         val extension = extensions().get(id)
-        extension.client<TrackerClient, Unit> { onMarkAsPlayed(details) }
+        extension.clientOrNull<TrackerClient, Unit> { onMarkAsPlayed(details) }
     }
 
     override suspend fun onPlayingStateChanged(details: TrackDetails?, isPlaying: Boolean) {
-        val id = details?.extensionId ?: return
+        val id = details?.track?.extras?.extensionId ?: return
         val extension = extensions().get(id)
-        extension.client<TrackerClient, Unit> { onPlayingStateChanged(details, isPlaying) }
+        extension.clientOrNull<TrackerClient, Unit> { onPlayingStateChanged(details, isPlaying) }
     }
 
     override val markAsPlayedDuration: Long?
         get() {
-            val extension = extFlow.value?.getOrNull(current?.extensionId) ?: return null
+            val extension = extFlow.value?.getOrNull(current?.extras?.extensionId) ?: return null
             return runCatching {
                 extension.instance.value.run {
                     if (this !is TrackerClient) null

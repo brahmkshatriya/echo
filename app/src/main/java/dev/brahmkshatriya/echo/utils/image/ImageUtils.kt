@@ -62,13 +62,13 @@ object ImageUtils {
         view: T, thumbnail: Drawable? = null,
         error: Int? = null, onDrawable: T.(Drawable?) -> Unit
     ) = tryWith(true) {
-        thumbnail?.let { tryWith(false) { onDrawable(view, thumbnail) } }
+        tryWith(false) { onDrawable(view, thumbnail) }
         val request = createRequest(view.context, null, error)
         fun setDrawable(image: Image?) {
             val drawable = image?.asDrawable(view.resources)
             tryWith(false) { onDrawable(view, drawable) }
         }
-        request.target(::setDrawable, ::setDrawable, ::setDrawable)
+        request.target({}, ::setDrawable, ::setDrawable)
         view.enqueue(request)
     }
 
@@ -77,10 +77,10 @@ object ImageUtils {
     fun <T : View> ImageHolder?.loadAsCircle(
         view: T,
         placeholder: Int? = null,
-        errorDrawable: Int? = null,
+        error: Int? = null,
         onDrawable: (Drawable?) -> Unit
     ) = tryWith {
-        val request = createRequest(view.context, placeholder, errorDrawable, circleCrop)
+        val request = createRequest(view.context, placeholder, error, circleCrop)
         fun setDrawable(image: Image?) {
             val drawable = image?.asDrawable(view.resources)
             tryWith(false) { onDrawable(drawable) }

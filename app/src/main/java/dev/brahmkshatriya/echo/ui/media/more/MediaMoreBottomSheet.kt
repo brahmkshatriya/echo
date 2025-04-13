@@ -55,12 +55,14 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         fun newInstance(
+            contId: Int,
             extensionId: String,
             item: EchoMediaItem,
             loaded: Boolean,
             fromPlayer: Boolean = false
         ) = MediaMoreBottomSheet().apply {
             arguments = Bundle().apply {
+                putInt("contId", contId)
                 putString("extensionId", extensionId)
                 putSerialized("item", item)
                 putBoolean("loaded", loaded)
@@ -95,6 +97,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
     private val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
     private val loaded by lazy { args.getBoolean("loaded") }
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
+    private val contId by lazy { args.getInt("contId") }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -339,7 +342,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
     private fun openItemFragment(extensionId: String?, item: EchoMediaItem?) {
         extensionId ?: return
         item ?: return
-        parentFragmentManager.fragments.reversed()[1].openFragment<MediaFragment>(
+        parentFragmentManager.findFragmentById(contId)!!.openFragment<MediaFragment>(
             null,
             MediaFragment.getBundle(extensionId, item, loaded)
         )

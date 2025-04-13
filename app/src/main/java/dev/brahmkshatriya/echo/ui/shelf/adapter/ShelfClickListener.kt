@@ -60,7 +60,7 @@ open class ShelfClickListener(
     override fun onMediaItemLongClicked(extensionId: String?, item: EchoMediaItem?, it: View) {
         extensionId ?: return
         item ?: return
-        MediaMoreBottomSheet.newInstance(extensionId, item, false)
+        MediaMoreBottomSheet.newInstance(fragment.id, extensionId, item, false)
             .show(fragmentManager, null)
     }
 

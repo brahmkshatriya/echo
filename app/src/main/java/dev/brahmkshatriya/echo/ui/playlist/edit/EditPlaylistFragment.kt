@@ -83,6 +83,7 @@ class EditPlaylistFragment : Fragment() {
         applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
+            binding.toolbarIconContainer.alpha = 1 - offset
         }
 
         binding.toolbar.setNavigationOnClickListener {

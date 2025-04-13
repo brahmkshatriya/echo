@@ -441,6 +441,7 @@ class UiViewModel(
                     viewModel.playerSheetState.value = newState
                     if (!isFinalState(newState)) return
                     viewModel.setPlayerInsets(view.context, newState != STATE_HIDDEN)
+                    onSlide(view, if (newState == STATE_EXPANDED) 1f else 0f)
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {

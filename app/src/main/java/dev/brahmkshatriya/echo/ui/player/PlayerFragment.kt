@@ -591,7 +591,7 @@ class PlayerFragment : Fragment() {
 
     private fun onMoreClicked(item: MediaItem) {
         MediaMoreBottomSheet.newInstance(
-            item.extensionId, item.track.toMediaItem(), item.isLoaded, true
+            R.id.navHostFragment, item.extensionId, item.track.toMediaItem(), item.isLoaded, true
         ).show(parentFragmentManager, null)
     }
 

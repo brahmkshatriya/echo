@@ -111,10 +111,9 @@ class PlayerService : MediaLibraryService() {
         player.addListener(effects)
         app.settings.registerOnSharedPreferenceChangeListener(listener)
 
-        val notificationProvider =
-            DefaultMediaNotificationProvider.Builder(this)
-                .setChannelName(R.string.app_name)
-                .build()
+        val notificationProvider = DefaultMediaNotificationProvider.Builder(this)
+            .setChannelName(R.string.app_name)
+            .build()
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
         setMediaNotificationProvider(notificationProvider)
 

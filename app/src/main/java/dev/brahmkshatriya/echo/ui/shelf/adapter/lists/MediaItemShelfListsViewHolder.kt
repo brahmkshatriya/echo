@@ -12,6 +12,7 @@ import android.widget.ImageView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
+import coil3.load
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -111,7 +112,7 @@ class MediaItemShelfListsViewHolder(
                 val drawable = image ?: ResourcesCompat.getDrawable(
                     cover.resources, item.placeHolder, cover.context.theme
                 )
-                cover.setImageDrawable(drawable)
+                cover.load(drawable)
                 when (item) {
                     is EchoMediaItem.Lists -> {
                         val color = image?.toBitmap()?.let {

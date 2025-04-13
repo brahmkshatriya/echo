@@ -108,7 +108,7 @@ class MediaFragment : Fragment() {
             when (it.itemId) {
                 R.id.menu_more -> {
                     MediaMoreBottomSheet.newInstance(
-                        extensionId, vm.itemFlow.value, !vm.loadingFlow.value, false
+                        id, extensionId, vm.itemFlow.value, !vm.loadingFlow.value, false
                     ).show(parentFragmentManager, null)
                     true
                 }
@@ -148,7 +148,7 @@ class MediaFragment : Fragment() {
             binding.toolBar.title = item.title.trim()
             binding.endIcon.setImageResource(item.icon)
             binding.fabContainer.isVisible =
-                item is EchoMediaItem.Lists.PlaylistItem && !vm.loadingFlow.value
+                (item as? EchoMediaItem.Lists.PlaylistItem)?.playlist?.isEditable ?: false
         }
 
         binding.swipeRefresh.setOnRefreshListener { vm.refresh(true) }
