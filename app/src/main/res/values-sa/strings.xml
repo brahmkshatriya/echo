@@ -326,4 +326,7 @@
     <string name="downloading_update_for_x">%1$s कृते अद्यतनं डाउनलोड् करणम्</string>
     <string name="apply_player_color_to_app">सङ्गीतक्रीडकवर्णं सर्वे अनुप्रयोगे योजयतु</string>
     <string name="apply_player_color_to_app_summary">विलम्ब-सूचना!!!</string>
+    <string name="download_complete">डाउनलोड सम्पूर्ण</string>
+    <string name="delete_download">डाउनलोड् विलोपयन्तु</string>
+    <string name="removed_x_from_downloads">डाउनलोड्स तः %1$s निष्कासितम्</string>
 </resources>
