@@ -326,4 +326,7 @@
     <string name="downloading_update_for_x">%1$s के लिए अपडेट डाउनलोड किया जा रहा है</string>
     <string name="apply_player_color_to_app">संपूर्ण ऐप पर प्लेयर रंग लागू करें</string>
     <string name="apply_player_color_to_app_summary">लैग अलर्ट!!!</string>
+    <string name="delete_download">डाउनलोड हटाएँ</string>
+    <string name="removed_x_from_downloads">%1$s को डाउनलोड से हटाया गया</string>
+    <string name="download_complete">डाउनलोड पूरा हुआ</string>
 </resources>
