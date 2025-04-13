@@ -326,4 +326,7 @@
     <string name="downloading_update_for_x">%1$s ৰ বাবে আপডেইট ডাউনলোড কৰা হৈছে</string>
     <string name="apply_player_color_to_app_summary">লেগ এলাৰ্ট!!!</string>
     <string name="apply_player_color_to_app">সমগ্ৰ এপটোত প্লেয়াৰৰ ৰং প্ৰয়োগ কৰক</string>
+    <string name="delete_download">ডাউনলোড মচি পেলাওক</string>
+    <string name="removed_x_from_downloads">ডাউনলোডসমূহৰ পৰা %1$s আঁতৰোৱা হৈছে</string>
+    <string name="download_complete">ডাউনলোড সম্পূৰ্ণ হল</string>
 </resources>
