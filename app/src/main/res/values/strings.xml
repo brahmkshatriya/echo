@@ -379,4 +379,7 @@
     <string name="delete_download">Delete Download</string>
     <string name="removed_x_from_downloads">Removed %1$s from Downloads</string>
     <string name="download_complete">Download Complete</string>
+
+    <string name="add_widget">Mini Player Widget</string>
+    <string name="app_widget_description">Echo on your home screen!</string>
 </resources>

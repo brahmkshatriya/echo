@@ -25,6 +25,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        viewBinding = true
     }
 
     compileOptions {
@@ -36,9 +37,6 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    viewBinding {
-        enable = true
-    }
     androidResources {
         @Suppress("UnstableApiUsage")
         generateLocaleConfig = true

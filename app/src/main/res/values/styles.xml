@@ -28,7 +28,7 @@
     </style>
 
     <style name="TopCollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
-<!--        <item name="contentScrim">?navBackground</item>-->
+        <!--        <item name="contentScrim">?navBackground</item>-->
         <item name="expandedTitleMarginBottom">20dp</item>
         <item name="expandedTitleMarginEnd">24dp</item>
         <item name="expandedTitleMarginStart">24dp</item>

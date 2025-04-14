@@ -72,6 +72,7 @@ class PlayerCallback(
                 .add(likeCommand).add(unlikeCommand).add(repeatCommand).add(repeatOffCommand)
                 .add(repeatOneCommand).add(radioCommand).add(sleepTimer)
                 .add(playCommand).add(addToQueueCommand).add(addToNextCommand)
+                .add(resumeCommand)
                 .build()
         }
         return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
@@ -96,8 +97,18 @@ class PlayerCallback(
             addToNextCommand -> addToNext(player, args)
             radioCommand -> radio(player, args)
             sleepTimer -> onSleepTimer(player, args.getLong("ms"))
+            resumeCommand -> resume(player, args.getBoolean("cleared", true))
             else -> super.onCustomCommand(session, controller, customCommand, args)
         }
+    }
+
+    private fun resume(player: Player, withClear: Boolean) = run {
+        player.shuffleModeEnabled = context.recoverShuffle() == true
+        player.repeatMode = context.recoverRepeat() ?: 0
+        val (items, index, pos) = context.recoverPlaylist(downloadFlow.value, withClear)
+        player.setMediaItems(items, index, pos)
+        player.prepare()
+        Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
     }
 
     private var timerJob: Job? = null
@@ -330,7 +341,7 @@ class PlayerCallback(
     ): ListenableFuture<MediaItemsWithStartPosition> {
         mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
         mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
-        val (items, index, pos) = context.recoverPlaylist(downloadFlow)
+        val (items, index, pos) = context.recoverPlaylist(downloadFlow.value)
         return Futures.immediateFuture(MediaItemsWithStartPosition(items, index, pos))
     }
 

@@ -32,12 +32,10 @@ import dev.brahmkshatriya.echo.playback.PlayerCommands.addToNextCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.addToQueueCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.playCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.radioCommand
+import dev.brahmkshatriya.echo.playback.PlayerCommands.resumeCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.sleepTimer
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getController
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
-import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverRepeat
-import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverShuffle
 import dev.brahmkshatriya.echo.utils.ContextUtils.listenFuture
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import kotlinx.coroutines.Dispatchers
@@ -58,7 +56,7 @@ class PlayerViewModel(
     downloader: Downloader,
 ) : ViewModel() {
     private val extensions = extensionLoader.extensions
-    val downloadFlow = downloader.flow
+    private val downloadFlow = downloader.flow
 
     val browser = MutableStateFlow<MediaController?>(null)
     private fun withBrowser(block: (MediaController) -> Unit) {
@@ -78,11 +76,7 @@ class PlayerViewModel(
         if (player.mediaItemCount != 0) return@getController
         if (!settings.getBoolean(KEEP_QUEUE, true)) return@getController
 
-        player.shuffleModeEnabled = context.recoverShuffle() == true
-        player.repeatMode = context.recoverRepeat() ?: 0
-        val (items, index, pos) = context.recoverPlaylist(downloadFlow, true)
-        player.setMediaItems(items, index, pos)
-        player.prepare()
+        player.sendCustomCommand(resumeCommand, Bundle.EMPTY)
     }
 
     override fun onCleared() {

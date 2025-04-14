@@ -27,6 +27,7 @@
             android:layout_height="match_parent"
             android:clickable="false"
             android:visibility="gone"
+            app:use_controller="false"
             app:show_buffering="always" />
 
         <include

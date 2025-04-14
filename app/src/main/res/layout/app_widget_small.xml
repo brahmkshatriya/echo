@@ -1,0 +1,90 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:theme="@style/Default.Theme.Echo"
+    tools:background="@tools:sample/backgrounds/scenic">
+
+    <FrameLayout
+        android:id="@android:id/background"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/app_widget_image_background"
+        android:clipToOutline="true"
+        tools:ignore="UnusedAttribute">
+
+        <ImageView
+            android:id="@+id/trackCover"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            android:src="@drawable/art_brand" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@drawable/app_widget_gradient_background"
+            android:orientation="vertical"
+            android:paddingHorizontal="28dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="28dp">
+
+            <TextView
+                android:id="@+id/trackTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/trackArtist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/artists"
+                android:textColor="#9EFFFFFF"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="-16dp"
+        android:background="@drawable/app_widget_inner_view_background"
+        android:gravity="center"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="4dp">
+
+        <ImageView
+            android:id="@+id/playPauseButton"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/play"
+            android:padding="10dp"
+            android:src="@drawable/ic_play_48dp"
+            android:tint="@color/material_dynamic_primary30"
+            tools:ignore="UseAppTint" />
+
+        <ImageView
+            android:id="@+id/nextButton"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/next"
+            android:padding="12dp"
+            android:src="@drawable/ic_skip_next_40dp"
+            android:tint="@color/material_dynamic_primary30"
+            tools:ignore="UseAppTint" />
+
+    </LinearLayout>
+
+</LinearLayout>

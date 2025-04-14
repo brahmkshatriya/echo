@@ -14,7 +14,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
-import kotlinx.coroutines.flow.StateFlow
 
 object ResumptionUtils {
 
@@ -52,7 +51,7 @@ object ResumptionUtils {
     }
 
     private fun Context.recoverQueue(
-        downloadFlow: StateFlow<List<Downloader.Info>>,
+        downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): List<MediaItem>? {
         val settings = getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -63,7 +62,7 @@ object ResumptionUtils {
         return tracks?.mapIndexedNotNull { index, track ->
             val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
-            MediaItemUtils.build(settings, downloadFlow.value, track, extensionId, item)
+            MediaItemUtils.build(settings, downloads, track, extensionId, item)
         } ?: return null
     }
 
@@ -83,10 +82,10 @@ object ResumptionUtils {
 
     @OptIn(UnstableApi::class)
     fun Context.recoverPlaylist(
-        downloadFlow: StateFlow<List<Downloader.Info>>,
+        downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): Triple<List<MediaItem>, Int, Long> {
-        val items = recoverQueue(downloadFlow, withClear) ?: emptyList()
+        val items = recoverQueue(downloads, withClear) ?: emptyList()
         val index = recoverIndex() ?: C.INDEX_UNSET
         val position = recoverPosition() ?: 0L
         return Triple(items, index, position)

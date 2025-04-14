@@ -80,7 +80,7 @@ class PlayerService : MediaLibraryService() {
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
-        setListener(MediaSessionServiceListener(this, intent))
+        setListener(MediaSessionServiceListener(this, getPendingIntent(this)))
 
         val player = ShufflePlayer(exoPlayer)
         scope.launch(Dispatchers.Main) {
@@ -93,7 +93,7 @@ class PlayerService : MediaLibraryService() {
 
         val session = MediaLibrarySession.Builder(this, player, callback)
             .setBitmapLoader(PlayerBitmapLoader(this, scope))
-            .setSessionActivity(intent)
+            .setSessionActivity(getPendingIntent(this))
             .build()
 
         player.addListener(AudioFocusListener(this, player))
@@ -129,16 +129,6 @@ class PlayerService : MediaLibraryService() {
         }
         super.onDestroy()
     }
-
-    private val intent: PendingIntent
-        get() = PendingIntent.getActivity(
-            this,
-            0,
-            Intent(this, MainActivity::class.java).apply {
-                putExtra("fromNotification", true)
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-        )
 
     private val cache by inject<SimpleCache>()
 
@@ -249,5 +239,14 @@ class PlayerService : MediaLibraryService() {
             }
             return { MediaController.releaseFuture(playerFuture) }
         }
+
+        fun getPendingIntent(context: Context): PendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            Intent(context, MainActivity::class.java).apply {
+                putExtra("fromNotification", true)
+            },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
     }
 }
