@@ -144,7 +144,7 @@
     <string name="app">এপ</string>
     <string name="file">ফাইল</string>
     <string name="installation_type">সংস্থাপনৰ ধৰণ</string>
-    <string name="installation_type_summary">এপ ইনষ্টলেচনে ইকোত তলত দিয়া লিংকসমূহ খোলাৰ অনুমতি দিব:</string>
+    <string name="installation_type_summary">এপ ইনষ্টলেচনে Echo ত তলত দিয়া লিংকসমূহ খোলাৰ অনুমতি দিব:</string>
     <string name="installation_type_warning">যদি আপুনি এক্সটেনচন এটা ফাইল হিচাপে সংস্থাপন কৰিব বিচাৰে তেন্তে এই বিকল্প উপলব্ধ নহয় ।</string>
     <string name="could_not_find_the_file">ফাইলটো বিচাৰি পোৱা নগ\'ল।</string>
     <string name="extension_installer">এক্সটেনচন ইনষ্টলাৰ</string>
@@ -329,4 +329,6 @@
     <string name="delete_download">ডাউনলোড মচি পেলাওক</string>
     <string name="removed_x_from_downloads">ডাউনলোডসমূহৰ পৰা %1$s আঁতৰোৱা হৈছে</string>
     <string name="download_complete">ডাউনলোড সম্পূৰ্ণ হল</string>
+    <string name="add_widget">মিনি প্লেয়াৰ ৱিজেট</string>
+    <string name="app_widget_description">Echo আপোনাৰ হোম স্ক্ৰীনত!</string>
 </resources>
