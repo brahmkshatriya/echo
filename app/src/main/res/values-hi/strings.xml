@@ -329,4 +329,6 @@
     <string name="delete_download">डाउनलोड हटाएँ</string>
     <string name="removed_x_from_downloads">%1$s को डाउनलोड से हटाया गया</string>
     <string name="download_complete">डाउनलोड पूरा हुआ</string>
+    <string name="add_widget">मिनी प्लेयर विजेट</string>
+    <string name="app_widget_description">अपने होम स्क्रीन पर इको!</string>
 </resources>
