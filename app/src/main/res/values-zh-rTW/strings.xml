@@ -200,4 +200,5 @@
     <string name="no_download_extension">未找到下載外掛程式，請使用 \"echodown\"</string>
     <string name="nothing_to_download_in_x">%1$s 中無可下載項目</string>
     <string name="download_started">下載已開始</string>
+    <string name="okay">好的</string>
 </resources>
