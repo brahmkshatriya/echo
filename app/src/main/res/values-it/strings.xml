@@ -23,7 +23,7 @@
     <plurals name="number_min">
         <item quantity="one">%1$d Minuto</item>
         <item quantity="many">%1$d Minuti</item>
-        <item quantity="other">%1$d Minuti</item>
+        <item quantity="other"></item>
     </plurals>
     <string name="cache_playlist_warning">Funzione sperimentale. Solo l\'ascolto di essi è supportato.</string>
     <string name="x_permission_required">Permessi %1$s richiesti</string>
@@ -77,8 +77,8 @@
     <string name="no_internet">Nessun accesso a Internet</string>
     <string name="error_loading_extension_from_x">Impossibile caricare l\'estensione da %1$s</string>
     <string name="required_extensions_missing_x">Estensione richiesta mancante: %1$s</string>
-    <string name="x_login_required">Accesso a %1$s richiesto</string>
-    <string name="x_is_not_supported_in_x">%1$s non è supportato in %2$s</string>
+    <string name="x_login_required">Accesso a %1$s necessario</string>
+    <string name="x_is_not_supported_in_x">%1$s non è supportato da %2$s</string>
     <string name="account_session_expired_in_x">Sessione Account scaduta in %1$s</string>
     <string name="no_servers_found">Nessun server trovato</string>
     <string name="no_source_found">Nessuna fonte trovata</string>
@@ -95,7 +95,7 @@
     <string name="audio_fx">Effetti Audio</string>
     <string name="value">Valore</string>
     <string name="value_not_set">Non impostato</string>
-    <string name="audio_summary">(Area riservata agli audiofili)</string>
+    <string name="audio_summary">(Punto di ritrovo per audiofili)</string>
     <string name="playback">Riproduzione</string>
     <string name="audio_fx_summary">Effetti applicati a tutti i brani</string>
     <string name="audio_fx_desc">Cambia gli effetti audio per il brano attualmente in riproduzione.</string>
@@ -107,12 +107,12 @@
     <string name="equalizer">Equalizzatore</string>
     <string name="equalizer_summary">Apre l\'equalizzatore di sistema</string>
     <string name="stream_quality">Qualità di Streaming</string>
-    <string name="keep_queue_summary">Ripristina la coda di riproduzione, quando riavvii l\'app.</string>
+    <string name="keep_queue_summary">Ripristina la coda di riproduzione quando riavvii l\'app.</string>
     <string name="stream_quality_summary">Seleziona la qualità della stream</string>
     <string name="behavior">Comportamento</string>
     <string name="keep_queue">Mantieni Coda di Riproduzione</string>
     <string name="stop_player">Ferma Player</string>
-    <string name="stop_player_summary">Interrompi la riproduzione quando l\'app viene rimossa dalle app recenti</string>
+    <string name="stop_player_summary">Interrompi la riproduzione quando Echo viene rimossa dalle app recenti</string>
     <string name="skip_silence">Salta Silenzio</string>
     <string name="auto_start_radio">Avvia la Radio Automaticamente</string>
     <string name="auto_start_radio_summary">Aggiungi automaticamente brani correlati nella playlist, per avere una coda infinita</string>
@@ -124,14 +124,14 @@
     <string name="system">Sistema</string>
     <string name="language_summary">Lingua dell\'app, \'Sistema\' userà l\'Inglese di default</string>
     <string name="check_for_extension_updates">Controlla Aggiornamenti per le Estensioni</string>
-    <string name="check_for_extension_updates_summary">Controlla che ci siano nuovi aggiornamenti per le estensioni, quando apri l\'app.</string>
+    <string name="check_for_extension_updates_summary">Controlla se ci sono nuovi aggiornamenti per le estensioni quando apri l\'app.</string>
     <string name="app">App</string>
     <string name="file">File</string>
     <string name="installation_type">Tipo di Installazione</string>
     <string name="installation_type_summary">L\'installazione come App consente di aprire i seguenti link in Echo:</string>
     <string name="installation_type_warning">Non disponibile se installi l\'estensione come File.</string>
     <string name="could_not_find_the_file">Impossibile trovare il file.</string>
-    <string name="extension_installer">Strumento Installazione Estensioni</string>
+    <string name="extension_installer">Installazione Estensioni</string>
     <string name="uninstall">Disinstalla</string>
     <string name="invalid_extension">Estensione Non Valida</string>
     <string name="extension_installed_successfully">Estensione installata con successo.</string>
@@ -149,9 +149,9 @@
     <string name="invalid_extension_list">Lista estensioni non valida</string>
     <string name="checking_for_extension_updates">Controllo aggiornamenti estensioni in corso</string>
     <string name="look_and_feel">Aspetto</string>
-    <string name="look_and_feel_summary">Impostazioni UI ed Animazioni</string>
-    <string name="ui">UI</string>
-    <string name="theme_summary">Vuoi diventare cieco?</string>
+    <string name="look_and_feel_summary">Gestisci Interfaccia e Animazioni</string>
+    <string name="ui">Interfaccia</string>
+    <string name="theme_summary">Vuoi perdere la vista?</string>
     <string name="custom_theme_color">Colore Tema Personalizzato</string>
     <string name="custom_theme_color_summary">Usa un colore personalizzato per il tema, al posto di quello di sistema.</string>
     <string name="add_color">Aggiungi colore</string>
@@ -163,7 +163,7 @@
     <string name="dynamic_player_summary">Il colore del player si adatta automaticamente alla copertina del brano</string>
     <string name="dynamic_player">Colore Dinamico nel Player</string>
     <string name="show_background">Mostra Sfondo</string>
-    <string name="show_background_summary">Mostra un video o una copertina sfocata come sfondo nel player</string>
+    <string name="show_background_summary">Mostra un video, o la copertina dell\'album sfocata, come sfondo nel player</string>
     <string name="animation">Animazione</string>
     <string name="animations">Animazioni</string>
     <string name="animations_summary">Troppi scatti? Prova a disattivare questa opzione</string>
@@ -173,13 +173,13 @@
     <string name="music">Musica</string>
     <string name="tracker">Tracker</string>
     <string name="lyrics">Testi</string>
-    <string name="misc">Altro</string>
-    <string name="x_extensions">%1$s Estensioni</string>
-    <string name="x_extension">%1$s Estensione</string>
+    <string name="misc">Varie</string>
+    <string name="x_extensions">Estensioni per %1$s</string>
+    <string name="x_extension">Estensione per %1$s</string>
     <string name="enabled">Abilitato</string>
     <string name="disabled">Disabilitato</string>
     <string name="no_user_found">Nessun utente trovato</string>
-    <string name="select_x_account">Selezione un account per %1$s</string>
+    <string name="select_x_account">Seleziona account per %1$s</string>
     <string name="add_account">Aggiungi Account</string>
     <string name="add_extension">Aggiungi Estensione</string>
     <string name="error_updating_extension">Errore durante l\'aggiornamento</string>
@@ -190,7 +190,7 @@
     <string name="password">Password</string>
     <string name="logout">Disconnetti</string>
     <string name="switch_account">Cambia Account</string>
-    <string name="incognito">Modalità Incognito</string>
+    <string name="incognito">Incognito</string>
     <string name="not_logged_in">Accesso non eseguito</string>
     <string name="x_login">Accedi a %1$s</string>
     <string name="x_is_required">$1%s è necessario</string>
@@ -204,7 +204,7 @@
     <string name="repeat">Ripeti</string>
     <string name="close">Chiudi</string>
     <string name="no_lyrics">Nessun Testo</string>
-    <string name="sleep_timer">Timer Spegnimento</string>
+    <string name="sleep_timer">Timer di Spegnimento</string>
     <string name="end_of_track">Fine del Brano</string>
     <string name="_15min">15m</string>
     <string name="_30min">30m</string>
@@ -213,8 +213,8 @@
     <string name="_2hr">2h</string>
     <string name="sleep_timer_desc">Imposta un timer di spegimento per interrompere la riproduzione dopo un certo lasso di tempo</string>
     <string name="sleep_on_specific_time">Spegni ad un orario preciso</string>
-    <string name="sleep_timer_cancelled">Timer Spegnimento annullato</string>
-    <string name="sleep_timer_set_for">Timer di spegnimento impostato a %1$s</string>
+    <string name="sleep_timer_cancelled">Timer di Spegnimento annullato</string>
+    <string name="sleep_timer_set_for">Timer di Spegnimento impostato a %1$s</string>
     <string name="search_x">Cerca %1$s</string>
     <string name="servers">Server</string>
     <string name="sources">Fonti</string>
@@ -227,7 +227,7 @@
     <string name="quality_x">Qualità %1$d</string>
     <string name="off">Off</string>
     <string name="unknown_quality">Qualità Sconosciuta</string>
-    <string name="so_empty">È tutto vuoto qui…</string>
+    <string name="so_empty">Non c\'è niente qui…</string>
     <string name="not_loading">Non in Caricamento</string>
     <string name="share">Condividi</string>
     <string name="sharing_x">Condivisione di %1$s</string>
@@ -240,7 +240,7 @@
     <string name="radio">Radio</string>
     <string name="download">Scarica</string>
     <string name="following_x">Aggiunta di %1$s tra i seguiti</string>
-    <string name="followed_x">%1$s Aggiunto ai seguiti</string>
+    <string name="followed_x">%1$s aggiunto ai seguiti</string>
     <string name="unfollow">Non seguire più</string>
     <string name="unfollowing_x">Rimozione di %1$s tra i seguiti</string>
     <string name="unfollowed_x">%1$s rimosso dai seguiti</string>
@@ -261,14 +261,14 @@
     <string name="loading_radio_for_x">Caricamento di una radio per %1$s</string>
     <string name="playing_x">Riproduzione di %1$s</string>
     <string name="adding_x_to_queue">Aggiunta di %1$s alla coda</string>
-    <string name="background_gradient">Gradiente di Sfondo</string>
-    <string name="background_gradient_summary">Un colore di sfondo gradiente in base al contesto</string>
+    <string name="background_gradient">Sfondo Sfumato</string>
+    <string name="background_gradient_summary">Usa un colore di sfondo sfumato in base al contesto</string>
     <string name="all">Tutto</string>
     <string name="edit_playlist">Modifica Playlist</string>
     <string name="more_brain_capacity">Più Materia Grigia</string>
     <string name="sort">Ordina</string>
     <string name="explicit">Esplicito</string>
-    <string name="more_brain_capacity_summary">Questa impostazione può risolvere i problemi di latenza audio, ma comporta un maggiore consumo della batteria (disabilita l\'audio offloading).</string>
+    <string name="more_brain_capacity_summary">Può risolvere problemi di latenza audio, ma comporta un maggiore consumo della batteria (disabilita l\'audio offloading).</string>
     <string name="x_plays">%1$s Ascolti</string>
     <string name="x_followers">%1$s Seguiti</string>
     <string name="shuffling_x">Riproduzione Casuale di %1$s</string>
@@ -286,7 +286,7 @@
     <string name="sort_plays">Ascolti</string>
     <string name="sort_explicit">Esplicito</string>
     <string name="scroll_animations">Animazioni di Scorrimento</string>
-    <string name="scroll_animations_summary">Animazioni di scorrimento elementi</string>
+    <string name="scroll_animations_summary">Mostra animazioni quando scorri roba</string>
     <string name="sort_subtitle">Sottotitoli</string>
     <string name="delete">Elimina</string>
     <string name="playlist_name">Nome Playlist</string>
@@ -315,7 +315,7 @@
     <string name="download_started">Download Avviato</string>
     <string name="merging_x">Unione di %1$s</string>
     <string name="tagging_x">Aggiunta dei Tag di %1$s</string>
-    <string name="delete_download">Elimina DOwnload</string>
+    <string name="delete_download">Elimina Download</string>
     <string name="removed_x_from_downloads">%1$s rimosso dai Download</string>
     <string name="download_complete">Download Completato</string>
     <string name="add_widget">Widget del Mini Player</string>
@@ -326,11 +326,11 @@
     <plurals name="number_hour">
         <item quantity="one">%1$d Ora</item>
         <item quantity="many">%1$d Ore</item>
-        <item quantity="other">%1$d Ore</item>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="n_songs">
         <item quantity="one">%1$d Brano</item>
         <item quantity="many">%1$d Brani</item>
-        <item quantity="other">%1$d Brani</item>
+        <item quantity="other"></item>
     </plurals>
 </resources>
