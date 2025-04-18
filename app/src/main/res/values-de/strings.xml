@@ -4,6 +4,5 @@
     <string name="cancel">Abbrechen</string>
     <string name="back">Zurück</string>
     <string name="x_permission_required">%1$s Berechtigung Erforderlich</string>
-    <string name="audio"></string>
     <string name="x_was_not_granted">%1$s wurde nicht gewährt</string>
 </resources>
