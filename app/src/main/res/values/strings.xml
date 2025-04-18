@@ -148,7 +148,7 @@
     <string name="invalid_extension_list">Invalid extensions list</string>
     <string name="checking_for_extension_updates">Checking for extension updates</string>
     <string name="look_and_feel">Look &amp; Feel</string>
-    <string name="look_and_feel_summary">Adjust the UI and animations to your liking</string>
+    <string name="look_and_feel_summary">UI and Animation Settings</string>
     <string name="ui">UI</string>
     <string name="theme">Theme</string>
     <string name="theme_summary">Want to be blind?</string>
