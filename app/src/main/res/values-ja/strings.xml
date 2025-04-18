@@ -65,4 +65,6 @@
     <string name="version">バージョン</string>
     <string name="system">システム</string>
     <string name="playback_speed">プレイバック速度</string>
+    <string name="x_was_not_granted">%1$s は付与されませんでした</string>
+    <string name="x_permission_required">%1$s 権限が必要です</string>
 </resources>
