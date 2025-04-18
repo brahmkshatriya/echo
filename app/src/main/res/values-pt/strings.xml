@@ -235,7 +235,7 @@
     <string name="background_gradient_summary">Uma tonalidade de cor gradiente no plano de fundo, dependendo do contexto</string>
     <string name="all">Tudo</string>
     <string name="more_brain_capacity">Mais capacidade cerebral</string>
-    <string name="more_brain_capacity_summary">Habilitar isso pode ajudar a corrigir o atraso de áudio e aumentar o uso da bateria (desativa o descarregamento de áudio).</string>
+    <string name="more_brain_capacity_summary">Habilitar isso pode corrigir o atraso de áudio, mas aumenta drasticamente o uso da bateria (desativa o descarregamento de áudio).</string>
     <string name="sort">Ordenar</string>
     <string name="x_plays">%1$s Reproduções</string>
     <string name="x_followers">%1$s Seguidores</string>
