@@ -331,6 +331,6 @@
     <plurals name="n_songs">
         <item quantity="one">%1$d Brano</item>
         <item quantity="many">%1$d Brani</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
 </resources>
