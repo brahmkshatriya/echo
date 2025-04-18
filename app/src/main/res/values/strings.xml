@@ -128,7 +128,7 @@
     <string name="file">File</string>
     <string name="installation_type">Installation Type</string>
     <string name="installation_type_summary">App installation will allow the following links to open in Echo:</string>
-    <string name="installation_type_warning">Not available if you install the extension as a File.</string>
+    <string name="installation_type_warning">Not available if you install the extension as a file.</string>
     <string name="could_not_find_the_file">Could not find the file.</string>
     <string name="extension_installer">Extension Installer</string>
     <string name="uninstall">Uninstall</string>
