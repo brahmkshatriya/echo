@@ -63,8 +63,8 @@
     <string name="playlist_description">सङ्गीतसूच्याः विवरणम्</string>
     <string name="create_playlist">प्लेलिस्ट् निर्मितय</string>
     <plurals name="n_songs">
-        <item quantity="one">%1$d गीतम्</item>
-        <item quantity="other">%1$d गीतानि</item>
+        <item quantity="one">%1$d गीत</item>
+        <item quantity="other">%1$d गीतें</item>
     </plurals>
     <string name="create">निर्माति</string>
     <string name="playlist_name_empty">सङ्गीतसूच्याः नाम रिक्तं न भवेत्</string>
@@ -166,7 +166,7 @@
     <string name="sort_plays">चालनानि</string>
     <string name="sort_explicit">स्पष्टः</string>
     <string name="scroll_animations">स्क्रॉल गति दृश्याः</string>
-    <string name="scroll_animations_summary">स्क्रॉल कुर्वन् गति दृश्याः</string>
+    <string name="scroll_animations_summary">स्क्रॉल करते समय एनीमेशन</string>
     <string name="delete">निराकुरु</string>
     <string name="add_song">गीतं योजय</string>
     <string name="creating_x">%1$s निर्मीयते</string>
@@ -187,12 +187,12 @@
     <string name="recently_added">अधुना योजितम्</string>
     <string name="refresh_library_on_reload">पुनः लोड् इत्यत्र पुस्तकालयः ताजगः कुर्वन्तु</string>
     <string name="refresh_library_on_reload_summary">प्रत्येकं फीड् लोड् भवति तदा यन्त्रं स्कैन् कुर्वन्तु</string>
-    <string name="blacklist_folder_keywords_summary">अवरोध-सूचीकरणाय फोल्डर-कुंजिकाशब्दाः, विभेदाय अल्पविरामस्य प्रयोगः कुर्वन्तु</string>
+    <string name="blacklist_folder_keywords_summary">फ़ोल्डरों को ब्लैकलिस्ट करने के लिए कीवर्ड्स। separator के रूप में कॉमा का उपयोग करें</string>
     <string name="playlists">प्लेलिस्ट्स</string>
     <string name="saved">रक्षितम्</string>
     <string name="tabs">टब्स्</string>
     <string name="show_tabs">ट्याब्स् दर्शयतु</string>
-    <string name="show_tab_summary">विस्ताराणां ट्याब्स् श्रेणीरूपेण दर्शयिष्यति</string>
+    <string name="show_tab_summary">एक्सटेंशन के टैब्स को श्रेणियों के रूप में दिखाएँ</string>
     <string name="unknown">अज्ञात</string>
     <string name="like">इष्टम्</string>
     <string name="unlike">अस्वीकृतं करोतु</string>
@@ -233,7 +233,7 @@
     <string name="auto_start_radio_summary">प्लेलिस्ट् मध्ये ट्रैकस्य सम्बन्धित गीतानि स्वयमेव योजयेत्, अनन्तम् कतारम् करणाय</string>
     <string name="cache_size">सङ्ग्राहक परिमाण</string>
     <string name="cache_size_summary">श्रव्यं विडियो च संग्रहणार्थं MB मध्ये आकारः</string>
-    <string name="extensions_summary">स्वयं संस्थापिताः प्रत्यायुक्तिः प्रबंधयतु</string>
+    <string name="extensions_summary">इंस्टॉल की गई एक्सटेंशन को प्रबंधित करें</string>
     <string name="version">संस्करणम्</string>
     <string name="language">भाषा</string>
     <string name="system">प्रणाली</string>
@@ -245,7 +245,7 @@
     <string name="file">सञ्चिका</string>
     <string name="installation_type">संस्थापनप्रकारः</string>
     <string name="installation_type_summary">अनुप्रयोगस्य संस्थापनं निम्नलिखितान् सम्पर्कान् प्रतिध्वन्यां उद्घाटनं अनुमन्यते:</string>
-    <string name="installation_type_warning">सञ्चिकारूपेण विस्तारस्य संस्थापनं कृते एतत् अनुपलब्धम्।</string>
+    <string name="installation_type_warning">यदि आप एक्सटेंशन को फ़ाइल के रूप में इंस्टॉल करते हैं, तो यह उपलब्ध नहीं है।</string>
     <string name="could_not_find_the_file">सञ्चिका न प्राप्ता।</string>
     <string name="extension_installer">संस्थापकः</string>
     <string name="uninstall">अपाक्रियताम्</string>
@@ -289,7 +289,7 @@
     <string name="no_user_found">कोऽपि उपयोगकर्त्ता न लब्धः</string>
     <string name="add_account">खाता योजय</string>
     <string name="add_extension">विस्तारम् योजय</string>
-    <string name="webview">जालावलोकनं</string>
+    <string name="webview">वेबव्यू</string>
     <string name="logout">लॉग आउट्</string>
     <string name="switch_account">खाता परिवर्तय</string>
     <string name="incognito">अज्ञातं मोड</string>
@@ -322,7 +322,7 @@
     <string name="off">दूरे</string>
     <string name="not_loading">लोड् न कुर्वन् अस्ति</string>
     <string name="saving_x_to_library">%1$s ग्रन्थालये संरक्ष्यमाणम्</string>
-    <string name="more_brain_capacity_summary">एतत् सक्रियं कुर्वन्, ध्वनिलाघवं परिहार्यते तथा च शक्ति उपभोगः वर्धते (ध्वनिअफलोडिंग् निष्क्रियं भवति) ।</string>
+    <string name="more_brain_capacity_summary">इसे सक्षम करने से ऑडियो लैग ठीक हो सकता है, लेकिन बैटरी उपयोग में अत्यधिक वृद्धि होती है (ऑडियो ऑफ़लोडिंग को अक्षम करता है)।</string>
     <string name="downloading_update_for_x">%1$s कृते अद्यतनं डाउनलोड् करणम्</string>
     <string name="apply_player_color_to_app">सङ्गीतक्रीडकवर्णं सर्वे अनुप्रयोगे योजयतु</string>
     <string name="apply_player_color_to_app_summary">विलम्ब-सूचना!!!</string>
