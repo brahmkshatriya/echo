@@ -145,7 +145,7 @@
     <string name="subtitle_selection">Выбор субтитров</string>
     <string name="extensions_summary">Управление установленными расширениями</string>
     <string name="no_servers_found">Не найдено ни одного сервера</string>
-    <string name="blacklist_folder_keywords">Ключевые слова для включения папок в чёрный список</string>
+    <string name="blacklist_folder_keywords">Черный список папок Ключевые слова</string>
     <string name="audio_fx_desc">Изменить аудио-эффекты текущей песни.</string>
     <string name="_30min">30 мин.</string>
     <string name="playlist_description">Описание плейлиста</string>
@@ -188,4 +188,15 @@
     <string name="theme">Тема</string>
     <string name="file">Файл</string>
     <string name="extension_installed_successfully">Расширение установлено успешно.</string>
+    <string name="n_items">%1$d Товаров</string>
+    <string name="like">Любить</string>
+    <string name="unlike">В отличие от</string>
+    <string name="repeat_one">Повторите один раз</string>
+    <string name="repeat_off">Повторить выключение</string>
+    <string name="extension_out_of_date">Устарело</string>
+    <string name="random">Случайный</string>
+    <string name="change_pitch_with_speed">Меняйте высоту тона со скоростью</string>
+    <string name="bass_boost">Усиление басов</string>
+    <string name="refresh_library_on_reload_summary">Сканируйте устройство каждый раз при загрузке канала</string>
+    <string name="blacklist_folder_keywords_summary">Ключевые слова для черного списка папок. Используйте запятую для разделителя</string>
 </resources>
