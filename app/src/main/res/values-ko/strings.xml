@@ -85,7 +85,7 @@
     <string name="unknown">알 수 없음</string>
     <string name="equalizer">이퀄라이저</string>
     <string name="language">언어</string>
-    <string name="custom_theme_color_summary">시스템 테마 대신 사용자 지정 테마 색상을 사용합니다.</string>
+    <string name="custom_theme_color_summary">시스템 색상 대신 사용자 정의 테마 색상 사용</string>
     <string name="add_color">색상 추가</string>
     <string name="stream_quality">스트리밍 품질</string>
     <string name="audio_fx_summary">모든 곡에 적용된 효과</string>
@@ -93,7 +93,7 @@
     <string name="keep_queue_summary">앱을 다시 열면 플레이어 대기열을 복구합니다.</string>
     <string name="installation_type_summary">앱을 설치하면 Echo에서 다음 링크가 열립니다:</string>
     <string name="extension_uninstalled_successfully">확장 프로그램이 성공적으로 제거되었습니다.</string>
-    <string name="skip_silence_summary">노래에서 무음 부분을 건너뛰어 끊김 없이 재생할 수 있습니다.</string>
+    <string name="skip_silence_summary">끊김 없는 재생을 제공하기 위해 노래에서 조용한 부분을 건너뜁니다</string>
     <string name="installation_type">설치 유형</string>
     <string name="auto_start_radio_summary">재생 목록에 트랙의 관련 노래를 자동으로 추가하여 무한 대기열을 만듭니다</string>
     <string name="extension_requires_following_extensions">%1$s에 %2$s가 필요합니다</string>
@@ -101,7 +101,7 @@
     <string name="check_for_extension_updates_summary">앱을 열 때 확장 프로그램의 새 업데이트를 확인.</string>
     <string name="open_links_instruction">이러한 링크를 열도록 허용하려면 다음과 같이 해야 합니다:\n- 아래로 스크롤하여 \"기본으로 열기\"를 클릭합니다\n- \"+ 링크 추가\"를 클릭합니다</string>
     <string name="extension_updated_successfully">%1$s가 업데이트되었습니다</string>
-    <string name="look_and_feel">외관 및 경험</string>
+    <string name="look_and_feel">룩 앤 필</string>
     <string name="audio_fx_desc">현재 트랙의 오디오 효과를 변경합니다.</string>
     <string name="custom_theme_color">사용자 지정 테마 색상</string>
     <string name="extension_installed">%1$s (설치됨)</string>
@@ -115,7 +115,7 @@
     <string name="change_pitch_with_speed">속도에 따른 피치 변경</string>
     <string name="bass_boost_desc">값이 클수록 소리가 왜곡될 수 있습니다.</string>
     <string name="change_pitch_with_speed_desc">소리에 슬로우-모션 적용</string>
-    <string name="equalizer_summary">장치 이퀄라이저 설정 열기</string>
+    <string name="equalizer_summary">시스템 이퀄라이저 설정을 엽니다</string>
     <string name="stream_quality_summary">스트리밍 품질 선택</string>
     <string name="behavior">동작</string>
     <string name="keep_queue">플레이어 대기열 유지</string>
@@ -148,7 +148,7 @@
     <string name="theme">테마</string>
     <string name="theme_summary">숨기고 싶으신가요?</string>
     <string name="amoled">Amoled</string>
-    <string name="amoled_summary">피치 블랙, 퓨어 블랙</string>
+    <string name="amoled_summary">배경색을 칠흑같이 어둡게 바꿉니다. 배터리 소모를 줄이고 화면 번인을 방지하기 위해 AMOLED 화면에 유용합니다</string>
     <string name="bass_boost">베이스 부스트</string>
     <string name="system">시스템</string>
     <string name="extension_installed_successfully">확장 프로그램이 성공적으로 설치되었습니다.</string>
@@ -177,7 +177,7 @@
     <string name="tracker">트래커</string>
     <string name="removing_x_from_library">보관함에서 %1$s를 제거하는 중</string>
     <string name="adding_x_to_queue">대기열에 %1$s를 추가하는 중</string>
-    <string name="misc">기타</string>
+    <string name="misc">잡다한</string>
     <string name="navbar_gradient_summary">Navbar가 점차 투명해집니다</string>
     <string name="x_disabled">%1$s (사용 안 함)</string>
     <string name="removed_x_from_library">보관함에서 %1$s를 제거했습니다</string>
