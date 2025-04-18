@@ -5,7 +5,7 @@
     <string name="no_internet">Tidak ada internet</string>
     <string name="link_or_code">Tautan atau kode</string>
     <string name="stop_player_summary">Hentikan musik ketika aplikasi ditutup</string>
-    <string name="auto_start_radio">Otomatis mulai radio</string>
+    <string name="auto_start_radio">Radio Mulai Otomatis</string>
     <string name="songs">Lagu</string>
     <string name="playlists">Playlist</string>
     <string name="extension_requires_following_extensions">%1$s memerlukan %2$s</string>
@@ -78,9 +78,9 @@
     <string name="loading">Tunggu yaa…</string>
     <string name="audio_summary">(Audiophile sinii)</string>
     <string name="bass_boost">Tingkat bass</string>
-    <string name="equalizer_summary">Buka pengaturan equaliser bawaan</string>
+    <string name="equalizer_summary">Buka pengaturan equalizer sistem</string>
     <string name="stream_quality_summary">Pilih kualitas stream</string>
-    <string name="stop_player">Hentikan musik</string>
+    <string name="stop_player">Hentikan Pemain</string>
     <string name="playback_speed">Kecepatan pemutaran</string>
     <string name="equalizer">Equaliser</string>
     <string name="keep_queue">Simpan antrean</string>
@@ -89,7 +89,7 @@
     <string name="change_pitch_with_speed_desc">Jadikan lagunya seloww</string>
     <string name="behavior">Kebiasaan</string>
     <string name="skip_silence">Lewati hening</string>
-    <string name="skip_silence_summary">Lewati bagian hening lagu, supaya musik menyatu.</string>
+    <string name="skip_silence_summary">Lewati bagian senyap dalam lagu, untuk menyediakan pemutaran tanpa celah</string>
     <string name="misc_summary">Pengaturan lain</string>
     <string name="cache_size">Ukuran cache</string>
     <string name="auto_start_radio_summary">Otomatis tambah musik terkait, supaya musik terus berjalan</string>
@@ -122,7 +122,7 @@
     <string name="music">Musik</string>
     <string name="lyrics">Lirik</string>
     <string name="tracker">Tracker</string>
-    <string name="misc">Lainnya</string>
+    <string name="misc">Miscellaneous</string>
     <string name="x_extensions">Ekstensi %1$s</string>
     <string name="x_extension">Ekstensi %1$s</string>
     <string name="enabled">Nyala</string>
@@ -253,7 +253,7 @@
     <string name="logout_and_login">Keluar dan masuk</string>
     <string name="look_and_feel_summary">Pengaturan UI dan animasi</string>
     <string name="value_not_set">Tidak diatur</string>
-    <string name="amoled_summary">Hitam legam</string>
+    <string name="amoled_summary">Ganti warna latar belakang dengan hitam pekat. Berguna untuk layar AMOLED untuk mengurangi pengurasan baterai dan mencegah layar terbakar</string>
     <string name="_30min">30 menit</string>
     <string name="extension_installed">%1$s (sudah terpasang)</string>
     <string name="username">Nama pengguna</string>
@@ -275,7 +275,7 @@
     <string name="sleep_timer">Waktu tidur</string>
     <string name="_45min">45 menit</string>
     <string name="x_disabled">%1$s (dimatikan)</string>
-    <string name="custom_theme_color_summary">Gunakan warna yang sudah diracik.</string>
+    <string name="custom_theme_color_summary">Gunakan warna tema khusus, bukan warna sistem</string>
     <string name="backgrounds">Latarbelakang</string>
     <string name="_1hr">1 jam</string>
     <string name="dynamic_player">Warna pemutar akan berubah-ubah</string>
@@ -317,7 +317,7 @@
     <string name="extension_installed_successfully">Ekstensi berhasil terpasang.</string>
     <string name="file">File</string>
     <string name="remember">Ingat</string>
-    <string name="look_and_feel">Sesuaikan selera</string>
+    <string name="look_and_feel">Tampilan dan Nuansa</string>
     <string name="sleep_timer_cancelled">Waktu tidur dibatalkan</string>
     <string name="could_not_find_the_file">File tidak ditemukan.</string>
     <string name="apply_player_color_to_app">Terapkan warna pemutar ke seluruh aplikasi</string>
