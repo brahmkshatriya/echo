@@ -9,7 +9,7 @@
     <string name="songs">Lagu</string>
     <string name="playlists">Playlist</string>
     <string name="extension_requires_following_extensions">%1$s memerlukan %2$s</string>
-    <string name="more_brain_capacity_summary">Jika ini dinyalakan, akan memperbaiki lag saat memutar audio tetapi meningkatkan penggunaan baterai (mematikan audio offloading).</string>
+    <string name="more_brain_capacity_summary">Mengaktifkan ini, dapat memperbaiki kelambatan audio, tetapi secara drastis meningkatkan penggunaan baterai (Menonaktifkan pemuatan audio).</string>
     <string name="password">Kata sandi</string>
     <string name="next">Selanjutnya</string>
     <string name="previous">Sebelum</string>
@@ -35,9 +35,9 @@
     <string name="show_tabs">Tunjukan tab</string>
     <string name="saved">Tersimpan</string>
     <string name="blacklist_folder_keywords">Blacklist folder dengan kata kunci</string>
-    <string name="blacklist_folder_keywords_summary">Kata kunci untuk folder yang diblacklist, gunakan koma sebagai pemisah</string>
+    <string name="blacklist_folder_keywords_summary">Kata kunci untuk memasukkan folder ke daftar hitam. Gunakan koma untuk pemisah</string>
     <string name="tabs">Tab</string>
-    <string name="show_tab_summary">Menunjukkan tab ekstensi sebagai kategori</string>
+    <string name="show_tab_summary">Tampilkan tab ekstensi sebagai kategori</string>
     <string name="n_items">%1$d item</string>
     <string name="unknown">Tidak diketahui</string>
     <string name="like">Suka</string>
@@ -51,7 +51,7 @@
     <string name="download_progress">Unduhan berlangsung</string>
     <string name="downloads">Unduhan</string>
     <string name="x_items">%1$d item</string>
-    <string name="library">Library</string>
+    <string name="library">Perpustakaan</string>
     <string name="progress_x_percentage">Progres %1$d%%</string>
     <string name="downloaded_x">Terunduh %1$s</string>
     <string name="login">Masuk</string>
@@ -98,7 +98,7 @@
     <string name="check_for_extension_updates">Periksa pembaruan ekstensi</string>
     <string name="install">Pasang</string>
     <string name="app">Aplikasi</string>
-    <string name="installation_type_warning">Tidak tersedia jika memasang ekstensi sebagai file.</string>
+    <string name="installation_type_warning">Tidak tersedia jika Anda menginstal ekstensi sebagai file.</string>
     <string name="extension_installer">Pemasang ekstensi</string>
     <string name="back">Kembali</string>
     <string name="invalid_extension">Ekstensi tidak valid</string>
@@ -112,7 +112,7 @@
     <string name="custom_theme_color">Racik warna tema</string>
     <string name="add_color">Tambah warna</string>
     <string name="custom_colors">Warna Kustom</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">hitam pekat</string>
     <string name="theme_summary">Pengin buta?</string>
     <string name="dynamic_player_summary">Warna pemutar akan tergantung lagi yang sedang dimainkan</string>
     <string name="navbar_gradient">Gradasi navbar</string>
@@ -141,7 +141,7 @@
     <string name="x_is_required">$1%s diperlukan</string>
     <string name="info">Info</string>
     <string name="up_next">Selanjutnya</string>
-    <string name="seekbar">Seekbar</string>
+    <string name="seekbar">Bilah pencarian</string>
     <string name="repeat">Ulangi</string>
     <string name="close">Tutup</string>
     <string name="no_lyrics">Lirik tidak ada</string>
@@ -172,7 +172,7 @@
     <string name="following_x">Mengikuti %1$s</string>
     <string name="followed_x">Diikuti %1$s</string>
     <string name="removed_x_from_library">%1$s terhapus dari library</string>
-    <string name="unfollowing_x">Unfollowing %1$s</string>
+    <string name="unfollowing_x">Berhenti mengikuti %1$s</string>
     <string name="unfollowed_x">%1$s sudah diunfollow</string>
     <string name="hide">Sembunyikan</string>
     <string name="hid_x">%1$s tersembunyi</string>
@@ -202,7 +202,7 @@
     <string name="save">Simpan</string>
     <string name="sort_title">Judul</string>
     <string name="sort_explicit">Eksplisit</string>
-    <string name="scroll_animations_summary">Animasi ketika sedang scroll</string>
+    <string name="scroll_animations_summary">Animasi saat menggulir</string>
     <string name="playlist_name">Nama playlist</string>
     <string name="playlist_description">Deskripsi playlist</string>
     <string name="create">Buat</string>
@@ -256,7 +256,7 @@
     <string name="amoled_summary">Hitam legam</string>
     <string name="_30min">30 menit</string>
     <string name="extension_installed">%1$s (sudah terpasang)</string>
-    <string name="username">Username</string>
+    <string name="username">Nama pengguna</string>
     <string name="unknown_quality">Kualitas tidak diketahui</string>
     <string name="animation">Animasi</string>
     <string name="not_logged_in">Tidak ada akun</string>
@@ -287,7 +287,7 @@
     <string name="copying_the_error">Salin eror</string>
     <string name="audio_selection">Pilihan audio</string>
     <string name="quality_selection">Pilihan kualitas</string>
-    <string name="unfollow">Unfollow</string>
+    <string name="unfollow">Berhenti mengikuti</string>
     <string name="no_download_extension">Ekstensi untuk mengunduh tidak ada, gunakan kode \"echodown\" untuk mendapatkannya.</string>
     <string name="delete_playlist">Hapus playlist</string>
     <string name="saving_x_to_library">Menyimpan %1$s ke library</string>
@@ -299,7 +299,7 @@
     <string name="add_to_next">Putar selanjutnya</string>
     <string name="duration_filter_summary">Saring file audio berdasarkan durasi (detik) kurang dari nilai yang ditentukan</string>
     <string name="sort_and_filter">Sortir dan saring</string>
-    <string name="sort_subtitle">Subtitle</string>
+    <string name="sort_subtitle">Teks terjemahan</string>
     <string name="downloads_summary">Semua unduhan</string>
     <string name="sort_album">Album</string>
     <string name="loading_x">Memuat %1s</string>
@@ -311,8 +311,8 @@
     <string name="reset">Mulai ulang</string>
     <string name="username_and_password">Username dan kata sandi</string>
     <string name="ui">UI</string>
-    <string name="uninstall">Uninstall</string>
-    <string name="extensions_summary">Atur ekstensi yang terpasang</string>
+    <string name="uninstall">Copot pemasangan</string>
+    <string name="extensions_summary">Kelola Ekstensi yang diinstal</string>
     <string name="loading_radio_for_x">Memuat radio untuk %1$s</string>
     <string name="extension_installed_successfully">Ekstensi berhasil terpasang.</string>
     <string name="file">File</string>
@@ -322,4 +322,9 @@
     <string name="could_not_find_the_file">File tidak ditemukan.</string>
     <string name="apply_player_color_to_app">Terapkan warna pemutar ke seluruh aplikasi</string>
     <string name="apply_player_color_to_app_summary">AWAS NGELAG!!!</string>
+    <string name="delete_download">Hapus Unduhan</string>
+    <string name="removed_x_from_downloads">Menghapus %1$s dari Unduhan</string>
+    <string name="download_complete">Unduh Selesai</string>
+    <string name="add_widget">Widget Pemutar Mini</string>
+    <string name="app_widget_description">Gema di layar beranda Anda!</string>
 </resources>
