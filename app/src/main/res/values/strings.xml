@@ -162,7 +162,7 @@
     <string name="add_color">Add color</string>
     <string name="custom_colors">Custom Colors</string>
     <string name="amoled">Amoled</string>
-    <string name="amoled_summary">Replace the background color with pure black. Useful for AMOLED screens to decrease the battery drain and prevent burn-in</string>
+    <string name="amoled_summary">Replace the background color with pitch black. Useful for AMOLED screens to decrease the battery drain and prevent screen burn-in</string>
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
     <string name="dynamic_player">Dynamic Player Color</string>
