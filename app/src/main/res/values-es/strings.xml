@@ -39,11 +39,11 @@
     <string name="blacklist_folders">Carpetas en Lista Negra</string>
     <string name="blacklist_folders_summary">Carpetas a excluir de la biblioteca</string>
     <string name="blacklist_folder_keywords">Palabras Clave para Carpetas en Lista Negra</string>
-    <string name="blacklist_folder_keywords_summary">Palabras clave para poner en lista negra carpetas, usa coma como separador</string>
+    <string name="blacklist_folder_keywords_summary">Palabras clave para incluir carpetas en la lista negra. Usar coma para el separador</string>
     <string name="playlists">Listas de Reproducción</string>
     <string name="saved">Guardadas</string>
     <string name="show_tabs">Mostrar Pestañas</string>
-    <string name="show_tab_summary">Mostrará las pestañas de las extensiones como categoría</string>
+    <string name="show_tab_summary">Mostrar pestañas de las extensiones como categorías</string>
     <string name="unified_liked_playlist_summary">Tus pistas favoritas de varias extensiones</string>
     <string name="n_items">%1$d elementos</string>
     <string name="playlist_liked">Favoritas</string>
@@ -118,7 +118,7 @@
     <string name="cache_size">Tamaño de Caché</string>
     <string name="version">Versión</string>
     <string name="cache_size_summary">Tamaño en MB para almacenar en caché audio y video</string>
-    <string name="extensions_summary">Gestiona tus extensiones instaladas</string>
+    <string name="extensions_summary">Administrar las extensiones instaladas</string>
     <string name="misc_summary">Ajustes varios</string>
     <string name="language">Idioma</string>
     <string name="system">Sistema</string>
@@ -130,7 +130,7 @@
     <string name="file">Archivo</string>
     <string name="installation_type">Tipo de Instalación</string>
     <string name="installation_type_summary">La instalación de la app permitirá que los siguientes enlaces se abran en Echo:</string>
-    <string name="installation_type_warning">No disponible si instalas la extensión como un Archivo.</string>
+    <string name="installation_type_warning">No está disponible si instala la extensión como un archivo.</string>
     <string name="could_not_find_the_file">No se pudo encontrar el archivo.</string>
     <string name="extension_installer">Instalador de Extensiones</string>
     <string name="uninstall">Desinstalar</string>
@@ -273,15 +273,15 @@
     <string name="background_gradient_summary">Un tinte degradado en el fondo según el contexto</string>
     <string name="edit_playlist">Editar Lista de Reproducción</string>
     <string name="more_brain_capacity">Mayor Capacidad Cerebral</string>
-    <string name="more_brain_capacity_summary">Activar esto puede ayudar a corregir el retraso del audio y aumentar el uso de batería (desactiva la descarga de audio).</string>
+    <string name="more_brain_capacity_summary">Habilitar esto, puede solucionar el retraso del audio, pero aumenta drásticamente el uso de la batería (deshabilita la descarga de audio).</string>
     <string name="sort">Ordenar</string>
     <string name="explicit">Explícito</string>
     <string name="x_plays">%1$s Reproducciones</string>
     <string name="x_followers">%1$s Seguidores</string>
     <plurals name="n_songs">
-        <item quantity="one">%1$d Canción</item>
-        <item quantity="many">%1$d Canciones</item>
-        <item quantity="other">%1$d Canciones</item>
+        <item quantity="one">%1$d canción</item>
+        <item quantity="many">%1$d canciones</item>
+        <item quantity="other">%1$d canciones</item>
     </plurals>
     <string name="shuffling_x">Reproduciendo al azar %1$s</string>
     <string name="copying_the_error">Copiando el error</string>
@@ -298,7 +298,7 @@
     <string name="sort_plays">Reproducciones</string>
     <string name="sort_explicit">Explícito</string>
     <string name="scroll_animations">Animaciones al Desplazar</string>
-    <string name="scroll_animations_summary">Animaciones al desplazarse por la interfaz</string>
+    <string name="scroll_animations_summary">Animaciones durante el desplazamiento</string>
     <string name="sort_subtitle">Subtítulo</string>
     <string name="delete">Eliminar</string>
     <string name="playlist_name">Nombre de la Lista</string>
@@ -326,4 +326,11 @@
     <string name="tagging_x">Etiquetando %1$s</string>
     <string name="downloads_summary">Todas tus descargas</string>
     <string name="okay">Aceptar</string>
+    <string name="apply_player_color_to_app">Aplicar el color del reproductor a toda la aplicación</string>
+    <string name="apply_player_color_to_app_summary">ALERTA DE RETRASO!!</string>
+    <string name="delete_download">Eliminar Descargar</string>
+    <string name="removed_x_from_downloads">Eliminado %1$s de las descargas</string>
+    <string name="download_complete">Descargar Completo</string>
+    <string name="app_widget_description">Widget de mini reproductor!</string>
+    <string name="add_widget">Widget de mini reproductor</string>
 </resources>
