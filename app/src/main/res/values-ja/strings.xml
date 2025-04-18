@@ -329,4 +329,5 @@
     <string name="extension_out_of_date"></string>
     <string name="ui"></string>
     <string name="amoled"></string>
+    <string name="look_and_feel_summary"></string>
 </resources>
