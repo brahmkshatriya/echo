@@ -132,15 +132,15 @@
     <string name="link">Link</string>
     <string name="extension_installed">%1$s (Instalado)</string>
     <string name="add_extensions">Adicionar Extensões</string>
-    <string name="look_and_feel_summary">Configurações de interface do usuário e Animação</string>
+    <string name="look_and_feel_summary">Configurações de interface do usuário e animação</string>
     <string name="ui">Interface do Usuário</string>
     <string name="theme">Tema</string>
     <string name="custom_theme_color">Cor do Tema Personalizado</string>
-    <string name="custom_theme_color_summary">Use uma cor de tema personalizada, em vez de um tema do sistema.</string>
+    <string name="custom_theme_color_summary">Use uma cor de tema personalizada, em vez da do sistema</string>
     <string name="add_color">Adicionar cor</string>
     <string name="custom_colors">Cores Personalizadas</string>
     <string name="amoled">Preto Puro</string>
-    <string name="amoled_summary">Preto Fosco, Preto Puro</string>
+    <string name="amoled_summary">Substitua a cor de fundo por preto total. Útil para telas AMOLED para diminuir o consumo de bateria e evitar o burn-in da tela</string>
     <string name="navbar_gradient">Barra de Navegação Gradiente</string>
     <string name="navbar_gradient_summary">A barra de navegação torna-se gradualmente transparente</string>
     <string name="dynamic_player">Cor Dinâmica do Reprodutor</string>
@@ -155,7 +155,7 @@
     <string name="music">Música</string>
     <string name="tracker">Rastreador</string>
     <string name="lyrics">Letras</string>
-    <string name="misc">Diversos</string>
+    <string name="misc">Variado</string>
     <string name="x_extensions">Extensões %1$s</string>
     <string name="enabled">Habilitado</string>
     <string name="select_x_account">Selecionar conta %1$s</string>
