@@ -48,7 +48,7 @@
     <string name="duration_filter_summary">FIltra i file audio con una durata (in secondi) più breve di quella indicata</string>
     <string name="blacklist_folders_summary">Cartelle da escludere dalla liberia</string>
     <string name="blacklist_folder_keywords">Parole chiave Blacklist Cartelle</string>
-    <string name="blacklist_folder_keywords_summary">Parole chiave nelle cartelle da escludere, usare la virgola (\',\') per separale</string>
+    <string name="blacklist_folder_keywords_summary">Parole chiave per inserire nella blacklist le cartelle. Usa la virgola per il separatore</string>
     <string name="playlists">Playlist</string>
     <string name="saved">Salvato</string>
     <string name="tabs">Schede</string>
@@ -118,7 +118,7 @@
     <string name="auto_start_radio_summary">Aggiungi automaticamente brani correlati nella playlist, per avere una coda infinita</string>
     <string name="cache_size">Dimensioni Cache</string>
     <string name="cache_size_summary">Spazio dedicato alla cache di audio e video, in MB</string>
-    <string name="extensions_summary">Gestisci le tue Estensioni installate</string>
+    <string name="extensions_summary">Gestisci le estensioni installate</string>
     <string name="misc_summary">Impostazioni varie</string>
     <string name="version">Versione</string>
     <string name="system">Sistema</string>
@@ -129,7 +129,7 @@
     <string name="file">File</string>
     <string name="installation_type">Tipo di Installazione</string>
     <string name="installation_type_summary">L\'installazione come App consente di aprire i seguenti link in Echo:</string>
-    <string name="installation_type_warning">Non disponibile se installi l\'estensione come File.</string>
+    <string name="installation_type_warning">Non disponibile se si installa l\'estensione come file.</string>
     <string name="could_not_find_the_file">Impossibile trovare il file.</string>
     <string name="extension_installer">Installazione Estensioni</string>
     <string name="uninstall">Disinstalla</string>
@@ -183,7 +183,7 @@
     <string name="add_account">Aggiungi Account</string>
     <string name="add_extension">Aggiungi Estensione</string>
     <string name="error_updating_extension">Errore durante l\'aggiornamento</string>
-    <string name="webview">WebView</string>
+    <string name="webview">Visualizzazione Web</string>
     <string name="username_and_password">Username e Password</string>
     <string name="manual">Manuale</string>
     <string name="username">Username</string>
@@ -268,7 +268,7 @@
     <string name="more_brain_capacity">Più Materia Grigia</string>
     <string name="sort">Ordina</string>
     <string name="explicit">Esplicito</string>
-    <string name="more_brain_capacity_summary">Può risolvere problemi di latenza audio, ma comporta un maggiore consumo della batteria (disabilita l\'audio offloading).</string>
+    <string name="more_brain_capacity_summary">Abilitando questa opzione, è possibile correggere il ritardo audio, ma aumenta drasticamente l\'utilizzo della batteria (disabilita lo scaricamento dell\'audio).</string>
     <string name="x_plays">%1$s Ascolti</string>
     <string name="x_followers">%1$s Seguiti</string>
     <string name="shuffling_x">Riproduzione Casuale di %1$s</string>
@@ -286,7 +286,7 @@
     <string name="sort_plays">Ascolti</string>
     <string name="sort_explicit">Esplicito</string>
     <string name="scroll_animations">Animazioni di Scorrimento</string>
-    <string name="scroll_animations_summary">Mostra animazioni quando scorri roba</string>
+    <string name="scroll_animations_summary">Animazioni durante lo scorrimento</string>
     <string name="sort_subtitle">Sottotitoli</string>
     <string name="delete">Elimina</string>
     <string name="playlist_name">Nome Playlist</string>
@@ -329,8 +329,8 @@
         <item quantity="other"/>
     </plurals>
     <plurals name="n_songs">
-        <item quantity="one">%1$d Brano</item>
-        <item quantity="many">%1$d Brani</item>
-        <item quantity="other"/>
+        <item quantity="one">%1$d canzone</item>
+        <item quantity="many">%1$d canzoni</item>
+        <item quantity="other">%1$d canzoni</item>
     </plurals>
 </resources>
