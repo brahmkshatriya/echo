@@ -119,7 +119,7 @@
     <string name="bass_boost_desc">বৃহৎ মানে শব্দ বিকৃত কৰিব পাৰে।</string>
     <string name="change_pitch_with_speed_desc">সেই স্লো-মোচন শব্দটো পাওক</string>
     <string name="equalizer">ইকুৱালাইজাৰ</string>
-    <string name="equalizer_summary">ডিভাইচৰ ইকুৱালাইজাৰ ছেটিংছ খুলক</string>
+    <string name="equalizer_summary">চিষ্টেমৰ ইকুৱালাইজাৰ ছেটিংছ খুলক</string>
     <string name="stream_quality">স্ট্ৰীম গুণমান</string>
     <string name="stream_quality_summary">স্ট্ৰীমৰ গুণমান বাছনি কৰক</string>
     <string name="keep_queue">প্লেয়াৰ কিউ সংৰক্ষণ কৰক</string>
@@ -127,7 +127,7 @@
     <string name="stop_player">প্লেয়াৰ বন্ধ কৰক</string>
     <string name="stop_player_summary">আপ্প পুনৰ খোলাৰ সময়ত প্লেয়াৰ সংক্ৰমণ পুনৰুদ্ধাৰ কৰক</string>
     <string name="skip_silence">নিৰ্বাচিত মুঠ</string>
-    <string name="skip_silence_summary">গীতত নিৰৱ অংশ তিয়াৰ কৰি নাথাকিব।</string>
+    <string name="skip_silence_summary">গীতত থকা নিৰৱ অংশ এৰাই, অবিৰত বজোৱাৰ সুবিধা প্ৰদান কৰে</string>
     <string name="auto_start_radio">স্বয়ংক্ৰিয়ভাৱে ৰেডিঅ\' আৰম্ভ কৰক</string>
     <string name="auto_start_radio_summary">স্বয়ংক্ৰিয়ভাৱে সংগীতৰ সম্পৰ্কীয় গানসমূহ প্লেলিষ্টত যোগ কৰক, যাতে অসীম ক্ৰম থাকে</string>
     <string name="cache_size">কেচৰ আকাৰ</string>
@@ -188,8 +188,8 @@
     <string name="followed_x">%1$s অনুগমন কৰা হ’ল</string>
     <string name="unfollowing_x">%1$s অনুগমন নকৰিব</string>
     <string name="checking_for_extension_updates">এক্সটেনচন আপডেটৰ বাবে পৰীক্ষা কৰা হৈছে</string>
-    <string name="look_and_feel">দৰ্শন আৰু অনুভৱ</string>
-    <string name="look_and_feel_summary">UI আৰু এনিমেচন ছেটিংছ</string>
+    <string name="look_and_feel">দৰ্শন আৰু অনুভূতি</string>
+    <string name="look_and_feel_summary">UI আৰু এনিমেচন ইচ্ছামতে পৰিবৰ্তন কৰক</string>
     <string name="ui">UI</string>
     <string name="theme_summary">অন্ধ হ\'ব বিচাৰে নেকি?</string>
     <string name="custom_theme_color">নিজস্ব থিমৰ ৰং</string>
@@ -203,7 +203,7 @@
     <string name="loading_radio_for_x">%1$s ৰেডিঅ’ ল’ড কৰিছে</string>
     <string name="playing_x">%1$s বজাই আছে</string>
     <string name="adding_x_to_queue">%1$s ক তালিকাত যোগ কৰা হৈছে</string>
-    <string name="custom_theme_color_summary">চিস্টেম থিমৰ পৰিবর্তে নিজস্ব থিমৰ ৰং ব্যৱহাৰ কৰক।</string>
+    <string name="custom_theme_color_summary">চিষ্টেম থিমৰ পৰিবর্তে নিজস্ব থিমৰ ৰং ব্যৱহাৰ কৰক</string>
     <string name="add_color">ৰং যোগ কৰক</string>
     <string name="custom_colors">নিজস্ব ৰং</string>
     <string name="amoled">আমোলেড</string>
