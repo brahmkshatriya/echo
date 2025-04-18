@@ -16,7 +16,7 @@
     <string name="login">Entrar</string>
     <string name="change_pitch_with_speed_desc">Obtenha aquele som em câmera lenta</string>
     <string name="sort_duration">Duração</string>
-    <string name="equalizer_summary">Abra as configurações do equalizador do dispositivo</string>
+    <string name="equalizer_summary">Abra as configurações do equalizador do sistema</string>
     <string name="list_is_empty">A lista está vazia</string>
     <string name="show_background">Mostrar Fundo</string>
     <string name="webview">Visualizar na Web</string>
@@ -105,8 +105,8 @@
     <string name="keep_queue">Manter Fila do Reprodutor</string>
     <string name="keep_queue_summary">Recupere a fila do reprodutor ao reabrir o aplicativo.</string>
     <string name="skip_silence">Pular Silêncio</string>
-    <string name="skip_silence_summary">Pule a parte silenciosa da música, para fornecer uma reprodução contínua.</string>
-    <string name="auto_start_radio">Rádio de Início Automático</string>
+    <string name="skip_silence_summary">Pule a parte silenciosa da música, para fornecer uma reprodução contínua</string>
+    <string name="auto_start_radio">Rádio de início automático</string>
     <string name="cache_size">Tamanho do Cache</string>
     <string name="cache_size_summary">Tamanho em MB para armazenar em cache áudio e vídeo</string>
     <string name="extensions_summary">Gerenciar as extensões instaladas</string>
@@ -303,12 +303,12 @@
     <string name="video_permission_summary">Para acessar sua biblioteca de vídeos local</string>
     <string name="library">Biblioteca</string>
     <string name="misc_summary">Configurações Diversas</string>
-    <string name="look_and_feel">Aparência e Sensação</string>
+    <string name="look_and_feel">Aparência e Estilo</string>
     <string name="removed_x_from_library">Removido %1$s da biblioteca</string>
     <string name="download_progress">Progresso do Download</string>
     <string name="disabled">Desabilitado</string>
     <string name="up_next">A seguir</string>
-    <string name="stop_player">Parar reprodutor</string>
+    <string name="stop_player">Parar Reprodutor</string>
     <string name="language">Idioma</string>
     <string name="link_or_code">Link ou Código</string>
     <string name="theme_summary">Quer ficar cego?</string>
