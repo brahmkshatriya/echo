@@ -27,8 +27,8 @@
     <string name="refresh_library_on_reload">새로고침시 라이브러리 다시 불러오기</string>
     <string name="blacklist_folders">블랙리스트 폴더</string>
     <string name="blacklist_folder_keywords">블랙리스트 폴더 키워드</string>
-    <string name="show_tab_summary">확장 프로그램의 탭을 카테고리로 표시합니다</string>
-    <string name="blacklist_folder_keywords_summary">블랙리스트 폴더의 키워드는 쉼표로 구분</string>
+    <string name="show_tab_summary">확장 기능의 탭을 카테고리로 표시합니다</string>
+    <string name="blacklist_folder_keywords_summary">폴더를 차단할 키워드입니다. 쉼표로 구분하세요</string>
     <string name="duration_filter_summary">지속 시간(초)이 다음 값보다 짧은 오디오 파일을 필터링합니다</string>
     <string name="show_tabs">탭 표시</string>
     <string name="duration_filter">기간 필터</string>
@@ -125,7 +125,7 @@
     <string name="auto_start_radio">라디오 자동 시작</string>
     <string name="cache_size">캐시 크기</string>
     <string name="cache_size_summary">오디오 및 비디오 캐시에 필요한 크기(MB)</string>
-    <string name="extensions_summary">설치된 확장 프로그램 관리</string>
+    <string name="extensions_summary">설치된 확장 기능을 관리합니다</string>
     <string name="misc_summary">기타 설정</string>
     <string name="version">버전</string>
     <string name="language_summary">앱의 언어, 시스템은 기본적으로 영어로 설정됩니다</string>
@@ -133,7 +133,7 @@
     <string name="install">설치</string>
     <string name="app">앱</string>
     <string name="file">파일</string>
-    <string name="installation_type_warning">확장 프로그램을 파일로 설치한 경우에는 사용할 수 없습니다.</string>
+    <string name="installation_type_warning">확장 기능을 파일로 설치한 경우에는 사용할 수 없습니다.</string>
     <string name="could_not_find_the_file">파일을 찾을 수 없습니다.</string>
     <string name="uninstall">설치 제거</string>
     <string name="invalid_extension">잘못된 확장자</string>
@@ -262,7 +262,7 @@
     <string name="sort">정렬</string>
     <string name="edit_playlist">재생목록 수정</string>
     <plurals name="n_songs">
-        <item quantity="other">%1$d곡</item>
+        <item quantity="other">노래 %1$d곡</item>
     </plurals>
     <string name="copying_the_error">오류 복사하기</string>
     <string name="reversed">반전</string>
@@ -274,7 +274,7 @@
     <string name="sort_duration">기간</string>
     <string name="sort_explicit">설명</string>
     <string name="scroll_animations">스크롤 애니메이션</string>
-    <string name="scroll_animations_summary">콘텐츠를 스크롤할 때 애니메이션</string>
+    <string name="scroll_animations_summary">스크롤 시 애니메이션</string>
     <string name="create_playlist">재생 목록 만들기</string>
     <string name="add_song">노래 추가</string>
     <string name="playlist_name_empty">재생 목록 이름이 비어 있습니다</string>
@@ -306,7 +306,7 @@
     <string name="sort_artist">아티스트</string>
     <string name="downloads_summary">다운로드한 모든 항목</string>
     <string name="add_to_next">다음에 추가</string>
-    <string name="more_brain_capacity_summary">이 기능을 활성화하면 오디오 지연을 해결하고 배터리 사용량을 늘릴 수 있습니다(오디오 오프로딩 비활성화).</string>
+    <string name="more_brain_capacity_summary">이 옵션을 활성화하면 오디오 지연 현상을 해결할 수 있지만, 배터리 사용량이 크게 증가합니다 (오디오 오프로딩이 비활성화됩니다).</string>
     <string name="explicit">설명</string>
     <string name="x_followers">%1$s 팔로워</string>
     <string name="loading_x">%1s 로딩중</string>
@@ -320,4 +320,11 @@
     <string name="adding_x">%1$s 추가</string>
     <string name="saved_to_x">%1$s에 저장됨</string>
     <string name="merging_x">%1$s 병합 중</string>
+    <string name="apply_player_color_to_app">플레이어 색상을 앱 전체에 적용합니다</string>
+    <string name="apply_player_color_to_app_summary">지연 경고!!!</string>
+    <string name="delete_download">다운로드 삭제</string>
+    <string name="removed_x_from_downloads">%1$s를 다운로드에서 제거했습니다</string>
+    <string name="download_complete">다운로드 완료</string>
+    <string name="add_widget">미니 플레이어 위젯</string>
+    <string name="app_widget_description">홈 화면에서 에코!</string>
 </resources>
