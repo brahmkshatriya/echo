@@ -47,7 +47,7 @@
     <string name="refresh_library_on_reload_summary">Escaneie o dispositivo sempre que o feed for carregado</string>
     <string name="duration_filter">Filtro de Duração</string>
     <string name="blacklist_folders">Pastas da Lista Negra</string>
-    <string name="blacklist_folder_keywords_summary">Palavras-chave para pastas da lista negra, use vírgula para separador</string>
+    <string name="blacklist_folder_keywords_summary">Palavras-chave para pastas na lista negra. Use vírgula para separador</string>
     <string name="playlists">Listas de Reprodução</string>
     <string name="saved">Salvou</string>
     <string name="show_tabs">Mostrar Guias</string>
@@ -109,7 +109,7 @@
     <string name="auto_start_radio">Rádio de Início Automático</string>
     <string name="cache_size">Tamanho do Cache</string>
     <string name="cache_size_summary">Tamanho em MB para armazenar em cache áudio e vídeo</string>
-    <string name="extensions_summary">Gerenciar suas Extensões instaladas</string>
+    <string name="extensions_summary">Gerenciar as extensões instaladas</string>
     <string name="version">Versão</string>
     <string name="system">Sistema</string>
     <string name="language_summary">Idioma do aplicativo, o Sistema será padronizado para Inglês</string>
@@ -251,7 +251,7 @@
     <string name="sort_plays">Reproduções</string>
     <string name="sort_explicit">Explícito</string>
     <string name="scroll_animations">Animações de rolagem</string>
-    <string name="scroll_animations_summary">Animações quando você rola coisas</string>
+    <string name="scroll_animations_summary">Animações durante a rolagem</string>
     <string name="sort_subtitle">Subtítulo</string>
     <string name="delete">Excluir</string>
     <string name="playlist_description">Descrição da lista de reprodução</string>
@@ -283,9 +283,9 @@
         <item quantity="other">%1$d Minutos</item>
     </plurals>
     <plurals name="n_songs">
-        <item quantity="one">%1$d Música</item>
-        <item quantity="many">%1$d Músicas</item>
-        <item quantity="other">%1$d Músicas</item>
+        <item quantity="one">%1$d música</item>
+        <item quantity="many">%1$d músicas</item>
+        <item quantity="other">%1$d músicas</item>
     </plurals>
     <string name="delete_download">Excluir download</string>
     <string name="home">Início</string>
@@ -293,7 +293,7 @@
     <string name="more_by_x">Mais de %1$s</string>
     <string name="write_storage">Armazenamento de Gravação</string>
     <string name="blacklist_folder_keywords">Palavras-Chave da Pasta da Lista Negra</string>
-    <string name="show_tab_summary">Mostrará as guias das extensões como categoria</string>
+    <string name="show_tab_summary">Mostrar guias das extensões como categorias</string>
     <string name="remove">Remover</string>
     <string name="x_login_required">Entrada %1$s necessária</string>
     <string name="blacklist_folders_summary">Pastas a serem excluídas da biblioteca</string>
