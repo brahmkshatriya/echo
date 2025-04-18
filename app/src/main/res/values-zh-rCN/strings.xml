@@ -268,7 +268,7 @@
     <string name="sort_album">专辑</string>
     <string name="sort_explicit">显式</string>
     <string name="scroll_animations">滚动动画</string>
-    <string name="scroll_animations_summary">滚动内容时的动画</string>
+    <string name="scroll_animations_summary">滚动时的动画效果</string>
     <string name="sort_subtitle">字幕</string>
     <string name="delete">删除</string>
     <string name="playlist_name">播放列表名称</string>
@@ -316,7 +316,7 @@
     <string name="playing_x">正在播放 %1$s</string>
     <string name="remember">记住</string>
     <string name="x_created">%1$s 已创建</string>
-    <string name="more_brain_capacity_summary">启用此功能可以帮助解决音频延迟问题并增加电池使用量（禁用音频卸载）。</string>
+    <string name="more_brain_capacity_summary">启用此选项可以修复音频延迟，但会大幅增加电池消耗（会禁用音频卸载功能）。</string>
     <string name="saved_to_x">已保存至 %1$s</string>
     <string name="merging_x">正在合并 %1$s</string>
     <string name="no_download_extension">未找到下载扩展，请使用代码“echodown”获取。</string>
@@ -325,4 +325,6 @@
     <string name="delete_download">删除下载</string>
     <string name="download_complete">下载完成</string>
     <string name="removed_x_from_downloads">已将 %1$s 从下载移除</string>
+    <string name="add_widget">迷你播放器小部件</string>
+    <string name="app_widget_description">在你的主屏幕上回响！</string>
 </resources>
