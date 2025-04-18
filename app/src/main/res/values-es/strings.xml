@@ -179,7 +179,7 @@
     <string name="add_account">Agregar Cuenta</string>
     <string name="add_extension">Agregar Extensión</string>
     <string name="error_updating_extension">Error al actualizar</string>
-    <string name="webview">Webview</string>
+    <string name="webview">WebView</string>
     <string name="username_and_password">Nombre de usuario y Contraseña</string>
     <string name="manual">Manual</string>
     <string name="username">Nombre de usuario</string>
