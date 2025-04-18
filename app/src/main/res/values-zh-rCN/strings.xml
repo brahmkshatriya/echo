@@ -20,7 +20,7 @@
     <string name="extension_installed_successfully">扩展已成功安装。</string>
     <string name="okay">好的</string>
     <string name="video_permission_summary">用于获取你的本地视频库</string>
-    <string name="webview">网页</string>
+    <string name="webview">网页视图</string>
     <string name="recently_added">最近添加</string>
     <string name="animation">动画</string>
     <string name="lyrics">歌词</string>
@@ -63,7 +63,7 @@
     <string name="loading">加载中…</string>
     <string name="reset">重置</string>
     <string name="bass_boost">低音增强</string>
-    <string name="extensions_summary">管理你已安装的扩展</string>
+    <string name="extensions_summary">管理已安装的扩展</string>
     <string name="version">版本</string>
     <string name="look_and_feel">外观与体验</string>
     <string name="add_color">添加颜色</string>
@@ -130,8 +130,8 @@
     <string name="blacklist_folders">文件夹黑名单</string>
     <string name="blacklist_folders_summary">从媒体库中排除的文件夹</string>
     <string name="blacklist_folder_keywords">黑名单文件夹关键字</string>
-    <string name="blacklist_folder_keywords_summary">将关键字列入黑名单文件夹，使用逗号作为分隔符</string>
-    <string name="show_tab_summary">将显示扩展的标签作为类别</string>
+    <string name="blacklist_folder_keywords_summary">要屏蔽文件夹的关键词。使用逗号分隔</string>
+    <string name="show_tab_summary">将扩展的标签显示为分类</string>
     <string name="unified_liked_playlist_summary">您喜欢的来自各种扩展的曲目</string>
     <string name="n_items">%1$d 个项目</string>
     <string name="playlist_liked_desc">您喜欢的曲目</string>
@@ -167,7 +167,7 @@
     <string name="language_summary">应用程序的语言，系统将默认为英语</string>
     <string name="check_for_extension_updates_summary">打开应用程序时，查找扩展的新更新。</string>
     <string name="installation_type_summary">应用程序安装将允许在 Echo 中打开以下链接：</string>
-    <string name="installation_type_warning">如果将扩展作为文件安装则不可用。</string>
+    <string name="installation_type_warning">如果你以文件形式安装扩展，则此功能不可用。</string>
     <string name="allow_opening_links">允许打开链接</string>
     <string name="open_links_instruction">要允许打开这些链接，您需要：\n- 向下滚动并点击“默认打开”\n- 点击“+ 添加链接”</string>
     <string name="extension_requires_following_extensions">%1$s 需要 %2$s</string>
