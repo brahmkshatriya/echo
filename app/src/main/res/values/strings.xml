@@ -149,7 +149,7 @@
     <string name="checking_for_extension_updates">Checking for extension updates</string>
     <string name="look_and_feel">Look &amp; Feel</string>
     <string name="look_and_feel_summary">Adjust the UI and animations to your liking</string>
-    <string name="ui">User Interface</string>
+    <string name="ui">UI</string>
     <string name="theme">Theme</string>
     <string name="theme_summary">Want to be blind?</string>
     <string-array name="themes">
@@ -161,7 +161,7 @@
     <string name="custom_theme_color_summary">Use a custom theme color, instead of the system one</string>
     <string name="add_color">Add color</string>
     <string name="custom_colors">Custom Colors</string>
-    <string name="amoled">Pitch Black</string>
+    <string name="amoled">Amoled</string>
     <string name="amoled_summary">Replace the background color with pure black. Useful for AMOLED screens to decrease the battery drain and prevent burn-in</string>
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
