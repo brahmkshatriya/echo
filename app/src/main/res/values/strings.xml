@@ -284,7 +284,7 @@
     <string name="all">All</string>
     <string name="edit_playlist">Edit Playlist</string>
     <string name="more_brain_capacity">More Brain Capacity</string>
-    <string name="more_brain_capacity_summary">Enabling this, can help fix audio lag and increase battery usage (Disables the audio offloading).</string>
+    <string name="more_brain_capacity_summary">Enabling this, can fix the audio lag, but drastically increases the battery usage (Disables the audio offloading).</string>
     <string name="sort">Sort</string>
     <string name="explicit">Explicit</string>
     <string name="x_plays">%1$s Plays</string>
