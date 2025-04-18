@@ -133,7 +133,7 @@
     <string name="add_extension">Tambah ekstensi</string>
     <string name="error_updating_extension">Eror ketika memperbarui</string>
     <string name="manual">Manual</string>
-    <string name="webview">Webview</string>
+    <string name="webview">WebView</string>
     <string name="logout">Keluar</string>
     <string name="switch_account">Ganti akun</string>
     <string name="incognito">Mode rahasia</string>
