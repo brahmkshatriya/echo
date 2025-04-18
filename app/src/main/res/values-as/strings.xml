@@ -207,7 +207,7 @@
     <string name="add_color">ৰং যোগ কৰক</string>
     <string name="custom_colors">নিজস্ব ৰং</string>
     <string name="amoled">আমোলেড</string>
-    <string name="amoled_summary">একেবাৰেই ক’লা, খাটি ক’লা</string>
+    <string name="amoled_summary">পৃষ্ঠভূমি ৰং পিচ ব্লেকৰলই সলনি কৰক। এমোলেড স্ক্রীনৰ বাবে এইটো উপকাৰী, যাৰ দ্বাৰা বেটাৰী খৰচ কম হয় আৰু স্ক্রীন আকাৰ ধ্বংস ৰোধ হয়</string>
     <string name="navbar_gradient">গ্ৰেডিয়েণ্ট নেভবাৰ</string>
     <string name="adding_x_to_next">%1$s ক পৰৱৰ্তীত যোগ কৰা হৈছে</string>
     <string name="navbar_gradient_summary">নেভবাৰ অলপ অলপকৈ পৰিস্ফুট হৈ পৰে</string>
