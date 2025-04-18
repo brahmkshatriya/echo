@@ -31,7 +31,7 @@
     <string name="blacklist_folders">Blacklist Folders</string>
     <string name="blacklist_folders_summary">Folders to exclude from the library</string>
     <string name="blacklist_folder_keywords">Blacklist Folder Keywords</string>
-    <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders, use comma for separator</string>
+    <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders. Use comma for separator</string>
     <string name="playlists">Playlists</string>
     <string name="saved">Saved</string>
     <string name="tabs">Tabs</string>
@@ -188,7 +188,7 @@
     <string name="add_account">Add Account</string>
     <string name="add_extension">Add Extension</string>
     <string name="error_updating_extension">Error while updating</string>
-    <string name="webview">Webview</string>
+    <string name="webview">WebView</string>
     <string name="username_and_password">Username and Password</string>
     <string name="manual">Manual</string>
     <string name="username">Username</string>
@@ -290,8 +290,8 @@
     <string name="x_plays">%1$s Plays</string>
     <string name="x_followers">%1$s Followers</string>
     <plurals name="n_songs">
-        <item quantity="one">%1$d Song</item>
-        <item quantity="other">%1$d Songs</item>
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
     </plurals>
     <string name="shuffling_x">Shuffling %1$s</string>
     <string name="copying_the_error">Copying the error</string>
@@ -309,7 +309,7 @@
     <string name="sort_plays">Plays</string>
     <string name="sort_explicit">Explicit</string>
     <string name="scroll_animations">Scroll Animations</string>
-    <string name="scroll_animations_summary">Animations when you scroll stuff</string>
+    <string name="scroll_animations_summary">Animations while scrolling</string>
     <string name="sort_subtitle">Subtitle</string>
     <string name="delete">Delete</string>
     <string name="playlist_name">Playlist Name</string>
