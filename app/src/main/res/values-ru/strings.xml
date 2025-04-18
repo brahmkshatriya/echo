@@ -71,7 +71,7 @@
     <string name="read_storage">Чтение хранилища</string>
     <string name="write_storage">Запись в хранилище</string>
     <string name="more_by_x">Больше от %1$s</string>
-    <string name="refresh_library_on_reload">Обновить библиотеку при перезагрузке</string>
+    <string name="refresh_library_on_reload">Обновлять библиотеку при перезагрузке</string>
     <string name="blacklist_folders_summary">Папки, которые нужно исключить из библиотеки</string>
     <string name="blacklist_folders">Чёрный список папок</string>
     <string name="playlist_liked">Понравившееся</string>
@@ -168,4 +168,24 @@
     <string name="logout">Выход</string>
     <string name="incognito">Инкогнито</string>
     <string name="sleep_timer_desc">Установить таймер сна, чтоб останавливать воспроизведение после определённого количества времени</string>
+    <string name="value_not_set">Не установлено</string>
+    <string name="app">Приложение</string>
+    <string name="installation_type_warning">Недоступно, если вы устанавливаете расширение как файл.</string>
+    <string name="extension_installer">Установка расширения</string>
+    <string name="uninstall">Удалить</string>
+    <string name="allow_opening_links">Разрешить открытие ссылок</string>
+    <string name="extension_requires_following_extensions">%1$s требует %2$s</string>
+    <string name="ui">Интерфейс</string>
+    <string name="add_extension">Добавить расширение</string>
+    <string name="add_account">Добавить аккаунт</string>
+    <string name="error_updating_extension">Ошибка при обновлении</string>
+    <string name="webview">WebView</string>
+    <string name="nothing_to_download_in_x">Нечего скачивать в %1$s</string>
+    <string name="download_started">Загрузка началась</string>
+    <string name="extension_uninstalled_successfully">Расширение удалено успешно.</string>
+    <string name="installation_type">Тип установки</string>
+    <string name="installation_type_summary">Установка приложения разрешит открытие следующих ссылок в Echo:</string>
+    <string name="theme">Тема</string>
+    <string name="file">Файл</string>
+    <string name="extension_installed_successfully">Расширение установлено успешно.</string>
 </resources>
