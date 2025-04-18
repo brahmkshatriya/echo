@@ -310,4 +310,23 @@
     <string name="app_widget_description"></string>
     <string name="removed_x_from_downloads"></string>
     <string name="download_complete"></string>
+    <string name="auto_start_radio"></string>
+    <plurals name="n_songs">
+        <item quantity="one"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="equalizer_summary"></string>
+    <string name="webview"></string>
+    <string name="misc"></string>
+    <string name="installation_type_warning"></string>
+    <string name="extensions_summary"></string>
+    <string name="more_brain_capacity_summary"></string>
+    <string name="blacklist_folder_keywords_summary"></string>
+    <string name="amoled_summary"></string>
+    <string name="stop_player"></string>
+    <string name="custom_theme_color_summary"></string>
+    <string name="show_tab_summary"></string>
+    <string name="skip_silence_summary"></string>
+    <string name="look_and_feel"></string>
+    <string name="scroll_animations_summary"></string>
 </resources>
