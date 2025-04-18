@@ -329,4 +329,7 @@
     <string name="skip_silence_summary"></string>
     <string name="look_and_feel"></string>
     <string name="scroll_animations_summary"></string>
+    <string name="ui"></string>
+    <string name="amoled"></string>
+    <string name="extension_out_of_date"></string>
 </resources>
