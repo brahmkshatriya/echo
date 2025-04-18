@@ -65,7 +65,7 @@
     <string name="bass_boost">低音增强</string>
     <string name="extensions_summary">管理已安装的扩展</string>
     <string name="version">版本</string>
-    <string name="look_and_feel">外观与体验</string>
+    <string name="look_and_feel">外观与感觉</string>
     <string name="add_color">添加颜色</string>
     <string name="custom_colors">自定义颜色</string>
     <string name="show_background">显示背景</string>
@@ -157,11 +157,11 @@
     <string name="stream_quality">流媒体质量</string>
     <string name="stream_quality_summary">选择流媒体的质量</string>
     <string name="keep_queue">保留播放队列</string>
-    <string name="stop_player">停止播放</string>
+    <string name="stop_player">停止玩家</string>
     <string name="stop_player_summary">当应用程序从最近使用记录中删除时，停止播放器</string>
     <string name="skip_silence">跳过静音</string>
-    <string name="skip_silence_summary">跳过歌曲中的静音部分，提供无间隙播放。</string>
-    <string name="auto_start_radio">自动启动电台</string>
+    <string name="skip_silence_summary">跳过歌曲中的静音部分，以提供无缝播放</string>
+    <string name="auto_start_radio">自动启动无线电</string>
     <string name="auto_start_radio_summary">自动添加播放列表中曲目的相关歌曲，以获得无限队列</string>
     <string name="misc_summary">其他设置</string>
     <string name="language_summary">应用程序的语言，系统将默认为英语</string>
@@ -177,9 +177,9 @@
     <string name="extension_installed">%1$s （已安装）</string>
     <string name="theme_summary">想当盲人吗？</string>
     <string name="custom_theme_color">自定义主题颜色</string>
-    <string name="custom_theme_color_summary">使用自定义主题颜色，而不是系统主题。</string>
+    <string name="custom_theme_color_summary">使用自定义主题颜色，而不是系统颜色</string>
     <string name="amoled">黑色主题</string>
-    <string name="amoled_summary">漆黑一片，纯黑</string>
+    <string name="amoled_summary">将背景色替换为漆黑。可用于 AMOLED 屏幕，以减少电池消耗并防止屏幕老化</string>
     <string name="navbar_gradient">渐变导航栏</string>
     <string name="navbar_gradient_summary">导航栏逐渐变得透明</string>
     <string name="dynamic_player">动态播放器颜色</string>
@@ -304,7 +304,7 @@
         <item quantity="other">%1$d 首歌曲</item>
     </plurals>
     <string name="sleep_timer_desc">设置定时关闭，在一定时间后停止播放</string>
-    <string name="equalizer_summary">打开设备均衡器设置</string>
+    <string name="equalizer_summary">打开系统均衡器设置</string>
     <string name="sleep_on_specific_time">在特定时间关闭</string>
     <string name="sort">排序</string>
     <string name="audio_selection">音频选择</string>
