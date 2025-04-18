@@ -322,7 +322,7 @@
     <string name="saved_to_x">%1$s ত সংৰক্ষণ কৰা হ’ল</string>
     <string name="removing_x">%1$s আঁতৰ কৰি আছে</string>
     <string name="tagging_x">%1$s টেগিং কৰি আছে</string>
-    <string name="more_brain_capacity_summary">এইটো সক্রিয় কৰিলে, অডিঅ’ লেগ কমিব পাৰে, কিন্তু বেটাৰী খৰচ বৃদ্ধি হ’ব (অডিঅ’ অফল’ডিং নিষ্ক্ৰিয় কৰে) ।</string>
+    <string name="more_brain_capacity_summary">ইয়াক সক্ষম কৰিলে, অডিঅ\' লেগ ঠিক কৰিব পাৰে, কিন্তু বেটাৰিৰ ব্যৱহাৰ যথেষ্ট বৃদ্ধি কৰে (অডিঅ\' অফলোডিং অক্ষম কৰে)।</string>
     <string name="downloading_update_for_x">%1$s ৰ বাবে আপডেইট ডাউনলোড কৰা হৈছে</string>
     <string name="apply_player_color_to_app_summary">লেগ এলাৰ্ট!!!</string>
     <string name="apply_player_color_to_app">সমগ্ৰ এপটোত প্লেয়াৰৰ ৰং প্ৰয়োগ কৰক</string>
