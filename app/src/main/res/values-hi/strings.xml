@@ -15,12 +15,12 @@
     <string name="blacklist_folders">ब्लैकलिस्ट फ़ोल्डर्स</string>
     <string name="blacklist_folders_summary">लाइब्रेरी से बाहर रखे जाने वाले फ़ोल्डर</string>
     <string name="blacklist_folder_keywords">ब्लैकलिस्ट फ़ोल्डर कुंजीशब्द</string>
-    <string name="blacklist_folder_keywords_summary">फ़ोल्डरों को ब्लैकलिस्ट करने के लिए कुंजीशब्द, अलग करने के लिए अल्पविराम का उपयोग करें</string>
+    <string name="blacklist_folder_keywords_summary">फ़ोल्डरों को ब्लैकलिस्ट करने के लिए कीवर्ड। विभाजक के लिए अल्पविराम का उपयोग करें</string>
     <string name="playlists">प्लेलिस्ट्स</string>
     <string name="saved">सहेजा गया</string>
     <string name="tabs">टैब</string>
     <string name="show_tabs">टैब दिखाएँ</string>
-    <string name="show_tab_summary">श्रेणी के रूप में एक्सटेंशन के टैब दिखाए जाएंगे</string>
+    <string name="show_tab_summary">एक्सटेंशन के टैब को श्रेणियों के रूप में दिखाएं</string>
     <string name="unknown">अज्ञात</string>
     <string name="like">पसंद करें</string>
     <string name="unlike">नापसंद करें</string>
@@ -73,7 +73,7 @@
     <string name="auto_start_radio_summary">प्लेलिस्ट में ट्रैक के संबंधित गाने स्वचालित रूप से जोड़ें, ताकि अनंत कतार हो</string>
     <string name="cache_size">कैचे आकार</string>
     <string name="cache_size_summary">ऑडियो और वीडियो कैश करने के लिए MB में आकार</string>
-    <string name="extensions_summary">अपने इंस्टॉल किए गए एक्सटेंशन प्रबंधित करें</string>
+    <string name="extensions_summary">इंस्टॉल किए गए एक्सटेंशन प्रबंधित करें</string>
     <string name="version">संस्करण</string>
     <string name="language">भाषा</string>
     <string name="language_summary">ऐप की भाषा, सिस्टम डिफ़ॉल्ट रूप से अंग्रेज़ी में होगी</string>
@@ -84,7 +84,7 @@
     <string name="file">फ़ाइल</string>
     <string name="installation_type">स्थापना प्रकार</string>
     <string name="installation_type_summary">ऐप स्थापना निम्नलिखित लिंक को इको में खोलने की अनुमति देगी:</string>
-    <string name="installation_type_warning">अगर आप एक्सटेंशन को फ़ाइल के रूप में स्थापित करते हैं, तो यह उपलब्ध नहीं होगा।</string>
+    <string name="installation_type_warning">यदि आप एक्सटेंशन को फ़ाइल के रूप में स्थापित करते हैं तो उपलब्ध नहीं है।</string>
     <string name="could_not_find_the_file">फ़ाइल नहीं मिला ।</string>
     <string name="extension_installer">एक्सटेंशन इंस्टॉलर</string>
     <string name="uninstall">अनइंस्टॉल</string>
@@ -300,7 +300,7 @@
     <string name="removing_x">%1$s हटा रहे हैं</string>
     <string name="more_brain_capacity">अधिक मस्तिष्क क्षमता</string>
     <string name="delete">मिटाएँ</string>
-    <string name="more_brain_capacity_summary">इसे सक्षम करने से ऑडियो विलंब ठीक हो सकता है और बैटरी खपत बढ़ सकती है (ऑडियो ऑफलोडिंग अक्षम करेगा)।</string>
+    <string name="more_brain_capacity_summary">इसे सक्षम करना, ऑडियो लैग को ठीक कर सकता है, लेकिन बैटरी उपयोग को काफी बढ़ा देता है (ऑडियो ऑफलोडिंग को अक्षम करता है)।</string>
     <string name="x_plays">%1$s बार चलाया गया</string>
     <string name="x_followers">%1$s अनुयायी</string>
     <string name="shuffling_x">%1$s को शफल कर रहे हैं</string>
@@ -312,7 +312,7 @@
     <string name="sort_plays">चलाने की संख्या</string>
     <string name="sort_explicit">स्पष्ट</string>
     <string name="scroll_animations">स्क्रॉल एनिमेशन</string>
-    <string name="scroll_animations_summary">जब आप स्क्रॉल करते हैं तो एनीमेशन</string>
+    <string name="scroll_animations_summary">स्क्रॉल करते समय एनिमेशन</string>
     <string name="creating_x">%1$s बना रहे हैं</string>
     <string name="x_created">%1$s बनाया गया</string>
     <string name="deleted_x">%1$s हटाया गया</string>
