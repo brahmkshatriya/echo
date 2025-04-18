@@ -135,9 +135,9 @@
     <string name="extensions_summary">আপোনাৰ স্থাপিত এক্সটেনচনসমূহ ব্যৱস্থাপনা কৰক</string>
     <string name="version">সংস্কৰণ</string>
     <string name="language">ভাষা</string>
-    <string name="system">চিস্টেম</string>
+    <string name="system">চিষ্টেম</string>
     <string name="notifications_permission_summary">ডাউনল’ড আৰু সংগীতৰ বাবে জাননী প্ৰদৰ্শন কৰিবলৈ</string>
-    <string name="language_summary">এপ্‌টোৰ ভাষা, চিস্টেমে প্ৰতিৰূপভাৱে ইংৰাজী বাছনি কৰিব</string>
+    <string name="language_summary">এপ্‌টোৰ ভাষা, চিষ্টেমে প্ৰতিৰূপভাৱে ইংৰাজী বাছনি কৰিব</string>
     <string name="check_for_extension_updates">এক্সটেনচন আপডেইটসমূহৰ বাবে পৰীক্ষা কৰক</string>
     <string name="check_for_extension_updates_summary">এক্সটেনচনৰ নতুন আপডেট বিচাৰক, যেতিয়া আপুনি এপটো খুলিব।</string>
     <string name="install">স্থাপন কৰা</string>
@@ -206,7 +206,7 @@
     <string name="custom_theme_color_summary">চিষ্টেম থিমৰ পৰিবর্তে নিজস্ব থিমৰ ৰং ব্যৱহাৰ কৰক</string>
     <string name="add_color">ৰং যোগ কৰক</string>
     <string name="custom_colors">নিজস্ব ৰং</string>
-    <string name="amoled">আমোলেড</string>
+    <string name="amoled">এমোলেড</string>
     <string name="amoled_summary">পৃষ্ঠভূমি ৰং পিচ ব্লেকৰলই সলনি কৰক। এমোলেড স্ক্রীনৰ বাবে এইটো উপকাৰী, যাৰ দ্বাৰা বেটাৰী খৰচ কম হয় আৰু স্ক্রীন আকাৰ ধ্বংস ৰোধ হয়</string>
     <string name="navbar_gradient">গ্ৰেডিয়েণ্ট নেভবাৰ</string>
     <string name="adding_x_to_next">%1$s ক পৰৱৰ্তীত যোগ কৰা হৈছে</string>
