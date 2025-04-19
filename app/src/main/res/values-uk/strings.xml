@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">Назад</string>
+    <string name="cancel">Відміна</string>
+    <string name="okay">Ок</string>
+    <string name="video">Відео</string>
+    <string name="audio">Аудіо</string>
+    <string name="write_storage_permission_summary">Щоб створювати або редагувати локальні плейлисти</string>
+    <string name="audio_permission_summary">Щоб отримати доступ до вашою локальної бібліотеки музики</string>
+    <string name="video_permission_summary">Щоб отримати доступ до вашої локальної бібліотеки відео</string>
+    <string name="notifications">Повідомлення</string>
+    <string name="manage_extensions">Керувати розширеннями</string>
+    <string name="choose_a_color">Обрати колір</string>
+    <string name="extensions">Розширення</string>
+    <string name="add">Додати</string>
+    <string name="str_copy">Копіювати</string>
+</resources>

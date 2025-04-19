@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="audio_permission_summary">Çevrimdışı müzik kitaplığına erişmek için</string>
+    <string name="okay">Tamam</string>
+    <string name="audio">Ses</string>
+    <string name="video_permission_summary">Çevrimdışı video kitaplığına erişmek için</string>
+    <string name="write_storage_permission_summary">Çevrimdışı oynatma listesi yaratmak ve düzenlemek için</string>
+    <string name="cache_playlist_warning">Deneysel Özellik. Şarkıları dinlemek dışındaki hiçbir şey desteklenmiyor.</string>
+    <string name="refresh_library_on_reload">Yeniden Yüklemede Kütüphaneyi Yenile</string>
+    <string name="remove">Kaldır</string>
+    <string name="back">Geri</string>
+    <string name="x_radio">%1$s Radyosu</string>
+    <string name="artists">Sanatçılar</string>
+    <string name="write_storage">Depolamaya Yaz</string>
+    <string name="songs">Şarkılar</string>
+    <string name="cancel">İptal</string>
+    <string name="x_permission_required">%1$s İzini Gerekli</string>
+    <string name="x_was_not_granted">%1$s izini verilmedi</string>
+    <string name="video">Video</string>
+    <string name="read_storage">Depolamayı Oku</string>
+    <string name="notifications">Bildirimler</string>
+    <string name="notifications_permission_summary">İndirme ve müzik bildirimlerini göstermek için</string>
+    <string name="more_by_x">%1$s\'dan Daha fazla</string>
+    <string name="albums">Albümler</string>
+    <string name="cached_songs">Önbelleğe Alınmış Şarkılar</string>
+    <string name="recently_added">Yakın Zamanda Eklendi</string>
+</resources>
