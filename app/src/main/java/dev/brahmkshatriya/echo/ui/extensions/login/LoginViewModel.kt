@@ -44,7 +44,7 @@ class LoginViewModel(
     fun onWebViewStop(
         extension: Extension<*>,
         url: String,
-        cookie: List<String>
+        cookie: Map<String, String>
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.get<LoginClient.WebView, List<User>>(app.throwFlow) {

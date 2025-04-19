@@ -182,7 +182,7 @@ class LoginFragment : Fragment() {
         extension: Extension<*>,
         client: LoginClient.WebView
     ) = with(client) {
-        val data = Collections.synchronizedList(mutableListOf<String>())
+        val data = Collections.synchronizedMap(mapOf<String, String>())
 
         webView.isVisible = true
         webView.applyDarkMode()
@@ -195,6 +195,10 @@ class LoginFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
 
         webView.webViewClient = object : WebViewClient() {
+
+            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                callback.isEnabled = webView.canGoBack()
+            }
 
             override fun shouldInterceptRequest(
                 view: WebView?,
@@ -209,20 +213,11 @@ class LoginFragment : Fragment() {
                 request: WebResourceRequest?
             ): Boolean {
                 val url = request?.url.toString()
-                if(runCatching { loginWebViewCookieUrlRegex.find(url) }.getOrNull() != null) {
-                    lifecycleScope.launch {
-                        val result = webView.loadData(url, client)
-                        data.add(result)
-                    }
-                    println("FUCK YOU $url : $data")
-                    return false
-                }
-                println("FUCK YOU $url")
                 if (runCatching { loginWebViewStopUrlRegex.find(url) }.getOrNull() != null) {
                     webView.stopLoading()
                     lifecycleScope.launch {
                         val result = webView.loadData(url, client)
-                        data.add(result)
+                        data.put(url, result)
 
                         webView.isVisible = false
                         loadingContainer.root.isVisible = true
@@ -237,6 +232,14 @@ class LoginFragment : Fragment() {
                         loginViewModel.onWebViewStop(extension, url, data)
                     }
                     return true
+                }
+
+                if(runCatching { loginWebViewCookieUrlRegex?.find(url) }.getOrNull() != null) {
+                    lifecycleScope.launch {
+                        val result = webView.loadData(url, client)
+                        data.put(url, result)
+                    }
+                    return false
                 }
                 return false
             }
