@@ -63,6 +63,11 @@ sealed interface LoginClient {
         val loginWebViewStopUrlRegex: Regex
 
         /**
+         * The regex to match the URL to get the cookies from the Request.
+         */
+        val loginWebViewCookieUrlRegex: Regex
+
+        /**
          * Called when the webview stops loading a URL with the [loginWebViewStopUrlRegex].
          *
          * @param url The URL that the webview stopped at
@@ -70,7 +75,7 @@ sealed interface LoginClient {
          *
          * @return A list of users that are logged in
          */
-        suspend fun onLoginWebviewStop(url: String, data: String): List<User>
+        suspend fun onLoginWebviewStop(url: String, data: List<String>): List<User>
 
         /**
          * To be implemented when the login requires cookies in [onLoginWebviewStop].

@@ -9,6 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -187,9 +189,37 @@ class LoginFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-        webView.webViewClient = object : WebViewClient() {
 
-            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+        /*ServiceWorkerController.getInstance()
+            .setServiceWorkerClient(object : ServiceWorkerClient() {
+                override fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
+                    val url = request.url.toString()
+                    println("FUCK YOU SW $url")
+                    val cookie = lifecycleScope.launch { webView.loadData(url, client) }
+                    println("FUCK YOU $cookie")
+                    if (runCatching { loginWebViewStopUrlRegex.find(url) }.getOrNull() != null) {
+                        Handler(Looper.getMainLooper()).post {
+                            lifecycleScope.launch {
+                                webView.stopLoading()
+                                val data = webView.loadData(url, client)
+                                webView.isVisible = false
+                                loadingContainer.root.isVisible = true
+                                WebStorage.getInstance().deleteAllData()
+                                CookieManager.getInstance().apply {
+                                    removeAllCookies(null)
+                                    flush()
+                                }
+                                loginViewModel.onWebViewStop(extension, url, data)
+                            }
+                        }
+                    }
+                    return null
+                }
+            })*/
+
+        webView.webViewClient = object : WebViewClient() {
+            /*override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                println("FUCK YOU $url")
                 callback.isEnabled = webView.canGoBack()
                 url ?: return
                 if (runCatching { loginWebViewStopUrlRegex.find(url) }.getOrNull() != null) {
@@ -207,8 +237,39 @@ class LoginFragment : Fragment() {
                         loginViewModel.onWebViewStop(extension, url, data)
                     }
                 }
+            }*/
+
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val data = mutableListOf<String>()
+                val url = request?.url.toString()
+                if(runCatching { loginWebViewCookieUrlRegex.find(url) }.getOrNull() != null) {
+                    lifecycleScope.launch {
+                        data.add(webView.loadData(url, client))
+                    }
+                }
+                println("FUCK YOU $url")
+                if (runCatching { loginWebViewStopUrlRegex.find(url) }.getOrNull() != null) {
+                    webView.stopLoading()
+                    lifecycleScope.launch {
+                        data.add(webView.loadData(url, client))
+                        webView.isVisible = false
+                        loadingContainer.root.isVisible = true
+                        callback.isEnabled = false
+                        WebStorage.getInstance().deleteAllData()
+                        CookieManager.getInstance().run {
+                            removeAllCookies(null)
+                            flush()
+                        }
+                        loginViewModel.onWebViewStop(extension, url, data)
+                    }
+                }
+                return super.shouldInterceptRequest(view, request)
             }
         }
+
         webView.settings.apply {
             domStorageEnabled = true
             @SuppressLint("SetJavaScriptEnabled")
@@ -218,6 +279,7 @@ class LoginFragment : Fragment() {
             userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
                 ?: USER_AGENT
         }
+
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)
 
         lifecycleScope.launch {
@@ -225,6 +287,7 @@ class LoginFragment : Fragment() {
             appBarLayout.setExpanded(false, true)
         }
     }
+
 
     private suspend fun WebView.loadData(url: String, client: LoginClient.WebView) = when (client) {
         is LoginClient.WebView.Cookie ->
