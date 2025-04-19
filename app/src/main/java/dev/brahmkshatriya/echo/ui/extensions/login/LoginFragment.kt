@@ -40,8 +40,9 @@ import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.util.Collections
 import kotlin.collections.set
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -182,7 +183,8 @@ class LoginFragment : Fragment() {
         extension: Extension<*>,
         client: LoginClient.WebView
     ) = with(client) {
-        val data = Collections.synchronizedMap(mapOf<String, String>())
+        val mutex = Mutex()
+        val data = mutableMapOf<String, String>()
 
         webView.isVisible = true
         webView.applyDarkMode()
@@ -217,7 +219,9 @@ class LoginFragment : Fragment() {
                     webView.stopLoading()
                     lifecycleScope.launch {
                         val result = webView.loadData(url, client)
-                        data.put(url, result)
+                        mutex.withLock {
+                            data[url] = result
+                        }
 
                         webView.isVisible = false
                         loadingContainer.root.isVisible = true
@@ -237,7 +241,9 @@ class LoginFragment : Fragment() {
                 if(runCatching { loginWebViewCookieUrlRegex?.find(url) }.getOrNull() != null) {
                     lifecycleScope.launch {
                         val result = webView.loadData(url, client)
-                        data.put(url, result)
+                        mutex.withLock {
+                            data[url] = result
+                        }
                     }
                     return false
                 }
