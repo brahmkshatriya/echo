@@ -63,7 +63,7 @@ sealed interface LoginClient {
         val loginWebViewStopUrlRegex: Regex
 
         /**
-         * The regex to match the URL to get the cookies from the Request.
+         * The regex to match the URL to intercept requests made by the webview for cookies.
          */
         val loginWebViewCookieUrlRegex: Regex?
             get() = null
