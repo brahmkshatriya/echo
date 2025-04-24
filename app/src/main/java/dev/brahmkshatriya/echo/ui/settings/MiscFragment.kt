@@ -32,7 +32,7 @@ class MiscFragment : BaseSettingsFragment() {
             preferenceScreen = screen
 
             LongClickPreference(context).apply {
-                val version = context.appVersion()
+                val version = appVersion()
                 title = getString(R.string.version)
                 summary = version
                 layoutResource = R.layout.preference

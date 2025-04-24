@@ -9,14 +9,13 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.BuildConfig
-import dev.brahmkshatriya.echo.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 object ContextUtils {
-    fun Context.appVersion() = BuildConfig.VERSION_NAME + " " + getString(R.string.app_type)
+    fun appVersion() = BuildConfig.VERSION_NAME + " " + BuildConfig.BUILD_TYPE
 
     fun Context.copyToClipboard(label: String?, string: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

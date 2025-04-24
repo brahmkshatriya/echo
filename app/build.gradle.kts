@@ -28,12 +28,10 @@ android {
         create("nightly") {
             initWith(getByName("release"))
             applicationIdSuffix = ".nightly"
-            resValue("string", "app_name", "Echo ⏾")
-            resValue("string", "app_type", "Nightly")
+            resValue("string", "app_name", "Echo Nightly")
         }
         create("stable") {
             initWith(getByName("release"))
-            resValue("string", "app_type", "Stable")
         }
     }
 

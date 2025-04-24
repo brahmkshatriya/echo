@@ -65,16 +65,28 @@
         android:paddingHorizontal="4dp"
         android:paddingVertical="4dp">
 
-        <ImageView
-            android:id="@+id/playPauseButton"
+        <FrameLayout
             android:layout_width="0dp"
             android:layout_height="64dp"
-            android:layout_weight="1"
-            android:contentDescription="@string/play"
-            android:padding="10dp"
-            android:src="@drawable/ic_play_48dp"
-            android:tint="@color/material_dynamic_primary30"
-            tools:ignore="UseAppTint" />
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/playPauseButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/play"
+                android:padding="10dp"
+                android:src="@drawable/ic_play_48dp"
+                android:tint="@color/material_dynamic_primary30"
+                tools:ignore="UseAppTint" />
+
+            <ProgressBar
+                android:id="@+id/playProgress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminateTint="@color/material_dynamic_primary50"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <ImageView
             android:id="@+id/nextButton"

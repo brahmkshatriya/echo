@@ -225,7 +225,7 @@ class PlayerService : MediaLibraryService() {
             select(settings) { it.quality }
 
         fun getController(
-            context: Context,
+            context: Application,
             block: (MediaController) -> Unit
         ): () -> Unit {
             val sessionToken =

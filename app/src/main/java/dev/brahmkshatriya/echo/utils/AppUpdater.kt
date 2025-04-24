@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.utils
 import android.content.Context
 import android.os.Build
 import androidx.fragment.app.FragmentActivity
+import dev.brahmkshatriya.echo.BuildConfig
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.common.models.Message
@@ -24,23 +25,25 @@ import java.util.zip.ZipFile
 
 object AppUpdater {
     val client = OkHttpClient()
+
+    @Suppress("KotlinConstantConditions")
     suspend fun FragmentActivity.updateApp() {
         val app by inject<App>()
         val throwableFlow = app.throwFlow
         val messageFlow = app.messageFlow
         val githubRepo = getString(R.string.app_github_repo)
-        val appType = getString(R.string.app_type)
+        val appType = BuildConfig.BUILD_TYPE
         val version = appVersion()
 
         val url = runCatching {
             when (appType) {
-                "Stable" -> {
+                "stable" -> {
                     val currentVersion = version.substringBefore('_')
                     val updateUrl = "https://api.github.com/repos/$githubRepo/releases"
                     getGithubUpdateUrl(currentVersion, updateUrl, client) ?: return
                 }
 
-                "Nightly" -> {
+                "nightly" -> {
                     val hash = version.substringBefore("(").substringAfter('_')
                     val id = getGithubWorkflowId(hash, githubRepo, client) ?: return
                     "https://nightly.link/$githubRepo/actions/runs/$id/artifact.zip"
@@ -60,7 +63,7 @@ object AppUpdater {
         )
         val file = runCatching {
             val download = downloadUpdate(this, url, client)
-            if (appType == "Stable") download else unzipApk(download)
+            if (appType == "stable") download else unzipApk(download)
         }.getOrElse {
             throwableFlow.emit(it)
             return

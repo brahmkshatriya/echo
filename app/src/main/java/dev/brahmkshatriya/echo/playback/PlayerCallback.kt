@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.playback
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.OptIn
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.os.bundleOf
 import androidx.media3.common.Player
 import androidx.media3.common.Rating
@@ -43,6 +44,7 @@ import dev.brahmkshatriya.echo.playback.listener.PlayerRadio
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
+import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -72,7 +74,7 @@ class PlayerCallback(
                 .add(likeCommand).add(unlikeCommand).add(repeatCommand).add(repeatOffCommand)
                 .add(repeatOneCommand).add(radioCommand).add(sleepTimer)
                 .add(playCommand).add(addToQueueCommand).add(addToNextCommand)
-                .add(resumeCommand)
+                .add(resumeCommand).add(imageCommand)
                 .build()
         }
         return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
@@ -98,13 +100,22 @@ class PlayerCallback(
             radioCommand -> radio(player, args)
             sleepTimer -> onSleepTimer(player, args.getLong("ms"))
             resumeCommand -> resume(player, args.getBoolean("cleared", true))
+            imageCommand -> getImage(player)
             else -> super.onCustomCommand(session, controller, customCommand, args)
         }
     }
 
+    private fun getImage(player: Player) = scope.future {
+        val item = player.with { currentMediaItem }
+            ?: context.recoverPlaylist(downloadFlow.value, false).run { first.getOrNull(second) }
+            ?: return@future SessionResult(SessionError.ERROR_UNKNOWN)
+        val image = item.track.cover.loadDrawable(context)?.toBitmap()
+        SessionResult(RESULT_SUCCESS, Bundle().apply { putParcelable("image", image) })
+    }
+
     private fun resume(player: Player, withClear: Boolean) = run {
         player.shuffleModeEnabled = context.recoverShuffle() == true
-        player.repeatMode = context.recoverRepeat() ?: 0
+        player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
         val (items, index, pos) = context.recoverPlaylist(downloadFlow.value, withClear)
         player.setMediaItems(items, index, pos)
         player.prepare()
@@ -196,11 +207,7 @@ class PlayerCallback(
             is EchoMediaItem.TrackItem -> {
                 val track = item.track
                 val mediaItem = MediaItemUtils.build(
-                    settings,
-                    downloadFlow.value,
-                    track,
-                    extId,
-                    null
+                    settings, downloadFlow.value, track, extId, null
                 )
                 player.with {
                     setMediaItem(mediaItem)
@@ -214,15 +221,32 @@ class PlayerCallback(
                     throwableFlow.emit(it)
                     return@future error
                 }
-                val radio = PlayerState.Radio.Loaded(extension.id, item, null) {
-                    extension.run(throwableFlow) { tracks.loadList(it) }
+
+                val list = if (shuffle)
+                    extension.run(throwableFlow) { tracks.loadAll() } ?: return@future error
+                else {
+                    val (list, continuation) = extension.run(throwableFlow) { tracks.loadList(null) }
+                        ?: return@future error
+                    if (continuation != null) scope.launch {
+                        extension.run(throwableFlow) {
+                            val all = tracks.loadAll().drop(list.size)
+                            player.with {
+                                addMediaItems(list.size, all.map {
+                                    MediaItemUtils.build(
+                                        settings, downloadFlow.value, it, extId, item
+                                    )
+                                })
+                            }
+                        }
+                    }
+                    list
                 }
                 player.with {
-                    clearMediaItems()
-                    shuffleModeEnabled = false
-                }
-                PlayerRadio.play(player, downloadFlow, settings, radioFlow, radio)
-                player.with {
+                    setMediaItems(list.map {
+                        MediaItemUtils.build(
+                            settings, downloadFlow.value, it, extId, item
+                        )
+                    })
                     shuffleModeEnabled = shuffle
                     seekTo(0, 0)
                     play()

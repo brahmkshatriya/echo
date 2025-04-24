@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
@@ -14,6 +15,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
+import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 
 class
@@ -35,7 +37,7 @@ ExtensionAdapter(
             oldItem == newItem
     }
 
-//    private val empty = ShelfEmptyAdapter()
+    private val empty = ShelfEmptyAdapter()
     fun withEmptyAdapter() = ConcatAdapter(this)
 
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :
@@ -71,12 +73,13 @@ ExtensionAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val download = getItem(position) ?: return
+        val download = runCatching { getItem(position) }.getOrNull() ?: return
         holder.bind(download)
     }
 
     suspend fun submit(list: List<Extension<*>>) {
-//        empty.loadState = if (list.isEmpty()) LoadState.Loading else LoadState.NotLoading(true)
+        empty.loadState = if (list.isEmpty()) LoadState.Loading
+        else LoadState.NotLoading(true)
         submitData(PagingData.from(list))
     }
 }

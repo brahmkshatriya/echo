@@ -237,7 +237,7 @@ abstract class AndroidAutoCallback(
             val type = getResourceTypeName(int)
             val name = getResourceEntryName(int)
             val uri = "$scheme://$pkg/$type/$name"
-            return Uri.parse(uri)
+            return uri.toUri()
         }
 
         private fun ImageHolder.toUri(context: Context) = when (this) {

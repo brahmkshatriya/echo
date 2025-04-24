@@ -66,7 +66,7 @@ sealed class PagedData<T : Any> {
 
     abstract fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R>
 
-    abstract fun getLoaded(): List<T>
+    abstract fun getLoaded(): Pair<List<T>, String?>
 
     /**
      * A class representing a single page of data.
@@ -104,8 +104,8 @@ sealed class PagedData<T : Any> {
             clear()
         }
 
-        override fun getLoaded(): List<T> {
-            return items
+        override fun getLoaded(): Pair<List<T>, String?> {
+            return items to null
         }
 
         override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
@@ -161,23 +161,24 @@ sealed class PagedData<T : Any> {
             itemMap.remove(continuation)
         }
 
-        override fun getLoaded(): List<T> {
+        override fun getLoaded(): Pair<List<T>, String?> {
             val list = mutableListOf<T>()
             var page = itemMap[null]
-            while (page?.continuation != null) {
-                list.addAll(page.data)
+            if (page != null) list.addAll(page.data)
+            while (page?.continuation != null && itemMap.contains(page.continuation)) {
                 page = itemMap[page.continuation]
+                if (page != null) list.addAll(page.data)
             }
-            return list
+            return list to page?.continuation
         }
 
         override fun clear() = itemMap.clear()
 
         override suspend fun loadAllInternal(): List<T> {
             val list = mutableListOf<T>()
-            val init = loadListInternal(null)
-            list.addAll(init.data)
-            var cont = init.continuation
+            val (data, continuation) = getLoaded()
+            list.addAll(data)
+            var cont = continuation
             while (cont != null) {
                 val page = load(cont)
                 list.addAll(page.data)
@@ -249,8 +250,18 @@ sealed class PagedData<T : Any> {
             source?.invalidate(token)
         }
 
-        override fun getLoaded(): List<T> {
-            return sources.flatMap { it.getLoaded() }
+        override fun getLoaded(): Pair<List<T>, String?> {
+            val list = mutableListOf<T>()
+            var continuation: String? = null
+            sources.forEachIndexed { i, source ->
+                val (data, token) = source.getLoaded()
+                list.addAll(data)
+                if (token != null) {
+                    continuation = combine(i, token)
+                    return@forEachIndexed
+                }
+            }
+            return list to continuation
         }
     }
 
@@ -283,8 +294,8 @@ sealed class PagedData<T : Any> {
             _data?.invalidate(continuation)
         }
 
-        override fun getLoaded(): List<T> {
-            return _data?.getLoaded() ?: emptyList()
+        override fun getLoaded(): Pair<List<T>, String?> {
+            return _data?.getLoaded() ?: (emptyList<T>() to null)
         }
     }
 

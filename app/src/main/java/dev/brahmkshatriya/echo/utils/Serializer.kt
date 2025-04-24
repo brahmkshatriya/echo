@@ -2,9 +2,9 @@ package dev.brahmkshatriya.echo.utils
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.Serializable
 
 object Serializer {
     val json = Json {
@@ -22,11 +22,17 @@ object Serializer {
         return getString(key)?.toData()
     }
 
+//    @Suppress("DEPRECATION")
+//    inline fun <reified T : Serializable> Bundle.getSerial(key: String?) =
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+//            getSerializable(key, T::class.java)
+//        else getSerializable(key) as T
+
     @Suppress("DEPRECATION")
-    inline fun <reified T : Serializable> Bundle.getSerial(key: String?) =
+    inline fun <reified T: Parcelable> Bundle.getParcel(key: String?) =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            getSerializable(key, T::class.java)
-        else getSerializable(key) as T
+            getParcelable(key, T::class.java)
+        else getParcelable(key)
 
     val Throwable.rootCause: Throwable
         get() = generateSequence(this) { it.cause }.last()
