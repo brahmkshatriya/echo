@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.ui.media
 
+import androidx.core.app.ShareCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
@@ -39,7 +41,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MediaViewModel(
     private val extensionId: String,
@@ -95,11 +96,16 @@ class MediaViewModel(
         messageFlow.emit(Message(message))
     }
 
-    suspend fun onShare(): String? = withContext(Dispatchers.IO) {
+    fun onShare(activity: FragmentActivity) = viewModelScope.launch(Dispatchers.IO) {
         createMessage(context.getString(R.string.sharing_x, itemFlow.value.title))
-        extensionFlow.value?.get<ShareClient, String>(throwFlow) {
+        val url = extensionFlow.value?.get<ShareClient, String>(throwFlow) {
             onShare(itemFlow.value)
-        }
+        } ?: return@launch
+        ShareCompat.IntentBuilder(activity)
+            .setType("text/plain")
+            .setChooserTitle("${extensionFlow.value?.name} - ${item.title}")
+            .setText(url)
+            .startChooser()
     }
 
     val savedState = MutableStateFlow(false)

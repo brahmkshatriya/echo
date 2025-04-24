@@ -76,7 +76,7 @@ class OfflineExtension(
             type = ExtensionType.MUSIC,
             id = "echo-offline",
             name = "Offline",
-            description = "Offline extension",
+            description = "An extension for all your downloaded files.",
             version = BuildConfig.VERSION_NAME,
             author = "Echo",
             icon = R.drawable.ic_offline.toResourceImageHolder(),
@@ -489,15 +489,5 @@ class OfflineExtension(
     override suspend fun onEnterPlaylistEditor(playlist: Playlist, tracks: List<Track>) {}
     override suspend fun onExitPlaylistEditor(playlist: Playlist, tracks: List<Track>) {
         refreshLibrary()
-    }
-
-    fun getDownloads(): PagedData<Shelf> {
-        refreshLibrary()
-        return library.folderStructure.folderList["storage"]
-            ?.folderList?.get("emulated")
-            ?.folderList?.get("0")
-            ?.folderList?.get("Download")
-            ?.folderList?.get("Echo")?.toShelf(context, null)?.items
-            ?: PagedData.Single { listOf() }
     }
 }

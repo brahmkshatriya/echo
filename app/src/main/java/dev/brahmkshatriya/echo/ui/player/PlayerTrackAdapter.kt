@@ -216,10 +216,9 @@ class PlayerTrackAdapter(
     private fun onEachViewHolder(block: ViewHolder.() -> Unit) {
         val recyclerView = recyclerView ?: return
         recyclerView.run {
-            (0 until childCount).forEach {
+            for (it in 0 until childCount) {
                 val viewHolder = getChildViewHolder(getChildAt(it)) as? ViewHolder
-                    ?: return@forEach
-                viewHolder.block()
+                viewHolder?.block()
             }
         }
     }

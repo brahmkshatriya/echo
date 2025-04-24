@@ -2,6 +2,8 @@ package dev.brahmkshatriya.echo.ui.extensions
 
 import androidx.core.content.edit
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
@@ -14,6 +16,7 @@ import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.Extensions.Companion.priorityKey
 import dev.brahmkshatriya.echo.extensions.InstallationUtils
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
@@ -25,6 +28,7 @@ import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
@@ -33,7 +37,6 @@ class ExtensionsViewModel(
     val extensionLoader: ExtensionLoader,
     val app: App
 ) : ExtensionListViewModel<MusicExtension>() {
-    val installExtension = MutableSharedFlow<String>()
     val extensions = extensionLoader.extensions
     override val extensionsFlow = extensions.music
     override val currentSelectionFlow = extensions.current
@@ -125,13 +128,38 @@ class ExtensionsViewModel(
         }
     }
 
+    fun changeExtension(id: String) {
+        viewModelScope.launch {
+            runCatching {
+                val ext = extensions.music.getExtensionOrThrow(id)
+                extensions.setupMusicExtension(ext, true)
+            }.getOrElse {
+                app.throwFlow.emit(it)
+            }
+        }
+    }
+
+    val installExtension = MutableSharedFlow<String>()
+    private val extensionInstalled = MutableSharedFlow<Boolean>()
+    suspend fun awaitInstall(file: String) {
+        installExtension.emit(file)
+        extensionInstalled.first()
+    }
+
     companion object {
         fun FragmentActivity.configureExtensionsUpdater(force: Boolean = false) {
             val viewModel by viewModel<ExtensionsViewModel>()
             viewModel.updateExtensions(this, force)
             observe(viewModel.installExtension) {
-                installExtension(it)
+                viewModel.extensionInstalled.emit(installExtension(it))
             }
+            lifecycle.addObserver(object : DefaultLifecycleObserver {
+                override fun onDestroy(owner: LifecycleOwner) {
+                    viewModel.run {
+                        viewModelScope.launch { extensionInstalled.emit(false) }
+                    }
+                }
+            })
         }
     }
 }

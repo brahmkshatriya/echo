@@ -1,15 +1,16 @@
 [versions]
-agp = "8.5.2"
+agp = "8.9.2"
 kotlin = "2.1.0"
 
 androidx-paging = "3.3.6"
-room = "2.6.1"
+room = "2.7.1"
 koinAndroid = "4.1.0-Beta6"
-media3 = "1.6.0"
+media3 = "1.6.1"
 coil = "3.0.0-rc01"
 
 [libraries]
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
+androidx-core-google-shortcuts = { module = "androidx.core:core-google-shortcuts", version = "1.1.0" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
 androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.1" }
 
@@ -27,7 +28,7 @@ paging-common = { module = "androidx.paging:paging-common-ktx", version.ref = "a
 paging-runtime = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging" }
 
 
-material = { group = "com.google.android.material", name = "material", version = "1.13.0-alpha12" }
+material = { group = "com.google.android.material", name = "material", version = "1.13.0-alpha13" }
 
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -60,12 +61,16 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
+firebase-analytics = { module = "com.google.firebase:firebase-analytics", version = "22.4.0" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "19.4.2" }
+
 [bundles]
 androidx = [
     "androidx-core-ktx", "androidx-appcompat", "androidx-activity", "fragment",
     "recyclerview", "swiperefresh",
     "splashscreen", "palette",
-    "preference"
+    "preference",
+    "androidx-core-google-shortcuts"
 ]
 paging = ["paging-common", "paging-runtime"]
 room = ["room-runtime", "room-ktx"]
@@ -73,6 +78,7 @@ koin = ["koin-androidx-startup", "koin-android", "koin-androidx-workmanager"]
 media3 = ["media3-exoplayer", "media3-session", "media3-ui", "media3-dash", "media3-hls"]
 coil = ["coil", "coil-network-okhttp"]
 kotlinx = ["kotlinx-serialization-json", "kotlinx-coroutines-core"]
+firebase = ["firebase-analytics", "firebase-crashlytics"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -80,4 +86,5 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version = "2.1.0-1.0.29" }
-
+gms = { id = "com.google.gms.google-services", version = "4.4.2" }
+crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.3" }

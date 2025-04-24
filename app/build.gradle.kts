@@ -1,13 +1,14 @@
-import java.io.ByteArrayOutputStream
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinx.serialization)
+
+    alias(libs.plugins.gms)
+    alias(libs.plugins.crashlytics)
 }
 
-val version = "2.0."
+val version = "2.0.0"
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
 
@@ -20,7 +21,20 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = gitCount
-        versionName = "v$version$gitCount($gitHash)"
+        versionName = "v${version}_$gitHash($gitCount)"
+    }
+
+    buildTypes {
+        create("nightly") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".nightly"
+            resValue("string", "app_name", "Echo ⏾")
+            resValue("string", "app_type", "Nightly")
+        }
+        create("stable") {
+            initWith(getByName("release"))
+            resValue("string", "app_type", "Stable")
+        }
     }
 
     buildFeatures {
@@ -60,13 +74,18 @@ dependencies {
     implementation(libs.fastscroll)
     implementation(libs.kenburnsview)
     implementation(libs.nestedscrollwebview)
+
+    debugImplementation(libs.bundles.firebase)
+    "stableImplementation"(libs.bundles.firebase)
+    "nightlyImplementation"(libs.bundles.firebase)
 }
 
 fun execute(vararg command: String): String {
-    val outputStream = ByteArrayOutputStream()
-    project.exec {
-        commandLine(*command)
-        standardOutput = outputStream
-    }
-    return outputStream.toString().trim()
+    val processBuilder = ProcessBuilder(*command)
+    val hashCode = command.joinToString().hashCode().toString()
+    val output = File.createTempFile(hashCode, "")
+    processBuilder.redirectOutput(output)
+    val process = processBuilder.start()
+    process.waitFor()
+    return output.readText().dropLast(1)
 }

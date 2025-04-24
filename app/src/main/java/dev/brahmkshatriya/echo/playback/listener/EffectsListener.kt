@@ -77,10 +77,10 @@ class EffectsListener(
             equalizer?.setEnabled(true)
             equalizer?.apply {
                 val value =
-                    ((strength) * bandLevelRange.last().toDouble() / 10).roundToInt().toShort()
+                    (strength * bandLevelRange.last().toDouble() / 10).roundToInt().toShort()
                 val zero = numberOfBands.toDouble() * 2 / 3
-                (0 until numberOfBands).forEach {
-                    val v = ((-(it - zero).pow(3) * value) / zero.pow(3)).roundToInt()
+                for (it in 0 until numberOfBands) {
+                    val v = (-(it - zero).pow(3) * value / zero.pow(3)).roundToInt()
                     setBandLevel(it.toShort(), v.toShort())
                 }
             }
@@ -147,7 +147,7 @@ class EffectsListener(
         })
     }
 
-    fun release() {
+    private fun release() {
         effects.release()
         context.broadcastAudioSessionClose(audioSessionFlow.value)
     }

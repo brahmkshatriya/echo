@@ -33,7 +33,6 @@ class Extensions(
         lyrics.value = null
         misc.value = null
         all.value = null
-        System.gc()
     }
 
     @Suppress("UNCHECKED_CAST")

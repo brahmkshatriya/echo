@@ -35,6 +35,6 @@ abstract class ExtensionDatabase : RoomDatabase() {
         private const val DATABASE_NAME = "extension-database"
         fun create(app: Application) = Room.databaseBuilder(
             app, ExtensionDatabase::class.java, DATABASE_NAME
-        ).fallbackToDestructiveMigration().build()
+        ).fallbackToDestructiveMigration(true).build()
     }
 }

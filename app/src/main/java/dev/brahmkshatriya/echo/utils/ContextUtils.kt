@@ -3,28 +3,20 @@ package dev.brahmkshatriya.echo.utils
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.common.util.concurrent.ListenableFuture
+import dev.brahmkshatriya.echo.BuildConfig
+import dev.brahmkshatriya.echo.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 object ContextUtils {
-
-    @Suppress("DEPRECATION")
-    fun Context.appVersion(): String = packageManager
-        .getPackageInfo(packageName, 0).run {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                "$versionName($longVersionCode)"
-            } else {
-                "$versionName($versionCode)"
-            }
-        }
+    fun Context.appVersion() = BuildConfig.VERSION_NAME + " " + getString(R.string.app_type)
 
     fun Context.copyToClipboard(label: String?, string: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

@@ -83,7 +83,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="content" />
+                <data android:scheme="content" tools:ignore="AppLinkUrlError" />
                 <data android:mimeType="application/octet-stream" />
                 <data android:scheme="file" />
                 <data android:pathPattern=".*\\.eapk" />

@@ -47,8 +47,8 @@ fun MediaStoreUtils.MPlaylist.toPlaylist() = Playlist(
 //coverts epoch seconds long to Date
 fun Long.toDate() = run {
     val year = (this / 31556952 + 1970).toInt()
-    val month = ((this % 31556952) / 2629746).toInt()
-    val day = (((this % 31556952) % 2629746) / 86400).toInt()
+    val month = (this % 31556952 / 2629746).toInt()
+    val day = ((this % 31556952) % 2629746 / 86400).toInt()
     Date(year, month, day)
 }
 

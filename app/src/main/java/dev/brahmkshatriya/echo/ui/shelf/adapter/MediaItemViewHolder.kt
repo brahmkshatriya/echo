@@ -29,7 +29,7 @@ sealed class MediaItemViewHolder(view: View) : ShelfAdapter.ViewHolder(view) {
 
     var item: Shelf.Item? = null
     override fun bind(item: Shelf?) {
-        val shelfItem = (item as? Shelf.Item)
+        val shelfItem = item as? Shelf.Item
         this.item = shelfItem
         bind(shelfItem?.media, shelfItem?.loadTracks ?: false)
     }

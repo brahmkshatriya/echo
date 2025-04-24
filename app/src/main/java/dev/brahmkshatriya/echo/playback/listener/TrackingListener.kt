@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 @UnstableApi
@@ -61,31 +63,38 @@ class TrackingListener(
         }
     }
 
+    private val mutex = Mutex()
     private val timers = mutableMapOf<String, PauseTimer>()
     private fun onTrackChanged(mediaItem: MediaItem?) {
         current = mediaItem
-        timers.forEach { (_, timer) -> timer.pause() }
-        timers.clear()
         trackMedia { extension, details ->
+            mutex.withLock {
+                timers.forEach { (_, timer) -> timer.pause() }
+                timers.clear()
+            }
             onTrackChanged(details)
             val isPlaying = withContext(Dispatchers.Main) { player.isPlaying }
             onPlayingStateChanged(details, isPlaying)
             details ?: return@trackMedia
             val duration = markAsPlayedDuration ?: return@trackMedia
-            timers[extension.id] = PauseTimer(scope, duration) {
-                scope.launch {
-                    extension.get<TrackerClient, Unit>(throwableFlow) { onMarkAsPlayed(details) }
+            mutex.withLock {
+                timers[extension.id] = PauseTimer(scope, duration) {
+                    scope.launch {
+                        extension.get<TrackerClient, Unit>(throwableFlow) { onMarkAsPlayed(details) }
+                    }
                 }
             }
         }
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        timers.forEach { (_, timer) ->
-            if (isPlaying) timer.resume()
-            else timer.pause()
-        }
         trackMedia { _, it ->
+            mutex.withLock {
+                timers.forEach { (_, timer) ->
+                    if (isPlaying) timer.resume()
+                    else timer.pause()
+                }
+            }
             onPlayingStateChanged(it, isPlaying)
         }
     }

@@ -50,7 +50,7 @@ class ListsShelfViewHolder(
 
     override fun bind(item: Shelf?) {
         binding.root.applyTranslationYAnimation(scrollAmount)
-        val shelf = (item as? Shelf.Lists<*>) ?: return
+        val shelf = item as? Shelf.Lists<*> ?: return
         this.shelf = shelf
         binding.title.text = shelf.title
         binding.title.isVisible = shelf.title.isNotBlank()

@@ -80,4 +80,15 @@
         android:textColor="?colorOnSurfaceVariant"
         android:textColorLink="?colorPrimary"
         tools:text="@tools:sample/lorem" />
+
+    <TextView
+        android:id="@+id/trackArtist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:maxLines="1"
+        android:minHeight="32dp"
+        android:textColorLink="@color/button_player"
+        android:textSize="16sp"
+        tools:text="burhhh" />
 </LinearLayout>

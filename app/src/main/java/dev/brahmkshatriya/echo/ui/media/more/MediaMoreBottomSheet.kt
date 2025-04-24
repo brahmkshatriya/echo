@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ShareCompat
 import androidx.core.os.bundleOf
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
@@ -46,7 +44,6 @@ import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -204,7 +201,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-    } + listOfNotNull(shareButton(client, item, loaded))
+    } + listOfNotNull(shareButton(client, loaded))
 
     private fun getPlayButtons(
         client: ExtensionClient?, item: EchoMediaItem, loaded: Boolean
@@ -313,19 +310,12 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
     ) { playerViewModel.radio(extensionId, item) }
     else null
 
-    private fun shareButton(client: ExtensionClient?, item: EchoMediaItem, loaded: Boolean) =
+    private fun shareButton(client: ExtensionClient?, loaded: Boolean) =
         if (client is ShareClient && loaded) resource(
             R.drawable.ic_forward,
             R.string.share
         ) {
-            lifecycleScope.launch {
-                val url = vm.onShare()
-                ShareCompat.IntentBuilder(requireActivity())
-                    .setType("text/plain")
-                    .setChooserTitle("${vm.extensionFlow.value?.name} - ${item.title}")
-                    .setText(url)
-                    .startChooser()
-            }
+            vm.onShare(requireActivity())
         } else null
 
     private fun saveToLibraryButton(

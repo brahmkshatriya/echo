@@ -39,8 +39,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DynamicColors.applyToActivityIfAvailable(
-            this,
-            applyUiChanges(this, uiViewModel)
+            this, applyUiChanges(this, uiViewModel)
         )
 
         setContentView(binding.root)

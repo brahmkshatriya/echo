@@ -96,6 +96,13 @@ object ImageUtils {
         context.imageLoader.execute(request.build()).image?.asDrawable(context.resources)
     }
 
+    suspend fun ImageHolder?.loadAsCircleDrawable(
+        context: Context
+    ) = tryWithSuspend {
+        val request = createRequest(context, null, null, circleCrop)
+        context.imageLoader.execute(request.build()).image?.asDrawable(context.resources)
+    }
+
     fun ImageView.loadBlurred(bitmap: Bitmap?, radius: Float) = tryWith {
         if (bitmap == null) setImageDrawable(null)
         load(bitmap) {

@@ -16,7 +16,9 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 object FragmentUtils {
     inline fun <reified T : Fragment> Fragment.openFragment(
@@ -47,8 +49,7 @@ object FragmentUtils {
     }
 
     fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
-        val extensionType = uri.host
-        when (extensionType) {
+        when (val extensionType = uri.host) {
             "music" -> {
                 val extensionId = uri.pathSegments.firstOrNull()
                 if (extensionId == null) {
@@ -58,7 +59,8 @@ object FragmentUtils {
                 val type = uri.pathSegments.getOrNull(1)
                 val id = uri.pathSegments.getOrNull(2)
                 if (id == null) {
-                    createSnack("No id found")
+                    val vm by viewModel<ExtensionsViewModel>()
+                    vm.changeExtension(extensionId)
                     return
                 }
                 val name = uri.getQueryParameter("name").orEmpty()
@@ -78,7 +80,7 @@ object FragmentUtils {
             }
 
             else -> {
-                createSnack("Invalid extension host")
+                createSnack("Opening $extensionType extension is not possible")
             }
         }
     }

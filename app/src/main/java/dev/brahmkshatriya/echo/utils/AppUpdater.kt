@@ -20,6 +20,7 @@ import okhttp3.Request
 import okio.use
 import org.koin.android.ext.android.inject
 import java.io.File
+import java.util.zip.ZipFile
 
 object AppUpdater {
     val client = OkHttpClient()
@@ -27,11 +28,26 @@ object AppUpdater {
         val app by inject<App>()
         val throwableFlow = app.throwFlow
         val messageFlow = app.messageFlow
-        val currentVersion = appVersion()
-        val updateUrl = "https://api.github.com/repos/brahmkshatriya/echo/releases"
+        val githubRepo = getString(R.string.app_github_repo)
+        val appType = getString(R.string.app_type)
+        val version = appVersion()
 
         val url = runCatching {
-            getGithubUpdateUrl(currentVersion, updateUrl, client) ?: return
+            when (appType) {
+                "Stable" -> {
+                    val currentVersion = version.substringBefore('_')
+                    val updateUrl = "https://api.github.com/repos/$githubRepo/releases"
+                    getGithubUpdateUrl(currentVersion, updateUrl, client) ?: return
+                }
+
+                "Nightly" -> {
+                    val hash = version.substringBefore("(").substringAfter('_')
+                    val id = getGithubWorkflowId(hash, githubRepo, client) ?: return
+                    "https://nightly.link/$githubRepo/actions/runs/$id/artifact.zip"
+                }
+
+                else -> return
+            }
         }.getOrElse {
             throwableFlow.emit(it)
             return
@@ -43,7 +59,8 @@ object AppUpdater {
             )
         )
         val file = runCatching {
-            downloadUpdate(this, url, client)
+            val download = downloadUpdate(this, url, client)
+            if (appType == "Stable") download else unzipApk(download)
         }.getOrElse {
             throwableFlow.emit(it)
             return
@@ -65,7 +82,7 @@ object AppUpdater {
         val request = Request.Builder().url(url).build()
         val res = runCatching {
             client.newCall(request).await().use {
-                it.body.string().toData<GithubResponse>()
+                it.body.string().toData<GithubReleaseResponse>()
             }
         }.getOrElse {
             throw Exception("Failed to fetch latest release", it)
@@ -81,21 +98,51 @@ object AppUpdater {
         }
     }
 
+    private suspend fun getGithubWorkflowId(
+        hash: String,
+        githubRepo: String,
+        client: OkHttpClient
+    ) = runCatching {
+        val url =
+            "https://api.github.com/repos/$githubRepo/actions/workflows/nightly.yml/runs?per_page=1&conclusion=success"
+        val request = Request.Builder().url(url).build()
+        client.newCall(request).await().use { res ->
+            res.body.string().toData<GithubRunsResponse>().workflowRuns.firstOrNull {
+                it.sha.take(7) != hash
+            }?.id
+        }
+    }.getOrElse {
+        throw Exception("Failed to fetch workflow ID", it)
+    }
+
     @Serializable
-    data class GithubResponse(
+    data class GithubReleaseResponse(
         @SerialName("tag_name")
         val tagName: String,
         @SerialName("created_at")
         val createdAt: String,
         val assets: List<Asset>
-    )
+    ) {
+        @Serializable
+        data class Asset(
+            val name: String,
+            @SerialName("browser_download_url")
+            val browserDownloadUrl: String
+        )
+    }
 
     @Serializable
-    data class Asset(
-        val name: String,
-        @SerialName("browser_download_url")
-        val browserDownloadUrl: String
-    )
+    data class GithubRunsResponse(
+        @SerialName("workflow_runs")
+        val workflowRuns: List<Run>
+    ) {
+        @Serializable
+        data class Run(
+            val id: Long,
+            @SerialName("head_sha")
+            val sha: String,
+        )
+    }
 
     suspend fun downloadUpdate(
         context: Context,
@@ -106,6 +153,22 @@ object AppUpdater {
         val res = client.newCall(request).await().body.byteStream()
         val file = File.createTempFile("temp", ".apk", context.getTempApkDir())
         res.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
-        file
+        file!!
+    }
+
+    private fun unzipApk(file: File): File {
+        val zipFile = ZipFile(file)
+        val apkFile = File.createTempFile("temp", ".apk", file.parentFile!!)
+        zipFile.use { zip ->
+            val apkEntry = zip.entries().asSequence().firstOrNull {
+                !it.isDirectory && it.name.endsWith(".apk")
+            } ?: throw Exception("No APK file found in the zip")
+            zip.getInputStream(apkEntry).use { input ->
+                apkFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        }
+        return apkFile
     }
 }

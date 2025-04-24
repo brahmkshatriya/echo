@@ -5,9 +5,11 @@ import android.content.Context
 import android.icu.text.CompactDecimalFormat
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -42,6 +44,8 @@ class MediaHeaderAdapter(
         fun onPlayClicked(id: String?, item: EchoMediaItem?, view: View)
     }
 
+    var clickEnabled = true
+
     inner class ViewHolder(
         val binding: ItemMediaHeaderBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -49,7 +53,10 @@ class MediaHeaderAdapter(
             binding.apply {
                 follow.setOnClickListener { listener.onFollowClicked(extensionId, item, it) }
                 unfollow.setOnClickListener { listener.onUnfollowClicked(extensionId, item, it) }
-                text.setOnClickListener { listener.onTextClicked(extensionId, item, it) }
+                text.movementMethod = LinkMovementMethod.getInstance()
+                text.setOnClickListener {
+                    if (clickEnabled) listener.onTextClicked(extensionId, item, it)
+                }
                 radio.setOnClickListener { listener.onRadioClicked(extensionId, item, it) }
                 shuffle.setOnClickListener { listener.onShuffleClicked(extensionId, item, it) }
                 play.setOnClickListener { listener.onPlayClicked(extensionId, item, it) }
@@ -90,7 +97,11 @@ class MediaHeaderAdapter(
         val isFollowing = item is EchoMediaItem.Profile.ArtistItem && item.artist.isFollowing
         follow.isVisible = !isFollowing && isFollowSupported
         unfollow.isVisible = isFollowing && isFollowSupported
-        text.text = root.context.getSpan(true, item, extensionId, listener::openMediaItem)
+        text.text = root.context.getSpan(true, item, extensionId) { a, b ->
+            clickEnabled = false
+            listener.openMediaItem(a, b)
+            text.post { clickEnabled = true }
+        }
         text.isVisible = !text.text.isNullOrBlank()
     }
 
@@ -106,7 +117,7 @@ class MediaHeaderAdapter(
             item: EchoMediaItem,
             extensionId: String?,
             openMediaItem: (String?, EchoMediaItem?) -> Unit
-        ) = when (item) {
+        ): SpannableString = when (item) {
             is EchoMediaItem.Lists.AlbumItem -> {
                 val album = item.album
                 val span = SpannableString(buildString {
@@ -209,10 +220,10 @@ class MediaHeaderAdapter(
                 span
             }
 
-            is EchoMediaItem.Lists.RadioItem -> ""
+            is EchoMediaItem.Lists.RadioItem -> SpannableString("")
             is EchoMediaItem.Profile.ArtistItem -> {
                 val artist = item.artist
-                buildString {
+                SpannableString(buildString {
                     if (artist.followers != null) {
                         val formatter = CompactDecimalFormat.getInstance()
                         val formatted = formatter.format(artist.followers)
@@ -228,11 +239,11 @@ class MediaHeaderAdapter(
                             else artist.description
                         )
                     }
-                }
+                })
             }
 
-            is EchoMediaItem.Profile.UserItem -> ""
-            is EchoMediaItem.TrackItem -> item.track.getInfoString(compact, this)
+            is EchoMediaItem.Profile.UserItem -> SpannableString("")
+            is EchoMediaItem.TrackItem -> SpannableString(item.track.getInfoString(compact, this))
         }
 
         fun Track.getInfoString(
@@ -304,6 +315,8 @@ class MediaHeaderAdapter(
                         }
                     dialog = builder.create()
                     dialog.show()
+                    val text = dialog.findViewById<TextView>(android.R.id.message)!!
+                    text.movementMethod = LinkMovementMethod.getInstance()
                 }
 
                 override fun openMediaItem(id: String?, item: EchoMediaItem?) {

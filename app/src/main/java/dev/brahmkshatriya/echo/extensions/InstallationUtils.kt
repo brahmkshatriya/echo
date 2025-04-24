@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.extensions
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
@@ -56,7 +55,7 @@ object InstallationUtils {
             val it = context.waitForResult(installIntent)
             if (it.resultCode == Activity.RESULT_OK) return@runCatching true
             val result = it.data?.extras?.getInt("android.intent.extra.INSTALL_RESULT")
-                ?: return@runCatching true
+                ?: return@runCatching false
             throw Exception(installStatusToString(result))
         } else {
             val viewModel by context.viewModel<ExtensionsViewModel>()
@@ -166,7 +165,7 @@ object InstallationUtils {
                     app.throwFlow.emit(it)
                     return@forEach
                 }
-            viewModel.installExtension.emit(file.toUri().toString())
+            viewModel.awaitInstall(file.toUri().toString())
         }
     }
 
@@ -180,12 +179,13 @@ object InstallationUtils {
                 EXTENSION_INSTALLER,
                 this
             ) { _, b ->
-                val file = b.getString("file")?.toUri()?.toFile()
                 val install = b.getBoolean("install")
+                if (!install) return@setFragmentResultListener
+                val file = b.getString("file")?.toUri()?.toFile()
                 val installAsApk = b.getBoolean("installAsApk")
                 val links = b.getStringArrayList("links").orEmpty()
                 val context = this
-                if (install && file != null) {
+                if (file != null && file.exists()) {
                     val extensionViewModel by viewModel<ExtensionsViewModel>()
                     lifecycleScope.launch {
                         val result = extensionViewModel.install(context, file, installAsApk)
@@ -195,6 +195,8 @@ object InstallationUtils {
                         supportFragmentManager.clearFragmentResultListener(EXTENSION_INSTALLER)
                         it.resume(result)
                     }
+                } else {
+                    it.resume(false)
                 }
             }
             ExtensionInstallerBottomSheet.newInstance(fileString).show(supportFragmentManager, null)
@@ -212,7 +214,7 @@ object InstallationUtils {
             .setPositiveButton(getString(R.string.okay)) { dialog, _ ->
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val packageName = getPackageName(file.path)
-                intent.setData(Uri.parse("package:$packageName"))
+                intent.setData("package:$packageName".toUri())
                 startActivity(intent)
                 dialog.dismiss()
             }

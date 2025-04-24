@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: {}
+  workflow_dispatch: { }
 
 jobs:
   build:
@@ -26,24 +26,24 @@ jobs:
           cache: 'gradle'
 
       - name: Cook KeyStore
-        run:  echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
-      
+        run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
         run: |
-          ./gradlew assembleRelease \
+          ./gradlew assembleNightly \
           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
           -Pandroid.injected.signing.store.password=${{ secrets.PASSWORD }} \
           -Pandroid.injected.signing.key.alias=key0 \
           -Pandroid.injected.signing.key.password=${{ secrets.PASSWORD }}
-          cp app/build/outputs/apk/release/app-release.apk app/build/${{ env.VERSION }}.apk
+          cp app/build/outputs/apk/nightly/app-nightly.apk app/build/${{ env.VERSION }}.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/${{ env.VERSION }}.apk
 
       - name: Upload APK to Discord
         shell: bash
@@ -55,7 +55,7 @@ jobs:
           curl -F "payload_json={\"content\":\"${message}\"}" \
           -F "echo_beta=@app/build/${{ env.VERSION }}.apk" \
           ${{ env.WEBHOOK }}
-     
+
       - name: Upload APK to Telegram
         shell: bash
         env:

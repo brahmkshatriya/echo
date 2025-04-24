@@ -16,6 +16,8 @@ import coil3.memory.MemoryCache
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import dev.brahmkshatriya.echo.di.DI
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.utils.AppShortcuts.configureAppShortcuts
 import dev.brahmkshatriya.echo.utils.CoroutineUtils
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -45,11 +47,13 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
     }
 
     private val settings by inject<SharedPreferences>()
+    private val extensionLoader by inject<ExtensionLoader>()
 
     override fun onCreate() {
         super.onCreate()
         CoroutineUtils.setDebug()
         applyLocale(settings)
+        configureAppShortcuts(extensionLoader)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {

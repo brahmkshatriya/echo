@@ -175,7 +175,7 @@ sealed class PagedData<T : Any> {
 
         override suspend fun loadAllInternal(): List<T> {
             val list = mutableListOf<T>()
-            val init = loadList(null)
+            val init = loadListInternal(null)
             list.addAll(init.data)
             var cont = init.continuation
             while (cont != null) {

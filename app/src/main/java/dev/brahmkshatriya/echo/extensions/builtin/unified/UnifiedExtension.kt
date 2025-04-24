@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
+import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
@@ -54,7 +55,7 @@ class UnifiedExtension(
     private val context: Context
 ) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient, TrackClient,
-    TrackLikeClient, SaveToLibraryClient, PlaylistEditClient, TrackerClient {
+    TrackLikeClient, SaveToLibraryClient, PlaylistEditClient, TrackerClient, ShareClient {
 
     companion object {
         const val UNIFIED_ID = "unified"
@@ -473,7 +474,7 @@ class UnifiedExtension(
 
     private val db = Room.databaseBuilder(
         context, UnifiedDatabase::class.java, "unified-database"
-    ).fallbackToDestructiveMigration().build()
+    ).fallbackToDestructiveMigration(true).build()
 
     override suspend fun getLibraryTabs() = listOf(
         Tab("Unified", context.getString(R.string.all))
@@ -611,4 +612,10 @@ class UnifiedExtension(
                 }
             }.getOrElse { throw it.toAppException(extension) }
         }
+
+    override suspend fun onShare(item: EchoMediaItem): String {
+        val id = item.extras.extensionId
+        val extension = extensions().get(id)
+        return extension.client<ShareClient, String> { onShare(item) }
+    }
 }

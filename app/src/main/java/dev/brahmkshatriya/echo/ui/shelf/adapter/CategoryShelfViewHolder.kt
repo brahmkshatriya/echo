@@ -28,7 +28,7 @@ class CategoryShelfViewHolder(
     }
 
     override fun bind(item: Shelf?) {
-        val category = (item as? Shelf.Category) ?: return
+        val category = item as? Shelf.Category ?: return
         this.category = category
         binding.title.text = category.title
         binding.subtitle.text = category.subtitle
