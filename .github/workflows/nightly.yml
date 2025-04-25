@@ -43,7 +43,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          path: app/build/${{ env.VERSION }}.apk
+          path: app/build/outputs/apk/nightly/app-nightly.apk
 
       - name: Upload APK to Discord
         shell: bash
