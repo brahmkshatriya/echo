@@ -202,11 +202,22 @@ class LoginFragment : Fragment() {
                 callback.isEnabled = webView.canGoBack()
             }
 
+            fun checkForCookies(url: String) {
+                if (runCatching { loginWebViewCookieUrlRegex?.find(url) }.getOrNull() != null) {
+                    lifecycleScope.launch {
+                        mutex.withLock {
+                            val result = webView.loadData(url, client)
+                            data[url] = result
+                        }
+                    }
+                }
+            }
+
             override fun shouldInterceptRequest(
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                shouldOverrideUrlLoading(view, request)
+                checkForCookies(request?.url.toString())
                 return super.shouldInterceptRequest(view, request)
             }
 
@@ -218,35 +229,25 @@ class LoginFragment : Fragment() {
                 if (runCatching { loginWebViewStopUrlRegex.find(url) }.getOrNull() != null) {
                     webView.stopLoading()
                     lifecycleScope.launch {
-                        val result = webView.loadData(url, client)
                         mutex.withLock {
+                            val result = webView.loadData(url, client)
+                            webView.isVisible = false
+                            loadingContainer.root.isVisible = true
+                            callback.isEnabled = false
+
+                            WebStorage.getInstance().deleteAllData()
+                            CookieManager.getInstance().run {
+                                removeAllCookies(null)
+                                flush()
+                            }
+
                             data[url] = result
+                            loginViewModel.onWebViewStop(extension, url, data)
                         }
-
-                        webView.isVisible = false
-                        loadingContainer.root.isVisible = true
-                        callback.isEnabled = false
-
-                        WebStorage.getInstance().deleteAllData()
-                        CookieManager.getInstance().run {
-                            removeAllCookies(null)
-                            flush()
-                        }
-
-                        loginViewModel.onWebViewStop(extension, url, data)
                     }
                     return true
                 }
-
-                if(runCatching { loginWebViewCookieUrlRegex?.find(url) }.getOrNull() != null) {
-                    lifecycleScope.launch {
-                        val result = webView.loadData(url, client)
-                        mutex.withLock {
-                            data[url] = result
-                        }
-                    }
-                    return false
-                }
+                checkForCookies(url)
                 return false
             }
         }
@@ -257,8 +258,7 @@ class LoginFragment : Fragment() {
             javaScriptEnabled = true
             @Suppress("DEPRECATION")
             databaseEnabled = true
-            userAgentString = loginWebViewInitialUrl.headers["User-Agent"]
-                ?: USER_AGENT
+            userAgentString = loginWebViewInitialUrl.headers["User-Agent"] ?: USER_AGENT
         }
 
         webView.loadUrl(loginWebViewInitialUrl.url, loginWebViewInitialUrl.headers)

@@ -62,7 +62,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version = "22.4.0" }
-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "19.4.2" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "19.4.3" }
 
 [bundles]
 androidx = [
