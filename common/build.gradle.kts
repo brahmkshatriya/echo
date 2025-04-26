@@ -15,6 +15,7 @@ kotlin {
 }
 
 dependencies {
+    api(libs.kotlin.stdlib)
     api(libs.bundles.kotlinx)
     api(libs.okhttp)
 }
