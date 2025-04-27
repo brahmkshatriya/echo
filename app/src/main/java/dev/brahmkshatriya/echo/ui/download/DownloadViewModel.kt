@@ -23,8 +23,10 @@ import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 class DownloadViewModel(
@@ -40,7 +42,9 @@ class DownloadViewModel(
     private val downloadList = extensionLoader.extensions.misc
 
     val extensions = extensionLoader.extensions
-    val flow = downloader.flow
+
+    @OptIn(FlowPreview::class)
+    val flow = downloader.flow.debounce(1000)
 
     fun addToDownload(
         activity: FragmentActivity, clientId: String, item: EchoMediaItem

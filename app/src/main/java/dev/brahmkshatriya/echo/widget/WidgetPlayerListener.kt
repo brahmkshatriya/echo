@@ -12,8 +12,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dev.brahmkshatriya.echo.playback.PlayerCommands.imageCommand
 import dev.brahmkshatriya.echo.utils.Serializer.getParcel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 
 class WidgetPlayerListener(
     private val update: (Bitmap?) -> Unit
@@ -24,9 +22,7 @@ class WidgetPlayerListener(
     private var image: Bitmap? = null
     private fun getImage() {
         result?.cancel(true)
-        result = runBlocking(Dispatchers.Main) {
-            controller?.sendCustomCommand(imageCommand, Bundle.EMPTY)
-        }
+        result = controller?.sendCustomCommand(imageCommand, Bundle.EMPTY)
         result?.addListener({
             val result = result?.get()
             if (result?.resultCode == SessionResult.RESULT_SUCCESS) {

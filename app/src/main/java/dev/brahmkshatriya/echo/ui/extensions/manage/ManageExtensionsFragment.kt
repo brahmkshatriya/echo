@@ -28,7 +28,6 @@ import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configure
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
-import kotlinx.coroutines.Job
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ManageExtensionsFragment : Fragment() {
@@ -74,7 +73,6 @@ class ManageExtensionsFragment : Fragment() {
             tabs.forEach { addTab(it) }
         }
 
-        var type = ExtensionType.entries[binding.tabLayout.selectedTabPosition]
         val callback = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
         ) {
@@ -85,7 +83,7 @@ class ManageExtensionsFragment : Fragment() {
             ): Boolean {
                 val fromPos = viewHolder.bindingAdapterPosition
                 val toPos = target.bindingAdapterPosition
-                viewModel.moveExtensionItem(type, toPos, fromPos)
+                viewModel.moveExtensionItem(toPos, fromPos)
                 return true
             }
 
@@ -116,26 +114,19 @@ class ManageExtensionsFragment : Fragment() {
             }
         })
 
-        var job: Job? = null
-        fun change(pos: Int): Job {
-            job?.cancel()
-            type = ExtensionType.entries[pos]
-            viewModel.lastSelectedManageExt = pos
-            val flow = viewModel.extensions.getFlow(type)
-            return observe(flow) { list ->
-                binding.swipeRefresh.isRefreshing = list == null
-                extensionAdapter.submit(list ?: emptyList())
-            }
+        observe(viewModel.manageExtListFlow) { list ->
+            binding.swipeRefresh.isRefreshing = list == null
+            extensionAdapter.submit(list ?: emptyList())
         }
 
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            fun select(tab: TabLayout.Tab) = run { job = change(tab.position) }
+            fun select(tab: TabLayout.Tab) { viewModel.lastSelectedManageExt.value = tab.position }
             override fun onTabSelected(tab: TabLayout.Tab) = select(tab)
             override fun onTabReselected(tab: TabLayout.Tab) = select(tab)
             override fun onTabUnselected(tab: TabLayout.Tab) {}
         })
 
-        binding.tabLayout.selectTab(tabs[viewModel.lastSelectedManageExt])
+        binding.tabLayout.selectTab(tabs[viewModel.lastSelectedManageExt.value])
         binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
         touchHelper.attachToRecyclerView(binding.recyclerView)
     }

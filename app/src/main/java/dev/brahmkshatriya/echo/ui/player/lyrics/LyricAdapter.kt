@@ -43,7 +43,7 @@ class LyricAdapter(
         }
     }
 
-    private fun getItemOrNull(position: Int) = if (position >= 0) getItem(position) else null
+    private fun getItemOrNull(position: Int) = runCatching { getItem(position) }.getOrNull()
 
     private var currentPos = -1
     private fun ViewHolder.updateCurrent() {

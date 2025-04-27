@@ -22,7 +22,9 @@ import kotlin.math.roundToInt
 
 object AppShortcuts {
     private suspend fun Context.applyAppShortcuts(extensions: List<MusicExtension>) {
-        val shortcuts = extensions.map { extension ->
+        val max = ShortcutManagerCompat.getMaxShortcutCountPerActivity(this)
+        val ext = extensions.take(max)
+        val shortcuts = ext.map { extension ->
             val bitmap =
                 extension.metadata.icon.loadAsCircleDrawable(this)
                     ?.toBitmap()?.addPadding()
@@ -38,7 +40,7 @@ object AppShortcuts {
         ShortcutManagerCompat.addDynamicShortcuts(this, shortcuts)
         ShortcutManagerCompat.disableShortcuts(
             this,
-            extensions.filter { !it.isEnabled }.map { it.id },
+            ext.filter { !it.isEnabled }.map { it.id },
             getString(R.string.disabled)
         )
     }

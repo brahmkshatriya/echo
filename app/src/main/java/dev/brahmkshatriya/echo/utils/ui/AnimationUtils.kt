@@ -19,10 +19,10 @@ import androidx.core.view.forEachIndexed
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.transition.Fade
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
-import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import kotlin.math.absoluteValue
@@ -153,10 +153,13 @@ object AnimationUtils {
 //            sharedElementEnterTransition = transition
 //        }
             (view as? ViewGroup)?.isTransitionGroup = true
-            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
-            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
-            enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
-            returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
+            val fade = Fade()
+            fade.interpolator = getInterpolator(requireContext())
+            fade.duration = view.animationDurationSmall
+            exitTransition = fade
+            reenterTransition = fade.clone()
+            enterTransition = fade.clone()
+            returnTransition = fade.clone()
 
             postponeEnterTransition()
             view.doOnPreDraw { startPostponedEnterTransition() }

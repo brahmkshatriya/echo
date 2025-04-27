@@ -134,7 +134,7 @@ object ExceptionUtils {
         throwable.cause?.let { append(getFinalDetails(it)) }
     }
 
-    private fun Context.getStackTrace(throwable: Throwable): String = buildString {
+    private fun getStackTrace(throwable: Throwable): String = buildString {
         appendLine("Version: ${appVersion()}")
         appendLine(getFinalDetails(throwable))
         appendLine("---Stack Trace---")
@@ -149,7 +149,7 @@ object ExceptionUtils {
             R.string.error_x,
             message ?: this::class.run { simpleName ?: java.name }
         )
-        Data(title, context.getStackTrace(this))
+        Data(title, getStackTrace(this))
     }
 
 
@@ -166,17 +166,17 @@ object ExceptionUtils {
                 is AppException.Unauthorized ->
                     Message.Action(getString(R.string.logout_and_login)) {
                         uiViewModel.collapsePlayer()
-                        openLoginException(root, view)
+                        runCatching { openLoginException(root, view) }
                     }
 
                 is AppException.LoginRequired -> Message.Action(getString(R.string.login)) {
                     uiViewModel.collapsePlayer()
-                    openLoginException(root, view)
+                    runCatching { openLoginException(root, view) }
                 }
 
                 else -> Message.Action(getString(R.string.view)) {
                     uiViewModel.collapsePlayer()
-                    openException(Data(title, getStackTrace(throwable)), view)
+                    runCatching { openException(Data(title, getStackTrace(throwable)), view) }
                 }
             }
         )

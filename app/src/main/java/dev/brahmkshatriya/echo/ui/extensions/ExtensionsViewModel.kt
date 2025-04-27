@@ -28,6 +28,8 @@ import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -52,7 +54,6 @@ class ExtensionsViewModel(
         }
     }
 
-    var lastSelectedManageExt: Int = 0
     fun refresh() = extensionLoader.refresh()
 
     private val extensionDao = extensionLoader.db.extensionDao()
@@ -88,15 +89,7 @@ class ExtensionsViewModel(
         function(result)
     }
 
-    fun moveExtensionItem(type: ExtensionType, toPos: Int, fromPos: Int) {
-        val flow = extensions.priorityMap[type]!!
-        val list = extensions.getFlow(type).value.orEmpty().map { it.id }.toMutableList()
-        list.add(toPos, list.removeAt(fromPos))
-        flow.value = list
-        app.settings.edit {
-            putString(type.priorityKey(), list.joinToString(","))
-        }
-    }
+
 
     fun addFromFile(context: FragmentActivity) {
         viewModelScope.launch {
@@ -144,6 +137,23 @@ class ExtensionsViewModel(
     suspend fun awaitInstall(file: String) {
         installExtension.emit(file)
         extensionInstalled.first()
+    }
+
+    val lastSelectedManageExt = MutableStateFlow(0)
+    val manageExtListFlow = extensions.all.combine(lastSelectedManageExt) { list, last ->
+        val type = ExtensionType.entries[last]
+        list?.filter { it.type == type }
+    }
+
+    fun moveExtensionItem(toPos: Int, fromPos: Int) {
+        val type = ExtensionType.entries[lastSelectedManageExt.value]
+        val flow = extensions.priorityMap[type]!!
+        val list = extensions.getFlow(type).value.orEmpty().map { it.id }.toMutableList()
+        list.add(toPos, list.removeAt(fromPos))
+        flow.value = list
+        app.settings.edit {
+            putString(type.priorityKey(), list.joinToString(","))
+        }
     }
 
     companion object {

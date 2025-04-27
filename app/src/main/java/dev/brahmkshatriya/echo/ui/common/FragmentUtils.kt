@@ -25,6 +25,7 @@ object FragmentUtils {
         view: View? = null, bundle: Bundle? = null,
     ) {
         parentFragmentManager.commit {
+            setReorderingAllowed(true)
             add<T>(id, args = bundle)
             hide(this@openFragment)
             addToBackStack(null)
