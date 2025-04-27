@@ -73,7 +73,7 @@
     <string name="downloaded_x">%1$s Scaricato</string>
     <string name="login">Accedi</string>
     <string name="view">Visualizza</string>
-    <string name="extension_out_of_date">Obsoleta</string>
+    <string name="extension_out_of_date">Estensione obsoleta</string>
     <string name="no_internet">Nessun accesso a Internet</string>
     <string name="error_loading_extension_from_x">Impossibile caricare l\'estensione da %1$s</string>
     <string name="required_extensions_missing_x">Estensione richiesta mancante: %1$s</string>
