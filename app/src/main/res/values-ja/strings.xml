@@ -326,4 +326,7 @@
     <string name="custom_theme_color_summary"></string>
     <string name="stop_player"></string>
     <string name="look_and_feel"></string>
+    <string name="extension_out_of_date"></string>
+    <string name="ui"></string>
+    <string name="amoled"></string>
 </resources>
