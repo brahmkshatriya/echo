@@ -96,7 +96,7 @@
     <string name="downloads">ডাউনলোডসমূহ</string>
     <string name="downloaded_x">%1$s ডাউনলোড কৰা হৈছে</string>
     <string name="view">দৰ্শন</string>
-    <string name="extension_out_of_date">এক্সটেনচন মেয়াদ উত্তীৰ্ণ হৈছে</string>
+    <string name="extension_out_of_date">অপৰ্যাপ্ত এক্সটেনচন</string>
     <string name="no_internet">ইণ্টাৰনেট নাই</string>
     <string name="str_copy">কপি কৰক</string>
     <string name="extensions">এক্সটেনচনসমূহ</string>
