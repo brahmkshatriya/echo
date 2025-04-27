@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Echo</string>
     <string name="app_github_repo" translatable="false">brahmkshatriya/echo</string>
@@ -31,12 +32,12 @@
     <string name="blacklist_folders">Blacklist Folders</string>
     <string name="blacklist_folders_summary">Folders to exclude from the library</string>
     <string name="blacklist_folder_keywords">Blacklist Folder Keywords</string>
-    <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders, use comma for separator</string>
+    <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders. Use comma for separator</string>
     <string name="playlists">Playlists</string>
     <string name="saved">Saved</string>
     <string name="tabs">Tabs</string>
     <string name="show_tabs">Show Tabs</string>
-    <string name="show_tab_summary">will show tabs of the extensions as category</string>
+    <string name="show_tab_summary">Show tabs of the extensions as categories</string>
     <string name="unified_liked_playlist_summary">Your liked tracks from various extensions</string>
     <string name="n_items">%1$d Items</string>
     <string name="playlist_liked">Liked</string>
@@ -59,12 +60,10 @@
     <string name="downloads">Downloads</string>
     <string name="x_items">%1$d Items</string>
     <string name="downloaded_x">Downloaded %1$s</string>
-
     <string name="logout_and_login">Logout and Login</string>
     <string name="login">Login</string>
     <string name="view">View</string>
-
-    <string name="extension_out_of_date">Out of date</string>
+    <string name="extension_out_of_date">Outdated Extension</string>
     <string name="no_internet">No Internet</string>
     <string name="error_loading_extension_from_x">Error loading extension from %1$s</string>
     <string name="extension_x_not_found">Extension %1$s not found</string>
@@ -83,14 +82,11 @@
     <string name="random">Random</string>
     <string name="add">Add</string>
     <string name="loading">Loading…</string>
-
     <string name="settings">Settings</string>
     <string name="value">Value</string>
     <string name="value_not_set">Not Set</string>
-
     <string name="audio_summary">(Audiophiles gather here)</string>
     <string name="playback">Playback</string>
-
     <string name="audio_fx">Audio Effects</string>
     <string name="audio_fx_summary">Effects applied for all songs</string>
     <string name="audio_fx_desc">Change the audio effects for the current track.</string>
@@ -101,8 +97,7 @@
     <string name="bass_boost_desc">Larger value may distort the sound.</string>
     <string name="change_pitch_with_speed_desc">Get that slow-motion sound</string>
     <string name="equalizer">Equalizer</string>
-    <string name="equalizer_summary">Open the device equalizer settings</string>
-
+    <string name="equalizer_summary">Open the system equalizer settings</string>
     <string name="stream_quality">Stream Quality</string>
     <string name="stream_quality_summary">Select the quality of the stream</string>
     <string-array name="stream_qualities">
@@ -110,26 +105,18 @@
         <item>Medium</item>
         <item>Lowest</item>
     </string-array>
-
     <string name="behavior">Behavior</string>
-
     <string name="keep_queue">Keep Player Queue</string>
     <string name="keep_queue_summary">Recover the player queue, when you reopen the app.</string>
-
-    <string name="stop_player">Stop player</string>
+    <string name="stop_player">Stop Player</string>
     <string name="stop_player_summary">Stop the player, when the app is removed from recents</string>
-
     <string name="skip_silence">Skip Silence</string>
-    <string name="skip_silence_summary">Skip silent part in the song, to provide gapless playback.</string>
-
-    <string name="auto_start_radio">Auto Start Radio</string>
+    <string name="skip_silence_summary">Skip silent part in the song, to provide gapless playback</string>
+    <string name="auto_start_radio">Auto-Start Radio</string>
     <string name="auto_start_radio_summary">Automatically add related songs of track in the playlist, to have an infinite queue</string>
-
     <string name="cache_size">Cache Size</string>
     <string name="cache_size_summary">Size in MB to cache audio and video</string>
-
-    <string name="extensions_summary">Manage your installed Extensions</string>
-
+    <string name="extensions_summary">Manage the installed Extensions</string>
     <string name="misc_summary">Miscellaneous settings</string>
     <string name="version">Version</string>
     <string name="language">Language</string>
@@ -137,13 +124,12 @@
     <string name="language_summary">Language of the app, System will default to English</string>
     <string name="check_for_extension_updates">Check for Extension Updates</string>
     <string name="check_for_extension_updates_summary">Look for new updates of extensions, when you open the app.</string>
-
     <string name="install">Install</string>
     <string name="app">App</string>
     <string name="file">File</string>
     <string name="installation_type">Installation Type</string>
     <string name="installation_type_summary">App installation will allow the following links to open in Echo:</string>
-    <string name="installation_type_warning">Not available if you install the extension as a File.</string>
+    <string name="installation_type_warning">Not available if you install the extension as a file.</string>
     <string name="could_not_find_the_file">Could not find the file.</string>
     <string name="extension_installer">Extension Installer</string>
     <string name="uninstall">Uninstall</string>
@@ -162,12 +148,9 @@
     <string name="add_extensions">Add Extensions</string>
     <string name="invalid_extension_list">Invalid extensions list</string>
     <string name="checking_for_extension_updates">Checking for extension updates</string>
-
-    <string name="look_and_feel">Look and Feel</string>
+    <string name="look_and_feel">Look &amp; Feel</string>
     <string name="look_and_feel_summary">UI and Animation Settings</string>
-
     <string name="ui">UI</string>
-
     <string name="theme">Theme</string>
     <string name="theme_summary">Want to be blind?</string>
     <string-array name="themes">
@@ -175,47 +158,38 @@
         <item>Dark</item>
         <item>System</item>
     </string-array>
-
     <string name="custom_theme_color">Custom Theme Color</string>
-    <string name="custom_theme_color_summary">Use a custom theme color, instead of system theme.</string>
+    <string name="custom_theme_color_summary">Use a custom theme color, instead of the system one</string>
     <string name="add_color">Add color</string>
     <string name="custom_colors">Custom Colors</string>
-
     <string name="amoled">Amoled</string>
-    <string name="amoled_summary">Pitch Black, Pure Black</string>
-
+    <string name="amoled_summary">Replace the background color with pitch black. Useful for AMOLED screens to decrease the battery drain and prevent screen burn-in</string>
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
-
     <string name="dynamic_player">Dynamic Player Color</string>
     <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
-
     <string name="show_background">Show Background</string>
     <string name="show_background_summary">Background video or blurred artwork of track in player</string>
-
     <string name="animation">Animation</string>
-
     <string name="animations">Animations</string>
     <string name="animations_summary">Feeling too much stutter? turning this off, might help</string>
-
     <string name="refresh">Refresh</string>
     <string name="x_disabled">%1$s (Disabled)</string>
     <string name="by_x">By %1$s</string>
     <string name="music">Music</string>
     <string name="tracker">Tracker</string>
     <string name="lyrics">Lyrics</string>
-    <string name="misc">Misc</string>
+    <string name="misc">Miscellaneous</string>
     <string name="x_extensions">%1$s Extensions</string>
     <string name="x_extension">%1$s Extension</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-
     <string name="no_user_found">No user found</string>
     <string name="select_x_account">Select %1$s account</string>
     <string name="add_account">Add Account</string>
     <string name="add_extension">Add Extension</string>
     <string name="error_updating_extension">Error while updating</string>
-    <string name="webview">Webview</string>
+    <string name="webview">WebView</string>
     <string name="username_and_password">Username and Password</string>
     <string name="manual">Manual</string>
     <string name="username">Username</string>
@@ -226,7 +200,6 @@
     <string name="not_logged_in">Not logged in</string>
     <string name="x_login">%1$s Login</string>
     <string name="x_is_required">$1%s is required</string>
-
     <string name="playing_from">Playing From</string>
     <string name="up_next">Up Next</string>
     <string name="info">Info</string>
@@ -238,7 +211,6 @@
     <string name="repeat">Repeat</string>
     <string name="close">Close</string>
     <string name="no_lyrics">No Lyrics</string>
-
     <string name="sleep_timer">Sleep Timer</string>
     <string name="end_of_track">End of Track</string>
     <string name="_15min">15m</string>
@@ -259,7 +231,6 @@
         <item quantity="one">%1$d Min</item>
         <item quantity="other">%1$d Mins</item>
     </plurals>
-
     <string name="servers">Servers</string>
     <string name="sources">Sources</string>
     <string name="backgrounds">Backgrounds</string>
@@ -271,12 +242,10 @@
     <string name="quality_x">Quality %1$d</string>
     <string name="off">Off</string>
     <string name="unknown_quality">Unknown Quality</string>
-
     <string name="crying_af" translatable="false">(;-;)</string>
     <string name="so_empty">So empty…</string>
     <string name="not_loading">Not Loading</string>
     <string name="n_dot_x" translatable="false">%1$d. %2$s</string>
-
     <string name="share">Share</string>
     <string name="sharing_x">Sharing %1$s</string>
     <string name="save_to_library">Save to library</string>
@@ -287,26 +256,22 @@
     <string name="removed_x_from_library">Removed %1$s from library</string>
     <string name="radio">Radio</string>
     <string name="download">Download</string>
-
     <string name="follow">Follow</string>
     <string name="following_x">Following %1$s</string>
     <string name="followed_x">Followed %1$s</string>
     <string name="unfollow">Unfollow</string>
     <string name="unfollowing_x">Unfollowing %1$s</string>
     <string name="unfollowed_x">Unfollowed %1$s</string>
-
     <string name="hide">Hide</string>
     <string name="hiding_x">Hiding %1$s</string>
     <string name="hid_x">Hid %1$s</string>
     <string name="unhide">Un-hide</string>
     <string name="unhiding_x">Un-hiding %1$s</string>
     <string name="unhid_x">Un-hid %1$s</string>
-
     <string name="liking_x">Liking %1$s</string>
     <string name="liked_x">Liked %1$s</string>
     <string name="unliking_x">Unliked %1$s</string>
     <string name="unliked_x">Unliked %1$s</string>
-
     <string name="save_to_playlist">Save to playlist</string>
     <string name="delete_playlist">Delete playlist</string>
     <string name="add_to_next">Add to next</string>
@@ -320,15 +285,14 @@
     <string name="all">All</string>
     <string name="edit_playlist">Edit Playlist</string>
     <string name="more_brain_capacity">More Brain Capacity</string>
-    <string name="more_brain_capacity_summary">Enabling this, can help fix audio lag and increase battery usage (Disables the audio offloading).</string>
-
+    <string name="more_brain_capacity_summary">Enabling this, can fix the audio lag, but drastically increases the battery usage (Disables the audio offloading).</string>
     <string name="sort">Sort</string>
     <string name="explicit">Explicit</string>
     <string name="x_plays">%1$s Plays</string>
     <string name="x_followers">%1$s Followers</string>
     <plurals name="n_songs">
-        <item quantity="one">%1$d Song</item>
-        <item quantity="other">%1$d Songs</item>
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
     </plurals>
     <string name="shuffling_x">Shuffling %1$s</string>
     <string name="copying_the_error">Copying the error</string>
@@ -346,7 +310,7 @@
     <string name="sort_plays">Plays</string>
     <string name="sort_explicit">Explicit</string>
     <string name="scroll_animations">Scroll Animations</string>
-    <string name="scroll_animations_summary">Animations when you scroll stuff</string>
+    <string name="scroll_animations_summary">Animations while scrolling</string>
     <string name="sort_subtitle">Subtitle</string>
     <string name="delete">Delete</string>
     <string name="playlist_name">Playlist Name</string>
@@ -367,20 +331,17 @@
     <string name="adding_x">Adding %1$s</string>
     <string name="moving_x">Moving %1$s</string>
     <string name="removing_x">Removing %1$s</string>
-
     <string name="no_download_extension">No download extension found, use code \"echodown\" to get it.</string>
     <string name="nothing_to_download_in_x">Nothing to download in %1$s</string>
     <string name="download_started">Download Started</string>
     <string name="merging_x">Merging %1$s</string>
     <string name="tagging_x">Tagging %1$s</string>
     <string name="downloads_summary">All your downloads</string>
-
     <string name="apply_player_color_to_app">Apply Player Color to the Entire App</string>
     <string name="apply_player_color_to_app_summary">LAG ALERT!!!</string>
     <string name="delete_download">Delete Download</string>
     <string name="removed_x_from_downloads">Removed %1$s from Downloads</string>
     <string name="download_complete">Download Complete</string>
-
     <string name="add_widget">Mini Player Widget</string>
     <string name="app_widget_description">Echo on your home screen!</string>
 </resources>
