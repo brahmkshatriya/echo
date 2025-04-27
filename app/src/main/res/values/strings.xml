@@ -63,7 +63,7 @@
     <string name="logout_and_login">Logout and Login</string>
     <string name="login">Login</string>
     <string name="view">View</string>
-    <string name="extension_out_of_date">Out of date</string>
+    <string name="extension_out_of_date">Outdated Extension</string>
     <string name="no_internet">No Internet</string>
     <string name="error_loading_extension_from_x">Error loading extension from %1$s</string>
     <string name="extension_x_not_found">Extension %1$s not found</string>
