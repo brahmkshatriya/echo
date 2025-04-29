@@ -51,7 +51,7 @@
     <string name="downloaded_x">Завантажено %1$s</string>
     <string name="login">Увійти</string>
     <string name="view">Переглянути</string>
-    <string name="extension_out_of_date">Застаріло</string>
+    <string name="extension_out_of_date">Застаріле розширення</string>
     <string name="no_internet">Немає мережі</string>
     <string name="required_extensions_missing_x">Відсутні необхідні розширення: %1$s</string>
     <string name="x_login_required">Потрібно ввійти в %1$s</string>
