@@ -21,7 +21,7 @@
     <string name="albums">Альбомы</string>
     <string name="cache_playlist_warning">Экспериментальная функция. Доступно только прослушивание.</string>
     <string name="duration_filter">Фильтр длительности</string>
-    <string name="duration_filter_summary">Фильтровать аудиофайлы с длительностью меньше указанной</string>
+    <string name="duration_filter_summary">Фильтровать аудиофайлы с длительностью меньше указанной (в секундах)</string>
     <string name="tabs">Вкладки</string>
     <string name="playlists">Плейлисты</string>
     <string name="unified_liked_playlist_summary">Ваши понравившееся треки из разных расширений</string>
@@ -193,12 +193,12 @@
     <string name="unlike">В отличие от</string>
     <string name="repeat_one">Повторите один раз</string>
     <string name="repeat_off">Повторить выключение</string>
-    <string name="extension_out_of_date">Устарело</string>
+    <string name="extension_out_of_date">Устаревшее расширение</string>
     <string name="random">Случайный</string>
     <string name="change_pitch_with_speed">Меняйте высоту тона со скоростью</string>
     <string name="bass_boost">Усиление басов</string>
     <string name="refresh_library_on_reload_summary">Сканируйте устройство каждый раз при загрузке канала</string>
-    <string name="blacklist_folder_keywords_summary">Ключевые слова для черного списка папок. Используйте запятую для разделителя</string>
+    <string name="blacklist_folder_keywords_summary">Ключевые слова для черного списка папок. Используйте запятую как разделитель</string>
     <string name="change_pitch_with_speed_desc">Получите замедленный звук</string>
     <string name="keep_queue">Держать игрока в очереди</string>
     <string name="stop_player">Остановить игрока</string>
