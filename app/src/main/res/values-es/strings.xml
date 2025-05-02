@@ -31,7 +31,7 @@
     <string name="cached_songs">Canciones prealmacenadas</string>
     <string name="cache_playlist_warning">Funcionalidad experimental. No admite ninguna acción excepto escuchar.</string>
     <string name="artists">Artistas</string>
-    <string name="recently_added">Recientemente Agregadas</string>
+    <string name="recently_added">Agregado recientemente</string>
     <string name="refresh_library_on_reload">Actualizar colección al recargar</string>
     <string name="refresh_library_on_reload_summary">Escanear el dispositivo cada vez que se carga el feed</string>
     <string name="duration_filter">Filtro de Duración</string>
@@ -39,7 +39,7 @@
     <string name="blacklist_folders">Carpetas en Lista Negra</string>
     <string name="blacklist_folders_summary">Carpetas a excluir de la biblioteca</string>
     <string name="blacklist_folder_keywords">Palabras Clave para Carpetas en Lista Negra</string>
-    <string name="blacklist_folder_keywords_summary">Palabras clave para incluir carpetas en la lista negra. Usar coma para el separador</string>
+    <string name="blacklist_folder_keywords_summary">Palabras clave para incluir carpetas en la lista negra. Usa la coma para separar</string>
     <string name="playlists">Listas de Reproducción</string>
     <string name="saved">Guardadas</string>
     <string name="show_tabs">Mostrar Pestañas</string>
@@ -110,11 +110,11 @@
     <string name="keep_queue">Mantener Cola del Reproductor</string>
     <string name="keep_queue_summary">Recupera la cola del reproductor al reabrir la app.</string>
     <string name="stop_player">Detener reproductor</string>
-    <string name="stop_player_summary">Detener el reproductor cuando la app se cierre de recientes</string>
+    <string name="stop_player_summary">Detener la reproducción al quitar la app de recientes</string>
     <string name="skip_silence">Saltar Silencio</string>
     <string name="skip_silence_summary">Omitir la parte silenciosa de la canción para que la reproducción se reproduzca sin pausas</string>
     <string name="auto_start_radio">Inicio automático de la Radio</string>
-    <string name="auto_start_radio_summary">Agregar automáticamente canciones relacionadas de la pista a la lista para tener una cola infinita</string>
+    <string name="auto_start_radio_summary">Agregar automáticamente canciones relacionadas a la lista para tener una cola infinita</string>
     <string name="cache_size">Tamaño de Caché</string>
     <string name="version">Versión</string>
     <string name="cache_size_summary">Tamaño en MB para almacenar en caché audio y video</string>
@@ -122,9 +122,9 @@
     <string name="misc_summary">Ajustes varios</string>
     <string name="language">Idioma</string>
     <string name="system">Sistema</string>
-    <string name="language_summary">Idioma de la app, el valor Sistema se traducirá a inglés por defecto</string>
+    <string name="language_summary">Idioma de la app. Por defecto, el sistema está en inglés</string>
     <string name="check_for_extension_updates">Buscar actualizaciones de Extensiones</string>
-    <string name="check_for_extension_updates_summary">Busca nuevas actualizaciones de extensiones al abrir la app.</string>
+    <string name="check_for_extension_updates_summary">Buscar nuevas actualizaciones de extensiones al abrir la app.</string>
     <string name="install">Instalar</string>
     <string name="app">Aplicación</string>
     <string name="file">Archivo</string>
@@ -142,7 +142,7 @@
     <string name="extension_requires_following_extensions">%1$s requiere %2$s</string>
     <string name="downloading_update_for_x">Descargando actualización para %1$s</string>
     <string name="extension_installed">%1$s (Instalada)</string>
-    <string name="add_extensions">Agregar Extensiones</string>
+    <string name="add_extensions">Añadir Extensiones</string>
     <string name="invalid_extension_list">Lista de extensiones inválida</string>
     <string name="look_and_feel_summary">Ajustes de interfaz y animación</string>
     <string name="ui">Interfaz</string>
@@ -328,9 +328,9 @@
     <string name="okay">Aceptar</string>
     <string name="apply_player_color_to_app">Aplicar el color del reproductor a toda la aplicación</string>
     <string name="apply_player_color_to_app_summary">ALERTA DE LAG!!</string>
-    <string name="delete_download">Eliminar Descargar</string>
+    <string name="delete_download">Eliminar descargas</string>
     <string name="removed_x_from_downloads">Eliminado %1$s de las descargas</string>
-    <string name="download_complete">Descargar Completo</string>
+    <string name="download_complete">Descarga completada</string>
     <string name="app_widget_description">¡Echo en tu pantalla de inicio!</string>
     <string name="add_widget">Widget de mini reproductor</string>
 </resources>
