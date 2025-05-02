@@ -47,7 +47,7 @@
     <string name="logout_and_login">Sair e Entrar</string>
     <string name="login">Entrar</string>
     <string name="view">Ver</string>
-    <string name="extension_out_of_date">Desatualizado</string>
+    <string name="extension_out_of_date">Extensão desatualizada</string>
     <string name="no_internet">Sem Internet</string>
     <string name="error_loading_extension_from_x">Erro ao carregar a extensão de %1$s</string>
     <string name="extension_x_not_found">Extensão %1$s não encontrada</string>
