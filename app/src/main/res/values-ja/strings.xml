@@ -67,4 +67,12 @@
     <string name="playback_speed">プレイバック速度</string>
     <string name="x_was_not_granted">%1$s は付与されませんでした</string>
     <string name="x_permission_required">%1$s 権限が必要です</string>
+    <string name="video_permission_summary">デバイス内の動画ライブラリにアクセス</string>
+    <string name="audio_permission_summary">デバイスの音楽ライブラリにアクセス</string>
+    <string name="notifications_permission_summary">ダウンロードと音楽に関する通知を表示する</string>
+    <string name="write_storage_permission_summary">ローカルプレイリストの作成・編集</string>
+    <string name="cache_playlist_warning">実験的な機能です。音楽視聴以外の機能はサポートされていません。</string>
+    <string name="read_storage">ストレージの読み込み</string>
+    <string name="write_storage">ストレージへの書き込み</string>
+    <string name="cached_songs">キャッシュされた曲</string>
 </resources>
