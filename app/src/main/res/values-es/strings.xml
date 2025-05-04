@@ -273,7 +273,7 @@
     <string name="background_gradient_summary">Un tinte degradado en el fondo según el contexto</string>
     <string name="edit_playlist">Editar lista de reproducción</string>
     <string name="more_brain_capacity">Mayor capacidad cerebral</string>
-    <string name="more_brain_capacity_summary">Habilitar esto, puede solucionar el retraso del audio, pero aumenta drásticamente el uso de la batería (deshabilita la descarga de audio).</string>
+    <string name="more_brain_capacity_summary">Activar esto puede solucionar el retraso del audio, pero aumenta drásticamente el uso de la batería (desactiva el descargo de audio).</string>
     <string name="sort">Ordenar</string>
     <string name="explicit">Explícito</string>
     <string name="x_plays">%1$s reproducciones</string>
@@ -327,8 +327,8 @@
     <string name="downloads_summary">Todas sus descargas</string>
     <string name="okay">Aceptar</string>
     <string name="apply_player_color_to_app">Aplicar el color del reproductor a toda la aplicación</string>
-    <string name="apply_player_color_to_app_summary">ALERTA DE LAG!!</string>
-    <string name="delete_download">Eliminar descargas</string>
+    <string name="apply_player_color_to_app_summary">¡ALERTA DE DESFASE!</string>
+    <string name="delete_download">Eliminar descarga</string>
     <string name="removed_x_from_downloads">Eliminado %1$s de las descargas</string>
     <string name="download_complete">Descarga completada</string>
     <string name="app_widget_description">Echo en su pantalla de inicio</string>
