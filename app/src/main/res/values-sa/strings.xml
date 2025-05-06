@@ -331,8 +331,4 @@
     <string name="removed_x_from_downloads">डाउनलोड्स तः %1$s निष्कासितम्</string>
     <string name="add_widget">लघु-प्लेयर-साध्यम्</string>
     <string name="app_widget_description">Echo गृहपृष्ठे दृश्यताम्!</string>
-    <string name="app_name" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
 </resources>

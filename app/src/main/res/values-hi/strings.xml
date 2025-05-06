@@ -331,8 +331,4 @@
     <string name="download_complete">डाउनलोड पूरा हुआ</string>
     <string name="add_widget">मिनी प्लेयर विजेट</string>
     <string name="app_widget_description">अपने होम स्क्रीन पर इको!</string>
-    <string name="app_name" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
 </resources>

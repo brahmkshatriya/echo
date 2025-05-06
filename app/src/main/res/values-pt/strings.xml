@@ -333,8 +333,4 @@
     <string name="download_complete">Download Completo</string>
     <string name="add_widget">Mini Player Widget</string>
     <string name="app_widget_description">Eco na sua tela inicial!</string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="app_name" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
 </resources>

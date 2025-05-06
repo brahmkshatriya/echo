@@ -330,8 +330,4 @@
     <string name="download_complete">Download Komplett</string>
     <string name="add_widget">Mini-Player-Widget</string>
     <string name="app_widget_description">Echo auf Ihrem Startbildschirm!</string>
-    <string name="n_dot_x" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="app_name" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
 </resources>

@@ -327,8 +327,4 @@
     <string name="download_complete">다운로드 완료</string>
     <string name="add_widget">미니 플레이어 위젯</string>
     <string name="app_widget_description">홈 화면에서 에코!</string>
-    <string name="app_name" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
 </resources>

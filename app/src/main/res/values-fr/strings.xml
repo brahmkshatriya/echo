@@ -333,8 +333,4 @@
     <string name="selected_n">%1$d Sélectionnées</string>
     <string name="unhiding_x">Démasquage de %1$s</string>
     <string name="apply_player_color_to_app">Appliquer la couleur du Lecteur à l\'ensemble de l\'application</string>
-    <string name="app_name" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
 </resources>
