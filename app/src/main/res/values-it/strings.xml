@@ -333,4 +333,8 @@
         <item quantity="many">%1$d canzoni</item>
         <item quantity="other">%1$d canzoni</item>
     </plurals>
+    <string name="app_name" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
 </resources>
