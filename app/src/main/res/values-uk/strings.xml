@@ -336,4 +336,8 @@
     <string name="x_followers">%1$s підписників</string>
     <string name="delete">Видалити</string>
     <string name="nothing_to_download_in_x">Нічого завантажувати в %1$s</string>
+    <string name="app_name" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
 </resources>
