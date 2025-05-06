@@ -331,4 +331,8 @@
     <string name="download_complete">ডাউনলোড সম্পূৰ্ণ হল</string>
     <string name="add_widget">মিনি প্লেয়াৰ ৱিজেট</string>
     <string name="app_widget_description">Echo আপোনাৰ হোম স্ক্ৰীনত!</string>
+    <string name="app_name" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
 </resources>
