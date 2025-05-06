@@ -327,4 +327,8 @@
     <string name="download_complete">Unduh Selesai</string>
     <string name="add_widget">Widget Pemutar Mini</string>
     <string name="app_widget_description">Gema di layar beranda Anda!</string>
+    <string name="app_name" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
 </resources>
