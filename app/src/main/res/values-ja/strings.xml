@@ -75,4 +75,6 @@
     <string name="read_storage">ストレージの読み込み</string>
     <string name="write_storage">ストレージへの書き込み</string>
     <string name="cached_songs">キャッシュされた曲</string>
+    <string name="refresh_library_on_reload">リロード時にライブラリを更新</string>
+    <string name="recently_added">最近追加された</string>
 </resources>
