@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.PagerSnapHelper
 import dev.brahmkshatriya.echo.R
@@ -39,16 +40,16 @@ class AudioEffectsFragment : Fragment() {
         binding.appBarLayout.onAppBarChangeListener { offset ->
             binding.toolbarOutline.alpha = offset
         }
-        binding.title.setNavigationOnClickListener {
+        binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
-        binding.title.title = getString(R.string.audio_fx)
+        binding.extensionIcon.isVisible = false
+        binding.toolBar.title = getString(R.string.audio_fx)
         childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, fragment)
             .commit()
 
-        binding.title.inflateMenu(R.menu.refresh_menu)
-        binding.title.setOnMenuItemClickListener {
+        binding.toolBar.inflateMenu(R.menu.refresh_menu)
+        binding.toolBar.setOnMenuItemClickListener {
             val context = requireContext()
             context.deleteGlobalFx()
             fragment.bind()

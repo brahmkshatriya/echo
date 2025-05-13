@@ -41,7 +41,6 @@ import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverRepeat
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverShuffle
 import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
@@ -143,7 +142,6 @@ class PlayerCallback(
         Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
     }
 
-    val settings = context.getSettings()
 
     @OptIn(UnstableApi::class)
     private fun radio(player: Player, args: Bundle) = scope.future {
@@ -160,7 +158,7 @@ class PlayerCallback(
             clearMediaItems()
             shuffleModeEnabled = false
         }
-        PlayerRadio.play(player, downloadFlow, settings, radioFlow, loaded)
+        PlayerRadio.play(player, downloadFlow, context, radioFlow, loaded)
         player.with { play() }
         SessionResult(RESULT_SUCCESS)
     }
@@ -207,7 +205,7 @@ class PlayerCallback(
             is EchoMediaItem.TrackItem -> {
                 val track = item.track
                 val mediaItem = MediaItemUtils.build(
-                    settings, downloadFlow.value, track, extId, null
+                    context, downloadFlow.value, track, extId, null
                 )
                 player.with {
                     setMediaItem(mediaItem)
@@ -233,7 +231,7 @@ class PlayerCallback(
                             player.with {
                                 addMediaItems(list.size, all.map {
                                     MediaItemUtils.build(
-                                        settings, downloadFlow.value, it, extId, item
+                                        this@PlayerCallback.context, downloadFlow.value, it, extId, item
                                     )
                                 })
                             }
@@ -244,7 +242,7 @@ class PlayerCallback(
                 player.with {
                     setMediaItems(list.map {
                         MediaItemUtils.build(
-                            settings, downloadFlow.value, it, extId, item
+                            this@PlayerCallback.context, downloadFlow.value, it, extId, item
                         )
                     })
                     shuffleModeEnabled = shuffle
@@ -289,7 +287,7 @@ class PlayerCallback(
         }
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
-            MediaItemUtils.build(settings, downloadFlow.value, track, extId, null)
+            MediaItemUtils.build(context, downloadFlow.value, track, extId, null)
         }
         player.with {
             addMediaItems(mediaItems)
@@ -316,7 +314,7 @@ class PlayerCallback(
         }
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
-            MediaItemUtils.build(settings, downloadFlow.value, track, extId, null)
+            MediaItemUtils.build(context, downloadFlow.value, track, extId, null)
         }
         player.with {
             addMediaItems(currentMediaItemIndex + 1 + next, mediaItems)

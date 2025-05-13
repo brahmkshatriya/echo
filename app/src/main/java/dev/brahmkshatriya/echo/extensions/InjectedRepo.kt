@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.extensions.plugger
+package dev.brahmkshatriya.echo.extensions
 
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
@@ -14,16 +14,14 @@ import dev.brahmkshatriya.echo.common.providers.MetadataProvider
 import dev.brahmkshatriya.echo.common.providers.MiscExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
-import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.inject
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.injectWith
-import dev.brahmkshatriya.echo.extensions.Extensions
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.exceptions.RequiredExtensionsMissingException
 import dev.brahmkshatriya.echo.extensions.plugger.interfaces.PluginRepo
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.collectWith
-import dev.brahmkshatriya.echo.utils.SettingsUtils.getSettings
 import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map

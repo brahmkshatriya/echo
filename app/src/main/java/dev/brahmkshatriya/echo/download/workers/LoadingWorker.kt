@@ -6,7 +6,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Progress
-import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
@@ -26,22 +25,19 @@ class LoadingWorker(
     private val extensionsList = downloader.extensions.music
 
     private val totalSize = 3L
+    override suspend fun <T> permit(block: suspend () -> T) =
+        downloader.loadingSemaphore.withPermit { block() }
+
     override suspend fun work(trackId: Long) {
         progressFlow.value = Progress(totalSize, 0)
         var download = dao.getDownloadEntity(trackId)!!
         val extension = extensionsList.getExtensionOrThrow(download.extensionId)
-        val streamables = if (!download.loaded) {
-            val (track, streamables) = extension.get<TrackClient, Pair<Track, List<Streamable>>> {
-                val track = loadTrack(download.track)
-                track to track.servers.ifEmpty {
-                    throw Exception("${track.title}: No servers found")
-                }
-            }.getOrThrow()
-
+        if (!download.loaded) {
+            val track = extension.get<TrackClient, Track> { loadTrack(download.track) }.getOrThrow()
+            track.servers.ifEmpty { throw Exception("${track.title}: No servers found") }
             download = download.copy(data = track.toJson(), loaded = true)
             dao.insertDownloadEntity(download)
-            streamables
-        } else download.track.streamables
+        }
 
         progressFlow.value = Progress(totalSize, 1)
         val downloadContext = getDownloadContext()
@@ -85,7 +81,5 @@ class LoadingWorker(
             .then(mergeRequest)
             .then(taggingRequest)
             .enqueue()
-
-        println("Loading Done")
     }
 }

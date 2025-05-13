@@ -4,9 +4,6 @@ import android.app.Application
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import androidx.work.Configuration
-import androidx.work.DelegatingWorkerFactory
-import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -21,29 +18,18 @@ import dev.brahmkshatriya.echo.utils.AppShortcuts.configureAppShortcuts
 import dev.brahmkshatriya.echo.utils.CoroutineUtils
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.workmanager.factory.KoinWorkerFactory
+import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.androix.startup.KoinStartup
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinConfiguration
-import java.util.concurrent.ThreadPoolExecutor
 
 @OptIn(KoinExperimentalAPI::class)
 class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory {
 
-    private val executor by inject<ThreadPoolExecutor>()
-
     override fun onKoinStartup() = koinConfiguration {
         androidContext(this@MainApplication)
         modules(DI.appModule)
-
-        val factory = DelegatingWorkerFactory().apply {
-            addFactory(KoinWorkerFactory())
-        }
-        val conf = Configuration.Builder()
-            .setWorkerFactory(factory)
-            .setExecutor(executor)
-            .build()
-        WorkManager.initialize(koin.get(), conf)
+        workManagerFactory()
     }
 
     private val settings by inject<SharedPreferences>()

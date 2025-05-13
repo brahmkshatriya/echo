@@ -57,7 +57,7 @@ import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
-import dev.brahmkshatriya.echo.utils.SettingsUtils.getSettings
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import java.io.File
 
 @OptIn(UnstableApi::class)
@@ -77,7 +77,7 @@ class OfflineExtension(
             id = "echo-offline",
             name = "Offline",
             description = "An extension for all your downloaded files.",
-            version = BuildConfig.VERSION_NAME,
+            version = "v${BuildConfig.VERSION_CODE}",
             author = "Echo",
             icon = R.drawable.ic_offline.toResourceImageHolder(),
         )

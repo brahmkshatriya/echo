@@ -18,7 +18,7 @@ import dev.brahmkshatriya.echo.ui.download.DownloadsAdapter.Companion.toItems
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener.Companion.getShelfListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
-import dev.brahmkshatriya.echo.utils.ExceptionUtils
+import dev.brahmkshatriya.echo.ui.common.ExceptionUtils
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener

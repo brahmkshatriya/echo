@@ -25,7 +25,6 @@ import dev.brahmkshatriya.echo.databinding.DialogMediaMoreBinding
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
-import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
@@ -70,7 +69,6 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
 
     private var binding by autoCleared<DialogMediaMoreBinding>()
     private val playerViewModel by activityViewModel<PlayerViewModel>()
-    private val uiViewModel by activityViewModel<UiViewModel>()
     private val vm by viewModel<MediaViewModel> { parametersOf(extensionId, item, loaded, false) }
 
     private val itemAdapter by lazy {
@@ -337,6 +335,5 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             MediaFragment.getBundle(extensionId, item, loaded)
         )
         dismiss()
-        uiViewModel.collapsePlayer()
     }
 }

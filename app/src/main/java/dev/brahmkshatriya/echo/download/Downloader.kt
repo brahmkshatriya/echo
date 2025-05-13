@@ -24,6 +24,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.utils.AdjustableSemaphore
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -37,18 +38,19 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.WeakHashMap
-import java.util.concurrent.ThreadPoolExecutor
 
 class Downloader(
     val app: App,
     database: DownloadDatabase,
     extensionLoader: ExtensionLoader,
-    private val executor: ThreadPoolExecutor,
 ) {
+
     suspend fun downloadExtension() = extensions.misc.await()
         .find { it.isClient<DownloadClient>() && it.isEnabled }
         ?: throw DownloaderExtensionNotFoundException()
 
+    val loadingSemaphore = AdjustableSemaphore()
+    val downloadSemaphore = AdjustableSemaphore()
     val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Downloader")
 
     val extensions = extensionLoader.extensions
@@ -57,10 +59,10 @@ class Downloader(
     fun add(
         downloads: List<DownloadContext>
     ) = scope.launch {
-        val concurrentDownloads =
-            downloadExtension().get<DownloadClient, Int> { concurrentDownloads }.getOrNull() ?: 2
-        executor.maximumPoolSize = concurrentDownloads
-        executor.corePoolSize = concurrentDownloads
+        val concurrentDownloads = downloadExtension().get<DownloadClient, Int> { concurrentDownloads }
+            .getOrNull()?.takeIf { it > 0 } ?: 2
+        loadingSemaphore.setMaxPermits(concurrentDownloads)
+        downloadSemaphore.setMaxPermits(concurrentDownloads)
 
         val contexts = downloads.mapNotNull { it.context }.distinctBy { it.id }.associate {
             it.id to dao.insertContextEntity(ContextEntity(0, it.id, it.toJson()))

@@ -46,7 +46,6 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
@@ -208,8 +207,7 @@ abstract class AndroidAutoCallback(
                 val (track, extId, con) =
                     context.getFromCache<Triple<Track, String, EchoMediaItem?>>(id, "auto")
                         ?: return@mapNotNull null
-                val settings = context.getSettings()
-                MediaItemUtils.build(settings, downloadFlow.value, track, extId, con)
+                MediaItemUtils.build(context, downloadFlow.value, track, extId, con)
             } else it
         }
         return super.onSetMediaItems(

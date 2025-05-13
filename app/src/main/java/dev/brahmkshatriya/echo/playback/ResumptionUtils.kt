@@ -54,7 +54,6 @@ object ResumptionUtils {
         downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): List<MediaItem>? {
-        val settings = getSharedPreferences("settings", Context.MODE_PRIVATE)
         if (withClear && getFromCache<Boolean>(CLEARED) != false) return null
         val tracks = getFromCache<List<Track>>(TRACKS, FOLDER)
         val extensionIds = getFromCache<List<String>>(EXTENSIONS, FOLDER)
@@ -62,7 +61,7 @@ object ResumptionUtils {
         return tracks?.mapIndexedNotNull { index, track ->
             val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
-            MediaItemUtils.build(settings, downloads, track, extensionId, item)
+            MediaItemUtils.build(this, downloads, track, extensionId, item)
         } ?: return null
     }
 

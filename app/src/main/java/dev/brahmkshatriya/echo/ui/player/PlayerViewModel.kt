@@ -205,7 +205,7 @@ class PlayerViewModel(
 
     fun setQueue(id: String, list: List<Track>, index: Int, context: EchoMediaItem?) {
         val mediaItems =
-            list.map { MediaItemUtils.build(settings, downloadFlow.value, it, id, context) }
+            list.map { MediaItemUtils.build(app.context, downloadFlow.value, it, id, context) }
         withBrowser {
             it.setMediaItems(mediaItems, index, 0)
             it.prepare()

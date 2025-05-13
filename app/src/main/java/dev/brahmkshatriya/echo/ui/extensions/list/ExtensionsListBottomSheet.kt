@@ -13,9 +13,9 @@ import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.manage.ManageExtensionsFragment
 import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe

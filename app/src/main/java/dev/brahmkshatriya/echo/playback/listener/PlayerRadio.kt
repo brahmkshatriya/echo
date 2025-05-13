@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PlayerRadio(
-    context: Context,
+    private val context: Context,
     private val scope: CoroutineScope,
     private val player: Player,
     private val throwFlow: MutableSharedFlow<Throwable>,
@@ -69,7 +69,7 @@ class PlayerRadio(
         suspend fun play(
             player: Player,
             downloadFlow: StateFlow<List<Downloader.Info>>,
-            settings: SharedPreferences,
+            context: Context,
             stateFlow: MutableStateFlow<PlayerState.Radio>,
             loaded: PlayerState.Radio.Loaded
         ) {
@@ -81,7 +81,7 @@ class PlayerRadio(
 
             val item = tracks.data.map {
                 MediaItemUtils.build(
-                    settings, downloadFlow.value, it, loaded.clientId, loaded.context
+                    context, downloadFlow.value, it, loaded.clientId, loaded.context
                 )
             }
 
@@ -103,7 +103,7 @@ class PlayerRadio(
         val extension = extensionList.getExtension(extensionId) ?: return
         val loaded = start(throwFlow, extension, item, itemContext)
         stateFlow.value = loaded ?: PlayerState.Radio.Empty
-        if (loaded != null) play(player, downloadFlow, settings, stateFlow, loaded)
+        if (loaded != null) play(player, downloadFlow, context, stateFlow, loaded)
     }
 
     private var autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
@@ -128,7 +128,7 @@ class PlayerRadio(
         when (val state = stateFlow.value) {
             is PlayerState.Radio.Loading -> {}
             is PlayerState.Radio.Empty -> loadPlaylist()
-            is PlayerState.Radio.Loaded -> play(player, downloadFlow, settings, stateFlow, state)
+            is PlayerState.Radio.Loaded -> play(player, downloadFlow, context, stateFlow, state)
         }
     }
 

@@ -583,7 +583,6 @@ class PlayerFragment : Fragment() {
     }
 
     private fun openItem(extension: String, item: EchoMediaItem) {
-        uiViewModel.collapsePlayer()
         requireActivity().openFragment<MediaFragment>(
             null, MediaFragment.getBundle(extension, item, false)
         )

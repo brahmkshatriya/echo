@@ -47,7 +47,7 @@ import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
-import dev.brahmkshatriya.echo.utils.SettingsUtils.getSettings
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
@@ -67,7 +67,7 @@ class UnifiedExtension(
             ExtensionType.MUSIC,
             UNIFIED_ID,
             "Unified Extension",
-            version = BuildConfig.VERSION_NAME,
+            version = "v${BuildConfig.VERSION_CODE}",
             "All your extensions in one place!",
             "Echo",
             isEnabled = true
@@ -93,11 +93,14 @@ class UnifiedExtension(
         val Map<String, String>.extensionId
             get() = this[EXTENSION_ID] ?: throw Exception("Extension id not found")
 
-        private fun Track.withExtensionId(id: String) =
-            copy(extras = extras + mapOf(EXTENSION_ID to id),
-                album = album?.withExtensionId(id),
-                artists = artists.map { it.withExtensionId(id) },
-                streamables = streamables.map { it.copy(extras = it.extras + mapOf(EXTENSION_ID to id)) })
+        private fun Track.withExtensionId(id: String) = copy(
+            extras = extras + mapOf(EXTENSION_ID to id),
+            album = album?.withExtensionId(id),
+            artists = artists.map { it.withExtensionId(id) },
+            streamables = streamables.map {
+                it.copy(extras = it.extras + mapOf(EXTENSION_ID to id))
+            }
+        )
 
         private fun Album.withExtensionId(id: String) = copy(
             artists = artists.map { it.withExtensionId(id) },

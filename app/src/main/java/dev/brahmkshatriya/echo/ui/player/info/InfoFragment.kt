@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerInfoBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
-import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -18,13 +17,10 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class InfoFragment : Fragment() {
     private var binding by autoCleared<FragmentPlayerInfoBinding>()
-    private val uiViewModel by activityViewModel<UiViewModel>()
     private val viewModel by activityViewModel<TrackInfoViewModel>()
 
     private val listener by lazy {
-        ShelfClickListener(requireActivity().supportFragmentManager) {
-            uiViewModel.collapsePlayer()
-        }
+        ShelfClickListener(requireActivity().supportFragmentManager)
     }
     private val shelfAdapter by lazy { getShelfAdapter(listener) }
     private val trackInfoAdapter by lazy { TrackInfoAdapter() }

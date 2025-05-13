@@ -7,15 +7,17 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadFragment
 import dev.brahmkshatriya.echo.ui.extensions.manage.ManageExtensionsFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
-import dev.brahmkshatriya.echo.utils.prefs.TransitionPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.TransitionPreference
 
 
 class SettingsFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.settings)
+    override val icon get() = R.drawable.ic_settings_outline.toResourceImageHolder()
     override val creator = { SettingsPreference() }
 
     class SettingsPreference : PreferenceFragmentCompat() {

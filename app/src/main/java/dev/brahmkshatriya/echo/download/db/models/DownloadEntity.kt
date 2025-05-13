@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.download.db.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.utils.ExceptionUtils
+import dev.brahmkshatriya.echo.ui.common.ExceptionUtils
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import kotlinx.serialization.Serializable
 

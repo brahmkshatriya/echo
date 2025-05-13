@@ -1,17 +1,26 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.extensions
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 
 object SettingsUtils {
+    val Extension<*>.prefId get() = metadata.prefId
+    val Metadata.prefId get() = extensionPrefId(type.name, id)
+
+    fun Extension<*>.prefs(context: Context) = metadata.prefs(context)
+    fun Metadata.prefs(context: Context) = prefId.prefs(context)
+    fun String.prefs(context: Context) =
+        context.getSharedPreferences(this, Context.MODE_PRIVATE)!!
+
+    fun extensionPrefId(extensionType: String, extensionId: String) =
+        "$extensionType-$extensionId"
 
     fun getSettings(context: Context, metadata: Metadata): Settings {
-        val name = "${metadata.type}-${metadata.id}"
-        val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
-        return toSettings(prefs)
+        return toSettings(metadata.prefs(context))
     }
 
     fun toSettings(prefs: SharedPreferences) = object : Settings {

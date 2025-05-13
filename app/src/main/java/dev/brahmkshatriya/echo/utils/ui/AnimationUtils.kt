@@ -13,16 +13,15 @@ import android.view.animation.RotateAnimation
 import android.view.animation.ScaleAnimation
 import android.view.animation.TranslateAnimation
 import androidx.core.view.doOnLayout
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import androidx.transition.Fade
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
+import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import kotlin.math.absoluteValue
@@ -153,16 +152,13 @@ object AnimationUtils {
 //            sharedElementEnterTransition = transition
 //        }
             (view as? ViewGroup)?.isTransitionGroup = true
-            val fade = Fade()
-            fade.interpolator = getInterpolator(requireContext())
-            fade.duration = view.animationDurationSmall
-            exitTransition = fade
-            reenterTransition = fade.clone()
-            enterTransition = fade.clone()
-            returnTransition = fade.clone()
+            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+            enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+            returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
 
-            postponeEnterTransition()
-            view.doOnPreDraw { startPostponedEnterTransition() }
+//            postponeEnterTransition()
+//            view.doOnPreDraw { startPostponedEnterTransition() }
         }
     }
 

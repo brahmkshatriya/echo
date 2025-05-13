@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils
+package dev.brahmkshatriya.echo.ui.common
 
 import android.content.Context
 import android.view.View
@@ -23,10 +23,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.exceptions.NoServersException
 import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
 import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
-import dev.brahmkshatriya.echo.ui.UiViewModel
-import dev.brahmkshatriya.echo.ui.common.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.common.SnackBarHandler
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginFragment
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
@@ -159,23 +156,19 @@ object ExceptionUtils {
             throwable.message ?: throwable::class.run { simpleName ?: java.name }
         )
         val root = throwable.rootCause
-        val uiViewModel by viewModel<UiViewModel>()
         return Message(
             message = title,
             when (root) {
                 is AppException.Unauthorized ->
                     Message.Action(getString(R.string.logout_and_login)) {
-                        uiViewModel.collapsePlayer()
                         runCatching { openLoginException(root, view) }
                     }
 
                 is AppException.LoginRequired -> Message.Action(getString(R.string.login)) {
-                    uiViewModel.collapsePlayer()
                     runCatching { openLoginException(root, view) }
                 }
 
                 else -> Message.Action(getString(R.string.view)) {
-                    uiViewModel.collapsePlayer()
                     runCatching { openException(Data(title, getStackTrace(throwable)), view) }
                 }
             }

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils.prefs
+package dev.brahmkshatriya.echo.utils.ui.prefs
 
 import android.graphics.Color
 import android.os.Bundle

@@ -8,23 +8,26 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.CACHE_SIZE
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.CLOSE_PLAYER
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.MORE_BRAIN_CAPACITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.UNMETERED_STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel.Companion.KEEP_QUEUE
 import dev.brahmkshatriya.echo.ui.settings.AudioEffectsFragment.Companion.AUDIO_FX
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
-import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
-import dev.brahmkshatriya.echo.utils.prefs.MaterialSliderPreference
-import dev.brahmkshatriya.echo.utils.prefs.TransitionPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialSliderPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.TransitionPreference
 
 class AudioFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.audio)
+    override val icon get() = R.drawable.ic_queue_music.toResourceImageHolder()
     override val creator = { AudioPreference() }
 
     class AudioPreference : PreferenceFragmentCompat() {
@@ -64,6 +67,18 @@ class AudioFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
+                MaterialListPreference(context).apply {
+                    key = UNMETERED_STREAM_QUALITY
+                    title = getString(R.string.unmetered_stream_quality)
+                    summary = getString(R.string.unmetered_stream_quality_summary)
+                    entries =
+                        context.resources.getStringArray(R.array.stream_qualities) + getString(R.string.off)
+                    entryValues = streamQualities + "off"
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+                    setDefaultValue(streamQualities[0])
+                    addPreference(this)
+                }
             }
 
             PreferenceCategory(context).apply {

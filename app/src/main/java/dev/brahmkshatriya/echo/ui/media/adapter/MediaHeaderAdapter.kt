@@ -117,7 +117,7 @@ class MediaHeaderAdapter(
             item: EchoMediaItem,
             extensionId: String?,
             openMediaItem: (String?, EchoMediaItem?) -> Unit
-        ): SpannableString = when (item) {
+        ) = when (item) {
             is EchoMediaItem.Lists.AlbumItem -> {
                 val album = item.album
                 val span = SpannableString(buildString {
@@ -158,7 +158,7 @@ class MediaHeaderAdapter(
                             else album.description
                         )
                     }
-                })
+                }.trimEnd('\n'))
                 album.artists.forEach { artist ->
                     val start = span.indexOf(artist.name)
                     val end = start + artist.name.length
@@ -208,7 +208,7 @@ class MediaHeaderAdapter(
                             else playlist.description
                         )
                     }
-                })
+                }.trimEnd('\n'))
                 playlist.authors.forEach { author ->
                     val start = span.indexOf(author.name)
                     val end = start + author.name.length
@@ -239,7 +239,7 @@ class MediaHeaderAdapter(
                             else artist.description
                         )
                     }
-                })
+                }.trimEnd('\n'))
             }
 
             is EchoMediaItem.Profile.UserItem -> SpannableString("")
@@ -279,7 +279,7 @@ class MediaHeaderAdapter(
                         else description
                     )
                 }
-            }
+            }.trimEnd('\n')
         }
 
         fun getListener(

@@ -104,12 +104,17 @@
     <string name="equalizer_summary">Open the device equalizer settings</string>
 
     <string name="stream_quality">Stream Quality</string>
-    <string name="stream_quality_summary">Select the quality of the stream</string>
+    <string name="stream_quality_summary">Select the default quality of the stream</string>
+    <string name="x_specific_quality_summary">%1$s specific stream quality, will override the default stream quality selection</string>
+
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
         <item>Lowest</item>
     </string-array>
+
+    <string name="unmetered_stream_quality">Unmetered Stream Quality</string>
+    <string name="unmetered_stream_quality_summary">The quality of the stream when connected to an unmetered network. This will override the default stream quality.</string>
 
     <string name="behavior">Behavior</string>
 
@@ -383,4 +388,5 @@
 
     <string name="add_widget">Mini Player Widget</string>
     <string name="app_widget_description">Echo on your home screen!</string>
+
 </resources>

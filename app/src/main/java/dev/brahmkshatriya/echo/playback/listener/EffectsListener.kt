@@ -14,7 +14,7 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import dev.brahmkshatriya.echo.utils.SettingsUtils.copyTo
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.copyTo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.pow
 import kotlin.math.roundToInt

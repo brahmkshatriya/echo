@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils.prefs
+package dev.brahmkshatriya.echo.utils.ui.prefs
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences

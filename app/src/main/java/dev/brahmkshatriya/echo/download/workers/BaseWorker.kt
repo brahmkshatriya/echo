@@ -31,7 +31,8 @@ import dev.brahmkshatriya.echo.download.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.download.db.models.TaskType
 import dev.brahmkshatriya.echo.download.exceptions.DownloadException
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
-import dev.brahmkshatriya.echo.utils.ExceptionUtils.toData
+import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.toData
+import dev.brahmkshatriya.echo.utils.CoroutineUtils.throttleLatest
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,27 +55,27 @@ abstract class BaseWorker(
     val dao = downloader.dao
 
     override suspend fun doWork() = withContext(Dispatchers.IO) {
-        val job = launch {
-            val download = getDownload()
-            progressFlow.collectLatest { update(it, download) }
-        }
-        runCatching {
-            val trackId = inputData.getLong("id", -1).takeIf { it != -1L }!!
-            println("start work")
-            work(trackId)
-            println("done work")
-            job.cancel()
-            removeNotification()
-            Result.success()
-        }.getOrElse { throwable ->
-            val trackId = inputData.getLong("id", -1).takeIf { it != -1L }
-                ?: return@getOrElse Result.failure()
-            val download = dao.getDownloadEntity(trackId) ?: return@getOrElse Result.failure()
-            val exception = DownloadException(TaskType.Loading, download, throwable)
-            dao.insertDownloadEntity(
-                download.copy(exceptionData = exception.toData(context).toJson())
-            )
-            Result.failure()
+        permit {
+            val job = launch {
+                val download = getDownload()
+                progressFlow.throttleLatest(1000L).collectLatest { update(it, download) }
+            }
+            runCatching {
+                val trackId = inputData.getLong("id", -1).takeIf { it != -1L }!!
+                work(trackId)
+                job.cancel()
+                removeNotification()
+                Result.success()
+            }.getOrElse { throwable ->
+                val trackId = inputData.getLong("id", -1).takeIf { it != -1L }
+                    ?: return@getOrElse Result.failure()
+                val download = dao.getDownloadEntity(trackId) ?: return@getOrElse Result.failure()
+                val exception = DownloadException(TaskType.Loading, download, throwable)
+                dao.insertDownloadEntity(
+                    download.copy(exceptionData = exception.toData(context).toJson())
+                )
+                Result.failure()
+            }
         }
     }
 
@@ -91,6 +92,7 @@ abstract class BaseWorker(
         )
     }
 
+    open suspend fun <T> permit(block: suspend () -> T): T = block()
     abstract suspend fun work(trackId: Long)
 
     private suspend fun update(progress: Progress, download: DownloadEntity) {

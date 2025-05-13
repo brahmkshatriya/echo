@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.InjectedRepo
 import dev.brahmkshatriya.echo.extensions.plugger.impl.BuiltInRepo
 import dev.brahmkshatriya.echo.extensions.plugger.impl.DexLoader
 import dev.brahmkshatriya.echo.extensions.plugger.impl.InjectablePluginRepo

@@ -1,102 +1,93 @@
 package dev.brahmkshatriya.echo.ui.extensions
 
-import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.net.toUri
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
+import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceGroup
+import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
-import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
-import dev.brahmkshatriya.echo.databinding.FragmentExtensionBinding
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserBottomSheet.Companion.bind
-import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
-import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment
-import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
-import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
-import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.SimpleItemSpan
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.settings.Setting
+import dev.brahmkshatriya.echo.common.settings.SettingCategory
+import dev.brahmkshatriya.echo.common.settings.SettingItem
+import dev.brahmkshatriya.echo.common.settings.SettingList
+import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
+import dev.brahmkshatriya.echo.common.settings.SettingOnClick
+import dev.brahmkshatriya.echo.common.settings.SettingSlider
+import dev.brahmkshatriya.echo.common.settings.SettingSwitch
+import dev.brahmkshatriya.echo.common.settings.SettingTextInput
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.extensionPrefId
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.toSettings
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
+import dev.brahmkshatriya.echo.ui.settings.BaseSettingsFragment
+import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
+import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialMultipleChoicePreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialSliderPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialTextInputPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.TransitionPreference
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
-class ExtensionInfoFragment : Fragment() {
+class ExtensionInfoFragment : BaseSettingsFragment() {
+    private val args by lazy { requireArguments() }
+    private val name by lazy { args.getString("name")!! }
+    private val extensionId by lazy { args.getString("id")!! }
+    private val extensionType by lazy { args.getString("type")!! }
+    private val extIcon by lazy { args.getSerialized<ImageHolder>("icon") }
+
+    private val extension by lazy {
+        viewModel.extensions.getFlow(ExtensionType.valueOf(extensionType))
+            .value?.find { it.id == extensionId }
+    }
+
+    override val title get() = name
+    override val icon get() = extIcon
+    override val creator = { ExtensionPreference().apply { arguments = args } }
+    private val viewModel by activityViewModel<ExtensionsViewModel>()
+
     companion object {
-        private fun getBundle(
-            clientId: String, clientName: String, extensionType: ExtensionType
+        fun getBundle(
+            name: String, id: String, type: ExtensionType, icon: ImageHolder?
         ) = Bundle().apply {
-            putString("clientId", clientId)
-            putString("clientName", clientName)
-            putString("extensionType", extensionType.name)
+            putString("name", name)
+            putString("id", id)
+            putString("type", type.name)
+            putSerialized("icon", icon)
         }
 
         fun getBundle(extension: Extension<*>) =
-            getBundle(extension.id, extension.name, extension.type)
+            getBundle(extension.name, extension.id, extension.type, extension.metadata.icon)
 
-        fun getType(type: ExtensionType) = when (type) {
-            ExtensionType.MUSIC -> R.string.music
-            ExtensionType.TRACKER -> R.string.tracker
-            ExtensionType.LYRICS -> R.string.lyrics
-            ExtensionType.MISC -> R.string.misc
+        fun Activity.openLink(url: String) {
+            val intent = Intent(Intent.ACTION_VIEW).apply { data = url.toUri() }
+            startActivity(intent)
         }
     }
 
-    private var binding by autoCleared<FragmentExtensionBinding>()
-    private val viewModel by activityViewModel<ExtensionsViewModel>()
-    private val loginViewModel by activityViewModel<LoginUserListViewModel>()
-
-    private val args by lazy { requireArguments() }
-    private val clientId by lazy { args.getString("clientId")!! }
-    private val clientName by lazy { args.getString("clientName")!! }
-    private val extensionType by lazy {
-        ExtensionType.valueOf(args.getString("extensionType")!!)
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentExtensionBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupTransition(view)
-        applyInsets {
-            binding.nestedScrollView.applyContentInsets(it)
-        }
-        applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
-            binding.toolbarOutline.alpha = offset
-        }
-        binding.toolBar.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
-        binding.toolBar.title = clientName
-
-        val extension =
-            viewModel.extensions.getFlow(extensionType).value?.find { it.id == clientId }
+        val extension = extension
         if (extension == null) {
             parentFragmentManager.popBackStack()
             return
         }
 
+        super.onViewCreated(view, savedInstanceState)
         val metadata = extension.metadata
         if (metadata.importType != ImportType.BuiltIn) {
             binding.toolBar.inflateMenu(R.menu.extensions_menu)
@@ -123,65 +114,176 @@ class ExtensionInfoFragment : Fragment() {
                 }
             }
         }
-
-        metadata.icon
-            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
-                binding.extensionIcon.setImageDrawable(it)
-            }
-        binding.extensionDetails.text =
-            "${metadata.version} • ${metadata.importType.name}"
-
-        val byAuthor = getString(R.string.by_x, metadata.author)
-        val type = getType(extensionType)
-        val typeString = getString(R.string.x_extension, getString(type))
-        val span = SpannableString("$typeString\n\n${metadata.description}\n\n$byAuthor")
-        val authUrl = metadata.authorUrl
-        if (authUrl != null) {
-            val itemSpan = SimpleItemSpan(requireContext()) {
-                requireActivity().openLink(authUrl)
-            }
-            val start = span.length - metadata.author.length
-            span.setSpan(itemSpan, start, span.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        binding.extensionDescription.text = span
-        binding.extensionDescription.movementMethod = LinkMovementMethod.getInstance()
-
-        fun updateText(enabled: Boolean) {
-            binding.enabledText.text = getString(
-                if (enabled) R.string.enabled else R.string.disabled
-            )
-        }
-        binding.enabledSwitch.apply {
-            updateText(metadata.isEnabled)
-            isChecked = metadata.isEnabled
-            setOnCheckedChangeListener { _, isChecked ->
-                updateText(isChecked)
-                viewModel.setExtensionEnabled(extensionType, metadata.id, isChecked)
-            }
-            binding.enabledCont.setOnClickListener { toggle() }
-        }
-
-        lifecycleScope.launch {
-            runCatching {
-                if (extension.isClient<LoginClient>()) {
-                    loginViewModel.currentExtension.value = extension
-                    binding.extensionLoginUser.bind(this@ExtensionInfoFragment) {}
-                } else binding.extensionLoginUser.root.isVisible = false
-            }
-        }
-        binding.extensionSettings.transitionName = "setting_${metadata.id}"
-        binding.extensionSettings.setOnClickListener {
-            openFragment<ExtensionFragment>(it, ExtensionFragment.getBundle(extension))
-        }
     }
 
-    private fun Activity.openLink(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW).apply { data = url.toUri() }
-        startActivity(intent)
-    }
+    class ExtensionPreference : PreferenceFragmentCompat() {
+        private val extensionId by lazy { arguments?.getString("id")!! }
+        private val extensionType by lazy { arguments?.getString("type")!! }
+        private val viewModel by activityViewModel<ExtensionsViewModel>()
+        private val extension by lazy {
+            viewModel.extensions.getFlow(ExtensionType.valueOf(extensionType))
+                .value?.find { it.id == extensionId }
+        }
 
-    override fun onDestroy() {
-        loginViewModel.currentExtension.value = viewModel.extensions.current.value
-        super.onDestroy()
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            val context = preferenceManager.context
+            preferenceManager.sharedPreferencesName = extensionPrefId(extensionType, extensionId)
+            preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
+            val screen = preferenceManager.createPreferenceScreen(context)
+            preferenceScreen = screen
+            val extension = extension ?: return
+            val infoPreference = ExtensionInfoPreference(this, extension)
+            screen.addPreference(infoPreference)
+            val prefs = preferenceManager.sharedPreferences ?: return
+            if (extension.type == ExtensionType.MUSIC) MaterialListPreference(context).apply {
+                key = STREAM_QUALITY
+                title = getString(R.string.stream_quality)
+                summary = getString(R.string.x_specific_quality_summary, extension.name)
+                entries =
+                    context.resources.getStringArray(R.array.stream_qualities) + getString(R.string.off)
+                entryValues = streamQualities + "off"
+                layoutResource = R.layout.preference
+                isIconSpaceReserved = false
+                setDefaultValue("off")
+                screen.addPreference(this)
+            }
+
+            viewModel.viewModelScope.launch {
+                extension.run(viewModel.app.throwFlow) {
+                    settingItems.forEach { setting ->
+                        setting.addPreferenceTo(screen)
+                    }
+
+                    val settings = toSettings(prefs)
+                    if (this is SettingsChangeListenerClient) {
+                        prefs.registerOnSharedPreferenceChangeListener { _, key ->
+                            viewModel.onSettingsChanged(extension, settings, key)
+                        }
+                        preferenceManager.setOnPreferenceTreeClickListener {
+                            viewModel.onSettingsChanged(extension, settings, it.key)
+                            true
+                        }
+                    }
+                }
+            }
+        }
+
+        private fun Setting.addPreferenceTo(preferenceGroup: PreferenceGroup) {
+            val context = preferenceGroup.context
+            when (this) {
+                is SettingCategory -> {
+                    PreferenceCategory(context).also {
+                        it.title = this.title
+                        it.key = this.key
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference_category
+                        preferenceGroup.addPreference(it)
+
+                        this.items.forEach { item ->
+                            item.addPreferenceTo(it)
+                        }
+                    }
+                }
+
+                is SettingItem -> {
+                    Preference(context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingSwitch -> {
+                    SwitchPreferenceCompat(context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        it.setDefaultValue(this.defaultValue)
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference_switch
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingList -> {
+                    MaterialListPreference(context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        defaultEntryIndex?.let { index ->
+                            it.setDefaultValue(this.entryValues[index])
+                        }
+                        it.entries = this.entryTitles.toTypedArray()
+                        it.entryValues = this.entryValues.toTypedArray()
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingMultipleChoice -> {
+                    MaterialMultipleChoicePreference(context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        defaultEntryIndices?.let { indices ->
+                            it.setDefaultValue(indices.mapNotNull { index ->
+                                entryValues.getOrNull(index)
+                            }.toSet())
+                        }
+                        it.entries = this.entryTitles.toTypedArray()
+                        it.entryValues = this.entryValues.toTypedArray()
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingTextInput -> {
+                    MaterialTextInputPreference(context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        it.text = this.defaultValue
+
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingSlider -> {
+                    MaterialSliderPreference(context, from, to, steps, allowOverride).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        it.setDefaultValue(this.defaultValue)
+
+                        it.isIconSpaceReserved = false
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+
+                is SettingOnClick -> {
+                    TransitionPreference(context).also {
+                        it.title = this.title
+                        it.key = this.key
+                        it.summary = this.summary
+                        it.setOnPreferenceClickListener { runCatching { onClick() }; true }
+                        it.isIconSpaceReserved = false
+                        it.layoutResource = R.layout.preference
+                        preferenceGroup.addPreference(it)
+                    }
+                }
+            }
+        }
     }
 }

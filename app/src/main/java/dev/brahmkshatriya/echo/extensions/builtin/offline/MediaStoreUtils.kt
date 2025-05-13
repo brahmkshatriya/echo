@@ -346,7 +346,7 @@ object MediaStoreUtils {
         }
     }
 
-    private val coverUri = Uri.parse("content://media/external/audio/albumart")
+    private val coverUri = "content://media/external/audio/albumart".toUri()
 
     private fun songAlbumMap(
         song: Track,

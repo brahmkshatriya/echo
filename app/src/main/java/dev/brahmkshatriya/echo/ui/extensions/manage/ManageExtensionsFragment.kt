@@ -18,10 +18,10 @@ import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsetsMain
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment.Companion.getType
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared

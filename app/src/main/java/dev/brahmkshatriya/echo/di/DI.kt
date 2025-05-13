@@ -32,8 +32,6 @@ import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadPoolExecutor
 
 object DI {
 
@@ -52,7 +50,6 @@ object DI {
         includes(extensionModule)
         singleOf(DownloadDatabase::create)
         singleOf(::Downloader)
-        single { Executors.newFixedThreadPool(2) as ThreadPoolExecutor }
         workerOf(::LoadingWorker)
         workerOf(::DownloadingWorker)
         workerOf(::MergingWorker)

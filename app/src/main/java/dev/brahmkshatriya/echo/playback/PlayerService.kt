@@ -6,6 +6,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -25,10 +27,13 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.extensionPrefId
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.prefs
 import dev.brahmkshatriya.echo.playback.listener.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener
 import dev.brahmkshatriya.echo.playback.listener.MediaSessionServiceListener
@@ -38,6 +43,7 @@ import dev.brahmkshatriya.echo.playback.listener.TrackingListener
 import dev.brahmkshatriya.echo.playback.renderer.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.renderer.RenderersFactory
 import dev.brahmkshatriya.echo.playback.source.StreamableMediaSource
+import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.listenFuture
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -202,27 +208,59 @@ class PlayerService : MediaLibraryService() {
         }
 
         const val STREAM_QUALITY = "stream_quality"
+        const val UNMETERED_STREAM_QUALITY = "unmetered_stream_quality"
         val streamQualities = arrayOf("highest", "medium", "lowest")
 
         fun selectServerIndex(
-            settings: SharedPreferences?, streamables: List<Streamable>, downloaded: List<String>
+            context: Context,
+            extensionId: String,
+            streamables: List<Streamable>,
+            downloaded: List<String>
         ) = if (downloaded.isNotEmpty()) streamables.size
-        else if (streamables.isNotEmpty()) streamables.indexOf(streamables.select(settings))
-        else -1
+        else if (streamables.isNotEmpty()) {
+            val streamable = streamables.select(context, extensionId) { it.quality }
+            streamables.indexOf(streamable)
+        } else -1
 
-        private fun <E> List<E>.select(settings: SharedPreferences?, quality: (E) -> Int) =
-            when (settings?.getString(STREAM_QUALITY, streamQualities[1])) {
-                streamQualities[0] -> maxBy { quality(it) }
-                streamQualities[1] -> sortedBy { quality(it) }[size / 2]
-                streamQualities[2] -> minBy { quality(it) }
-                else -> first()
-            }
+        private fun isUnmetered(context: Context): Boolean {
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = connectivityManager.activeNetwork ?: return false
+            val networkCapabilities =
+                connectivityManager.getNetworkCapabilities(network) ?: return false
+            return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+        }
 
-        private fun List<Streamable>.select(settings: SharedPreferences?) =
-            select(settings) { it.quality }
+        private fun <E> List<E>.select(
+            context: Context,
+            settings: SharedPreferences,
+            quality: (E) -> Int
+        ): E? {
+            return if (isUnmetered(context)) selectQuality(
+                settings.getString(UNMETERED_STREAM_QUALITY, streamQualities[0]),
+                quality
+            ) else selectQuality(
+                settings.getString(STREAM_QUALITY, streamQualities[1]),
+                quality
+            )
+        }
 
-        fun List<Streamable.Source>.select(settings: SharedPreferences?) =
-            select(settings) { it.quality }
+        private fun <E> List<E>.selectQuality(final: String?, quality: (E) -> Int) = when (final) {
+            streamQualities[0] -> maxBy { quality(it) }
+            streamQualities[1] -> sortedBy { quality(it) }[size / 2]
+            streamQualities[2] -> minBy { quality(it) }
+            else -> null
+        }
+
+
+        fun <T> List<T>.select(
+            context: Context, extensionId: String, quality: (T) -> Int
+        ): T {
+            val extSettings = extensionPrefId(ExtensionType.MUSIC.name, extensionId).prefs(context)
+            return select(context, extSettings, quality)
+                ?: select(context, context.getSettings(), quality)
+                ?: first()
+        }
 
         fun getController(
             context: Application,

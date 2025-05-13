@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.utils.prefs
+package dev.brahmkshatriya.echo.utils.ui.prefs
 
 import android.content.Context
 import android.widget.EditText

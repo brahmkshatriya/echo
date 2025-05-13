@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.selectServerIndex
+import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.toData
@@ -30,7 +31,7 @@ import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 object MediaItemUtils {
 
     fun build(
-        settings: SharedPreferences?,
+        appContext: Context,
         downloads: List<Downloader.Info>,
         track: Track,
         extensionId: String,
@@ -38,7 +39,7 @@ object MediaItemUtils {
     ): MediaItem {
         val item = MediaItem.Builder()
         val metadata =
-            track.toMetaData(bundleOf(), downloads, extensionId, context, false, settings)
+            track.toMetaData(bundleOf(), downloads, extensionId, context, false, appContext)
         item.setMediaMetadata(metadata)
         item.setMediaId(track.id)
         item.setUri(track.id)
@@ -46,14 +47,14 @@ object MediaItemUtils {
     }
 
     fun buildLoaded(
-        settings: SharedPreferences?,
+        appContext: Context,
         downloads: List<Downloader.Info>,
         mediaItem: MediaItem,
         track: Track
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
         val metadata = track.toMetaData(
-            mediaMetadata.extras!!, downloads, extensionId, context, true, settings
+            mediaMetadata.extras!!, downloads, extensionId, context, true, appContext
         )
         item.setMediaMetadata(metadata)
         return item.build()
@@ -161,10 +162,10 @@ object MediaItemUtils {
     private fun Track.toMetaData(
         bundle: Bundle,
         downloads: List<Downloader.Info>,
-        extensionId: String = bundle.getString("clientId")!!,
+        extensionId: String = bundle.getString("extensionId")!!,
         context: EchoMediaItem? = bundle.getSerialized("context"),
         loaded: Boolean = bundle.getBoolean("loaded"),
-        settings: SharedPreferences? = null,
+        appContext: Context,
         serverIndex: Int? = null,
         backgroundIndex: Int? = null,
         subtitleIndex: Int? = null
@@ -178,9 +179,10 @@ object MediaItemUtils {
             if (isLiked) ThumbRating(true) else ThumbRating()
         )
         .setExtras(Bundle().apply {
+            val settings = appContext.getSettings()
             putAll(bundle)
-            putSerialized("track", this@toMetaData)
             putSerialized("unloadedCover", bundle.trackNullable?.cover)
+            putSerialized("track", this@toMetaData)
             putString("extensionId", extensionId)
             putSerialized("context", context)
             putBoolean("loaded", loaded)
@@ -191,7 +193,7 @@ object MediaItemUtils {
                     ?: 0.takeIf { backgrounds.isNotEmpty() && settings.showBackground() } ?: -1
             )
             val downloaded = downloads.filter { it.download.trackId == id }.mapNotNull { it.download.finalFile }
-            putInt("serverIndex", serverIndex ?: selectServerIndex(settings, servers, downloaded))
+            putInt("serverIndex", serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded))
             putSerialized("downloaded", downloaded)
         })
         .setSubtitle(bundle.indexes())

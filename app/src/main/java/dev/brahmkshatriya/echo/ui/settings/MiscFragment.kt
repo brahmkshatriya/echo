@@ -11,16 +11,18 @@ import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.MainApplication.Companion.applyLocale
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.configureExtensionsUpdater
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
 import dev.brahmkshatriya.echo.utils.ContextUtils.copyToClipboard
-import dev.brahmkshatriya.echo.utils.prefs.LongClickPreference
-import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
-import dev.brahmkshatriya.echo.utils.prefs.SwitchLongClickPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.LongClickPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.SwitchLongClickPreference
 
 class MiscFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.misc)
+    override val icon get() = R.drawable.ic_info.toResourceImageHolder()
     override val creator = { AboutPreference() }
 
     class AboutPreference : PreferenceFragmentCompat() {

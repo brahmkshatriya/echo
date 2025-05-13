@@ -69,6 +69,12 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
         )
     }
 
+    private val bottomSaveAdapter by lazy {
+        SaveButtonAdapter {
+            viewModel.saveTracks()
+        }
+    }
+
     private var binding by autoCleared<DialogPlaylistSaveBinding>()
     private val viewModel by viewModel<SaveToPlaylistViewModel> { parametersOf(extensionId, item) }
     private val playerViewModel by activityViewModel<PlayerViewModel>()
@@ -81,11 +87,6 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        binding.save.setOnClickListener {
-            viewModel.saveTracks()
-        }
-
         var count = 1
         val gridLayoutManager = GridLayoutManager(requireContext(), count)
         binding.recyclerView.mediaItemSpanCount {
@@ -95,18 +96,21 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
         }
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                return when (position) {
-                    0, 1, 2 -> count
-                    else -> 1
+                val viewHolder = binding.recyclerView.findViewHolderForAdapterPosition(position)
+                return when (viewHolder) {
+                    is MediaItemSelectableAdapter.ViewHolder -> 1
+                    else -> count
                 }
             }
         }
         itemAdapter.submitList(extensionId, listOf(item))
         binding.recyclerView.layoutManager = gridLayoutManager
-        binding.recyclerView.adapter =
-            ConcatAdapter(topBarAdapter, itemAdapter, adapter.withHeader {
-                viewModel.toggleAll(it)
-            })
+        binding.recyclerView.adapter = ConcatAdapter(
+            topBarAdapter,
+            itemAdapter,
+            adapter.withHeader { viewModel.toggleAll(it) },
+            bottomSaveAdapter
+        )
 
         val combined = viewModel.playlistsFlow.combine(viewModel.saveFlow) { playlists, save ->
             playlists to save
@@ -119,7 +123,7 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
                         return@observe
                     }
                     adapter.submitList(state.list.map { it.first.toMediaItem() to it.second })
-                    binding.save.isEnabled = state.list.any { it.second }
+                    bottomSaveAdapter.setEnabled(state.list.any { it.second })
                     false
                 }
 
@@ -127,7 +131,6 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
             }
             val saving = save != SaveToPlaylistViewModel.SaveState.Initial
             val loading = playlistLoading || saving
-            binding.save.isVisible = !loading
             binding.recyclerView.isVisible = !loading
             binding.loading.root.isVisible = loading
             binding.loading.textView.text = when (save) {

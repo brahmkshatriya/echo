@@ -13,6 +13,9 @@ class DownloadingWorker(
     downloader: Downloader,
 ) : BaseWorker(context, workerParams, downloader) {
 
+    override suspend fun <T> permit(block: suspend () -> T) =
+        downloader.downloadSemaphore.withPermit { block() }
+
     override val type = TaskType.Downloading
     override suspend fun work(trackId: Long) {
         var download = getDownload()

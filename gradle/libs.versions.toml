@@ -3,14 +3,12 @@ agp = "8.9.2"
 kotlin = "2.1.0"
 
 androidx-paging = "3.3.6"
-kotlinStdlib = "2.1.20"
 room = "2.7.1"
 koinAndroid = "4.1.0-Beta6"
 media3 = "1.6.1"
 coil = "3.0.0-rc01"
 
 [libraries]
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinStdlib" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version = "5.0.0-alpha.14" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.1" }

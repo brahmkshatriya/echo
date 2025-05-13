@@ -25,7 +25,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getDetails
@@ -41,7 +40,6 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
     var binding by autoCleared<DialogPlayerQualitySelectionBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
-    private val uiViewModel by activityViewModel<UiViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -55,7 +53,6 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
         binding.topAppBar.setOnMenuItemClickListener {
             dismiss()
-            uiViewModel.collapsePlayer()
             requireActivity().openFragment<AudioFragment>()
             true
         }

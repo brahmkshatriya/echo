@@ -21,10 +21,10 @@ import dev.brahmkshatriya.echo.extensions.Extensions.Companion.priorityKey
 import dev.brahmkshatriya.echo.extensions.InstallationUtils
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.uninstallExtension
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.prefId
 import dev.brahmkshatriya.echo.extensions.Updater
 import dev.brahmkshatriya.echo.extensions.db.models.ExtensionEntity
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionListViewModel
-import dev.brahmkshatriya.echo.ui.settings.ExtensionFragment.ExtensionPreference.Companion.prefId
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

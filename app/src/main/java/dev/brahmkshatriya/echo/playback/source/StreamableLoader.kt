@@ -1,6 +1,6 @@
 package dev.brahmkshatriya.echo.playback.source
 
-import android.content.SharedPreferences
+import android.content.Context
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -31,7 +31,7 @@ import java.io.File
 
 @UnstableApi
 class StreamableLoader(
-    private val settings: SharedPreferences,
+    private val context: Context,
     private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
     private val downloadFlow: StateFlow<List<Downloader.Info>>
 ) {
@@ -39,7 +39,7 @@ class StreamableLoader(
         extensionListFlow.first { it != null }
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.buildLoaded(
-            settings, downloadFlow.value, mediaItem, loadTrack(mediaItem)
+            context, downloadFlow.value, mediaItem, loadTrack(mediaItem)
         )
 
         val server = async { loadServer(new) }

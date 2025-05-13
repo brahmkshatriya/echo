@@ -26,7 +26,7 @@ import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
-import dev.brahmkshatriya.echo.utils.ExceptionUtils.setupExceptionHandler
+import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.setupExceptionHandler
 import dev.brahmkshatriya.echo.utils.PermsUtils.checkAppPermissions
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isNightMode
 import org.koin.androidx.viewmodel.ext.android.viewModel

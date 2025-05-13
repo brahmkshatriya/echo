@@ -20,8 +20,8 @@ import dev.brahmkshatriya.echo.extensions.plugger.ExtensionsRepo.Companion.PACKA
 import dev.brahmkshatriya.echo.extensions.plugger.impl.AppInfo
 import dev.brahmkshatriya.echo.extensions.plugger.impl.app.ApkManifestParser
 import dev.brahmkshatriya.echo.extensions.plugger.impl.file.ApkLinkParser
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import kotlinx.coroutines.launch

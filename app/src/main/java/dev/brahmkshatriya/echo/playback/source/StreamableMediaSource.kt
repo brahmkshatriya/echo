@@ -36,7 +36,6 @@ import dev.brahmkshatriya.echo.playback.PlayerService.Companion.select
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,7 +89,8 @@ class StreamableMediaSource(
                     }.toTypedArray()
                 ) else {
                     val index = mediaItem.sourceIndex
-                    val source = sources.getOrNull(index) ?: sources.select(context.getSettings())
+                    val source = sources.getOrNull(index)
+                        ?: sources.select(context, new.extensionId) { it.quality }
                     factories.create(new, index, source)
                 }
             }
@@ -155,7 +155,7 @@ class StreamableMediaSource(
         private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>? = null
     ) : MediaSource.Factory {
 
-        private val loader = StreamableLoader(context.getSettings(), extensions.music, downloadFlow)
+        private val loader = StreamableLoader(context, extensions.music, downloadFlow)
 
         private val factories = Factories(
             lazily { DashMediaSource.Factory(dataSource) },

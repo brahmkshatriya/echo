@@ -13,20 +13,22 @@ import dev.brahmkshatriya.echo.MainActivity.Companion.CUSTOM_THEME_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.THEME_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.defaultColor
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.SHOW_BACKGROUND
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.DYNAMIC_PLAYER
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
-import dev.brahmkshatriya.echo.utils.prefs.ColorListPreference
-import dev.brahmkshatriya.echo.utils.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.ANIMATIONS_KEY
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.SCROLL_ANIMATIONS_KEY
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable.BACKGROUND_GRADIENT
+import dev.brahmkshatriya.echo.utils.ui.prefs.ColorListPreference
+import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
 
 
 class LookFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.look_and_feel)
+    override val icon get() = R.drawable.ic_palette.toResourceImageHolder()
     override val creator = { LookPreference() }
 
     class LookPreference : PreferenceFragmentCompat() {
