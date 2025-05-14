@@ -96,10 +96,10 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
         }
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                val viewHolder = binding.recyclerView.findViewHolderForAdapterPosition(position)
-                return when (viewHolder) {
-                    is MediaItemSelectableAdapter.ViewHolder -> 1
-                    else -> count
+                val last = adapter.itemCount + 3
+                return when (position) {
+                    0, 1, 2, last -> count
+                    else -> 1
                 }
             }
         }

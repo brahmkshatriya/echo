@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.extensions
 
-import androidx.core.content.edit
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -17,7 +16,6 @@ import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
-import dev.brahmkshatriya.echo.extensions.Extensions.Companion.priorityKey
 import dev.brahmkshatriya.echo.extensions.InstallationUtils
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.uninstallExtension
@@ -90,7 +88,6 @@ class ExtensionsViewModel(
     }
 
 
-
     fun addFromFile(context: FragmentActivity) {
         viewModelScope.launch {
             InstallationUtils.addFromFile(context)
@@ -140,9 +137,8 @@ class ExtensionsViewModel(
     }
 
     val lastSelectedManageExt = MutableStateFlow(0)
-    val manageExtListFlow = extensions.all.combine(lastSelectedManageExt) { list, last ->
-        val type = ExtensionType.entries[last]
-        list?.filter { it.type == type }
+    val manageExtListFlow = extensions.combined.combine(lastSelectedManageExt) { _, last ->
+        extensions.getFlow(ExtensionType.entries[last]).value
     }
 
     fun moveExtensionItem(toPos: Int, fromPos: Int) {
@@ -151,9 +147,6 @@ class ExtensionsViewModel(
         val list = extensions.getFlow(type).value.orEmpty().map { it.id }.toMutableList()
         list.add(toPos, list.removeAt(fromPos))
         flow.value = list
-        app.settings.edit {
-            putString(type.priorityKey(), list.joinToString(","))
-        }
     }
 
     companion object {

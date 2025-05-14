@@ -31,7 +31,8 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:contentDescription="@string/settings"
-                    app:srcCompat="@drawable/ic_extension_48dp" />
+                    app:srcCompat="@drawable/ic_extension_48dp"
+                    app:tint="?colorControlNormal" />
 
             </FrameLayout>
 
@@ -49,7 +50,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="-1dp"
-        android:alpha="0"
+        android:alpha="1"
         android:background="?attr/colorOutline"
         android:translationZ="1dp"
         app:layout_anchor="@id/appBarLayout"

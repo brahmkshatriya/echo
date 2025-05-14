@@ -33,6 +33,7 @@ import dev.brahmkshatriya.echo.download.exceptions.DownloadException
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.toData
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.throttleLatest
+import dev.brahmkshatriya.echo.utils.Serializer.rootCause
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,7 +73,7 @@ abstract class BaseWorker(
                 val download = dao.getDownloadEntity(trackId) ?: return@getOrElse Result.failure()
                 val exception = DownloadException(TaskType.Loading, download, throwable)
                 dao.insertDownloadEntity(
-                    download.copy(exceptionData = exception.toData(context).toJson())
+                    download.copy(exceptionData = exception.rootCause.toData(context).toJson())
                 )
                 Result.failure()
             }

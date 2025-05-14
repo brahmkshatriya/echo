@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.download.db.models.DownloadEntity
         ContextEntity::class,
         DownloadEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class DownloadDatabase : RoomDatabase() {

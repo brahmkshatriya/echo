@@ -49,8 +49,14 @@ abstract class BaseSettingsFragment : Fragment() {
         }
 
         binding.toolBar.title = title
-        icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
-            binding.extensionIcon.setImageDrawable(it)
+        when (val icon = icon) {
+            is ImageHolder.ResourceImageHolder ->
+                binding.extensionIcon.setImageResource(icon.resId)
+
+            else -> icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
+                binding.extensionIcon.imageTintList = null
+                binding.extensionIcon.setImageDrawable(it)
+            }
         }
         childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
             .commit()
@@ -66,5 +72,4 @@ abstract class BaseSettingsFragment : Fragment() {
             }
         }
     }
-
 }

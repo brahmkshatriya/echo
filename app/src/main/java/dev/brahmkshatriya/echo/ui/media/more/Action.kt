@@ -69,13 +69,15 @@ data class Action(
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)
             return ViewHolder(inflater, parent, {
-                getItem(it)?.onClick?.invoke()
+                getItemOrNull(it)?.onClick?.invoke()
             })
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.bind(getItem(position))
         }
+
+        private fun getItemOrNull(position: Int) = runCatching { getItem(position) }.getOrNull()
     }
 
     companion object {

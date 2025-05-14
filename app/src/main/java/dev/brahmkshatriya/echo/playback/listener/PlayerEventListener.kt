@@ -75,7 +75,7 @@ class PlayerEventListener(
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         updateCurrentFlow()
-        ResumptionUtils.saveQueue(context, player)
+        scope.launch { ResumptionUtils.saveQueue(context, player) }
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {

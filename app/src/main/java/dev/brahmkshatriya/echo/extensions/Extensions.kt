@@ -17,7 +17,6 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -84,7 +83,7 @@ class Extensions(
         setupMusicExtension(extension, false)
     }
 
-    fun setupMusicExtension(extension: MusicExtension, manual:Boolean): Boolean {
+    fun setupMusicExtension(extension: MusicExtension, manual: Boolean): Boolean {
         if (manual) settings.edit { putString(LAST_EXTENSION_KEY, extension.id) }
         current.value = extension
         scope.launch { extension.run(throwableFlow) { onExtensionSelected() } }
@@ -120,7 +119,10 @@ class Extensions(
     init {
         priorityMap.forEach { (type, flow) ->
             scope.launch {
-                flow.collectLatest {
+                flow.collect {
+                    settings.edit {
+                        putString(type.priorityKey(), flow.value.joinToString(","))
+                    }
                     when (type) {
                         ExtensionType.MUSIC -> music.value = music.value?.sorted(type)
                         ExtensionType.TRACKER -> tracker.value = tracker.value?.sorted(type)

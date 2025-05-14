@@ -566,7 +566,11 @@ class PlayerFragment : Fragment() {
                 val clickableSpan = SimpleItemSpan(trackArtist.context) {
                     openItem(extId, artist.toMediaItem())
                 }
-                span.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                runCatching {
+                    span.setSpan(
+                        clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
             }
 
             trackArtist.text = span
