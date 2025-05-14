@@ -4,6 +4,7 @@ import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -35,7 +36,7 @@ import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 import kotlin.random.Random
 
-class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient,
+class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
     HomeFeedClient, ArtistFollowClient, RadioClient, SaveToLibraryClient, TrackLikeClient,
     TrackHideClient, TrackerClient {
 
@@ -76,8 +77,18 @@ class TestExtension : ExtensionClient, LoginClient.UsernamePassword, TrackClient
     override suspend fun onExtensionSelected() {}
     override val settingItems: List<Setting> = emptyList()
     override fun setSettings(settings: Settings) {}
-    override suspend fun onLogin(username: String, password: String): List<User> {
-        return listOf(User(username, username, null))
+
+    override val loginInputFields = listOf(
+        InputField(InputField.Type.Username, "name", "Name", true, Regex("bruh")),
+        InputField(InputField.Type.Password, "password", "Password", false, Regex("bruh")),
+        InputField(InputField.Type.Misc, "text", "Text", false, Regex("bruh")),
+        InputField(InputField.Type.Number, "number", "Number", false),
+        InputField(InputField.Type.Url, "url", "Url", false),
+    )
+
+    override suspend fun onLogin(data: Map<String, String?>): List<User> {
+        val name = data["name"]!!
+        return listOf(User(name, name, null))
     }
 
     override suspend fun onSetLoginUser(user: User?) {

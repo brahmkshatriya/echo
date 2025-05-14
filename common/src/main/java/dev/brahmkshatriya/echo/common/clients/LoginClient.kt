@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.clients
 
-import dev.brahmkshatriya.echo.common.clients.LoginClient.CustomTextInput
-import dev.brahmkshatriya.echo.common.clients.LoginClient.UsernamePassword
+import dev.brahmkshatriya.echo.common.clients.LoginClient.CustomInput
 import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView
 import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView.Cookie
 import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView.Evaluate
@@ -14,29 +13,11 @@ import dev.brahmkshatriya.echo.common.models.User
  * Do not implement this interface directly, use the sub-interfaces.
  * The extension can implement all of the sub-interfaces.
  *
- * @see [UsernamePassword]
  * @see [WebView]
- * @see [CustomTextInput]
+ * @see [CustomInput]
  */
 sealed interface LoginClient {
 
-    /**
-     * To be implemented when the login screen has username and password fields.
-     *
-     * @see [CustomTextInput]
-     */
-    interface UsernamePassword : LoginClient {
-
-        /**
-         * Called when the user submits the login form.
-         *
-         * @param username The username entered by the user
-         * @param password The password entered by the user
-         *
-         * @return A list of users that are logged in
-         */
-        suspend fun onLogin(username: String, password: String): List<User>
-    }
 
     /**
      * Interface when the login requires a webview.
@@ -102,7 +83,7 @@ sealed interface LoginClient {
      *
      * The extension needs to provide the [loginInputFields].
      */
-    interface CustomTextInput : LoginClient {
+    interface CustomInput : LoginClient {
 
         /**
          * List of input fields to be displayed on the login screen.
@@ -122,17 +103,23 @@ sealed interface LoginClient {
     /**
      * Represents an input field for the login screen.
      *
+     * @param type The type of the input field
      * @param key The key to be used in the `data` map in the `onLogin` method
      * @param label The label to be displayed for the input field
      * @param isRequired If the field is required
-     * @param isPassword If the field is a password field
+     * @param regex The regex to be used for validation of the input field
      */
     data class InputField(
+        val type: Type,
         val key: String,
         val label: String,
         val isRequired: Boolean,
-        val isPassword: Boolean = false
-    )
+        val regex: Regex? = null
+    ) {
+        enum class Type {
+            Email, Username, Password, Number, Url, Misc
+        }
+    }
 
     /**
      * Called when the extension starts or when user selects a user.

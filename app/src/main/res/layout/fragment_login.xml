@@ -58,7 +58,8 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:paddingVertical="8dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:importantForAccessibility="no">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -75,13 +76,6 @@
                 app:singleSelection="true">
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/loginUserPass"
-                    style="@style/OutlinedButton"
-                    android:text="@string/username_and_password"
-                    android:visibility="gone"
-                    app:icon="@drawable/ic_password" />
-
-                <com.google.android.material.button.MaterialButton
                     android:id="@+id/loginWebview"
                     style="@style/OutlinedButton"
                     android:text="@string/webview"
@@ -96,55 +90,6 @@
                     app:icon="@drawable/ic_input" />
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
-
-            <LinearLayout
-                android:id="@+id/usernamePasswordContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginVertical="24dp"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/TextInput"
-                    android:hint="@string/username"
-                    app:startIconDrawable="@drawable/ic_account_circle">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/loginUsername"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="text"
-                        android:singleLine="true" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/TextInput"
-                    android:hint="@string/password"
-                    app:passwordToggleEnabled="true"
-                    app:startIconDrawable="@drawable/ic_password">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/loginPassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textPassword"
-                        android:singleLine="true" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <Button
-                    android:id="@+id/loginUserPassSubmit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:text="@string/login"
-                    app:icon="@drawable/ic_login"
-                    app:iconGravity="end" />
-
-            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/customInputContainer"
@@ -178,9 +123,9 @@
 
     <com.telefonica.nestedscrollwebview.NestedScrollWebView
         android:id="@+id/webView"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <include

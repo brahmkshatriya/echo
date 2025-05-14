@@ -54,25 +54,12 @@ class LoginViewModel(
         }
     }
 
-    fun onUsernamePasswordSubmit(
-        extension: Extension<*>,
-        username: String,
-        password: String
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val users = extension.get<LoginClient.UsernamePassword, List<User>>(app.throwFlow) {
-                onLogin(username, password)
-            } ?: return@launch
-            afterLogin(extension, users)
-        }
-    }
-
     val inputs = mutableMapOf<String, String?>()
     fun onCustomTextInputSubmit(
         extension: Extension<*>
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = extension.get<LoginClient.CustomTextInput, List<User>>(app.throwFlow) {
+            val users = extension.get<LoginClient.CustomInput, List<User>>(app.throwFlow) {
                 onLogin(inputs)
             } ?: return@launch
             afterLogin(extension, users)

@@ -3,8 +3,11 @@ package dev.brahmkshatriya.echo.ui.extensions.login
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType.TYPE_CLASS_NUMBER
 import android.text.InputType.TYPE_CLASS_TEXT
+import android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
 import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+import android.text.InputType.TYPE_TEXT_VARIATION_URI
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +26,7 @@ import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField.Type
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
@@ -49,10 +53,10 @@ import kotlin.coroutines.suspendCoroutine
 
 class LoginFragment : Fragment() {
     companion object {
-        fun getBundle(clientId: String, clientName: String, extensionType: ExtensionType) =
+        fun getBundle(extId: String, extName: String, extensionType: ExtensionType) =
             Bundle().apply {
-                putString("clientId", clientId)
-                putString("clientName", clientName)
+                putString("extId", extId)
+                putString("extName", extName)
                 putString("extensionType", extensionType.name)
             }
 
@@ -68,8 +72,8 @@ class LoginFragment : Fragment() {
         val type = requireArguments().getString("extensionType")!!
         ExtensionType.valueOf(type)
     }
-    private val clientId by lazy { requireArguments().getString("clientId")!! }
-    private val clientName by lazy { requireArguments().getString("clientName")!! }
+    private val extId by lazy { requireArguments().getString("extId")!! }
+    private val extName by lazy { requireArguments().getString("extName")!! }
     private val loginViewModel by viewModel<LoginViewModel>()
 
     override fun onCreateView(
@@ -105,10 +109,10 @@ class LoginFragment : Fragment() {
         binding.toolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        binding.toolbar.title = getString(R.string.x_login, clientName)
+        binding.toolbar.title = getString(R.string.x_login, extName)
 
         val extension = loginViewModel.extensionLoader.extensions.getFlow(clientType)
-            .value?.find { it.id == clientId }
+            .value?.find { it.id == extId }
 
         if (extension == null) {
             parentFragmentManager.popBackStack()
@@ -144,13 +148,10 @@ class LoginFragment : Fragment() {
             binding.loginContainer.isVisible = true
 
             val clients = listOfNotNull(
-                extension.getClient<LoginClient.UsernamePassword>(binding.loginUserPass) {
-                    configureUsernamePassword(extension)
-                },
                 extension.getClient<LoginClient.WebView>(binding.loginWebview) {
                     configureWebView(extension, it)
                 },
-                extension.getClient<LoginClient.CustomTextInput>(binding.loginCustomInput) {
+                extension.getClient<LoginClient.CustomInput>(binding.loginCustomInput) {
                     configureCustomTextInput(extension, it)
                 },
             )
@@ -176,7 +177,7 @@ class LoginFragment : Fragment() {
 
     private fun loginNotSupported(): String {
         val login = getString(R.string.login)
-        return getString(R.string.x_is_not_supported_in_x, login, clientName)
+        return getString(R.string.x_is_not_supported_in_x, login, extName)
     }
 
     private fun FragmentLoginBinding.configureWebView(
@@ -286,18 +287,31 @@ class LoginFragment : Fragment() {
 
     private fun FragmentLoginBinding.configureCustomTextInput(
         extension: Extension<*>,
-        client: LoginClient.CustomTextInput
+        client: LoginClient.CustomInput
     ) {
         customInputContainer.isVisible = true
         client.loginInputFields.forEachIndexed { index, field ->
             val input = ItemInputBinding.inflate(
-                layoutInflater,
-                customInput,
-                false
+                layoutInflater, customInput, false
             )
             input.root.hint = field.label
-            input.editText.inputType = if (!field.isPassword) TYPE_CLASS_TEXT
-            else TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_PASSWORD
+            input.root.setStartIconDrawable(
+                when (field.type) {
+                    Type.Email -> R.drawable.ic_email
+                    Type.Password -> R.drawable.ic_password
+                    Type.Number -> R.drawable.ic_numbers
+                    Type.Url -> R.drawable.ic_language
+                    Type.Username -> R.drawable.ic_account_circle
+                    Type.Misc -> R.drawable.ic_input
+                }
+            )
+            input.editText.inputType = when (field.type) {
+                Type.Email -> TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                Type.Password -> TYPE_TEXT_VARIATION_PASSWORD
+                Type.Number -> TYPE_CLASS_NUMBER
+                Type.Url -> TYPE_TEXT_VARIATION_URI
+                else -> TYPE_CLASS_TEXT
+            }
             input.editText.setText(loginViewModel.inputs[field.key])
             input.editText.doAfterTextChanged { editable ->
                 loginViewModel.inputs[field.key] = editable.toString().takeIf { it.isNotBlank() }
@@ -313,12 +327,19 @@ class LoginFragment : Fragment() {
         loginCustomSubmit.setOnClickListener {
             client.loginInputFields.forEach {
                 if (it.isRequired && loginViewModel.inputs[it.key].isNullOrEmpty()) {
-                    lifecycleScope.launch {
-                        loginViewModel.messageFlow.emit(
-                            Message(getString(R.string.x_is_required, it.label))
-                        )
-                    }
+                    message(Message(getString(R.string.x_is_required, it.label)))
                     return@setOnClickListener
+                }
+                val regex = it.regex
+                if (regex != null && !loginViewModel.inputs[it.key].isNullOrEmpty()) {
+                    if (!loginViewModel.inputs[it.key]!!.matches(regex)) {
+                        message(
+                            Message(
+                                getString(R.string.regex_invalid, it.label, regex.pattern)
+                            )
+                        )
+                        return@setOnClickListener
+                    }
                 }
             }
             loginViewModel.onCustomTextInputSubmit(extension)
@@ -327,35 +348,9 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun FragmentLoginBinding.configureUsernamePassword(
-        extension: Extension<*>
-    ) {
-        usernamePasswordContainer.isVisible = true
-        loginUsername.requestFocus()
-        loginUsername.setOnEditorActionListener { _, _, _ ->
-            loginPassword.requestFocus()
-            true
-        }
-        loginPassword.setOnEditorActionListener { _, _, _ ->
-            loginUserPassSubmit.performClick()
-            true
-        }
-        loginUserPassSubmit.setOnClickListener {
-            val username = loginUsername.text.toString()
-            val password = loginPassword.text.toString()
-            if (username.isEmpty()) {
-                lifecycleScope.launch {
-                    loginViewModel.messageFlow.emit(
-                        Message(
-                            getString(R.string.x_is_required, getString(R.string.username))
-                        )
-                    )
-                }
-                return@setOnClickListener
-            }
-            loginViewModel.onUsernamePasswordSubmit(extension, username, password)
-            usernamePasswordContainer.isVisible = false
-            loadingContainer.root.isVisible = true
+    private fun message(m: Message) {
+        lifecycleScope.launch {
+            loginViewModel.messageFlow.emit(m)
         }
     }
 }

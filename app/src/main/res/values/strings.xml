@@ -214,23 +214,21 @@
     <string name="x_extension">%1$s Extension</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
+    <string name="error_updating_extension">Error while updating</string>
 
     <string name="no_user_found">No user found</string>
     <string name="select_x_account">Select %1$s account</string>
     <string name="add_account">Add Account</string>
     <string name="add_extension">Add Extension</string>
-    <string name="error_updating_extension">Error while updating</string>
     <string name="webview">Webview</string>
-    <string name="username_and_password">Username and Password</string>
     <string name="manual">Manual</string>
-    <string name="username">Username</string>
-    <string name="password">Password</string>
     <string name="logout">Logout</string>
     <string name="switch_account">Switch Account</string>
     <string name="incognito">Incognito</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="x_login">%1$s Login</string>
     <string name="x_is_required">$1%s is required</string>
+    <string name="regex_invalid">%1$s is invalid, please follow the regex: %2$s</string>
 
     <string name="playing_from">Playing From</string>
     <string name="up_next">Up Next</string>
