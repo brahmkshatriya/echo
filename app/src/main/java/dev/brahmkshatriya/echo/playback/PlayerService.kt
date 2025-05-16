@@ -51,7 +51,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.android.inject
 import java.io.File
 
@@ -129,7 +128,6 @@ class PlayerService : MediaLibraryService() {
 
     override fun onDestroy() {
         mediaSession?.run {
-            runBlocking { ResumptionUtils.saveQueue(this@PlayerService, player) }
             player.release()
             release()
             mediaSession = null
@@ -161,7 +159,7 @@ class PlayerService : MediaLibraryService() {
             offloadPreferences(app.settings.getBoolean(MORE_BRAIN_CAPACITY, false))
 
         val factory = StreamableMediaSource.Factory(
-            this, state, extensions, cache, downloadFlow, mediaChangeFlow
+            this, scope, state, extensions, cache, downloadFlow, mediaChangeFlow
         )
 
         ExoPlayer.Builder(this, factory)
