@@ -22,13 +22,13 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.button.MaterialButton
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField.Type
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Message
+import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.FragmentLoginBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
@@ -85,16 +85,6 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    private suspend inline fun <reified T : LoginClient> Extension<*>.getClient(
-        button: MaterialButton, noinline configure: FragmentLoginBinding.(T) -> Unit
-    ) = run {
-        val client = instance.value().getOrNull()
-        if (client !is T) null
-        else Pair(button) { configure(binding, client) }
-    }
-
-    var clients = listOf<Pair<MaterialButton, () -> Unit>>()
-    var current: Int? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
         applyInsets {
@@ -121,14 +111,6 @@ class LoginFragment : Fragment() {
 
         val metadata = extension.metadata
 
-        observe(loginViewModel.loginClient) {
-            it ?: return@observe
-            if (current == it) return@observe
-            current = it
-            binding.loginToggleGroup.isVisible = false
-            clients[it].second()
-        }
-
         observe(loginViewModel.loadingOver) {
             parentFragmentManager.popBackStack()
         }
@@ -140,36 +122,45 @@ class LoginFragment : Fragment() {
                 return@launch
             }
 
-            metadata.icon
-                .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
-                    binding.extensionIcon.setImageDrawable(it)
-                }
+            metadata.icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
+                binding.extensionIcon.setImageDrawable(it)
+            }
 
             binding.loginContainer.isVisible = true
-
+            val client = extension.instance.value().getOrNull()!!
             val clients = listOfNotNull(
-                extension.getClient<LoginClient.WebView>(binding.loginWebview) {
-                    configureWebView(extension, it)
-                },
-                extension.getClient<LoginClient.CustomInput>(binding.loginCustomInput) {
-                    configureCustomTextInput(extension, it)
-                },
+                if (client is LoginClient.WebView) {
+                    val button = ButtonExtensionBinding.inflate(
+                        layoutInflater, binding.loginToggleGroup, false
+                    ).root
+                    button.text = getString(R.string.webview)
+                    button.setIconResource(R.drawable.ic_language)
+                    button to {
+                        binding.loginContainer.isVisible = false
+                        binding.configureWebView(extension, client)
+                    }
+                } else null,
+                *(if (client is LoginClient.CustomInput) {
+                    client.forms.map {
+                        val button = ButtonExtensionBinding.inflate(
+                            layoutInflater, binding.loginToggleGroup, false
+                        ).root
+                        button.text = it.label
+                        button.setIconResource(getIcon(it.icon))
+                        button to {
+                            binding.loginContainer.isVisible = false
+                            binding.configureCustomTextInput(extension, it)
+                        }
+                    }
+                } else listOf()).toTypedArray(),
             )
-            this@LoginFragment.clients = clients
-            if (clients.isEmpty()) {
-                createSnack(loginNotSupported())
-                parentFragmentManager.popBackStack()
-                return@launch
-            } else if (clients.size == 1) loginViewModel.loginClient.value = 0
-            else {
+            if (clients.size == 1) clients.first().second() else {
                 binding.loginToggleGroup.isVisible = true
                 clients.forEachIndexed { index, pair ->
-                    val (button, _) = pair
-                    button.isVisible = true
-                    button.setOnClickListener {
-                        loginViewModel.loginClient.value = index
-                        binding.loginToggleGroup.isVisible = false
-                    }
+                    val button = pair.first
+                    button.setOnClickListener { pair.second() }
+                    binding.loginToggleGroup.addView(button)
+                    button.id = index
                 }
             }
         }
@@ -268,6 +259,7 @@ class LoginFragment : Fragment() {
             delay(1000)
             appBarLayout.setExpanded(false, true)
         }
+        Unit
     }
 
     private suspend fun WebView.loadData(url: String, client: LoginClient.WebView) = when (client) {
@@ -287,24 +279,15 @@ class LoginFragment : Fragment() {
 
     private fun FragmentLoginBinding.configureCustomTextInput(
         extension: Extension<*>,
-        client: LoginClient.CustomInput
+        form: LoginClient.Form
     ) {
         customInputContainer.isVisible = true
-        client.loginInputFields.forEachIndexed { index, field ->
+        form.inputFields.forEachIndexed { index, field ->
             val input = ItemInputBinding.inflate(
                 layoutInflater, customInput, false
             )
             input.root.hint = field.label
-            input.root.setStartIconDrawable(
-                when (field.type) {
-                    Type.Email -> R.drawable.ic_email
-                    Type.Password -> R.drawable.ic_password
-                    Type.Number -> R.drawable.ic_numbers
-                    Type.Url -> R.drawable.ic_language
-                    Type.Username -> R.drawable.ic_account_circle
-                    Type.Misc -> R.drawable.ic_input
-                }
-            )
+            input.root.setStartIconDrawable(getIcon(field.type))
             input.editText.inputType = when (field.type) {
                 Type.Email -> TYPE_TEXT_VARIATION_EMAIL_ADDRESS
                 Type.Password -> TYPE_TEXT_VARIATION_PASSWORD
@@ -317,7 +300,7 @@ class LoginFragment : Fragment() {
                 loginViewModel.inputs[field.key] = editable.toString().takeIf { it.isNotBlank() }
             }
             input.editText.setOnEditorActionListener { _, _, _ ->
-                if (index < client.loginInputFields.size - 1) {
+                if (index < form.inputFields.size - 1) {
                     customInput.getChildAt(index + 1).requestFocus()
                 } else loginCustomSubmit.performClick()
                 true
@@ -325,7 +308,7 @@ class LoginFragment : Fragment() {
             customInput.addView(input.root)
         }
         loginCustomSubmit.setOnClickListener {
-            client.loginInputFields.forEach {
+            form.inputFields.forEach {
                 if (it.isRequired && loginViewModel.inputs[it.key].isNullOrEmpty()) {
                     message(Message(getString(R.string.x_is_required, it.label)))
                     return@setOnClickListener
@@ -342,7 +325,7 @@ class LoginFragment : Fragment() {
                     }
                 }
             }
-            loginViewModel.onCustomTextInputSubmit(extension)
+            loginViewModel.onCustomTextInputSubmit(extension, form)
             customInputContainer.isVisible = false
             loadingContainer.root.isVisible = true
         }
@@ -352,6 +335,15 @@ class LoginFragment : Fragment() {
         lifecycleScope.launch {
             loginViewModel.messageFlow.emit(m)
         }
+    }
+
+    private fun getIcon(type: Type) = when (type) {
+        Type.Email -> R.drawable.ic_email
+        Type.Password -> R.drawable.ic_password
+        Type.Number -> R.drawable.ic_numbers
+        Type.Url -> R.drawable.ic_language
+        Type.Username -> R.drawable.ic_account_circle
+        Type.Misc -> R.drawable.ic_input
     }
 }
 

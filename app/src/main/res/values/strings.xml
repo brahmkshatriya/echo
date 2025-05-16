@@ -221,7 +221,6 @@
     <string name="add_account">Add Account</string>
     <string name="add_extension">Add Extension</string>
     <string name="webview">Webview</string>
-    <string name="manual">Manual</string>
     <string name="logout">Logout</string>
     <string name="switch_account">Switch Account</string>
     <string name="incognito">Incognito</string>

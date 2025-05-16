@@ -58,6 +58,7 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
 
     override val title get() = name
     override val icon get() = extIcon
+    override val circleIcon = true
     override val creator = { ExtensionPreference().apply { arguments = args } }
     private val viewModel by activityViewModel<ExtensionsViewModel>()
 

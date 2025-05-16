@@ -81,14 +81,14 @@ sealed interface LoginClient {
     /**
      * To be implemented when the login screen has custom text input fields.
      *
-     * The extension needs to provide the [loginInputFields].
+     * The extension needs to provide the [forms].
      */
     interface CustomInput : LoginClient {
 
         /**
-         * List of input fields to be displayed on the login screen.
+         * List of forms to be displayed on the login screen.
          */
-        val loginInputFields: List<InputField>
+        val forms: List<Form>
 
         /**
          * Called when the user submits the login form.
@@ -97,8 +97,22 @@ sealed interface LoginClient {
          *
          * @return A list of users that are logged in
          */
-        suspend fun onLogin(data: Map<String, String?>): List<User>
+        suspend fun onLogin(key: String, data: Map<String, String?>): List<User>
     }
+
+    /**
+     * Represents a form for the login screen.
+     *
+     * @param key The key to be used to identify the `data` in the `onLogin` method
+     * @param label The label to be displayed for the form
+     * @param inputFields The list of input fields to be displayed in the form
+     */
+    data class Form(
+        val key: String,
+        val label: String,
+        val icon: InputField.Type,
+        val inputFields: List<InputField>,
+    )
 
     /**
      * Represents an input field for the login screen.

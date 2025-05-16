@@ -13,14 +13,12 @@ import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toCurre
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
     val extensionLoader: ExtensionLoader,
 ) : ViewModel() {
 
-    val loginClient: MutableStateFlow<Int?> = MutableStateFlow(null)
     private val app = extensionLoader.app
     val messageFlow = app.messageFlow
     private val userDao = extensionLoader.db.userDao()
@@ -56,11 +54,12 @@ class LoginViewModel(
 
     val inputs = mutableMapOf<String, String?>()
     fun onCustomTextInputSubmit(
-        extension: Extension<*>
+        extension: Extension<*>,
+        form: LoginClient.Form
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.get<LoginClient.CustomInput, List<User>>(app.throwFlow) {
-                onLogin(inputs)
+                onLogin(form.key, inputs)
             } ?: return@launch
             afterLogin(extension, users)
         }

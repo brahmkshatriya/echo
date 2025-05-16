@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
+import dev.brahmkshatriya.echo.common.models.Request.Companion.toRequest
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toBackgroundMedia
@@ -37,8 +38,8 @@ import dev.brahmkshatriya.echo.common.settings.Settings
 import kotlin.random.Random
 
 class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
-    HomeFeedClient, ArtistFollowClient, RadioClient, SaveToLibraryClient, TrackLikeClient,
-    TrackHideClient, TrackerClient {
+    LoginClient.WebView.Cookie, HomeFeedClient, ArtistFollowClient, RadioClient,
+    SaveToLibraryClient, TrackLikeClient, TrackHideClient, TrackerClient {
 
     companion object {
         val metadata = Metadata(
@@ -78,17 +79,33 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
     override val settingItems: List<Setting> = emptyList()
     override fun setSettings(settings: Settings) {}
 
-    override val loginInputFields = listOf(
-        InputField(InputField.Type.Username, "name", "Name", true, Regex("bruh")),
-        InputField(InputField.Type.Password, "password", "Password", false, Regex("bruh")),
-        InputField(InputField.Type.Misc, "text", "Text", false, Regex("bruh")),
-        InputField(InputField.Type.Number, "number", "Number", false),
-        InputField(InputField.Type.Url, "url", "Url", false),
+    override val forms = listOf(
+        LoginClient.Form(
+            "bruh",
+            "Test Form",
+            InputField.Type.Username,
+            listOf(
+                InputField(InputField.Type.Username, "name", "Name", true, Regex("bruh")),
+                InputField(InputField.Type.Password, "password", "Password", false, Regex("bruh")),
+                InputField(InputField.Type.Misc, "text", "Text", false, Regex("bruh")),
+                InputField(InputField.Type.Number, "number", "Number", false),
+                InputField(InputField.Type.Url, "url", "Url", false),
+            )
+        )
     )
 
-    override suspend fun onLogin(data: Map<String, String?>): List<User> {
+    override suspend fun onLogin(key: String, data: Map<String, String?>): List<User> {
         val name = data["name"]!!
         return listOf(User(name, name, null))
+    }
+
+    override val loginWebViewInitialUrl = "https://example.com/".toRequest()
+    override val loginWebViewStopUrlRegex = "https://example.com/.*".toRegex()
+
+    override suspend fun onLoginWebviewStop(url: String, data: Map<String, String>): List<User> {
+        return listOf(
+            User("bruh", "Bruh", null)
+        )
     }
 
     override suspend fun onSetLoginUser(user: User?) {

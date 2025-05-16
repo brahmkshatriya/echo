@@ -24,6 +24,7 @@ abstract class BaseSettingsFragment : Fragment() {
     abstract val title: String
     abstract val icon: ImageHolder?
     abstract val creator: () -> PreferenceFragmentCompat
+    open val circleIcon: Boolean = false
 
     var binding: FragmentSettingsContainerBinding by autoCleared()
 
@@ -49,15 +50,14 @@ abstract class BaseSettingsFragment : Fragment() {
         }
 
         binding.toolBar.title = title
-        when (val icon = icon) {
-            is ImageHolder.ResourceImageHolder ->
-                binding.extensionIcon.setImageResource(icon.resId)
-
-            else -> icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
-                binding.extensionIcon.imageTintList = null
-                binding.extensionIcon.setImageDrawable(it)
-            }
+        val icon = icon
+        if (icon is ImageHolder.ResourceImageHolder && !circleIcon) {
+            binding.extensionIcon.setImageResource(icon.resId)
+        } else icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
+            binding.extensionIcon.imageTintList = null
+            binding.extensionIcon.setImageDrawable(it)
         }
+
         childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
             .commit()
 
