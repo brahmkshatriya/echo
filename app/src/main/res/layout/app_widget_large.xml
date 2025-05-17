@@ -102,12 +102,12 @@
                 android:tint="@color/material_dynamic_primary30"
                 tools:ignore="UseAppTint" />
 
-            <ProgressBar
-                android:id="@+id/playProgress"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:indeterminateTint="@color/material_dynamic_primary50"
-                android:visibility="visible" />
+<!--            <ProgressBar-->
+<!--                android:id="@+id/playProgress"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:indeterminateTint="@color/material_dynamic_primary50"-->
+<!--                android:visibility="visible" />-->
         </FrameLayout>
 
         <ImageView

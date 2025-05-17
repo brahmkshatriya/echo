@@ -227,8 +227,7 @@ abstract class BaseWorker(
             .setContentTitle(context.getString(R.string.download_complete))
             .setContentText(title)
             .setStyle(
-                NotificationCompat.BigPictureStyle()
-                    .bigPicture(drawable?.toBitmap())
+                NotificationCompat.BigPictureStyle().bigPicture(drawable?.toBitmap())
             )
             .setContentIntent(getMainIntent(context))
             .setAutoCancel(true)

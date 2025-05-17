@@ -108,7 +108,7 @@ class PlayerCallback(
         val item = player.with { currentMediaItem }
             ?: context.recoverPlaylist(downloadFlow.value, false).run { first.getOrNull(second) }
             ?: return@future SessionResult(SessionError.ERROR_UNKNOWN)
-        val image = item.track.cover.loadDrawable(context)?.toBitmap()
+        val image = item.track.cover.loadDrawable(context)?.toBitmap(1024, -1)
         SessionResult(RESULT_SUCCESS, Bundle().apply { putParcelable("image", image) })
     }
 
@@ -231,7 +231,11 @@ class PlayerCallback(
                             player.with {
                                 addMediaItems(list.size, all.map {
                                     MediaItemUtils.build(
-                                        this@PlayerCallback.context, downloadFlow.value, it, extId, item
+                                        this@PlayerCallback.context,
+                                        downloadFlow.value,
+                                        it,
+                                        extId,
+                                        item
                                     )
                                 })
                             }

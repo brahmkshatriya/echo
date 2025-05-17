@@ -194,8 +194,7 @@ class UiViewModel(
                 extensionColor.value = null
                 extensionColor.value =
                     extension?.metadata?.icon?.loadDrawable(context)?.let {
-                        val bitmap = it.toBitmap()
-                        PlayerColors.getDominantColor(bitmap)
+                        PlayerColors.getDominantColor(it.toBitmap())
                     }
             }
         }

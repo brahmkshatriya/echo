@@ -10,8 +10,6 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.util.SizeF
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.widget.RemoteViews
 import androidx.core.os.bundleOf
 import androidx.media3.common.Player
@@ -204,9 +202,9 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 if (isPlaying) R.drawable.ic_pause_48dp else R.drawable.ic_play_48dp
             )
 
-            views.setViewVisibility(
-                R.id.playProgress, if (controller?.isLoading == true) VISIBLE else GONE
-            )
+//            views.setViewVisibility(
+//                R.id.playProgress, if (controller?.isLoading == true) VISIBLE else GONE
+//            )
 
             views.setOnClickPendingIntent(
                 R.id.nextButton, context.createIntent(ACTION_NEXT)
