@@ -141,7 +141,8 @@ class LoginFragment : Fragment() {
                     }
                 } else null,
                 *(if (client is LoginClient.CustomInput) {
-                    client.forms.map {
+                    val forms = runCatching { client.forms }.getOrNull().orEmpty()
+                    forms.map {
                         val button = ButtonExtensionBinding.inflate(
                             layoutInflater, binding.loginToggleGroup, false
                         ).root

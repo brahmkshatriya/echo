@@ -126,9 +126,12 @@ class MediaHeaderAdapter(
                         appendLine(getString(R.string.explicit))
                     }
                     val tracks = album.tracks
-                    if (tracks != null) {
-                        append(resources.getQuantityString(R.plurals.n_songs, tracks, tracks))
-                    }
+                    if (tracks != null) append(
+                        runCatching {
+                            resources.getQuantityString(R.plurals.n_songs, tracks, tracks)
+                        }.getOrNull() ?: getString(R.string.x_songs, tracks)
+                    )
+
                     if (album.releaseDate != null) {
                         if (tracks != null) append(" • ") else appendLine()
                         append(album.releaseDate.toString())

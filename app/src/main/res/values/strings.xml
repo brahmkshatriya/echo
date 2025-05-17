@@ -328,6 +328,7 @@
     <string name="explicit">Explicit</string>
     <string name="x_plays">%1$s Plays</string>
     <string name="x_followers">%1$s Followers</string>
+    <string name="x_songs">%1$d Songs</string>
     <plurals name="n_songs">
         <item quantity="one">%1$d Song</item>
         <item quantity="other">%1$d Songs</item>
