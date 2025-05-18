@@ -178,7 +178,9 @@ class MediaHeaderAdapter(
                 val span = SpannableString(buildString {
                     val tracks = playlist.tracks
                     if (tracks != null) {
-                        append(resources.getQuantityString(R.plurals.n_songs, tracks, tracks))
+                        runCatching {
+                            resources.getQuantityString(R.plurals.n_songs, tracks, tracks)
+                        }.getOrNull() ?: getString(R.string.x_songs, tracks)
                     }
                     if (playlist.creationDate != null) {
                         if (tracks != null) append(" • ") else appendLine()

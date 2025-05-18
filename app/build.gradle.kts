@@ -8,9 +8,9 @@ plugins {
     alias(libs.plugins.crashlytics)
 }
 
-val version = "2.0.0"
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
+val version = "2.0.$gitCount"
 
 android {
     namespace = "dev.brahmkshatriya.echo"

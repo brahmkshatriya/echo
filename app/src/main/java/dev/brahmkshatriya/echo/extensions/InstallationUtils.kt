@@ -193,7 +193,7 @@ object InstallationUtils {
                             context.createLinksDialog(file, links)
                         }
                         supportFragmentManager.clearFragmentResultListener(EXTENSION_INSTALLER)
-                        it.resume(result)
+                        runCatching { it.resume(result) }
                     }
                 } else {
                     it.resume(false)

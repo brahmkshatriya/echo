@@ -117,7 +117,7 @@ class LoginFragment : Fragment() {
 
         lifecycleScope.launch {
             if (!extension.isClient<LoginClient>()) {
-                createSnack(loginNotSupported())
+                createSnack(loginNotSupported() ?: "???")
                 parentFragmentManager.popBackStack()
                 return@launch
             }
@@ -167,9 +167,9 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun loginNotSupported(): String {
-        val login = getString(R.string.login)
-        return getString(R.string.x_is_not_supported_in_x, login, extName)
+    private fun loginNotSupported(): String? {
+        val login = context?.getString(R.string.login)
+        return context?.getString(R.string.x_is_not_supported_in_x, login, extName)
     }
 
     private fun FragmentLoginBinding.configureWebView(
@@ -278,6 +278,7 @@ class LoginFragment : Fragment() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun FragmentLoginBinding.configureCustomTextInput(
         extension: Extension<*>,
         form: LoginClient.Form
@@ -287,13 +288,16 @@ class LoginFragment : Fragment() {
             val input = ItemInputBinding.inflate(
                 layoutInflater, customInput, false
             )
+            input.root.id = field.key.hashCode()
+            input.editText.id = "${field.key}_input".hashCode()
             input.root.hint = field.label
             input.root.setStartIconDrawable(getIcon(field.type))
+            input.root.isPasswordVisibilityToggleEnabled = field.type == Type.Password
             input.editText.inputType = when (field.type) {
-                Type.Email -> TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-                Type.Password -> TYPE_TEXT_VARIATION_PASSWORD
-                Type.Number -> TYPE_CLASS_NUMBER
-                Type.Url -> TYPE_TEXT_VARIATION_URI
+                Type.Email -> TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                Type.Password -> TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_PASSWORD
+                Type.Number -> TYPE_CLASS_TEXT or TYPE_CLASS_NUMBER
+                Type.Url -> TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_URI
                 else -> TYPE_CLASS_TEXT
             }
             input.editText.setText(loginViewModel.inputs[field.key])
@@ -306,6 +310,7 @@ class LoginFragment : Fragment() {
                 } else loginCustomSubmit.performClick()
                 true
             }
+
             customInput.addView(input.root)
         }
         loginCustomSubmit.setOnClickListener {

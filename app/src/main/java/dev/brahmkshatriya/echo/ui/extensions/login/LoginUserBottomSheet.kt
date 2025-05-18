@@ -51,38 +51,36 @@ class LoginUserBottomSheet : BottomSheetDialogFragment() {
                 dismiss()
                 LoginUserListBottomSheet().show(parentFragmentManager, null)
             }
-            observe(viewModel.currentUser) { (extensionData, user) ->
+            observe(viewModel.currentUser) { (ext, user) ->
                 binding.login.isVisible = user == null
                 binding.notLoggedInContainer.isVisible = user == null
 
                 binding.logout.isVisible = user != null
                 binding.userContainer.isVisible = user != null
 
-                val metadata = extensionData?.metadata
                 binding.login.setOnClickListener {
-                    metadata?.run {
-                        requireActivity().openFragment<LoginFragment>(
-                            null,
-                            LoginFragment.getBundle(id, name, extensionData.type)
-                        )
-                    }
+                    ext ?:  return@setOnClickListener
+                    requireActivity().openFragment<LoginFragment>(
+                        null,
+                        LoginFragment.getBundle(ext.id, ext.name, ext.type)
+                    )
                     dismiss()
                 }
 
                 binding.logout.setOnClickListener {
-                    val meta = metadata ?: return@setOnClickListener
-                    viewModel.logout(user?.toEntity(meta.type, meta.id))
-                    viewModel.setLoginUser(CurrentUser(meta.type, meta.id, null))
+                    ext ?: return@setOnClickListener
+                    viewModel.logout(user?.toEntity(ext.type, ext.id))
+                    viewModel.setLoginUser(CurrentUser(ext.type, ext.id, null))
                 }
 
                 binding.incognito.setOnClickListener {
                     dismiss()
-                    val meta = metadata ?: return@setOnClickListener
-                    viewModel.setLoginUser(CurrentUser(meta.type, meta.id, null))
+                    ext ?: return@setOnClickListener
+                    viewModel.setLoginUser(CurrentUser(ext.type, ext.id, null))
                 }
 
                 binding.currentUserName.text = user?.name
-                binding.currentUserSubTitle.text = user?.subtitle ?: metadata?.name
+                binding.currentUserSubTitle.text = user?.subtitle ?: ext?.name
                 user?.cover.loadInto(binding.currentUserAvatar, R.drawable.ic_account_circle)
             }
         }

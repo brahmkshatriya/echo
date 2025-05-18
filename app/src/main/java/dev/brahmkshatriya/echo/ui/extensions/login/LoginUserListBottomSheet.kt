@@ -8,7 +8,6 @@ import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
@@ -51,7 +50,7 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
                 requireActivity().openFragment<LoginFragment>(
                     null,
                     LoginFragment.getBundle(
-                        extension.id, extension.name, ExtensionType.MUSIC
+                        extension.id, extension.name, extension.type
                     )
                 )
             }

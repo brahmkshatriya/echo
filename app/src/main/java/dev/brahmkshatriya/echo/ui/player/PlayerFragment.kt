@@ -490,7 +490,7 @@ class PlayerFragment : Fragment() {
             }
         }
         val bufferView =
-            binding!!.playerView.findViewById<ProgressBar>(androidx.media3.ui.R.id.exo_buffering)!!
+            binding?.playerView?.findViewById<ProgressBar>(androidx.media3.ui.R.id.exo_buffering)
         observe(uiViewModel.playerColors) {
             val context = requireContext()
             if (context.isPlayerColor() && context.isDynamic()) {
@@ -512,7 +512,7 @@ class PlayerFragment : Fragment() {
                 val backgroundState = ColorStateList.valueOf(colors.background)
                 bgGradient.imageTintList = backgroundState
                 bgCollapsed.backgroundTintList = backgroundState
-                bufferView.indeterminateDrawable.setTint(colors.accent)
+                bufferView?.indeterminateDrawable?.setTint(colors.accent)
                 expandedToolbar.run {
                     setTitleTextColor(colors.onBackground)
                     setSubtitleTextColor(colors.onBackground)

@@ -44,8 +44,8 @@ class ExtensionOpenerActivity : Activity() {
         return getTempFile(bytes)
     }
 
-    private fun getTempFile(file: File): File {
+    private fun getTempFile(file: File) = runCatching {
         val bytes = file.readBytes()
-        return getTempFile(bytes)
-    }
+        getTempFile(bytes)
+    }.getOrNull()
 }

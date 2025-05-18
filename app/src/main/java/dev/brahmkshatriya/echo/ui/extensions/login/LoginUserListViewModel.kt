@@ -10,7 +10,6 @@ import dev.brahmkshatriya.echo.extensions.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toCurrentUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -20,27 +19,24 @@ class LoginUserListViewModel(
 
     private val userDao = extensionLoader.db.userDao()
     val currentExtension = MutableStateFlow<Extension<*>?>(null)
+    val allUsers = MutableStateFlow<Pair<Extension<*>?, List<User>?>>(null to null)
     val currentUser = MutableStateFlow<Pair<Extension<*>?, User?>>(null to null)
 
     init {
         suspend fun update() {
             val currentExt = currentExtension.value
+            val users = currentExt?.let {
+                withContext(Dispatchers.IO) { userDao.getAllUsers(it.type, it.id) }
+            }?.map { it.user }
             val user = currentExt?.let {
                 withContext(Dispatchers.IO) { userDao.getCurrentUser(it.type, it.id) }
-            }?.user
+            }?.let { curr -> users?.find { it.id == curr.userId } }
             currentUser.value = currentExt to user
+            allUsers.value = currentExt to users
         }
         viewModelScope.launch {
             launch { currentExtension.collect { update() } }
             userDao.observeCurrentUser().collect { update() }
-        }
-    }
-
-    val allUsers = currentUser.map { (extension) ->
-        withContext(Dispatchers.IO) {
-            extension to extension?.let { ext ->
-                userDao.getAllUsers(ext.type, ext.id).map { it.user }
-            }
         }
     }
 

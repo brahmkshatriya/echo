@@ -59,7 +59,7 @@ class LoginViewModel(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.get<LoginClient.CustomInput, List<User>>(app.throwFlow) {
-                onLogin(form.key, inputs)
+                onLogin(form.key, inputs.toMap())
             } ?: return@launch
             afterLogin(extension, users)
         }

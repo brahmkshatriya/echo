@@ -22,7 +22,6 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
-import dev.brahmkshatriya.echo.common.models.Request.Companion.toRequest
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toBackgroundMedia
@@ -37,8 +36,9 @@ import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 import kotlin.random.Random
 
+@Suppress("unused")
 class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
-    LoginClient.WebView.Cookie, HomeFeedClient, ArtistFollowClient, RadioClient,
+    HomeFeedClient, ArtistFollowClient, RadioClient,
     SaveToLibraryClient, TrackLikeClient, TrackHideClient, TrackerClient {
 
     companion object {
@@ -85,9 +85,10 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
             "Test Form",
             InputField.Type.Username,
             listOf(
-                InputField(InputField.Type.Username, "name", "Name", true, Regex("bruh")),
-                InputField(InputField.Type.Password, "password", "Password", false, Regex("bruh")),
-                InputField(InputField.Type.Misc, "text", "Text", false, Regex("bruh")),
+                InputField(InputField.Type.Username, "name", "Name", true),
+                InputField(InputField.Type.Password, "password", "Password", false),
+                InputField(InputField.Type.Email, "email", "EMail", false),
+                InputField(InputField.Type.Misc, "text", "Text", false),
                 InputField(InputField.Type.Number, "number", "Number", false),
                 InputField(InputField.Type.Url, "url", "Url", false),
             )
@@ -99,14 +100,14 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
         return listOf(User(name, name, null))
     }
 
-    override val loginWebViewInitialUrl = "https://example.com/".toRequest()
-    override val loginWebViewStopUrlRegex = "https://example.com/.*".toRegex()
-
-    override suspend fun onLoginWebviewStop(url: String, data: Map<String, String>): List<User> {
-        return listOf(
-            User("bruh", "Bruh", null)
-        )
-    }
+//    override val loginWebViewInitialUrl = "https://example.com/".toRequest()
+//    override val loginWebViewStopUrlRegex = "https://example.com/.*".toRegex()
+//
+//    override suspend fun onLoginWebviewStop(url: String, data: Map<String, String>): List<User> {
+//        return listOf(
+//            User("bruh", "Bruh", null)
+//        )
+//    }
 
     override suspend fun onSetLoginUser(user: User?) {
         println("setLoginUser: $user")

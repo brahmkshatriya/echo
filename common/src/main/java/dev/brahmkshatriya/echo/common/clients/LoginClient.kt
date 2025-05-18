@@ -105,6 +105,7 @@ sealed interface LoginClient {
      *
      * @param key The key to be used to identify the `data` in the `onLogin` method
      * @param label The label to be displayed for the form
+     * @param icon The icon to be displayed for the form
      * @param inputFields The list of input fields to be displayed in the form
      */
     data class Form(

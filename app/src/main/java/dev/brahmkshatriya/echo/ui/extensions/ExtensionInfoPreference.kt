@@ -6,46 +6,37 @@ import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
-import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.PreferenceExtensionInfoBinding
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment.Companion.openLink
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.addOnDestroyObserver
 import dev.brahmkshatriya.echo.utils.ui.SimpleItemSpan
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ExtensionInfoPreference(
     private val fragment: Fragment,
     private val extension: Extension<*>,
+    private val isLoginClient: Boolean,
 ) : Preference(fragment.requireContext()) {
 
-    private var isLoginClient = false
     private val viewModel by fragment.activityViewModel<ExtensionsViewModel>()
     private val loginViewModel by fragment.activityViewModel<LoginUserListViewModel>()
 
     init {
         layoutResource = R.layout.preference_extension_info
-        fragment.addOnDestroyObserver {
-            loginViewModel.currentExtension.value = viewModel.extensions.current.value
-        }
-        fragment.lifecycleScope.launch {
-            runCatching {
-                isLoginClient = extension.isClient<LoginClient>()
-                if (isLoginClient) loginViewModel.currentExtension.value = extension
-                notifyChanged()
+        if (isLoginClient) {
+            loginViewModel.currentExtension.value = extension
+            fragment.addOnDestroyObserver {
+                loginViewModel.currentExtension.value = viewModel.extensions.current.value
             }
         }
     }
-
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
