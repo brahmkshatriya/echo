@@ -25,6 +25,13 @@ android {
     }
 
     buildTypes {
+        all {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+            )
+        }
         create("nightly") {
             initWith(getByName("release"))
             applicationIdSuffix = ".nightly"
