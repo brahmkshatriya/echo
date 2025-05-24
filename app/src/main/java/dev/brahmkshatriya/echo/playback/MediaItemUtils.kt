@@ -26,7 +26,6 @@ import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
-import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 
 object MediaItemUtils {
 
@@ -192,8 +191,12 @@ object MediaItemUtils {
                 backgroundIndex
                     ?: 0.takeIf { backgrounds.isNotEmpty() && settings.showBackground() } ?: -1
             )
-            val downloaded = downloads.filter { it.download.trackId == id }.mapNotNull { it.download.finalFile }
-            putInt("serverIndex", serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded))
+            val downloaded =
+                downloads.filter { it.download.trackId == id }.mapNotNull { it.download.finalFile }
+            putInt(
+                "serverIndex",
+                serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded)
+            )
             putSerialized("downloaded", downloaded)
         })
         .setSubtitle(bundle.indexes())
@@ -205,21 +208,19 @@ object MediaItemUtils {
     private fun Bundle.indexes() =
         "${getInt("serverIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
 
-    private val Bundle?.trackNullable by sticky { this?.getSerialized<Track>("track") }
+    private val Bundle?.trackNullable get() = this?.getSerialized<Track>("track")
     val Bundle?.track get() = requireNotNull(trackNullable)
-    val Bundle?.isLoaded by sticky { this?.getBoolean("loaded") ?: false }
-    val Bundle?.extensionId by sticky { requireNotNull(this?.getString("extensionId")) }
-    val Bundle?.context by sticky { this?.getSerialized<EchoMediaItem?>("context") }
-    val Bundle?.serverIndex by sticky { this?.getInt("serverIndex") ?: -1 }
-    val Bundle?.sourceIndex by sticky { this?.getInt("sourceIndex") ?: -1 }
-    val Bundle?.backgroundIndex by sticky { this?.getInt("backgroundIndex") ?: -1 }
-    val Bundle?.subtitleIndex by sticky { this?.getInt("subtitleIndex") ?: -1 }
-    val Bundle?.background by sticky {
-        this?.getSerialized<Streamable.Media.Background?>("background")
-    }
-    val Bundle?.retries by sticky { this?.getInt("retries") ?: 0 }
-    val Bundle?.unloadedCover by sticky { this?.getSerialized<ImageHolder?>("unloadedCover") }
-    val Bundle?.downloaded by sticky { this?.getSerialized<List<String>>("downloaded") }
+    val Bundle?.isLoaded get() = this?.getBoolean("loaded") ?: false
+    val Bundle?.extensionId get() = requireNotNull(this?.getString("extensionId"))
+    val Bundle?.context get() = this?.getSerialized<EchoMediaItem?>("context")
+    val Bundle?.serverIndex get() = this?.getInt("serverIndex") ?: -1
+    val Bundle?.sourceIndex get() = this?.getInt("sourceIndex") ?: -1
+    val Bundle?.backgroundIndex get() = this?.getInt("backgroundIndex") ?: -1
+    val Bundle?.subtitleIndex get() = this?.getInt("subtitleIndex") ?: -1
+    val Bundle?.background get() = this?.getSerialized<Streamable.Media.Background?>("background")
+    val Bundle?.retries get() = this?.getInt("retries") ?: 0
+    val Bundle?.unloadedCover get() = this?.getSerialized<ImageHolder?>("unloadedCover")
+    val Bundle?.downloaded get() = this?.getSerialized<List<String>>("downloaded")
 
     val MediaItem.track get() = mediaMetadata.extras.track
     val MediaItem.extensionId get() = mediaMetadata.extras.extensionId
@@ -230,7 +231,7 @@ object MediaItemUtils {
     val MediaItem.backgroundIndex get() = mediaMetadata.extras.backgroundIndex
     val MediaItem.subtitleIndex get() = mediaMetadata.extras.subtitleIndex
     val MediaItem.background get() = mediaMetadata.extras.background
-    val MediaMetadata.isLiked by sticky { (userRating as? ThumbRating)?.isThumbsUp == true }
+    val MediaMetadata.isLiked get() = (userRating as? ThumbRating)?.isThumbsUp == true
     val MediaItem.isLiked get() = mediaMetadata.isLiked
     val MediaItem.retries get() = mediaMetadata.extras.retries
     val MediaItem.unloadedCover get() = mediaMetadata.extras.unloadedCover
