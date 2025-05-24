@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder
-import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
+import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
@@ -26,13 +26,13 @@ abstract class BaseSettingsFragment : Fragment() {
     abstract val creator: () -> PreferenceFragmentCompat
     open val circleIcon: Boolean = false
 
-    var binding: FragmentSettingsContainerBinding by autoCleared()
+    var binding: FragmentGenericCollapsableBinding by autoCleared()
 
     final override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentSettingsContainerBinding.inflate(inflater, container, false)
+        binding = FragmentGenericCollapsableBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -58,12 +58,12 @@ abstract class BaseSettingsFragment : Fragment() {
             binding.extensionIcon.setImageDrawable(it)
         }
 
-        childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
+        childFragmentManager.beginTransaction().replace(R.id.genericFragmentContainer, creator())
             .commit()
 
         view.post {
             runCatching {
-                binding.fragmentContainer.getFragment<PreferenceFragmentCompat>().listView?.apply {
+                binding.genericFragmentContainer.getFragment<PreferenceFragmentCompat>().listView?.apply {
                     clipToPadding = false
                     applyInsets { applyContentInsets(it) }
                     isVerticalScrollBarEnabled = false

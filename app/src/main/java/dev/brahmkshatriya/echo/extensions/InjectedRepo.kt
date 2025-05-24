@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.common.providers.MetadataProvider
 import dev.brahmkshatriya.echo.common.providers.MiscExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
+import dev.brahmkshatriya.echo.common.providers.WebViewClientProvider
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.inject
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.injectWith
@@ -59,6 +60,8 @@ class InjectedRepo(
         if (this is MetadataProvider) setMetadata(metadata)
         if (this is MessageFlowProvider) setMessageFlow(extensionLoader.app.messageFlow)
         setSettings(getSettings(extensionLoader.app.context, metadata))
+        if (this is WebViewClientProvider)
+            setWebViewClient(extensionLoader.createWebClient(metadata))
         onInitialize()
     }
 

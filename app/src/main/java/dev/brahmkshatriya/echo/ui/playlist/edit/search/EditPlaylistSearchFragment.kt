@@ -8,6 +8,8 @@ import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
+import androidx.fragment.app.commitNow
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -48,7 +50,9 @@ class EditPlaylistSearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-
+        parentFragmentManager.commit {
+            setPrimaryNavigationFragment(this@EditPlaylistSearchFragment)
+        }
         val behavior = BottomSheetBehavior.from(binding.bottomSheet)
         binding.bottomSheetDragHandle.setOnClickListener { behavior.state = STATE_EXPANDED }
         var topInset = 0
@@ -105,6 +109,7 @@ class EditPlaylistSearchFragment : Fragment() {
         }
 
         binding.addTracks.setOnClickListener {
+            parentFragmentManager.commitNow { setPrimaryNavigationFragment(null) }
             parentFragmentManager.setFragmentResult("searchedTracks", Bundle().apply {
                 putSerialized("tracks", viewModel.selectedTracks.value)
             })

@@ -226,7 +226,7 @@
     <string name="incognito">Incognito</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="x_login">%1$s Login</string>
-    <string name="x_is_required">$1%s is required</string>
+    <string name="x_is_required">%1$s is required</string>
     <string name="regex_invalid">%1$s is invalid, please follow the regex: %2$s</string>
 
     <string name="playing_from">Playing From</string>
@@ -386,5 +386,7 @@
 
     <string name="add_widget">Mini Player Widget</string>
     <string name="app_widget_description">Echo on your home screen!</string>
+    <string name="opening_webview_x">Opening Webview: %1$s</string>
+    <string name="x_webview">%1$s Webview</string>
 
 </resources>

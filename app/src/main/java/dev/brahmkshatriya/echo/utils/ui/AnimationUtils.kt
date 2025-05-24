@@ -134,7 +134,9 @@ object AnimationUtils {
                 .getBoolean(SCROLL_ANIMATIONS_KEY, false)
         }
 
-    fun Fragment.setupTransition(view: View, applyBackground: Boolean = true) {
+    fun Fragment.setupTransition(
+        view: View, applyBackground: Boolean = true, useZ: Boolean = true
+    ) {
         if (applyBackground) {
             val color = MaterialColors.getColor(view, R.attr.echoBackground, 0)
             view.setBackgroundColor(color)
@@ -152,10 +154,11 @@ object AnimationUtils {
 //            sharedElementEnterTransition = transition
 //        }
             (view as? ViewGroup)?.isTransitionGroup = true
-            exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
-            reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
-            enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
-            returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+            val axis = if (useZ) MaterialSharedAxis.Z else MaterialSharedAxis.X
+            exitTransition = MaterialSharedAxis(axis, true)
+            reenterTransition = MaterialSharedAxis(axis, false)
+            enterTransition = MaterialSharedAxis(axis, true)
+            returnTransition = MaterialSharedAxis(axis, false)
 
 //            postponeEnterTransition()
 //            view.doOnPreDraw { startPostponedEnterTransition() }

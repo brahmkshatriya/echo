@@ -47,20 +47,23 @@
 
     <View
         android:id="@+id/toolbarOutline"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="-1dp"
+        style="@style/AppBarOutline"
         android:alpha="1"
-        android:background="?attr/colorOutline"
-        android:translationZ="1dp"
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainer"
+        android:id="@+id/genericFragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <include
+        android:id="@+id/loading"
+        layout="@layout/item_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

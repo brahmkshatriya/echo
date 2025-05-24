@@ -28,7 +28,10 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
 import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openItemFragmentFromUri
+import dev.brahmkshatriya.echo.ui.download.DownloadFragment
+import dev.brahmkshatriya.echo.ui.extensions.WebViewFragment.Companion.onWebViewIntent
 import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
@@ -51,7 +54,7 @@ import kotlin.math.min
 
 class UiViewModel(
     context: Context,
-    extensionLoader: ExtensionLoader,
+    private val extensionLoader: ExtensionLoader,
     private val playerState: PlayerState
 ) : ViewModel() {
 
@@ -394,14 +397,20 @@ class UiViewModel(
                     changeMoreState(STATE_COLLAPSED)
                     return
                 }
-//                val fromDownload = intent.hasExtra("fromDownload")
-//                if (fromDownload) {
-//                    openFragment(DownloadingFragment())
-//                    return
-//                }
+                val fromDownload = intent.hasExtra("fromDownload")
+                if (fromDownload) {
+                    openFragment<DownloadFragment>()
+                    return
+                }
+                val webViewRequest = intent.hasExtra("webViewRequest")
+                if (webViewRequest) {
+                    val webViewClient = uiViewModel.extensionLoader.webViewClient
+                    onWebViewIntent(intent, webViewClient, binding.hiddenWebView)
+                    return
+                }
                 val uri = intent.data
                 when (uri?.scheme) {
-                    "echo" -> openItemFragmentFromUri(uri)
+                    "echo" -> runCatching { openItemFragmentFromUri(uri) }
                     "file" -> lifecycleScope.launch {
                         installExtension(uri.toString())
                     }

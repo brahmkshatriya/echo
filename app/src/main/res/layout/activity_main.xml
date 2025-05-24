@@ -7,6 +7,12 @@
     android:layout_height="match_parent"
     android:background="?echoBackground">
 
+    <WebView
+        android:id="@+id/hiddenWebView"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/navHostFragment"
         android:layout_width="match_parent"

@@ -14,6 +14,8 @@ import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.helpers.WebViewClient
+import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -22,6 +24,8 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
+import dev.brahmkshatriya.echo.common.models.Request
+import dev.brahmkshatriya.echo.common.models.Request.Companion.toRequest
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toBackgroundMedia
@@ -32,13 +36,14 @@ import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.TrackDetails
 import dev.brahmkshatriya.echo.common.models.User
+import dev.brahmkshatriya.echo.common.providers.WebViewClientProvider
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 import kotlin.random.Random
 
 @Suppress("unused")
-class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
-    HomeFeedClient, ArtistFollowClient, RadioClient,
+class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, LoginClient.WebView,
+    HomeFeedClient, ArtistFollowClient, RadioClient, WebViewClientProvider,
     SaveToLibraryClient, TrackLikeClient, TrackHideClient, TrackerClient {
 
     companion object {
@@ -100,14 +105,16 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
         return listOf(User(name, name, null))
     }
 
-//    override val loginWebViewInitialUrl = "https://example.com/".toRequest()
-//    override val loginWebViewStopUrlRegex = "https://example.com/.*".toRegex()
-//
-//    override suspend fun onLoginWebviewStop(url: String, data: Map<String, String>): List<User> {
-//        return listOf(
-//            User("bruh", "Bruh", null)
-//        )
-//    }
+    override val webViewRequest = object : WebViewRequest.Cookie<List<User>> {
+        override suspend fun onStop(url: Request, cookie: String): List<User> {
+            return listOf(
+                User("bruh", "Bruh", null)
+            )
+        }
+
+        override val initialUrl = "https://www.example.com/".toRequest()
+        override val stopUrlRegex = "https://www\\.iana\\.org/.*".toRegex()
+    }
 
     override suspend fun onSetLoginUser(user: User?) {
         println("setLoginUser: $user")
@@ -155,7 +162,27 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
         )
     }
 
+    private lateinit var webViewClient: WebViewClient
+    override fun setWebViewClient(webViewClient: WebViewClient) {
+        this.webViewClient = webViewClient
+    }
+
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
+        println("waiting for webview")
+        val bruh = webViewClient.await(
+            true,
+            "For Testing purposes",
+            object : WebViewRequest.Cookie<String> {
+                override suspend fun onStop(url: Request, cookie: String): String {
+                    return cookie
+                }
+
+                override val initialUrl = "https://www.example.com".toRequest()
+                override val stopUrlRegex = "https://www\\.iana\\.org/.*".toRegex()
+                override val maxTimeout = 15 * 1000L
+            }
+        ).getOrThrow()
+        println("bruh: $bruh")
         listOf(
             Shelf.Lists.Categories(
                 "Bruh",
@@ -257,4 +284,5 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient,
     override suspend fun onMarkAsPlayed(details: TrackDetails) {
         println("onMarkAsPlayed : $details")
     }
+
 }

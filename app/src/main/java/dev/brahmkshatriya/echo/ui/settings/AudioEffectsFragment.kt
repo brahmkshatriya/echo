@@ -9,43 +9,34 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.PagerSnapHelper
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentAudioFxBinding
-import dev.brahmkshatriya.echo.databinding.FragmentSettingsContainerBinding
+import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.deleteGlobalFx
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.extensions.login.LoginFragment.Companion.bind
 import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet.Companion.bind
 import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet.Companion.onEqualizerClicked
-import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
 
 class AudioEffectsFragment : Fragment() {
 
-    private var binding: FragmentSettingsContainerBinding by autoCleared()
+    private var binding: FragmentGenericCollapsableBinding by autoCleared()
     private val fragment = AudioFxFragment()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentSettingsContainerBinding.inflate(inflater, container, false)
+        binding = FragmentGenericCollapsableBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupTransition(view)
-        applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
-            binding.toolbarOutline.alpha = offset
-        }
-        binding.toolBar.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
+        binding.bind(this)
         binding.extensionIcon.isVisible = false
         binding.toolBar.title = getString(R.string.audio_fx)
-        childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, fragment)
+        childFragmentManager.beginTransaction().replace(R.id.genericFragmentContainer, fragment)
             .commit()
 
         binding.toolBar.inflateMenu(R.menu.refresh_menu)

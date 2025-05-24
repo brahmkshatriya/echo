@@ -2,9 +2,7 @@ package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.clients.LoginClient.CustomInput
 import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView
-import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView.Cookie
-import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView.Evaluate
-import dev.brahmkshatriya.echo.common.models.Request
+import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
 import dev.brahmkshatriya.echo.common.models.User
 
 /**
@@ -22,60 +20,21 @@ sealed interface LoginClient {
     /**
      * Interface when the login requires a webview.
      *
-     * The extension should provide the [loginWebViewInitialUrl] and [loginWebViewStopUrlRegex].
+     * The extension should provide the [webViewRequest]
      *
-     * Do not implement this interface directly, you can implement either of the sub-interfaces.
-     * - [Cookie] - if the login requires cookies
-     * - [Evaluate] - if the login requires evaluating javascript
-     *
-     * Do not implement both the sub-interfaces,
-     * [Cookie] will take priority if both are implemented.
+     * @see [WebViewRequest]
      */
-    sealed interface WebView : LoginClient {
+    interface WebView : LoginClient {
 
         /**
-         * The initial URL to be loaded in the webview.
-         */
-        val loginWebViewInitialUrl: Request
-
-        /**
-         * The regex to match the URL when the login process is assumed to be complete.
-         */
-        val loginWebViewStopUrlRegex: Regex
-
-        /**
-         * The regex to match the URL to intercept requests made by the webview for cookies.
-         */
-        val loginWebViewCookieUrlRegex: Regex?
-            get() = null
-
-        /**
-         * Called when the webview stops loading a URL with the [loginWebViewStopUrlRegex].
+         * The request to be made to the webview, should return a list of users.
          *
-         * @param url The URL that the webview stopped at
-         * @param data The data from the webview
+         * The [WebViewRequest.maxTimeout] is ignored for login.
          *
-         * @return A list of users that are logged in
+         * @see WebViewRequest
+         * @see LoginClient.WebView
          */
-        suspend fun onLoginWebviewStop(url: String, data: Map<String, String>): List<User>
-
-        /**
-         * To be implemented when the login requires cookies in [onLoginWebviewStop].
-         */
-        interface Cookie : WebView
-
-        /**
-         * To be implemented when the login requires data after the evaluating javascript in [onLoginWebviewStop].
-         */
-        interface Evaluate : WebView {
-
-            /**
-             * The javascript to be evaluated in the webview.
-             * Make sure this a function that can return some data that can be
-             * used in the [onLoginWebviewStop] method.
-             */
-            val javascriptToEvaluate: String
-        }
+        val webViewRequest: WebViewRequest<List<User>>
     }
 
     /**
@@ -87,6 +46,9 @@ sealed interface LoginClient {
 
         /**
          * List of forms to be displayed on the login screen.
+         *
+         * @see Form
+         * @see LoginClient.CustomInput
          */
         val forms: List<Form>
 
@@ -96,6 +58,8 @@ sealed interface LoginClient {
          * @param data A map of the input fields with the key as the `key` from the `InputField` and the value as the user input
          *
          * @return A list of users that are logged in
+         *
+         * @see LoginClient.CustomInput
          */
         suspend fun onLogin(key: String, data: Map<String, String?>): List<User>
     }
@@ -107,6 +71,9 @@ sealed interface LoginClient {
      * @param label The label to be displayed for the form
      * @param icon The icon to be displayed for the form
      * @param inputFields The list of input fields to be displayed in the form
+     *
+     * @see InputField
+     * @see LoginClient.CustomInput
      */
     data class Form(
         val key: String,

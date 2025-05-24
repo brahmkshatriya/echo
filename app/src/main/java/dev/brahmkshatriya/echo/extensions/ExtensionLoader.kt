@@ -3,7 +3,10 @@ package dev.brahmkshatriya.echo.extensions
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
+import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
+import dev.brahmkshatriya.echo.common.helpers.WebViewClient
+import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
@@ -52,6 +55,13 @@ class ExtensionLoader(
 
     fun refresh() {
         loadExtensions()
+    }
+
+    val webViewClient = WebViewClientImpl(app.context)
+    fun createWebClient(metadata: Metadata): WebViewClient {
+        if (metadata.type != ExtensionType.MUSIC)
+            throw Exception("Webview client is not available for ${metadata.type} Extensions")
+        return webViewClient.createFor(metadata)
     }
 
     init {

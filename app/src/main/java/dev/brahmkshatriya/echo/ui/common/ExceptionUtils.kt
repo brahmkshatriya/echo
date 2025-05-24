@@ -43,7 +43,7 @@ import java.nio.channels.UnresolvedAddressException
 object ExceptionUtils {
 
     private fun Context.getTitle(throwable: Throwable): String? = when (throwable) {
-        is LinkageError -> getString(R.string.extension_out_of_date)
+        is LinkageError, is ReflectiveOperationException -> getString(R.string.extension_out_of_date)
         is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
         is ExtensionLoaderException ->
             getString(R.string.error_loading_extension_from_x, throwable.clazz)
