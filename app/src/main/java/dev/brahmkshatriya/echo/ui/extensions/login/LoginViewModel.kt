@@ -31,20 +31,16 @@ class LoginViewModel(
         extension: Extension<*>,
         users: List<User>
     ) {
-        println("LoginViewModel.afterLogin: $users")
         loading.value = true
         if (users.isEmpty()) {
             app.messageFlow.emit(Message(app.context.getString(R.string.no_user_found)))
             loadingOver.emit(Unit)
             return
         }
-        println("LoginViewModel.afterLogin: inserting users into db")
         val entities = users.map { it.toEntity(extension.type, extension.id) }
         userDao.insertUsers(entities)
-        println("LoginViewModel.afterLogin: users inserted into db: $entities")
         val user = entities.first()
         userDao.setCurrentUser(user.toCurrentUser())
-        println("LoginViewModel.afterLogin: set current user to $user")
         loading.value = false
         loadingOver.emit(Unit)
     }
@@ -54,10 +50,8 @@ class LoginViewModel(
         result: Result<List<User>?>,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            println("LoginViewModel.onWebViewStop: result = $result")
             val users = extension.run(app.throwFlow) { result.getOrThrow().orEmpty() }
                 ?: return@launch
-            println("LoginViewModel.onWebViewStop: users = $users")
             afterLogin(extension, users)
         }
     }
@@ -68,11 +62,9 @@ class LoginViewModel(
         form: LoginClient.Form
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            println("LoginViewModel.onCustomTextInputSubmit: inputs = $inputs")
             val users = extension.get<LoginClient.CustomInput, List<User>>(app.throwFlow) {
                 onLogin(form.key, inputs.toMap())
             } ?: return@launch
-            println("LoginViewModel.onCustomTextInputSubmit: users = $users")
             afterLogin(extension, users)
         }
     }

@@ -116,12 +116,19 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
+    override fun onDestroy() {
+        parentFragmentManager.commitNow { setPrimaryNavigationFragment(null) }
+        super.onDestroy()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (savedInstanceState != null) return
 
         parentFragmentManager.commit { setPrimaryNavigationFragment(this@LoginFragment) }
         binding.bind(this)
-
+        binding.toolBar.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
         binding.toolBar.title = getString(R.string.x_login, extName)
 
         val extension = loginViewModel.extensionLoader.extensions
@@ -138,7 +145,6 @@ class LoginFragment : Fragment() {
         }
 
         observe(loginViewModel.loading) {
-            println("LoginFragment.observe: loading = $it")
             binding.genericFragmentContainer.isVisible = !it
             binding.loading.root.isVisible = it
         }

@@ -109,7 +109,6 @@ class EditPlaylistSearchFragment : Fragment() {
         }
 
         binding.addTracks.setOnClickListener {
-            parentFragmentManager.commitNow { setPrimaryNavigationFragment(null) }
             parentFragmentManager.setFragmentResult("searchedTracks", Bundle().apply {
                 putSerialized("tracks", viewModel.selectedTracks.value)
             })
@@ -127,5 +126,10 @@ class EditPlaylistSearchFragment : Fragment() {
                 R.plurals.n_songs, items.size, items.size
             )
         }
+    }
+
+    override fun onDestroy() {
+        parentFragmentManager.commitNow { setPrimaryNavigationFragment(null) }
+        super.onDestroy()
     }
 }

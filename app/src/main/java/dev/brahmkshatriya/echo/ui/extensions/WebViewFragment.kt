@@ -106,7 +106,7 @@ class WebViewFragment : Fragment() {
                     webViewRequest.javascriptToEvaluateOnPageStart?.let { js ->
                         scope.launch {
                             runCatching { evalJS(null, js) }.onFailure {
-                                stop(callback)
+                                stop(callback, true)
                                 onComplete(Result.failure(it))
                             }
                         }
@@ -124,7 +124,7 @@ class WebViewFragment : Fragment() {
 
                     scope.launch {
                         mutex.withLock {
-                            stop(callback)
+                            stop(callback, false)
                             onComplete(null)
                             val result = runCatching {
                                 val headerRes = if (webViewRequest is WebViewRequest.Headers)
@@ -142,7 +142,7 @@ class WebViewFragment : Fragment() {
                                 else null
                                 evalRes ?: cookieRes ?: headerRes
                             }
-
+                            stop(callback, true)
                             onComplete(result)
                         }
                     }
@@ -191,11 +191,13 @@ class WebViewFragment : Fragment() {
             }
 
         private suspend fun WebView.stop(
-            callback: OnBackPressedCallback
+            callback: OnBackPressedCallback,
+            clear: Boolean
         ) = withContext(Dispatchers.Main) {
             loadUrl("about:blank")
-            clearCache(false)
             callback.isEnabled = false
+            if (!clear) return@withContext
+            clearCache(false)
             WebStorage.getInstance().deleteAllData()
             CookieManager.getInstance().run {
                 removeAllCookies(null)

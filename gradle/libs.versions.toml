@@ -22,7 +22,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version = 
 recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 swiperefresh = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 
-fragment = { module = "androidx.fragment:fragment-ktx", version = "1.8.6" }
+fragment = { module = "androidx.fragment:fragment-ktx", version = "1.8.7" }
 
 splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 palette = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
