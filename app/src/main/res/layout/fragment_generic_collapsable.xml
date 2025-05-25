@@ -31,8 +31,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:contentDescription="@string/settings"
-                    app:srcCompat="@drawable/ic_extension_48dp"
-                    app:tint="?colorControlNormal" />
+                    app:srcCompat="@drawable/ic_extension_48dp" />
 
             </FrameLayout>
 
@@ -48,7 +47,7 @@
     <View
         android:id="@+id/toolbarOutline"
         style="@style/AppBarOutline"
-        android:alpha="1"
+        android:alpha="0"
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 

@@ -16,7 +16,7 @@ class WebViewClientImpl(
 ) {
 
     val requests = mutableMapOf<Int, Wrapper>()
-    val responseFlow = MutableSharedFlow<Pair<Wrapper, Result<String?>>>()
+    val responseFlow = MutableSharedFlow<Pair<Wrapper, Result<String?>?>>()
 
     suspend fun await(
         ext: Metadata, showWebView: Boolean, reason: String, request: WebViewRequest<String>
@@ -27,7 +27,7 @@ class WebViewClientImpl(
         startWebView(id)
         val res = runCatching {
             withTimeout(wrapper.request.maxTimeout) {
-                responseFlow.first { it.first == wrapper }.second
+                responseFlow.first { it.first == wrapper && it.second != null }.second!!
             }
         }.getOrElse { Result.failure(it) }
         requests.remove(id)

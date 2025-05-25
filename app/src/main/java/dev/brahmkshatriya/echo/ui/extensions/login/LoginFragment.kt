@@ -253,7 +253,8 @@ class LoginFragment : Fragment() {
                 val binding = FragmentWebviewBinding.bind(view)
                 val callback =
                     binding.root.configure(loginViewModel.viewModelScope, webViewRequest) {
-                        loginViewModel.onWebViewStop(extension, it)
+                        if (it == null) loginViewModel.loading.value = true
+                        else loginViewModel.onWebViewStop(extension, it)
                     } ?: return
                 requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
             } else {

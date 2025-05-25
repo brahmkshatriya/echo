@@ -79,7 +79,7 @@ class WebViewFragment : Fragment() {
         fun <T : Any> WebView.configure(
             scope: CoroutineScope,
             webViewRequest: WebViewRequest<T>,
-            onComplete: suspend (Result<T?>) -> Unit
+            onComplete: suspend (Result<T?>?) -> Unit
         ): OnBackPressedCallback? {
             val request = runCatching { webViewRequest.initialUrl }.getOrNull()
                 ?: return null
@@ -120,17 +120,16 @@ class WebViewFragment : Fragment() {
                 ): WebResourceResponse? {
                     val url = request?.url?.toString() ?: return null
                     requests?.add(request.toRequest())
-                    println("shouldInterceptRequest: $url")
                     if (stopRegex.find(url) == null) return null
 
                     scope.launch {
-                        withContext(Dispatchers.Main) { stopLoading() }
                         mutex.withLock {
+                            stop(callback)
+                            onComplete(null)
                             val result = runCatching {
                                 val headerRes = if (webViewRequest is WebViewRequest.Headers)
                                     webViewRequest.onStop(requests!!)
                                 else null
-
                                 val cookieRes = if (webViewRequest is WebViewRequest.Cookie) {
                                     val cookie = CookieManager.getInstance().getCookie(url) ?: ""
                                     webViewRequest.onStop(request.toRequest(), cookie)
@@ -143,7 +142,7 @@ class WebViewFragment : Fragment() {
                                 else null
                                 evalRes ?: cookieRes ?: headerRes
                             }
-                            stop(callback)
+
                             onComplete(result)
                         }
                     }
