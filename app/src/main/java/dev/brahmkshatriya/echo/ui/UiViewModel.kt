@@ -405,7 +405,7 @@ class UiViewModel(
                 val webViewRequest = intent.hasExtra("webViewRequest")
                 if (webViewRequest) {
                     val webViewClient = uiViewModel.extensionLoader.webViewClient
-                    onWebViewIntent(intent, webViewClient, binding.hiddenWebView)
+                    onWebViewIntent(intent, webViewClient)
                     return
                 }
                 val uri = intent.data

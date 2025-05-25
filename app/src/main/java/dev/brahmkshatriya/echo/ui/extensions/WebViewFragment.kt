@@ -18,6 +18,9 @@ import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
+import androidx.fragment.app.commitNow
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
@@ -41,7 +44,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -63,6 +65,10 @@ class WebViewFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            binding.root.restoreState(savedInstanceState)
+            return
+        }
         val callback = binding.root.configure(vm.viewModelScope, wrapper.request) {
             webViewClient.responseFlow.emit(wrapper to it)
             parentFragment?.parentFragmentManager?.popBackStack()
@@ -121,7 +127,6 @@ class WebViewFragment : Fragment() {
                     val url = request?.url?.toString() ?: return null
                     requests?.add(request.toRequest())
                     if (stopRegex.find(url) == null) return null
-
                     scope.launch {
                         mutex.withLock {
                             stop(callback, false)
@@ -207,8 +212,7 @@ class WebViewFragment : Fragment() {
 
         fun AppCompatActivity.onWebViewIntent(
             intent: Intent,
-            webViewClient: WebViewClientImpl,
-            hiddenWebView: WebView,
+            webViewClient: WebViewClientImpl
         ) {
             val id = intent.getIntExtra("webViewRequest", -1)
             if (id == -1) return
@@ -216,11 +220,8 @@ class WebViewFragment : Fragment() {
             createSnack(Message(getString(R.string.opening_webview_x, wrapper.reason)))
 
             if (wrapper.showWebView) openFragment<WithAppbar>(null, getBundle(id))
-            else {
-                val extensionsViewModel by viewModel<ExtensionsViewModel>()
-                hiddenWebView.configure(extensionsViewModel.viewModelScope, wrapper.request) {
-                    webViewClient.responseFlow.emit(wrapper to it)
-                }
+            else supportFragmentManager.commit {
+                add<Hidden>(R.id.hiddenWebViewContainer, null, getBundle(id))
             }
         }
 
@@ -235,6 +236,32 @@ class WebViewFragment : Fragment() {
         @JavascriptInterface
         fun putJsResult(result: String?) {
             onResult?.invoke(result)
+        }
+    }
+
+    class Hidden : Fragment(R.layout.fragment_webview) {
+        private val vm by activityViewModel<ExtensionsViewModel>()
+        private val webViewClient by lazy { vm.extensionLoader.webViewClient }
+        private val wrapper by lazy {
+            val id = requireArguments().getInt("webViewRequest")
+            webViewClient.requests[id] ?: throw IllegalStateException("Invalid webview request")
+        }
+
+        private fun removeSelf() {
+            parentFragmentManager.commitNow { remove(this@Hidden) }
+        }
+
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            val binding = FragmentWebviewBinding.bind(view)
+            if (savedInstanceState != null) {
+                binding.root.restoreState(savedInstanceState)
+                return
+            }
+            binding.root.configure(vm.viewModelScope, wrapper.request) {
+                webViewClient.responseFlow.emit(wrapper to it)
+                if (it == null) return@configure
+                removeSelf()
+            } ?: removeSelf()
         }
     }
 
