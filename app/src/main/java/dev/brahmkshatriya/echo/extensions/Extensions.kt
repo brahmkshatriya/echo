@@ -25,6 +25,7 @@ class Extensions(
     private val scope: CoroutineScope,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) {
+
     fun flush() {
         current.value = null
         music.value = null
@@ -32,6 +33,8 @@ class Extensions(
         lyrics.value = null
         misc.value = null
         all.value = null
+        System.runFinalization()
+        System.gc()
     }
 
     @Suppress("UNCHECKED_CAST")

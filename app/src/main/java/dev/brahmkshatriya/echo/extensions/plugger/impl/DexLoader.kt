@@ -38,7 +38,11 @@ class DexLoader(
         val libFolder = File(context.cacheDir, "libs")
         if (!libFolder.exists()) libFolder.mkdirs()
         val libs = File(libFolder, metadata.id)
-        if (!libs.exists()) extractLibsFromApk(metadata.path, targetAbi, libs).getOrThrow()
+        val version = File(libs, "version.txt")
+        if (version.exists() && version.readText() == metadata.version) return libs
+        libs.deleteRecursively()
+        extractLibsFromApk(metadata.path, targetAbi, libs).getOrThrow()
+        version.writeText(metadata.version)
         return libs
     }
 
