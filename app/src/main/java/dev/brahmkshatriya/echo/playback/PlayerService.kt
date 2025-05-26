@@ -159,7 +159,7 @@ class PlayerService : MediaLibraryService() {
             offloadPreferences(app.settings.getBoolean(MORE_BRAIN_CAPACITY, false))
 
         val factory = StreamableMediaSource.Factory(
-            this, state, extensions, cache, downloadFlow, mediaChangeFlow
+            this, scope, state, extensions, cache, downloadFlow, mediaChangeFlow
         )
 
         ExoPlayer.Builder(this, factory)
@@ -173,7 +173,7 @@ class PlayerService : MediaLibraryService() {
                     .buildUpon()
                     .setAudioOffloadPreferences(audioOffloadPreferences)
                     .build()
-                it.preloadConfiguration = ExoPlayer.PreloadConfiguration(0)
+                it.preloadConfiguration = ExoPlayer.PreloadConfiguration(C.TIME_UNSET)
                 it.skipSilenceEnabled = app.settings.getBoolean(SKIP_SILENCE, true)
             }
     }
