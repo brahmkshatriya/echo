@@ -159,7 +159,7 @@ class PlayerService : MediaLibraryService() {
             offloadPreferences(app.settings.getBoolean(MORE_BRAIN_CAPACITY, false))
 
         val factory = StreamableMediaSource.Factory(
-            this, scope, state, extensions, cache, downloadFlow, mediaChangeFlow
+            this, state, extensions, cache, downloadFlow, mediaChangeFlow
         )
 
         ExoPlayer.Builder(this, factory)

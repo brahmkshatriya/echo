@@ -5,7 +5,6 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.common.util.Util
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.cache.CacheDataSource
@@ -37,17 +36,16 @@ import dev.brahmkshatriya.echo.playback.PlayerService.Companion.select
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 
 @UnstableApi
 class StreamableMediaSource(
     private var mediaItem: MediaItem,
     private val context: Context,
-    private val scope: CoroutineScope,
     private val state: PlayerState,
     private val loader: StreamableLoader,
     private val factories: Factories,
@@ -63,41 +61,41 @@ class StreamableMediaSource(
     private lateinit var actualSource: MediaSource
     override fun prepareSourceInternal(mediaTransferListener: TransferListener?) {
         super.prepareSourceInternal(mediaTransferListener)
-        val handler = Util.createHandlerForCurrentLooper()
-        scope.launch {
-            val (new, server) = runCatching { loader.load(mediaItem) }.getOrElse {
+        val (new, server) = runBlocking(Dispatchers.IO) {
+            runCatching { loader.load(mediaItem) }.getOrElse {
                 error = it
-                return@launch
+                return@runBlocking null
             }
-            changeFlow?.emit(mediaItem to new)
-            mediaItem = new
-            state.servers[new.mediaId] = server
-            state.serverChanged.emit(Unit)
+        } ?: return
+        runBlocking { changeFlow?.emit(mediaItem to new) }
+        mediaItem = new
 
-            if (new.extensionId != OfflineExtension.metadata.id) {
-                val track = mediaItem.track
-                context.saveToCache(track.id, new.extensionId to track, "track")
-            }
+        state.servers[new.mediaId] = server
+        runBlocking { state.serverChanged.emit(Unit) }
 
-            val sources = server.sources
-            actualSource = when (sources.size) {
-                0 -> run { error = NoSourceException(); return@launch }
-                1 -> factories.create(new, 0, sources.first())
-                else -> {
-                    if (server.merged) MergingMediaSource(
-                        *sources.mapIndexed { index, source ->
-                            factories.create(new, index, source)
-                        }.toTypedArray()
-                    ) else {
-                        val index = mediaItem.sourceIndex
-                        val source = sources.getOrNull(index)
-                            ?: sources.select(context, new.extensionId) { it.quality }
+        if (new.extensionId != OfflineExtension.metadata.id) {
+            val track = mediaItem.track
+            context.saveToCache(track.id, new.extensionId to track, "track")
+        }
+
+        val sources = server.sources
+        actualSource = when (sources.size) {
+            0 -> run { error = NoSourceException(); return }
+            1 -> factories.create(new, 0, sources.first())
+            else -> {
+                if (server.merged) MergingMediaSource(
+                    *sources.mapIndexed { index, source ->
                         factories.create(new, index, source)
-                    }
+                    }.toTypedArray()
+                ) else {
+                    val index = mediaItem.sourceIndex
+                    val source = sources.getOrNull(index)
+                        ?: sources.select(context, new.extensionId) { it.quality }
+                    factories.create(new, index, source)
                 }
             }
-            handler.post { runCatching { prepareChildSource(null, actualSource) } }
         }
+        prepareChildSource(null, actualSource)
     }
 
     override fun onChildSourceInfoRefreshed(
@@ -149,7 +147,6 @@ class StreamableMediaSource(
 
     class Factory(
         private val context: Context,
-        private val scope: CoroutineScope,
         private val state: PlayerState,
         extensions: Extensions,
         cache: SimpleCache,
@@ -203,6 +200,6 @@ class StreamableMediaSource(
         }
 
         override fun createMediaSource(mediaItem: MediaItem) =
-            StreamableMediaSource(mediaItem, context, scope, state, loader, factories, changeFlow)
+            StreamableMediaSource(mediaItem, context, state, loader, factories, changeFlow)
     }
 }
