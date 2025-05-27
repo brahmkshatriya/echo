@@ -82,10 +82,7 @@ data class Action(
 
     companion object {
         fun DialogFragment.resource(drawable: Int, string: Int, action: () -> Unit): Action {
-            return Action(
-                getString(string),
-                ResourceImage(drawable)
-            ) {
+            return Action(getString(string), ResourceImage(drawable)) {
                 action()
                 dismiss()
             }

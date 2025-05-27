@@ -163,7 +163,8 @@ class MediaFragment : Fragment() {
             openFragment<EditPlaylistFragment>(
                 it, EditPlaylistFragment.getBundle(
                     extensionId,
-                    (vm.itemFlow.value as EchoMediaItem.Lists.PlaylistItem).playlist
+                    (vm.itemFlow.value as EchoMediaItem.Lists.PlaylistItem).playlist,
+                    true
                 )
             )
         }

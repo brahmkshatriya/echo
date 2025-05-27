@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
@@ -36,6 +37,7 @@ import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet
 import dev.brahmkshatriya.echo.ui.player.quality.QualitySelectionBottomSheet
 import dev.brahmkshatriya.echo.ui.player.sleep.SleepTimerBottomSheet
+import dev.brahmkshatriya.echo.ui.playlist.edit.EditPlaylistFragment
 import dev.brahmkshatriya.echo.ui.playlist.save.SaveToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -152,15 +154,19 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
             is EchoMediaItem.Lists.PlaylistItem -> listOfNotNull(
                 radioButton(client, item, loaded),
                 saveToPlaylist(client, item, loaded),
-                saveToLibraryButton(client, loaded),
-                if (client is LibraryFeedClient && item.playlist.isEditable) Action(
-                    getString(R.string.delete_playlist),
-                    ResourceImage(R.drawable.ic_delete)
-                ) {
+                saveToLibraryButton(client, loaded)
+            ) + if (client is LibraryFeedClient && item.playlist.isEditable) listOf(
+                resource(R.drawable.ic_edit_note, R.string.edit_playlist) {
+                    openFragment<EditPlaylistFragment>(
+                        EditPlaylistFragment.getBundle(extensionId, item.playlist, loaded)
+                    )
+                },
+                Action(getString(R.string.delete_playlist), ResourceImage(R.drawable.ic_delete)) {
                     vm.deletePlaylist(item.playlist)
                 }
-                else null,
-            ) + downloadButton(client, item, downloads) + item.playlist.authors.map {
+            ) else listOf<Action>() + downloadButton(
+                client, item, downloads
+            ) + item.playlist.authors.map {
                 Action(it.name, Action.CustomImage(it.cover, R.drawable.ic_person, true)) {
                     openItemFragment(extensionId, it.toMediaItem())
                 }
@@ -327,13 +333,15 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
         ) { vm.saveToLibrary(true) }
     } else null
 
+    private inline fun <reified T : Fragment> openFragment(bundle: Bundle) {
+        parentFragmentManager.findFragmentById(contId)!!
+            .openFragment<T>(null, bundle)
+    }
+
     private fun openItemFragment(extensionId: String?, item: EchoMediaItem?) {
         extensionId ?: return
         item ?: return
-        parentFragmentManager.findFragmentById(contId)!!.openFragment<MediaFragment>(
-            null,
-            MediaFragment.getBundle(extensionId, item, loaded)
-        )
+        openFragment<MediaFragment>(MediaFragment.getBundle(extensionId, item, loaded))
         dismiss()
     }
 }

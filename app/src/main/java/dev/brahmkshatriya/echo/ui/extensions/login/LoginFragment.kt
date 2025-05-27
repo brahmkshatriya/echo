@@ -39,6 +39,7 @@ import dev.brahmkshatriya.echo.ui.extensions.WebViewFragment.Companion.configure
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.addOnDestroyObserver
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
 import kotlinx.coroutines.launch
@@ -116,15 +117,12 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    override fun onDestroy() {
-        parentFragmentManager.commitNow { setPrimaryNavigationFragment(null) }
-        super.onDestroy()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (savedInstanceState != null) return
-
-        parentFragmentManager.commit { setPrimaryNavigationFragment(this@LoginFragment) }
+        parentFragmentManager.run {
+            commit { setPrimaryNavigationFragment(this@LoginFragment) }
+            addOnDestroyObserver { commit { setPrimaryNavigationFragment(null) } }
+        }
         binding.bind(this)
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()

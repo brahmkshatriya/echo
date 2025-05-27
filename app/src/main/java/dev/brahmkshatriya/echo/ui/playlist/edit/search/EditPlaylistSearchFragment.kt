@@ -9,7 +9,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import androidx.fragment.app.commitNow
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -25,6 +24,7 @@ import dev.brahmkshatriya.echo.ui.media.adapter.MediaItemSelectableAdapter.Compa
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
+import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.addOnDestroyObserver
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 
@@ -50,8 +50,9 @@ class EditPlaylistSearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        parentFragmentManager.commit {
-            setPrimaryNavigationFragment(this@EditPlaylistSearchFragment)
+        parentFragmentManager.run {
+            commit { setPrimaryNavigationFragment(this@EditPlaylistSearchFragment) }
+            addOnDestroyObserver { commit { setPrimaryNavigationFragment(null) } }
         }
         val behavior = BottomSheetBehavior.from(binding.bottomSheet)
         binding.bottomSheetDragHandle.setOnClickListener { behavior.state = STATE_EXPANDED }
@@ -126,10 +127,5 @@ class EditPlaylistSearchFragment : Fragment() {
                 R.plurals.n_songs, items.size, items.size
             )
         }
-    }
-
-    override fun onDestroy() {
-        parentFragmentManager.commitNow { setPrimaryNavigationFragment(null) }
-        super.onDestroy()
     }
 }

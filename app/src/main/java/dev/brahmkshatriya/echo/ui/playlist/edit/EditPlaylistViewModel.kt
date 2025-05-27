@@ -17,7 +17,8 @@ import kotlinx.coroutines.launch
 
 class EditPlaylistViewModel(
     private val extensionId: String,
-    val playlist: Playlist,
+    var playlist: Playlist,
+    private val loaded: Boolean,
     private val app: App,
     extensionLoader: ExtensionLoader,
 ) : ViewModel() {
@@ -120,6 +121,7 @@ class EditPlaylistViewModel(
             val tracks = runCatching {
                 val extension = extensions.getExtensionOrThrow(extensionId)
                 extension.get<PlaylistEditClient, List<Track>> {
+                    if (!loaded) playlist = loadPlaylist(playlist)
                     loadTracks(playlist).loadAll()
                 }.getOrThrow()
             }.getOrElse {

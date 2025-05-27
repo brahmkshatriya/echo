@@ -34,19 +34,23 @@ import org.koin.core.parameter.parametersOf
 class EditPlaylistFragment : Fragment() {
 
     companion object {
-        fun getBundle(extension: String, playlist: Playlist) = Bundle().apply {
+        fun getBundle(extension: String, playlist: Playlist, loaded: Boolean) = Bundle().apply {
             putString("extensionId", extension)
             putSerialized("playlist", playlist)
+            putBoolean("loaded", loaded)
         }
     }
 
     private val args by lazy { requireArguments() }
     private val extensionId by lazy { args.getString("extensionId")!! }
     private val playlist by lazy { args.getSerialized<Playlist>("playlist")!! }
+    private val loaded by lazy { args.getBoolean("loaded", false) }
 
     private var binding: FragmentPlaylistEditBinding by autoCleared()
     private val playerViewModel by activityViewModel<PlayerViewModel>()
-    private val vm by viewModel<EditPlaylistViewModel> { parametersOf(extensionId, playlist) }
+    private val vm by viewModel<EditPlaylistViewModel> {
+        parametersOf(extensionId, playlist, loaded)
+    }
 
     private val adapter by lazy {
         val itemCallback = PlaylistAdapter.getTouchHelper(vm)
