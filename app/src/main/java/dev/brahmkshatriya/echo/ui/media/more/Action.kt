@@ -21,11 +21,11 @@ data class Action(
 ) {
     sealed interface Image
     data class ResourceImage(val drawable: Int) : Image
-    data class CustomImage(val image: ImageHolder?, val drawable: Int, val circle: Boolean) : Image
+    data class CustomImage(val image: ImageHolder?, val placeholder: Int, val circle: Boolean) : Image
 
     object DiffCallback : DiffUtil.ItemCallback<Action>() {
         override fun areItemsTheSame(oldItem: Action, newItem: Action) =
-            oldItem.title == newItem.title
+            oldItem.image == newItem.image
 
         override fun areContentsTheSame(oldItem: Action, newItem: Action) = oldItem == newItem
     }
@@ -49,9 +49,9 @@ data class Action(
                 when (val img = action?.image) {
                     is CustomImage -> {
                         binding.imageView.imageTintList = null
-                        if (img.circle) img.image.loadAsCircle(binding.root, img.drawable) {
+                        if (img.circle) img.image.loadAsCircle(binding.root, img.placeholder) {
                             binding.imageView.setImageDrawable(it)
-                        } else img.image.loadInto(binding.imageView, img.drawable)
+                        } else img.image.loadInto(binding.imageView, img.placeholder)
                     }
 
                     is ResourceImage -> {
