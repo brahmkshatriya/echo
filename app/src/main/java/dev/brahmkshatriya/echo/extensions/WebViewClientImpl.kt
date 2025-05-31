@@ -9,7 +9,6 @@ import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
 import dev.brahmkshatriya.echo.common.models.Metadata
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withTimeout
 
 class WebViewClientImpl(
     private val context: Application
@@ -25,11 +24,7 @@ class WebViewClientImpl(
         val id = wrapper.hashCode()
         requests[id] = wrapper
         startWebView(id)
-        val res = runCatching {
-            withTimeout(wrapper.request.maxTimeout) {
-                responseFlow.first { it.first == wrapper && it.second != null }.second!!
-            }
-        }.getOrElse { Result.failure(it) }
+        val res = responseFlow.first { it.first == wrapper && it.second != null }.second!!
         requests.remove(id)
         return res
     }

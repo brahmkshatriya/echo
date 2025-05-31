@@ -118,7 +118,7 @@ object MediaItemUtils {
     }.getOrNull() else null
 
     fun buildForSource(
-        mediaItem: MediaItem, index: Int, source: Streamable.Source
+        mediaItem: MediaItem, index: Int, source: Streamable.Source?
     ) = with(mediaItem) {
         val item = buildUpon()
         item.setUri(

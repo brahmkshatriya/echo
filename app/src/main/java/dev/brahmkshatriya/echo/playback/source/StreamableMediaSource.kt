@@ -35,7 +35,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.select
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -79,9 +78,9 @@ class StreamableMediaSource(
                 context.saveToCache(track.id, new.extensionId to track, "track")
             }
 
-            val sources = server.sources
-            actualSource = when (sources.size) {
-                0 -> run { error = NoSourceException(); return@launch }
+            val sources = server?.sources
+            actualSource = when (sources?.size) {
+                0, null -> factories.create(new, -1, null)
                 1 -> factories.create(new, 0, sources.first())
                 else -> {
                     if (server.merged) MergingMediaSource(
@@ -142,7 +141,7 @@ class StreamableMediaSource(
         val hls: Lazy<MediaSource.Factory>,
         val default: Lazy<MediaSource.Factory>
     ) {
-        fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source): MediaSource {
+        fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source?): MediaSource {
             val type = (source as? Streamable.Source.Http)?.type
             val factory = when (type) {
                 Streamable.SourceType.DASH -> dash

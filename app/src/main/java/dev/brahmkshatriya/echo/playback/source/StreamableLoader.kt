@@ -20,7 +20,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.playback.exceptions.NoServersException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,9 +61,7 @@ class StreamableLoader(
 
     private suspend fun loadTrack(item: MediaItem): Track {
         val track = withClient(item) {
-            loadTrack(item.track).also {
-                it.servers.ifEmpty { throw NoServersException() }
-            }
+            loadTrack(item.track)
         }
         return track.getOrElse {
             downloadFlow.value.find { info ->
@@ -73,7 +70,7 @@ class StreamableLoader(
         }
     }
 
-    private suspend fun loadServer(mediaItem: MediaItem): Streamable.Media.Server {
+    private suspend fun loadServer(mediaItem: MediaItem): Streamable.Media.Server? {
         val downloaded = mediaItem.downloaded
         val servers = mediaItem.track.servers
         val index = mediaItem.serverIndex
@@ -83,7 +80,7 @@ class StreamableLoader(
                 true
             )
         }
-        val streamable = servers[index]
+        val streamable = servers.getOrNull(index) ?: return null
         return withClient(mediaItem) {
             loadStreamableMedia(streamable, false) as Streamable.Media.Server
         }.getOrThrow()

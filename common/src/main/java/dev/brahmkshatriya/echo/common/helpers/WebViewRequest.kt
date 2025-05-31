@@ -37,6 +37,12 @@ sealed interface WebViewRequest<T> {
         get() = 15_000L // Default to 15 seconds
 
     /**
+     * If you want to disable caching of the webview data, set this to true.
+     */
+    val dontCache: Boolean
+        get() = false // Default to false, meaning the webview will cache the data
+
+    /**
      * If you want to get the headers from all requests made by the webview, use this.
      *
      * @see WebViewRequest
