@@ -71,7 +71,7 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
                 R.id.menu_refresh -> {
                     val context = requireContext()
                     val id = mediaId ?: return@setOnMenuItemClickListener false
-                    context.deleteFxPrefs(id)
+                    context.deleteFxPrefs(id.hashCode())
                     bind()
                     true
                 }
@@ -87,7 +87,7 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
         fun FragmentAudioFxBinding.bind(
             context: Context, mediaId: String? = null, onEqualizerClicked: () -> Unit
         ) {
-            val settings = context.getFxPrefs(mediaId)
+            val settings = context.getFxPrefs(mediaId?.hashCode())
             val speed = settings.getInt(PLAYBACK_SPEED, speedRange.indexOf(1f))
             RulerAdapter(
                 speedRecycler,

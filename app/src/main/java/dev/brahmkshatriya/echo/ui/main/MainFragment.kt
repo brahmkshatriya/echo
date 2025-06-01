@@ -62,7 +62,7 @@ class MainFragment : Fragment() {
                 else -> addIfNull<HomeFragment>("home")
             }
 
-            childFragmentManager.commit {
+            childFragmentManager.commit(true) {
                 childFragmentManager.fragments.forEach { fragment ->
                     if (fragment.tag != toShow) hide(fragment)
                     else show(fragment)

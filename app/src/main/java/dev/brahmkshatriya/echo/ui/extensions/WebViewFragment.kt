@@ -101,12 +101,18 @@ class WebViewFragment : Fragment() {
                 }
             }
             val bridge = Bridge()
-            val requests =
-                if (webViewRequest is WebViewRequest.Headers) mutableListOf<Request>() else null
+            val requests = mutableListOf<Request>()
             val timeoutJob = scope.launch {
                 delay(timeout)
                 stop(callback)
-                onComplete(Result.failure(Exception("WebView request timed out after $timeout ms")))
+                onComplete(
+                    Result.failure(
+                        Exception(
+                            "WebView request timed out after $timeout ms\nParsed Links:\n" +
+                                    requests.joinToString("\n") { it.url }
+                        )
+                    )
+                )
             }
             webViewClient = object : WebViewClient() {
                 override fun doUpdateVisitedHistory(
@@ -136,7 +142,7 @@ class WebViewFragment : Fragment() {
                 ): WebResourceResponse? {
                     if (done) return null
                     val url = request?.url?.toString() ?: return null
-                    requests?.add(request.toRequest())
+                    requests.add(request.toRequest())
                     if (stopRegex.find(url) == null) return null
                     done = true
                     timeoutJob.cancel()
@@ -145,7 +151,7 @@ class WebViewFragment : Fragment() {
                             onComplete(null)
                             val result = runCatching {
                                 val headerRes = if (webViewRequest is WebViewRequest.Headers)
-                                    webViewRequest.onStop(requests!!)
+                                    webViewRequest.onStop(requests)
                                 else null
                                 val cookieRes = if (webViewRequest is WebViewRequest.Cookie) {
                                     val cookie = CookieManager.getInstance().getCookie(url) ?: ""
@@ -277,7 +283,7 @@ class WebViewFragment : Fragment() {
         }
 
         private fun removeSelf() {
-            parentFragmentManager.commit { remove(this@Hidden) }
+            parentFragmentManager.commit(true) { remove(this@Hidden) }
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

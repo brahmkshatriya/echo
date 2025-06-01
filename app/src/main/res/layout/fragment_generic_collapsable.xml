@@ -47,7 +47,7 @@
     <View
         android:id="@+id/toolbarOutline"
         style="@style/AppBarOutline"
-        android:alpha="0"
+        android:alpha="1"
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 

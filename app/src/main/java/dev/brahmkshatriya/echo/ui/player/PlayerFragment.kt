@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.ui.player
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimatedVectorDrawable
@@ -36,6 +37,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+import androidx.media3.ui.CaptionStyleCompat
+import androidx.media3.ui.CaptionStyleCompat.EDGE_TYPE_OUTLINE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -640,7 +643,14 @@ class PlayerFragment : Fragment() {
         applyVideoVisibility(visible)
     }
 
+    @OptIn(UnstableApi::class)
     private fun configureBackgroundPlayerView() {
+        binding?.playerView?.subtitleView?.setStyle(
+            CaptionStyleCompat(
+                Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT,
+                EDGE_TYPE_OUTLINE, Color.BLACK, null
+            )
+        )
         observe(viewModel.playerState.current) { applyPlayer() }
         observe(viewModel.tracks) { applyPlayer() }
     }

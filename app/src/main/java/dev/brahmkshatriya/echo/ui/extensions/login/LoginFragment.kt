@@ -121,7 +121,7 @@ class LoginFragment : Fragment() {
         if (savedInstanceState != null) return
         parentFragmentManager.run {
             commit { setPrimaryNavigationFragment(this@LoginFragment) }
-            addOnDestroyObserver { commit { setPrimaryNavigationFragment(null) } }
+            addOnDestroyObserver { commit(true) { setPrimaryNavigationFragment(null) } }
         }
         binding.bind(this)
         binding.toolBar.setNavigationOnClickListener {

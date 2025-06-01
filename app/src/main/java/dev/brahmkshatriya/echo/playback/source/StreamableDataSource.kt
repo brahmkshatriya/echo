@@ -7,22 +7,29 @@ import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.playback.source.StreamableResolver.Companion.copy
 
 @UnstableApi
 class StreamableDataSource(
     private val defaultDataSourceFactory: Lazy<DefaultDataSource.Factory>,
+    private val defaultHttpDataSourceFactory: Lazy<DefaultHttpDataSource.Factory>,
     private val byteStreamDataSourceFactory: Lazy<ByteStreamDataSource.Factory>,
 ) : BaseDataSource(true) {
 
     class Factory(
         context: Context,
     ) : DataSource.Factory {
-        private val defaultDataSourceFactory = lazy { DefaultDataSource.Factory(context) }
+        private val defaultDataSourceFactory = lazy {
+            DefaultDataSource.Factory(context, defaultHttpDataSourceFactory.value)
+        }
+        private val defaultHttpDataSourceFactory = lazy {
+            DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true)
+        }
         private val byteStreamDataSourceFactory = lazy { ByteStreamDataSource.Factory() }
         override fun createDataSource() = StreamableDataSource(
-            defaultDataSourceFactory, byteStreamDataSourceFactory
+            defaultDataSourceFactory, defaultHttpDataSourceFactory, byteStreamDataSourceFactory
         )
     }
 
@@ -45,6 +52,7 @@ class StreamableDataSource(
             is Streamable.Source.ByteStream -> byteStreamDataSourceFactory to dataSpec
             is Streamable.Source.Http -> {
                 val spec = streamable.request.run {
+                    defaultHttpDataSourceFactory.value.setDefaultRequestProperties(headers)
                     dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
                 }
                 defaultDataSourceFactory to spec
