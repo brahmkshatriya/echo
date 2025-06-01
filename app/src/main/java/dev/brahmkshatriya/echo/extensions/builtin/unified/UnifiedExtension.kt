@@ -1,6 +1,9 @@
 package dev.brahmkshatriya.echo.extensions.builtin.unified
 
 import android.content.Context
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.room.Room
 import dev.brahmkshatriya.echo.BuildConfig
 import dev.brahmkshatriya.echo.R
@@ -44,15 +47,18 @@ import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
+@OptIn(UnstableApi::class)
 class UnifiedExtension(
-    private val context: Context
+    private val context: Context,
+    private val cache: SimpleCache
 ) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient, TrackClient,
     TrackLikeClient, SaveToLibraryClient, PlaylistEditClient, TrackerClient, ShareClient {
@@ -93,12 +99,14 @@ class UnifiedExtension(
         val Map<String, String>.extensionId
             get() = this[EXTENSION_ID] ?: throw Exception("Extension id not found")
 
-        private fun Track.withExtensionId(id: String) = copy(
-            extras = extras + mapOf(EXTENSION_ID to id),
+        private fun Track.withExtensionId(id: String, cached: Boolean = false) = copy(
+            extras = extras + mapOf(EXTENSION_ID to id, "cached" to cached.toString()),
             album = album?.withExtensionId(id),
             artists = artists.map { it.withExtensionId(id) },
             streamables = streamables.map {
-                it.copy(extras = it.extras + mapOf(EXTENSION_ID to id))
+                it.copy(
+                    extras = it.extras + mapOf(EXTENSION_ID to id, "cached" to cached.toString())
+                )
             }
         )
 
@@ -359,6 +367,8 @@ class UnifiedExtension(
     }
 
     override suspend fun loadTrack(track: Track): Track {
+        val cached = track.extras["cached"]?.toBoolean() ?: false
+        if (cached) return track
         val id = track.extras.extensionId
         return extensions().get(id).client<TrackClient, Track> {
             loadTrack(track).withExtensionId(id)
@@ -380,25 +390,6 @@ class UnifiedExtension(
             val extension = extensions().get(id)
             extension.client<TrackClient, PagedData<Shelf>> {
                 getShelves(track).injectExtensionId(extension)
-            }
-        }
-    }
-
-    override suspend fun loadPlaylist(playlist: Playlist): Playlist {
-        val extId = playlist.extras.extensionId
-        return if (extId == UNIFIED_ID) db.loadPlaylist(playlist)
-        else extensions().get(extId).client<PlaylistClient, Playlist> {
-            loadPlaylist(playlist).withExtensionId(extId)
-        }
-    }
-
-    override fun loadTracks(playlist: Playlist): PagedData<Track> {
-        val id = playlist.extras.extensionId
-        return if (id == UNIFIED_ID) PagedData.Single { db.getTracks(playlist) }
-        else PagedData.Suspend {
-            val extension = extensions().get(id)
-            extension.client<PlaylistClient, PagedData<Track>> {
-                loadTracks(playlist).injectExtension(extension)
             }
         }
     }
@@ -475,6 +466,30 @@ class UnifiedExtension(
         }
     }
 
+    override suspend fun loadPlaylist(playlist: Playlist): Playlist {
+        val extId = playlist.extras.extensionId
+        return if (extId == UNIFIED_ID) {
+            if (playlist.id == "cached") playlist
+            else db.loadPlaylist(playlist)
+        } else extensions().get(extId).client<PlaylistClient, Playlist> {
+            loadPlaylist(playlist).withExtensionId(extId)
+        }
+    }
+
+    override fun loadTracks(playlist: Playlist): PagedData<Track> {
+        val id = playlist.extras.extensionId
+        return if (id == UNIFIED_ID) PagedData.Single {
+            if (playlist.id == "cached") cachedTracks
+            else db.getTracks(playlist)
+        }
+        else PagedData.Suspend {
+            val extension = extensions().get(id)
+            extension.client<PlaylistClient, PagedData<Track>> {
+                loadTracks(playlist).injectExtension(extension)
+            }
+        }
+    }
+
     private val db = Room.databaseBuilder(
         context, UnifiedDatabase::class.java, "unified-database"
     ).fallbackToDestructiveMigration(true).build()
@@ -483,13 +498,20 @@ class UnifiedExtension(
         Tab("Unified", context.getString(R.string.all))
     ) + extensions().map { Tab(it.id, it.name) }
 
+    private fun getCachedTracks() = cache.keys.mapNotNull { key ->
+        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
+        context.getFromCache<Pair<String, Track>>(id.hashCode().toString(), "track")
+    }.reversed()
+        .map { it.second.withExtensionId(it.first, true) }
+        .groupBy { it.id }.map { it.value.first() }
+
+    private var cachedTracks = listOf<Track>()
     override fun getLibraryFeed(tab: Tab?) = PagedData.Suspend {
         val extension = extensions().getOrNull(tab?.id)
         extension?.client<LibraryFeedClient, PagedData<Shelf>> {
             val tabs = getLibraryTabs()
-            if (!showTabs || tabs.isEmpty()) getLibraryFeed(tabs.firstOrNull()).injectExtensionId(
-                extension
-            )
+            if (!showTabs || tabs.isEmpty())
+                getLibraryFeed(tabs.firstOrNull()).injectExtensionId(extension)
             else PagedData.Single {
                 listOf(
                     Shelf.Lists.Categories(
@@ -502,7 +524,19 @@ class UnifiedExtension(
                 )
             }
         } ?: PagedData.Single {
-            listOf(
+            cachedTracks = getCachedTracks()
+            val cached = if (cachedTracks.isNotEmpty()) Playlist(
+                id = "cached",
+                title = context.getString(R.string.cached_songs),
+                isEditable = false,
+                cover = cachedTracks.first().cover,
+                description = context.getString(R.string.cache_playlist_warning),
+                tracks = cachedTracks.size,
+                extras = mapOf(EXTENSION_ID to UNIFIED_ID)
+            ).toMediaItem().toShelf() else null
+
+            listOfNotNull(
+                cached,
                 Shelf.Category(
                     context.getString(R.string.saved),
                     PagedData.Single { db.getSaved().map { it.toShelf() } }

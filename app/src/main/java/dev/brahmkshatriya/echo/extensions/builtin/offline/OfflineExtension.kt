@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.BuildConfig
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
@@ -45,6 +44,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.deletePlaylist
@@ -52,18 +52,15 @@ import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.editPl
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.moveSongInPlaylist
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.removeSongFromPlaylist
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.searchBy
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import java.io.File
 
 @OptIn(UnstableApi::class)
 class OfflineExtension(
     private val context: Context,
-    private val cache: SimpleCache
 ) : ExtensionClient, HomeFeedClient, TrackClient, AlbumClient, ArtistClient, PlaylistClient,
     RadioClient, SearchFeedClient, LibraryFeedClient, TrackLikeClient, PlaylistEditorListenerClient,
     SettingsChangeListenerClient {
@@ -125,14 +122,7 @@ class OfflineExtension(
     private var library = MediaStoreUtils.getAllSongs(context, settings)
     private fun refreshLibrary() {
         library = MediaStoreUtils.getAllSongs(context, settings)
-        cachedTracks = getCachedTracks()
     }
-
-    @OptIn(UnstableApi::class)
-    private fun getCachedTracks() = cache.keys.mapNotNull { key ->
-        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
-        context.getFromCache<Pair<String, Track>>(id, "track")
-    }.reversed()
 
     override fun setSettings(settings: Settings) {}
 
@@ -184,14 +174,14 @@ class OfflineExtension(
                     context.getString(R.string.albums),
                     albums.take(10),
                     more =
-                    PagedData.Single<EchoMediaItem> { albums }.takeIf { albums.size > 10 }
+                        PagedData.Single<EchoMediaItem> { albums }.takeIf { albums.size > 10 }
                 ) else null
 
                 val artistsShelf = if (artists.isNotEmpty()) Shelf.Lists.Items(
                     context.getString(R.string.artists),
                     artists.take(10),
                     more =
-                    PagedData.Single<EchoMediaItem> { artists }.takeIf { albums.size > 10 }
+                        PagedData.Single<EchoMediaItem> { artists }.takeIf { albums.size > 10 }
                 ) else null
 
                 listOfNotNull(recent, albumShelf, artistsShelf) + library.songList.map {
@@ -264,8 +254,7 @@ class OfflineExtension(
         if (playlist.id == "cached") playlist else find(playlist)!!.toPlaylist()
 
     override fun loadTracks(playlist: Playlist): PagedData<Track> = PagedData.Single {
-        if (playlist.id == "cached") cachedTracks.map { it.second }
-        else find(playlist)!!.songList.map { it }
+        find(playlist)!!.songList.map { it }
     }
 
     override fun getShelves(playlist: Playlist) = PagedData.Single<Shelf> {
@@ -407,25 +396,14 @@ class OfflineExtension(
         "Playlists", "Folders"
     ).map { Tab(it, it) }
 
-    private var cachedTracks = listOf<Pair<String, Track>>()
     override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
         if (refreshLibrary) refreshLibrary()
         return when (tab?.id) {
             "Folders" -> library.folderStructure.folderList.entries.firstOrNull()?.value
                 ?.toShelf(context, null)?.items ?: PagedData.Single { listOf() }
 
-            else -> {
-                val cached = if (cachedTracks.isNotEmpty()) Playlist(
-                    id = "cached",
-                    title = context.getString(R.string.cached_songs),
-                    isEditable = false,
-                    cover = cachedTracks.first().second.cover,
-                    description = context.getString(R.string.cache_playlist_warning),
-                    tracks = cachedTracks.size
-                ).toMediaItem().toShelf() else null
-                val playlists = library.playlistList.map { it.toPlaylist().toMediaItem().toShelf() }
-                (listOfNotNull(cached) + playlists).toPaged()
-            }
+            else ->
+                library.playlistList.map { it.toPlaylist().toMediaItem().toShelf() }.toPaged()
         }
     }
 

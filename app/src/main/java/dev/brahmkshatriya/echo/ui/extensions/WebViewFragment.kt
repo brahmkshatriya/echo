@@ -86,6 +86,7 @@ class WebViewFragment : Fragment() {
         fun <T : Any> WebView.configure(
             scope: CoroutineScope,
             webViewRequest: WebViewRequest<T>,
+            skipTimeout: Boolean = false,
             onComplete: suspend (Result<T?>?) -> Unit
         ): OnBackPressedCallback? {
             val request = runCatching { webViewRequest.initialUrl }.getOrNull()
@@ -102,7 +103,7 @@ class WebViewFragment : Fragment() {
             }
             val bridge = Bridge()
             val requests = mutableListOf<Request>()
-            val timeoutJob = scope.launch {
+            val timeoutJob = if (!skipTimeout) scope.launch {
                 delay(timeout)
                 stop(callback)
                 onComplete(
@@ -113,7 +114,7 @@ class WebViewFragment : Fragment() {
                         )
                     )
                 )
-            }
+            } else null
             webViewClient = object : WebViewClient() {
                 override fun doUpdateVisitedHistory(
                     view: WebView?, url: String?, isReload: Boolean
@@ -145,7 +146,7 @@ class WebViewFragment : Fragment() {
                     requests.add(request.toRequest())
                     if (stopRegex.find(url) == null) return null
                     done = true
-                    timeoutJob.cancel()
+                    timeoutJob?.cancel()
                     scope.launch {
                         mutex.withLock {
                             onComplete(null)

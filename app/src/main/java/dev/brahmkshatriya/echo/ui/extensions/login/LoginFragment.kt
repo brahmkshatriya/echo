@@ -256,7 +256,7 @@ class LoginFragment : Fragment() {
                 setupTransition(view, useZ = false)
                 val binding = FragmentWebviewBinding.bind(view)
                 val callback =
-                    binding.root.configure(loginViewModel.viewModelScope, webViewRequest) {
+                    binding.root.configure(loginViewModel.viewModelScope, webViewRequest, true) {
                         if (it == null) loginViewModel.loading.value = true
                         else loginViewModel.onWebViewStop(extension, it)
                     } ?: return

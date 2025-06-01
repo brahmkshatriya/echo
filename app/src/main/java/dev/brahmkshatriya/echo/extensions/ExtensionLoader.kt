@@ -35,8 +35,8 @@ class ExtensionLoader(
 
     private val extensionRepo = ExtensionsRepo(
         this,
-        UnifiedExtension.metadata to Injectable { UnifiedExtension(app.context) },
-        OfflineExtension.metadata to Injectable { OfflineExtension(app.context, cache) },
+        UnifiedExtension.metadata to Injectable { UnifiedExtension(app.context, cache) },
+        OfflineExtension.metadata to Injectable { OfflineExtension(app.context) },
 //        TestExtension.metadata to Injectable { TestExtension() },
 //        DownloadExtension.metadata to Injectable { DownloadExtension(app.context) }
 //        TrackerTestExtension.metadata to Injectable { TrackerTestExtension() },

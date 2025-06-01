@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.Extensions
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.actualExtensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.retries
@@ -73,9 +74,12 @@ class StreamableMediaSource(
             state.servers[new.mediaId] = server
             state.serverChanged.emit(Unit)
 
-            if (new.extensionId != OfflineExtension.metadata.id) {
+            val isOffline = new.actualExtensionId != OfflineExtension.metadata.id
+            if (isOffline && !server?.sources.isNullOrEmpty()) {
                 val track = mediaItem.track
-                context.saveToCache(track.id, new.extensionId to track, "track")
+                context.saveToCache(
+                    track.id.hashCode().toString(), new.actualExtensionId to track, "track"
+                )
             }
 
             val sources = server?.sources
