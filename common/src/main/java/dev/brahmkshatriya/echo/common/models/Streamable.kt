@@ -10,9 +10,9 @@ import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toServer
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtitleMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Server
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Subtitle
-import dev.brahmkshatriya.echo.common.models.Streamable.Source.ByteStream
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Http
+import dev.brahmkshatriya.echo.common.models.Streamable.Source.Raw
 import kotlinx.serialization.Serializable
 import java.io.InputStream
 
@@ -164,7 +164,7 @@ data class Streamable(
      *
      * There are three types of sources:
      * - [Http] - To represent a source that contains Audio/Video on a Http Url.
-     * - [ByteStream] - To represent a source that contains Audio/Video in a Byte Stream.
+     * - [Raw] - To represent a source that contains Audio/Video in a Byte Stream.
      *
      * @property quality The quality of the source, this is used to sort the sources
      * @property title The title of the source
@@ -198,14 +198,12 @@ data class Streamable(
         /**
          * A data class representing a source that contains Audio/Video in a Byte Stream.
          *
-         * @property stream The stream for the source
-         * @property totalBytes The total bytes of the stream
+         * @property streamProvider A function that provides an [InputStream] from a given position.
          *
-         * @see InputStream
+         * @see InputProvider
          */
-        data class ByteStream(
-            val stream: InputStream,
-            val totalBytes: Long,
+        data class Raw(
+            val streamProvider: InputProvider,
             override val quality: Int = 0,
             override val title: String? = null
         ) : Source()
@@ -223,6 +221,22 @@ data class Streamable(
                 type: SourceType = SourceType.Progressive
             ) = Http(this.toRequest(headers), type)
         }
+    }
+
+    /**
+     * An interface that provides an [InputStream] from a given position.
+     *
+     * This is used for [Streamable.Source.Raw] to provide the stream data.
+     */
+    interface InputProvider {
+
+        /**
+         * Provides an [InputStream] from a given position.
+         *
+         * @param position The position to start reading from
+         * @return An [InputStream] from the given position and the total bytes that can be read
+         */
+        suspend fun provide(position: Long): Pair<InputStream, Long>
     }
 
     companion object {

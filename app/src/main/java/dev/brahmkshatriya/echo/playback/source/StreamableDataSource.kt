@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.playback.source.StreamableResolver.Companion.copy
 class StreamableDataSource(
     private val defaultDataSourceFactory: Lazy<DefaultDataSource.Factory>,
     private val defaultHttpDataSourceFactory: Lazy<DefaultHttpDataSource.Factory>,
-    private val byteStreamDataSourceFactory: Lazy<ByteStreamDataSource.Factory>,
+    private val rawDataSourceFactory: Lazy<RawDataSource.Factory>,
 ) : BaseDataSource(true) {
 
     class Factory(
@@ -27,9 +27,9 @@ class StreamableDataSource(
         private val defaultHttpDataSourceFactory = lazy {
             DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true)
         }
-        private val byteStreamDataSourceFactory = lazy { ByteStreamDataSource.Factory() }
+        private val rawDataSourceFactory = lazy { RawDataSource.Factory() }
         override fun createDataSource() = StreamableDataSource(
-            defaultDataSourceFactory, defaultHttpDataSourceFactory, byteStreamDataSourceFactory
+            defaultDataSourceFactory, defaultHttpDataSourceFactory, rawDataSourceFactory
         )
     }
 
@@ -46,10 +46,9 @@ class StreamableDataSource(
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        val streamable = dataSpec.customData as? Streamable.Source
+        val streamable = dataSpec.customData
         val (factory, spec) = when (streamable) {
-            null -> defaultDataSourceFactory to dataSpec
-            is Streamable.Source.ByteStream -> byteStreamDataSourceFactory to dataSpec
+            is Streamable.Source.Raw -> rawDataSourceFactory to dataSpec
             is Streamable.Source.Http -> {
                 val spec = streamable.request.run {
                     defaultHttpDataSourceFactory.value.setDefaultRequestProperties(headers)
@@ -57,6 +56,7 @@ class StreamableDataSource(
                 }
                 defaultDataSourceFactory to spec
             }
+            else -> defaultDataSourceFactory to dataSpec
         }
         val source = factory.value.createDataSource()
         this.source = source
