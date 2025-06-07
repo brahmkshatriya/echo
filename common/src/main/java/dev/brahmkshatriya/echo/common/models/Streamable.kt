@@ -220,6 +220,8 @@ data class Streamable(
                 headers: Map<String, String> = mapOf(),
                 type: SourceType = SourceType.Progressive
             ) = Http(this.toRequest(headers), type)
+
+            fun InputProvider.toSource() = Raw(this)
         }
     }
 
@@ -228,15 +230,16 @@ data class Streamable(
      *
      * This is used for [Streamable.Source.Raw] to provide the stream data.
      */
-    interface InputProvider {
+    fun interface InputProvider {
 
         /**
          * Provides an [InputStream] from a given position.
          *
-         * @param position The position to start reading from
-         * @return An [InputStream] from the given position and the total bytes that can be read
+         * @param position The position to start reading from, 0 if the stream should start from the beginning
+         * @param length The total bytes that should be the end of the stream, -1 if unknown. Important for seeking.
+         * @return An [InputStream] from the given position and the total bytes that can be read, or -1 if unknown.
          */
-        suspend fun provide(position: Long): Pair<InputStream, Long>
+        suspend fun provide(position: Long, length: Long): Pair<InputStream, Long>
     }
 
     companion object {
