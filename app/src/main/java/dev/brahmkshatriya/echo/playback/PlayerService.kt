@@ -233,22 +233,26 @@ class PlayerService : MediaLibraryService() {
         private fun <E> List<E>.select(
             context: Context,
             settings: SharedPreferences,
-            quality: (E) -> Int
+            quality: (E) -> Int,
+            default: String = streamQualities[1]
         ): E? {
-            return if (isUnmetered(context)) selectQuality(
-                settings.getString(UNMETERED_STREAM_QUALITY, streamQualities[0]),
+            val unmetered = if (isUnmetered(context)) selectQuality(
+                settings.getString(UNMETERED_STREAM_QUALITY, "off"),
                 quality
-            ) else selectQuality(
-                settings.getString(STREAM_QUALITY, streamQualities[1]),
+            ) else null
+            return unmetered ?: selectQuality(
+                settings.getString(STREAM_QUALITY, default),
                 quality
             )
         }
 
-        private fun <E> List<E>.selectQuality(final: String?, quality: (E) -> Int) = when (final) {
-            streamQualities[0] -> maxBy { quality(it) }
-            streamQualities[1] -> sortedBy { quality(it) }[size / 2]
-            streamQualities[2] -> minBy { quality(it) }
-            else -> null
+        private fun <E> List<E>.selectQuality(final: String?, quality: (E) -> Int): E? {
+            return when (final) {
+                streamQualities[0] -> maxBy { quality(it) }
+                streamQualities[1] -> sortedBy { quality(it) }[size / 2]
+                streamQualities[2] -> minBy { quality(it) }
+                else -> null
+            }
         }
 
 
@@ -256,7 +260,7 @@ class PlayerService : MediaLibraryService() {
             context: Context, extensionId: String, quality: (T) -> Int
         ): T {
             val extSettings = extensionPrefId(ExtensionType.MUSIC.name, extensionId).prefs(context)
-            return select(context, extSettings, quality)
+            return select(context, extSettings, quality, "off")
                 ?: select(context, context.getSettings(), quality)
                 ?: first()
         }

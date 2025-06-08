@@ -101,15 +101,12 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     )
 
     override suspend fun onLogin(key: String, data: Map<String, String?>): List<User> {
-        val name = data["name"]!!
-        return listOf(User(name, name, null))
+        throw IllegalStateException("Test")
     }
 
     override val webViewRequest = object : WebViewRequest.Cookie<List<User>> {
         override suspend fun onStop(url: Request, cookie: String): List<User> {
-            return listOf(
-                User("bruh", "Bruh", null)
-            )
+            throw IllegalStateException("Test")
         }
 
         override val initialUrl = "https://www.example.com/".toRequest()
@@ -158,7 +155,9 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         Single, Merged, M3U8;
 
         fun createTrack() = createTrack(
-            name, name, listOf(Streamable.server(this.name, 0), Streamable.subtitle(SUBTITLE))
+            name, name, listOf(Streamable.subtitle(SUBTITLE)) + (0..5).map { i ->
+                Streamable.server(this.name, i)
+            }
         )
     }
 
@@ -168,21 +167,6 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     }
 
     override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
-        println("waiting for webview")
-        val bruh = webViewClient.await(
-            true,
-            "For Testing purposes",
-            object : WebViewRequest.Cookie<String> {
-                override suspend fun onStop(url: Request, cookie: String): String {
-                    return cookie
-                }
-
-                override val initialUrl = "https://www.example.com".toRequest()
-                override val stopUrlRegex = "https://www\\.iana\\.org/.*".toRegex()
-                override val maxTimeout = 15 * 1000L
-            }
-        ).getOrThrow()
-        println("bruh: $bruh")
         listOf(
             Shelf.Lists.Categories(
                 "Bruh",

@@ -155,7 +155,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
                 radioButton(client, item, loaded),
                 saveToPlaylist(client, item, loaded),
                 saveToLibraryButton(client, loaded)
-            ) + if (client is LibraryFeedClient && item.playlist.isEditable) listOf(
+            ) + (if (client is LibraryFeedClient && item.playlist.isEditable) listOf(
                 resource(R.drawable.ic_edit_note, R.string.edit_playlist) {
                     openFragment<EditPlaylistFragment>(
                         EditPlaylistFragment.getBundle(extensionId, item.playlist, loaded)
@@ -164,9 +164,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment() {
                 Action(getString(R.string.delete_playlist), ResourceImage(R.drawable.ic_delete)) {
                     vm.deletePlaylist(item.playlist)
                 }
-            ) else listOf<Action>() + downloadButton(
-                client, item, downloads
-            ) + item.playlist.authors.map {
+            ) else listOf()) + downloadButton(client, item, downloads) + item.playlist.authors.map {
                 Action(it.name, Action.CustomImage(it.cover, R.drawable.ic_person, true)) {
                     openItemFragment(extensionId, it.toMediaItem())
                 }

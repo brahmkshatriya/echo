@@ -387,37 +387,38 @@ class UiViewModel(
         fun MainActivity.setupIntents(
             uiViewModel: UiViewModel,
         ) {
-            fun onIntent(intent: Intent?) {
-                this.intent = null
-                intent ?: return
-                val fromNotif = intent.hasExtra("fromNotification")
-                if (fromNotif) uiViewModel.run {
-                    if (playerSheetState.value == STATE_HIDDEN) return@run
-                    changePlayerState(STATE_EXPANDED)
-                    changeMoreState(STATE_COLLAPSED)
-                    return
-                }
-                val fromDownload = intent.hasExtra("fromDownload")
-                if (fromDownload) {
-                    openFragment<DownloadFragment>()
-                    return
-                }
-                val webViewRequest = intent.hasExtra("webViewRequest")
-                if (webViewRequest) {
-                    val webViewClient = uiViewModel.extensionLoader.webViewClient
-                    onWebViewIntent(intent, webViewClient)
-                    return
-                }
-                val uri = intent.data
-                when (uri?.scheme) {
-                    "echo" -> runCatching { openItemFragmentFromUri(uri) }
-                    "file" -> lifecycleScope.launch {
-                        installExtension(uri.toString())
-                    }
+            addOnNewIntentListener { onIntent(uiViewModel, it) }
+            onIntent(uiViewModel, intent)
+        }
+
+        private fun MainActivity.onIntent(uiViewModel: UiViewModel, intent: Intent?) {
+            this.intent = null
+            intent ?: return
+            val fromNotif = intent.hasExtra("fromNotification")
+            if (fromNotif) uiViewModel.run {
+                if (playerSheetState.value == STATE_HIDDEN) return@run
+                changePlayerState(STATE_EXPANDED)
+                changeMoreState(STATE_COLLAPSED)
+                return
+            }
+            val fromDownload = intent.hasExtra("fromDownload")
+            if (fromDownload) {
+                openFragment<DownloadFragment>()
+                return
+            }
+            val webViewRequest = intent.hasExtra("webViewRequest")
+            if (webViewRequest) {
+                val webViewClient = uiViewModel.extensionLoader.webViewClient
+                onWebViewIntent(intent, webViewClient)
+                return
+            }
+            val uri = intent.data
+            when (uri?.scheme) {
+                "echo" -> runCatching { openItemFragmentFromUri(uri) }
+                "file" -> lifecycleScope.launch {
+                    installExtension(uri.toString())
                 }
             }
-            addOnNewIntentListener { onIntent(it) }
-            onIntent(intent)
         }
 
         fun LifecycleOwner.setupPlayerBehavior(viewModel: UiViewModel, view: View) {

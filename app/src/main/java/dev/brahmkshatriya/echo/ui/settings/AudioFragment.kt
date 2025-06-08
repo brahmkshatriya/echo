@@ -76,7 +76,7 @@ class AudioFragment : BaseSettingsFragment() {
                     entryValues = streamQualities + "off"
                     layoutResource = R.layout.preference
                     isIconSpaceReserved = false
-                    setDefaultValue(streamQualities[0])
+                    setDefaultValue("off")
                     addPreference(this)
                 }
             }

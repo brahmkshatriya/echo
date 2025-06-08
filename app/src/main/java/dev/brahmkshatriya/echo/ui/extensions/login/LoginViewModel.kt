@@ -51,7 +51,10 @@ class LoginViewModel(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.run(app.throwFlow) { result.getOrThrow().orEmpty() }
-                ?: return@launch
+                ?: run {
+                    loadingOver.emit(Unit)
+                    return@launch
+                }
             afterLogin(extension, users)
         }
     }
@@ -64,7 +67,10 @@ class LoginViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val users = extension.get<LoginClient.CustomInput, List<User>>(app.throwFlow) {
                 onLogin(form.key, inputs.toMap())
-            } ?: return@launch
+            } ?: run {
+                loadingOver.emit(Unit)
+                return@launch
+            }
             afterLogin(extension, users)
         }
     }

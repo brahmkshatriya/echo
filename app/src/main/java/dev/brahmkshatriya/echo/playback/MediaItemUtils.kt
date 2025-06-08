@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -194,6 +195,7 @@ object MediaItemUtils {
             )
             val downloaded =
                 downloads.filter { it.download.trackId == id }.mapNotNull { it.download.finalFile }
+            Log.d("BRUH", "server index $serverIndex")
             putInt(
                 "serverIndex",
                 serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded)
