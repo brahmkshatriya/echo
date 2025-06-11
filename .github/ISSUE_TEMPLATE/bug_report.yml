@@ -62,6 +62,8 @@ body:
       options:
         - label: I have searched the open AND closed issues for any duplicates.
           required: true
+        - label: If this is an issue with an extension, I should be opening an issue in the extension's repository.
+          required: false
 
   - type: textarea
     attributes:
