@@ -17,6 +17,7 @@ kotlin {
 dependencies {
     api(libs.bundles.kotlinx)
     api(libs.okhttp)
+    api(libs.protobuf.java)
 }
 
 publishing {
