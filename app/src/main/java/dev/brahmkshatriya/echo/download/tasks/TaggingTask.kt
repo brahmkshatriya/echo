@@ -1,19 +1,18 @@
-package dev.brahmkshatriya.echo.download.workers
+package dev.brahmkshatriya.echo.download.tasks
 
 import android.content.Context
 import android.media.MediaScannerConnection
-import androidx.work.WorkerParameters
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
 import java.io.File
 
-class TaggingWorker(
-    context: Context,
-    workerParams: WorkerParameters,
+class TaggingTask(
+    private val app: Context,
     downloader: Downloader,
-) : BaseWorker(context, workerParams, downloader) {
+    override val trackId: Long,
+) : BaseTask(app, downloader, trackId) {
 
     override val type = TaskType.Tagging
 
@@ -25,16 +24,14 @@ class TaggingWorker(
         }
         dao.insertDownloadEntity(download.copy(finalFile = file.toString()))
         MediaScannerConnection.scanFile(
-            applicationContext, arrayOf(file.toString()), null, null
+            app, arrayOf(file.toString()), null, null
         )
         val context = downloadContext.context
         val item = if (context == null) download.track.toMediaItem() else {
             val allDownloads = dao.getDownloadsForContext(context.id)
             if (allDownloads.all { it.finalFile != null }) context else null
         } ?: return
-        createCompleteNotification(
-            applicationContext, item.title, item.cover.loadDrawable(applicationContext)
-        )
+        createCompleteNotification(app, item.title, item.cover.loadDrawable(app))
     }
 
 }

@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.common.Extension
-import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
@@ -34,7 +34,7 @@ abstract class FeedViewModel(
     open val current = extensionLoader.extensions.current
 
     abstract suspend fun getTabs(extension: Extension<*>): Result<List<Tab>>
-    abstract suspend fun getFeed(extension: Extension<*>): Result<PagedData<Shelf>>
+    abstract suspend fun getFeed(extension: Extension<*>): Result<Feed>
 
     val feed = MutableStateFlow<PagingUtils.Data<Shelf>>(
         PagingUtils.Data(null, null, null, null)
@@ -75,7 +75,7 @@ abstract class FeedViewModel(
                 feed.value =
                     PagingUtils.Data(extension, null, null, PagingUtils.errorPagingData(it))
                 return@launch
-            }
+            }.pagedData
             data.toFlow(extension).collectWith(throwableFlow) {
                 feed.value = PagingUtils.Data(extension, null, data, it)
             }

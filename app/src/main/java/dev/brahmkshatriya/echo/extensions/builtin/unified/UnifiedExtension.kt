@@ -33,6 +33,8 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -276,7 +278,7 @@ class UnifiedExtension(
         tab: Tab?,
         crossinline loadTabs: suspend T.() -> List<Tab>,
         crossinline getFeed: T.(Tab?) -> PagedData<Shelf>
-    ): PagedData<Shelf> {
+    ): Feed {
         return PagedData.Suspend {
             val extensions = extensions()
             val id = tab?.extras?.extensionId ?: extensions.firstOrNull()?.id
@@ -285,13 +287,13 @@ class UnifiedExtension(
             extension.client<T, PagedData<Shelf>> {
                 extension.loadFeed(extensions, { loadTabs() }, { getFeed(it) })
             }
-        }
+        }.toFeed()
     }
 
     override suspend fun getHomeTabs() = tabs<HomeFeedClient> { getHomeTabs() }
 
     override fun getHomeFeed(tab: Tab?) =
-        feed<HomeFeedClient>(tab, { getHomeTabs() }, { getHomeFeed(it) })
+        feed<HomeFeedClient>(tab, { getHomeTabs() }, { getHomeFeed(it).pagedData })
 
     override suspend fun deleteQuickSearch(item: QuickSearchItem) {
         val history = getHistory().toMutableList()
@@ -316,9 +318,12 @@ class UnifiedExtension(
     }
 
     override suspend fun searchTabs(query: String) = tabs<SearchFeedClient> { searchTabs(query) }
-    override fun searchFeed(query: String, tab: Tab?): PagedData<Shelf> {
+    override fun searchFeed(query: String, tab: Tab?): Feed {
         if (query.isNotBlank()) saveInHistory(query)
-        return feed<SearchFeedClient>(tab, { searchTabs(query) }, { searchFeed(query, it) })
+        return feed<SearchFeedClient>(
+            tab,
+            { searchTabs(query) },
+            { searchFeed(query, it).pagedData })
     }
 
     override fun loadTracks(radio: Radio): PagedData<Track> {
@@ -511,13 +516,13 @@ class UnifiedExtension(
         extension?.client<LibraryFeedClient, PagedData<Shelf>> {
             val tabs = getLibraryTabs()
             if (!showTabs || tabs.isEmpty())
-                getLibraryFeed(tabs.firstOrNull()).injectExtensionId(extension)
+                getLibraryFeed(tabs.firstOrNull()).pagedData.injectExtensionId(extension)
             else PagedData.Single {
                 listOf(
                     Shelf.Lists.Categories(
                         context.getString(R.string.tabs), tabs.map {
                             Shelf.Category(
-                                it.title, getLibraryFeed(it).injectExtensionId(extension)
+                                it.title, getLibraryFeed(it).pagedData.injectExtensionId(extension)
                             )
                         }, type = Shelf.Lists.Type.Grid
                     )
@@ -544,7 +549,7 @@ class UnifiedExtension(
                 *db.getPlaylists().map { it.toMediaItem().toShelf() }.toTypedArray()
             )
         }
-    }
+    }.toFeed()
 
     override suspend fun saveToLibrary(mediaItem: EchoMediaItem, save: Boolean) {
         if (save) db.save(mediaItem) else db.deleteSaved(mediaItem)

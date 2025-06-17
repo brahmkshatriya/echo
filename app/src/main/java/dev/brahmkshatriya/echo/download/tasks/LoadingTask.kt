@@ -1,27 +1,25 @@
-package dev.brahmkshatriya.echo.download.workers
+package dev.brahmkshatriya.echo.download.tasks
 
 import android.content.Context
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkerParameters
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Progress
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
+import dev.brahmkshatriya.echo.download.tasks.TaskManager.Companion.toQueueItem
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
 
-class LoadingWorker(
-    context: Context,
-    workerParams: WorkerParameters,
+class LoadingTask(
+    private val context: Context,
     downloader: Downloader,
-) : BaseWorker(context, workerParams, downloader) {
+    override val trackId: Long,
+) : BaseTask(context, downloader, trackId) {
 
     override val type = TaskType.Loading
 
-    private val workManager = downloader.workManager
+    private val manager = downloader.taskManager
     private val extensionsList = downloader.extensions.music
 
     private val totalSize = 3L
@@ -61,25 +59,11 @@ class LoadingWorker(
         progressFlow.value = Progress(totalSize, 3)
 
         val requests = indexes.map { index ->
-            OneTimeWorkRequestBuilder<DownloadingWorker>()
-                .setInputData(DownloadingWorker.createInputData(trackId, index))
-                .addTag(trackId.toString())
-                .build()
-        }
+            DownloadingTask(context, downloader, trackId, index)
+        }.toQueueItem()
+        val mergeRequest = MergingTask(context, downloader, trackId).toQueueItem()
+        val taggingRequest = TaggingTask(context, downloader, trackId).toQueueItem()
 
-        val mergeRequest = OneTimeWorkRequestBuilder<MergingWorker>()
-            .setInputData(createInputData(trackId))
-            .addTag(trackId.toString())
-            .build()
-
-        val taggingRequest = OneTimeWorkRequestBuilder<TaggingWorker>()
-            .setInputData(createInputData(trackId))
-            .addTag(trackId.toString())
-            .build()
-
-        workManager.beginUniqueWork(trackId.toString(), ExistingWorkPolicy.APPEND, requests)
-            .then(mergeRequest)
-            .then(taggingRequest)
-            .enqueue()
+        manager.enqueue(trackId, listOf(requests, mergeRequest, taggingRequest))
     }
 }

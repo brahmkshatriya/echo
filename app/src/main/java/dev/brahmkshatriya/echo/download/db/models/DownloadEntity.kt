@@ -6,6 +6,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import kotlinx.serialization.Serializable
+import java.io.File
 
 @Entity
 @Serializable
@@ -15,8 +16,9 @@ data class DownloadEntity(
     val extensionId: String,
     val trackId: String,
     val contextId: Long?,
-    val data: String,
     val sortOrder: Int? = null,
+    val data: String,
+    val task: TaskType,
     val loaded: Boolean = false,
     val folderPath: String? = null,
     val streamableId: String? = null,
@@ -24,10 +26,13 @@ data class DownloadEntity(
     val toMergeFilesData: String? = null,
     val toTagFile: String? = null,
     val finalFile: String? = null,
-    val exceptionData : String? = null,
+    val exceptionFile: String? = null,
 ) {
     val track by lazy { data.toData<Track>() }
     val indexes by lazy { indexesData?.toData<List<Int>>().orEmpty() }
     val toMergeFiles by lazy { toMergeFilesData?.toData<List<String>>().orEmpty() }
-    val exception by lazy { exceptionData?.toData<ExceptionUtils.Data>() }
+    val exception by lazy {
+        exceptionFile?.let { File(it) }?.readText()?.toData<ExceptionUtils.Data>()
+    }
+    val isFinal by lazy { finalFile != null || exceptionFile != null }
 }

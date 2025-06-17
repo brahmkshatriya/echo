@@ -4,9 +4,8 @@ import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Playlist
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
@@ -27,7 +26,7 @@ class LibraryViewModel(
         }
 
     override suspend fun getFeed(extension: Extension<*>) =
-        extension.get<LibraryFeedClient, PagedData<Shelf>> {
+        extension.get<LibraryFeedClient, Feed> {
             getLibraryFeed(tab)
         }
 

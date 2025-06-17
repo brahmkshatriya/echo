@@ -26,6 +26,8 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -138,57 +140,54 @@ class OfflineExtension(
 
     override suspend fun onExtensionSelected() {}
 
-    override suspend fun getHomeTabs() = listOf(
-        "All", "Songs", "Albums", "Artists", "Genres"
-    ).map { Tab(it, it) }
+    override suspend fun getHomeTabs() = listOf<Tab>()
+    private fun List<Shelf>.toFeed(
+        playShuffle: Boolean = false,
+        search: Boolean = false,
+        filter: Boolean = false
+    ) = PagedData.Single { this }.toFeed(
+        showPlayButton = playShuffle,
+        showShuffleButton = playShuffle,
+        showSearchButton = search,
+        showFilterButton = filter
+    )
 
-    private fun List<Shelf>.toPaged() = PagedData.Single { this }
 
-    override fun getHomeFeed(tab: Tab?): PagedData<Shelf> {
+    override fun getHomeFeed(tab: Tab?): Feed {
         if (refreshLibrary) refreshLibrary()
-        fun List<EchoMediaItem>.sorted() = sortedBy { it.title.lowercase() }
-            .map { it.toShelf(false) }.toPaged()
-        return when (tab?.id) {
-            "Songs" -> library.songList.map { it.toMediaItem() }.sorted()
-            "Albums" -> library.albumList.map { it.toAlbum().toMediaItem() }.sorted()
-            "Artists" -> library.artistMap.values.map { it.toArtist().toMediaItem() }.sorted()
-            "Genres" -> library.genreList.map { it.toShelf() }.toPaged()
-            else -> run {
-                val recentlyAdded = library.songList.sortedByDescending {
-                    it.extras["addDate"]?.toLongOrNull()
-                }.map { it }
-                val albums = library.albumList.map {
-                    it.toAlbum().toMediaItem()
-                }.shuffled()
-                val artists = library.artistMap.values.map {
-                    it.toArtist().toMediaItem()
-                }.shuffled()
 
-                val recent = if (recentlyAdded.isNotEmpty()) Shelf.Lists.Tracks(
-                    context.getString(R.string.recently_added),
-                    recentlyAdded.take(6),
-                    more = PagedData.Single { recentlyAdded }.takeIf { albums.size > 6 }
-                ) else null
+        val recentlyAdded = library.songList.sortedByDescending {
+            it.extras["addDate"]?.toLongOrNull()
+        }.map { it }
+        val albums = library.albumList.map {
+            it.toAlbum().toMediaItem()
+        }.shuffled()
+        val artists = library.artistMap.values.map {
+            it.toArtist().toMediaItem()
+        }.shuffled()
 
-                val albumShelf = if (albums.isNotEmpty()) Shelf.Lists.Items(
-                    context.getString(R.string.albums),
-                    albums.take(10),
-                    more =
-                        PagedData.Single<EchoMediaItem> { albums }.takeIf { albums.size > 10 }
-                ) else null
+        val recent = if (recentlyAdded.isNotEmpty()) Shelf.Lists.Tracks(
+            context.getString(R.string.recently_added),
+            recentlyAdded.take(6),
+            more = PagedData.Single { recentlyAdded }.takeIf { albums.size > 6 }
+        ) else null
 
-                val artistsShelf = if (artists.isNotEmpty()) Shelf.Lists.Items(
-                    context.getString(R.string.artists),
-                    artists.take(10),
-                    more =
-                        PagedData.Single<EchoMediaItem> { artists }.takeIf { albums.size > 10 }
-                ) else null
+        val albumShelf = if (albums.isNotEmpty()) Shelf.Lists.Items(
+            context.getString(R.string.albums),
+            albums.take(10),
+            more =
+                PagedData.Single<EchoMediaItem> { albums }.takeIf { albums.size > 10 }
+        ) else null
 
-                listOfNotNull(recent, albumShelf, artistsShelf) + library.songList.map {
-                    it.toMediaItem().toShelf()
-                }
-            }.toPaged()
-        }
+        val artistsShelf = if (artists.isNotEmpty()) Shelf.Lists.Items(
+            context.getString(R.string.artists),
+            artists.take(10),
+            more =
+                PagedData.Single<EchoMediaItem> { artists }.takeIf { albums.size > 10 }
+        ) else null
+        val data = listOfNotNull(recent, albumShelf, artistsShelf) +
+                library.songList.map { it.toMediaItem().toShelf() }
+        return data.toFeed()
     }
 
     override suspend fun loadTrack(track: Track) = track.copy(
@@ -348,15 +347,25 @@ class OfflineExtension(
         context.saveToCache("search_history", history, "offline")
     }
 
-    override suspend fun searchTabs(query: String) = if (query.isBlank()) listOf()
-    else listOf("All", "Tracks", "Albums", "Artists").map { Tab(it, it) }
+    override suspend fun searchTabs(query: String) =
+        (if (query.isBlank()) listOf("Songs", "Albums", "Artists", "Genres")
+        else listOf("All", "Tracks", "Albums", "Artists")).map { Tab(it, it) }
 
-    override fun searchFeed(query: String, tab: Tab?) = run {
-        query.ifBlank {
-            return@run library.songList.sortedByDescending {
+
+    private fun List<EchoMediaItem>.sorted() = sortedBy { it.title.lowercase() }
+        .map { it.toShelf(false) }.toFeed(filter = true)
+
+    override fun searchFeed(query: String, tab: Tab?): Feed = if (query.isBlank()) {
+        if (refreshLibrary) refreshLibrary()
+        when (tab?.id) {
+            "Albums" -> library.albumList.map { it.toAlbum().toMediaItem() }.sorted()
+            "Artists" -> library.artistMap.values.map { it.toArtist().toMediaItem() }.sorted()
+            "Genres" -> library.genreList.map { it.toShelf() }.toFeed()
+            else -> library.songList.sortedByDescending {
                 it.extras["addDate"]?.toLongOrNull()
-            }.map { it.toMediaItem().toShelf() }
+            }.map { it.toMediaItem().toShelf() }.toFeed(playShuffle = true, filter = true)
         }
+    } else {
         saveInHistory(query)
         val tracks = library.songList.map { it }.searchBy(query) {
             listOf(it.title, it.album?.title) + it.artists.map { artist -> artist.name }
@@ -389,22 +398,24 @@ class OfflineExtension(
 
                 listOf(listOfNotNull(exactMatch), containers).flatten()
             }
-        }
-    }.toPaged()
+        }.toFeed()
+    }
 
     override suspend fun getLibraryTabs(): List<Tab> = listOf(
         "Playlists", "Folders"
     ).map { Tab(it, it) }
 
-    override fun getLibraryFeed(tab: Tab?): PagedData<Shelf> {
+    override fun getLibraryFeed(tab: Tab?): Feed {
         if (refreshLibrary) refreshLibrary()
-        return when (tab?.id) {
+        val bruh: PagedData<Shelf> = when (tab?.id) {
             "Folders" -> library.folderStructure.folderList.entries.firstOrNull()?.value
                 ?.toShelf(context, null)?.items ?: PagedData.Single { listOf() }
 
-            else ->
-                library.playlistList.map { it.toPlaylist().toMediaItem().toShelf() }.toPaged()
+            else -> PagedData.Single {
+                library.playlistList.map { it.toPlaylist().toMediaItem().toShelf() }
+            }
         }
+        return bruh.toFeed(showFilterButton = true, showSearchButton = true)
     }
 
     override suspend fun listEditablePlaylists(track: Track?) = library.playlistList.map {

@@ -10,7 +10,7 @@ plugins {
 
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
-val version = "2.0.$gitCount"
+val version = "2.1.$gitCount"
 
 android {
     namespace = "dev.brahmkshatriya.echo"
@@ -86,11 +86,20 @@ dependencies {
 }
 
 fun execute(vararg command: String): String {
-    val processBuilder = ProcessBuilder(*command)
-    val hashCode = command.joinToString().hashCode().toString()
-    val output = File.createTempFile(hashCode, "")
-    processBuilder.redirectOutput(output)
-    val process = processBuilder.start()
-    process.waitFor()
-    return output.readText().dropLast(1)
+    val process = ProcessBuilder(*command)
+        .redirectOutput(ProcessBuilder.Redirect.PIPE)
+        .redirectError(ProcessBuilder.Redirect.PIPE)
+        .start()
+    val output = process.inputStream.bufferedReader().readText()
+    val errorOutput = process.errorStream.bufferedReader().readText()
+    val exitCode = process.waitFor()
+    if (exitCode != 0) throw Exception(
+        """
+        Command failed with exit code $exitCode. 
+        Command: ${command.joinToString(" ")}
+        Stdout: $output
+        Stderr: $errorOutput
+        """.trimIndent()
+    )
+    return output.trim()
 }

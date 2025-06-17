@@ -4,9 +4,8 @@ import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
@@ -47,7 +46,7 @@ class SearchViewModel(
         }
 
     override suspend fun getFeed(extension: Extension<*>) =
-        extension.get<SearchFeedClient, PagedData<Shelf>> {
+        extension.get<SearchFeedClient, Feed> {
             searchFeed(query ?: "", tab)
         }
 

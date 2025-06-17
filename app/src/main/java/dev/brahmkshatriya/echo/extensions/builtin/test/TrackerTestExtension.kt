@@ -28,7 +28,7 @@ class TrackerTestExtension : TrackerClient {
     override fun setSettings(settings: Settings) {}
 
     override suspend fun onTrackChanged(details: TrackDetails?) {
-        println("onTrackChanged")
+        println("onTrackChanged ${details?.track?.id}")
     }
 
     override val markAsPlayedDuration = 30000L

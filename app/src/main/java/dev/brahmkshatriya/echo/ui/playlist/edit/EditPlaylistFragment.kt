@@ -80,7 +80,7 @@ class EditPlaylistFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
         applyInsets {
-            binding.recyclerView.applyContentInsets(it)
+            binding.recyclerView.applyContentInsets(it, 96)
             binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
 

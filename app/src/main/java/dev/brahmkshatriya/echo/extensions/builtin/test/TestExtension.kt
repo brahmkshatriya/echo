@@ -20,6 +20,7 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -166,7 +167,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         this.webViewClient = webViewClient
     }
 
-    override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
+    override fun getHomeFeed(tab: Tab?) = PagedData.Single {
         listOf(
             Shelf.Lists.Categories(
                 "Bruh",
@@ -192,7 +193,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
             Srcs.Merged.createTrack(),
             Srcs.M3U8.createTrack()
         )
-    }
+    }.toFeed()
 
     private val radio = Radio("empty", "empty")
     override fun loadTracks(radio: Radio) = PagedData.Single {

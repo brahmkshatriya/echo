@@ -63,7 +63,7 @@ class DownloadExtension(
         progressFlow: MutableStateFlow<Progress>,
         context: DownloadContext,
         files: List<File>
-    ) = test(progressFlow, "Merging")
+    ) = test(progressFlow, "Merging", true)
 
     override suspend fun tag(
         progressFlow: MutableStateFlow<Progress>,
@@ -106,12 +106,17 @@ class DownloadExtension(
         }
     }
 
-    private suspend fun test(progressFlow: MutableSharedFlow<Progress>, type: String): File {
-        progressFlow.emit(Progress(10, 0))
+    private suspend fun test(
+        progressFlow: MutableSharedFlow<Progress>,
+        type: String,
+        crash: Boolean = false
+    ): File {
+        progressFlow.emit(Progress(1000, 0))
+        if (crash) throw Exception("Test crash for $type")
         var it = 0L
-        while (it < 10) {
-            delay(1000)
-            progressFlow.emit(Progress(10, it))
+        while (it < 1000) {
+            delay(1)
+            progressFlow.emit(Progress(1000, it))
             it++
         }
         return this.context.cacheDir

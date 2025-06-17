@@ -56,8 +56,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
-        android:paddingBottom="96dp"
         android:paddingTop="12dp"
+        android:paddingBottom="96dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         tools:itemCount="1"
@@ -68,58 +68,51 @@
         layout="@layout/item_loading" />
 
 
-    <FrameLayout
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/fabContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom"
-        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior">
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="12dp"
+        android:translationZ="8dp"
+        app:cardBackgroundColor="?navBackground"
+        app:cardCornerRadius="40dp"
+        app:strokeWidth="0dp">
 
-        <com.google.android.material.card.MaterialCardView
+        <com.google.android.material.button.MaterialButtonGroup
+            style="@style/Widget.Material3.MaterialButtonGroup.Connected"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginBottom="12dp"
-            android:translationZ="8dp"
-            app:cardBackgroundColor="?navBackground"
-            app:cardCornerRadius="40dp"
-            app:strokeWidth="0dp">
+            android:layout_marginHorizontal="4dp"
+            android:spacing="4dp">
 
-            <com.google.android.material.button.MaterialButtonGroup
-                style="@style/Widget.Material3.MaterialButtonGroup.Connected"
-                android:layout_width="match_parent"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/add"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="4dp"
-                android:spacing="4dp">
+                android:layout_weight="1"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:minHeight="64dp"
+                android:text="@string/add_song"
+                app:icon="@drawable/ic_add_circle" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/add"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="middle"
-                    android:maxLines="1"
-                    android:minHeight="64dp"
-                    android:text="@string/add_song"
-                    app:icon="@drawable/ic_add_circle" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/save"
+                style="@style/Widget.Material3.Button.UnelevatedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:minHeight="64dp"
+                android:text="@string/save"
+                app:icon="@drawable/ic_save" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/save"
-                    style="@style/Widget.Material3.Button.UnelevatedButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="middle"
-                    android:maxLines="1"
-                    android:minHeight="64dp"
-                    android:text="@string/save"
-                    app:icon="@drawable/ic_save" />
+        </com.google.android.material.button.MaterialButtonGroup>
 
-            </com.google.android.material.button.MaterialButtonGroup>
-
-        </com.google.android.material.card.MaterialCardView>
-
-    </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

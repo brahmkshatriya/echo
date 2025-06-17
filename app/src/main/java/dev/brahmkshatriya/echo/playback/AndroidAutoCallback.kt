@@ -141,16 +141,16 @@ abstract class AndroidAutoCallback(
             }
 
             HOME -> extension.getFeed<HomeFeedClient>(
-                context, parentId, HOME, page, { getHomeTabs() }, { getHomeFeed(it) }
+                context, parentId, HOME, page, { getHomeTabs() }, { getHomeFeed(it).pagedData }
             )
 
             LIBRARY -> extension.getFeed<LibraryFeedClient>(
-                context, parentId, LIBRARY, page, { getLibraryTabs() }, { getLibraryFeed(it) }
+                context, parentId, LIBRARY, page, { getLibraryTabs() }, { getLibraryFeed(it).pagedData }
             )
 
             SEARCH -> extension.getFeed<SearchFeedClient>(
                 context, parentId, SEARCH, page,
-                { searchTabs(searchQuery) }, { searchFeed(searchQuery, it) }
+                { searchTabs(searchQuery) }, { searchFeed(searchQuery, it).pagedData }
             )
 
             else -> LibraryResult.ofItemList(

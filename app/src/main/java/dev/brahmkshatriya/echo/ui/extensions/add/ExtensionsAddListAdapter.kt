@@ -35,8 +35,21 @@ class ExtensionsAddListAdapter(
         fun onChecked(item: Updater.ExtensionAssetResponse, isChecked: Boolean)
     }
 
-    inner class ViewHolder(val binding: ItemExtensionAddBinding) :
-        RecyclerView.ViewHolder(binding.root)
+    inner class ViewHolder(
+        val binding: ItemExtensionAddBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.extensionSwitch.setOnCheckedChangeListener { _, checked ->
+                val item = runCatching { getItem(bindingAdapterPosition) }.getOrNull()
+                if (item == null) return@setOnCheckedChangeListener
+                listener.onChecked(item.item, checked)
+            }
+            binding.root.setOnClickListener {
+                binding.extensionSwitch.isChecked = !binding.extensionSwitch.isChecked
+            }
+            binding.extensionSwitch.isClickable = false
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -56,13 +69,6 @@ class ExtensionsAddListAdapter(
             }
         }
         binding.extensionSwitch.isChecked = isChecked
-        binding.extensionSwitch.setOnCheckedChangeListener { _, checked ->
-            listener.onChecked(item, checked)
-        }
-        binding.root.setOnClickListener {
-            binding.extensionSwitch.isChecked = !binding.extensionSwitch.isChecked
-        }
-        binding.extensionSwitch.isClickable = false
     }
 
     class Header(

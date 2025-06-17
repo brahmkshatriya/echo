@@ -95,7 +95,7 @@ class ExtensionsViewModel(
     }
 
     fun addExtensions(
-        selectedExtensions: MutableList<Updater.ExtensionAssetResponse>
+        selectedExtensions: List<Updater.ExtensionAssetResponse>
     ) {
         viewModelScope.launch {
             InstallationUtils.addExtensions(

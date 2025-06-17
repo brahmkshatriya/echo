@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 
@@ -27,12 +28,11 @@ interface HomeFeedClient {
      * [tab] will be null if [getHomeTabs] returned an empty list.
      *
      * @param tab the tab to get the feed of.
-     * @return the paged shelves.
+     * @return the feed.
      *
      * @see Tab
-     * @see Shelf
-     * @see PagedData
+     * @see Feed
      */
-    fun getHomeFeed(tab: Tab?): PagedData<Shelf>
+    fun getHomeFeed(tab: Tab?): Feed
 
 }

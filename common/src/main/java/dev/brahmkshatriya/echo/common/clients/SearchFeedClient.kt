@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
@@ -32,7 +33,7 @@ interface SearchFeedClient {
     suspend fun deleteQuickSearch(item: QuickSearchItem)
 
     /**
-     * Searches for tabs.
+     * Get the tabs for the search feed.
      *
      * @param query the query to search for, will be empty if the user hasn't typed anything.
      * @return the tabs.
@@ -42,15 +43,14 @@ interface SearchFeedClient {
     suspend fun searchTabs(query: String): List<Tab>
 
     /**
-     * Searches for shelves.
+     * Gets the search feed.
      *
      * @param query the query to search for, will be empty if the user hasn't typed anything.
      * @param tab the tab to search in.
-     * @return the paged shelves.
+     * @return the feed.
      *
      * @see Tab
-     * @see Shelf
-     * @see PagedData
+     * @see Feed
      */
-    fun searchFeed(query: String, tab: Tab?): PagedData<Shelf>
+    fun searchFeed(query: String, tab: Tab?): Feed
 }

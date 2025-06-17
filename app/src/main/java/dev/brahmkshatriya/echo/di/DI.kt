@@ -2,10 +2,7 @@ package dev.brahmkshatriya.echo.di
 
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.DownloadDatabase
-import dev.brahmkshatriya.echo.download.workers.DownloadingWorker
-import dev.brahmkshatriya.echo.download.workers.LoadingWorker
-import dev.brahmkshatriya.echo.download.workers.MergingWorker
-import dev.brahmkshatriya.echo.download.workers.TaggingWorker
+import dev.brahmkshatriya.echo.download.DownloadWorker
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.playback.PlayerService
@@ -14,6 +11,7 @@ import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler
 import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
+import dev.brahmkshatriya.echo.ui.extensions.add.AddViewModel
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginViewModel
 import dev.brahmkshatriya.echo.ui.main.home.HomeFeedViewModel
@@ -50,10 +48,7 @@ object DI {
         includes(extensionModule)
         singleOf(DownloadDatabase::create)
         singleOf(::Downloader)
-        workerOf(::LoadingWorker)
-        workerOf(::DownloadingWorker)
-        workerOf(::MergingWorker)
-        workerOf(::TaggingWorker)
+        workerOf(::DownloadWorker)
     }
 
     private val playerModule = module {
@@ -72,6 +67,7 @@ object DI {
 
         viewModelOf(::ExtensionsViewModel)
         viewModelOf(::LoginUserListViewModel)
+        viewModelOf(::AddViewModel)
         viewModelOf(::LoginViewModel)
 
         viewModelOf(::HomeFeedViewModel)

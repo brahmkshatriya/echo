@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.withExtensionId
@@ -93,7 +93,7 @@ class DownloadViewModel(
     }
 
     fun deleteDownload(item: EchoMediaItem) {
-        when(item) {
+        when (item) {
             is EchoMediaItem.TrackItem -> downloader.deleteDownload(item.id)
             else -> downloader.deleteContext(item.id)
         }
@@ -118,7 +118,7 @@ class DownloadViewModel(
                         context!!.mediaItem.toShelf().withExtensionId(download.extensionId)
                     })
                 }
-                val extension = extensions.music.getExtensionOrThrow(UnifiedExtension.metadata.id)
+                val extension = extensions.music.getExtension(UnifiedExtension.metadata.id)
                 downloaded.value = PagingUtils.Data(
                     extension,
                     "downloaded",

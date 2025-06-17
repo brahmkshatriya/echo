@@ -9,7 +9,7 @@ import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.awa
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.download.exceptions.DownloadException
 import dev.brahmkshatriya.echo.download.exceptions.DownloaderExtensionNotFoundException
-import dev.brahmkshatriya.echo.download.workers.BaseWorker.Companion.getTitle
+import dev.brahmkshatriya.echo.download.tasks.BaseTask.Companion.getTitle
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionLoaderException

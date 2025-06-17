@@ -1,16 +1,15 @@
-package dev.brahmkshatriya.echo.download.workers
+package dev.brahmkshatriya.echo.download.tasks
 
 import android.content.Context
-import androidx.work.WorkerParameters
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
 import java.io.File
 
-class MergingWorker(
+class MergingTask(
     context: Context,
-    workerParams: WorkerParameters,
     downloader: Downloader,
-) : BaseWorker(context, workerParams, downloader) {
+    override val trackId: Long,
+) : BaseTask(context, downloader, trackId) {
     override val type = TaskType.Merging
 
     override suspend fun work(trackId: Long) {

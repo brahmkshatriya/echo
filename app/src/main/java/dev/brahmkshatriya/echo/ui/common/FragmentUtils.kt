@@ -20,7 +20,6 @@ import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
-import org.koin.androidx.fragment.android.replace
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 object FragmentUtils {
@@ -31,7 +30,7 @@ object FragmentUtils {
         viewModel.collapsePlayer()
         parentFragmentManager.commit {
             setReorderingAllowed(true)
-            replace<T>(id, args = bundle)
+            add<T>(id, args = bundle)
             addToBackStack(null)
         }
     }
