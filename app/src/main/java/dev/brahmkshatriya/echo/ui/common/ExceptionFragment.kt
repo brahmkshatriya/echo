@@ -22,7 +22,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import kotlinx.coroutines.launch
 
 class ExceptionFragment : Fragment() {
@@ -51,7 +51,7 @@ class ExceptionFragment : Fragment() {
             binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
         applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.toolbarOutline.alpha = offset
             binding.exceptionIconContainer.alpha = 1 - offset
         }

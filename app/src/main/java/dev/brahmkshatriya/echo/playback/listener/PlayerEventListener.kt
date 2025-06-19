@@ -53,9 +53,8 @@ class PlayerEventListener(
     }
 
     private fun updateCurrentFlow() {
-        if (player.currentMediaItem == null && player.mediaItemCount > 0) {
+        if (player.currentMediaItem == null && player.mediaItemCount > 0)
             throw Exception("This is possible")
-        }
         currentFlow.value = player.currentMediaItem?.let {
             val isPlaying = player.isPlaying && player.playbackState == Player.STATE_READY
             PlayerState.Current(player.currentMediaItemIndex, it, it.isLoaded, isPlaying)

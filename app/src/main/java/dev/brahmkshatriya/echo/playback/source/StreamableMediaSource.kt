@@ -65,12 +65,11 @@ class StreamableMediaSource(
         super.prepareSourceInternal(mediaTransferListener)
         val handler = Util.createHandlerForCurrentLooper()
         scope.launch {
-            val (new, server) = runCatching { loader.load(mediaItem) }.getOrElse {
+            var (new, serv) = runCatching { loader.load(mediaItem) }.getOrElse {
                 error = it
                 return@launch
             }
-            changeFlow.emit(mediaItem to new)
-            mediaItem = new
+            val server = serv
             state.servers[new.mediaId] = server
             state.serverChanged.emit(Unit)
 
@@ -95,10 +94,15 @@ class StreamableMediaSource(
                         val index = mediaItem.sourceIndex
                         val source = sources.getOrNull(index)
                             ?: sources.select(context, new.extensionId) { it.quality }
-                        factories.create(new, index, source)
+                        val newIndex = sources.indexOf(source)
+                        new = MediaItemUtils.buildSource(new, newIndex)
+                        factories.create(new, newIndex, source)
                     }
                 }
             }
+
+            changeFlow.emit(mediaItem to new)
+            mediaItem = new
 
             handler.post {
                 runCatching {

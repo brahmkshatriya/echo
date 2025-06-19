@@ -8,7 +8,6 @@ import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.di.App
@@ -18,7 +17,6 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
-import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.withExtensionId
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
@@ -44,7 +42,7 @@ class DownloadViewModel(
     val flow = downloader.flow
 
     fun addToDownload(
-        activity: FragmentActivity, clientId: String, item: EchoMediaItem
+        activity: FragmentActivity, extensionId: String, item: EchoMediaItem
     ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
             messageFlow.emit(Message(getString(R.string.downloading_x, item.title)))
@@ -61,7 +59,7 @@ class DownloadViewModel(
             )
 
             val downloads = downloadExt.get<DownloadClient, List<DownloadContext>>(throwableFlow) {
-                getDownloadTracks(clientId, item)
+                getDownloadTracks(extensionId, item)
             } ?: return@with
 
             if (downloads.isEmpty()) return@with messageFlow.emit(
@@ -106,18 +104,7 @@ class DownloadViewModel(
 
     init {
         viewModelScope.launch {
-            flow.collectLatest { infos ->
-                val downloads = infos.filter { it.download.finalFile != null }.groupBy {
-                    it.context?.id
-                }.flatMap { (id, infos) ->
-                    if (id == null) infos.map {
-                        it.download.track.toMediaItem().toShelf()
-                            .withExtensionId(it.download.extensionId)
-                    }
-                    else listOf(infos.first().run {
-                        context!!.mediaItem.toShelf().withExtensionId(download.extensionId)
-                    })
-                }
+            downloader.downloadShelf.collectLatest { downloads ->
                 val extension = extensions.music.getExtension(UnifiedExtension.metadata.id)
                 downloaded.value = PagingUtils.Data(
                     extension,

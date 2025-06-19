@@ -41,7 +41,7 @@ import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.addOnDestroyObserver
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.collections.set
@@ -64,7 +64,7 @@ class LoginFragment : Fragment() {
                 genericFragmentContainer.applyContentInsets(it, 0)
             }
             applyBackPressCallback()
-            appBarLayout.onAppBarChangeListener { offset ->
+            appBarLayout.configureAppBar { offset ->
                 toolbarOutline.alpha = offset
                 iconContainer.alpha = 1 - offset
             }

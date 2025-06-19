@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.ui.main.MainFragment.Companion.applyPlayerBg
 import dev.brahmkshatriya.echo.ui.main.MainFragment.Companion.configureMainMenu
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
@@ -30,15 +30,15 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyPlayerBg(view, binding.appBarLayout)
-        applyInsetsMain(binding.appBarLayout, binding.recyclerView)
+        applyPlayerBg(view)
+        applyInsetsMain(binding.appBarLayout, binding.recyclerViewHome)
         applyBackPressCallback()
         binding.toolBar.configureMainMenu(parentFragment as MainFragment)
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.appBarOutline.alpha = offset
             binding.appBarOutline.isVisible = offset > 0
             binding.toolBar.alpha = 1 - offset
         }
-        configureFeed(viewModel, binding.recyclerView, binding.swipeRefresh, binding.tabLayout)
+        configureFeed(viewModel, binding.recyclerViewHome, binding.swipeRefresh, binding.tabLayout)
     }
 }

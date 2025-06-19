@@ -79,6 +79,7 @@ abstract class BaseTask(
             TaskType.Downloading -> getString(R.string.downloading_x, title)
             TaskType.Merging -> getString(R.string.merging_x, title)
             TaskType.Tagging -> getString(R.string.tagging_x, title)
+            TaskType.Saving -> getString(R.string.saving_x, title)
         }
 
         private const val DOWNLOAD_CHANNEL_ID = "download_channel"
@@ -102,7 +103,7 @@ abstract class BaseTask(
             .setContentTitle(context.getString(R.string.download_complete))
             .setContentText(title)
             .setStyle(
-                NotificationCompat.BigPictureStyle().bigPicture(drawable?.toBitmap())
+                NotificationCompat.BigPictureStyle().bigLargeIcon(drawable?.toBitmap())
             )
             .setContentIntent(getMainIntent(context))
             .setAutoCancel(true)

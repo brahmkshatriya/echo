@@ -25,7 +25,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -85,7 +85,7 @@ class EditPlaylistFragment : Fragment() {
         }
 
         applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.toolbarOutline.alpha = offset
             binding.toolbarIconContainer.alpha = 1 - offset
         }

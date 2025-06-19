@@ -44,8 +44,8 @@
     </style>
 
     <style name="EchoAppBarLayout" parent="Widget.Material3.AppBarLayout">
-        <item name="android:background">?echoBackground</item>
-        <item name="liftOnScrollColor">?navBackground</item>
+        <item name="android:background">?navBackground</item>
+        <item name="liftOnScrollColor">@android:color/transparent</item>
     </style>
 
     <style name="Toolbar" parent="Widget.Material3.Toolbar">

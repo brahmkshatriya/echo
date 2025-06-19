@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.main
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -73,17 +72,14 @@ class MainFragment : Fragment() {
     }
 
     companion object {
-        fun Fragment.applyPlayerBg(view: View, appBar: View) {
+        fun Fragment.applyPlayerBg(view: View) {
             val uiViewModel by activityViewModel<UiViewModel>()
             val combined = uiViewModel.run {
                 playerColors.combine(extensionColor) { a, b -> a?.accent ?: b }
             }
             val settings = requireContext().getSettings()
-            val defaultBg = appBar.background
             observe(combined) {
                 val isGradient = settings.getBoolean(BACKGROUND_GRADIENT, true)
-                if (isGradient) appBar.setBackgroundColor(Color.TRANSPARENT)
-                else appBar.background = defaultBg
                 val color = if (isGradient) it ?: MaterialColors.getColor(
                     view, androidx.appcompat.R.attr.colorPrimary
                 ) else MaterialColors.getColor(view, R.attr.echoBackground)

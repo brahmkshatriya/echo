@@ -21,7 +21,7 @@ import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener.Companion.get
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -61,7 +61,7 @@ class DownloadFragment : Fragment() {
             binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
         applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.toolbarOutline.alpha = offset
             binding.toolbarIconContainer.alpha = 1 - offset
         }

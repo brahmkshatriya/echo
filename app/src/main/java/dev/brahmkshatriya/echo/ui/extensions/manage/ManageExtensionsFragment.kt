@@ -27,7 +27,7 @@ import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configure
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ManageExtensionsFragment : Fragment() {
@@ -47,7 +47,7 @@ class ManageExtensionsFragment : Fragment() {
             binding.fabContainer.applyInsets(it)
         }
         applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.appBarOutline.alpha = offset
             binding.appBarOutline.isVisible = offset > 0
             binding.toolBar.alpha = 1 - offset

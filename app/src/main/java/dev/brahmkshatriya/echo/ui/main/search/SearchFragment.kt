@@ -26,7 +26,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -50,7 +50,7 @@ class SearchFragment : Fragment() {
         }
 
         setupTransition(view)
-        applyPlayerBg(view, binding.appBarLayout)
+        applyPlayerBg(view)
         applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
             binding.quickSearchView.updatePaddingRelative(start = it.start, end = it.end)
             binding.quickSearchRecyclerView.updatePaddingRelative(bottom = it.bottom)
@@ -58,7 +58,7 @@ class SearchFragment : Fragment() {
         applyBackPressCallback {
             if (it == STATE_EXPANDED) binding.quickSearchView.hide()
         }
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.appBarOutline.alpha = offset
             binding.appBarOutline.isVisible = offset > 0
             binding.searchBar.alpha = 1 - offset

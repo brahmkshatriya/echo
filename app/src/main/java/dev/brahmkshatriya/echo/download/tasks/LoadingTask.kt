@@ -63,7 +63,8 @@ class LoadingTask(
         }.toQueueItem()
         val mergeRequest = MergingTask(context, downloader, trackId).toQueueItem()
         val taggingRequest = TaggingTask(context, downloader, trackId).toQueueItem()
+        val saveToUnified = SaveToUnifiedTask(context, downloader, trackId).toQueueItem()
 
-        manager.enqueue(trackId, listOf(requests, mergeRequest, taggingRequest))
+        manager.enqueue(trackId, listOf(requests, mergeRequest, taggingRequest, saveToUnified))
     }
 }

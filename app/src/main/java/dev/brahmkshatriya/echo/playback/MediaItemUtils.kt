@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -195,7 +194,6 @@ object MediaItemUtils {
             )
             val downloaded =
                 downloads.filter { it.download.trackId == id }.mapNotNull { it.download.finalFile }
-            Log.d("BRUH", "server index $serverIndex")
             putInt(
                 "serverIndex",
                 serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded)
@@ -216,10 +214,10 @@ object MediaItemUtils {
     val Bundle?.isLoaded get() = this?.getBoolean("loaded") ?: false
     val Bundle?.extensionId get() = requireNotNull(this?.getString("extensionId"))
     val Bundle?.context get() = this?.getSerialized<EchoMediaItem?>("context")
-    val Bundle?.serverIndex get() = this?.getInt("serverIndex") ?: -1
-    val Bundle?.sourceIndex get() = this?.getInt("sourceIndex") ?: -1
-    val Bundle?.backgroundIndex get() = this?.getInt("backgroundIndex") ?: -1
-    val Bundle?.subtitleIndex get() = this?.getInt("subtitleIndex") ?: -1
+    val Bundle?.serverIndex get() = this?.getInt("serverIndex", -1) ?: -1
+    val Bundle?.sourceIndex get() = this?.getInt("sourceIndex", -1) ?: -1
+    val Bundle?.backgroundIndex get() = this?.getInt("backgroundIndex", -1) ?: -1
+    val Bundle?.subtitleIndex get() = this?.getInt("subtitleIndex", -1) ?: -1
     val Bundle?.background get() = this?.getSerialized<Streamable.Media.Background?>("background")
     val Bundle?.retries get() = this?.getInt("retries") ?: 0
     val Bundle?.unloadedCover get() = this?.getSerialized<ImageHolder?>("unloadedCover")

@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.media
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +9,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.color.MaterialColors
@@ -17,10 +17,10 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentMediaBinding
+import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyFabInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.adapter.MediaHeaderAdapter
 import dev.brahmkshatriya.echo.ui.media.adapter.TrackAdapter
@@ -42,8 +42,8 @@ import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable.BACKGROUND_GRADIENT
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -89,12 +89,8 @@ class MediaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val settings = requireContext().getSettings()
         setupTransition(view)
-        applyInsets {
-            binding.recyclerView.applyContentInsets(it)
-            binding.fabContainer.applyFabInsets(it, systemInsets.value)
-        }
         applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.appbarOutline.alpha = offset
             binding.coverContainer.alpha = 1 - offset
             binding.endIcon.alpha = 1 - offset
@@ -121,6 +117,17 @@ class MediaFragment : Fragment() {
         observe(playerViewModel.playerState.current) {
             listAdapter.onCurrentChanged(it)
         }
+
+        val uiViewModel by activityViewModel<UiViewModel>()
+        observe(uiViewModel.combined.combine(vm.itemFlow) { a, b -> a to b }) { (it, item) ->
+            binding.recyclerView.applyContentInsets(it)
+            val isFabVisible = (item as? EchoMediaItem.Lists.PlaylistItem)?.playlist?.isEditable ?: false
+            binding.fabContainer.isVisible = isFabVisible
+            if (isFabVisible) binding.recyclerView.updatePadding(
+                bottom = it.bottom + 96.dpToPx(requireContext()),
+            )
+            binding.fabContainer.applyFabInsets(it, uiViewModel.systemInsets.value)
+        }
         observe(vm.itemFlow) { item ->
             if (item is EchoMediaItem.Profile) binding.coverContainer.run {
                 val maxWidth = 240.dpToPx(context)
@@ -134,21 +141,12 @@ class MediaFragment : Fragment() {
                 val color = PlayerColors.getDominantColor(it?.toBitmap().takeIf {
                     settings.getBoolean(BACKGROUND_GRADIENT, true)
                 })
-                val (appBar, collapsing) = if (color != null) Color.TRANSPARENT to Color.TRANSPARENT
-                else Pair(
-                    MaterialColors.getColor(view, R.attr.echoBackground),
-                    MaterialColors.getColor(view, R.attr.navBackground)
-                )
-                binding.appBarLayout.setBackgroundColor(appBar)
-                binding.collapsingToolbar.setContentScrimColor(collapsing)
                 view.background = GradientDrawable.createBg(
                     view, color ?: MaterialColors.getColor(view, R.attr.echoBackground)
                 )
             }
             binding.toolBar.title = item.title.trim()
             binding.endIcon.setImageResource(item.icon)
-            binding.fabContainer.isVisible =
-                (item as? EchoMediaItem.Lists.PlaylistItem)?.playlist?.isEditable ?: false
         }
 
         binding.swipeRefresh.setOnRefreshListener { vm.refresh(true) }

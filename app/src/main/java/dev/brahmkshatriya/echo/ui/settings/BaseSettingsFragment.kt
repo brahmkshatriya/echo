@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 
 abstract class BaseSettingsFragment : Fragment() {
 
@@ -41,7 +41,7 @@ abstract class BaseSettingsFragment : Fragment() {
         setupTransition(view)
 
         applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.toolbarOutline.alpha = offset
             binding.extensionIcon.alpha = 1 - offset
         }

@@ -33,9 +33,10 @@ object UiUtils {
         }
     }
 
-    fun AppBarLayout.onAppBarChangeListener(block: (offset: Float) -> Unit) {
-        addOnOffsetChangedListener { appBarLayout, verticalOffset ->
-            val offset = -verticalOffset / appBarLayout.totalScrollRange.toFloat()
+    fun AppBarLayout.configureAppBar(block: (offset: Float) -> Unit) {
+        addOnOffsetChangedListener { _, verticalOffset ->
+            val offset = -verticalOffset / totalScrollRange.toFloat()
+            background?.mutate()?.alpha = (offset * 255).toInt()
             runCatching { block(offset) }
         }
     }

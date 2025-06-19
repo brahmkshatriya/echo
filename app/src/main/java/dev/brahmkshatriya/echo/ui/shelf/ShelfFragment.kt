@@ -15,7 +15,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoClearedNullable
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -41,7 +41,7 @@ class ShelfFragment : Fragment() {
         setupTransition(view)
         applyBackPressCallback()
         val binding = binding!!
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.toolbarOutline.alpha = offset
         }
         binding.title.setNavigationOnClickListener {

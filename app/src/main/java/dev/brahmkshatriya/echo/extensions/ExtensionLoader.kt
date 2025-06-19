@@ -3,10 +3,12 @@ package dev.brahmkshatriya.echo.extensions
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.helpers.WebViewClient
 import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
@@ -17,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import java.io.File
@@ -25,6 +28,7 @@ import java.io.File
 class ExtensionLoader(
     val app: App,
     val db: ExtensionDatabase,
+    private val downloadShelf: MutableStateFlow<List<Shelf>>,
     private val cache: SimpleCache,
 ) {
     val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("ExtensionLoader")
@@ -33,9 +37,11 @@ class ExtensionLoader(
     val extensions = Extensions(app.settings, scope, app.throwFlow)
     val updater = Updater(this)
 
+    val unified =
+        Injectable<ExtensionClient> { UnifiedExtension(app.context, downloadShelf, cache) }
     private val extensionRepo = ExtensionsRepo(
         this,
-        UnifiedExtension.metadata to Injectable { UnifiedExtension(app.context, cache) },
+        UnifiedExtension.metadata to unified,
         OfflineExtension.metadata to Injectable { OfflineExtension(app.context) },
 //        TestExtension.metadata to Injectable { TestExtension() },
 //        DownloadExtension.metadata to Injectable { DownloadExtension(app.context) }

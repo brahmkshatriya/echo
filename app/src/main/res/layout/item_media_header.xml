@@ -64,9 +64,10 @@
             android:layout_width="56dp"
             android:layout_height="wrap_content"
             android:contentDescription="@string/shuffle"
-            android:minHeight="64dp"
             android:insetRight="0dp"
-            android:padding="18dp"
+            android:minHeight="64dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="0dp"
             app:icon="@drawable/ic_shuffle" />
 
     </com.google.android.material.button.MaterialButtonGroup>

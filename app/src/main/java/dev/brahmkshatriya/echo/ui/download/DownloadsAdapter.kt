@@ -50,9 +50,13 @@ class DownloadsAdapter(
                 ) {
                     extensionIcon.setImageDrawable(it)
                 }
-                val sub = entity.exception?.title ?: item.context?.mediaItem?.title
+                val sub = item.context?.mediaItem?.title
                 subtitle.text = sub
                 subtitle.isVisible = !sub.isNullOrEmpty()
+
+                exception.text = entity.exception?.title
+                exception.isVisible = exception.text.isNotEmpty()
+
                 remove.setOnClickListener {
                     listener.onCancel(entity.id)
                 }

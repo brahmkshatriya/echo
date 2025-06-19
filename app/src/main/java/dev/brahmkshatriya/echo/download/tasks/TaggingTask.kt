@@ -2,10 +2,8 @@ package dev.brahmkshatriya.echo.download.tasks
 
 import android.content.Context
 import android.media.MediaScannerConnection
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
-import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
 import java.io.File
 
 class TaggingTask(
@@ -26,12 +24,6 @@ class TaggingTask(
         MediaScannerConnection.scanFile(
             app, arrayOf(file.toString()), null, null
         )
-        val context = downloadContext.context
-        val item = if (context == null) download.track.toMediaItem() else {
-            val allDownloads = dao.getDownloadsForContext(context.id)
-            if (allDownloads.all { it.finalFile != null }) context else null
-        } ?: return
-        createCompleteNotification(app, item.title, item.cover.loadDrawable(app))
     }
 
 }

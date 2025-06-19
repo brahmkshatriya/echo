@@ -27,6 +27,7 @@ data class DownloadEntity(
     val toTagFile: String? = null,
     val finalFile: String? = null,
     val exceptionFile: String? = null,
+    val fullyDownloaded: Boolean = false
 ) {
     val track by lazy { data.toData<Track>() }
     val indexes by lazy { indexesData?.toData<List<Int>>().orEmpty() }

@@ -60,6 +60,7 @@ import kotlinx.coroutines.flow.first
 @OptIn(UnstableApi::class)
 class UnifiedExtension(
     private val context: Context,
+    private val downloadFeed: MutableStateFlow<List<Shelf>>,
     private val cache: SimpleCache
 ) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient, TrackClient,
@@ -101,7 +102,7 @@ class UnifiedExtension(
         val Map<String, String>.extensionId
             get() = this[EXTENSION_ID] ?: throw Exception("Extension id not found")
 
-        private fun Track.withExtensionId(id: String, cached: Boolean = false) = copy(
+        fun Track.withExtensionId(id: String, cached: Boolean = false) = copy(
             extras = extras + mapOf(EXTENSION_ID to id, "cached" to cached.toString()),
             album = album?.withExtensionId(id),
             artists = artists.map { it.withExtensionId(id) },
@@ -495,7 +496,7 @@ class UnifiedExtension(
         }
     }
 
-    private val db = Room.databaseBuilder(
+    val db = Room.databaseBuilder(
         context, UnifiedDatabase::class.java, "unified-database"
     ).fallbackToDestructiveMigration(true).build()
 
@@ -539,14 +540,17 @@ class UnifiedExtension(
                 tracks = cachedTracks.size,
                 extras = mapOf(EXTENSION_ID to UNIFIED_ID)
             ).toMediaItem().toShelf() else null
-
             listOfNotNull(
-                cached,
                 Shelf.Category(
                     context.getString(R.string.saved),
                     PagedData.Single { db.getSaved().map { it.toShelf() } }
                 ),
-                *db.getPlaylists().map { it.toMediaItem().toShelf() }.toTypedArray()
+                Shelf.Category(
+                    context.getString(R.string.downloads),
+                    PagedData.Single { downloadFeed.value }
+                ),
+                cached,
+                *db.getCreatedPlaylists().map { it.toMediaItem().toShelf() }.toTypedArray()
             )
         }
     }.toFeed()
@@ -570,7 +574,7 @@ class UnifiedExtension(
         extension.client<TrackLikeClient, Unit> { likeTrack(track, isLiked) }
     }
 
-    override suspend fun listEditablePlaylists(track: Track?) = db.getPlaylists().map {
+    override suspend fun listEditablePlaylists(track: Track?) = db.getCreatedPlaylists().map {
         val has = db.getTracks(it).any { t -> t.id == track?.id }
         it to has
     }

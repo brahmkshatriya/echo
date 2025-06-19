@@ -23,7 +23,7 @@ import dev.brahmkshatriya.echo.ui.playlist.CreatePlaylistBottomSheet
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class LibraryFragment : Fragment() {
@@ -38,20 +38,20 @@ class LibraryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyPlayerBg(view, binding.appBarLayout)
-        applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
+        applyPlayerBg(view)
+        applyInsetsMain(binding.appBarLayout, binding.recyclerViewLib, 96) {
             binding.fabContainer.applyContentInsets(it)
         }
         applyBackPressCallback()
         binding.toolBar.configureMainMenu(parentFragment as MainFragment)
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.appBarOutline.alpha = offset
             binding.appBarOutline.isVisible = offset > 0
             binding.toolBar.alpha = 1 - offset
         }
 
         val listener = configureFeed(
-            viewModel, binding.recyclerView, binding.swipeRefresh, binding.tabLayout
+            viewModel, binding.recyclerViewLib, binding.swipeRefresh, binding.tabLayout
         )
 
         val parent = requireParentFragment()
@@ -59,16 +59,17 @@ class LibraryFragment : Fragment() {
             CreatePlaylistBottomSheet().show(parent.parentFragmentManager, null)
         }
 
-
         parent.parentFragmentManager.setFragmentResultListener("createPlaylist", this) { _, data ->
             val extensionId = data.getString("extensionId")
             val playlist = data.getSerialized<Playlist>("playlist")
-            if (extensionId != null && playlist != null) createSnack(Message(
-                getString(R.string.x_created, playlist.title),
-                Message.Action(getString(R.string.view)) {
-                    listener.onMediaItemClicked(extensionId, playlist.toMediaItem(), null)
-                }
-            ))
+            if (extensionId != null && playlist != null) createSnack(
+                Message(
+                    getString(R.string.x_created, playlist.title),
+                    Message.Action(getString(R.string.view)) {
+                        listener.onMediaItemClicked(extensionId, playlist.toMediaItem(), null)
+                    }
+                )
+            )
             viewModel.refresh(true)
         }
 

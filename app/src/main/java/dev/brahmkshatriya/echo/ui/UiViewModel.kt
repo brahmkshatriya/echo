@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
@@ -219,11 +220,15 @@ class UiViewModel(
         fun Fragment.applyInsetsMain(
             appBar: View,
             child: View,
+            bottom: Int = 12,
             block: UiViewModel.(Insets) -> Unit = {}
         ) {
             val uiViewModel by activityViewModel<UiViewModel>()
             observe(uiViewModel.combined) { insets ->
                 child.applyContentInsets(insets)
+                child.updatePadding(
+                    bottom = insets.bottom + bottom.dpToPx(child.context),
+                )
                 appBar.updatePaddingRelative(
                     top = insets.top,
                     start = insets.start,
