@@ -28,7 +28,6 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.withExtensionId
-import dev.brahmkshatriya.echo.utils.AdjustableSemaphore
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -57,8 +56,6 @@ class Downloader(
         .find { it.isClient<DownloadClient>() && it.isEnabled }
         ?: throw DownloaderExtensionNotFoundException()
 
-    val loadingSemaphore = AdjustableSemaphore()
-    val downloadSemaphore = AdjustableSemaphore()
     val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Downloader")
 
     val extensions = extensionLoader.extensions
@@ -71,6 +68,7 @@ class Downloader(
             Info(download, context, listOf())
         }
     }
+
     val taskManager = TaskManager(this)
 
     fun add(
@@ -79,9 +77,7 @@ class Downloader(
         val concurrentDownloads = downloadExtension()
             .get<DownloadClient, Int> { concurrentDownloads }
             .getOrNull()?.takeIf { it > 0 } ?: 2
-        loadingSemaphore.setMaxPermits(concurrentDownloads)
-        downloadSemaphore.setMaxPermits(concurrentDownloads)
-
+        taskManager.setConcurrency(concurrentDownloads)
         val contexts = downloads.mapNotNull { it.context }.distinctBy { it.id }.associate {
             it.id to dao.insertContextEntity(ContextEntity(0, it.id, it.toJson()))
         }

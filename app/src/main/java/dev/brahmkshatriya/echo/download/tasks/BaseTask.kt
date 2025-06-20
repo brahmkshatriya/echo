@@ -37,27 +37,25 @@ abstract class BaseTask(
     abstract val type: TaskType
     val progressFlow = MutableStateFlow(Progress())
     val throttledProgressFlow = progressFlow.throttleLatest(500L)
-    var running = false
+    val running = MutableStateFlow(false)
     suspend fun <T> withDownloadExtension(block: suspend DownloadClient.() -> T) =
         downloader.downloadExtension().get<DownloadClient, T> { block() }.getOrThrow()
 
     val dao = downloader.dao
 
     suspend fun doWork() = withContext(Dispatchers.IO) {
-        permit {
-            running = true
-            val result = runCatching { work(trackId) }
-            val throwable = result.exceptionOrNull()
-            val download = dao.getDownloadEntity(trackId)
-            if (throwable != null && download != null) {
-                val exception = DownloadException(type, download, throwable)
-                val exceptionFile = context.exceptionDir().resolve("$trackId.json")
-                exceptionFile.writeText(exception.toData(context).toJson())
-                dao.insertDownloadEntity(download.copy(exceptionFile = exceptionFile.absolutePath))
-            }
-            running = false
-            result
+        running.value = true
+        val result = runCatching { work(trackId) }
+        val throwable = result.exceptionOrNull()
+        val download = dao.getDownloadEntity(trackId)
+        if (throwable != null && download != null) {
+            val exception = DownloadException(type, download, throwable)
+            val exceptionFile = context.exceptionDir().resolve("$trackId.json")
+            exceptionFile.writeText(exception.toData(context).toJson())
+            dao.insertDownloadEntity(download.copy(exceptionFile = exceptionFile.absolutePath))
         }
+        running.value = false
+        result
     }
 
     suspend fun getDownload() = dao.getDownloadEntity(trackId)!!
@@ -70,7 +68,6 @@ abstract class BaseTask(
         )
     }
 
-    open suspend fun <T> permit(block: suspend () -> T): T = block()
     abstract suspend fun work(trackId: Long)
 
     companion object {

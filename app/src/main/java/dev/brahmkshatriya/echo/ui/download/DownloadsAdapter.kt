@@ -82,7 +82,7 @@ class DownloadsAdapter(
                 progressBar.isIndeterminate = item.progress.size == 0L
                 progressBar.max = item.progress.size.toInt()
                 progressBar.progress = item.progress.progress.toInt()
-                subtitle.text = item.progress.toString()
+                subtitle.text = item.progress.toText()
                 title.text = root.context.run {
                     getTitle(item.taskType, getString(R.string.download))
                 }
@@ -162,6 +162,27 @@ class DownloadsAdapter(
             listOf(Download(info.context, download, extension)) + info.workers.map {
                 Task(it.first, it.second, download.id)
             }
+        }
+
+        private val SPEED_UNITS = arrayOf("", "KB", "MB", "GB")
+        fun Progress.toText() = buildString {
+            if (size > 0) append("%.2f%% • ".format(progress.toFloat() / size * 100))
+            append(
+                if (size > 0) "${convertBytes(progress)} / ${convertBytes(size)}"
+                else convertBytes(progress)
+            )
+            if (speed > 0) append(" • ${convertBytes(speed)}/s")
+        }
+
+        private fun convertBytes(bytes: Long): String {
+            var value = bytes.toFloat()
+            var unitIndex = 0
+
+            while (value >= 500 && unitIndex < SPEED_UNITS.size - 1) {
+                value /= 1024
+                unitIndex++
+            }
+            return "%.2f %s".format(value, SPEED_UNITS[unitIndex])
         }
     }
 }

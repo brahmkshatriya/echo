@@ -23,8 +23,6 @@ class LoadingTask(
     private val extensionsList = downloader.extensions.music
 
     private val totalSize = 3L
-    override suspend fun <T> permit(block: suspend () -> T) =
-        downloader.loadingSemaphore.withPermit { block() }
 
     override suspend fun work(trackId: Long) {
         progressFlow.value = Progress(totalSize, 0)

@@ -57,19 +57,19 @@ class DownloadExtension(
         progressFlow: MutableStateFlow<Progress>,
         context: DownloadContext,
         source: Streamable.Source
-    ) = test(progressFlow, "Downloading")
+    ) = test(progressFlow, "Downloading", 10000)
 
     override suspend fun merge(
         progressFlow: MutableStateFlow<Progress>,
         context: DownloadContext,
         files: List<File>
-    ) = test(progressFlow, "Merging", true)
+    ) = test(progressFlow, "Merging", 5000)
 
     override suspend fun tag(
         progressFlow: MutableStateFlow<Progress>,
         context: DownloadContext,
         file: File
-    ) = test(progressFlow, "Tagging")
+    ) = test(progressFlow, "Tagging", 2000)
 
     override suspend fun getDownloadTracks(
         extensionId: String,
@@ -109,16 +109,16 @@ class DownloadExtension(
     private suspend fun test(
         progressFlow: MutableSharedFlow<Progress>,
         type: String,
-        crash: Boolean = false
+        crash: Long
     ): File {
-        progressFlow.emit(Progress(1000, 0))
-        if (crash) throw Exception("Test crash for $type")
+        progressFlow.emit(Progress(crash, 0))
         var it = 0L
-        while (it < 1000) {
+        while (it < crash) {
             delay(1)
-            progressFlow.emit(Progress(1000, it))
+            progressFlow.emit(Progress(crash, it))
             it++
         }
+        if (type == "Tagging") throw Exception("Test exception in $type")
         return this.context.cacheDir
     }
 

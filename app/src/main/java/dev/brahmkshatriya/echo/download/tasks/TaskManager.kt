@@ -1,10 +1,11 @@
 package dev.brahmkshatriya.echo.download.tasks
 
+import dev.brahmkshatriya.echo.common.models.Progress
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.download.db.models.TaskType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
@@ -14,6 +15,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 class TaskManager(private val downloader: Downloader) {
     val scope = downloader.scope
@@ -21,22 +24,29 @@ class TaskManager(private val downloader: Downloader) {
     private val context = downloader.app.context
 
     val taskFlow = MutableStateFlow(listOf<TaskItem>())
+    private var taskSemaphores = TaskType.entries.associateWith { Semaphore(2) }
+    fun setConcurrency(limit: Int) {
+        taskSemaphores = TaskType.entries.associateWith { Semaphore(limit) }
+    }
 
-    val progressFlow = taskFlow.map { works ->
-        works.flatMap { it.queue }.flatMap { it.workers }
-    }.flatMapCombineLatest { workers ->
-        workers.filter { it.running }.map { worker ->
-            worker.throttledProgressFlow.map { worker to it }
+    val progressFlow = channelFlow<Array<Pair<BaseTask, Progress>>> {
+        taskFlow.map { items ->
+            items.flatMap { it.queue }.flatMap { it.tasks }
+        }.collectLatest { tasks ->
+            if (tasks.isEmpty()) send(emptyArray())
+            else combine(tasks.map { it.running }) { _ ->
+                tasks.filter { it.running.value }.map { task ->
+                    task.throttledProgressFlow.map { task to it }
+                }
+            }.collectLatest { progressFlows ->
+                if (progressFlows.isEmpty()) send(emptyArray())
+                else combine(progressFlows) { it }.collectLatest { send(it) }
+            }
         }
     }.stateIn(scope, SharingStarted.Eagerly, arrayOf())
 
-    data class TaskItem(
-        val trackId: Long,
-        val queue: List<QueueItem>,
-        val job: Job,
-    )
-
-    data class QueueItem(val workers: List<BaseTask>)
+    data class TaskItem(val trackId: Long, val queue: List<QueueItem>, val job: Job)
+    data class QueueItem(val tasks: List<BaseTask>)
 
     companion object {
         fun BaseTask.toQueueItem() = QueueItem(listOf(this))
@@ -48,7 +58,11 @@ class TaskManager(private val downloader: Downloader) {
         list.add(TaskItem(trackId, items, scope.launch {
             runCatching {
                 items.onEach { item ->
-                    val results = item.workers.map { async { it.doWork() } }.awaitAll()
+                    val results = item.tasks.map { worker ->
+                        scope.async {
+                            taskSemaphores[worker.type]!!.withPermit { worker.doWork() }
+                        }
+                    }.awaitAll()
                     results.onEach { it.getOrThrow() }
                 }
             }
@@ -79,16 +93,6 @@ class TaskManager(private val downloader: Downloader) {
         works.forEach { it.job.cancel() }
         list.removeAll(works)
         taskFlow.value = list
-    }
-
-    private inline fun <T, reified R> Flow<T>.flatMapCombineLatest(
-        crossinline transform: (T) -> List<Flow<R>>
-    ): Flow<Array<R>> = channelFlow {
-        collectLatest { t ->
-            val flows = transform(t)
-            if (flows.isEmpty()) send(emptyArray())
-            else combine(flows) { it }.collectLatest { send(it) }
-        }
     }
 
     fun removeAll() {
