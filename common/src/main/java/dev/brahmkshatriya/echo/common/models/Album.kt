@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
  * @property duration The duration of the album in milliseconds
  * @property tracks The total number of tracks in the album
  * @property releaseDate The release date of the album
- * @property publisher The publisher of the album
+ * @property label The publisher of the album
  * @property description The description of the album
  * @property isExplicit Whether the album is explicit
  * @property subtitle The subtitle of the album, used to display information under the title
@@ -28,7 +28,7 @@ data class Album(
     val duration: Long? = null,
     val releaseDate: Date? = null,
     val description: String? = null,
-    val publisher: String? = null,
+    val label: String? = null,
     val isExplicit: Boolean = false,
     val subtitle: String? = null,
     val extras: Map<String, String> = mapOf()

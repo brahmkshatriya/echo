@@ -14,6 +14,10 @@ import kotlinx.serialization.Serializable
  * @property plays The number of plays of the track
  * @property releaseDate The release date of the track
  * @property description The description of the track
+ * @property irsc The IRSC code of the track
+ * @property genres The genres of the track
+ * @property albumNumber The number of the track in the album
+ * @property albumDiscNumber The disc number of the track in the album
  * @property isExplicit Whether the track is explicit
  * @property subtitle The subtitle of the track, used to display information under the title
  * @property extras Any extra data you want to associate with the track
@@ -36,6 +40,10 @@ data class Track(
     val plays: Long? = null,
     val releaseDate: Date? = null,
     val description: String? = null,
+    val irsc: String? = null,
+    val genres: List<String> = listOf(),
+    val albumNumber: Long? = null,
+    val albumDiscNumber: Long? = null,
     val isExplicit: Boolean = false,
     val subtitle: String? = null,
     val extras: Map<String, String> = mapOf(),

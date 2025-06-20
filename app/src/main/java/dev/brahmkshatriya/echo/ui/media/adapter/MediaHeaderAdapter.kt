@@ -136,12 +136,12 @@ class MediaHeaderAdapter(
                         if (tracks != null) append(" • ") else appendLine()
                         append(album.releaseDate.toString())
                     }
-                    if (album.publisher != null) {
+                    if (album.label != null) {
                         if (album.releaseDate != null || tracks != null) appendLine()
-                        append(album.publisher)
+                        append(album.label)
                     }
                     if (album.artists.isNotEmpty()) {
-                        if (album.releaseDate != null || tracks != null || album.publisher != null) {
+                        if (album.releaseDate != null || tracks != null || album.label != null) {
                             appendLine()
                         }
                         append(
@@ -152,7 +152,7 @@ class MediaHeaderAdapter(
                         )
                     }
                     if (!album.description.isNullOrBlank()) {
-                        if (album.releaseDate != null || tracks != null || album.publisher != null || album.artists.isNotEmpty()) {
+                        if (album.releaseDate != null || tracks != null || album.label != null || album.artists.isNotEmpty()) {
                             appendLine()
                             appendLine()
                         }

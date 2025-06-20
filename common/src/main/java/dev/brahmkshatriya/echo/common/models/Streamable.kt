@@ -124,8 +124,9 @@ data class Streamable(
              */
             fun String.toServerMedia(
                 headers: Map<String, String> = mapOf(),
-                type: SourceType = SourceType.Progressive
-            ) = this.toSource(headers, type).toMedia()
+                type: SourceType = SourceType.Progressive,
+                isVideo: Boolean = false
+            ) = this.toSource(headers, type, isVideo).toMedia()
 
             /**
              * Creates a [Subtitle] media from this String Url.
@@ -176,6 +177,7 @@ data class Streamable(
     sealed class Source {
         abstract val quality: Int
         abstract val title: String?
+        open val isVideo: Boolean = false
 
         /**
          * A data class representing a source that contains Audio/Video on a Http Url.
@@ -192,7 +194,8 @@ data class Streamable(
             val type: SourceType = SourceType.Progressive,
             val decryption: Decryption? = null,
             override val quality: Int = 0,
-            override val title: String? = null
+            override val title: String? = null,
+            override val isVideo: Boolean = false
         ) : Source()
 
         /**
@@ -205,7 +208,8 @@ data class Streamable(
         data class Raw(
             val streamProvider: InputProvider,
             override val quality: Int = 0,
-            override val title: String? = null
+            override val title: String? = null,
+            override val isVideo: Boolean = false
         ) : Source()
 
         companion object {
@@ -218,10 +222,11 @@ data class Streamable(
              */
             fun String.toSource(
                 headers: Map<String, String> = mapOf(),
-                type: SourceType = SourceType.Progressive
-            ) = Http(this.toRequest(headers), type)
+                type: SourceType = SourceType.Progressive,
+                isVideo: Boolean = false
+            ) = Http(this.toRequest(headers), type, isVideo = isVideo)
 
-            fun InputProvider.toSource() = Raw(this)
+            fun InputProvider.toSource(isVideo: Boolean = false) = Raw(this, isVideo = isVideo)
         }
     }
 
