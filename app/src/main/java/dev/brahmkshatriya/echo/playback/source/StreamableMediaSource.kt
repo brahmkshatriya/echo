@@ -23,7 +23,7 @@ import androidx.media3.exoplayer.upstream.Allocator
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.download.Downloader
-import dev.brahmkshatriya.echo.extensions.Extensions
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.actualExtensionId
@@ -165,7 +165,7 @@ class StreamableMediaSource(
         private val context: Context,
         private val scope: CoroutineScope,
         private val state: PlayerState,
-        extensions: Extensions,
+        extensions: ExtensionLoader,
         cache: SimpleCache,
         downloadFlow: StateFlow<List<Downloader.Info>>,
         private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>

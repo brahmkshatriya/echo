@@ -20,7 +20,7 @@ class LoadingTask(
     override val type = TaskType.Loading
 
     private val manager = downloader.taskManager
-    private val extensionsList = downloader.extensions.music
+    private val extensionsList = downloader.extensionLoader.music
 
     private val totalSize = 3L
 

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.settings
+package dev.brahmkshatriya.echo.ui.main.settings
 
 import android.content.Context
 import android.os.Bundle
@@ -18,8 +18,8 @@ import dev.brahmkshatriya.echo.playback.PlayerService.Companion.UNMETERED_STREAM
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.main.settings.AudioEffectsFragment.Companion.AUDIO_FX
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel.Companion.KEEP_QUEUE
-import dev.brahmkshatriya.echo.ui.settings.AudioEffectsFragment.Companion.AUDIO_FX
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialSliderPreference
@@ -31,6 +31,11 @@ class AudioFragment : BaseSettingsFragment() {
     override val creator = { AudioPreference() }
 
     class AudioPreference : PreferenceFragmentCompat() {
+
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+            configure()
+        }
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
@@ -153,7 +158,7 @@ class AudioFragment : BaseSettingsFragment() {
             val view = listView.findViewById<View>(preference.key.hashCode())
             return when (preference.key) {
                 AUDIO_FX -> {
-                    parentFragment?.openFragment<AudioEffectsFragment>(view)
+                    requireActivity().openFragment<AudioEffectsFragment>(view)
                     true
                 }
 

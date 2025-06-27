@@ -8,9 +8,9 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.session.MediaSession
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
-import dev.brahmkshatriya.echo.extensions.Extensions
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
@@ -34,7 +34,7 @@ class PlayerEventListener(
     private val scope: CoroutineScope,
     private val session: MediaSession,
     private val currentFlow: MutableStateFlow<PlayerState.Current?>,
-    private val extensions: Extensions,
+    private val extensions: ExtensionLoader,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : Player.Listener {
 
@@ -62,6 +62,7 @@ class PlayerEventListener(
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        println("mediaItem : $mediaItem ${player.currentMediaItem}")
         updateCurrentFlow()
         updateCustomLayout()
         ResumptionUtils.saveIndex(context, player.currentMediaItemIndex)

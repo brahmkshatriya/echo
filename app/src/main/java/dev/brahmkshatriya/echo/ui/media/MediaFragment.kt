@@ -17,10 +17,10 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentMediaBinding
-import dev.brahmkshatriya.echo.ui.UiViewModel
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyFabInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.adapter.MediaHeaderAdapter
 import dev.brahmkshatriya.echo.ui.media.adapter.TrackAdapter

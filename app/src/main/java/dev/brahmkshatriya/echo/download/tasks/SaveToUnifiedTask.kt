@@ -34,7 +34,7 @@ class SaveToUnifiedTask(
         val allDownloads = dao.getDownloadsForContext(download.contextId)
 
         val unifiedExtension =
-            downloader.extensions.music.getExtensionOrThrow(UnifiedExtension.metadata.id)
+            downloader.extensionLoader.music.getExtensionOrThrow(UnifiedExtension.metadata.id)
 
         if (context != null) unifiedExtension.get<PlaylistEditClient, Unit> {
             val db = (this as UnifiedExtension).db

@@ -5,10 +5,9 @@ import dev.brahmkshatriya.echo.download.DownloadWorker
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.DownloadDatabase
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.playback.PlayerService
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.ui.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler
 import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
@@ -42,7 +41,6 @@ object DI {
 
     private val extensionModule = module {
         includes(baseModule)
-        singleOf(ExtensionDatabase::create)
         single { MutableStateFlow<List<Shelf>>(listOf()) }
         singleOf(::ExtensionLoader)
     }

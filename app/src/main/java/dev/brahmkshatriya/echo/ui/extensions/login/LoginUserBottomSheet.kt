@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.databinding.ItemLoginUserBinding
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.settings.SettingsFragment
+import dev.brahmkshatriya.echo.ui.main.settings.SettingsFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared

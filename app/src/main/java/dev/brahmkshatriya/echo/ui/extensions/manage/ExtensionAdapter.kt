@@ -38,7 +38,7 @@ ExtensionAdapter(
     }
 
     private val empty = ShelfEmptyAdapter()
-    fun withEmptyAdapter() = ConcatAdapter(this)
+    fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :
         RecyclerView.ViewHolder(binding.root) {
@@ -57,9 +57,13 @@ ExtensionAdapter(
                     setImageDrawable(it)
                 }
             }
-            binding.extensionDrag.setOnClickListener {
+
+            binding.extensionDrag.setOnTouchListener { v, _ ->
+                v.performClick()
                 listener.onDragHandleTouched(this)
+                true
             }
+
             binding.extensionOpen.isVisible = extension.type == ExtensionType.MUSIC
             binding.extensionOpen.setOnClickListener {
                 listener.onOpenClick(extension)
@@ -78,8 +82,8 @@ ExtensionAdapter(
     }
 
     suspend fun submit(list: List<Extension<*>>) {
+        submitData(PagingData.from(list))
         empty.loadState = if (list.isEmpty()) LoadState.Loading
         else LoadState.NotLoading(true)
-        submitData(PagingData.from(list))
     }
 }

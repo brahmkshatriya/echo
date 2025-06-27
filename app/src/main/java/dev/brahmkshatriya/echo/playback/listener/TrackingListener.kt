@@ -8,9 +8,9 @@ import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.models.TrackDetails
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
-import dev.brahmkshatriya.echo.extensions.Extensions
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -34,7 +34,7 @@ import kotlinx.coroutines.withContext
 class TrackingListener(
     private val player: Player,
     private val scope: CoroutineScope,
-    extensions: Extensions,
+    extensions: ExtensionLoader,
     private val currentFlow: MutableStateFlow<PlayerState.Current?>,
     private val throwableFlow: MutableSharedFlow<Throwable>
 ) : Player.Listener {
@@ -57,7 +57,7 @@ class TrackingListener(
         scope.launch {
             val details = getDetails()
             val extension = musicList.getExtension(details?.extensionId)
-            val trackers = trackerList.value?.filter { it.isEnabled } ?: emptyList()
+            val trackers = trackerList.value.filter { it.isEnabled }
             extension?.get<TrackerClient, Unit>(throwableFlow) { block(extension, details) }
             trackers.forEach {
                 launch { it.get<TrackerClient, Unit>(throwableFlow) { block(it, details) } }
@@ -112,14 +112,18 @@ class TrackingListener(
         onTrackChanged(current)
     }
 
-    override fun onPlayerError(error: PlaybackException) { onTrackChanged(null) }
+    override fun onPlayerError(error: PlaybackException) {
+        onTrackChanged(null)
+    }
 
     private val playState = MutableStateFlow<Pair<TrackDetails?, Boolean>>(null to false)
 
     init {
         scope.launch {
             currentFlow.map { it?.let { curr -> curr.mediaItem.takeIf { curr.isLoaded } } }
-                .distinctUntilChanged().collectLatest { onTrackChanged(it) }
+                .distinctUntilChanged().collectLatest {
+                    onTrackChanged(it)
+                }
         }
         scope.launch {
             @OptIn(FlowPreview::class)

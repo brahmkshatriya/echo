@@ -29,11 +29,11 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
-import dev.brahmkshatriya.echo.extensions.Extensions
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
@@ -60,7 +60,7 @@ class PlayerCallback(
     override val context: Context,
     override val scope: CoroutineScope,
     private val throwableFlow: MutableSharedFlow<Throwable>,
-    private val extensions: Extensions,
+    private val extensions: ExtensionLoader,
     private val radioFlow: MutableStateFlow<PlayerState.Radio>,
     override val downloadFlow: StateFlow<List<Downloader.Info>>
 ) : AndroidAutoCallback(context, scope, extensions.music, downloadFlow) {

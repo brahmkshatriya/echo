@@ -388,5 +388,8 @@
     <string name="app_widget_description">Echo on your home screen!</string>
     <string name="opening_webview_x">Opening Webview: %1$s</string>
     <string name="x_webview">%1$s Webview</string>
+    <string name="no_update_available_for_x">No update available for %1$s</string>
+    <string name="other">Other</string>
+    <string name="accounts">Accounts</string>
 
 </resources>

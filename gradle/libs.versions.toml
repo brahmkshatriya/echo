@@ -58,6 +58,7 @@ fadingedgelayout = { module = "com.github.bosphere.android-fadingedgelayout:fadi
 fastscroll = { module = "me.zhanghai.android.fastscroll:library", version = "1.3.0" }
 kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 nestedscrollwebview = { module = "com.telefonica:nestedscrollwebview", version = "0.1.6" }
+acsbendi-webview = { module = "com.github.acsbendi:Android-Request-Inspector-WebView", version = "1.0.12" }
 
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version = "22.4.0" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "19.4.4" }

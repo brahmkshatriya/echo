@@ -10,29 +10,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
-import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
+import com.acsbendi.requestinspectorwebview.RequestInspectorWebViewClient
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Request
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.databinding.FragmentWebviewBinding
-import dev.brahmkshatriya.echo.extensions.WebViewClientImpl
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.extensions.WebViewClientFactory
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginFragment.Companion.bind
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -40,10 +39,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import okhttp3.Headers.Companion.toHeaders
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -51,7 +54,7 @@ import kotlin.coroutines.resumeWithException
 class WebViewFragment : Fragment() {
 
     private val vm by activityViewModel<ExtensionsViewModel>()
-    private val webViewClient by lazy { vm.extensionLoader.webViewClient }
+    private val webViewClient by lazy { vm.extensionLoader.webViewClientFactory }
     private val wrapper by lazy {
         val id = requireArguments().getInt("webViewRequest")
         webViewClient.requests[id] ?: throw IllegalStateException("Invalid webview request")
@@ -85,15 +88,15 @@ class WebViewFragment : Fragment() {
 
         fun <T : Any> WebView.configure(
             scope: CoroutineScope,
-            webViewRequest: WebViewRequest<T>,
+            target: WebViewRequest<T>,
             skipTimeout: Boolean = false,
             onComplete: suspend (Result<T?>?) -> Unit
         ): OnBackPressedCallback? {
-            val request = runCatching { webViewRequest.initialUrl }.getOrNull()
+            val request = runCatching { target.initialUrl }.getOrNull()
                 ?: return null
-            val stopRegex = runCatching { webViewRequest.stopUrlRegex }.getOrNull()
+            val stopRegex = runCatching { target.stopUrlRegex }.getOrNull()
                 ?: return null
-            val timeout = runCatching { webViewRequest.maxTimeout }.getOrNull()
+            val timeout = runCatching { target.maxTimeout }.getOrNull()
                 ?: return null
 
             val callback = object : OnBackPressedCallback(false) {
@@ -115,17 +118,18 @@ class WebViewFragment : Fragment() {
                     )
                 )
             } else null
-            webViewClient = object : WebViewClient() {
+            webViewClient = object : RequestInspectorWebViewClient(this@configure) {
+                val client = OkHttpClient()
                 override fun doUpdateVisitedHistory(
                     view: WebView?, url: String?, isReload: Boolean
                 ) {
                     callback.isEnabled = canGoBack()
                 }
 
-                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                    if (webViewRequest !is WebViewRequest.Evaluate) return
+                override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+                    if (target !is WebViewRequest.Evaluate) return
                     if (done) return
-                    webViewRequest.javascriptToEvaluateOnPageStart?.let { js ->
+                    target.javascriptToEvaluateOnPageStart?.let { js ->
                         scope.launch {
                             runCatching { evalJS(null, js) }.onFailure {
                                 stop(callback)
@@ -138,30 +142,58 @@ class WebViewFragment : Fragment() {
                 val mutex = Mutex()
                 var done = false
                 override fun shouldInterceptRequest(
-                    view: WebView?,
-                    request: WebResourceRequest?
+                    view: WebView,
+                    webViewRequest: com.acsbendi.requestinspectorwebview.WebViewRequest
                 ): WebResourceResponse? {
-                    if (done) return null
-                    val url = request?.url?.toString() ?: return null
-                    requests.add(request.toRequest())
-                    if (stopRegex.find(url) == null) return null
+                    println("Intercepted request: $webViewRequest")
+                    val url = webViewRequest.url
+                    val req = okhttp3.Request.Builder().url(webViewRequest.url)
+                        .headers(
+                            webViewRequest.headers.toHeaders().newBuilder()
+                                .set("X-Requested-With", "")
+                                .set("sec-ch-ua", "")
+                                .build()
+                        )
+                        .method(
+                            webViewRequest.method,
+                            webViewRequest.body.takeIf { webViewRequest.method == "POST" }?.toByteArray()?.toRequestBody()
+                        )
+                        .build()
+                    println("Intercepted request: ${req.url}")
+                    println("Headers: ${req.headers.toMultimap()}")
+                    val response = runBlocking(Dispatchers.IO) {
+                        runCatching { client.newCall(req).execute() }
+                    }.getOrNull()
+
+                    val actualResponse = if (response != null) {
+                        val type = response.header("content-type", "text/plain")
+                        val (contentType, charset) = type?.split(";")?.map { it.trim() }
+                            ?.let { it[0] to it.getOrNull(1)?.substringAfter("charset=") }
+                            ?: ("text/plain" to null)
+                        println("Content-Type: $type ($contentType, $charset)")
+                        println("Response: ${response.headers.names()}")
+                        WebResourceResponse(contentType, charset, response.body.byteStream())
+                    } else null
+                    if (done) return actualResponse
+                    requests.add(webViewRequest.toRequest())
+                    if (stopRegex.find(url) == null) return actualResponse
                     done = true
                     timeoutJob?.cancel()
                     scope.launch {
                         mutex.withLock {
                             onComplete(null)
                             val result = runCatching {
-                                val headerRes = if (webViewRequest is WebViewRequest.Headers)
-                                    webViewRequest.onStop(requests)
+                                val headerRes = if (target is WebViewRequest.Headers)
+                                    target.onStop(requests)
                                 else null
-                                val cookieRes = if (webViewRequest is WebViewRequest.Cookie) {
+                                val cookieRes = if (target is WebViewRequest.Cookie) {
                                     val cookie = CookieManager.getInstance().getCookie(url) ?: ""
-                                    webViewRequest.onStop(request.toRequest(), cookie)
+                                    target.onStop(webViewRequest.toRequest(), cookie)
                                 } else null
-                                val evalRes = if (webViewRequest is WebViewRequest.Evaluate)
-                                    webViewRequest.onStop(
-                                        request.toRequest(),
-                                        evalJS(bridge, webViewRequest.javascriptToEvaluate)
+                                val evalRes = if (target is WebViewRequest.Evaluate)
+                                    target.onStop(
+                                        webViewRequest.toRequest(),
+                                        evalJS(bridge, target.javascriptToEvaluate)
                                     )
                                 else null
                                 evalRes ?: cookieRes ?: headerRes
@@ -170,9 +202,21 @@ class WebViewFragment : Fragment() {
                             onComplete(result)
                         }
                     }
-                    return null
+                    return actualResponse
                 }
+
+//
+//                override fun shouldOverrideUrlLoading(
+//                    view: WebView?,
+//                    request: WebResourceRequest?
+//                ): Boolean {
+//                    val headers = request?.requestHeaders ?: mutableMapOf()
+//                    headers["X-Requested-With"] = ""
+//                    view?.loadUrl(request?.url.toString(), headers)
+//                    return true
+//                }
             }
+
 
             settings.apply {
                 domStorageEnabled = true
@@ -182,7 +226,7 @@ class WebViewFragment : Fragment() {
                 databaseEnabled = true
                 userAgentString = request.headers["User-Agent"] ?: USER_AGENT
                 cacheMode =
-                    if (runCatching { webViewRequest.dontCache }.getOrNull() != true) WebSettings.LOAD_NO_CACHE
+                    if (runCatching { target.dontCache }.getOrNull() != true) WebSettings.LOAD_NO_CACHE
                     else WebSettings.LOAD_DEFAULT
             }
 
@@ -194,7 +238,13 @@ class WebViewFragment : Fragment() {
             return callback
         }
 
-        private fun WebResourceRequest.toRequest() = Request(url.toString(), requestHeaders)
+        private fun com.acsbendi.requestinspectorwebview.WebViewRequest.toRequest(): Request {
+            val cookie = CookieManager.getInstance().getCookie(url)
+            return Request(url, buildMap {
+                if (cookie != null) put("Cookie", cookie)
+                putAll(headers)
+            })
+        }
 
         private suspend fun WebView.evalJS(bridge: Bridge?, js: String) =
             suspendCancellableCoroutine {
@@ -243,7 +293,7 @@ class WebViewFragment : Fragment() {
 
         fun AppCompatActivity.onWebViewIntent(
             intent: Intent,
-            webViewClient: WebViewClientImpl
+            webViewClient: WebViewClientFactory
         ) {
             val id = intent.getIntExtra("webViewRequest", -1)
             if (id == -1) return
@@ -277,7 +327,7 @@ class WebViewFragment : Fragment() {
 
     class Hidden : Fragment(R.layout.fragment_webview) {
         private val vm by activityViewModel<ExtensionsViewModel>()
-        private val webViewClient by lazy { vm.extensionLoader.webViewClient }
+        private val webViewClient by lazy { vm.extensionLoader.webViewClientFactory }
         private val wrapper by lazy {
             val id = requireArguments().getInt("webViewRequest")
             webViewClient.requests[id] ?: throw IllegalStateException("Invalid webview request")
@@ -303,7 +353,7 @@ class WebViewFragment : Fragment() {
 
     class WithAppbar : Fragment(R.layout.fragment_generic_collapsable) {
         private val vm by activityViewModel<ExtensionsViewModel>()
-        private val webViewClient by lazy { vm.extensionLoader.webViewClient }
+        private val webViewClient by lazy { vm.extensionLoader.webViewClientFactory }
         private val wrapper by lazy {
             val id = requireArguments().getInt("webViewRequest")
             webViewClient.requests[id] ?: throw IllegalStateException("Invalid webview request")

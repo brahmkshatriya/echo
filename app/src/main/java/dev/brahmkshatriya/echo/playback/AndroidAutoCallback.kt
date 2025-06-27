@@ -41,7 +41,6 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
@@ -49,14 +48,13 @@ import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import java.util.WeakHashMap
 
 @UnstableApi
 abstract class AndroidAutoCallback(
     open val context: Context,
     open val scope: CoroutineScope,
-    open val extensionList: StateFlow<List<MusicExtension>?>,
+    open val extensionList: StateFlow<List<MusicExtension>>,
     open val downloadFlow: StateFlow<List<Downloader.Info>>
 ) : MediaLibrarySession.Callback {
 
@@ -81,7 +79,7 @@ abstract class AndroidAutoCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future {
-        val extensions = extensionList.await()
+        val extensions = extensionList.value
         if (parentId == ROOT) return@future LibraryResult.ofItemList(
             extensions.map { it.toMediaItem(context) },
             null
@@ -181,7 +179,7 @@ abstract class AndroidAutoCallback(
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
         return scope.future {
-            val extensions = extensionList.first { it != null }!!
+            val extensions = extensionList.value
             LibraryResult.ofItemList(
                 extensions.map { ext ->
                     browsableItem("$ROOT/${ext.id}/$SEARCH", ext.name, query)

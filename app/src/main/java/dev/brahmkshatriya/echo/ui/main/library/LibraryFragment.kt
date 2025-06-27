@@ -11,9 +11,9 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsetsMain
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsMain
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.main.FeedViewModel.Companion.configureFeed
 import dev.brahmkshatriya.echo.ui.main.MainFragment

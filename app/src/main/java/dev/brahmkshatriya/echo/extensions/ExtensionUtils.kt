@@ -1,13 +1,17 @@
 package dev.brahmkshatriya.echo.extensions
 
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
+import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionNotFoundException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 
 object ExtensionUtils {
 
@@ -75,13 +79,69 @@ object ExtensionUtils {
     }
 
     suspend inline fun <reified T> Extension<*>.isClient() = instance.value().getOrNull() is T
-    suspend fun <T : Extension<*>> StateFlow<List<T>?>.await(): List<T> {
-        return first { it != null }!!
+
+    fun <T : Extension<*>> StateFlow<List<T>>.getExtension(id: String?) =
+        value.find { it.id == id }
+
+    fun <T : Extension<*>> StateFlow<List<T>>.getExtensionOrThrow(id: String?) =
+        value.find { it.id == id } ?: throw ExtensionNotFoundException(id)
+
+    val Extension<*>.prefId get() = metadata.prefId
+    val Metadata.prefId get() = extensionPrefId(type.name, id)
+
+    fun Extension<*>.prefs(context: Context) = metadata.prefs(context)
+    fun Metadata.prefs(context: Context) = prefId.prefs(context)
+    fun String.prefs(context: Context) =
+        context.getSharedPreferences(this, Context.MODE_PRIVATE)!!
+
+    fun extensionPrefId(extensionType: String, extensionId: String) =
+        "$extensionType-$extensionId"
+
+    fun getSettings(context: Context, metadata: Metadata): Settings {
+        return toSettings(metadata.prefs(context))
     }
 
-    suspend fun <T : Extension<*>> StateFlow<List<T>?>.getExtension(id: String?) =
-        await().find { it.id == id }
+    fun toSettings(prefs: SharedPreferences) = object : Settings {
+        override fun getString(key: String) = prefs.getString(key, null)
+        override fun putString(key: String, value: String?) {
+            prefs.edit { putString(key, value) }
+        }
 
-    fun <T : Extension<*>> StateFlow<List<T>?>.getExtensionOrThrow(id: String?) =
-        value?.find { it.id == id } ?: throw ExtensionNotFoundException(id)
+        override fun getInt(key: String) =
+            if (prefs.contains(key)) prefs.getInt(key, 0) else null
+
+        override fun putInt(key: String, value: Int?) {
+            prefs.edit { putInt(key, value) }
+        }
+
+        override fun getBoolean(key: String) =
+            if (prefs.contains(key)) prefs.getBoolean(key, false) else null
+
+        override fun putBoolean(key: String, value: Boolean?) {
+            prefs.edit { putBoolean(key, value) }
+        }
+
+        override fun getStringSet(key: String) = prefs.getStringSet(key, null)
+        override fun putStringSet(key: String, value: Set<String>?) {
+            prefs.edit { putStringSet(key, value) }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun SharedPreferences.copyTo(dest: SharedPreferences) = with(dest.edit()) {
+        all.entries.forEach { entry ->
+            val value = entry.value ?: return@forEach
+            val key = entry.key
+            when (value) {
+                is String -> putString(key, value)
+                is Set<*> -> putStringSet(key, value as Set<String>)
+                is Int -> putInt(key, value)
+                is Long -> putLong(key, value)
+                is Float -> putFloat(key, value)
+                is Boolean -> putBoolean(key, value)
+                else -> {}
+            }
+        }
+        apply()
+    }
 }

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui
+package dev.brahmkshatriya.echo.ui.common
 
 import android.content.Context
 import android.content.Intent
@@ -7,6 +7,7 @@ import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.net.toFile
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
@@ -16,7 +17,6 @@ import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
@@ -27,13 +27,13 @@ import com.google.android.material.navigationrail.NavigationRailView
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.InstallationUtils.installExtension
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openItemFragmentFromUri
-import dev.brahmkshatriya.echo.ui.download.DownloadFragment
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.WebViewFragment.Companion.onWebViewIntent
 import dev.brahmkshatriya.echo.ui.main.MainFragment
+import dev.brahmkshatriya.echo.ui.main.settings.NewSettingsFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
@@ -77,11 +77,13 @@ class UiViewModel(
 
     var currentAppColor: String? = null
     val navigation = MutableStateFlow(0)
+    val selectedSettingsTab = MutableStateFlow(0)
     val navigationReselected = MutableSharedFlow<Int>()
     val navIds = listOf(
         R.id.homeFragment,
         R.id.searchFragment,
-        R.id.libraryFragment
+        R.id.libraryFragment,
+        R.id.settingsFragment
     )
     private val navViewInsets = MutableStateFlow(Insets())
     private val playerNavViewInsets = MutableStateFlow(Insets())
@@ -194,7 +196,7 @@ class UiViewModel(
 
     init {
         viewModelScope.launch {
-            extensionLoader.extensions.current.collect { extension ->
+            extensionLoader.current.collect { extension ->
                 extensionColor.value = null
                 extensionColor.value =
                     extension?.metadata?.icon?.loadDrawable(context)?.let {
@@ -219,14 +221,14 @@ class UiViewModel(
 
         fun Fragment.applyInsetsMain(
             appBar: View,
-            child: View,
+            child: View?,
             bottom: Int = 12,
             block: UiViewModel.(Insets) -> Unit = {}
         ) {
             val uiViewModel by activityViewModel<UiViewModel>()
             observe(uiViewModel.combined) { insets ->
-                child.applyContentInsets(insets)
-                child.updatePadding(
+                child?.applyContentInsets(insets)
+                child?.updatePadding(
                     bottom = insets.bottom + bottom.dpToPx(child.context),
                 )
                 appBar.updatePaddingRelative(
@@ -408,20 +410,26 @@ class UiViewModel(
             }
             val fromDownload = intent.hasExtra("fromDownload")
             if (fromDownload) {
-                openFragment<DownloadFragment>()
+                uiViewModel.selectedSettingsTab.value = 0
+                if (supportFragmentManager.findFragmentById(R.id.navHostFragment) is MainFragment) {
+                    uiViewModel.navigation.value = uiViewModel.navIds.indexOf(R.id.settingsFragment)
+                } else {
+                    openFragment<NewSettingsFragment>()
+                }
                 return
             }
             val webViewRequest = intent.hasExtra("webViewRequest")
             if (webViewRequest) {
-                val webViewClient = uiViewModel.extensionLoader.webViewClient
+                val webViewClient = uiViewModel.extensionLoader.webViewClientFactory
                 onWebViewIntent(intent, webViewClient)
                 return
             }
             val uri = intent.data
             when (uri?.scheme) {
                 "echo" -> runCatching { openItemFragmentFromUri(uri) }
-                "file" -> lifecycleScope.launch {
-                    installExtension(uri.toString())
+                "file" -> {
+                    val viewModel by viewModel<ExtensionsViewModel>()
+                    viewModel.installWithPrompt(listOf(uri.toFile()))
                 }
             }
         }

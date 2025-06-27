@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.settings
+package dev.brahmkshatriya.echo.ui.main.settings
 
 import android.content.Context
 import android.os.Bundle

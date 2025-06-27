@@ -31,7 +31,7 @@ abstract class FeedViewModel(
     val throwableFlow: MutableSharedFlow<Throwable>,
     private val extensionLoader: ExtensionLoader
 ) : ViewModel() {
-    open val current = extensionLoader.extensions.current
+    open val current = extensionLoader.current
 
     abstract suspend fun getTabs(extension: Extension<*>): Result<List<Tab>>
     abstract suspend fun getFeed(extension: Extension<*>): Result<Feed>

@@ -22,7 +22,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -31,11 +30,11 @@ import java.io.File
 @UnstableApi
 class StreamableLoader(
     private val context: Context,
-    private val extensionListFlow: MutableStateFlow<List<MusicExtension>?>,
+    private val extensionListFlow: StateFlow<List<MusicExtension>>,
     private val downloadFlow: StateFlow<List<Downloader.Info>>
 ) {
     suspend fun load(mediaItem: MediaItem) = withContext(Dispatchers.IO) {
-        extensionListFlow.first { it != null }
+        extensionListFlow.first { it.isNotEmpty() }
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.buildLoaded(
             context, downloadFlow.value, mediaItem, loadTrack(mediaItem)

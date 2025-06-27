@@ -20,7 +20,6 @@ import dev.brahmkshatriya.echo.download.db.models.TaskType
 import dev.brahmkshatriya.echo.download.exceptions.DownloaderExtensionNotFoundException
 import dev.brahmkshatriya.echo.download.tasks.TaskManager
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
@@ -48,17 +47,16 @@ import java.util.WeakHashMap
 class Downloader(
     val app: App,
     val downloadShelf: MutableStateFlow<List<Shelf>>,
+    val extensionLoader: ExtensionLoader,
     database: DownloadDatabase,
-    extensionLoader: ExtensionLoader,
 ) {
 
-    suspend fun downloadExtension() = extensions.misc.await()
+    suspend fun downloadExtension() = extensionLoader.misc.value
         .find { it.isClient<DownloadClient>() && it.isEnabled }
         ?: throw DownloaderExtensionNotFoundException()
 
     val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Downloader")
 
-    val extensions = extensionLoader.extensions
     val dao = database.downloadDao()
     val downloadFlow = dao.getDownloadsFlow()
     private val contextFlow = dao.getContextFlow()
@@ -114,7 +112,7 @@ class Downloader(
     ): Streamable.Media.Server = mutexes.getOrPut(trackId) { Mutex() }.withLock {
         servers.getOrPut(trackId) {
             val extensionId = download.extensionId
-            val extension = extensions.music.getExtensionOrThrow(extensionId)
+            val extension = extensionLoader.music.getExtensionOrThrow(extensionId)
             val streamable = download.track.streamables.find { it.id == download.streamableId }!!
             extension.get<TrackClient, Streamable.Media.Server> {
                 val media =
@@ -211,7 +209,7 @@ class Downloader(
         scope.launch {
             downloadsFlow.map { info ->
                 val unifiedExtension =
-                    extensions.music.getExtension(UnifiedExtension.metadata.id)?.instance?.value as UnifiedExtension
+                    extensionLoader.music.getExtension(UnifiedExtension.metadata.id)?.instance?.value as UnifiedExtension
 
                 info.filter { it.download.fullyDownloaded }.groupBy {
                     it.context?.id

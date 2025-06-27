@@ -53,7 +53,7 @@ class MediaViewModel(
 ) : ViewModel() {
 
     val downloadsFlow = downloader.flow
-    val extensions = extensionLoader.extensions.music
+    val extensions = extensionLoader.music
     val throwFlow = app.throwFlow
     val messageFlow = app.messageFlow
     val context = app.context

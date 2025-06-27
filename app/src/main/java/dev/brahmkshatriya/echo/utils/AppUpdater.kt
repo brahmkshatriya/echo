@@ -2,15 +2,13 @@ package dev.brahmkshatriya.echo.utils
 
 import android.content.Context
 import android.os.Build
-import androidx.fragment.app.FragmentActivity
 import dev.brahmkshatriya.echo.BuildConfig
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.di.App
-import dev.brahmkshatriya.echo.extensions.InstallationUtils
-import dev.brahmkshatriya.echo.extensions.InstallationUtils.getTempApkDir
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
+import dev.brahmkshatriya.echo.utils.ContextUtils.getTempApkFile
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,19 +17,18 @@ import kotlinx.serialization.Serializable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.use
-import org.koin.android.ext.android.inject
 import java.io.File
 import java.util.zip.ZipFile
 
 object AppUpdater {
-    val client = OkHttpClient()
+
+    private val client = OkHttpClient()
 
     @Suppress("KotlinConstantConditions")
-    suspend fun FragmentActivity.updateApp() {
-        val app by inject<App>()
+    suspend fun updateApp(app: App): File? {
         val throwableFlow = app.throwFlow
         val messageFlow = app.messageFlow
-        val githubRepo = getString(R.string.app_github_repo)
+        val githubRepo = app.context.getString(R.string.app_github_repo)
         val appType = BuildConfig.BUILD_TYPE
         val version = appVersion()
 
@@ -40,36 +37,35 @@ object AppUpdater {
                 "stable" -> {
                     val currentVersion = version.substringBefore('_')
                     val updateUrl = "https://api.github.com/repos/$githubRepo/releases"
-                    getGithubUpdateUrl(currentVersion, updateUrl, client) ?: return
+                    getGithubUpdateUrl(currentVersion, updateUrl, client) ?: return null
                 }
 
                 "nightly" -> {
                     val hash = version.substringBefore("(").substringAfter('_')
-                    val id = getGithubWorkflowId(hash, githubRepo, client) ?: return
+                    val id = getGithubWorkflowId(hash, githubRepo, client) ?: return null
                     "https://nightly.link/$githubRepo/actions/runs/$id/artifact.zip"
                 }
 
-                else -> return
+                else -> return null
             }
         }.getOrElse {
             throwableFlow.emit(it)
-            return
+            return null
         }
 
         messageFlow.emit(
             Message(
-                getString(R.string.downloading_update_for_x, getString(R.string.app_name))
+                app.context.run {
+                    getString(R.string.downloading_update_for_x, getString(R.string.app_name))
+                }
             )
         )
-        val file = runCatching {
-            val download = downloadUpdate(this, url, client)
+        return runCatching {
+            val download = downloadUpdate(app.context, url, client).getOrThrow()
             if (appType == "stable") download else unzipApk(download)
         }.getOrElse {
             throwableFlow.emit(it)
-            return
-        }
-        InstallationUtils.installExtension(this, file, true).getOrElse {
-            throwableFlow.emit(it)
+            return null
         }
     }
 
@@ -151,12 +147,12 @@ object AppUpdater {
         context: Context,
         url: String,
         client: OkHttpClient
-    ) = withContext(Dispatchers.IO) {
+    ) = runIOCatching {
         val request = Request.Builder().url(url).build()
         val res = client.newCall(request).await().body.byteStream()
-        val file = File.createTempFile("temp", ".apk", context.getTempApkDir())
+        val file = context.getTempApkFile()
         res.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
-        file!!
+        file
     }
 
     private fun unzipApk(file: File): File {
@@ -173,5 +169,29 @@ object AppUpdater {
             }
         }
         return apkFile
+    }
+
+    suspend fun getUpdateFileUrl(
+        currentVersion: String,
+        updateUrl: String,
+        client: OkHttpClient
+    ) = runIOCatching {
+        if (updateUrl.isEmpty()) return@runIOCatching null
+        if (updateUrl.startsWith("https://api.github.com/repos/")) {
+            getGithubUpdateUrl(currentVersion, updateUrl, client)
+        } else {
+            throw Exception("Unsupported update url")
+        }
+    }
+
+    private suspend fun <T> runIOCatching(
+        block: suspend () -> T
+    ) = withContext(Dispatchers.IO) {
+        runCatching { runCatching { block() }.getOrElse { throw UpdateException(it) } }
+    }
+
+    class UpdateException(override val cause: Throwable) : Exception(cause) {
+        override val message: String
+            get() = "Update failed: ${cause.message}"
     }
 }

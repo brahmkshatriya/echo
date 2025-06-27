@@ -46,7 +46,7 @@ import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.common.settings.Settings
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getSettings
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.addSongToPlaylist
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.createPlaylist
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.deletePlaylist
@@ -118,6 +118,7 @@ class OfflineExtension(
         )
 
     private val settings = getSettings(context, metadata)
+    override fun setSettings(settings: Settings) {}
     private val refreshLibrary
         get() = settings.getBoolean("refresh_library") ?: true
 
@@ -126,7 +127,6 @@ class OfflineExtension(
         library = MediaStoreUtils.getAllSongs(context, settings)
     }
 
-    override fun setSettings(settings: Settings) {}
 
     private fun find(artist: Artist) =
         library.artistMap[artist.id.toLongOrNull()]

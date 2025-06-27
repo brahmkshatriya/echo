@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.player.lyrics
 
+import androidx.core.content.edit
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.paging.PagingData
@@ -32,7 +33,7 @@ class LyricsViewModel(
 ) : ExtensionListViewModel<Extension<*>>() {
 
     private val currentMediaFlow = playerState.current
-    private val extensions = extensionLoader.extensions
+    private val extensions = extensionLoader
     override val extensionsFlow = MutableStateFlow(listOf<Extension<*>>())
     override val currentSelectionFlow = MutableStateFlow<Extension<*>?>(null)
 
@@ -41,7 +42,7 @@ class LyricsViewModel(
             extensions.music.getExtension(id)?.takeIf { it.isClient<LyricsClient>() }
         }
         extensionsFlow.value =
-            listOfNotNull(trackExtension) + extensions.lyrics.value.orEmpty()
+            listOfNotNull(trackExtension) + extensions.lyrics.value
 
         val id = app.settings.getString(LAST_LYRICS_KEY, null)
         val extension = extensionsFlow.getExtension(id) ?: trackExtension ?: return
@@ -60,7 +61,7 @@ class LyricsViewModel(
 
     override fun onExtensionSelected(extension: Extension<*>) {
         searchResults.value = null
-        app.settings.edit().putString(LAST_LYRICS_KEY, extension.id).apply()
+        app.settings.edit { putString(LAST_LYRICS_KEY, extension.id) }
         val streamableTrack = currentMediaFlow.value?.mediaItem ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val data = onTrackChange(extension, streamableTrack)

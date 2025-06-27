@@ -26,7 +26,7 @@ class EditPlaylistViewModel(
     val playlistName = MutableStateFlow(playlist.title)
     val playlistDescription = MutableStateFlow(playlist.description)
 
-    private val extensions = extensionLoader.extensions.music
+    private val extensions = extensionLoader.music
 
     sealed interface SaveState {
         data object Initial : SaveState

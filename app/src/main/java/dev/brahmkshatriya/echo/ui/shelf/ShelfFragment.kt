@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dev.brahmkshatriya.echo.databinding.FragmentShelfBinding
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener.Companion.getShelfListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe

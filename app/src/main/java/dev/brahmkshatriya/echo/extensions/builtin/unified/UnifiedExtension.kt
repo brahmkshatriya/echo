@@ -49,9 +49,7 @@ import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.getSettings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,7 +59,7 @@ import kotlinx.coroutines.flow.first
 class UnifiedExtension(
     private val context: Context,
     private val downloadFeed: MutableStateFlow<List<Shelf>>,
-    private val cache: SimpleCache
+    private val cache: SimpleCache?
 ) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, UserClient, ArtistClient, RadioClient, LyricsClient, TrackClient,
     TrackLikeClient, SaveToLibraryClient, PlaylistEditClient, TrackerClient, ShareClient {
@@ -227,8 +225,10 @@ class UnifiedExtension(
         ),
     )
 
-    private val settings = getSettings(context, metadata)
-    override fun setSettings(settings: Settings) {}
+    private lateinit var settings: Settings
+    override fun setSettings(settings: Settings) {
+        this.settings = settings
+    }
     private val showTabs get() = settings.getBoolean("show_tabs") ?: true
 
     override val requiredMusicExtensions = listOf<String>()
@@ -504,10 +504,11 @@ class UnifiedExtension(
         Tab("Unified", context.getString(R.string.all))
     ) + extensions().map { Tab(it.id, it.name) }
 
-    private fun getCachedTracks() = cache.keys.mapNotNull { key ->
-        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
+    private fun getCachedTracks() = cache?.keys?.mapNotNull { key ->
+//        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
+        val id = ""
         context.getFromCache<Pair<String, Track>>(id.hashCode().toString(), "track")
-    }.reversed()
+    }?.reversed().orEmpty()
         .map { it.second.withExtensionId(it.first, true) }
         .groupBy { it.id }.map { it.value.first() }
 

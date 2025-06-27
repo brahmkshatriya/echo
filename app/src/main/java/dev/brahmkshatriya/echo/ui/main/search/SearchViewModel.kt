@@ -28,7 +28,7 @@ class SearchViewModel(
         if (id == null) super.current
         else {
             MutableStateFlow<MusicExtension?>(null).also { state ->
-                val music = extensionLoader.extensions.music
+                val music = extensionLoader.music
                 viewModelScope.launch {
                     music.collectLatest {
                         state.value = music.getExtension(id)

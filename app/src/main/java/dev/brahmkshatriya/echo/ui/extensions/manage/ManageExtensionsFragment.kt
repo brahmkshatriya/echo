@@ -9,24 +9,22 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsetsMain
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsMain
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
-import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddBottomSheet
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.configure
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
@@ -56,12 +54,8 @@ class ManageExtensionsFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
         FastScrollerHelper.applyTo(binding.recyclerView)
-        val refresh = binding.toolBar.findViewById<View>(R.id.menu_refresh)
-        refresh.setOnClickListener { viewModel.refresh() }
-        binding.swipeRefresh.configure { viewModel.refresh() }
-
         binding.fabAddExtensions.setOnClickListener {
-            ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
+            ExtensionsAddBottomSheet().show(parentFragmentManager, null)
         }
 
         val tabs = ExtensionType.entries.map {
@@ -115,8 +109,7 @@ class ManageExtensionsFragment : Fragment() {
         })
 
         observe(viewModel.manageExtListFlow) { list ->
-            binding.swipeRefresh.isRefreshing = list == null
-            extensionAdapter.submit(list ?: emptyList())
+            extensionAdapter.submit(list)
         }
 
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

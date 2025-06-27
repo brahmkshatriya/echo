@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.settings
+package dev.brahmkshatriya.echo.ui.main.settings
 
 import android.content.Context
 import android.os.Build.BRAND
@@ -8,17 +8,19 @@ import android.os.Build.VERSION.CODENAME
 import android.os.Build.VERSION.RELEASE
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import android.view.View
 import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.MainApplication.Companion.applyLocale
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.configureExtensionsUpdater
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
 import dev.brahmkshatriya.echo.utils.ContextUtils.copyToClipboard
 import dev.brahmkshatriya.echo.utils.ui.prefs.LongClickPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.SwitchLongClickPreference
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class MiscFragment : BaseSettingsFragment() {
     override val title get() = getString(R.string.misc)
@@ -26,6 +28,12 @@ class MiscFragment : BaseSettingsFragment() {
     override val creator = { AboutPreference() }
 
     class AboutPreference : PreferenceFragmentCompat() {
+
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+            configure()
+        }
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
             preferenceManager.sharedPreferencesName = SETTINGS_NAME
@@ -73,7 +81,8 @@ class MiscFragment : BaseSettingsFragment() {
                 setDefaultValue(true)
                 screen.addPreference(this)
                 setOnLongClickListener {
-                    requireActivity().configureExtensionsUpdater(true)
+                    val viewModel by activityViewModel<ExtensionsViewModel>()
+                    viewModel.update(requireActivity(), true)
                 }
             }
 

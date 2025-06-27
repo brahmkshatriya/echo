@@ -55,11 +55,11 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.showBackground
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.UiViewModel
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyHorizontalInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.isFinalState
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.setupPlayerMoreBehavior
+import dev.brahmkshatriya.echo.ui.common.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyHorizontalInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.isFinalState
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupPlayerMoreBehavior
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet

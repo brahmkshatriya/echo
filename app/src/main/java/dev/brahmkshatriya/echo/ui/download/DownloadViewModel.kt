@@ -19,7 +19,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.PagingUtils
-import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -35,9 +35,9 @@ class DownloadViewModel(
     private val context = app.context
     private val messageFlow = app.messageFlow
     private val throwableFlow = app.throwFlow
-    private val downloadList = extensionLoader.extensions.misc
+    private val downloadList = extensionLoader.misc
 
-    val extensions = extensionLoader.extensions
+    val extensions = extensionLoader
 
     val flow = downloader.flow
 
@@ -46,14 +46,13 @@ class DownloadViewModel(
     ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
             messageFlow.emit(Message(getString(R.string.downloading_x, item.title)))
-            val downloadExt = downloadList.value?.firstOrNull {
+            val downloadExt = downloadList.value.firstOrNull {
                 it.metadata.isEnabled && it.isClient<DownloadClient>()
             } ?: return@with messageFlow.emit(
                 Message(
                     context.getString(R.string.no_download_extension),
                     Message.Action(getString(R.string.add_extension)) {
-                        ExtensionsAddListBottomSheet.LinkFile()
-                            .show(supportFragmentManager, null)
+                        ExtensionsAddBottomSheet().show(supportFragmentManager, null)
                     }
                 )
             )

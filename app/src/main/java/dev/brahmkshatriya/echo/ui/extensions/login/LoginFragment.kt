@@ -30,10 +30,12 @@ import dev.brahmkshatriya.echo.databinding.FragmentExtensionLoginSelectorBinding
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.databinding.FragmentWebviewBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.extensions.WebViewFragment.Companion.configure
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -129,8 +131,7 @@ class LoginFragment : Fragment() {
         }
         binding.toolBar.title = getString(R.string.x_login, extName)
 
-        val extension = loginViewModel.extensionLoader.extensions
-            .getFlow(clientType).value?.find { it.id == extId }
+        val extension = loginViewModel.extensionLoader.getFlow(clientType).getExtension(extId)
 
         if (extension == null) {
             parentFragmentManager.popBackStack()
@@ -193,7 +194,7 @@ class LoginFragment : Fragment() {
         private val extId by lazy { requireArguments().getString("extId")!! }
         private val loginViewModel by activityViewModel<LoginViewModel>()
         private val extension by lazy {
-            loginViewModel.extensionLoader.extensions.getFlow(clientType).value?.find { it.id == extId }
+            loginViewModel.extensionLoader.getFlow(clientType).getExtension(extId)
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -245,7 +246,7 @@ class LoginFragment : Fragment() {
         private val extId by lazy { requireArguments().getString("extId")!! }
         private val loginViewModel by activityViewModel<LoginViewModel>()
         private val extension by lazy {
-            loginViewModel.extensionLoader.extensions.getFlow(clientType).value?.find { it.id == extId }!!
+            loginViewModel.extensionLoader.getFlow(clientType).getExtensionOrThrow(extId)
         }
         private val webViewRequest by lazy {
             (extension.instance.value as LoginClient.WebView).webViewRequest
@@ -276,7 +277,7 @@ class LoginFragment : Fragment() {
         private val extId by lazy { requireArguments().getString("extId")!! }
         private val loginViewModel by activityViewModel<LoginViewModel>()
         private val extension by lazy {
-            loginViewModel.extensionLoader.extensions.getFlow(clientType).value?.find { it.id == extId }!!
+            loginViewModel.extensionLoader.getFlow(clientType).getExtensionOrThrow(extId)
         }
         private val formIndex by lazy { requireArguments().getInt("formIndex", 0) }
         private val form by lazy {

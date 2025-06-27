@@ -32,8 +32,8 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.extensionPrefId
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.prefs
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.extensionPrefId
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.prefs
 import dev.brahmkshatriya.echo.playback.listener.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener
 import dev.brahmkshatriya.echo.playback.listener.MediaSessionServiceListener
@@ -57,7 +57,7 @@ import java.io.File
 class PlayerService : MediaLibraryService() {
 
     private val extensionLoader by inject<ExtensionLoader>()
-    private val extensions by lazy { extensionLoader.extensions }
+    private val extensions by lazy { extensionLoader }
     private val exoPlayer by lazy { createExoplayer() }
 
     private var mediaSession: MediaLibrarySession? = null

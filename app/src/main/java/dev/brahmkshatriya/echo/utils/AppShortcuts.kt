@@ -93,10 +93,10 @@ object AppShortcuts {
 
     fun configureAppShortcuts(loader: ExtensionLoader) {
         val scope = loader.scope
-        val musicExt = loader.extensions.music
+        val musicExt = loader.music
         scope.launch {
             musicExt.collectLatest {
-                loader.app.context.applyAppShortcuts(it ?: listOf())
+                loader.app.context.applyAppShortcuts(it)
             }
         }
     }

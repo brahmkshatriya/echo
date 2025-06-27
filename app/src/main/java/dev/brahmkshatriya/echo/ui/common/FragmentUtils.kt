@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
@@ -16,7 +17,6 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
-import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
@@ -27,10 +27,20 @@ object FragmentUtils {
         view: View? = null, bundle: Bundle? = null,
     ) {
         val viewModel by activityViewModels<UiViewModel>()
+        openFragment<T>(id, parentFragmentManager, viewModel, view, bundle)
+    }
+
+    inline fun <reified T : Fragment> openFragment(
+        cont: Int,
+        manager: FragmentManager,
+        viewModel: UiViewModel,
+        view: View? = null,
+        bundle: Bundle? = null,
+    ) {
         viewModel.collapsePlayer()
-        parentFragmentManager.commit {
+        manager.commit {
             setReorderingAllowed(true)
-            add<T>(id, args = bundle)
+            add<T>(cont, args = bundle)
             addToBackStack(null)
         }
     }
@@ -38,8 +48,11 @@ object FragmentUtils {
     inline fun <reified T : Fragment> FragmentActivity.openFragment(
         view: View? = null, bundle: Bundle? = null, cont: Int = R.id.navHostFragment
     ) {
-        val oldFragment = supportFragmentManager.findFragmentById(cont)!!
-        oldFragment.openFragment<T>(view, bundle)
+        val oldFragment = supportFragmentManager.findFragmentById(cont)
+        if (oldFragment == null) {
+            val viewModel by viewModel<UiViewModel>()
+            openFragment<T>(cont, supportFragmentManager, viewModel, view, bundle)
+        } else oldFragment.openFragment<T>(view, bundle)
     }
 
     inline fun <reified F : Fragment> Fragment.addIfNull(

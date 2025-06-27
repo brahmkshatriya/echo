@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -29,12 +28,11 @@ import dev.brahmkshatriya.echo.common.settings.SettingOnClick
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.extensionPrefId
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.toSettings
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.with
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.extensionPrefId
-import dev.brahmkshatriya.echo.extensions.SettingsUtils.toSettings
-import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
-import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
-import dev.brahmkshatriya.echo.ui.settings.BaseSettingsFragment
+import dev.brahmkshatriya.echo.ui.main.settings.BaseSettingsFragment
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
@@ -53,8 +51,8 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
     private val extIcon by lazy { args.getSerialized<ImageHolder>("icon") }
 
     private val extension by lazy {
-        viewModel.extensions.getFlow(ExtensionType.valueOf(extensionType))
-            .value?.find { it.id == extensionId }
+        viewModel.extensionLoader
+            .getFlow(ExtensionType.valueOf(extensionType)).getExtension(extensionId)
     }
 
     override val title get() = name
@@ -99,11 +97,8 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
             binding.toolBar.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.menu_uninstall -> {
-                        lifecycleScope.launch {
-                            viewModel.uninstall(requireActivity(), extension) {
-                                parentFragmentManager.popBackStack()
-                            }
-                        }
+                            parentFragmentManager.popBackStack()
+                        viewModel.uninstall(requireActivity(), extension)
                         true
                     }
 
@@ -123,8 +118,8 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
         private val extensionType by lazy { arguments?.getString("type")!! }
         private val viewModel by activityViewModel<ExtensionsViewModel>()
         private val extension by lazy {
-            viewModel.extensions.getFlow(ExtensionType.valueOf(extensionType))
-                .value?.find { it.id == extensionId }
+            viewModel.extensionLoader
+                .getFlow(ExtensionType.valueOf(extensionType)).getExtension(extensionId)
         }
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -146,18 +141,18 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                     screen.addPreference(infoPreference)
 
                     val client = result.getOrThrow()
-                    if (extension.type == ExtensionType.MUSIC) MaterialListPreference(context).apply {
-                        key = STREAM_QUALITY
-                        title = getString(R.string.stream_quality)
-                        summary = getString(R.string.x_specific_quality_summary, extension.name)
-                        entries =
-                            context.resources.getStringArray(R.array.stream_qualities) + getString(R.string.off)
-                        entryValues = streamQualities + "off"
-                        layoutResource = R.layout.preference
-                        isIconSpaceReserved = false
-                        setDefaultValue("off")
-                        screen.addPreference(this)
-                    }
+//                    if (extension.type == ExtensionType.MUSIC) MaterialListPreference(context).apply {
+//                        key = STREAM_QUALITY
+//                        title = getString(R.string.stream_quality)
+//                        summary = getString(R.string.x_specific_quality_summary, extension.name)
+//                        entries =
+//                            context.resources.getStringArray(R.array.stream_qualities) + getString(R.string.off)
+//                        entryValues = streamQualities + "off"
+//                        layoutResource = R.layout.preference
+//                        isIconSpaceReserved = false
+//                        setDefaultValue("off")
+//                        screen.addPreference(this)
+//                    }
 
                     client.settingItems.forEach { setting ->
                         setting.addPreferenceTo(screen)

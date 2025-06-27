@@ -55,7 +55,7 @@ class PlayerViewModel(
     extensionLoader: ExtensionLoader,
     downloader: Downloader,
 ) : ViewModel() {
-    private val extensions = extensionLoader.extensions
+    private val extensions = extensionLoader
     private val downloadFlow = downloader.flow
 
     val browser = MutableStateFlow<MediaController?>(null)

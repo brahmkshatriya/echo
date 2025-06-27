@@ -16,7 +16,6 @@ import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionLoaderException
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionNotFoundException
 import dev.brahmkshatriya.echo.extensions.exceptions.InvalidExtensionListException
 import dev.brahmkshatriya.echo.extensions.exceptions.RequiredExtensionsMissingException
-import dev.brahmkshatriya.echo.extensions.exceptions.UpdateException
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -26,6 +25,7 @@ import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginFragment
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
+import dev.brahmkshatriya.echo.utils.AppUpdater
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.rootCause
@@ -71,7 +71,7 @@ object ExceptionUtils {
         }
 
         is InvalidExtensionListException -> getString(R.string.invalid_extension_list)
-        is UpdateException -> getString(R.string.error_updating_extension)
+        is AppUpdater.UpdateException -> getString(R.string.error_updating_extension)
 
         is PlayerException -> "${throwable.mediaItem?.track?.title}: ${getFinalTitle(throwable.cause)}"
         is NoServersException -> getString(R.string.no_servers_found)

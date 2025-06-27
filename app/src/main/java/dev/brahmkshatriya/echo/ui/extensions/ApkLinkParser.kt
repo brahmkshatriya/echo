@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.extensions.plugger.impl.file
+package dev.brahmkshatriya.echo.ui.extensions
 
 import org.w3c.dom.Document
 import org.w3c.dom.Node
@@ -11,53 +11,52 @@ import java.util.zip.ZipFile
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.SAXParserFactory
 
-class ApkLinkParser {
-    companion object {
-        fun getSupportedLinks(apkFile: File): List<String> {
-            val zip = ZipFile(apkFile)
-            val entry = zip.getEntry("AndroidManifest.xml")
-            val manifest = parse(zip.getInputStream(entry)) ?: return listOf()
-            return manifest.getElementsByTagName("intent-filter").run {
-                (0 until length).flatMap { index ->
-                    val intentFilter = item(index)
-                    val schemes = mutableListOf<String>()
-                    val hosts = mutableListOf<String>()
-                    val paths = mutableListOf<String>()
+object ApkLinkParser {
+    fun getSupportedLinks(apkFile: File): List<String> {
+        val zip = ZipFile(apkFile)
+        val entry = zip.getEntry("AndroidManifest.xml")
+        val manifest = parse(zip.getInputStream(entry)) ?: return listOf()
+        return manifest.getElementsByTagName("intent-filter").run {
+            (0 until length).flatMap { index ->
+                val intentFilter = item(index)
+                val schemes = mutableListOf<String>()
+                val hosts = mutableListOf<String>()
+                val paths = mutableListOf<String>()
 
-                    intentFilter.childNodes.run {
-                        for (i in 0 until length) {
-                            val node = item(i)
-                            fun data(name: String) = node.attributes.getNamedItem(name)?.nodeValue
-                            if (node.nodeName == "data") {
-                                data("android:scheme")?.let { schemes.add(it) }
-                                data("android:host")?.let { hosts.add(it) }
-                                data("android:path")?.let {
-                                    paths.add(it)
-                                }
+                intentFilter.childNodes.run {
+                    for (i in 0 until length) {
+                        val node = item(i)
+                        fun data(name: String) = node.attributes.getNamedItem(name)?.nodeValue
+                        if (node.nodeName == "data") {
+                            data("android:scheme")?.let { schemes.add(it) }
+                            data("android:host")?.let { hosts.add(it) }
+                            data("android:path")?.let {
+                                paths.add(it)
                             }
                         }
+                    }
 
-                        schemes.flatMap { scheme ->
-                            hosts.flatMap { host ->
-                                if (paths.isEmpty()) listOf("$scheme://$host")
-                                else paths.map { path -> "$scheme://$host$path" }
-                            }
+                    schemes.flatMap { scheme ->
+                        hosts.flatMap { host ->
+                            if (paths.isEmpty()) listOf("$scheme://$host")
+                            else paths.map { path -> "$scheme://$host$path" }
                         }
                     }
                 }
             }
         }
-
-        private fun parse(input: InputStream) = runCatching {
-            val xmlDom = XmlDom()
-            runCatching {
-                CompressedXmlParser(xmlDom).parse(input)
-            }.getOrElse {
-                NonCompressedXmlParser(xmlDom).parse(input)
-            }
-            xmlDom.document
-        }.getOrNull()
     }
+
+    private fun parse(input: InputStream) = runCatching {
+        val xmlDom = XmlDom()
+        runCatching {
+            CompressedXmlParser(xmlDom).parse(input)
+        }.getOrElse {
+            NonCompressedXmlParser(xmlDom).parse(input)
+        }
+        xmlDom.document
+    }.getOrNull()
+
 
     class Attribute {
         var name: String? = null
@@ -71,7 +70,10 @@ class ApkLinkParser {
             DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
         private val mStack = Stack<Node?>()
         private fun isEmpty(text: String?) = text == null || "" == text
-        fun startDocument() { mStack.push(document) }
+        fun startDocument() {
+            mStack.push(document)
+        }
+
         fun startElement(
             uri: String?, localName: String?, qName: String?, attrs: Array<Attribute>
         ) {
@@ -85,8 +87,15 @@ class ApkLinkParser {
             mStack.peek()!!.appendChild(elt)
             mStack.push(elt)
         }
-        fun endElement() { mStack.pop() }
-        fun text(data: String?) { mStack.peek()!!.appendChild(document.createTextNode(data)) }
+
+        fun endElement() {
+            mStack.pop()
+        }
+
+        fun text(data: String?) {
+            mStack.peek()!!.appendChild(document.createTextNode(data))
+        }
+
         fun characterData(data: String?) {
             mStack.peek()!!.appendChild(document.createCDATASection(data))
         }

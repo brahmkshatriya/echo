@@ -1,57 +1,72 @@
-package dev.brahmkshatriya.echo.ui.extensions.add
+package dev.brahmkshatriya.echo.ui.extensions
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toFile
+import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.ImportType
 import dev.brahmkshatriya.echo.databinding.DialogExtensionInstallerBinding
-import dev.brahmkshatriya.echo.extensions.InstallationUtils.EXTENSION_INSTALLER
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionLoaderException
-import dev.brahmkshatriya.echo.extensions.plugger.ExtensionsRepo.Companion.PACKAGE_FLAGS
-import dev.brahmkshatriya.echo.extensions.plugger.impl.AppInfo
-import dev.brahmkshatriya.echo.extensions.plugger.impl.app.ApkManifestParser
-import dev.brahmkshatriya.echo.extensions.plugger.impl.file.ApkLinkParser
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
+import dev.brahmkshatriya.echo.extensions.repo.ExtensionParser.Companion.PACKAGE_FLAGS
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import java.io.File
 
 class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         fun newInstance(
-            file: String,
+            file: File,
         ) = ExtensionInstallerBottomSheet().apply {
             arguments = Bundle().apply {
-                putString("file", file)
+                putString("file", file.absolutePath)
             }
         }
+
+        fun Context.createLinksDialog(
+            file: File, links: List<String>
+        ): AlertDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.allow_opening_links))
+            .setMessage(
+                links.joinToString("\n") + "\n" + getString(R.string.open_links_instruction)
+            )
+            .setPositiveButton(getString(R.string.okay)) { dialog, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val packageName = packageManager
+                    .getPackageArchiveInfo(file.absolutePath, PACKAGE_FLAGS)?.packageName
+                intent.setData("package:$packageName".toUri())
+                startActivity(intent)
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     private var binding by autoCleared<DialogExtensionInstallerBinding>()
+    private val viewModel by activityViewModel<ExtensionsViewModel>()
+
     private val args by lazy { requireArguments() }
-    private val file by lazy { args.getString("file")!!.toUri().toFile() }
-    private val supportedLinks by lazy { ApkLinkParser.getSupportedLinks(file) }
+    private val file by lazy { File(args.getString("file")!!) }
+    private val supportedLinks by lazy {
+        runCatching { ApkLinkParser.getSupportedLinks(file) }.getOrNull().orEmpty()
+    }
     private val metadata by lazy {
-        runCatching {
-            val packageInfo = requireActivity().packageManager
-                .getPackageArchiveInfo(file.path, PACKAGE_FLAGS)!!
-            val metadata = ApkManifestParser(ImportType.App).parseManifest(
-                AppInfo(file.path, packageInfo)
-            )
-            metadata
-        }
+        runCatching { viewModel.extensionLoader.parser.parseManifest(file, ImportType.File) }
     }
 
     override fun onCreateView(inflater: LayoutInflater, parent: ViewGroup?, state: Bundle?): View {
@@ -60,13 +75,12 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
     }
 
     private var install = false
-    private var installAsApk = true
+    private var installAsApk = false
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
         val metadata = metadata.getOrElse {
-            val viewModel by activityViewModel<ExtensionsViewModel>()
             lifecycleScope.launch {
                 viewModel.app.throwFlow.emit(
                     ExtensionLoaderException("ExtensionInstaller", file.toString(), it)
@@ -112,13 +126,7 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        requireActivity().supportFragmentManager.setFragmentResult(
-            EXTENSION_INSTALLER,
-            Bundle().apply {
-                putString("file", file.toUri().toString())
-                putBoolean("install", install)
-                putBoolean("installAsApk", installAsApk)
-            }
-        )
+        val id = metadata.getOrNull()?.id.takeIf { !installAsApk }
+        viewModel.promptDismissed(file, install, id, supportedLinks)
     }
 }

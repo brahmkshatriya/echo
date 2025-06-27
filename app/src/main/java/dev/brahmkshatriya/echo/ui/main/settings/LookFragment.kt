@@ -1,8 +1,9 @@
-package dev.brahmkshatriya.echo.ui.settings
+package dev.brahmkshatriya.echo.ui.main.settings
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -15,7 +16,7 @@ import dev.brahmkshatriya.echo.MainActivity.Companion.defaultColor
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.SHOW_BACKGROUND
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.NAVBAR_GRADIENT
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.DYNAMIC_PLAYER
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
@@ -32,7 +33,10 @@ class LookFragment : BaseSettingsFragment() {
     override val creator = { LookPreference() }
 
     class LookPreference : PreferenceFragmentCompat() {
-
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+            configure()
+        }
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
             preferenceManager.sharedPreferencesName = SETTINGS_NAME
@@ -175,7 +179,7 @@ class LookFragment : BaseSettingsFragment() {
 
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
-                THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY -> {
+                THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY, NAVBAR_GRADIENT, BACKGROUND_GRADIENT -> {
                     requireActivity().recreate()
                 }
             }

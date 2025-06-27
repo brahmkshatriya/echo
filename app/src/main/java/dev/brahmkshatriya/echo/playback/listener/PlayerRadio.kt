@@ -38,7 +38,7 @@ class PlayerRadio(
     private val player: Player,
     private val throwFlow: MutableSharedFlow<Throwable>,
     private val stateFlow: MutableStateFlow<PlayerState.Radio>,
-    private val extensionList: StateFlow<List<MusicExtension>?>,
+    private val extensionList: StateFlow<List<MusicExtension>>,
     private val downloadFlow: StateFlow<List<Downloader.Info>>
 ) : Player.Listener {
 

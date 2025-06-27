@@ -10,7 +10,6 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddFooterBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddHeaderBinding
-import dev.brahmkshatriya.echo.extensions.Updater
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 
 class ExtensionsAddListAdapter(
@@ -18,7 +17,7 @@ class ExtensionsAddListAdapter(
 ) : ListAdapter<ExtensionsAddListAdapter.Item, ExtensionsAddListAdapter.ViewHolder>(DiffCallback) {
 
     data class Item(
-        val item: Updater.ExtensionAssetResponse,
+        val item: AddViewModel.ExtensionAssetResponse,
         val isChecked: Boolean,
         val isInstalled: Boolean
     )
@@ -32,7 +31,7 @@ class ExtensionsAddListAdapter(
     }
 
     fun interface Listener {
-        fun onChecked(item: Updater.ExtensionAssetResponse, isChecked: Boolean)
+        fun onChecked(item: AddViewModel.ExtensionAssetResponse, isChecked: Boolean)
     }
 
     inner class ViewHolder(

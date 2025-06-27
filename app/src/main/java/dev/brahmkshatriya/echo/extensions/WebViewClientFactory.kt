@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.common.models.Metadata
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 
-class WebViewClientImpl(
+class WebViewClientFactory(
     private val context: Application
 ) {
 

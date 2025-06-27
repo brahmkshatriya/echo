@@ -7,28 +7,30 @@ class Injectable<T>(
     private val getter: () -> T
 ) {
 
-    private val _data = lazy { runCatching { getter() } }
+    val data = lazy { runCatching { getter() } }
 
     private val mutex = Mutex()
-    private val injections = mutableListOf<suspend T.() -> Unit>()
+    val injections = mutableListOf<suspend T.() -> Unit>()
     val value: T?
-        get() = _data.value.getOrNull()
+        get() = data.value.getOrNull()
 
     suspend fun value() = runCatching {
         mutex.withLock {
-            val t = _data.value.getOrThrow()
+            val t = data.value.getOrThrow()
             injections.forEach { it(t) }
             injections.clear()
             t
         }
     }
 
-    fun injectIfNotInitialized(block: suspend T.() -> Unit) {
-        if (!_data.isInitialized()) injections.add(block)
+    suspend fun injectOnce(block: suspend T.() -> Unit) {
+        if (!data.isInitialized() && injections.isEmpty()) mutex.withLock { injections.add(block) }
     }
 
     suspend fun injectOrRun(block: suspend T.() -> Unit) {
-        if (_data.isInitialized()) _data.value.getOrThrow().block()
+        if (data.isInitialized()) data.value.getOrThrow().block()
         else mutex.withLock { injections.add(block) }
     }
+
+    inline fun <reified R> casted() = Injectable { data.value.getOrThrow() as R }
 }

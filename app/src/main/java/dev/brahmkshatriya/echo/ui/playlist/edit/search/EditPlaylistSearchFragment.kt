@@ -17,7 +17,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistSearchBinding
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.main.search.SearchFragment
 import dev.brahmkshatriya.echo.ui.media.adapter.MediaItemSelectableAdapter
 import dev.brahmkshatriya.echo.ui.media.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount

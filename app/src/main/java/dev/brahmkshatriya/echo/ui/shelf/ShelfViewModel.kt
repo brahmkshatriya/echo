@@ -24,7 +24,7 @@ class ShelfViewModel(
     var data: PagedData<Shelf>? = null
     var title: String? = null
 
-    private val music = extensionLoader.extensions.music
+    private val music = extensionLoader.music
     private val throwFlow = app.throwFlow
     val feed = MutableStateFlow(PagingUtils.Data<Shelf>(null, null, null, null))
 

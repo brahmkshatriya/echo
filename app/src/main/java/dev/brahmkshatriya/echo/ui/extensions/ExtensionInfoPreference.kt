@@ -33,7 +33,7 @@ class ExtensionInfoPreference(
         if (isLoginClient) {
             loginViewModel.currentExtension.value = extension
             fragment.addOnDestroyObserver {
-                loginViewModel.currentExtension.value = viewModel.extensions.current.value
+                loginViewModel.currentExtension.value = viewModel.extensionLoader.current.value
             }
         }
     }

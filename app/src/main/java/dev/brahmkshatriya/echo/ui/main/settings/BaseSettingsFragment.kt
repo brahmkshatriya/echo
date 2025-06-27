@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.settings
+package dev.brahmkshatriya.echo.ui.main.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,9 +10,9 @@ import androidx.preference.PreferenceFragmentCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyContentInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -63,12 +63,18 @@ abstract class BaseSettingsFragment : Fragment() {
 
         view.post {
             runCatching {
-                binding.genericFragmentContainer.getFragment<PreferenceFragmentCompat>().listView?.apply {
-                    clipToPadding = false
-                    applyInsets { applyContentInsets(it) }
-                    isVerticalScrollBarEnabled = false
-                    FastScrollerHelper.applyTo(this)
-                }
+                binding.genericFragmentContainer.getFragment<PreferenceFragmentCompat>().configure()
+            }
+        }
+    }
+
+    companion object {
+        fun PreferenceFragmentCompat.configure() {
+            listView?.apply {
+                clipToPadding = false
+                applyInsets { applyContentInsets(it) }
+                isVerticalScrollBarEnabled = false
+                FastScrollerHelper.applyTo(this)
             }
         }
     }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 
 object ContextUtils {
     fun appVersion() = BuildConfig.VERSION_NAME + " " + BuildConfig.BUILD_TYPE
@@ -43,4 +44,12 @@ object ContextUtils {
 
     const val SETTINGS_NAME = "settings"
     fun Context.getSettings() = getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE)!!
+
+    private fun Context.getTempDir() = cacheDir.resolve("apks").apply { mkdirs() }
+    fun Context.getTempApkFile(): File =
+        File.createTempFile("temp", ".apk", getTempDir())
+
+    fun Context.cleanupTempApks() {
+        getTempDir().deleteRecursively()
+    }
 }

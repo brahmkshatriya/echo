@@ -30,7 +30,7 @@ class TrackInfoViewModel(
     playerState: PlayerState,
 ) : ViewModel() {
 
-    private val extensions = extensionLoader.extensions
+    private val extensions = extensionLoader
     val currentFlow = playerState.current
     private var previous: Track? = null
     val itemsFlow = MutableStateFlow<PagingUtils.Data<Shelf>>(

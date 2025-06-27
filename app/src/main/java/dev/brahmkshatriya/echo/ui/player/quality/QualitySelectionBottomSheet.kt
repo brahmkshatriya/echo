@@ -32,7 +32,7 @@ import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getSelected
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toAudioDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toSubtitleDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toVideoDetails
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment
+import dev.brahmkshatriya.echo.ui.main.settings.AudioFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel

@@ -14,7 +14,6 @@ import dev.brahmkshatriya.echo.databinding.SkeletonShelfBinding
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.Companion.createListener
-import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfLoadingAdapter.ViewHolder
 
 class LyricsItemAdapter(
     private val listener: Listener
