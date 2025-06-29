@@ -118,7 +118,11 @@ class ExtensionsViewModel(
     }
 
     data class PromptResult(
-        val file: File, val accepted: Boolean, val id: String?, val supportedLinks: List<String>
+        val file: File,
+        val accepted: Boolean,
+        val type: ImportType,
+        val id: String,
+        val supportedLinks: List<String>
     )
 
     val installPromptFlow = MutableSharedFlow<File>()
@@ -138,13 +142,13 @@ class ExtensionsViewModel(
     }
 
     fun promptDismissed(
-        file: File, install: Boolean, id: String?, supportedLinks: List<String>
+        file: File, install: Boolean, type: ImportType, id: String, supportedLinks: List<String>
     ) = viewModelScope.launch {
-        promptResultFlow.emit(PromptResult(file, install, id, supportedLinks))
+        promptResultFlow.emit(PromptResult(file, install, type, id, supportedLinks))
     }
 
-    private suspend fun updateExt(ext: Extension<*>) {
-        val file = getExtensionUpdate(ext) ?: return
+    private suspend fun updateExt(ext: Extension<*>, show: Boolean = false) {
+        val file = getExtensionUpdate(ext, show) ?: return
         install(ext.id, ext.metadata.importType, file).onFailure {
             app.throwFlow.emit(it)
             return
@@ -152,20 +156,19 @@ class ExtensionsViewModel(
         message(app.context.getString(R.string.extension_updated_successfully, ext.name))
     }
 
-    fun update(extension: Extension<*>) = viewModelScope.launch { updateExt(extension) }
+    fun update(extension: Extension<*>) = viewModelScope.launch { updateExt(extension, true) }
 
     fun installWithPrompt(files: List<File>) = viewModelScope.launch {
         files.forEach { file ->
             installPromptFlow.emit(file)
             val result = promptResultFlow.first { it.file == file }
             if (!result.accepted) return@forEach
-            val type = if (result.id == null) ImportType.File else ImportType.App
-            install(result.id ?: "", type, result.file).onFailure {
+            install(result.id, result.type, result.file).onFailure {
                 app.throwFlow.emit(it)
                 return@forEach
             }
             message(app.context.getString(R.string.extension_installed_successfully))
-            if (result.id == null && result.supportedLinks.isNotEmpty())
+            if (result.type == ImportType.App)
                 linksDialogFlow.emit(file to result.supportedLinks)
         }
     }

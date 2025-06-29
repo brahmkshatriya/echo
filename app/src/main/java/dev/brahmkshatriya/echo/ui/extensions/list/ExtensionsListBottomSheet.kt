@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.g
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddBottomSheet
 import dev.brahmkshatriya.echo.ui.extensions.manage.ManageExtensionsFragment
+import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -49,21 +50,14 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
             ExtensionsAddBottomSheet().show(parentFragmentManager, null)
         }
 
-        binding.topAppBar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.menu_settings -> {
-                    dismiss()
-                    requireActivity().openFragment<ManageExtensionsFragment>()
-                    true
-                }
-
-                else -> false
-            }
+        binding.manageExtension.setOnClickListener {
+            dismiss()
+            requireActivity().openFragment<ManageExtensionsFragment>()
         }
 
         val viewModel = when (type) {
             ExtensionType.MUSIC -> activityViewModel<ExtensionsViewModel>().value
-//            ExtensionType.LYRICS -> activityViewModel<LyricsViewModel>().value
+            ExtensionType.LYRICS -> activityViewModel<LyricsViewModel>().value
             else -> throw IllegalStateException("Not supported")
         }
 
@@ -83,7 +77,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
         observe(extensionFlow) { list ->
             binding.buttonToggleGroup.removeAllViews()
             listener.enabled = false
-
+            val selected = viewModel.currentSelectionFlow.value
             list.forEachIndexed { index, extension ->
                 if (!extension.isEnabled) return@forEachIndexed
                 val button = ButtonExtensionBinding.inflate(
@@ -93,7 +87,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 ).root
                 button.text = extension.name
                 binding.buttonToggleGroup.addView(button)
-                button.isChecked = extension == viewModel.currentSelectionFlow.value
+                button.isChecked = extension == selected
                 extension.metadata.icon.loadAsCircle(button) {
                     if (it != null) {
                         button.icon = it
@@ -103,8 +97,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                 button.id = index
             }
 
-            val checked = list.indexOf(viewModel.currentSelectionFlow.value)
-                .takeIf { it != -1 }
+            val checked = list.indexOf(selected).takeIf { it != -1 }
             if (checked != null) binding.buttonToggleGroup.check(checked)
             listener.enabled = true
         }

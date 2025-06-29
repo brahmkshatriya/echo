@@ -19,6 +19,7 @@
             app:layout_scrollEffect="compress"
             app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
             app:navigationIcon="@drawable/ic_back"
+            app:menu="@menu/update_menu"
             app:title="@string/extensions" />
 
         <com.google.android.material.tabs.TabLayout

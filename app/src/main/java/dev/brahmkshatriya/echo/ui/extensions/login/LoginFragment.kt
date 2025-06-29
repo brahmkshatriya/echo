@@ -18,7 +18,6 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.fragment.app.replace
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField.Type
@@ -33,11 +32,11 @@ import dev.brahmkshatriya.echo.databinding.ItemInputBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
+import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
-import dev.brahmkshatriya.echo.ui.extensions.WebViewFragment.Companion.configure
+import dev.brahmkshatriya.echo.ui.extensions.WebViewUtils.configure
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
@@ -253,19 +252,13 @@ class LoginFragment : Fragment() {
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            if (savedInstanceState == null) {
-                setupTransition(view, useZ = false)
-                val binding = FragmentWebviewBinding.bind(view)
-                val callback =
-                    binding.root.configure(loginViewModel.viewModelScope, webViewRequest, true) {
-                        if (it == null) loginViewModel.loading.value = true
-                        else loginViewModel.onWebViewStop(extension, it)
-                    } ?: return
-                requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-            } else {
-                val binding = FragmentWebviewBinding.bind(view)
-                binding.root.restoreState(savedInstanceState)
+            setupTransition(view, useZ = false)
+            val binding = FragmentWebviewBinding.bind(view)
+            val callback = requireActivity().configure(binding.root, webViewRequest, true) {
+                if (it == null) loginViewModel.loading.value = true
+                else loginViewModel.onWebViewStop(extension, it)
             }
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         }
     }
 

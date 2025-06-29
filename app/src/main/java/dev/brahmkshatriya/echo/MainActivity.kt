@@ -16,12 +16,13 @@ import com.google.android.material.color.DynamicColorsOptions
 import com.google.android.material.color.ThemeUtils
 import com.google.android.material.navigation.NavigationBarView
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.setupExceptionHandler
+import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.setupSnackBar
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupIntents
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupNavBarAndInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupPlayerBehavior
-import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.setupExceptionHandler
-import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.setupSnackBar
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.configureExtensionsUpdater
 import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment
@@ -29,12 +30,15 @@ import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.PermsUtils.checkAppPermissions
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isNightMode
+import kotlinx.coroutines.delay
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
     val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private val uiViewModel by viewModel<UiViewModel>()
+    private val extensionLoader by inject<ExtensionLoader>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +58,12 @@ class MainActivity : AppCompatActivity() {
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
         setupIntents(uiViewModel)
         setupExceptionHandler(setupSnackBar(uiViewModel, binding.root))
-        checkAppPermissions()
+        checkAppPermissions {
+            val curr = extensionLoader.current.value
+            extensionLoader.current.value = null
+            delay(10)
+            extensionLoader.current.value = curr
+        }
         configureExtensionsUpdater()
         supportFragmentManager.commit {
             if (savedInstanceState != null) return@commit

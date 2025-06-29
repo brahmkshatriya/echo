@@ -126,7 +126,8 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        val id = metadata.getOrNull()?.id.takeIf { !installAsApk }
-        viewModel.promptDismissed(file, install, id, supportedLinks)
+        val id = metadata.getOrNull()?.id
+        val type = if (installAsApk) ImportType.App else ImportType.File
+        viewModel.promptDismissed(file, install, type, id ?: "", supportedLinks)
     }
 }

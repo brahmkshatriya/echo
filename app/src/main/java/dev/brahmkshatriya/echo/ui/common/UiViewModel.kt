@@ -31,9 +31,9 @@ import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openItemFragmentFromUri
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
-import dev.brahmkshatriya.echo.ui.extensions.WebViewFragment.Companion.onWebViewIntent
+import dev.brahmkshatriya.echo.ui.extensions.WebViewUtils.onWebViewIntent
 import dev.brahmkshatriya.echo.ui.main.MainFragment
-import dev.brahmkshatriya.echo.ui.main.settings.NewSettingsFragment
+import dev.brahmkshatriya.echo.ui.main.settings.SettingsFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
@@ -414,7 +414,7 @@ class UiViewModel(
                 if (supportFragmentManager.findFragmentById(R.id.navHostFragment) is MainFragment) {
                     uiViewModel.navigation.value = uiViewModel.navIds.indexOf(R.id.settingsFragment)
                 } else {
-                    openFragment<NewSettingsFragment>()
+                    openFragment<SettingsFragment>()
                 }
                 return
             }

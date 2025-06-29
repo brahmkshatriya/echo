@@ -32,6 +32,8 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.extensionPrefId
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.toSettings
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.with
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
 import dev.brahmkshatriya.echo.ui.main.settings.BaseSettingsFragment
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
@@ -97,13 +99,18 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
             binding.toolBar.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.menu_uninstall -> {
-                            parentFragmentManager.popBackStack()
+                        parentFragmentManager.popBackStack()
                         viewModel.uninstall(requireActivity(), extension)
                         true
                     }
 
                     R.id.menu_repo -> {
                         requireActivity().openLink(metadata.repoUrl!!)
+                        true
+                    }
+
+                    R.id.menu_update -> {
+                        viewModel.update(extension)
                         true
                     }
 
@@ -141,18 +148,18 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                     screen.addPreference(infoPreference)
 
                     val client = result.getOrThrow()
-//                    if (extension.type == ExtensionType.MUSIC) MaterialListPreference(context).apply {
-//                        key = STREAM_QUALITY
-//                        title = getString(R.string.stream_quality)
-//                        summary = getString(R.string.x_specific_quality_summary, extension.name)
-//                        entries =
-//                            context.resources.getStringArray(R.array.stream_qualities) + getString(R.string.off)
-//                        entryValues = streamQualities + "off"
-//                        layoutResource = R.layout.preference
-//                        isIconSpaceReserved = false
-//                        setDefaultValue("off")
-//                        screen.addPreference(this)
-//                    }
+                    if (extension.type == ExtensionType.MUSIC) MaterialListPreference(context).apply {
+                        key = STREAM_QUALITY
+                        title = getString(R.string.stream_quality)
+                        summary = getString(R.string.x_specific_quality_summary, extension.name)
+                        entries =
+                            context.resources.getStringArray(R.array.stream_qualities) + getString(R.string.off)
+                        entryValues = streamQualities + "off"
+                        layoutResource = R.layout.preference
+                        isIconSpaceReserved = false
+                        setDefaultValue("off")
+                        screen.addPreference(this)
+                    }
 
                     client.settingItems.forEach { setting ->
                         setting.addPreferenceTo(screen)

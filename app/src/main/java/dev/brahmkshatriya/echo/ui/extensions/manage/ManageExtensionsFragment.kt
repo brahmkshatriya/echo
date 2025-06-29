@@ -13,10 +13,10 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsMain
-import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
@@ -53,6 +53,11 @@ class ManageExtensionsFragment : Fragment() {
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
+        binding.toolBar.setOnMenuItemClickListener {
+            viewModel.update(requireActivity(), true)
+            true
+        }
+
         FastScrollerHelper.applyTo(binding.recyclerView)
         binding.fabAddExtensions.setOnClickListener {
             ExtensionsAddBottomSheet().show(parentFragmentManager, null)
@@ -113,7 +118,10 @@ class ManageExtensionsFragment : Fragment() {
         }
 
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            fun select(tab: TabLayout.Tab) { viewModel.lastSelectedManageExt.value = tab.position }
+            fun select(tab: TabLayout.Tab) {
+                viewModel.lastSelectedManageExt.value = tab.position
+            }
+
             override fun onTabSelected(tab: TabLayout.Tab) = select(tab)
             override fun onTabReselected(tab: TabLayout.Tab) = select(tab)
             override fun onTabUnselected(tab: TabLayout.Tab) {}

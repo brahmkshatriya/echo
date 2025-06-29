@@ -6,10 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
+import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -32,46 +33,46 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.accountListLogin.isEnabled = false
-        binding.title.setNavigationOnClickListener {
-            dismiss()
-        }
+        binding.title.setNavigationOnClickListener { dismiss() }
 
-        observe(viewModel.allUsers) { (extension, list) ->
-            binding.accountListLoading.root.isVisible = list == null
-            binding.accountListToggleGroup.isVisible = list != null
-            binding.title.isVisible = extension != null
+        var listener: OnButtonCheckedListener? = null
+        observe(viewModel.allUsers) { (ext, list) ->
+            binding.accountListLoading.root.isVisible = ext == null
+            binding.accountListToggleGroup.isVisible = ext != null
+            binding.title.title = getString(R.string.select_x_account, ext?.name ?: "")
+            binding.accountListToggleGroup.removeAllViews()
+            listener?.let { binding.accountListToggleGroup.removeOnButtonCheckedListener(it) }
 
-            extension ?: return@observe
-            list ?: return@observe
-            binding.title.title = getString(R.string.select_x_account, extension.name)
+            ext ?: return@observe
+
+            binding.title.setOnMenuItemClickListener {
+                viewModel.setLoginUser(CurrentUser(ext.type, ext.id, null))
+                true
+            }
+
             binding.addAccount.setOnClickListener {
                 dismiss()
                 requireActivity().openFragment<LoginFragment>(
                     null,
-                    LoginFragment.getBundle(
-                        extension.id, extension.name, extension.type
-                    )
+                    LoginFragment.getBundle(ext.id, ext.name, ext.type)
                 )
             }
-            binding.accountListToggleGroup.removeAllViews()
-            val listener = MaterialButtonToggleGroup.OnButtonCheckedListener { _, id, isChecked ->
-                if (isChecked) {
-                    val user = list[id]
-                    binding.accountListLogin.isEnabled = true
-                    binding.accountListLogin.setOnClickListener {
-                        viewModel.setLoginUser(user.toEntity(extension.type, extension.id))
-                        dismiss()
-                    }
-                }
+
+            val selectedUser = viewModel.currentUser.value
+
+            binding.logout.isEnabled = selectedUser != null
+            binding.logout.setOnClickListener {
+                viewModel.logout(selectedUser?.toEntity(ext.type, ext.id))
+                viewModel.setLoginUser(CurrentUser(ext.type, ext.id, null))
             }
-            binding.accountListToggleGroup.addOnButtonCheckedListener(listener)
-            list.forEachIndexed { index, user ->
+
+            list.forEachIndexed { index, (user, selected) ->
                 val button = ButtonExtensionBinding.inflate(
                     layoutInflater, binding.accountListToggleGroup, false
                 ).root
                 button.text = user.name
                 binding.accountListToggleGroup.addView(button)
+                button.isChecked = selected
                 user.cover.loadAsCircle(button) {
                     if (it != null) {
                         button.icon = it
@@ -80,7 +81,18 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
                 }
                 button.id = index
             }
+
+            val checked = list.indexOfFirst { it.second }.takeIf { it != -1 }
+            if (checked != null) binding.accountListToggleGroup.check(checked)
+
+            listener = OnButtonCheckedListener { _, id, isChecked ->
+                if (isChecked) {
+                    val user = list[id].first
+                    viewModel.setLoginUser(user.toEntity(ext.type, ext.id))
+                    dismiss()
+                }
+            }
+            binding.accountListToggleGroup.addOnButtonCheckedListener(listener!!)
         }
     }
-
 }

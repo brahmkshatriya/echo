@@ -25,8 +25,8 @@ import dev.brahmkshatriya.echo.ui.search.QuickSearchAdapter
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -65,7 +65,11 @@ class SearchFragment : Fragment() {
             binding.toolBar.alpha = 1 - offset
         }
         val main = parentFragment as? MainFragment
-        if (main != null) binding.toolBar.configureMainMenu(main)
+        if (main != null) binding.toolBar.configureMainMenu(main) {
+            binding.searchBar.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = (if (it) 112 else 64).dpToPx(requireContext())
+            }
+        }
         else {
             binding.toolBar.isVisible = false
             binding.searchBar.updateLayoutParams<MarginLayoutParams> {

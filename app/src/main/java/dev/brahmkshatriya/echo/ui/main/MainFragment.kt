@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.google.android.material.appbar.MaterialToolbar
@@ -17,14 +16,13 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionsListBottomSheet
-import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListBottomSheet
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
 import dev.brahmkshatriya.echo.ui.main.home.HomeFragment
 import dev.brahmkshatriya.echo.ui.main.library.LibraryFragment
 import dev.brahmkshatriya.echo.ui.main.search.SearchFragment
-import dev.brahmkshatriya.echo.ui.main.settings.NewSettingsFragment
+import dev.brahmkshatriya.echo.ui.main.settings.SettingsFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
@@ -59,7 +57,7 @@ class MainFragment : Fragment() {
             val toShow = when (it) {
                 1 -> addIfNull<SearchFragment>("search")
                 2 -> addIfNull<LibraryFragment>("library")
-                3 -> addIfNull<NewSettingsFragment>("settings")
+                3 -> addIfNull<SettingsFragment>("settings")
                 else -> addIfNull<HomeFragment>("home")
             }
 
@@ -106,47 +104,57 @@ class MainFragment : Fragment() {
             }
         }
 
-        fun MaterialToolbar.configureMainMenu(fragment: MainFragment) {
-            val extVM by fragment.activityViewModel<ExtensionsViewModel>()
-            val loginUserViewModel by fragment.activityViewModel<LoginUserListViewModel>()
-            val accountsMenu = findViewById<View>(R.id.menu_accounts)
-            accountsMenu.transitionName = "settings"
-            val extMenu = findViewById<View>(R.id.menu_extensions)
-            extMenu.transitionName = "extensions"
+        fun MaterialToolbar.configureMainMenu(
+            fragment: MainFragment, isLogin: ((Boolean) -> Unit)? = null
+        ) {
+            val viewModel by fragment.activityViewModel<LoginUserListViewModel>()
 
-            fragment.observe(extVM.extensionLoader.current) { extension ->
-                loginUserViewModel.currentExtension.value = extension
-                extension?.metadata?.icon.loadAsCircle(extMenu, R.drawable.ic_extension_48dp) {
+            fragment.observe(viewModel.extensionLoader.current) { ext ->
+                viewModel.currentExtension.value = ext
+            }
+
+            fragment.observe(viewModel.allUsers) { (ext, all) ->
+                val isLoginClient = ext?.isClient<LoginClient>() ?: false
+                menu.removeItem(R.id.menu_accounts)
+                menu.removeItem(R.id.menu_extensions)
+
+                if (isLoginClient) inflateMenu(R.menu.account_menu)
+                inflateMenu(R.menu.top_bar_menu)
+                val extMenu = findViewById<View>(R.id.menu_extensions)
+                extMenu.setOnClickListener {
+                    ExtensionsListBottomSheet.newInstance(ExtensionType.MUSIC)
+                        .show(fragment.parentFragmentManager, null)
+                }
+                ext?.metadata?.icon.loadAsCircle(extMenu, R.drawable.ic_extension_48dp) {
+                    it ?: return@loadAsCircle
                     menu.findItem(R.id.menu_extensions).icon = it
                 }
-            }
-            extMenu.setOnClickListener {
-                ExtensionsListBottomSheet.newInstance(ExtensionType.MUSIC)
-                    .show(fragment.parentFragmentManager, null)
-            }
-            val list = extVM.extensionLoader.music.value.filter { it.isEnabled }
-            extMenu.setLoopedLongClick(list, { extVM.extensionLoader.current.value }) { next ->
-                extVM.extensionLoader.setupMusicExtension(next, true)
-            }
+                val list = viewModel.extensionLoader.music.value.filter { it.isEnabled }
+                extMenu.setLoopedLongClick(
+                    list, { viewModel.extensionLoader.current.value }
+                ) {
+                    viewModel.extensionLoader.setupMusicExtension(it, true)
+                }
 
-            fragment.observe(loginUserViewModel.allUsers) { (extension, all) ->
-                val isLoginClient = extension?.isClient<LoginClient>() ?: false
-                accountsMenu.isVisible = isLoginClient
-                val user = loginUserViewModel.currentUser.value.second
                 if (isLoginClient) {
-                    val ext = extension!!
-                    user?.cover.loadAsCircle(accountsMenu, R.drawable.ic_account_circle_48dp) {
-                        menu.findItem(R.id.menu_accounts).icon = it
-                    }
+                    val accountsMenu = findViewById<View>(R.id.menu_accounts)
+                    viewModel.currentUser.value
+                        ?.cover.loadAsCircle(accountsMenu, R.drawable.ic_account_circle) {
+                            it ?: return@loadAsCircle
+                            menu.findItem(R.id.menu_accounts).icon = it
+                        }
                     accountsMenu.setOnClickListener {
-                        LoginUserBottomSheet().show(fragment.parentFragmentManager, null)
+                        LoginUserListBottomSheet().show(
+                            fragment.parentFragmentManager,
+                            null
+                        )
                     }
-                    accountsMenu.setLoopedLongClick(
-                        all.orEmpty(), { loginUserViewModel.currentUser.value.second }
-                    ) { next ->
-                        loginUserViewModel.setLoginUser(next.toEntity(ext.type, ext.id))
+                    accountsMenu.setLoopedLongClick(all, { all.find { it.second } }) {
+                        ext!!
+                        viewModel.setLoginUser(it.first.toEntity(ext.type, ext.id))
                     }
                 }
+                isLogin?.invoke(isLoginClient)
             }
         }
     }

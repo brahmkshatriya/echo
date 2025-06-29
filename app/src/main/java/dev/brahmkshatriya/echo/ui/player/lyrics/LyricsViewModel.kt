@@ -22,8 +22,12 @@ import dev.brahmkshatriya.echo.ui.common.PagingUtils.toFlow
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionListViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class LyricsViewModel(
@@ -32,25 +36,24 @@ class LyricsViewModel(
     playerState: PlayerState
 ) : ExtensionListViewModel<Extension<*>>() {
 
-    private val currentMediaFlow = playerState.current
-    private val extensions = extensionLoader
-    override val extensionsFlow = MutableStateFlow(listOf<Extension<*>>())
     override val currentSelectionFlow = MutableStateFlow<Extension<*>?>(null)
-
-    private suspend fun update() {
-        val trackExtension = currentMediaFlow.value?.mediaItem?.extensionId?.let { id ->
-            extensions.music.getExtension(id)?.takeIf { it.isClient<LyricsClient>() }
-        }
-        extensionsFlow.value =
-            listOfNotNull(trackExtension) + extensions.lyrics.value
-
-        val id = app.settings.getString(LAST_LYRICS_KEY, null)
-        val extension = extensionsFlow.getExtension(id) ?: trackExtension ?: return
-        currentSelectionFlow.value = extension
-        onExtensionSelected(extension)
-    }
-
     val searchResults = MutableStateFlow<PagingData<Lyrics>?>(null)
+    val lyricsState = MutableStateFlow<State>(State.Empty)
+
+    private val currentMediaFlow = playerState.current
+    private val mediaFlow = currentMediaFlow.map { it?.mediaItem }.distinctUntilChanged()
+    override val extensionsFlow = extensionLoader.lyrics.combine(mediaFlow) { lyrics, mediaItem ->
+        val trackExtension = mediaItem?.extensionId?.let { id ->
+            extensionLoader.music.getExtension(id)?.takeIf { it.isClient<LyricsClient>() }
+        }
+        listOfNotNull(trackExtension) + lyrics
+    }.onEach { extensions ->
+        val id = app.settings.getString(LAST_LYRICS_KEY, null)
+        val extension = extensions.find { it.id == id } ?: extensions.firstOrNull()
+        currentSelectionFlow.value = extension
+        onExtensionSelected(extension ?: return@onEach)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     private suspend fun onSearch(query: String?): PagedData<Lyrics>? {
         val extension = currentSelectionFlow.value
         if (query == null) return null
@@ -102,7 +105,6 @@ class LyricsViewModel(
         data class Loaded(val lyrics: Lyrics) : State
     }
 
-    val lyricsState = MutableStateFlow<State>(State.Empty)
     fun onLyricsSelected(lyricsItem: Lyrics) {
         val extension = currentSelectionFlow.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
@@ -127,15 +129,6 @@ class LyricsViewModel(
             }
             this.copy(lyrics = Lyrics.Timed(new))
         } else this
-    }
-
-    init {
-        viewModelScope.launch {
-            update()
-            currentMediaFlow.map { it?.mediaItem }.distinctUntilChanged().collect {
-                update()
-            }
-        }
     }
 
     companion object {

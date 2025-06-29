@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinx.serialization)
 
-//    alias(libs.plugins.gms)
-//    alias(libs.plugins.crashlytics)
+    alias(libs.plugins.gms)
+    alias(libs.plugins.crashlytics)
 }
 
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
@@ -17,7 +17,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "dev.brahmkshatriya.echo2"
+        applicationId = "dev.brahmkshatriya.echo"
         minSdk = 24
         targetSdk = 35
         versionCode = gitCount
@@ -81,9 +81,9 @@ dependencies {
     implementation(libs.nestedscrollwebview)
     implementation(libs.acsbendi.webview)
 
-//    debugImplementation(libs.bundles.firebase)
-//    "stableImplementation"(libs.bundles.firebase)
-//    "nightlyImplementation"(libs.bundles.firebase)
+    debugImplementation(libs.bundles.firebase)
+    "stableImplementation"(libs.bundles.firebase)
+    "nightlyImplementation"(libs.bundles.firebase)
 }
 
 fun execute(vararg command: String): String {

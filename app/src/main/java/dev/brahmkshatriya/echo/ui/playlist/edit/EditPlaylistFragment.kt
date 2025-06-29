@@ -12,11 +12,10 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistEditBinding
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyFabInsets
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsMain
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.playlist.edit.search.EditPlaylistSearchFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -79,9 +78,8 @@ class EditPlaylistFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsets {
-            binding.recyclerView.applyContentInsets(it, 96)
-            binding.fabContainer.applyFabInsets(it, systemInsets.value)
+        applyInsetsMain(binding.appBarLayout, binding.recyclerView, 96) {
+            binding.fabContainer.applyInsets(it)
         }
 
         applyBackPressCallback()

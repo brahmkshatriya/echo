@@ -1,7 +1,11 @@
 package dev.brahmkshatriya.echo
 
 import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Looper
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import coil3.ImageLoader
@@ -60,7 +64,33 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
             .build()
     }
 
+    override fun getPackageName(): String {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) runCatching {
+            val stackTrace = Looper.getMainLooper().thread.stackTrace
+            val isChromiumCall = stackTrace.any { trace ->
+                trace.className.equals(CLASS_NAME, ignoreCase = true)
+                        && FUNCTION_SET.any { trace.methodName.equals(it, ignoreCase = true) }
+            }
+            if (isChromiumCall) return spoofedPackageName(applicationContext)
+        }
+        return super.getPackageName()
+    }
+
+    private fun spoofedPackageName(context: Context): String {
+        return runCatching {
+            context.packageManager.getPackageInfo(CHROME_PACKAGE, PackageManager.GET_META_DATA)
+            CHROME_PACKAGE
+        }.getOrElse {
+            SYSTEM_SETTINGS_PACKAGE
+        }
+    }
+
     companion object {
+        private const val CHROME_PACKAGE = "com.android.chrome"
+        private const val SYSTEM_SETTINGS_PACKAGE = "com.android.settings"
+        private const val CLASS_NAME = "org.chromium.base.BuildInfo"
+        private val FUNCTION_SET = setOf("getAll", "getPackageName", "<init>")
+
         fun applyLocale(sharedPref: SharedPreferences) {
             val value = sharedPref.getString("language", "system") ?: "system"
             val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()

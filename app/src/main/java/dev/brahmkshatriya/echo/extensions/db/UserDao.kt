@@ -20,7 +20,7 @@ interface UserDao {
     fun observeCurrentUser(): Flow<List<CurrentUser>>
 
     @Query("SELECT * FROM UserEntity WHERE type = :type AND extId = :extId")
-    suspend fun getAllUsers(type: ExtensionType, extId: String): List<UserEntity>
+    fun observeAllUsers(type: ExtensionType, extId: String): Flow<List<UserEntity>>
 
     @Query("SELECT * FROM CurrentUser WHERE extId = :extId AND type = :type")
     suspend fun getCurrentUser(type: ExtensionType, extId: String): CurrentUser?

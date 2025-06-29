@@ -78,7 +78,7 @@
     <string name="error_x">Error: %1$s</string>
     <string name="str_copy">Copy</string>
     <string name="extensions">Extensions</string>
-    <string name="manage_extensions">Manage Extensions</string>
+    <string name="manage">Manage</string>
     <string name="choose_a_color">Choose a color</string>
     <string name="random">Random</string>
     <string name="add">Add</string>
