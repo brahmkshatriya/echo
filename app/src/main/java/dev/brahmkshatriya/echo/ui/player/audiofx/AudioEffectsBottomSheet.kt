@@ -94,9 +94,15 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
                 List(speedRange.size) { index -> index to (index % 2 == 0) },
                 speed,
                 { "${speedRange.getOrNull(it) ?: 1f}x" },
-            ) {
-                speedValue.text = "${speedRange.getOrNull(it) ?: 1f}x"
-                settings.edit { putInt(PLAYBACK_SPEED, it) }
+            ) { selectedIndex ->
+                // For some reason, the speed increments every time the audio fx view is created,
+                // this just prevents it from changing without user input
+                if (selectedIndex != speed) {
+                    speedValue.text = "${speedRange.getOrNull(selectedIndex) ?: 1f}x"
+                    settings.edit { putInt(PLAYBACK_SPEED, selectedIndex) }
+                } else {
+                    speedValue.text = "${speedRange.getOrNull(selectedIndex) ?: 1f}x"
+                }
             }
             pitchSwitch.isChecked = settings.getBoolean(CHANGE_PITCH, true)
             pitch.setOnClickListener {
