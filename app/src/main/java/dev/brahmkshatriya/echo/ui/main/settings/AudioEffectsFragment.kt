@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.PagerSnapHelper
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentAudioFxBinding
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
@@ -64,7 +63,6 @@ class AudioEffectsFragment : Fragment() {
         fun bind() = binding.bind(requireContext().globalFx()) { onEqualizerClicked() }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            PagerSnapHelper().attachToRecyclerView(binding.speedRecycler)
             bind()
             binding.root.apply {
                 clipToPadding = false

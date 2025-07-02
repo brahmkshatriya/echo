@@ -31,7 +31,9 @@ object ContextUtils {
 
     fun <T> LifecycleOwner.collect(flow: Flow<T>, block: suspend (T) -> Unit) =
         lifecycleScope.launch {
-            flow.collect(block)
+            flow.collect {
+                runCatching { block(it) }
+            }
         }
 
     fun <T> Context.listenFuture(future: ListenableFuture<T>, block: (Result<T>) -> Unit) {

@@ -160,10 +160,8 @@ class ExtensionsViewModel(
 
     fun installWithPrompt(files: List<File>) = viewModelScope.launch {
         files.forEach { file ->
-            println("Installing file: ${file.absolutePath}")
             installPromptFlow.emit(file)
             val result = promptResultFlow.first { it.file == file }
-            println("Received prompt result: $result")
             if (!result.accepted) return@forEach
             install(result.id, result.type, result.file).onFailure {
                 app.throwFlow.emit(it)

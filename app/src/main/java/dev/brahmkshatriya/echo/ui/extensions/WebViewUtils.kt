@@ -135,7 +135,7 @@ object WebViewUtils {
                 if (stopRegex.find(request.url) == null) return
                 done = true
                 timeoutJob?.cancel()
-                scope.launch {
+                scope.launch(Dispatchers.IO) {
                     mutex.withLock {
                         onComplete(null)
                         val result = runCatching {
@@ -191,17 +191,18 @@ object WebViewUtils {
         }
     }
 
-    suspend fun WebView.evalJS(bridge: Bridge?, js: String) = suspendCancellableCoroutine {
-        bridge?.onResult = it::resume
-        bridge?.onError = it::resumeWithException
-        val asyncFunction = if (js.startsWith("async function")) js
-        else if (js.startsWith("function")) "async $js"
-        else {
-            it.resumeWithException(Exception("Invalid JS function, must start with async or function"))
-            return@suspendCancellableCoroutine
-        }
+    suspend fun WebView.evalJS(bridge: Bridge?, js: String) = withContext(Dispatchers.Main) {
+        suspendCancellableCoroutine {
+            bridge?.onResult = it::resume
+            bridge?.onError = it::resumeWithException
+            val asyncFunction = if (js.startsWith("async function")) js
+            else if (js.startsWith("function")) "async $js"
+            else {
+                it.resumeWithException(Exception("Invalid JS function, must start with async or function"))
+                return@suspendCancellableCoroutine
+            }
 
-        val newJs = """
+            val newJs = """
         (function() {
             try {
                 const fun = $asyncFunction;
@@ -215,10 +216,11 @@ object WebViewUtils {
             }
         })()
         """.trimIndent()
-        evaluateJavascript(newJs, null)
+            evaluateJavascript(newJs, null)
 
-        it.invokeOnCancellation {
-            evaluateJavascript("javascript:window.stop();", null)
+            it.invokeOnCancellation {
+                evaluateJavascript("javascript:window.stop();", null)
+            }
         }
     }
 

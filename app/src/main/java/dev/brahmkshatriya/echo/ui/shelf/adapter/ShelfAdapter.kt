@@ -68,10 +68,10 @@ class ShelfAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val (type, extra) = when (val item = getItem(position)) {
-            is Shelf.Item -> 1 to MediaItemViewHolder.getViewType(item)
+        val (type, extra) = when (val item = getItemOrNull(position)) {
             is Shelf.Category -> 2 to null
             is Shelf.Lists<*> -> 3 to null
+            is Shelf.Item -> 1 to MediaItemViewHolder.getViewType(item)
             null -> error("null shelf item")
         }
         return type * 10 + (extra ?: 0)

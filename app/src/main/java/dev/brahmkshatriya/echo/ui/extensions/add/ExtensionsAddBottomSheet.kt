@@ -49,7 +49,7 @@ class ExtensionsAddBottomSheet : BottomSheetDialogFragment() {
             if (!isLink) lifecycleScope.launch {
                 val file = runCatching { requireActivity().openFileSelector() }.getOrNull()
                 extensionViewModel.installWithPrompt(listOfNotNull(file))
-                dismiss()
+                dismissAllowingStateLoss()
             } else {
                 val link = binding.editText.text.toString()
                 if (link.isEmpty()) return@setOnClickListener
