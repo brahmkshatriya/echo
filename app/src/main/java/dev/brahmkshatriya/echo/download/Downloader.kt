@@ -21,7 +21,6 @@ import dev.brahmkshatriya.echo.download.exceptions.DownloaderExtensionNotFoundEx
 import dev.brahmkshatriya.echo.download.tasks.TaskManager
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
@@ -208,8 +207,7 @@ class Downloader(
     init {
         scope.launch {
             downloadsFlow.map { info ->
-                val unifiedExtension =
-                    extensionLoader.music.getExtension(UnifiedExtension.metadata.id)?.instance?.value as UnifiedExtension
+                val unifiedExtension = extensionLoader.unified.value as UnifiedExtension
 
                 info.filter { it.download.fullyDownloaded }.groupBy {
                     it.context?.id

@@ -7,15 +7,17 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
+import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadBinding
 import dev.brahmkshatriya.echo.ui.common.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyFabInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.download.DownloadsAdapter.Companion.toItems
+import dev.brahmkshatriya.echo.ui.main.settings.BaseSettingsFragment
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfAdapter.Companion.getShelfAdapter
 import dev.brahmkshatriya.echo.ui.shelf.adapter.ShelfClickListener.Companion.getShelfListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -58,7 +60,6 @@ class DownloadFragment : Fragment() {
             binding.recyclerView.applyContentInsets(it)
             binding.fabContainer.applyFabInsets(it, systemInsets.value)
         }
-        applyBackPressCallback()
         binding.fabCancel.setOnClickListener {
             vm.cancelAll()
         }
@@ -75,5 +76,12 @@ class DownloadFragment : Fragment() {
             shelfAdapter.submit(ext?.id, data, page)
         }
         shelfAdapter.getTouchHelper().attachToRecyclerView(binding.recyclerView)
+    }
+
+    class WithHeader : BaseSettingsFragment() {
+        override val title: String
+            get() = getString(R.string.downloads)
+        override val icon = R.drawable.ic_downloading.toResourceImageHolder()
+        override val creator = { DownloadFragment() }
     }
 }

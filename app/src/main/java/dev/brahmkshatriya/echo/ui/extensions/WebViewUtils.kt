@@ -14,7 +14,6 @@ import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.add
@@ -133,7 +132,6 @@ object WebViewUtils {
                 request: Request
             ) {
                 if (target is WebViewRequest.Headers) requests.add(request)
-                println(request.url)
                 if (stopRegex.find(request.url) == null) return
                 done = true
                 timeoutJob?.cancel()
@@ -174,7 +172,7 @@ object WebViewUtils {
                 view: WebView?, request: WebResourceRequest?
             ): Boolean {
                 request?.run {
-                    val headers = requestHeaders.toMutableMap()
+                    val headers = requestHeaders?.toMutableMap() ?: mutableMapOf()
                     val cookie = CookieManager.getInstance().getCookie(url.toString())
                     if (cookie != null) headers["Cookie"] = cookie
                     intercept(Request(url.toString(), headers))
@@ -184,8 +182,9 @@ object WebViewUtils {
         }
 
         addJavascriptInterface(bridge, "bridge")
-        settings.cacheMode = if (target.dontCache) WebSettings.LOAD_NO_CACHE
-        else WebSettings.LOAD_DEFAULT
+        settings.cacheMode =
+            if (runCatching { target.dontCache }.getOrNull() == true) WebSettings.LOAD_NO_CACHE
+            else WebSettings.LOAD_DEFAULT
         target.initialUrl.run {
             settings.userAgentString = headers["user-agent"] ?: settings.userAgentString
             loadUrl(url, headers)
@@ -246,7 +245,7 @@ object WebViewUtils {
         }
     }
 
-    fun AppCompatActivity.onWebViewIntent(
+    fun FragmentActivity.onWebViewIntent(
         intent: Intent,
         webViewClient: WebViewClientFactory
     ) {

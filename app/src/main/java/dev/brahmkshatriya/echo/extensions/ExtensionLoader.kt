@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.inject
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.injectWith
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
+import dev.brahmkshatriya.echo.extensions.builtin.test.TestExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
@@ -53,7 +54,7 @@ class ExtensionLoader(
     val parser = ExtensionParser(app.context)
     val scope = CoroutineScope(Dispatchers.IO)
     val db = ExtensionDatabase.create(app.context)
-    private val unified =
+    val unified =
         Injectable<ExtensionClient> { UnifiedExtension(app.context, downloadShelf, null) }
 
     val fileIgnoreFlow = MutableSharedFlow<File?>()
@@ -61,7 +62,7 @@ class ExtensionLoader(
         scope, app.context, fileIgnoreFlow, parser,
         UnifiedExtension.metadata to unified,
         OfflineExtension.metadata to Injectable { OfflineExtension(app.context) },
-//        TestExtension.metadata to Injectable { TestExtension() },
+        TestExtension.metadata to Injectable { TestExtension() },
 //        DownloadExtension.metadata to Injectable { DownloadExtension(app.context) }
 //        TrackerTestExtension.metadata to Injectable { TrackerTestExtension() },
     )

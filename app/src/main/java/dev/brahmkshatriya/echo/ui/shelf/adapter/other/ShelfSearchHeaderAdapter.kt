@@ -120,7 +120,6 @@ class ShelfSearchHeaderAdapter(
             id?.let { context.getFromCache<ShelfSort.State>(it, "shelf_sort") }
     }
 
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
         binding.root.run {

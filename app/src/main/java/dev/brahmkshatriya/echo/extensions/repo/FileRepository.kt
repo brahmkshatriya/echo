@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.util.WeakHashMap
 
@@ -21,6 +23,7 @@ class FileRepository(
 
     private val map =
         WeakHashMap<String, Pair<String, Result<Pair<Metadata, Injectable<ExtensionClient>>>>>()
+    private val mutex = Mutex()
 
     private var toIgnoreFile: File? = null
     override val flow = channelFlow {
@@ -38,8 +41,9 @@ class FileRepository(
         }.onEach { it.setWritable(false) }
     }
 
-    override suspend fun loadExtensions() =
+    override suspend fun loadExtensions() = mutex.withLock {
         parser.getAllDynamically(ImportType.File, map, loadAllApks())
+    }
 
     constructor(
         context: Context, parser: ExtensionParser, fileIgnoreFlow: Flow<File?>

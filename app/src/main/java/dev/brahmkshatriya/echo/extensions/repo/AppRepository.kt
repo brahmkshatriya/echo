@@ -15,6 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.WeakHashMap
@@ -26,31 +28,32 @@ class AppRepository(
     private val parser: ExtensionParser
 ) : ExtensionRepository {
     private suspend fun Context.getStaticPackages() = withContext(Dispatchers.IO) {
-        packageManager.getInstalledPackages(PACKAGE_FLAGS).mapNotNull {
-            runCatching {
-                val isExtension = it.reqFeatures.orEmpty().any { featureInfo ->
-                    featureInfo?.name?.startsWith(FEATURE) ?: false
-                }
-                if (isExtension) File(it.applicationInfo!!.sourceDir!!) else null
-            }.getOrNull()
-        }
+        runCatching {
+            packageManager.getInstalledPackages(PACKAGE_FLAGS).mapNotNull {
+                runCatching {
+                    val isExtension = it.reqFeatures.orEmpty().any { featureInfo ->
+                        featureInfo?.name?.startsWith(FEATURE) ?: false
+                    }
+                    if (isExtension) File(it.applicationInfo!!.sourceDir!!) else null
+                }.getOrNull()
+            }
+        }.getOrNull().orEmpty()
     }
 
     private val map =
         WeakHashMap<String, Pair<String, Result<Pair<Metadata, Injectable<ExtensionClient>>>>>()
+    private val mutex = Mutex()
 
-    override suspend fun loadExtensions() =
+    override suspend fun loadExtensions() = mutex.withLock {
         parser.getAllDynamically(ImportType.App, map, context.getStaticPackages())
+    }
 
     override val flow = channelFlow {
         send(loadExtensions())
         suspendCoroutine {
             val receiver = Receiver {
-                println("Received broadcast")
                 scope.launch {
-                    println("launching loadExtensions")
                     send(loadExtensions())
-                    println("loadExtensions sent")
                 }
             }
             val filter = IntentFilter().apply {

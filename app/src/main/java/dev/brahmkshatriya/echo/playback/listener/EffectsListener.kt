@@ -35,11 +35,12 @@ class EffectsListener(
     private var oldSettings = settings
     private fun applyCustomEffects() {
         oldSettings.unregisterOnSharedPreferenceChangeListener(listener)
-        val settings = context.getFxPrefs(exoPlayer.currentMediaItem?.mediaId?.hashCode())
-        oldSettings = settings
-        oldSettings.registerOnSharedPreferenceChangeListener(listener)
-        applyPlayback(settings)
-        effects.applySettings(settings)
+        val current = context.getFxPrefs(settings, exoPlayer.currentMediaItem?.mediaId?.hashCode())
+            ?: settings
+        oldSettings = current
+        current.registerOnSharedPreferenceChangeListener(listener)
+        applyPlayback(current)
+        effects.applySettings(current)
     }
 
     private fun createEffects() = Effects(exoPlayer.audioSessionId)
@@ -115,13 +116,12 @@ class EffectsListener(
 
         fun Context.globalFx() = getSharedPreferences(GLOBAL_FX, Context.MODE_PRIVATE)!!
         fun Context.deleteGlobalFx() = deleteSharedPreferences(GLOBAL_FX)
-        fun Context.getFxPrefs(id: Int? = null): SharedPreferences {
-            val settings = globalFx()
-            if (id == null) return settings
+        fun Context.getFxPrefs(settings: SharedPreferences, id: Int? = null): SharedPreferences? {
+            if (id == null) return null
             val string = id.toString()
-            val hasCustom = settings.getStringSet(CUSTOM_EFFECTS, emptySet())
-                ?.contains(string) ?: false
-            return if (!hasCustom) settings
+            val hasCustom = settings.getStringSet(CUSTOM_EFFECTS, emptySet())?.contains(string)
+                ?: false
+            return if (!hasCustom) null
             else getSharedPreferences("fx_$string", Context.MODE_PRIVATE)!!.apply {
                 if (getBoolean("init", false)) return@apply
                 settings.copyTo(this)

@@ -62,7 +62,6 @@ class PlayerEventListener(
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        println("mediaItem : $mediaItem ${player.currentMediaItem}")
         updateCurrentFlow()
         updateCustomLayout()
         ResumptionUtils.saveIndex(context, player.currentMediaItemIndex)

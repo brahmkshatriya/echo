@@ -43,6 +43,7 @@ class TrackingListener(
     private val trackerList = extensions.tracker
 
     private var current: MediaItem? = null
+    private var previousId: String? = null
 
     private suspend fun getDetails() = withContext(Dispatchers.Main) {
         current?.let { curr ->
@@ -56,8 +57,11 @@ class TrackingListener(
     ) {
         scope.launch {
             val details = getDetails()
+            val prevExtension = previousId?.takeIf { details?.extensionId != it }
+                ?.let { musicList.getExtension(it) }
             val extension = musicList.getExtension(details?.extensionId)
             val trackers = trackerList.value.filter { it.isEnabled }
+            prevExtension?.get<TrackerClient, Unit>(throwableFlow) { block(prevExtension, null) }
             extension?.get<TrackerClient, Unit>(throwableFlow) { block(extension, details) }
             trackers.forEach {
                 launch { it.get<TrackerClient, Unit>(throwableFlow) { block(it, details) } }
@@ -68,6 +72,7 @@ class TrackingListener(
     private val mutex = Mutex()
     private val timers = mutableMapOf<String, PauseTimer>()
     private fun onTrackChanged(mediaItem: MediaItem?) {
+        previousId = current?.extensionId
         current = mediaItem
         scope.launch {
             mutex.withLock {
@@ -127,7 +132,7 @@ class TrackingListener(
         }
         scope.launch {
             @OptIn(FlowPreview::class)
-            playState.debounce(1000L).collectLatest { (_, isPlaying) ->
+            playState.debounce(500).collectLatest { (_, isPlaying) ->
                 mutex.withLock {
                     timers.forEach { (_, timer) ->
                         if (isPlaying) timer.resume()

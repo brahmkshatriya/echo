@@ -123,9 +123,10 @@ class EditPlaylistSearchFragment : Fragment() {
             }
             adapter.submitList(items)
             binding.addTracks.isEnabled = items.isNotEmpty()
-            binding.selectedSongs.text = resources.getQuantityString(
-                R.plurals.n_songs, items.size, items.size
-            )
+            val tracks = items.size
+            binding.selectedSongs.text =  runCatching {
+                resources.getQuantityString(R.plurals.n_songs, tracks, tracks)
+            }.getOrNull() ?: getString(R.string.x_songs, tracks)
         }
     }
 }

@@ -6,49 +6,166 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.HapticFeedbackConstantsCompat
 import androidx.core.view.doOnLayout
+import androidx.core.view.marginLeft
+import androidx.core.view.marginRight
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.R
 import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.databinding.ItemRulerBinding
+import dev.brahmkshatriya.echo.databinding.ItemRulerEmptyBinding
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 
-@SuppressLint("NotifyDataSetChanged")
-class RulerAdapter(
-    private val recyclerView: RecyclerView,
-    private val rangeWithIntervals: List<Pair<Int, Boolean>>,
-    private val default: Int,
-    private val intervalText: (Int) -> String,
-    private val onSelected: (Int) -> Unit = {}
+class RulerAdapter<T>(
+    private val listener: Listener<T>
 ) : RecyclerView.Adapter<RulerAdapter.ViewHolder>() {
-    private val range = rangeWithIntervals.map { it.first }
 
-    init {
-        recyclerView.apply {
-            val layoutManager = layoutManager as LinearLayoutManager
-            adapter = this@RulerAdapter
+    interface Listener<T> {
+        fun intervalText(value: T): String
+        fun onSelectItem(value: T)
+
+        val selectedColor get() = androidx.appcompat.R.attr.colorPrimary
+        val unselectedColor get() = R.attr.colorOnSurface
+    }
+
+    sealed class ViewHolder(root: View) : RecyclerView.ViewHolder(root) {
+        open fun bind(position: Int) {}
+
+        class Empty(
+            parent: ViewGroup, binding: ItemRulerEmptyBinding = ItemRulerEmptyBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+        ) : ViewHolder(binding.root) {
+            init {
+                parent.doOnLayout {
+                    binding.root.updateLayoutParams {
+                        val itemWidth = 24.dpToPx(it.context)
+                        width = (it.width - itemWidth) / 2
+                    }
+                }
+            }
+        }
+
+        class Item<T>(
+            parent: ViewGroup,
+            private val getItem: (Int) -> Pair<T, Boolean>?,
+            private val listener: Listener<T>,
+            private val binding: ItemRulerBinding = ItemRulerBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+        ) : ViewHolder(binding.root) {
+            override fun bind(position: Int) {
+                val (value, showText) = getItem(position) ?: return
+                binding.rulerText.text = if (showText) listener.intervalText(value) else ""
+                unselect()
+            }
+
+            fun select() {
+                binding.rulerCard.setCardBackgroundColor(
+                    MaterialColors.getColor(itemView, listener.selectedColor, 0)
+                )
+            }
+
+            fun unselect() {
+                binding.rulerCard.setCardBackgroundColor(
+                    MaterialColors.getColor(itemView, listener.unselectedColor, 0)
+                )
+            }
+        }
+    }
+
+    override fun getItemViewType(position: Int) = when (position) {
+        0, itemCount - 1 -> 0
+        else -> 1
+    }
+
+    private var currentList = listOf<Pair<T, Boolean>?>(null, null)
+    private fun getItem(position: Int): Pair<T, Boolean>? {
+        return currentList.getOrNull(position)
+    }
+
+    override fun getItemCount() = currentList.size
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return when (viewType) {
+            0 -> ViewHolder.Empty(parent)
+            else -> ViewHolder.Item(parent, ::getItem, listener)
+        }
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(position)
+    }
+
+    private var selectedIndex: Int = -1
+    @SuppressLint("NotifyDataSetChanged")
+    fun submitList(list: List<Pair<T, Boolean>>, selected: T) {
+        currentList = buildList {
+            add(null)
+            addAll(list)
+            add(null)
+        }
+        val index = list.indexOfFirst { it.first == selected }
+        selectedIndex = index + 1
+        notifyDataSetChanged()
+    }
+
+    private var recyclerView: RecyclerView? = null
+    private var selectedVH: ViewHolder.Item<*>? = null
+    private fun select() {
+        val (vh, newIndex) = getMiddleItem() ?: return
+        if (vh == selectedVH) return
+        selectedIndex = newIndex
+        selectedVH?.unselect()
+        vh.select()
+        selectedVH = vh
+        vh.itemView.run {
+            isHapticFeedbackEnabled = true
+            performHapticFeedback(HapticFeedbackConstantsCompat.CLOCK_TICK)
+        }
+        listener.onSelectItem(getItem(newIndex)!!.first)
+    }
+
+    private val recyclerListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            select()
+        }
+    }
+
+    private fun scrollToMiddle(after: () -> Unit = {}) {
+        recyclerView?.run {
+            val manager = layoutManager as LinearLayoutManager
             doOnLayout {
                 val itemWidth = 24.dpToPx(context)
                 val pad = (width - itemWidth) / 2
-                padding = pad / itemWidth
-                notifyDataSetChanged()
+                manager.scrollToPositionWithOffset(selectedIndex, pad)
                 post {
-                    layoutManager.scrollToPositionWithOffset(getPositionFromValue(default), pad)
-                    post {
-                        selectMiddleItem()
-                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                                post { selectMiddleItem() }
-                            }
-                        })
-                    }
+                    after()
                 }
             }
         }
     }
 
-    private fun selectMiddleItem() = recyclerView.run {
-        val screenWidth = resources.displayMetrics.widthPixels
+    private val snapHelper = PagerSnapHelper()
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView = recyclerView
+        snapHelper.attachToRecyclerView(recyclerView)
+        scrollToMiddle {
+            select()
+            recyclerView.addOnScrollListener(recyclerListener)
+        }
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView?.removeOnScrollListener(recyclerListener)
+        snapHelper.attachToRecyclerView(null)
+        this.recyclerView = null
+    }
+
+    private fun getMiddleItem() = recyclerView?.run {
+        val middle = width * .5f
         val layoutManager = layoutManager as LinearLayoutManager
 
         val firstVisibleIndex = layoutManager.findFirstVisibleItemPosition()
@@ -56,79 +173,19 @@ class RulerAdapter(
         val visibleIndexes = firstVisibleIndex..lastVisibleIndex
 
         visibleIndexes.forEach {
+            if (it == 0 || it == itemCount - 1) return@forEach
             val vh = findViewHolderForLayoutPosition(it) ?: return@forEach
             val location = IntArray(2)
             vh.itemView.getLocationOnScreen(location)
             val x = location[0]
-            val halfWidth = vh.itemView.width * .5
+            val halfWidth = vh.itemView.run { width + marginLeft + marginRight } * .5f
             val rightSide = x + halfWidth
             val leftSide = x - halfWidth
-            val isInMiddle = screenWidth * .5 in leftSide..rightSide
+            val isInMiddle = middle in leftSide..rightSide
             if (isInMiddle) {
-                selectItem(vh as ViewHolder, it)
-                return
+                return@run vh as ViewHolder.Item<*> to it
             }
         }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemRulerBinding.inflate(inflater, parent, false)
-        return ViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind()
-    }
-
-    var padding = 0
-    override fun getItemCount() = range.size + (padding + 1) * 2 - 1
-    private fun getPositionFromValue(value: Int) = range.indexOf(value) + padding + 1
-
-    inner class ViewHolder(val binding: ItemRulerBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-
-        private fun actualValue(pos: Int) = rangeWithIntervals.getOrNull(pos - padding - 1)
-            ?: (null to false)
-
-        fun bind() {
-            val (value, showText) = actualValue(bindingAdapterPosition)
-            binding.root.visibility = if (value == null) View.INVISIBLE else View.VISIBLE
-            binding.rulerText.text = if (showText && value != null) intervalText(value) else ""
-        }
-
-        private val selectedColor = MaterialColors.getColor(
-            itemView, androidx.appcompat.R.attr.colorPrimary, 0
-        )
-
-        private val unselectedColor = MaterialColors.getColor(
-            itemView, R.attr.colorOnSurface, 0
-        )
-
-        fun select() {
-            binding.rulerCard.setCardBackgroundColor(selectedColor)
-        }
-
-        fun unselect() {
-            binding.rulerCard.setCardBackgroundColor(unselectedColor)
-        }
-    }
-
-    private var selectedVh: ViewHolder? = null
-    private var last: Int? = null
-    private fun selectItem(vh: ViewHolder, pos: Int) {
-        val value = range.getOrNull(pos - padding - 1)
-        if (value == last) return
-        last = value
-
-        selectedVh?.unselect()
-        vh.select()
-        selectedVh = vh
-
-        vh.itemView.run {
-            isHapticFeedbackEnabled = true
-            performHapticFeedback(HapticFeedbackConstantsCompat.CLOCK_TICK)
-        }
-        onSelected(value ?: return)
+        null
     }
 }

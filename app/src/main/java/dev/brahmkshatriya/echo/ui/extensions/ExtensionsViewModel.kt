@@ -30,7 +30,7 @@ import dev.brahmkshatriya.echo.utils.AppUpdater.updateApp
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.ContextUtils.cleanupTempApks
-import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import dev.brahmkshatriya.echo.utils.ContextUtils.collect
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -160,8 +160,10 @@ class ExtensionsViewModel(
 
     fun installWithPrompt(files: List<File>) = viewModelScope.launch {
         files.forEach { file ->
+            println("Installing file: ${file.absolutePath}")
             installPromptFlow.emit(file)
             val result = promptResultFlow.first { it.file == file }
+            println("Received prompt result: $result")
             if (!result.accepted) return@forEach
             install(result.id, result.type, result.file).onFailure {
                 app.throwFlow.emit(it)
@@ -188,16 +190,16 @@ class ExtensionsViewModel(
     companion object {
         fun FragmentActivity.configureExtensionsUpdater() {
             val viewModel by viewModel<ExtensionsViewModel>()
-            observe(viewModel.installPromptFlow) {
+            collect(viewModel.installPromptFlow) {
                 ExtensionInstallerBottomSheet.newInstance(it).show(supportFragmentManager, null)
             }
-            observe(viewModel.linksDialogFlow) {
+            collect(viewModel.linksDialogFlow) {
                 createLinksDialog(it.first, it.second)
             }
 
             viewModel.update(this, false)
             var currentFile: File? = null
-            observe(viewModel.installFileFlow) {
+            collect(viewModel.installFileFlow) {
                 currentFile = it
                 viewModel.installedFlow.emit(it to runCatching { installApp(this, it) })
             }

@@ -23,7 +23,7 @@ abstract class BaseSettingsFragment : Fragment() {
 
     abstract val title: String
     abstract val icon: ImageHolder?
-    abstract val creator: () -> PreferenceFragmentCompat
+    abstract val creator: () -> Fragment
     open val circleIcon: Boolean = false
 
     var binding: FragmentGenericCollapsableBinding by autoCleared()
@@ -60,12 +60,6 @@ abstract class BaseSettingsFragment : Fragment() {
 
         childFragmentManager.beginTransaction().replace(R.id.genericFragmentContainer, creator())
             .commit()
-
-        view.post {
-            runCatching {
-                binding.genericFragmentContainer.getFragment<PreferenceFragmentCompat>().configure()
-            }
-        }
     }
 
     companion object {

@@ -18,9 +18,9 @@ import com.google.android.material.navigation.NavigationBarView
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.setupExceptionHandler
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.setupIntents
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.setupSnackBar
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupIntents
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupNavBarAndInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupPlayerBehavior
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel.Companion.configureExtensionsUpdater
@@ -56,7 +56,6 @@ class MainActivity : AppCompatActivity() {
 
         setupNavBarAndInsets(uiViewModel, binding.root, binding.navView as NavigationBarView)
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
-        setupIntents(uiViewModel)
         setupExceptionHandler(setupSnackBar(uiViewModel, binding.root))
         checkAppPermissions {
             val curr = extensionLoader.current.value
@@ -70,6 +69,7 @@ class MainActivity : AppCompatActivity() {
             add<MainFragment>(R.id.navHostFragment, "main")
             add<PlayerFragment>(R.id.playerFragmentContainer, "player")
         }
+        setupIntents(uiViewModel)
     }
 
     companion object {

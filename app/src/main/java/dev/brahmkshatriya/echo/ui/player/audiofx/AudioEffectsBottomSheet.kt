@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.ui.player.audiofx
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.audiofx.AudioEffect
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,7 +14,6 @@ import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.viewModelScope
-import androidx.recyclerview.widget.PagerSnapHelper
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.DialogPlayerAudioFxBinding
@@ -56,10 +55,12 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
             val settings = requireContext().globalFx()
             settings.edit {
                 val customEffects = settings.getStringSet(CUSTOM_EFFECTS, null) ?: emptySet()
-                putStringSet(CUSTOM_EFFECTS, customEffects + mediaId)
+                putStringSet(CUSTOM_EFFECTS, customEffects + mediaId?.hashCode()?.toString())
             }
             binding.audioFxDescription.isVisible = mediaId != null
-            binding.audioFxFragment.bind(requireContext(), mediaId) { onEqualizerClicked() }
+            val mediaSettings =
+                requireContext().getFxPrefs(settings, mediaId?.hashCode()) ?: settings
+            binding.audioFxFragment.bind(mediaSettings) { onEqualizerClicked() }
         }
         observe(viewModel.playerState.current) {
             mediaId = it?.mediaItem?.mediaId
@@ -79,25 +80,25 @@ class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
                 else -> false
             }
         }
-        PagerSnapHelper().attachToRecyclerView(binding.audioFxFragment.speedRecycler)
     }
 
     companion object {
         @SuppressLint("SetTextI18n")
         fun FragmentAudioFxBinding.bind(
-            context: Context, mediaId: String? = null, onEqualizerClicked: () -> Unit
+            settings: SharedPreferences, onEqualizerClicked: () -> Unit
         ) {
-            val settings = context.getFxPrefs(mediaId?.hashCode())
             val speed = settings.getInt(PLAYBACK_SPEED, speedRange.indexOf(1f))
-            RulerAdapter(
-                speedRecycler,
-                List(speedRange.size) { index -> index to (index % 2 == 0) },
-                speed,
-                { "${speedRange.getOrNull(it) ?: 1f}x" },
-            ) {
-                speedValue.text = "${speedRange.getOrNull(it) ?: 1f}x"
-                settings.edit { putInt(PLAYBACK_SPEED, it) }
-            }
+            val adapter = RulerAdapter(object : RulerAdapter.Listener<Int> {
+                override fun intervalText(value: Int) = "${speedRange.getOrNull(value) ?: 1f}x"
+                override fun onSelectItem(value: Int) {
+                    speedValue.text = "${speedRange.getOrNull(value) ?: 1f}x"
+                    settings.edit { putInt(PLAYBACK_SPEED, value) }
+                }
+            })
+
+            speedRecycler.adapter = adapter
+            adapter.submitList(List(speedRange.size) { index -> index to (index % 2 == 0) }, speed)
+
             pitchSwitch.isChecked = settings.getBoolean(CHANGE_PITCH, true)
             pitch.setOnClickListener {
                 pitchSwitch.isChecked = !pitchSwitch.isChecked

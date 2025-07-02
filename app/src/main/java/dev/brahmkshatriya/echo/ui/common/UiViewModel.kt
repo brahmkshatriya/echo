@@ -1,13 +1,11 @@
 package dev.brahmkshatriya.echo.ui.common
 
 import android.content.Context
-import android.content.Intent
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.net.toFile
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
@@ -28,12 +26,7 @@ import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openItemFragmentFromUri
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
-import dev.brahmkshatriya.echo.ui.extensions.WebViewUtils.onWebViewIntent
 import dev.brahmkshatriya.echo.ui.main.MainFragment
-import dev.brahmkshatriya.echo.ui.main.settings.SettingsFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
@@ -55,7 +48,7 @@ import kotlin.math.min
 
 class UiViewModel(
     context: Context,
-    private val extensionLoader: ExtensionLoader,
+    val extensionLoader: ExtensionLoader,
     private val playerState: PlayerState
 ) : ViewModel() {
 
@@ -389,49 +382,6 @@ class UiViewModel(
 
         fun isFinalState(state: Int): Boolean {
             return state == STATE_HIDDEN || state == STATE_COLLAPSED || state == STATE_EXPANDED
-        }
-
-        fun MainActivity.setupIntents(
-            uiViewModel: UiViewModel,
-        ) {
-            addOnNewIntentListener { onIntent(uiViewModel, it) }
-            onIntent(uiViewModel, intent)
-        }
-
-        private fun MainActivity.onIntent(uiViewModel: UiViewModel, intent: Intent?) {
-            this.intent = null
-            intent ?: return
-            val fromNotif = intent.hasExtra("fromNotification")
-            if (fromNotif) uiViewModel.run {
-                if (playerSheetState.value == STATE_HIDDEN) return@run
-                changePlayerState(STATE_EXPANDED)
-                changeMoreState(STATE_COLLAPSED)
-                return
-            }
-            val fromDownload = intent.hasExtra("fromDownload")
-            if (fromDownload) {
-                uiViewModel.selectedSettingsTab.value = 0
-                if (supportFragmentManager.findFragmentById(R.id.navHostFragment) is MainFragment) {
-                    uiViewModel.navigation.value = uiViewModel.navIds.indexOf(R.id.settingsFragment)
-                } else {
-                    openFragment<SettingsFragment>()
-                }
-                return
-            }
-            val webViewRequest = intent.hasExtra("webViewRequest")
-            if (webViewRequest) {
-                val webViewClient = uiViewModel.extensionLoader.webViewClientFactory
-                onWebViewIntent(intent, webViewClient)
-                return
-            }
-            val uri = intent.data
-            when (uri?.scheme) {
-                "echo" -> runCatching { openItemFragmentFromUri(uri) }
-                "file" -> {
-                    val viewModel by viewModel<ExtensionsViewModel>()
-                    viewModel.installWithPrompt(listOf(uri.toFile()))
-                }
-            }
         }
 
         fun LifecycleOwner.setupPlayerBehavior(viewModel: UiViewModel, view: View) {

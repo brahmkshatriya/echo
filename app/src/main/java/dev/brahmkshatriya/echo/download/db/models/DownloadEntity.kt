@@ -33,7 +33,9 @@ data class DownloadEntity(
     val indexes by lazy { indexesData?.toData<List<Int>>().orEmpty() }
     val toMergeFiles by lazy { toMergeFilesData?.toData<List<String>>().orEmpty() }
     val exception by lazy {
-        exceptionFile?.let { File(it) }?.readText()?.toData<ExceptionUtils.Data>()
+        runCatching {
+            exceptionFile?.let { File(it) }?.readText()?.toData<ExceptionUtils.Data>()
+        }.getOrNull()
     }
     val isFinal by lazy { finalFile != null || exceptionFile != null }
 }

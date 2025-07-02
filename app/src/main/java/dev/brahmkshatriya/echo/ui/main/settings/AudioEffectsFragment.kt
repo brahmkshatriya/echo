@@ -11,6 +11,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentAudioFxBinding
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.deleteGlobalFx
+import dev.brahmkshatriya.echo.playback.listener.EffectsListener.Companion.globalFx
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginFragment.Companion.bind
@@ -60,7 +61,7 @@ class AudioEffectsFragment : Fragment() {
             return binding.root
         }
 
-        fun bind() = binding.bind(requireContext()) { onEqualizerClicked() }
+        fun bind() = binding.bind(requireContext().globalFx()) { onEqualizerClicked() }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             PagerSnapHelper().attachToRecyclerView(binding.speedRecycler)

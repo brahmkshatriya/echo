@@ -129,6 +129,11 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                 .getFlow(ExtensionType.valueOf(extensionType)).getExtension(extensionId)
         }
 
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+            configure()
+        }
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val context = preferenceManager.context
             preferenceManager.sharedPreferencesName = extensionPrefId(extensionType, extensionId)

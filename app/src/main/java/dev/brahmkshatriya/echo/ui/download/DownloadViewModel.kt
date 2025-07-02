@@ -70,7 +70,7 @@ class DownloadViewModel(
                 Message(
                     getString(R.string.download_started),
                     Message.Action(getString(R.string.view)) {
-                        openFragment<DownloadFragment>()
+                        openFragment<DownloadFragment.WithHeader>()
                     }
                 )
             )

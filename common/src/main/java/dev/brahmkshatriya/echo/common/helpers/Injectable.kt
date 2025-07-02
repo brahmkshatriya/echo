@@ -8,9 +8,8 @@ class Injectable<T>(
 ) {
 
     val data = lazy { runCatching { getter() } }
-
+    private val injections: MutableList<suspend T.() -> Unit> = mutableListOf()
     private val mutex = Mutex()
-    val injections = mutableListOf<suspend T.() -> Unit>()
     val value: T?
         get() = data.value.getOrNull()
 
@@ -32,5 +31,9 @@ class Injectable<T>(
         else mutex.withLock { injections.add(block) }
     }
 
-    inline fun <reified R> casted() = Injectable { data.value.getOrThrow() as R }
+    @Suppress("UNCHECKED_CAST")
+    fun <R> casted() = run {
+        injections.add { this as R }
+        this as Injectable<R>
+    }
 }

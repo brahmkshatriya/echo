@@ -61,13 +61,13 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         )
 
         const val FUN =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp"
 
         const val BUNNY =
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
         const val M3U8 =
-            "https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8"
+            "https://fl3.moveonjoy.com/CNBC/index.m3u8"
 
         const val SUBTITLE =
             "https://raw.githubusercontent.com/brenopolanski/html5-video-webvtt-example/master/MIB2-subtitles-pt-BR.vtt"

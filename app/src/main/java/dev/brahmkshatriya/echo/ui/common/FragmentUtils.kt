@@ -1,14 +1,20 @@
 package dev.brahmkshatriya.echo.ui.common
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -18,7 +24,10 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
+import dev.brahmkshatriya.echo.ui.download.DownloadFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
+import dev.brahmkshatriya.echo.ui.extensions.WebViewUtils.onWebViewIntent
+import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -65,7 +74,51 @@ object FragmentUtils {
         }
     }
 
-    fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
+    fun MainActivity.setupIntents(
+        uiViewModel: UiViewModel,
+    ) {
+        addOnNewIntentListener { onIntent(uiViewModel, it) }
+        onIntent(uiViewModel, intent)
+    }
+
+    private fun FragmentActivity.onIntent(uiViewModel: UiViewModel, intent: Intent?) {
+        this.intent = null
+        intent ?: return
+        println("intent: ${intent.data} ${intent.extras?.keySet()?.toList()}")
+        val fromNotif = intent.hasExtra("fromNotification")
+        if (fromNotif) uiViewModel.run {
+            if (playerSheetState.value == STATE_HIDDEN) return@run
+            changePlayerState(STATE_EXPANDED)
+            changeMoreState(STATE_COLLAPSED)
+            return
+        }
+        val fromDownload = intent.hasExtra("fromDownload")
+        if (fromDownload) {
+            uiViewModel.selectedSettingsTab.value = 0
+            if (supportFragmentManager.findFragmentById(R.id.navHostFragment) is MainFragment) {
+                uiViewModel.navigation.value = uiViewModel.navIds.indexOf(R.id.settingsFragment)
+            } else {
+                openFragment<DownloadFragment.WithHeader>()
+            }
+            return
+        }
+        val webViewRequest = intent.hasExtra("webViewRequest")
+        if (webViewRequest) {
+            val webViewClient = uiViewModel.extensionLoader.webViewClientFactory
+            onWebViewIntent(intent, webViewClient)
+            return
+        }
+        val uri = intent.data
+        when (uri?.scheme) {
+            "echo" -> runCatching { openItemFragmentFromUri(uri) }
+            "file" -> {
+                val viewModel by viewModel<ExtensionsViewModel>()
+                viewModel.installWithPrompt(listOf(uri.toFile()))
+            }
+        }
+    }
+
+    private fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
         when (val extensionType = uri.host) {
             "music" -> {
                 val extensionId = uri.pathSegments.firstOrNull()

@@ -29,6 +29,11 @@ object ContextUtils {
             flow.flowWithLifecycle(lifecycle).collectLatest(block)
         }
 
+    fun <T> LifecycleOwner.collect(flow: Flow<T>, block: suspend (T) -> Unit) =
+        lifecycleScope.launch {
+            flow.collect(block)
+        }
+
     fun <T> Context.listenFuture(future: ListenableFuture<T>, block: (Result<T>) -> Unit) {
         future.addListener({
             val result = runCatching { future.get() }
