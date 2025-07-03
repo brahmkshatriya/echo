@@ -70,7 +70,7 @@ class LoginFragment : Fragment() {
                 iconContainer.alpha = 1 - offset
             }
             toolBar.setNavigationOnClickListener {
-                parentFragmentManager.popBackStack()
+                parentFragmentManager.popBackStackImmediate()
             }
         }
 
@@ -87,7 +87,7 @@ class LoginFragment : Fragment() {
             val loginViewModel by activityViewModel<LoginViewModel>()
             childFragmentManager.run {
                 loginViewModel.loading.value = false
-                commit {
+                commitNow(true) {
                     setReorderingAllowed(true)
                     replace<T>(R.id.genericFragmentContainer, null, args)
                     if (fragments.size > 0) addToBackStack(null)
@@ -122,18 +122,18 @@ class LoginFragment : Fragment() {
         if (savedInstanceState != null) return
         parentFragmentManager.run {
             commit { setPrimaryNavigationFragment(this@LoginFragment) }
-            addOnDestroyObserver { commit(true) { setPrimaryNavigationFragment(null) } }
+            addOnDestroyObserver { commitNow(true) { setPrimaryNavigationFragment(null) } }
         }
         binding.bind(this)
         binding.toolBar.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack()
+            parentFragmentManager.popBackStackImmediate()
         }
         binding.toolBar.title = getString(R.string.x_login, extName)
 
         val extension = loginViewModel.extensionLoader.getFlow(clientType).getExtension(extId)
 
         if (extension == null) {
-            parentFragmentManager.popBackStack()
+            parentFragmentManager.popBackStackImmediate()
             return
         }
 
@@ -148,15 +148,15 @@ class LoginFragment : Fragment() {
         }
 
         observe(loginViewModel.loadingOver) {
-            parentFragmentManager.commitNow { setPrimaryNavigationFragment(null) }
-            parentFragmentManager.popBackStack()
+            parentFragmentManager.commitNow(true) { setPrimaryNavigationFragment(null) }
+            parentFragmentManager.popBackStackImmediate()
         }
 
         lifecycleScope.launch {
             val client = extension.instance.value().getOrNull() as? LoginClient
             if (client == null) {
                 createSnack(requireContext().loginNotSupported(extName))
-                parentFragmentManager.popBackStack()
+                parentFragmentManager.popBackStackImmediate()
                 return@launch
             }
 
@@ -170,7 +170,7 @@ class LoginFragment : Fragment() {
             when (totalClients) {
                 0 -> {
                     createSnack(requireContext().loginNotSupported(extName))
-                    parentFragmentManager.popBackStack()
+                    parentFragmentManager.popBackStackImmediate()
                     return@launch
                 }
 

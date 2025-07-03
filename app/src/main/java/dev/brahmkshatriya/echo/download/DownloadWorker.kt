@@ -17,6 +17,7 @@ import androidx.work.WorkerParameters
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class DownloadWorker(
@@ -30,7 +31,7 @@ class DownloadWorker(
         val job = manager.scope.launch {
             manager.taskFlow.collectLatest {
                 if (it.isEmpty()) removeNotification()
-                else setForeground(createNotification(it.size))
+                else if (isActive) setForeground(createNotification(it.size))
             }
         }
         manager.awaitCompletion()

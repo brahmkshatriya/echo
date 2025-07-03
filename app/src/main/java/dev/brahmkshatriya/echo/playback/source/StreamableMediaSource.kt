@@ -69,8 +69,8 @@ class StreamableMediaSource(
                 error = it
                 return@launch
             }
-            val server = serv
-            state.servers[new.mediaId] = server
+            val server = serv.getOrNull()
+            state.servers[new.mediaId] = serv
             state.serverChanged.emit(Unit)
 
             val isOffline = new.actualExtensionId != OfflineExtension.metadata.id

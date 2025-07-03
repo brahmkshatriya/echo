@@ -8,8 +8,6 @@
     <string name="x_was_not_granted">%1$s was not granted</string>
     <string name="audio">Audio</string>
     <string name="audio_permission_summary">To access your local music library</string>
-    <string name="video">Video</string>
-    <string name="video_permission_summary">To access your local video library</string>
     <string name="read_storage">Read Storage</string>
     <string name="write_storage">Write Storage</string>
     <string name="write_storage_permission_summary">To create and edit local playlists</string>
@@ -32,7 +30,6 @@
     <string name="blacklist_folders_summary">Folders to exclude from the library</string>
     <string name="blacklist_folder_keywords">Blacklist Folder Keywords</string>
     <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders, use comma for separator</string>
-    <string name="playlists">Playlists</string>
     <string name="saved">Saved</string>
     <string name="tabs">Tabs</string>
     <string name="show_tabs">Show Tabs</string>
@@ -54,7 +51,6 @@
     <string name="extension">Extension</string>
     <string name="downloading_x">Downloading %1$s</string>
     <string name="cancel_all">Cancel All</string>
-    <string name="progress_x_percentage">Progress %1$d%%</string>
     <string name="download_progress">Download Progress</string>
     <string name="downloads">Downloads</string>
     <string name="x_items">%1$d Items</string>
@@ -74,11 +70,9 @@
     <string name="account_session_expired_in_x">Account session expired in %1$s</string>
     <string name="no_servers_found">No servers found</string>
     <string name="no_source_found">No source found</string>
-    <string name="task_cancelled">Task cancelled</string>
     <string name="error_x">Error: %1$s</string>
     <string name="str_copy">Copy</string>
     <string name="extensions">Extensions</string>
-    <string name="manage">Manage</string>
     <string name="choose_a_color">Choose a color</string>
     <string name="random">Random</string>
     <string name="add">Add</string>
@@ -133,9 +127,6 @@
     <string name="cache_size">Cache Size</string>
     <string name="cache_size_summary">Size in MB to cache audio and video</string>
 
-    <string name="extensions_summary">Manage your installed Extensions</string>
-
-    <string name="misc_summary">Miscellaneous settings</string>
     <string name="version">Version</string>
     <string name="language">Language</string>
     <string name="system">System</string>
@@ -151,13 +142,10 @@
     <string name="installation_type_warning">Not available if you install the extension as a File.</string>
     <string name="could_not_find_the_file">Could not find the file.</string>
     <string name="extension_installer">Extension Installer</string>
-    <string name="uninstall">Uninstall</string>
-    <string name="invalid_extension">Invalid Extension</string>
     <string name="extension_installed_successfully">Extension installed successfully.</string>
     <string name="extension_uninstalled_successfully">Extension uninstalled successfully.</string>
     <string name="allow_opening_links">Allow opening links</string>
     <string name="open_links_instruction">To allow opening these links, you need to:\n- Scroll down and click on \"Open by Default\"\n- Click on \"+ Add Link\"</string>
-    <string name="extension_requires_following_extensions">%1$s requires %2$s</string>
     <string name="downloading_update_for_x">Downloading update for %1$s</string>
     <string name="extension_updated_successfully">%1$s updated successfully</string>
     <string name="link">Link</string>
@@ -169,7 +157,6 @@
     <string name="checking_for_extension_updates">Checking for extension updates</string>
 
     <string name="look_and_feel">Look and Feel</string>
-    <string name="look_and_feel_summary">UI and Animation Settings</string>
 
     <string name="ui">UI</string>
 
@@ -218,7 +205,6 @@
 
     <string name="no_user_found">No user found</string>
     <string name="select_x_account">Select %1$s account</string>
-    <string name="add_account">Add Account</string>
     <string name="add_extension">Add Extension</string>
     <string name="webview">Webview</string>
     <string name="logout">Logout</string>
@@ -338,7 +324,6 @@
     <string name="sort_and_filter">Sort and Filter</string>
     <string name="filter">Filter</string>
     <string name="reversed">Reversed</string>
-    <string name="remember">Remember</string>
     <string name="apply">Apply</string>
     <string name="save">Save</string>
     <string name="sort_title">Title</string>
@@ -376,7 +361,6 @@
     <string name="download_started">Download Started</string>
     <string name="merging_x">Merging %1$s</string>
     <string name="tagging_x">Tagging %1$s</string>
-    <string name="downloads_summary">All your downloads</string>
 
     <string name="apply_player_color_to_app">Apply Player Color to the Entire App</string>
     <string name="apply_player_color_to_app_summary">LAG ALERT!!!</string>
@@ -384,10 +368,8 @@
     <string name="removed_x_from_downloads">Removed %1$s from Downloads</string>
     <string name="download_complete">Download Complete</string>
 
-    <string name="add_widget">Mini Player Widget</string>
     <string name="app_widget_description">Echo on your home screen!</string>
     <string name="opening_webview_x">Opening Webview: %1$s</string>
-    <string name="x_webview">%1$s Webview</string>
     <string name="no_update_available_for_x">No update available for %1$s</string>
     <string name="other">Other</string>
     <string name="accounts">Accounts</string>

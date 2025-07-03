@@ -46,17 +46,19 @@ class StreamableDataSource(
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        val streamable = dataSpec.customData
-        val (factory, spec) = when (streamable) {
-            is Streamable.Source.Raw -> rawDataSourceFactory to dataSpec
-            is Streamable.Source.Http -> {
-                val spec = streamable.request.run {
-                    defaultHttpDataSourceFactory.value.setDefaultRequestProperties(headers)
-                    dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
+        val result = dataSpec.customData as? Result<*>
+        val (factory, spec) = when (result) {
+            null -> defaultDataSourceFactory to dataSpec
+            else -> when (val streamable = result.getOrThrow() as Streamable.Source) {
+                is Streamable.Source.Raw -> rawDataSourceFactory to dataSpec.copy(customData = streamable)
+                is Streamable.Source.Http -> {
+                    val spec = streamable.request.run {
+                        defaultHttpDataSourceFactory.value.setDefaultRequestProperties(headers)
+                        dataSpec.copy(uri = url.toUri(), httpRequestHeaders = headers)
+                    }
+                    defaultDataSourceFactory to spec
                 }
-                defaultDataSourceFactory to spec
             }
-            else -> defaultDataSourceFactory to dataSpec
         }
         val source = factory.value.createDataSource()
         this.source = source

@@ -115,16 +115,14 @@ object MediaItemUtils {
     }
 
     fun String.toIdAndIndex() = if (startsWith('{')) runCatching {
-        toData<Triple<String, Int, Int>>()
+        toData<Pair<String, Int>>()
     }.getOrNull() else null
 
     fun buildForSource(
         mediaItem: MediaItem, index: Int, source: Streamable.Source?
     ) = with(mediaItem) {
         val item = buildUpon()
-        item.setUri(
-            Triple(mediaId, source.hashCode(), index).toJson()
-        )
+        item.setUri(Pair(mediaId, index).toJson())
         when (val decryption = (source as? Streamable.Source.Http)?.decryption) {
             null -> {}
             is Streamable.Decryption.Widevine -> {
@@ -173,7 +171,7 @@ object MediaItemUtils {
         .setTitle(title)
         .setAlbumTitle(album?.title)
         .setAlbumArtist(album?.artists?.joinToString(", ") { it.name })
-        .setArtist(toMediaItem().subtitleWithE)
+        .setArtist(toMediaItem().subtitle)
         .setArtworkUri(cover?.toUriWithJson())
         .setUserRating(
             if (isLiked) ThumbRating(true) else ThumbRating()

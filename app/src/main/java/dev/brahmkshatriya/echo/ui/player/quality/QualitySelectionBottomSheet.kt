@@ -26,13 +26,13 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.main.settings.AudioFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getSelected
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toAudioDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toSubtitleDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toVideoDetails
-import dev.brahmkshatriya.echo.ui.main.settings.AudioFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -92,7 +92,7 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
         fun applyServer() {
             val servers = viewModel.playerState.servers
             val item = viewModel.playerState.current.value?.mediaItem
-            val server = servers[item?.mediaId]
+            val server = servers[item?.mediaId]?.getOrNull()
             val list = if (server != null && !server.merged) server.sources else listOf()
             binding.run {
                 applyChips(

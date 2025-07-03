@@ -69,20 +69,22 @@ class StreamableLoader(
         }
     }
 
-    private suspend fun loadServer(mediaItem: MediaItem): Streamable.Media.Server? {
+    private suspend fun loadServer(mediaItem: MediaItem): Result<Streamable.Media.Server> {
         val downloaded = mediaItem.downloaded
         val servers = mediaItem.track.servers
         val index = mediaItem.serverIndex
         if (!downloaded.isNullOrEmpty() && servers.size == index) {
-            return Streamable.Media.Server(
-                downloaded.map { Uri.fromFile(File(it)).toString().toSource() },
-                true
-            )
+            return runCatching {
+                Streamable.Media.Server(
+                    downloaded.map { Uri.fromFile(File(it)).toString().toSource() },
+                    true
+                )
+            }
         }
-        val streamable = servers.getOrNull(index) ?: return null
         return withClient(mediaItem) {
+            val streamable = servers.getOrNull(index)!!
             loadStreamableMedia(streamable, false) as Streamable.Media.Server
-        }.getOrThrow()
+        }
     }
 
     private suspend fun loadBackground(mediaItem: MediaItem): Result<Streamable.Media.Background> {

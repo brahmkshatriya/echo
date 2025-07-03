@@ -61,7 +61,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         )
 
         const val FUN =
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp"
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
 
         const val BUNNY =
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
@@ -124,6 +124,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     override suspend fun loadStreamableMedia(
         streamable: Streamable, isDownload: Boolean
     ): Streamable.Media {
+        if (streamable.quality == 3) throw Exception("Test exception for quality 3")
         return when (streamable.type) {
             Streamable.MediaType.Background -> streamable.id.toBackgroundMedia()
             Streamable.MediaType.Server -> {

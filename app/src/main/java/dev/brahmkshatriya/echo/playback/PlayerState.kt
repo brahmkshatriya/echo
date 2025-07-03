@@ -17,7 +17,7 @@ data class PlayerState(
     val session: MutableStateFlow<Int> = MutableStateFlow(0)
 ) {
 
-    val servers: WeakHashMap<String, Streamable.Media.Server> = WeakHashMap()
+    val servers: WeakHashMap<String, Result<Streamable.Media.Server>> = WeakHashMap()
     val serverChanged = MutableSharedFlow<Unit>()
 
     data class Current(

@@ -10,17 +10,14 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import java.util.WeakHashMap
 
 class StreamableResolver(
-    private val current: WeakHashMap<String, Streamable.Media.Server>
+    private val current: WeakHashMap<String, Result<Streamable.Media.Server>>
 ) : Resolver {
 
     @OptIn(UnstableApi::class)
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-        val (id, _, index) = dataSpec.uri.toString().toIdAndIndex() ?: return dataSpec
-        val streamable = current[id]!!.sources[index]
-
-        return dataSpec.copy(
-            customData = streamable
-        )
+        val (id, index) = dataSpec.uri.toString().toIdAndIndex() ?: return dataSpec
+        val streamable = runCatching { current[id]!!.getOrThrow().sources[index] }
+        return dataSpec.copy(customData = streamable)
     }
 
     companion object {
