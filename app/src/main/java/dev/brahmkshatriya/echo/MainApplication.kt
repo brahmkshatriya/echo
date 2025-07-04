@@ -36,13 +36,13 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
         workManagerFactory()
     }
 
-    private val settings by inject<SharedPreferences>()
+//    private val settings by inject<SharedPreferences>()
     private val extensionLoader by inject<ExtensionLoader>()
 
     override fun onCreate() {
         super.onCreate()
         CoroutineUtils.setDebug()
-        applyLocale(settings)
+//        applyLocale(settings)
         configureAppShortcuts(extensionLoader)
     }
 

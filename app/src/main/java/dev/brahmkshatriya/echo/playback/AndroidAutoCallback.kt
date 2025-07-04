@@ -15,7 +15,6 @@ import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionError
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -45,6 +44,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
+import dev.brahmkshatriya.echo.utils.CoroutineUtils.await
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
@@ -198,7 +198,7 @@ abstract class AndroidAutoCallback(
         mediaItems: MutableList<MediaItem>,
         startIndex: Int,
         startPositionMs: Long
-    ): ListenableFuture<MediaItemsWithStartPosition> {
+    ) = scope.future {
         val new = mediaItems.mapNotNull {
             if (it.mediaId.startsWith("auto/")) {
                 val id = it.mediaId.substringAfter("auto/")
@@ -208,9 +208,10 @@ abstract class AndroidAutoCallback(
                 MediaItemUtils.build(context, downloadFlow.value, track, extId, con)
             } else it
         }
-        return super.onSetMediaItems(
+        val future = super.onSetMediaItems(
             mediaSession, controller, new, startIndex, startPositionMs
         )
+        future.await(context)
     }
 
     companion object {

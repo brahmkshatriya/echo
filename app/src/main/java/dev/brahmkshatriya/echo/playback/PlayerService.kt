@@ -51,6 +51,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.File
 
@@ -210,7 +211,7 @@ class PlayerService : MediaLibraryService() {
         const val UNMETERED_STREAM_QUALITY = "unmetered_stream_quality"
         val streamQualities = arrayOf("highest", "medium", "lowest")
 
-        fun selectServerIndex(
+        suspend fun selectServerIndex(
             context: Context,
             extensionId: String,
             streamables: List<Streamable>,
@@ -221,16 +222,16 @@ class PlayerService : MediaLibraryService() {
             streamables.indexOf(streamable)
         } else -1
 
-        private fun isUnmetered(context: Context): Boolean {
+        private suspend fun isUnmetered(context: Context) = withContext(Dispatchers.IO) {
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val network = connectivityManager.activeNetwork ?: return false
+            val network = connectivityManager.activeNetwork ?: return@withContext false
             val networkCapabilities =
-                connectivityManager.getNetworkCapabilities(network) ?: return false
-            return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+                connectivityManager.getNetworkCapabilities(network) ?: return@withContext false
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
         }
 
-        private fun <E> List<E>.select(
+        private suspend fun <E> List<E>.select(
             context: Context,
             settings: SharedPreferences,
             quality: (E) -> Int,
@@ -256,7 +257,7 @@ class PlayerService : MediaLibraryService() {
         }
 
 
-        fun <T> List<T>.select(
+        suspend fun <T> List<T>.select(
             context: Context, extensionId: String, quality: (T) -> Int
         ): T {
             val extSettings = extensionPrefId(ExtensionType.MUSIC.name, extensionId).prefs(context)

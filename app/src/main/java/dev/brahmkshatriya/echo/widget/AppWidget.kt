@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.playback.PlayerCommands.unlikeCommand
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getController
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getPendingIntent
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -173,7 +174,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
         ) {
             val current = controller?.currentMediaItem
             val item = current ?: context.run {
-                val (list, index) = recoverPlaylist(listOf(), false)
+                val (list, index) = runBlocking { recoverPlaylist(listOf(), false) }
                 list.getOrNull(index)
             }
             val title = item?.mediaMetadata?.title

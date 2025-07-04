@@ -30,7 +30,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.toJson
 
 object MediaItemUtils {
 
-    fun build(
+    suspend fun build(
         appContext: Context,
         downloads: List<Downloader.Info>,
         track: Track,
@@ -46,7 +46,7 @@ object MediaItemUtils {
         return item.build()
     }
 
-    fun buildLoaded(
+    suspend fun buildLoaded(
         appContext: Context,
         downloads: List<Downloader.Info>,
         mediaItem: MediaItem,
@@ -157,7 +157,7 @@ object MediaItemUtils {
 
 
     @OptIn(UnstableApi::class)
-    private fun Track.toMetaData(
+    private suspend fun Track.toMetaData(
         bundle: Bundle,
         downloads: List<Downloader.Info>,
         extensionId: String = bundle.getString("extensionId")!!,

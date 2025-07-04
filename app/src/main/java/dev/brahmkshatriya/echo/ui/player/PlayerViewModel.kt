@@ -59,7 +59,7 @@ class PlayerViewModel(
     private val downloadFlow = downloader.flow
 
     val browser = MutableStateFlow<MediaController?>(null)
-    private fun withBrowser(block: (MediaController) -> Unit) {
+    private fun withBrowser(block: suspend (MediaController) -> Unit) {
         viewModelScope.launch {
             val browser = browser.first { it != null }!!
             block(browser)

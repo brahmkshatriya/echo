@@ -15,7 +15,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import androidx.fragment.app.commitNow
 import androidx.fragment.app.replace
 import androidx.lifecycle.lifecycleScope
 import dev.brahmkshatriya.echo.R
@@ -40,7 +39,6 @@ import dev.brahmkshatriya.echo.ui.extensions.WebViewUtils.configure
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
-import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.addOnDestroyObserver
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import kotlinx.coroutines.launch
@@ -70,7 +68,7 @@ class LoginFragment : Fragment() {
                 iconContainer.alpha = 1 - offset
             }
             toolBar.setNavigationOnClickListener {
-                parentFragmentManager.popBackStackImmediate()
+                parentFragmentManager.popBackStack()
             }
         }
 
@@ -87,10 +85,10 @@ class LoginFragment : Fragment() {
             val loginViewModel by activityViewModel<LoginViewModel>()
             childFragmentManager.run {
                 loginViewModel.loading.value = false
-                commitNow(true) {
+                commit {
                     setReorderingAllowed(true)
                     replace<T>(R.id.genericFragmentContainer, null, args)
-                    if (fragments.size > 0) addToBackStack(null)
+                    if (fragments.size > 0) addToBackStack("bruh")
                 }
             }
         }
@@ -118,22 +116,26 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        parentFragmentManager.commit {
+            setPrimaryNavigationFragment(null)
+        }
+        super.onDestroyView()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (savedInstanceState != null) return
-        parentFragmentManager.run {
-            commit { setPrimaryNavigationFragment(this@LoginFragment) }
-            addOnDestroyObserver { commitNow(true) { setPrimaryNavigationFragment(null) } }
-        }
+        parentFragmentManager.commit { setPrimaryNavigationFragment(this@LoginFragment) }
         binding.bind(this)
         binding.toolBar.setNavigationOnClickListener {
-            parentFragmentManager.popBackStackImmediate()
+            parentFragmentManager.popBackStack()
         }
         binding.toolBar.title = getString(R.string.x_login, extName)
 
         val extension = loginViewModel.extensionLoader.getFlow(clientType).getExtension(extId)
 
         if (extension == null) {
-            parentFragmentManager.popBackStackImmediate()
+            parentFragmentManager.popBackStack()
             return
         }
 
@@ -148,15 +150,15 @@ class LoginFragment : Fragment() {
         }
 
         observe(loginViewModel.loadingOver) {
-            parentFragmentManager.commitNow(true) { setPrimaryNavigationFragment(null) }
-            parentFragmentManager.popBackStackImmediate()
+            childFragmentManager.clearBackStack("bruh")
+            parentFragmentManager.popBackStack()
         }
 
         lifecycleScope.launch {
             val client = extension.instance.value().getOrNull() as? LoginClient
             if (client == null) {
                 createSnack(requireContext().loginNotSupported(extName))
-                parentFragmentManager.popBackStackImmediate()
+                parentFragmentManager.popBackStack()
                 return@launch
             }
 
@@ -170,7 +172,7 @@ class LoginFragment : Fragment() {
             when (totalClients) {
                 0 -> {
                     createSnack(requireContext().loginNotSupported(extName))
-                    parentFragmentManager.popBackStackImmediate()
+                    parentFragmentManager.popBackStack()
                     return@launch
                 }
 

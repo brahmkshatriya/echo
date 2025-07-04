@@ -10,7 +10,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.view.View
 import androidx.preference.PreferenceFragmentCompat
-import dev.brahmkshatriya.echo.MainApplication.Companion.applyLocale
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
@@ -86,9 +85,9 @@ class MiscFragment : BaseSettingsFragment() {
                 }
             }
 
-            preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener { pref, key ->
-                if (key == "language") applyLocale(pref)
-            }
+//            preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener { pref, key ->
+//                if (key == "language") applyLocale(pref)
+//            }
         }
 
         private fun getArch(): String {

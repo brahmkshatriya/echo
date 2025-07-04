@@ -112,13 +112,13 @@ class PlayerCallback(
         SessionResult(RESULT_SUCCESS, Bundle().apply { putParcelable("image", image) })
     }
 
-    private fun resume(player: Player, withClear: Boolean) = run {
+    private fun resume(player: Player, withClear: Boolean) = scope.future {
         player.shuffleModeEnabled = context.recoverShuffle() == true
         player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
         val (items, index, pos) = context.recoverPlaylist(downloadFlow.value, withClear)
         player.setMediaItems(items, index, pos)
         player.prepare()
-        Futures.immediateFuture(SessionResult(RESULT_SUCCESS))
+        SessionResult(RESULT_SUCCESS)
     }
 
     private var timerJob: Job? = null
@@ -258,7 +258,7 @@ class PlayerCallback(
         SessionResult(RESULT_SUCCESS)
     }
 
-    private suspend fun <T> Player.with(block: Player.() -> T): T =
+    private suspend fun <T> Player.with(block: suspend Player.() -> T): T =
         withContext(Dispatchers.Main) { block() }
 
     private suspend fun <T : Any> PagedData<T>.load(
@@ -364,11 +364,11 @@ class PlayerCallback(
     override fun onPlaybackResumption(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
-    ): ListenableFuture<MediaItemsWithStartPosition> {
+    ) = scope.future {
         mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
         mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
         val (items, index, pos) = context.recoverPlaylist(downloadFlow.value)
-        return Futures.immediateFuture(MediaItemsWithStartPosition(items, index, pos))
+        MediaItemsWithStartPosition(items, index, pos)
     }
 
     companion object {

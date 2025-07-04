@@ -54,7 +54,7 @@ object ResumptionUtils {
         context.saveToCache(POSITION, position, FOLDER)
     }
 
-    private fun Context.recoverQueue(
+    private suspend fun Context.recoverQueue(
         downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): List<MediaItem>? {
@@ -84,7 +84,7 @@ object ResumptionUtils {
     }
 
     @OptIn(UnstableApi::class)
-    fun Context.recoverPlaylist(
+    suspend fun Context.recoverPlaylist(
         downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): Triple<List<MediaItem>, Int, Long> {

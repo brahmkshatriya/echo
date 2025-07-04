@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.utils
 
+import android.content.Context
+import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import kotlinx.coroutines.CoroutineScope
@@ -10,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 object CoroutineUtils {
     fun setDebug() {
@@ -38,5 +41,14 @@ object CoroutineUtils {
             }
         }
         return future
+    }
+
+    suspend fun <T> ListenableFuture<T>.await(context:Context) = suspendCancellableCoroutine {
+        it.invokeOnCancellation {
+            cancel(true)
+        }
+        addListener({
+            it.resumeWith(runCatching { get()!! })
+        }, ContextCompat.getMainExecutor(context))
     }
 }
