@@ -5,6 +5,7 @@ import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.CoroutineContext
 
 object CoroutineUtils {
     fun setDebug() {
@@ -31,9 +33,11 @@ object CoroutineUtils {
         delay(delayMillis)
     }
 
-    fun <T> CoroutineScope.future(block: suspend () -> T): ListenableFuture<T> {
+    fun <T> CoroutineScope.future(
+        context: CoroutineContext = Dispatchers.IO, block: suspend () -> T
+    ): ListenableFuture<T> {
         val future = SettableFuture.create<T>()
-        launch {
+        launch(context) {
             runCatching {
                 future.set(block())
             }.onFailure {
@@ -43,7 +47,7 @@ object CoroutineUtils {
         return future
     }
 
-    suspend fun <T> ListenableFuture<T>.await(context:Context) = suspendCancellableCoroutine {
+    suspend fun <T> ListenableFuture<T>.await(context: Context) = suspendCancellableCoroutine {
         it.invokeOnCancellation {
             cancel(true)
         }

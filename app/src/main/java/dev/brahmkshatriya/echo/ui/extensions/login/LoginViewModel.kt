@@ -26,21 +26,59 @@ class LoginViewModel(
     private val userDao = extensionLoader.db.userDao()
     val loading = MutableStateFlow(true)
     val loadingOver = MutableSharedFlow<Unit>()
+    val addFragmentFlow = MutableSharedFlow<FragmentType>()
+
+    sealed class FragmentType {
+        data object Selector : FragmentType()
+        data object WebView : FragmentType()
+        data class CustomInput(val index: Int?) : FragmentType()
+    }
+
+    private suspend fun loginNotSupported(extName: String?) {
+        val login = app.context.getString(R.string.login)
+        val message =
+            app.context.getString(R.string.x_is_not_supported_in_x, login, extName.toString())
+        messageFlow.emit(Message(message))
+        loadingOver.emit(Unit)
+    }
+
+    fun loadClient(extension: Extension<*>?) = viewModelScope.launch {
+        val totalClients = extension?.run(app.throwFlow) {
+            listOfNotNull(
+                if (this is LoginClient.WebView) 1 else 0,
+                if (this is LoginClient.CustomInput) forms.size
+                else 0,
+            ).sum()
+        } ?: 0
+        val client = extension?.instance?.value
+        when (totalClients) {
+            0 -> loginNotSupported(extension?.name)
+            1 -> when (client) {
+                is LoginClient.WebView -> addFragmentFlow.emit(FragmentType.WebView)
+                is LoginClient.CustomInput -> addFragmentFlow.emit(FragmentType.CustomInput(null))
+                null -> loginNotSupported(extension?.name)
+            }
+
+            else -> addFragmentFlow.emit(FragmentType.Selector)
+        }
+    }
+
+    fun changeFragment(type: FragmentType) = viewModelScope.launch {
+        addFragmentFlow.emit(type)
+    }
 
     private suspend fun afterLogin(
         extension: Extension<*>,
         users: List<User>
     ) {
-        loading.value = true
         if (users.isEmpty()) {
             app.messageFlow.emit(Message(app.context.getString(R.string.no_user_found)))
-            loadingOver.emit(Unit)
-            return
+        } else {
+            val entities = users.map { it.toEntity(extension.type, extension.id) }
+            userDao.insertUsers(entities)
+            val user = entities.first()
+            userDao.setCurrentUser(user.toCurrentUser())
         }
-        val entities = users.map { it.toEntity(extension.type, extension.id) }
-        userDao.insertUsers(entities)
-        val user = entities.first()
-        userDao.setCurrentUser(user.toCurrentUser())
         loading.value = false
         loadingOver.emit(Unit)
     }
@@ -50,11 +88,7 @@ class LoginViewModel(
         result: Result<List<User>?>,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = extension.run(app.throwFlow) { result.getOrThrow().orEmpty() }
-                ?: run {
-                    loadingOver.emit(Unit)
-                    return@launch
-                }
+            val users = extension.run(app.throwFlow) { result.getOrThrow().orEmpty() }.orEmpty()
             afterLogin(extension, users)
         }
     }
@@ -65,12 +99,10 @@ class LoginViewModel(
         form: LoginClient.Form
     ) {
         viewModelScope.launch(Dispatchers.IO) {
+            loading.value = true
             val users = extension.get<LoginClient.CustomInput, List<User>>(app.throwFlow) {
                 onLogin(form.key, inputs.toMap())
-            } ?: run {
-                loadingOver.emit(Unit)
-                return@launch
-            }
+            }.orEmpty()
             afterLogin(extension, users)
         }
     }

@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.extensions.login
 
-import android.content.Context
 import android.os.Bundle
 import android.text.InputType.TYPE_CLASS_NUMBER
 import android.text.InputType.TYPE_CLASS_TEXT
@@ -16,7 +15,9 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField.Type
@@ -31,7 +32,6 @@ import dev.brahmkshatriya.echo.databinding.ItemInputBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
-import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
@@ -80,24 +80,6 @@ class LoginFragment : Fragment() {
             Type.Username -> R.drawable.ic_account_circle
             Type.Misc -> R.drawable.ic_input
         }
-
-        private inline fun <reified T : Fragment> Fragment.add(args: Bundle? = null) {
-            val loginViewModel by activityViewModel<LoginViewModel>()
-            childFragmentManager.run {
-                loginViewModel.loading.value = false
-                commit {
-                    setReorderingAllowed(true)
-                    replace<T>(R.id.genericFragmentContainer, null, args)
-                    if (fragments.size > 0) addToBackStack("bruh")
-                }
-            }
-        }
-
-        private fun Context.loginNotSupported(extName: String): String {
-            val login = getString(R.string.login)
-            return getString(R.string.x_is_not_supported_in_x, login, extName)
-        }
-
     }
 
     private var binding by autoCleared<FragmentGenericCollapsableBinding>()
@@ -117,14 +99,24 @@ class LoginFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        parentFragmentManager.commit {
+        if (!isStateSaved()) parentFragmentManager.commit {
             setPrimaryNavigationFragment(null)
         }
         super.onDestroyView()
     }
 
+    private inline fun <reified T : Fragment> add(args: Bundle? = null) {
+        childFragmentManager.run {
+            loginViewModel.loading.value = false
+            commit {
+                setReorderingAllowed(true)
+                replace<T>(R.id.genericFragmentContainer, null, args)
+                if (fragments.size > 0) addToBackStack("login")
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (savedInstanceState != null) return
         parentFragmentManager.commit { setPrimaryNavigationFragment(this@LoginFragment) }
         binding.bind(this)
         binding.toolBar.setNavigationOnClickListener {
@@ -133,14 +125,7 @@ class LoginFragment : Fragment() {
         binding.toolBar.title = getString(R.string.x_login, extName)
 
         val extension = loginViewModel.extensionLoader.getFlow(clientType).getExtension(extId)
-
-        if (extension == null) {
-            parentFragmentManager.popBackStack()
-            return
-        }
-
-        val metadata = extension.metadata
-        metadata.icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
+        extension?.metadata?.icon.loadAsCircle(view, R.drawable.ic_extension_48dp) {
             binding.extensionIcon.setImageDrawable(it)
         }
 
@@ -150,39 +135,26 @@ class LoginFragment : Fragment() {
         }
 
         observe(loginViewModel.loadingOver) {
-            childFragmentManager.clearBackStack("bruh")
+            repeat(childFragmentManager.backStackEntryCount) {
+                parentFragmentManager.popBackStack()
+            }
             parentFragmentManager.popBackStack()
         }
 
-        lifecycleScope.launch {
-            val client = extension.instance.value().getOrNull() as? LoginClient
-            if (client == null) {
-                createSnack(requireContext().loginNotSupported(extName))
-                parentFragmentManager.popBackStack()
-                return@launch
+        observe(loginViewModel.addFragmentFlow) {
+            when (it) {
+                LoginViewModel.FragmentType.Selector -> add<Selector>(arguments)
+                LoginViewModel.FragmentType.WebView -> add<WebView>(arguments)
+                is LoginViewModel.FragmentType.CustomInput -> add<CustomInput>(Bundle().apply {
+                    putAll(arguments)
+                    putInt("formIndex", it.index ?: 0)
+                })
             }
+        }
 
-            val totalClients = listOfNotNull(
-                if (client is LoginClient.WebView) 1 else 0,
-                if (client is LoginClient.CustomInput) {
-                    runCatching { client.forms }.getOrNull().orEmpty().size
-                } else 0,
-            ).sum()
-
-            when (totalClients) {
-                0 -> {
-                    createSnack(requireContext().loginNotSupported(extName))
-                    parentFragmentManager.popBackStack()
-                    return@launch
-                }
-
-                1 -> when (client) {
-                    is LoginClient.WebView -> add<WebView>(arguments)
-                    is LoginClient.CustomInput -> add<CustomInput>(arguments)
-                    else -> throw IllegalStateException("Unknown client type $client")
-                }
-
-                else -> add<Selector>(arguments)
+        if (childFragmentManager.fragments.isEmpty()) viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                loginViewModel.loadClient(extension)
             }
         }
     }
@@ -209,7 +181,7 @@ class LoginFragment : Fragment() {
                     ).root
                     button.text = getString(R.string.webview)
                     button.setIconResource(R.drawable.ic_language)
-                    button to { requireParentFragment().add<WebView>(arguments) }
+                    button to { loginViewModel.changeFragment(LoginViewModel.FragmentType.WebView) }
                 } else null,
                 *(if (client is LoginClient.CustomInput) {
                     val forms = runCatching { client.forms }.getOrNull().orEmpty()
@@ -220,11 +192,8 @@ class LoginFragment : Fragment() {
                         button.text = it.label
                         button.setIconResource(getIcon(it.icon))
                         button to {
-                            requireParentFragment().add<CustomInput>(
-                                Bundle().apply {
-                                    putAll(arguments)
-                                    putInt("formIndex", index)
-                                }
+                            loginViewModel.changeFragment(
+                                LoginViewModel.FragmentType.CustomInput(index)
                             )
                         }
                     }

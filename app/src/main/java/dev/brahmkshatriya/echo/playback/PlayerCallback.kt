@@ -113,11 +113,15 @@ class PlayerCallback(
     }
 
     private fun resume(player: Player, withClear: Boolean) = scope.future {
-        player.shuffleModeEnabled = context.recoverShuffle() == true
-        player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
+        withContext(Dispatchers.Main) {
+            player.shuffleModeEnabled = context.recoverShuffle() == true
+            player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
+        }
         val (items, index, pos) = context.recoverPlaylist(downloadFlow.value, withClear)
-        player.setMediaItems(items, index, pos)
-        player.prepare()
+        withContext(Dispatchers.Main) {
+            player.setMediaItems(items, index, pos)
+            player.prepare()
+        }
         SessionResult(RESULT_SUCCESS)
     }
 

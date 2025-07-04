@@ -102,12 +102,24 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     )
 
     override suspend fun onLogin(key: String, data: Map<String, String?>): List<User> {
-        throw IllegalStateException("Test")
+        return listOf(
+            User(
+                key,
+                "$key User",
+                "https://picsum.photos/480/270".toImageHolder(),
+            )
+        )
     }
 
     override val webViewRequest = object : WebViewRequest.Cookie<List<User>> {
         override suspend fun onStop(url: Request, cookie: String): List<User> {
-            throw IllegalStateException("Test")
+            return listOf(
+                User(
+                    "test_user",
+                    "WebView User",
+                    "https://picsum.photos/480/270".toImageHolder(),
+                )
+            )
         }
 
         override val initialUrl = "https://www.example.com/".toRequest()

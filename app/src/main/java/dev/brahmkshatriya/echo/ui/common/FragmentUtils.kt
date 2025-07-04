@@ -84,7 +84,6 @@ object FragmentUtils {
     private fun FragmentActivity.onIntent(uiViewModel: UiViewModel, intent: Intent?) {
         this.intent = null
         intent ?: return
-        println("intent: ${intent.data} ${intent.extras?.keySet()?.toList()}")
         val fromNotif = intent.hasExtra("fromNotification")
         if (fromNotif) uiViewModel.run {
             if (playerSheetState.value == STATE_HIDDEN) return@run

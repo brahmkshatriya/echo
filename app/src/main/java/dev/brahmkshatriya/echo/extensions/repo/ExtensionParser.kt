@@ -25,7 +25,7 @@ class ExtensionParser(
         files: List<File>
     ): List<Result<Pair<Metadata, Injectable<ExtensionClient>>>> {
         val new = files.associate {
-            val sha = getSha256(it)
+            val sha = runCatching { getSha256(it) }.getOrNull().orEmpty()
             val entry = map[it.absolutePath]
             val value = if (entry != null && entry.first == sha) entry
             else (sha to parse(it, type))
