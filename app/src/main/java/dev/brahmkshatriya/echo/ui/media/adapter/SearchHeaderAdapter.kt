@@ -114,8 +114,10 @@ class SearchHeaderAdapter(
         binding.root.run {
             val text = if (viewModel.loadedTracks.value == null) context.getString(R.string.songs)
             else {
-                val count = viewModel.loadedTracks.value?.size ?: 0
-                context.resources.getQuantityString(R.plurals.n_songs, count, count)
+                val tracks = viewModel.loadedTracks.value?.size ?: 0
+                runCatching {
+                    resources.getQuantityString(R.plurals.n_songs, tracks, tracks)
+                }.getOrNull() ?: resources.getString(R.string.x_songs, tracks)
             }
             binding.title.text = text
             binding.searchLayout.hint = text

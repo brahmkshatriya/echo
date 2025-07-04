@@ -50,6 +50,7 @@ import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -505,8 +506,7 @@ class UnifiedExtension(
     ) + extensions().map { Tab(it.id, it.name) }
 
     private fun getCachedTracks() = cache?.keys?.mapNotNull { key ->
-//        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
-        val id = ""
+        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
         context.getFromCache<Pair<String, Track>>(id.hashCode().toString(), "track")
     }?.reversed().orEmpty()
         .map { it.second.withExtensionId(it.first, true) }

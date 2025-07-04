@@ -154,7 +154,7 @@ class MainFragment : Fragment() {
                         viewModel.setLoginUser(it.first.toEntity(ext.type, ext.id))
                     }
                 }
-                isLogin?.invoke(isLoginClient)
+                runCatching { isLogin?.invoke(isLoginClient) }
             }
         }
     }

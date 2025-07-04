@@ -270,7 +270,7 @@ object WebViewUtils {
         private val webViewClient by lazy { vm.extensionLoader.webViewClientFactory }
         private val wrapper by lazy {
             val id = requireArguments().getInt("webViewRequest")
-            webViewClient.requests[id] ?: throw IllegalStateException("Invalid webview request")
+            webViewClient.requests[id]
         }
         private val shouldRemove by lazy {
             requireArguments().getBoolean("hidden", true)
@@ -283,6 +283,10 @@ object WebViewUtils {
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             val binding = FragmentWebviewBinding.bind(view)
+            val wrapper = wrapper ?: run {
+                removeSelf()
+                return
+            }
             val callback = requireActivity().configure(binding.root, wrapper.request, false) {
                 webViewClient.responseFlow.emit(wrapper to it)
                 if (it == null) runCatching { removeSelf() }

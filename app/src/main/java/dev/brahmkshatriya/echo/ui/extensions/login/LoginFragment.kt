@@ -98,14 +98,8 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    override fun onDestroyView() {
-        if (!isStateSaved()) parentFragmentManager.commit {
-            setPrimaryNavigationFragment(null)
-        }
-        super.onDestroyView()
-    }
-
     private inline fun <reified T : Fragment> add(args: Bundle? = null) {
+        if (!isAdded) return
         childFragmentManager.run {
             loginViewModel.loading.value = false
             commit {
@@ -114,6 +108,13 @@ class LoginFragment : Fragment() {
                 if (fragments.size > 0) addToBackStack("login")
             }
         }
+    }
+
+    override fun onDestroyView() {
+        if (!isStateSaved()) parentFragmentManager.commit {
+            setPrimaryNavigationFragment(null)
+        }
+        super.onDestroyView()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -219,13 +220,14 @@ class LoginFragment : Fragment() {
             loginViewModel.extensionLoader.getFlow(clientType).getExtensionOrThrow(extId)
         }
         private val webViewRequest by lazy {
-            (extension.instance.value as LoginClient.WebView).webViewRequest
+            (extension.instance.value as? LoginClient.WebView)?.webViewRequest
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             setupTransition(view, useZ = false)
             val binding = FragmentWebviewBinding.bind(view)
-            val callback = requireActivity().configure(binding.root, webViewRequest, true) {
+            val req = webViewRequest ?: return
+            val callback = requireActivity().configure(binding.root, req, true) {
                 if (it == null) loginViewModel.loading.value = true
                 else loginViewModel.onWebViewStop(extension, it)
             }

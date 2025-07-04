@@ -24,7 +24,6 @@ import dev.brahmkshatriya.echo.ui.media.adapter.MediaItemSelectableAdapter.Compa
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
-import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.addOnDestroyObserver
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 
@@ -48,12 +47,16 @@ class EditPlaylistSearchFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupTransition(view)
-        parentFragmentManager.run {
-            commit { setPrimaryNavigationFragment(this@EditPlaylistSearchFragment) }
-            addOnDestroyObserver { commit { setPrimaryNavigationFragment(null) } }
+    override fun onDestroyView() {
+        if (!isStateSaved()) parentFragmentManager.commit {
+            setPrimaryNavigationFragment(null)
         }
+        super.onDestroyView()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        parentFragmentManager.commit { setPrimaryNavigationFragment(this@EditPlaylistSearchFragment) }
+        setupTransition(view)
         val behavior = BottomSheetBehavior.from(binding.bottomSheet)
         binding.bottomSheetDragHandle.setOnClickListener { behavior.state = STATE_EXPANDED }
         var topInset = 0
@@ -124,7 +127,7 @@ class EditPlaylistSearchFragment : Fragment() {
             adapter.submitList(items)
             binding.addTracks.isEnabled = items.isNotEmpty()
             val tracks = items.size
-            binding.selectedSongs.text =  runCatching {
+            binding.selectedSongs.text = runCatching {
                 resources.getQuantityString(R.plurals.n_songs, tracks, tracks)
             }.getOrNull() ?: getString(R.string.x_songs, tracks)
         }

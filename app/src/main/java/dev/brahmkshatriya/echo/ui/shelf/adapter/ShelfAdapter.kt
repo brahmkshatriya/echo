@@ -56,7 +56,7 @@ class ShelfAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.scrollAmount = scrollY
-        holder.bind(getItem(position))
+        holder.bind(getItemOrNull(position))
         holder.onCurrentChanged(current)
         if (holder !is ListsShelfViewHolder) return
         stateViewModel.visibleScrollableViews[position] = WeakReference(holder)
