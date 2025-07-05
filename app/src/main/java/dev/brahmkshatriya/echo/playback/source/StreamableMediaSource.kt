@@ -146,18 +146,18 @@ class StreamableMediaSource(
 
     data class Factories(
         val dash: Lazy<MediaSource.Factory>,
-        val hls: MediaSource.Factory,
+        val hls: Lazy<MediaSource.Factory>,
         val default: Lazy<MediaSource.Factory>
     ) {
         fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source?): MediaSource {
             val type = (source as? Streamable.Source.Http)?.type
             val factory = when (type) {
-                Streamable.SourceType.DASH -> dash.value
+                Streamable.SourceType.DASH -> dash
                 Streamable.SourceType.HLS -> hls
-                Streamable.SourceType.Progressive, null -> default.value
+                Streamable.SourceType.Progressive, null -> default
             }
             val new = MediaItemUtils.buildForSource(mediaItem, index, source)
-            return factory.createMediaSource(new)
+            return factory.value.createMediaSource(new)
         }
     }
 
@@ -175,10 +175,7 @@ class StreamableMediaSource(
 
         private val factories = Factories(
             lazily { DashMediaSource.Factory(dataSource) },
-            HlsMediaSource.Factory(ResolvingDataSource.Factory(
-                StreamableDataSource.Factory(context),
-                StreamableResolver(state.servers)
-            )),
+            lazily { HlsMediaSource.Factory(hlsDataSource) },
             lazily { DefaultMediaSourceFactory(dataSource) }
         )
 
@@ -186,6 +183,11 @@ class StreamableMediaSource(
             CacheDataSource.Factory()
                 .setCache(cache)
                 .setUpstreamDataSourceFactory(StreamableDataSource.Factory(context)),
+            StreamableResolver(state.servers)
+        )
+
+        private val hlsDataSource = ResolvingDataSource.Factory(
+            StreamableDataSource.Factory(context),
             StreamableResolver(state.servers)
         )
 
