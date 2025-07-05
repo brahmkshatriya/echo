@@ -147,13 +147,14 @@ class StreamableMediaSource(
     data class Factories(
         val dash: Lazy<MediaSource.Factory>,
         val hls: Lazy<MediaSource.Factory>,
+        val liveHls: Lazy<MediaSource.Factory>,
         val default: Lazy<MediaSource.Factory>
     ) {
         fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source?): MediaSource {
             val type = (source as? Streamable.Source.Http)?.type
             val factory = when (type) {
                 Streamable.SourceType.DASH -> dash
-                Streamable.SourceType.HLS -> hls
+                Streamable.SourceType.HLS -> if (source.isLive) liveHls else hls
                 Streamable.SourceType.Progressive, null -> default
             }
             val new = MediaItemUtils.buildForSource(mediaItem, index, source)
@@ -175,6 +176,7 @@ class StreamableMediaSource(
 
         private val factories = Factories(
             lazily { DashMediaSource.Factory(dataSource) },
+            lazily { HlsMediaSource.Factory(dataSource) },
             lazily { HlsMediaSource.Factory(hlsDataSource) },
             lazily { DefaultMediaSourceFactory(dataSource) }
         )
@@ -191,10 +193,7 @@ class StreamableMediaSource(
             StreamableResolver(state.servers)
         )
 
-        private val provider = DefaultDrmSessionManagerProvider().apply {
-            setDrmHttpDataSourceFactory(dataSource)
-        }
-        private var drmSessionManagerProvider: DrmSessionManagerProvider? = provider
+        private var drmSessionManagerProvider: DrmSessionManagerProvider? = null
         private var loadErrorHandlingPolicy: LoadErrorHandlingPolicy? = null
         private fun lazily(factory: () -> MediaSource.Factory) = lazy {
             factory().apply {
