@@ -175,7 +175,7 @@ class StreamableMediaSource(
 
         private val factories = Factories(
             lazily { DashMediaSource.Factory(dataSource) },
-            lazily { HlsMediaSource.Factory(dataSource) },
+            lazily { HlsMediaSource.Factory(hlsDataSource) },
             lazily { DefaultMediaSourceFactory(dataSource) }
         )
 
@@ -183,6 +183,11 @@ class StreamableMediaSource(
             CacheDataSource.Factory()
                 .setCache(cache)
                 .setUpstreamDataSourceFactory(StreamableDataSource.Factory(context)),
+            StreamableResolver(state.servers)
+        )
+
+        private val hlsDataSource = ResolvingDataSource.Factory(
+            StreamableDataSource.Factory(context),
             StreamableResolver(state.servers)
         )
 
