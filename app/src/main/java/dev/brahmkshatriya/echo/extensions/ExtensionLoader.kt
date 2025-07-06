@@ -106,14 +106,14 @@ class ExtensionLoader(
     }
 
     private val injected = repository.flow.map { list ->
-        list.groupBy { it.getOrNull()?.first?.run { type to id } }.map { entry ->
+        list?.groupBy { it.getOrNull()?.first?.run { type to id } }?.map { entry ->
             entry.value.minBy { it.getOrNull()?.first?.importType?.ordinal ?: Int.MAX_VALUE }
         }
     }.onEach { list ->
-        list.onEach { it.getOrNull()?.run { second.injected(first) } }
+        list?.onEach { it.getOrNull()?.run { second.injected(first) } }
     }.combine(db.extensionEnabledFlow) { list, enabledList ->
         val enabledMap = enabledList.associate { (it.type to it.id) to it.enabled }
-        list.map { result ->
+        list?.map { result ->
             result.mapCatching { (metadata, injectable) ->
                 val key = metadata.run { type to id }
                 val isEnabled = enabledMap[key] ?: metadata.isEnabled
@@ -140,17 +140,22 @@ class ExtensionLoader(
         onExtensionSelected()
     }
 
-    private fun <T : Extension<*>> mapped(
+    private fun <T : Extension<*>> mappedNull(
         type: ExtensionType, transform: (Metadata, Injectable<ExtensionClient>) -> T
     ) = injected.map { list ->
-        list.mapNotNull {
+        list?.mapNotNull {
             val (meta, injectable) = it.getOrNull() ?: return@mapNotNull null
             if (meta.type != type) return@mapNotNull null
             transform(meta, injectable)
         }
     }.combine(priorityMap[type]!!) { list, _ ->
-        list.sorted(type) { it.id }
-    }.stateIn(scope, SharingStarted.Lazily, emptyList())
+        list?.sorted(type) { it.id }
+    }
+
+    private fun <T : Extension<*>> mapped(
+        type: ExtensionType, transform: (Metadata, Injectable<ExtensionClient>) -> T
+    ) = mappedNull(type, transform).map { it.orEmpty() }
+        .stateIn(scope, SharingStarted.Lazily, emptyList())
 
     val music = mapped(ExtensionType.MUSIC) { m, i -> MusicExtension(m, i) }
     val tracker = mapped(ExtensionType.TRACKER) { m, i -> TrackerExtension(m, i.casted()) }

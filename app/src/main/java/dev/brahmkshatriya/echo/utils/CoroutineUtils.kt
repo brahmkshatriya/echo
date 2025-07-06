@@ -38,11 +38,7 @@ object CoroutineUtils {
     ): ListenableFuture<T> {
         val future = SettableFuture.create<T>()
         launch(context) {
-            runCatching {
-                future.set(block())
-            }.onFailure {
-                future.setException(it)
-            }
+            future.set(block())
         }
         return future
     }

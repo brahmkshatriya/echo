@@ -49,6 +49,7 @@ class AppRepository(
     }
 
     override val flow = channelFlow {
+        send(null)
         send(loadExtensions())
         suspendCoroutine {
             val receiver = Receiver {

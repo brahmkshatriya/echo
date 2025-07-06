@@ -25,8 +25,9 @@ class CombinedRepository(
     private val fileRepository = FileRepository(context, extensionParser, fileIgnoreFlow)
 
     override val flow = fileRepository.flow.combine(appRepository.flow) { file, app ->
+        if (app == null) return@combine null
         list + file + app
     }.stateIn(scope, SharingStarted.Lazily, list)
 
-    override suspend fun loadExtensions() = flow.first()
+    override suspend fun loadExtensions() = flow.first { it != null } ?: list
 }

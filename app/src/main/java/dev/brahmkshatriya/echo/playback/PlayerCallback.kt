@@ -369,8 +369,10 @@ class PlayerCallback(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ) = scope.future {
-        mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
-        mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
+        withContext(Dispatchers.Main) {
+            mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
+            mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
+        }
         val (items, index, pos) = context.recoverPlaylist(downloadFlow.value)
         MediaItemsWithStartPosition(items, index, pos)
     }
