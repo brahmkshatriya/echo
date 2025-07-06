@@ -49,10 +49,16 @@ object FragmentUtils {
         viewModel.collapsePlayer()
         manager.commit {
             setReorderingAllowed(true)
-            add<T>(cont, args = bundle)
             addToBackStack(null)
+            val fragment = createFragment<T>(bundle)
+            add(cont, fragment)
+            setPrimaryNavigationFragment(fragment)
         }
     }
+
+    inline fun <reified T : Fragment> createFragment(
+        bundle: Bundle? = null
+    ): T = T::class.java.getDeclaredConstructor().newInstance().apply { arguments = bundle }
 
     inline fun <reified T : Fragment> FragmentActivity.openFragment(
         view: View? = null, bundle: Bundle? = null, cont: Int = R.id.navHostFragment

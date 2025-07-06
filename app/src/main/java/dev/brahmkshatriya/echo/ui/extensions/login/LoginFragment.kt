@@ -104,21 +104,13 @@ class LoginFragment : Fragment() {
             loginViewModel.loading.value = false
             commit {
                 setReorderingAllowed(true)
+                if (fragments.size > 0) addToBackStack(null)
                 replace<T>(R.id.genericFragmentContainer, null, args)
-                if (fragments.size > 0) addToBackStack("login")
             }
         }
     }
 
-    override fun onDestroyView() {
-        if (!isStateSaved()) parentFragmentManager.commit {
-            setPrimaryNavigationFragment(null)
-        }
-        super.onDestroyView()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        parentFragmentManager.commit { setPrimaryNavigationFragment(this@LoginFragment) }
         binding.bind(this)
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
@@ -247,12 +239,16 @@ class LoginFragment : Fragment() {
         }
         private val formIndex by lazy { requireArguments().getInt("formIndex", 0) }
         private val form by lazy {
-            (extension.instance.value as LoginClient.CustomInput).forms.getOrNull(formIndex)
-                ?: throw IllegalStateException("No form found for extension ${extension.id}")
+            (extension.instance.value as? LoginClient.CustomInput)?.forms?.getOrNull(formIndex)
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             setupTransition(view, useZ = false)
+            val form = form ?: run {
+                message(Message("No form found for extension ${extension.id}"))
+                parentFragmentManager.popBackStack()
+                return
+            }
             val binding = FragmentExtensionLoginCustomInputBinding.bind(view)
             binding.run {
                 form.inputFields.forEachIndexed { index, field ->

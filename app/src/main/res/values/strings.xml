@@ -239,10 +239,12 @@
     <string name="sleep_timer_cancelled">Sleep timer cancelled</string>
     <string name="sleep_timer_set_for">Sleep timer set for %1$s</string>
     <string name="search_x">Search %1$s</string>
+    <string name="n_hours">%1$d hours</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>
     </plurals>
+    <string name="n_minutes">%1$d minutes</string>
     <plurals name="number_min">
         <item quantity="one">%1$d Min</item>
         <item quantity="other">%1$d Mins</item>

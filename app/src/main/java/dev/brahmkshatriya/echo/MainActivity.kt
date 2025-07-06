@@ -30,7 +30,6 @@ import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.PermsUtils.checkAppPermissions
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isNightMode
-import kotlinx.coroutines.delay
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -57,12 +56,7 @@ class MainActivity : AppCompatActivity() {
         setupNavBarAndInsets(uiViewModel, binding.root, binding.navView as NavigationBarView)
         setupPlayerBehavior(uiViewModel, binding.playerFragmentContainer)
         setupExceptionHandler(setupSnackBar(uiViewModel, binding.root))
-        checkAppPermissions {
-            val curr = extensionLoader.current.value
-            extensionLoader.current.value = null
-            delay(10)
-            extensionLoader.current.value = curr
-        }
+        checkAppPermissions { extensionLoader.setPermGranted() }
         configureExtensionsUpdater()
         supportFragmentManager.commit {
             if (savedInstanceState != null) return@commit

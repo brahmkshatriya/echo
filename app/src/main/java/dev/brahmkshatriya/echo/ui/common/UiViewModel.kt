@@ -117,7 +117,12 @@ class UiViewModel(
 
     fun setSystemInsets(context: Context, insets: WindowInsetsCompat) {
         val system = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+        val display = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
         val inset = system.run {
+            val top = if (top > 0) top else display.top
+            val bottom = if (bottom > 0) bottom else display.bottom
+            val left = if (left > 0) left else display.left
+            val right = if (right > 0) right else display.right
             if (context.isRTL()) Insets(top, bottom, right, left)
             else Insets(top, bottom, left, right)
         }
@@ -265,9 +270,9 @@ class UiViewModel(
             )
         }
 
-        fun View.applyHorizontalInsets(it: Insets) {
+        fun View.applyHorizontalInsets(it: Insets, isLandScape: Boolean = false) {
             updatePaddingRelative(
-                start = it.start,
+                start = if (!isLandScape) it.start else 0,
                 end = it.end
             )
         }

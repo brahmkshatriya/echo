@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.utils.CoroutineUtils.collectWith
 import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,6 +54,21 @@ class ExtensionLoader(
     val parser = ExtensionParser(app.context)
     val scope = CoroutineScope(Dispatchers.IO)
     val db = ExtensionDatabase.create(app.context)
+
+    private var permGrantedFlow = false
+    fun setPermGranted() {
+        if (permGrantedFlow) return
+        permGrantedFlow = true
+        val id = current.value?.id
+        if (id == OfflineExtension.metadata.id || id == UnifiedExtension.metadata.id) {
+            current.value = null
+            scope.launch {
+                delay(1)
+                setCurrentExtension()
+            }
+        }
+    }
+
     val unified =
         Injectable<ExtensionClient> { UnifiedExtension(app.context, downloadShelf, null) }
 

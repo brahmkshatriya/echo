@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toCurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
-import kotlinx.coroutines.Dispatchers
+import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -69,8 +69,14 @@ class LoginViewModel(
 
     private suspend fun afterLogin(
         extension: Extension<*>,
-        users: List<User>
+        result: Result<List<User>>
     ) {
+        val users = result.getOrElse {
+            app.throwFlow.emit(it)
+            loading.value = false
+            loadingOver.emit(Unit)
+            return@afterLogin
+        }
         if (users.isEmpty()) {
             app.messageFlow.emit(Message(app.context.getString(R.string.no_user_found)))
         } else {
@@ -85,10 +91,10 @@ class LoginViewModel(
 
     fun onWebViewStop(
         extension: Extension<*>,
-        result: Result<List<User>?>,
+        result: Result<List<User>>,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val users = extension.run(app.throwFlow) { result.getOrThrow().orEmpty() }.orEmpty()
+        viewModelScope.launch {
+            val users = runCatching { result.getOrElse { throw it.toAppException(extension) } }
             afterLogin(extension, users)
         }
     }
@@ -98,11 +104,11 @@ class LoginViewModel(
         extension: Extension<*>,
         form: LoginClient.Form
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             loading.value = true
-            val users = extension.get<LoginClient.CustomInput, List<User>>(app.throwFlow) {
+            val users = extension.get<LoginClient.CustomInput, List<User>> {
                 onLogin(form.key, inputs.toMap())
-            }.orEmpty()
+            }
             afterLogin(extension, users)
         }
     }

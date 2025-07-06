@@ -132,10 +132,12 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
             val min = minutes % 60
             val str = StringBuilder()
             if (hrs > 0) str.append(
-                resources.getQuantityString(R.plurals.number_hour, hrs.toInt(), hrs)
+                runCatching { resources.getQuantityString(R.plurals.number_hour, hrs.toInt(), hrs) }
+                    .getOrNull() ?: getString(R.string.n_hours, hrs)
             ).append(if (min > 0) " " else "")
             if (min > 0) str.append(
-                resources.getQuantityString(R.plurals.number_min, min.toInt(), min)
+                runCatching { resources.getQuantityString(R.plurals.number_min, min.toInt(), min) }
+                    .getOrNull() ?: getString(R.string.n_minutes, min)
             )
             return str.toString()
         }

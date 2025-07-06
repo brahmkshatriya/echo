@@ -55,12 +55,12 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.showBackground
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyHorizontalInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.isFinalState
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupPlayerMoreBehavior
-import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
@@ -238,6 +238,7 @@ class PlayerFragment : Fragment() {
                 else getCombined()
             }
             binding.playerCollapsedContainer.root.applyHorizontalInsets(insets)
+            binding.playerControls.root.applyHorizontalInsets(insets, requireActivity().isLandscape())
             val left = if (requireContext().isRTL()) system.end + extraEndPadding else system.start
             leftPadding = collapsedTopPadding + left
             val right = if (requireContext().isRTL()) system.start else system.end + extraEndPadding

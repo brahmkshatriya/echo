@@ -86,16 +86,12 @@ object ExtensionUtils {
     fun <T : Extension<*>> StateFlow<List<T>>.getExtensionOrThrow(id: String?) =
         value.find { it.id == id } ?: throw ExtensionNotFoundException(id)
 
-    val Extension<*>.prefId get() = metadata.prefId
-    val Metadata.prefId get() = extensionPrefId(type.name, id)
-
-    fun Extension<*>.prefs(context: Context) = metadata.prefs(context)
-    fun Metadata.prefs(context: Context) = prefId.prefs(context)
+    fun extensionPrefId(extensionType: String, extensionId: String) = "$extensionType-$extensionId"
     fun String.prefs(context: Context) =
         context.getSharedPreferences(this, Context.MODE_PRIVATE)!!
 
-    fun extensionPrefId(extensionType: String, extensionId: String) =
-        "$extensionType-$extensionId"
+    fun Metadata.prefs(context: Context) = extensionPrefId(type.name, id).prefs(context)
+    fun Extension<*>.prefs(context: Context) = metadata.prefs(context)
 
     fun getSettings(context: Context, metadata: Metadata): Settings {
         return toSettings(metadata.prefs(context))
@@ -111,14 +107,14 @@ object ExtensionUtils {
             if (prefs.contains(key)) prefs.getInt(key, 0) else null
 
         override fun putInt(key: String, value: Int?) {
-            prefs.edit { putInt(key, value) }
+            prefs.edit { if (value != null) putInt(key, value) else remove(key) }
         }
 
         override fun getBoolean(key: String) =
             if (prefs.contains(key)) prefs.getBoolean(key, false) else null
 
         override fun putBoolean(key: String, value: Boolean?) {
-            prefs.edit { putBoolean(key, value) }
+            prefs.edit { if (value != null) putBoolean(key, value) else remove(key) }
         }
 
         override fun getStringSet(key: String) = prefs.getStringSet(key, null)

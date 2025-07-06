@@ -55,7 +55,7 @@ object WebViewUtils {
         webView: WebView,
         target: WebViewRequest<T>,
         skipTimeout: Boolean,
-        onComplete: suspend (Result<T?>?) -> Unit
+        onComplete: suspend (Result<T>?) -> Unit
     ): OnBackPressedCallback {
         val callback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
@@ -91,7 +91,7 @@ object WebViewUtils {
         callback: OnBackPressedCallback,
         target: WebViewRequest<T>,
         skipTimeout: Boolean,
-        onComplete: suspend (Result<T?>?) -> Unit
+        onComplete: suspend (Result<T>?) -> Unit
     ) {
         val stopRegex = target.stopUrlRegex
         val timeout = target.maxTimeout
@@ -153,7 +153,7 @@ object WebViewUtils {
                                     evalJS(bridge, target.javascriptToEvaluate)
                                 )
                             else null
-                            evalRes ?: cookieRes ?: headerRes
+                            evalRes ?: cookieRes ?: headerRes!!
                         }
                         stop(callback)
                         onComplete(result)
