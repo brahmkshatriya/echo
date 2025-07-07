@@ -341,7 +341,8 @@ class PlayerCallback(
     ): ListenableFuture<SessionResult> {
         return if (rating !is ThumbRating) super.onSetRating(session, controller, rating)
         else scope.future {
-            val item = session.player.with { currentMediaItem }!!
+            val item = session.player.with { currentMediaItem }
+                ?: return@future SessionResult(SessionError.ERROR_UNKNOWN)
             val track = item.track
             runCatching {
                 val extension = extensions.music.getExtensionOrThrow(item.extensionId)

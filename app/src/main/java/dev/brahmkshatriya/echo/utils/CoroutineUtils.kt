@@ -43,6 +43,21 @@ object CoroutineUtils {
         return future
     }
 
+    fun <T> CoroutineScope.futureCatching(
+        context: CoroutineContext = Dispatchers.IO, block: suspend () -> T
+    ): ListenableFuture<T> {
+        val future = SettableFuture.create<T>()
+        launch(context) {
+            runCatching {
+                future.set(block())
+            }.getOrElse {
+                future.setException(it)
+            }
+        }
+        return future
+    }
+
+
     suspend fun <T> ListenableFuture<T>.await(context: Context) = suspendCancellableCoroutine {
         it.invokeOnCancellation {
             cancel(true)

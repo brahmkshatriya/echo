@@ -15,9 +15,8 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withStarted
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField.Type
@@ -145,8 +144,8 @@ class LoginFragment : Fragment() {
             }
         }
 
-        if (childFragmentManager.fragments.isEmpty()) viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+        if (childFragmentManager.fragments.isEmpty()) lifecycleScope.launch {
+            lifecycle.withStarted {
                 loginViewModel.loadClient(extension)
             }
         }
