@@ -25,9 +25,12 @@ object FormatUtils {
     private fun Format.getHertz() =
         sampleRate.takeIf { it > 0 }?.let { " • $it Hz" } ?: ""
 
+    private fun Format.getChannelCount() =
+        channelCount.takeIf { it > 0 }?.let { " • ${it}ch" } ?: ""
+
     @OptIn(UnstableApi::class)
     fun Format.toAudioDetails() =
-        "${getMimeType()}${getHertz()} • ${channelCount}ch${getBitrate()}"
+        "${getMimeType()}${getHertz()}${getChannelCount()}${getBitrate()}"
 
     fun Format.toVideoDetails() = "${height}p${getFrameRate()}${getBitrate()}"
     fun Format.toSubtitleDetails() = label ?: language ?: "Unknown"
