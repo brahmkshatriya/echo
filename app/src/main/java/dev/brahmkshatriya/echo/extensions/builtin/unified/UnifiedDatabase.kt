@@ -129,6 +129,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val tracks = dao.getTracks(entity.id).associateBy { it.eid }
         if (tracks.isEmpty()) return emptyList()
         var last = entity.last
+        if (last !in tracks) return new // A workaround when last track of playlist is updated by removeTracksFromPlaylist() while having old playlist here
         while (last != null) {
             val track = tracks[last]!!
             new.add(track.track)
