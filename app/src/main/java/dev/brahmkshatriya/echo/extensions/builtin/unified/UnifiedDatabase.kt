@@ -167,11 +167,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
             val track = dao.getTrack(tracks[it].toEntity().eid)!!
             dao.deletePlaylistTrack(track)
 
-            val before = dao.getTrack(track.after)
-            if (before != null) dao.insertPlaylistTrack(before.copy(after = track.after))
-
             val after = dao.getAfterTrack(track.eid)
-            if (after != null) dao.insertPlaylistTrack(track.copy(after = before?.eid))
+            if (after != null) dao.insertPlaylistTrack(after.copy(after = track.after))
 
             val entity = dao.getPlaylist(playlist.toEntity().id)
             if (entity.last == track.eid) dao.insertPlaylist(entity.copy(last = track.after))
