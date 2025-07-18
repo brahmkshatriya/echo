@@ -192,6 +192,7 @@ data class Streamable(
         data class Http(
             val request: Request,
             val type: SourceType = SourceType.Progressive,
+            val isLive: Boolean = false,
             val decryption: Decryption? = null,
             override val quality: Int = 0,
             override val title: String? = null,
@@ -223,8 +224,9 @@ data class Streamable(
             fun String.toSource(
                 headers: Map<String, String> = mapOf(),
                 type: SourceType = SourceType.Progressive,
-                isVideo: Boolean = false
-            ) = Http(this.toRequest(headers), type, isVideo = isVideo)
+                isVideo: Boolean = false,
+                isLive: Boolean = false
+            ) = Http(this.toRequest(headers), type, isVideo = isVideo, isLive = isLive)
 
             fun InputProvider.toSource(isVideo: Boolean = false) = Raw(this, isVideo = isVideo)
         }
