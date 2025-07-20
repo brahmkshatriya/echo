@@ -18,7 +18,7 @@ An Extension-based Music Player for Android, designed with a clean and intuitive
 
 ## Downloads
 
-<a href="https://github.com/brahmkshatriya/echo/releases/latest"><img src="https://img.shields.io/badge/Stable-2EB9FF?label=Recommended&style=for-the-badge"  alt="Latest Stable Release"/></a>
+<!--<a href="https://github.com/brahmkshatriya/echo/releases/latest"><img src="https://img.shields.io/badge/Stable-2EB9FF?label=Recommended&style=for-the-badge"  alt="Latest Stable Release"/></a>-->
 <a href="https://nightly.link/brahmkshatriya/echo/workflows/nightly/main/artifact.zip"><img src="https://img.shields.io/badge/Nigthly-9999FF?label=Experimental&style=for-the-badge" alt="Latest Nightly Release"/></a>
 
 ## Support Us
