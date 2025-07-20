@@ -4,8 +4,8 @@
 An Extension-based Music Player for Android, designed with a clean and intuitive UI.
 </p>
 <p>
-  <a href="https://github.com/brahmkshatriya/echo/releases"><img src="https://img.shields.io/github/v/release/brahmkshatriya/echo?label=Downloads&style=for-the-badge" alt="GitHub Downloads"></a>
-<a href="https://www.codefactor.io/repository/github/brahmkshatriya/echo"><img src="https://img.shields.io/codefactor/grade/github/brahmkshatriya/echo?label=Codefactor&style=for-the-badge" alt="CodeFactor"/></a>
+  <!--<a href="https://github.com/brahmkshatriya/echo/releases"><img src="https://img.shields.io/github/v/release/brahmkshatriya/echo?label=Downloads&style=for-the-badge" alt="GitHub Downloads"></a>-->
+  <a href="https://www.codefactor.io/repository/github/brahmkshatriya/echo"><img src="https://img.shields.io/codefactor/grade/github/brahmkshatriya/echo?label=Codefactor&style=for-the-badge" alt="CodeFactor"/></a>
   <a href="https://hosted.weblate.org/engage/echo"><img alt="Weblate project translated" src="https://img.shields.io/weblate/progress/echo?label=Translated&style=for-the-badge"></a>
 </p>
 
@@ -49,7 +49,7 @@ our [Discord server](https://discord.gg/J3WvbBUU8Z) or [Telegram group](https://
 requests are welcome; check the [issues](https://github.com/brahmkshatriya/echo/issues?q=is%3Aissue%20) for
 guidance on major changes.
 
-### Translation
+### Translation [Currently turned off]
 
 You can help us by translating the app into your language here
 
