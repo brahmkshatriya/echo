@@ -81,7 +81,7 @@ ExtensionAdapter(
         holder.bind(download)
     }
 
-    suspend fun submit(list: List<Extension<*>>) {
+    suspend fun submit(list: List<Extension<*>>, selectedIndex: Int, settings: SharedPreferences) {
         submitData(PagingData.from(list))
         empty.loadState = if (list.isEmpty()) LoadState.Loading
         else LoadState.NotLoading(true)
