@@ -85,5 +85,9 @@ ExtensionAdapter(
         submitData(PagingData.from(list))
         empty.loadState = if (list.isEmpty()) LoadState.Loading
         else LoadState.NotLoading(true)
+        // Update priority map of extensions
+        val key = ExtensionType.entries[selectedIndex].priorityKey()
+        val extIds = list.joinToString(",") { it.id }
+        settings.edit { putString(key, extIds) }
     }
 }

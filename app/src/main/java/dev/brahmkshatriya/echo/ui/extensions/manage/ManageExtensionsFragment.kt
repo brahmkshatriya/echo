@@ -114,7 +114,7 @@ class ManageExtensionsFragment : Fragment() {
         })
 
         observe(viewModel.manageExtListFlow) { list ->
-            extensionAdapter.submit(list)
+            extensionAdapter.submit(list, viewModel.lastSelectedManageExt.value, viewModel.app.settings)
         }
 
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
