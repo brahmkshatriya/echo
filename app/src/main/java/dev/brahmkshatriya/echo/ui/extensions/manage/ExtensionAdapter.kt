@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.ui.extensions.manage
 
 import android.annotation.SuppressLint
+import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.priorityKey
 import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 
