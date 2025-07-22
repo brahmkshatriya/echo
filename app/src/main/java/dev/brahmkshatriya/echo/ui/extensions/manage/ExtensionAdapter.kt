@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.paging.LoadState
 import androidx.paging.PagingData
