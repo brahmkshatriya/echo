@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.utils
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build.SUPPORTED_ABIS
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
@@ -17,6 +18,12 @@ import java.io.File
 
 object ContextUtils {
     fun appVersion() = BuildConfig.VERSION_NAME + " " + BuildConfig.BUILD_TYPE
+    fun getArch(): String {
+        SUPPORTED_ABIS.firstOrNull()?.let { return it }
+        return System.getProperty("os.arch")
+            ?: System.getProperty("os.product.cpu.abi")
+            ?: "Unknown"
+    }
 
     fun Context.copyToClipboard(label: String?, string: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

@@ -1,37 +1,28 @@
 package dev.brahmkshatriya.echo.ui.main
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.color.MaterialColors
+import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentMainBinding
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
-import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
-import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionsListBottomSheet
-import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListBottomSheet
-import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
-import dev.brahmkshatriya.echo.ui.main.home.HomeFragment
-import dev.brahmkshatriya.echo.ui.main.library.LibraryFragment
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyGradient
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.main.search.SearchFragment
-import dev.brahmkshatriya.echo.ui.main.settings.SettingsFragment
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
-import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
-import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
-import dev.brahmkshatriya.echo.utils.ui.GradientDrawable.BACKGROUND_GRADIENT
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class MainFragment : Fragment() {
@@ -53,11 +44,13 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
+        applyPlayerBg(view) {
+            mainBgDrawable.combine(currentNavBackground) { a, b -> b ?: a }
+        }
         observe(viewModel.navigation) {
             val toShow = when (it) {
                 1 -> addIfNull<SearchFragment>("search")
                 2 -> addIfNull<LibraryFragment>("library")
-                3 -> addIfNull<SettingsFragment>("settings")
                 else -> addIfNull<HomeFragment>("home")
             }
 
@@ -72,89 +65,42 @@ class MainFragment : Fragment() {
     }
 
     companion object {
-        fun Fragment.applyPlayerBg(view: View, useExtensionColors: Boolean = true) {
+        fun Fragment.applyPlayerBg(
+            view: View,
+            imageFlow: UiViewModel.() -> Flow<Drawable?>
+        ): UiViewModel {
             val uiViewModel by activityViewModel<UiViewModel>()
-            val combined = uiViewModel.run {
-                if (!useExtensionColors) playerColors.map { it?.accent }
-                else playerColors.combine(extensionColor) { a, b -> a?.accent ?: b }
-            }
-            val settings = requireContext().getSettings()
-            observe(combined) {
-                val isGradient = settings.getBoolean(BACKGROUND_GRADIENT, true)
-                val color = if (isGradient) it ?: MaterialColors.getColor(
-                    view, androidx.appcompat.R.attr.colorPrimary
-                ) else MaterialColors.getColor(view, R.attr.echoBackground)
-                view.background = GradientDrawable.createBg(view, color)
-            }
+            val combined = uiViewModel.imageFlow()
+            observe(combined) { applyGradient(view, it) }
+            return uiViewModel
         }
 
-        private fun <T> View.setLoopedLongClick(
-            list: List<T>,
-            getCurrent: (View) -> T?,
-            onSelect: (T) -> Unit
+        fun Fragment.applyInsets(
+            recyclerView: RecyclerView,
+            outline: View,
+            bottom: Int = 0,
+            block: UiViewModel.(UiViewModel.Insets) -> Unit = {}
         ) {
-            setOnLongClickListener {
-                val current = getCurrent(this)
-                val index = list.indexOf(current)
-                if (index == -1) return@setOnLongClickListener false
-                val next = list[(index + 1) % list.size]
-                if (next == current) return@setOnLongClickListener false
-                onSelect(next)
-                true
+            recyclerView.run {
+                val height = 48.dpToPx(context)
+                setOnScrollChangeListener { _, _, _, _, _ ->
+                    outline.alpha =
+                        computeVerticalScrollOffset().coerceAtMost(height) / height.toFloat()
+                }
             }
-        }
-
-        fun MaterialToolbar.configureMainMenu(
-            fragment: MainFragment, isLogin: ((Boolean) -> Unit)? = null
-        ) {
-            val viewModel by fragment.activityViewModel<LoginUserListViewModel>()
-
-            fragment.observe(viewModel.extensionLoader.current) { ext ->
-                viewModel.currentExtension.value = ext
-            }
-
-            fragment.observe(viewModel.allUsers) { (ext, all) ->
-                val isLoginClient = ext?.isClient<LoginClient>() ?: false
-                menu.removeItem(R.id.menu_accounts)
-                menu.removeItem(R.id.menu_extensions)
-
-                if (isLoginClient) inflateMenu(R.menu.account_menu)
-                inflateMenu(R.menu.top_bar_menu)
-                val extMenu = findViewById<View>(R.id.menu_extensions)
-                extMenu.setOnClickListener {
-                    ExtensionsListBottomSheet.newInstance(ExtensionType.MUSIC)
-                        .show(fragment.parentFragmentManager, null)
-                }
-                ext?.metadata?.icon.loadAsCircle(extMenu, R.drawable.ic_extension_48dp) {
-                    it ?: return@loadAsCircle
-                    menu.findItem(R.id.menu_extensions).icon = it
-                }
-                val list = viewModel.extensionLoader.music.value.filter { it.isEnabled }
-                extMenu.setLoopedLongClick(
-                    list, { viewModel.extensionLoader.current.value }
-                ) {
-                    viewModel.extensionLoader.setupMusicExtension(it, true)
-                }
-
-                if (isLoginClient) {
-                    val accountsMenu = findViewById<View>(R.id.menu_accounts)
-                    viewModel.currentUser.value
-                        ?.cover.loadAsCircle(accountsMenu, R.drawable.ic_account_circle) {
-                            it ?: return@loadAsCircle
-                            menu.findItem(R.id.menu_accounts).icon = it
-                        }
-                    accountsMenu.setOnClickListener {
-                        LoginUserListBottomSheet().show(
-                            fragment.parentFragmentManager,
-                            null
-                        )
-                    }
-                    accountsMenu.setLoopedLongClick(all, { all.find { it.second } }) {
-                        ext!!
-                        viewModel.setLoginUser(it.first.toEntity(ext.type, ext.id))
-                    }
-                }
-                runCatching { isLogin?.invoke(isLoginClient) }
+            FastScrollerHelper.applyTo(recyclerView)
+            applyInsets {
+                recyclerView.applyInsets(it, 20, 20, bottom + 4)
+                outline.updatePadding(top = it.top)
+//                val rect = recyclerView.run {
+//                    val pad = 8.dpToPx(context)
+//                    val isRtl = context.isRTL()
+//                    val left = if (!isRtl) it.start else it.end
+//                    val right = if (!isRtl) it.end else it.start
+//                    Rect(left + pad, it.top + pad, right + pad, it.bottom + pad)
+//                }
+//                scroller.setPadding(rect)
+                block(it)
             }
         }
     }

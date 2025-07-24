@@ -1,19 +1,16 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.models.Request.Companion.toRequest
-import dev.brahmkshatriya.echo.common.models.Streamable.Decryption.Widevine
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Background
+import dev.brahmkshatriya.echo.common.models.NetworkRequest.Companion.toGetRequest
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toBackgroundMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toServerMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtitleMedia
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Server
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Subtitle
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
-import dev.brahmkshatriya.echo.common.models.Streamable.Source.Http
-import dev.brahmkshatriya.echo.common.models.Streamable.Source.Raw
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonClassDiscriminator
 import java.io.InputStream
 
 /**
@@ -56,6 +53,9 @@ data class Streamable(
      * @see toServerMedia
      * @see toBackgroundMedia
      */
+    @OptIn(ExperimentalSerializationApi::class)
+    @JsonClassDiscriminator("mediaType")
+    @Serializable
     sealed class Media {
 
         /**
@@ -69,6 +69,7 @@ data class Streamable(
          * @see SubtitleType
          * @see toSubtitleMedia
          */
+        @Serializable
         data class Subtitle(val url: String, val type: SubtitleType) : Media()
 
         /**
@@ -87,6 +88,7 @@ data class Streamable(
          * @see Source.toMedia
          * @see toServerMedia
          */
+        @Serializable
         data class Server(val sources: List<Source>, val merged: Boolean) : Media()
 
         /**
@@ -95,11 +97,11 @@ data class Streamable(
          *
          * @property request The request for the background media
          *
-         * @see Request
+         * @see NetworkRequest
          * @see toBackgroundMedia
          */
         @Serializable
-        data class Background(val request: Request) : Media()
+        data class Background(val request: NetworkRequest) : Media()
         companion object {
             /**
              * Creates a [Server] media from this [Source].
@@ -113,7 +115,7 @@ data class Streamable(
              * @return A [Background] media from the String Url
              */
             fun String.toBackgroundMedia(headers: Map<String, String> = mapOf()) =
-                Background(this.toRequest(headers))
+                Background(this.toGetRequest(headers))
 
             /**
              * Creates a single [Source] server media from this String Url.
@@ -144,6 +146,9 @@ data class Streamable(
      * There is only one type of decryption:
      * - [Widevine] - To represent a Widevine decryption
      */
+    @OptIn(ExperimentalSerializationApi::class)
+    @JsonClassDiscriminator("decryptionType")
+    @Serializable
     sealed class Decryption {
 
         /**
@@ -152,10 +157,11 @@ data class Streamable(
          * @property license The license request for the Widevine decryption
          * @property isMultiSession Whether the Widevine decryption is multi-session or not
          *
-         * @see Request
+         * @see NetworkRequest
          */
+        @Serializable
         data class Widevine(
-            val license: Request,
+            val license: NetworkRequest,
             val isMultiSession: Boolean,
         ) : Decryption()
     }
@@ -174,10 +180,15 @@ data class Streamable(
      * @see toSource
      * @see Media.toServerMedia
      */
+    @OptIn(ExperimentalSerializationApi::class)
+    @JsonClassDiscriminator("sourceType")
+    @Serializable
     sealed class Source {
+        abstract val id: String
         abstract val quality: Int
         abstract val title: String?
-        open val isVideo: Boolean = false
+        abstract val isVideo: Boolean
+        abstract val isLive: Boolean
 
         /**
          * A data class representing a source that contains Audio/Video on a Http Url.
@@ -185,18 +196,23 @@ data class Streamable(
          * @property request The request for the source
          * @property type The type of the source
          * @property decryption The decryption for the source
+         * @param isLive If true, will prevent caching of the source
          *
-         * @see Request
+         * @see NetworkRequest
          * @see Decryption
          */
+        @Serializable
         data class Http(
-            val request: Request,
+            val request: NetworkRequest,
             val type: SourceType = SourceType.Progressive,
             val decryption: Decryption? = null,
             override val quality: Int = 0,
             override val title: String? = null,
-            override val isVideo: Boolean = false
-        ) : Source()
+            override val isVideo: Boolean = false,
+            override val isLive: Boolean = false
+        ) : Source() {
+            override val id = request.url
+        }
 
         /**
          * A data class representing a source that contains Audio/Video in a Byte Stream.
@@ -205,11 +221,14 @@ data class Streamable(
          *
          * @see InputProvider
          */
+        @Serializable
         data class Raw(
-            val streamProvider: InputProvider,
+            @Transient val streamProvider: InputProvider? = null,
+            override val id: String,
             override val quality: Int = 0,
             override val title: String? = null,
-            override val isVideo: Boolean = false
+            override val isVideo: Boolean = false,
+            override val isLive: Boolean = false
         ) : Source()
 
         companion object {
@@ -223,10 +242,13 @@ data class Streamable(
             fun String.toSource(
                 headers: Map<String, String> = mapOf(),
                 type: SourceType = SourceType.Progressive,
-                isVideo: Boolean = false
-            ) = Http(this.toRequest(headers), type, isVideo = isVideo)
+                isVideo: Boolean = false,
+                isLive: Boolean = false
+            ) = Http(this.toGetRequest(headers), type, isVideo = isVideo, isLive = isLive)
 
-            fun InputProvider.toSource(isVideo: Boolean = false) = Raw(this, isVideo = isVideo)
+            fun InputProvider.toSource(
+                id: String, isVideo: Boolean = false, isLive: Boolean = false
+            ) = Raw(this, id, isVideo = isVideo, isLive = isLive)
         }
     }
 

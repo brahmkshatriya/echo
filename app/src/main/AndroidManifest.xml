@@ -53,8 +53,9 @@
 
         <activity
             android:name=".MainActivity"
-            android:enableOnBackInvokedCallback="false"
+            android:enableOnBackInvokedCallback="true"
             android:exported="true"
+            android:windowSoftInputMode="stateVisible|adjustPan"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

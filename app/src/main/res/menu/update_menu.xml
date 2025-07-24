@@ -5,7 +5,7 @@
     <item
         android:id="@+id/menu_update"
         android:icon="@drawable/ic_autorenew"
-        android:title="@string/check_for_extension_updates"
+        android:title="@string/check_for_updates"
         app:showAsAction="ifRoom" />
 
 </menu>

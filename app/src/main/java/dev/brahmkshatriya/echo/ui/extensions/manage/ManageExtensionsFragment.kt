@@ -11,12 +11,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsMain
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsWithChild
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
@@ -41,7 +41,7 @@ class ManageExtensionsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
+        applyInsetsWithChild(binding.appBarLayout, binding.recyclerView) {
             binding.fabContainer.applyInsets(it)
         }
         applyBackPressCallback()

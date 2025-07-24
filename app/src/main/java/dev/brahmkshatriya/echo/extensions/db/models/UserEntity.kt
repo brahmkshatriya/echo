@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.extensions.db.models
 
 import androidx.room.Entity
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson

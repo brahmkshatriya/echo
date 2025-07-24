@@ -51,8 +51,8 @@ class DownloadWorker(
         val intent = getMainIntent(context)
 
         val tracksTitle = runCatching {
-            context.resources.getQuantityString(R.plurals.n_songs, tracks, tracks)
-        }.getOrNull() ?: context.getString(R.string.x_songs, tracks)
+            context.resources.getQuantityString(R.plurals.number_songs, tracks, tracks)
+        }.getOrNull() ?: context.getString(R.string.n_songs, tracks)
 
         return ForegroundInfo(
             NOTIF_ID,

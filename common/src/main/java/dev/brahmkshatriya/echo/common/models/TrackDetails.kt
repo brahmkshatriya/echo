@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.common.models
 
+import kotlinx.serialization.Serializable
+
 /**
  * A data class that holds the details of a track that is in the player.
  *
@@ -12,6 +14,7 @@ package dev.brahmkshatriya.echo.common.models
  * @see EchoMediaItem
  * @see Track
  */
+@Serializable
 data class TrackDetails(
     val extensionId: String,
     val track: Track,

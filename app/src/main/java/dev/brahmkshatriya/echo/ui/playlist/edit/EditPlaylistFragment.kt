@@ -8,15 +8,16 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ConcatAdapter
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistEditBinding
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsMain
-import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsWithChild
+import dev.brahmkshatriya.echo.ui.feed.TabsAdapter
+import dev.brahmkshatriya.echo.ui.playlist.edit.EditPlaylistBottomSheet.Companion.toText
 import dev.brahmkshatriya.echo.ui.playlist.edit.search.EditPlaylistSearchFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
@@ -26,7 +27,6 @@ import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import kotlinx.coroutines.flow.combine
-import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -44,29 +44,18 @@ class EditPlaylistFragment : Fragment() {
     private val extensionId by lazy { args.getString("extensionId")!! }
     private val playlist by lazy { args.getSerialized<Playlist>("playlist")!! }
     private val loaded by lazy { args.getBoolean("loaded", false) }
+    private val selectedTab by lazy { args.getString("selectedTabId").orEmpty() }
 
     private var binding: FragmentPlaylistEditBinding by autoCleared()
-    private val playerViewModel by activityViewModel<PlayerViewModel>()
     private val vm by viewModel<EditPlaylistViewModel> {
-        parametersOf(extensionId, playlist, loaded)
+        parametersOf(extensionId, playlist, loaded, selectedTab, -1)
     }
 
     private val adapter by lazy {
-        val itemCallback = PlaylistAdapter.getTouchHelper(vm)
+        val (listener, itemCallback) = PlaylistTrackAdapter.getTouchHelperAndListener(vm)
         itemCallback.attachToRecyclerView(binding.recyclerView)
-        PlaylistAdapter(playerViewModel.playerState.current, object : PlaylistAdapter.Listener {
-            override fun onItemClosedClicked(viewHolder: PlaylistAdapter.ViewHolder) {
-                vm.edit(
-                    EditPlaylistViewModel.Action.Remove(listOf(viewHolder.bindingAdapterPosition))
-                )
-            }
-
-            override fun onDragHandleTouched(viewHolder: PlaylistAdapter.ViewHolder) {
-                itemCallback.startDrag(viewHolder)
-            }
-        })
+        PlaylistTrackAdapter(listener)
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -78,7 +67,7 @@ class EditPlaylistFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsetsMain(binding.appBarLayout, binding.recyclerView, 96) {
+        applyInsetsWithChild(binding.appBarLayout, binding.recyclerView, 96) {
             binding.fabContainer.applyInsets(it)
         }
 
@@ -103,6 +92,9 @@ class EditPlaylistFragment : Fragment() {
         binding.save.setOnClickListener {
             vm.save()
         }
+        observe(vm.isSavable) {
+            binding.save.isEnabled = it
+        }
 
         binding.add.setOnClickListener {
             openFragment<EditPlaylistSearchFragment>(
@@ -119,45 +111,33 @@ class EditPlaylistFragment : Fragment() {
         }
 
         FastScrollerHelper.applyTo(binding.recyclerView)
-        binding.recyclerView.adapter = ConcatAdapter(
-            EditPlaylistHeaderAdapter(vm), adapter
-        )
 
-        observe(vm.currentTracks) {
-            adapter.submitList(it)
+        val headerAdapter = EditPlaylistHeaderAdapter(vm)
+        val tabAdapter = TabsAdapter<Tab>({ title }) { v, index, tab ->
+            vm.selectedTabFlow.value = tab
         }
+
+        binding.recyclerView.adapter = ConcatAdapter(headerAdapter, tabAdapter, adapter)
+        observe(vm.pairFlow) { headerAdapter.pair = it }
+        observe(vm.tabsFlow) { tabAdapter.data = it }
+        observe(vm.selectedTabFlow) { tabAdapter.selected = vm.tabsFlow.value.indexOf(it) }
+        observe(vm.currentTracks) { adapter.submitList(it) }
+
         val combined = vm.originalList.combine(vm.saveState) { a, b -> a to b }
         observe(combined) { (tracks, save) ->
-            val trackLoading = tracks == EditPlaylistViewModel.LoadingState.Loading
+            val trackLoading = tracks == null
             val saving = save != EditPlaylistViewModel.SaveState.Initial
             val loading = trackLoading || saving
             binding.recyclerView.isVisible = !loading
             binding.fabContainer.isVisible = !loading
             binding.loading.root.isVisible = loading
-            binding.loading.textView.text = when (save) {
-                is EditPlaylistViewModel.SaveState.Performing -> when (save.action) {
-                    is EditPlaylistViewModel.Action.Add ->
-                        getString(R.string.adding_x, save.tracks.joinToString(", ") { it.title })
+            binding.loading.textView.text = save.toText(playlist, requireContext())
 
-                    is EditPlaylistViewModel.Action.Move ->
-                        getString(R.string.moving_x, save.tracks.first().title)
-
-                    is EditPlaylistViewModel.Action.Remove ->
-                        getString(R.string.removing_x, save.tracks.joinToString(", ") { it.title })
-                }
-
-                EditPlaylistViewModel.SaveState.Saving ->
-                    getString(R.string.saving_x, playlist.title)
-
-                EditPlaylistViewModel.SaveState.Initial -> getString(R.string.loading)
-                is EditPlaylistViewModel.SaveState.Saved -> {
-                    if (save.success) parentFragmentManager.setFragmentResult(
-                        "reload", bundleOf("id" to playlist.id)
-                    )
-                    parentFragmentManager.popBackStack()
-                    getString(R.string.loading)
-                }
-            }
+            val save = save as? EditPlaylistViewModel.SaveState.Saved ?: return@observe
+            if (save.result.isSuccess) parentFragmentManager.setFragmentResult(
+                "reload", bundleOf("id" to playlist.id)
+            )
+            parentFragmentManager.popBackStack()
         }
     }
 }

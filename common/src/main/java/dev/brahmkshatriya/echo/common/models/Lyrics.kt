@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
-import dev.brahmkshatriya.echo.common.models.Lyrics.Lyric
 import kotlinx.serialization.Serializable
 
 /**
@@ -54,6 +53,20 @@ data class Lyrics(
     @Serializable
     data class Timed(
         val list: List<Item>,
+        val fillTimeGaps: Boolean = true
+    ) : Lyric()
+
+    /**
+     * Represents a word-by-word lyric of a song.
+     *
+     * @property list the list of lists of timed lyric items, where each inner list represents a word.
+     * @property fillTimeGaps whether to fill the time gaps between the items.
+     *
+     * @see Item
+     */
+    @Serializable
+    data class WordByWord(
+        val list: List<List<Item>>,
         val fillTimeGaps: Boolean = true
     ) : Lyric()
 

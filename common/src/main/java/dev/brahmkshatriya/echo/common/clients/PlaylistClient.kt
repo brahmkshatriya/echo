@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
@@ -10,8 +11,7 @@ import dev.brahmkshatriya.echo.common.models.Track
  *
  * @see Playlist
  * @see Track
- * @see Shelf
- * @see PagedData
+ * @see Feed
  */
 interface PlaylistClient {
 
@@ -34,16 +34,15 @@ interface PlaylistClient {
      * @see PagedData
      * @see Track
      */
-    fun loadTracks(playlist: Playlist): PagedData<Track>
+    suspend fun loadTracks(playlist: Playlist): Feed<Track>
 
     /**
-     * Gets the shelves of a playlist.
+     * Gets the feed of a playlist.
      *
-     * @param playlist the playlist to get the shelves of.
-     * @return the paged shelves.
+     * @param playlist the playlist to get the feed of.
+     * @return the feed of the playlist, or null if not available.
      *
-     * @see PagedData
-     * @see Shelf
+     * @see Feed
      */
-    fun getShelves(playlist: Playlist): PagedData<Shelf>
+    suspend fun loadFeed(playlist: Playlist): Feed<Shelf>?
 }

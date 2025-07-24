@@ -10,11 +10,12 @@ import dev.brahmkshatriya.echo.common.models.TrackDetails
  * You can override the following methods to get the track details:
  * - [onTrackChanged]
  * - [onPlayingStateChanged]
- * - [onMarkAsPlayed]
  *
  * Can be implemented by both:
  * - [MusicExtension]
  * - [TrackerExtension]
+ *
+ * @see TrackerMarkClient
  */
 interface TrackerClient : ExtensionClient {
 
@@ -25,31 +26,12 @@ interface TrackerClient : ExtensionClient {
      *
      * @param details the details of the track that is playing, or null if player is empty.
      */
-    suspend fun onTrackChanged(details: TrackDetails?) {}
-
-    /**
-     * The duration in milliseconds after which the track should be marked as played (defaults to null).
-     * If null, the [onMarkAsPlayed] method will not be called.
-     *
-     * If you want a percentage of the song, you can calculate it based on the track's duration in
-     * [onTrackChanged]
-     */
-    val markAsPlayedDuration: Long?
-        get() = null
-
-    /**
-     * Called when the track has reached the [markAsPlayedDuration].
-     * will not be called if [markAsPlayedDuration] is null.
-     *
-     * @param details the details of the track that is playing.
-     */
-    suspend fun onMarkAsPlayed(details: TrackDetails) {}
-
+    suspend fun onTrackChanged(details: TrackDetails?)
 
     /**
      * Called when the player changes its playing state or when the position changes.
      *
      * @param details the details of the track that is playing, or null if the player is empty.
      */
-    suspend fun onPlayingStateChanged(details: TrackDetails?, isPlaying: Boolean) {}
+    suspend fun onPlayingStateChanged(details: TrackDetails?, isPlaying: Boolean)
 }

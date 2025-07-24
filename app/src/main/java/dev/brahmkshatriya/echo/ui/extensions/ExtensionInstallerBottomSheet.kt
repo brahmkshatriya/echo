@@ -16,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.helpers.ImportType
+import dev.brahmkshatriya.echo.common.models.ImportType
 import dev.brahmkshatriya.echo.databinding.DialogExtensionInstallerBinding
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionLoaderException
 import dev.brahmkshatriya.echo.extensions.repo.ExtensionParser.Companion.PACKAGE_FLAGS
@@ -92,7 +92,7 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
 
         binding.extensionTitle.text = metadata.name
         metadata.icon
-            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_48dp) {
+            .loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_32dp) {
                 binding.extensionIcon.setImageDrawable(it)
             }
         binding.extensionDetails.text = metadata.version

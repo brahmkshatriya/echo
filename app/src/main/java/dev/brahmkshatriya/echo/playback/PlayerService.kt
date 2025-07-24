@@ -27,7 +27,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader

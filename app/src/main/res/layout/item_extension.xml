@@ -22,7 +22,7 @@
             android:layout_marginHorizontal="8dp"
             android:contentDescription="@string/extension"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/ic_extension_48dp" />
+            app:srcCompat="@drawable/ic_extension_32dp" />
 
     </FrameLayout>
 
@@ -59,15 +59,11 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/extensionOpen"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:rotation="-45"
-            android:scaleX="-1"
-            app:icon="@drawable/ic_back"
-            app:iconSize="24dp" />
+            android:id="@+id/extensionSettings"
+            style="@style/IconButtonTonal"
+            android:contentDescription="@string/settings"
+            android:layout_marginHorizontal="4dp"
+            app:icon="@drawable/ic_settings_outline" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/extensionDrag"

@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.common.models
 
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.helpers.ImportType
+import kotlinx.serialization.Serializable
 
 /**
  * Metadata for an extension.
@@ -22,6 +21,7 @@ import dev.brahmkshatriya.echo.common.helpers.ImportType
  * @property preservedPackages The packages to preserve, ideally for extensions that use native libraries
  * @property isEnabled Whether the extension is enabled
  */
+@Serializable
 data class Metadata(
     val className: String,
     val path: String,

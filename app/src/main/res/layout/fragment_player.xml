@@ -107,7 +107,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/player_more_container"
-        android:name="dev.brahmkshatriya.echo.ui.player.PlayerMoreFragment"
+        android:name="dev.brahmkshatriya.echo.ui.player.more.PlayerMoreFragment"
         style="@style/Widget.Material3.BottomSheet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

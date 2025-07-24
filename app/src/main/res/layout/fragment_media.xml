@@ -74,21 +74,13 @@
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/mediaFragmentContainer"
+        android:name="dev.brahmkshatriya.echo.ui.media.MediaDetailsFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            tools:listitem="@layout/item_media_header"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:layout="@layout/fragment_media_details" />
 
     <FrameLayout
         android:id="@+id/fabContainer"

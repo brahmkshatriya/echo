@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/menu_extensions"
-        android:icon="@drawable/ic_extension_48dp"
+        android:icon="@drawable/ic_extension_32dp"
         android:title="@string/extensions"
         app:showAsAction="ifRoom" />
 

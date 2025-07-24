@@ -35,7 +35,7 @@
         app:liftOnScrollColor="@android:color/transparent">
 
         <com.google.android.material.search.SearchBar
-            android:id="@+id/searchBar"
+            android:id="@+id/searchBarText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="2dp"
@@ -83,13 +83,16 @@
         android:layout_height="match_parent"
         android:hint="@string/search"
         app:backgroundTint="@color/amoled_bg"
-        app:layout_anchor="@id/searchBar"
+        app:layout_anchor="@id/searchBarText"
         tools:visibility="gone">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/searchRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="?navBackground"
+            android:clipToPadding="false"
+            android:padding="4dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </com.google.android.material.search.SearchView>

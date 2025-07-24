@@ -5,10 +5,9 @@ import android.content.pm.FeatureInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.helpers.ImportType
-import dev.brahmkshatriya.echo.common.helpers.Injectable
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.ImportType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionLoaderException
 import dev.brahmkshatriya.echo.utils.ShaUtils.getSha256
@@ -21,14 +20,14 @@ class ExtensionParser(
 
     fun getAllDynamically(
         type: ImportType,
-        map: WeakHashMap<String, Pair<String, Result<Pair<Metadata, Injectable<ExtensionClient>>>>>,
+        map: WeakHashMap<String, Pair<String, Result<Pair<Metadata, Lazy<ExtensionClient>>>>>,
         files: List<File>
-    ): List<Result<Pair<Metadata, Injectable<ExtensionClient>>>> {
+    ): List<Result<Pair<Metadata, Lazy<ExtensionClient>>>> {
         val new = files.associate {
             val sha = runCatching { getSha256(it) }.getOrNull().orEmpty()
             val entry = map[it.absolutePath]
             val value = if (entry != null && entry.first == sha) entry
-            else (sha to parse(it, type))
+            else sha to parse(it, type)
             it.absolutePath to value
         }
         map.clear()
@@ -39,8 +38,8 @@ class ExtensionParser(
     private fun parse(source: File, importType: ImportType) = runCatching {
         runCatching {
             val metadata = parseManifest(source, importType)
-            val injectable = Injectable { loadFrom(metadata) }
-            metadata to injectable
+            val lazy = lazy { loadFrom(metadata) }
+            metadata to lazy
         }.getOrElse {
             throw ExtensionLoaderException(javaClass.simpleName, source.toString(), it)
         }

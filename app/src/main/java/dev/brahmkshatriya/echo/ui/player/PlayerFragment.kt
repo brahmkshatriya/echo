@@ -2,11 +2,11 @@ package dev.brahmkshatriya.echo.ui.player
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -18,6 +18,7 @@ import android.view.ViewOutlineProvider
 import android.widget.ProgressBar
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
@@ -45,7 +46,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
@@ -238,7 +238,10 @@ class PlayerFragment : Fragment() {
                 else getCombined()
             }
             binding.playerCollapsedContainer.root.applyHorizontalInsets(insets)
-            binding.playerControls.root.applyHorizontalInsets(insets, requireActivity().isLandscape())
+            binding.playerControls.root.applyHorizontalInsets(
+                insets,
+                requireActivity().isLandscape()
+            )
             val left = if (requireContext().isRTL()) system.end + extraEndPadding else system.start
             leftPadding = collapsedTopPadding + left
             val right = if (requireContext().isRTL()) system.start else system.end + extraEndPadding
@@ -482,14 +485,16 @@ class PlayerFragment : Fragment() {
 
     private fun configureColors() {
         observe(viewModel.playerState.current) { adapter.onCurrentUpdated() }
-        var last: Result<Bitmap?> = Result.failure(Exception())
-        adapter.currentBitmapListener = { bitmap ->
-            if (last.getOrNull() != bitmap) {
-                last = Result.success(bitmap)
+        var last: Drawable? = null
+        adapter.currentDrawableListener = { drawable ->
+            if (last != drawable) {
+                last = drawable
                 val context = requireContext()
-                val colors = if (context.isDynamic()) context.getColorsFrom(bitmap) else null
+                uiViewModel.playerDrawable.value = drawable
+                val colors =
+                    if (context.isDynamic()) context.getColorsFrom(drawable?.toBitmap()) else null
                 uiViewModel.playerColors.value = colors
-                if (context.showBackground()) binding?.bgImage?.loadBlurred(bitmap, 12f)
+                if (context.showBackground()) binding?.bgImage?.loadBlurred(drawable, 12f)
                 else binding?.bgImage?.setImageDrawable(null)
             }
         }
@@ -561,14 +566,14 @@ class PlayerFragment : Fragment() {
             trackTitle.text = track.title
             trackTitle.marquee()
             val artists = track.artists
-            val artistNames = track.toMediaItem().subtitleWithE ?: ""
+            val artistNames = artists.joinToString(", ") { it.name }
             val span = SpannableString(artistNames)
 
             artists.forEach { artist ->
                 val start = artistNames.indexOf(artist.name)
                 val end = start + artist.name.length
                 val clickableSpan = SimpleItemSpan(trackArtist.context) {
-                    openItem(extId, artist.toMediaItem())
+                    openItem(extId, artist)
                 }
                 runCatching {
                     span.setSpan(
@@ -578,7 +583,6 @@ class PlayerFragment : Fragment() {
             }
 
             trackArtist.text = span
-            trackArtist.marquee()
             trackArtist.movementMethod = LinkMovementMethod.getInstance()
             likeListener.enabled = false
             trackHeart.isChecked = item.isLiked
@@ -598,7 +602,7 @@ class PlayerFragment : Fragment() {
 
     private fun onMoreClicked(item: MediaItem) {
         MediaMoreBottomSheet.newInstance(
-            R.id.navHostFragment, item.extensionId, item.track.toMediaItem(), item.isLoaded, true
+            R.id.navHostFragment, item.extensionId, item.track, item.isLoaded, true
         ).show(parentFragmentManager, null)
     }
 
@@ -660,7 +664,7 @@ class PlayerFragment : Fragment() {
         private fun Context.showBackground() = getSettings().showBackground()
         const val DYNAMIC_PLAYER = "dynamic_player"
         const val PLAYER_COLOR = "player_color"
-        private fun Context.isDynamic() =
+        fun Context.isDynamic() =
             getSettings().getBoolean(DYNAMIC_PLAYER, true)
 
         private fun Context.isPlayerColor() =
@@ -680,7 +684,7 @@ class PlayerFragment : Fragment() {
                 .setDataSourceFactory(cacheFactory)
             val player = ExoPlayer.Builder(context).setMediaSourceFactory(factory).build()
             player.setMediaItem(MediaItem.fromUri(video.request.url.toUri()))
-            player.repeatMode = ExoPlayer.REPEAT_MODE_ONE
+            player.repeatMode = REPEAT_MODE_ONE
             player.volume = 0f
             player.prepare()
             player.play()

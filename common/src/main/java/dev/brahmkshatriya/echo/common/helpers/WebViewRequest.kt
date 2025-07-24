@@ -1,9 +1,6 @@
 package dev.brahmkshatriya.echo.common.helpers
 
-import dev.brahmkshatriya.echo.common.helpers.WebViewRequest.Cookie
-import dev.brahmkshatriya.echo.common.helpers.WebViewRequest.Evaluate
-import dev.brahmkshatriya.echo.common.helpers.WebViewRequest.Headers
-import dev.brahmkshatriya.echo.common.models.Request
+import dev.brahmkshatriya.echo.common.models.NetworkRequest
 
 /**
  * Use this to access the webview from the extension. There are 3 types of requests:
@@ -21,7 +18,7 @@ sealed interface WebViewRequest<T> {
     /**
      * The initial URL to be loaded in the webview.
      */
-    val initialUrl: Request
+    val initialUrl: NetworkRequest
 
     /**
      * The regex to match the URL when the request is assumed to be complete.
@@ -62,7 +59,7 @@ sealed interface WebViewRequest<T> {
          *
          * @return The data to be passed to the next step
          */
-        suspend fun onStop(requests: List<Request>): T?
+        suspend fun onStop(requests: List<NetworkRequest>): T?
     }
 
     /**
@@ -83,7 +80,7 @@ sealed interface WebViewRequest<T> {
          *
          * @return The data to be passed to the next step
          */
-        suspend fun onStop(url: Request, cookie: String): T?
+        suspend fun onStop(url: NetworkRequest, cookie: String): T?
     }
 
     /**
@@ -127,8 +124,6 @@ sealed interface WebViewRequest<T> {
          *
          * @return The data to be passed to the next step
          */
-        suspend fun onStop(url: Request, data: String?): T?
+        suspend fun onStop(url: NetworkRequest, data: String?): T?
     }
-
-
 }

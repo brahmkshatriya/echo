@@ -2,10 +2,10 @@ package dev.brahmkshatriya.echo.download.tasks
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.loadAll
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.withExtensionId
@@ -25,7 +25,7 @@ class SaveToUnifiedTask(
         if (old.finalFile == null) return
 
         val download = old.copy(
-            data = old.track.withExtensionId(old.extensionId).toJson(),
+            data = old.track.withExtensionId(old.extensionId, false).toJson(),
         )
         dao.insertDownloadEntity(download)
 
@@ -36,7 +36,7 @@ class SaveToUnifiedTask(
         val unifiedExtension =
             downloader.extensionLoader.music.getExtensionOrThrow(UnifiedExtension.metadata.id)
 
-        if (context != null) unifiedExtension.get<PlaylistEditClient, Unit> {
+        if (context != null) unifiedExtension.getAs<PlaylistEditClient, Unit> {
             val db = (this as UnifiedExtension).db
             val playlist = db.getOrCreate(app, context)
             val tracks = loadTracks(playlist).loadAll()
@@ -51,7 +51,7 @@ class SaveToUnifiedTask(
 
         dao.insertDownloadEntity(download.copy(fullyDownloaded = true))
 
-        val item = if (context == null) download.track.toMediaItem() else {
+        val item = if (context == null) download.track else {
             if (allDownloads.all { it.finalFile != null }) context else null
         } ?: return
         createCompleteNotification(app, item.title, item.cover.loadDrawable(app))

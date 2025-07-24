@@ -4,80 +4,114 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="24dp"
-    android:layout_marginVertical="8dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="8dp">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/follow"
-        style="@style/Widget.Material3.Button.UnelevatedButton"
-        android:layout_width="match_parent"
+    <HorizontalScrollView
+        android:id="@+id/buttonGroup"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="-4dp"
-        android:minHeight="64dp"
-        android:text="@string/follow"
-        app:icon="@drawable/ic_heart_outline_40dp"
-        app:iconGravity="end" />
+        android:layout_gravity="end"
+        android:layout_marginBottom="-56dp"
+        android:scrollbars="none">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/unfollow"
-        style="@style/Widget.Material3.Button.TonalButton"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/followButton"
+                style="@style/IconButtonOutlined"
+                android:checkable="true"
+                android:checked="false"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/follow"
+                android:visibility="gone"
+                app:iconPadding="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/savedButton"
+                style="@style/IconButtonOutlined"
+                android:checkable="true"
+                android:checked="false"
+                android:contentDescription="@string/save"
+                android:visibility="gone"
+                app:icon="@drawable/anim_bookmark" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/playButton"
+                style="@style/IconButton"
+                android:contentDescription="@string/play"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium.Emphasized"
+                android:visibility="gone"
+                app:icon="@drawable/ic_play"
+                app:iconSize="24dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/likeButton"
+                style="@style/IconButtonTertiary"
+                android:checkable="true"
+                android:checked="false"
+                android:contentDescription="@string/like"
+                android:visibility="gone"
+                app:icon="@drawable/anim_heart_40dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/radioButton"
+                style="@style/IconButtonTonal"
+                android:contentDescription="@string/radio"
+                app:icon="@drawable/ic_sensors" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/shareButton"
+                style="@style/IconButtonOutlined"
+                android:contentDescription="@string/share"
+                android:visibility="gone"
+                app:icon="@drawable/ic_share" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="-4dp"
-        android:minHeight="64dp"
-        android:text="@string/unfollow"
-        app:icon="@drawable/ic_heart_filled_40dp"
-        app:iconGravity="end" />
+        android:layout_height="wrap_content">
 
-    <com.google.android.material.button.MaterialButtonGroup
-        style="@style/Widget.Material3.MaterialButtonGroup.Connected"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:spacing="4dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/radio"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/explicit"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:maxLines="1"
-            android:minHeight="64dp"
-            android:text="@string/radio"
-            app:icon="@drawable/ic_sensors" />
+            android:layout_marginBottom="4dp"
+            android:drawablePadding="2dp"
+            android:gravity="center"
+            android:padding="2dp"
+            android:text="@string/explicit"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_explicit"
+            app:drawableTint="?colorOnSurface" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/play"
-            style="@style/Widget.Material3.Button.UnelevatedButton"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/followers"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:maxLines="1"
-            android:minHeight="64dp"
-            android:text="@string/play"
-            app:icon="@drawable/ic_play" />
+            android:layout_marginHorizontal="2dp"
+            android:padding="2dp"
+            android:text="@string/x_followers"
+            android:visibility="gone" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/shuffle"
-            style="?attr/materialSplitButtonIconFilledStyle"
-            android:layout_width="56dp"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/shuffle"
-            android:insetRight="0dp"
-            android:minHeight="64dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="0dp"
-            app:icon="@drawable/ic_shuffle" />
-
-    </com.google.android.material.button.MaterialButtonGroup>
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/text"
+        android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="16dp"
+        android:layout_marginEnd="48dp"
+        android:minHeight="48dp"
+        android:paddingHorizontal="4dp"
+        android:paddingBottom="8dp"
         android:textColor="?colorOnSurfaceVariant"
         android:textColorLink="?colorPrimary"
-        tools:text="@tools:sample/lorem" />
+        tools:text="@tools:sample/lorem/random[5]" />
+
 </LinearLayout>

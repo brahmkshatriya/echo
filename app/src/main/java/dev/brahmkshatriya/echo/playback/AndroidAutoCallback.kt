@@ -30,14 +30,15 @@ import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
-import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
-import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
@@ -89,66 +90,58 @@ abstract class AndroidAutoCallback(
         val searchQuery = params?.extras?.getString("search_query") ?: ""
         val type = parentId.substringAfter("$extId/").substringBefore("/")
         when (type) {
-            ALBUM -> extension.get<AlbumClient> {
+            ALBUM -> extension.getList<AlbumClient> {
                 val id = parentId.substringAfter("$ALBUM/").substringBefore("/")
-                val unloaded = (itemMap[id] as? EchoMediaItem.Lists.AlbumItem)?.album!!
+                val unloaded = itemMap[id] as Album
                 getTracks(context, id, page) {
                     val album = loadAlbum(unloaded)
-                    album.toMediaItem() to loadTracks(album)
+                    album to loadTracks(album)
                 }
             }
 
-            PLAYLIST -> extension.get<PlaylistClient> {
+            PLAYLIST -> extension.getList<PlaylistClient> {
                 val id = parentId.substringAfter("$PLAYLIST/").substringBefore("/")
-                val unloaded = (itemMap[id] as? EchoMediaItem.Lists.PlaylistItem)?.playlist!!
+                val unloaded = itemMap[id] as Playlist
                 getTracks(context, id, page) {
                     val playlist = loadPlaylist(unloaded)
-                    playlist.toMediaItem() to loadTracks(playlist)
+                    playlist to loadTracks(playlist)
                 }
             }
 
-            RADIO -> extension.get<RadioClient> {
+            RADIO -> extension.getList<RadioClient> {
                 val id = parentId.substringAfter("$RADIO/").substringBefore("/")
-                val radio = (itemMap[id]!! as EchoMediaItem.Lists.RadioItem).radio
+                val radio = itemMap[id] as Radio
                 getTracks(context, id, page) {
-                    radio.toMediaItem() to loadTracks(radio)
+                    radio to loadTracks(radio)
                 }
             }
 
-            ARTIST -> extension.get<ArtistClient> {
+            ARTIST -> extension.getList<ArtistClient> {
                 val id = parentId.substringAfter("$ARTIST/").substringBefore("/")
                 val artist = loadArtist(Artist(id, ""))
-                getShelves(artist).toMediaItems(context, extId, page)
+                loadFeed(artist).toMediaItems(artist.id, context, extId, page)
             }
 
-            USER -> extension.get<UserClient> {
-                val id = parentId.substringAfter("$USER/").substringBefore("/")
-                val unloaded = (itemMap[id] as? EchoMediaItem.Profile.UserItem)?.user!!
-                val user = loadUser(unloaded)
-                getShelves(user).toMediaItems(context, extId, page)
-            }
-
-            LIST -> extension.get<ExtensionClient> {
+            LIST -> extension.getList<ExtensionClient> {
                 val id = parentId.substringAfter("$LIST/").substringBefore("/")
                 getListsItems(context, id, extId)
             }
 
-            SHELF -> extension.get<ExtensionClient> {
+            SHELF -> extension.getList<ExtensionClient> {
                 val id = parentId.substringAfter("$SHELF/").substringBefore("/")
                 getShelfItems(context, id, extId, page)
             }
 
             HOME -> extension.getFeed<HomeFeedClient>(
-                context, parentId, HOME, page, { getHomeTabs() }, { getHomeFeed(it).pagedData }
+                context, parentId, HOME, page, { loadHomeFeed() }
             )
 
             LIBRARY -> extension.getFeed<LibraryFeedClient>(
-                context, parentId, LIBRARY, page, { getLibraryTabs() }, { getLibraryFeed(it).pagedData }
+                context, parentId, LIBRARY, page, { loadLibraryFeed() }
             )
 
             SEARCH -> extension.getFeed<SearchFeedClient>(
-                context, parentId, SEARCH, page,
-                { searchTabs(searchQuery) }, { searchFeed(searchQuery, it).pagedData }
+                context, parentId, SEARCH, page, { loadSearchFeed(searchQuery) }
             )
 
             else -> LibraryResult.ofItemList(
@@ -219,6 +212,7 @@ abstract class AndroidAutoCallback(
         private const val LIBRARY = "library"
         private const val HOME = "home"
         private const val SEARCH = "search"
+        private const val FEED = "feed"
         private const val SHELF = "shelf"
         private const val LIST = "list"
 
@@ -238,9 +232,10 @@ abstract class AndroidAutoCallback(
         }
 
         private fun ImageHolder.toUri(context: Context) = when (this) {
-            is ImageHolder.UriImageHolder -> uri.toUri()
-            is ImageHolder.UrlRequestImageHolder -> request.url.toUri()
-            is ImageHolder.ResourceImageHolder -> context.resources.getUri(resId)
+            is ImageHolder.ResourceUriImageHolder -> uri.toUri()
+            is ImageHolder.NetworkRequestImageHolder -> request.url.toUri()
+            is ImageHolder.ResourceIdImageHolder -> context.resources.getUri(resId)
+            is ImageHolder.HexColorImageHolder -> "".toUri()
         }
 
         private fun browsableItem(
@@ -276,7 +271,7 @@ abstract class AndroidAutoCallback(
                         .setIsBrowsable(false)
                         .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
                         .setTitle(title)
-                        .setArtist(toMediaItem().subtitleWithE)
+                        .setArtist(subtitleWithE)
                         .setAlbumTitle(album?.title)
                         .setArtworkUri(cover?.toUri(context))
                         .build()
@@ -296,7 +291,7 @@ abstract class AndroidAutoCallback(
         @OptIn(UnstableApi::class)
         val errorIo = LibraryResult.ofError<ImmutableList<MediaItem>>(SessionError.ERROR_IO)
 
-        suspend inline fun <reified C> Extension<*>.get(
+        suspend inline fun <reified C> Extension<*>.getList(
             block: C.() -> List<MediaItem>
         ): LibraryResult<ImmutableList<MediaItem>> = runCatching {
             val client = instance.value().getOrThrow() as? C ?: return@runCatching notSupported
@@ -316,16 +311,14 @@ abstract class AndroidAutoCallback(
         private fun EchoMediaItem.toMediaItem(
             context: Context, extId: String
         ): MediaItem = when (this) {
-            is EchoMediaItem.TrackItem -> track.toItem(context, extId)
+            is Track -> toItem(context, extId)
             else -> {
-                val id = "${hashCode()}"
+                val id = hashCode().toString()
                 itemMap[id] = this
                 val (page, type) = when (this) {
-                    is EchoMediaItem.Profile.ArtistItem -> ARTIST to MediaMetadata.MEDIA_TYPE_ARTIST
-                    is EchoMediaItem.Profile.UserItem -> USER to MediaMetadata.MEDIA_TYPE_MIXED
-                    is EchoMediaItem.Lists.AlbumItem -> ALBUM to MediaMetadata.MEDIA_TYPE_ALBUM
-                    is EchoMediaItem.Lists.PlaylistItem -> PLAYLIST to MediaMetadata.MEDIA_TYPE_PLAYLIST
-                    is EchoMediaItem.Lists.RadioItem -> RADIO to MediaMetadata.MEDIA_TYPE_RADIO_STATION
+                    is Artist, is Radio -> USER to MediaMetadata.MEDIA_TYPE_MIXED
+                    is Album -> ALBUM to MediaMetadata.MEDIA_TYPE_ALBUM
+                    is Playlist -> PLAYLIST to MediaMetadata.MEDIA_TYPE_PLAYLIST
                     else -> throw IllegalStateException("Invalid type")
                 }
                 browsableItem(
@@ -350,22 +343,10 @@ abstract class AndroidAutoCallback(
                 is Shelf.Lists.Tracks -> shelf.list.map { it.toItem(context, extId) }
             } + listOfNotNull(
                 if (shelf.more != null) {
-                    val moreId = "${shelf.more.hashCode()}"
-                    shelvesMap[moreId] = when (shelf) {
-                        is Shelf.Lists.Items -> shelf.more!!.map {
-                            it.getOrThrow().map { item -> item.toShelf() }
-                        }
-
-                        is Shelf.Lists.Tracks -> shelf.more!!.map {
-                            it.getOrThrow().map { track -> track.toMediaItem().toShelf() }
-                        }
-
-                        is Shelf.Lists.Categories -> shelf.more!!.map {
-                            it.getOrThrow().map { category -> category }
-                        }
-                    }
+                    val moreId = shelf.id
+                    feedMap[moreId] = shelf.more
                     browsableItem(
-                        "$ROOT/$extId/$SHELF/$moreId",
+                        "$ROOT/$extId/$FEED/$moreId",
                         context.getString(R.string.more)
                     )
                 } else null
@@ -376,15 +357,14 @@ abstract class AndroidAutoCallback(
             context: Context, extId: String
         ): MediaItem = when (this) {
             is Shelf.Category -> {
-                val items = items
-                val id = "${items.hashCode()}"
-                if (items != null) shelvesMap[id] = items
-                browsableItem("$ROOT/$extId/$SHELF/$id", title, subtitle, items != null)
+                val items = feed
+                if (items != null) feedMap[id] = items
+                browsableItem("$ROOT/$extId/$FEED/$id", title, subtitle, items != null)
             }
 
             is Shelf.Item -> media.toMediaItem(context, extId)
             is Shelf.Lists<*> -> {
-                val id = "${hashCode()}"
+                val id = "${id.hashCode()}"
                 listsMap[id] = this
                 browsableItem("$ROOT/$extId/$LIST/$id", title, subtitle)
             }
@@ -405,12 +385,14 @@ abstract class AndroidAutoCallback(
             )
         }
 
-        private suspend fun PagedData<Shelf>.toMediaItems(
-            context: Context, extId: String, page: Int
+        private val feedMap = WeakHashMap<String, Feed<Shelf>>()
+        private suspend fun Feed<Shelf>.toMediaItems(
+            id: String, context: Context, extId: String, page: Int
         ): List<MediaItem> {
-            val id = "${hashCode()}"
-            shelvesMap[id] = this
-            return getShelfItems(context, id, extId, page)
+            val id = "${id.hashCode()}"
+            feedMap[id] = this
+            //TODO
+            return listOf()
         }
 
         private suspend inline fun <reified T> Extension<*>.getFeed(
@@ -418,18 +400,9 @@ abstract class AndroidAutoCallback(
             parentId: String,
             page: String,
             pageNumber: Int,
-            getTabs: T.() -> List<Tab>,
-            getFeed: T.(tab: Tab?) -> PagedData<Shelf>
-        ) = get<T> {
-            val tabId = parentId.substringAfter("$page/").substringBefore("/")
-            if (tabId.isNotBlank()) {
-                val tab = Tab(tabId, tabId)
-                getFeed(tab).toMediaItems(context, id, pageNumber)
-            } else {
-                val tabs = getTabs()
-                if (tabs.isEmpty()) getFeed(null).toMediaItems(context, id, pageNumber)
-                else tabs.map { browsableItem("$ROOT/$id/$page/${it.id}", it.title) }
-            }
+            getFeed: T.() -> Feed<Shelf>
+        ) = getList<T> {
+            TODO()
         }
 
         private val tracksMap = WeakHashMap<String, Pair<EchoMediaItem, PagedData<Track>>>()
@@ -437,10 +410,13 @@ abstract class AndroidAutoCallback(
             context: Context,
             id: String,
             page: Int,
-            getTracks: suspend () -> Pair<EchoMediaItem, PagedData<Track>>
+            getTracks: suspend () -> Pair<EchoMediaItem, Feed<Track>?>
         ): List<MediaItem> {
             val (item, tracks) = tracksMap.getOrPut(id) {
-                val tracks = getTracks()
+                val tracks = getTracks().run {
+                    first to (second?.run { getPagedData(tabs.firstOrNull()) }?.pagedData
+                        ?: PagedData.empty())
+                }
                 tracksMap[id] = tracks
                 tracks
             }

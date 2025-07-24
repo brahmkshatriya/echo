@@ -117,10 +117,13 @@ abstract class UnifiedDatabase : RoomDatabase() {
     suspend fun loadPlaylist(playlist: Playlist): Playlist {
         val entity = dao.getPlaylist(playlist.toEntity().id)
         val tracks = dao.getTracks(entity.id).map { it.track }
-        if (tracks.isEmpty()) return playlist.copy(tracks = 0, duration = null)
+        if (tracks.isEmpty()) return playlist.copy(trackCount = 0, duration = null)
         val durations = tracks.mapNotNull { it.duration }
         val average = durations.average().toLong()
-        return entity.playlist.copy(tracks = tracks.size, duration = average * tracks.size)
+        return entity.playlist.copy(
+            trackCount = tracks.size.toLong(),
+            duration = average * tracks.size
+        )
     }
 
     suspend fun getTracks(playlist: Playlist): List<Track> {
@@ -294,7 +297,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
                 id.toString(),
                 name,
                 true,
-                cover?.toData(),
+                isPrivate = false,
+                cover = cover?.toData(),
                 creationDate = modified.toData<Date>(),
                 description = description.takeIf { it.isNotBlank() },
                 extras = mapOf(
@@ -332,7 +336,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
     ) {
         val track by lazy {
             data.toData<Track>().run {
-                copy(
+                this.copy(
+                    type = type,
                     extras = extras + mapOf(
                         "pId" to playlistId.toString(),
                         "eId" to eid.toString(),

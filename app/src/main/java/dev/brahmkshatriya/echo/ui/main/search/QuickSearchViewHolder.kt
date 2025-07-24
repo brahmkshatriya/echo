@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.ui.search
+package dev.brahmkshatriya.echo.ui.main.search
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,11 +8,11 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
-import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 
 sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    abstract fun bind(item: QuickSearchItem)
+    abstract fun bind(item: QuickSearchAdapter.Item)
     abstract val insertView: View
     abstract val deleteView: View
     open val transitionView: View
@@ -25,8 +25,8 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override val deleteView: View
             get() = binding.delete
 
-        override fun bind(item: QuickSearchItem) {
-            item as QuickSearchItem.Query
+        override fun bind(item:  QuickSearchAdapter.Item) {
+            val item = item.actual as QuickSearchItem.Query
             binding.history.visibility = if (item.searched) View.VISIBLE else View.INVISIBLE
             binding.query.text = item.query
         }
@@ -53,8 +53,8 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override val transitionView: View
             get() = binding.coverContainer
 
-        override fun bind(item: QuickSearchItem) {
-            item as QuickSearchItem.Media
+        override fun bind(item:  QuickSearchAdapter.Item) {
+            val item = item.actual as QuickSearchItem.Media
             binding.title.text = item.media.title
             binding.subtitle.text = item.media.subtitleWithE
             binding.subtitle.isVisible = !item.media.subtitleWithE.isNullOrEmpty()

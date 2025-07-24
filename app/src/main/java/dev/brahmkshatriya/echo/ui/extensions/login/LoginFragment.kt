@@ -16,20 +16,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.withStarted
+import com.google.android.material.transition.MaterialSharedAxis
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField.Type
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Message
-import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.FragmentExtensionLoginCustomInputBinding
 import dev.brahmkshatriya.echo.databinding.FragmentExtensionLoginSelectorBinding
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.databinding.FragmentWebviewBinding
+import dev.brahmkshatriya.echo.databinding.ItemExtensionButtonBinding
 import dev.brahmkshatriya.echo.databinding.ItemInputBinding
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
@@ -41,8 +39,8 @@ import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import kotlinx.coroutines.launch
-import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import kotlin.collections.set
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class LoginFragment : Fragment() {
     companion object {
@@ -56,10 +54,12 @@ class LoginFragment : Fragment() {
             getBundle(error.extension.id, error.extension.name, error.extension.type)
 
 
-        fun FragmentGenericCollapsableBinding.bind(fragment: Fragment) = with(fragment) {
+        fun FragmentGenericCollapsableBinding.bind(
+            fragment: Fragment, applyInsets: Boolean = true
+        ) = with(fragment) {
             setupTransition(root)
-            applyInsets {
-                genericFragmentContainer.applyContentInsets(it, 0)
+            if (applyInsets) applyInsets {
+                genericFragmentContainer.applyContentInsets(it)
             }
             applyBackPressCallback()
             appBarLayout.configureAppBar { offset ->
@@ -88,7 +88,9 @@ class LoginFragment : Fragment() {
     }
     private val extId by lazy { requireArguments().getString("extId")!! }
     private val extName by lazy { requireArguments().getString("extName")!! }
-    private val loginViewModel by activityViewModel<LoginViewModel>()
+    private val loginViewModel by viewModel<LoginViewModel> {
+        parametersOf(clientType, extId)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -103,7 +105,7 @@ class LoginFragment : Fragment() {
             loginViewModel.loading.value = false
             commit {
                 setReorderingAllowed(true)
-                if (fragments.size > 0) addToBackStack(null)
+                if (fragments.isNotEmpty()) addToBackStack(null)
                 replace<T>(R.id.genericFragmentContainer, null, args)
             }
         }
@@ -116,9 +118,10 @@ class LoginFragment : Fragment() {
         }
         binding.toolBar.title = getString(R.string.x_login, extName)
 
-        val extension = loginViewModel.extensionLoader.getFlow(clientType).getExtension(extId)
-        extension?.metadata?.icon.loadAsCircle(view, R.drawable.ic_extension_48dp) {
-            binding.extensionIcon.setImageDrawable(it)
+        observe(loginViewModel.extension) { ext ->
+            ext?.metadata?.icon.loadAsCircle(view, R.drawable.ic_extension_32dp) {
+                binding.extensionIcon.setImageDrawable(it)
+            }
         }
 
         observe(loginViewModel.loading) {
@@ -143,32 +146,20 @@ class LoginFragment : Fragment() {
                 })
             }
         }
-
-        if (childFragmentManager.fragments.isEmpty()) lifecycleScope.launch {
-            lifecycle.withStarted {
-                loginViewModel.loadClient(extension)
-            }
-        }
     }
 
     class Selector : Fragment(R.layout.fragment_extension_login_selector) {
-        private val clientType by lazy {
-            val type = requireArguments().getString("extensionType")!!
-            ExtensionType.valueOf(type)
-        }
-        private val extId by lazy { requireArguments().getString("extId")!! }
-        private val loginViewModel by activityViewModel<LoginViewModel>()
-        private val extension by lazy {
-            loginViewModel.extensionLoader.getFlow(clientType).getExtension(extId)
+        private val loginViewModel by lazy {
+            requireParentFragment().viewModel<LoginViewModel>().value
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             setupTransition(view)
             val binding = FragmentExtensionLoginSelectorBinding.bind(view)
-            val client = extension?.instance?.value
+            val client = loginViewModel.extension.value?.instance?.value
             val clients = listOfNotNull(
                 if (client is LoginClient.WebView) {
-                    val button = ButtonExtensionBinding.inflate(
+                    val button = ItemExtensionButtonBinding.inflate(
                         layoutInflater, binding.loginToggleGroup, false
                     ).root
                     button.text = getString(R.string.webview)
@@ -178,7 +169,7 @@ class LoginFragment : Fragment() {
                 *(if (client is LoginClient.CustomInput) {
                     val forms = runCatching { client.forms }.getOrNull().orEmpty()
                     forms.mapIndexed { index, it ->
-                        val button = ButtonExtensionBinding.inflate(
+                        val button = ItemExtensionButtonBinding.inflate(
                             layoutInflater, binding.loginToggleGroup, false
                         ).root
                         button.text = it.label
@@ -201,50 +192,42 @@ class LoginFragment : Fragment() {
     }
 
     class WebView : Fragment(R.layout.fragment_webview) {
-        private val clientType by lazy {
-            val type = requireArguments().getString("extensionType")!!
-            ExtensionType.valueOf(type)
+        private val loginViewModel by lazy {
+            requireParentFragment().viewModel<LoginViewModel>().value
         }
-        private val extId by lazy { requireArguments().getString("extId")!! }
-        private val loginViewModel by activityViewModel<LoginViewModel>()
         private val extension by lazy {
-            loginViewModel.extensionLoader.getFlow(clientType).getExtensionOrThrow(extId)
+            loginViewModel.extension.value
         }
         private val webViewRequest by lazy {
-            (extension.instance.value as? LoginClient.WebView)?.webViewRequest
+            (extension?.instance?.value as? LoginClient.WebView)?.webViewRequest
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            setupTransition(view, useZ = false)
+            setupTransition(view, axis = MaterialSharedAxis.X)
             val binding = FragmentWebviewBinding.bind(view)
             val req = webViewRequest ?: return
             val callback = requireActivity().configure(binding.root, req, true) {
                 if (it == null) loginViewModel.loading.value = true
-                else loginViewModel.onWebViewStop(extension, it)
+                else loginViewModel.onWebViewStop(it)
             }
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         }
     }
 
     class CustomInput : Fragment(R.layout.fragment_extension_login_custom_input) {
-        private val clientType by lazy {
-            val type = requireArguments().getString("extensionType")!!
-            ExtensionType.valueOf(type)
+        private val loginViewModel by lazy {
+            requireParentFragment().viewModel<LoginViewModel>().value
         }
-        private val extId by lazy { requireArguments().getString("extId")!! }
-        private val loginViewModel by activityViewModel<LoginViewModel>()
-        private val extension by lazy {
-            loginViewModel.extensionLoader.getFlow(clientType).getExtensionOrThrow(extId)
-        }
+        private val extension by lazy { loginViewModel.extension.value }
         private val formIndex by lazy { requireArguments().getInt("formIndex", 0) }
         private val form by lazy {
-            (extension.instance.value as? LoginClient.CustomInput)?.forms?.getOrNull(formIndex)
+            (extension?.instance?.value as? LoginClient.CustomInput)?.forms?.getOrNull(formIndex)
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            setupTransition(view, useZ = false)
+            setupTransition(view, axis = MaterialSharedAxis.X)
             val form = form ?: run {
-                message(Message("No form found for extension ${extension.id}"))
+                message(Message("No form found for extension ${extension?.id}"))
                 parentFragmentManager.popBackStack()
                 return
             }
@@ -299,7 +282,7 @@ class LoginFragment : Fragment() {
                             }
                         }
                     }
-                    loginViewModel.onCustomTextInputSubmit(extension, form)
+                    loginViewModel.onCustomTextInputSubmit(form)
                 }
             }
         }

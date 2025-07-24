@@ -5,7 +5,6 @@
     style="@style/Selectable"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/amoled_bg"
     android:clipToPadding="false"
     android:minHeight="72dp"
     android:paddingVertical="8dp"

@@ -1,11 +1,13 @@
 package dev.brahmkshatriya.echo.ui.common
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
@@ -16,10 +18,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import dev.brahmkshatriya.echo.MainActivity
@@ -36,10 +40,14 @@ import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateTranslation
 import dev.brahmkshatriya.echo.utils.ui.GradientDrawable
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isRTL
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.lang.ref.WeakReference
@@ -48,7 +56,7 @@ import kotlin.math.min
 
 class UiViewModel(
     context: Context,
-    val extensionLoader: ExtensionLoader,
+    extensionLoader: ExtensionLoader,
     private val playerState: PlayerState
 ) : ViewModel() {
 
@@ -75,9 +83,16 @@ class UiViewModel(
     val navIds = listOf(
         R.id.homeFragment,
         R.id.searchFragment,
-        R.id.libraryFragment,
-        R.id.settingsFragment
+        R.id.libraryFragment
     )
+
+    val currentNavBackground = MutableStateFlow<Drawable?>(null)
+    private val extensionColor = extensionLoader.current.transform { extension ->
+        emit(null)
+        val drawable = extension?.metadata?.icon?.loadDrawable(context) ?: return@transform
+        emit(PlayerColors.getDominantColor(drawable.toBitmap()).toDrawable())
+    }
+
     private val navViewInsets = MutableStateFlow(Insets())
     private val playerNavViewInsets = MutableStateFlow(Insets())
     private val playerInsets = MutableStateFlow(Insets())
@@ -88,7 +103,7 @@ class UiViewModel(
         if (isMainFragment.value) system.add(nav) else system
     }.combine(playerInsets) { system, player ->
         system.add(player)
-    }
+    }.stateIn(viewModelScope, Lazily, Insets())
 
     fun getCombined() = (if (isMainFragment.value) systemInsets.value.add(navViewInsets.value)
     else systemInsets.value).add(playerInsets.value)
@@ -189,20 +204,10 @@ class UiViewModel(
 
     var lastMoreTab = R.id.queue
     var playerControlsHeight = MutableStateFlow(0)
+    val playerDrawable = MutableStateFlow<Drawable?>(null)
     val playerColors = MutableStateFlow<PlayerColors?>(null)
-    val extensionColor = MutableStateFlow<Int?>(null)
 
-    init {
-        viewModelScope.launch {
-            extensionLoader.current.collect { extension ->
-                extensionColor.value = null
-                extensionColor.value =
-                    extension?.metadata?.icon?.loadDrawable(context)?.let {
-                        PlayerColors.getDominantColor(it.toBitmap())
-                    }
-            }
-        }
-    }
+    val mainBgDrawable = playerDrawable.combine(extensionColor) { a, b -> a ?: b }
 
     fun changeBgVisible(show: Boolean) {
         playerBgVisible.value = show
@@ -211,13 +216,24 @@ class UiViewModel(
     }
 
     companion object {
-
-        fun Fragment.applyInsets(block: UiViewModel.(Insets) -> Unit) {
-            val uiViewModel by activityViewModel<UiViewModel>()
-            observe(uiViewModel.combined) { uiViewModel.block(it) }
+        const val BACKGROUND_GRADIENT = "bg_gradient"
+        fun Fragment.applyGradient(view: View, drawable: Drawable?) {
+            val settings = requireContext().getSettings()
+            val isGradient = settings.getBoolean(BACKGROUND_GRADIENT, true)
+            val drawable = if (isGradient) {
+                drawable ?: MaterialColors.getColor(view, androidx.appcompat.R.attr.colorPrimary)
+                    .toDrawable()
+            } else null
+            view.background = GradientDrawable.createBlurred(view, drawable)
         }
 
-        fun Fragment.applyInsetsMain(
+        fun Fragment.applyInsets(vararg flows: Flow<*>, block: UiViewModel.(Insets) -> Unit) {
+            val uiViewModel by activityViewModel<UiViewModel>()
+            val flows = listOf(uiViewModel.combined) + flows
+            observe(flows.merge()) { uiViewModel.block(uiViewModel.combined.value) }
+        }
+
+        fun Fragment.applyInsetsWithChild(
             appBar: View,
             child: View?,
             bottom: Int = 12,
@@ -225,7 +241,6 @@ class UiViewModel(
         ) {
             val uiViewModel by activityViewModel<UiViewModel>()
             observe(uiViewModel.combined) { insets ->
-                child?.applyContentInsets(insets)
                 child?.updatePadding(
                     bottom = insets.bottom + bottom.dpToPx(child.context),
                 )
@@ -234,27 +249,30 @@ class UiViewModel(
                     start = insets.start,
                     end = insets.end
                 )
-
                 uiViewModel.block(insets)
             }
         }
 
-        fun View.applyContentInsets(insets: Insets, paddingDp: Int = 12) {
-            val verticalPadding = paddingDp.dpToPx(context)
+        fun View.applyContentInsets(
+            insets: Insets, horizontal: Int = 0, vertical: Int = 0, bottom: Int = 0
+        ) {
+            val horizontalPadding = horizontal.dpToPx(context)
+            val verticalPadding = vertical.dpToPx(context)
             updatePaddingRelative(
                 top = verticalPadding,
-                bottom = insets.bottom + verticalPadding,
-                start = insets.start,
-                end = insets.end
+                bottom = insets.bottom + verticalPadding + bottom.dpToPx(context),
+                start = insets.start + horizontalPadding,
+                end = insets.end + horizontalPadding
             )
         }
 
-        fun View.applyInsets(it: Insets, vertical: Int, horizontal: Int) {
+        fun View.applyInsets(it: Insets, vertical: Int, horizontal: Int, bottom: Int = 0) {
             val verticalPadding = vertical.dpToPx(context)
             val horizontalPadding = horizontal.dpToPx(context)
+            val bottomPadding = bottom.dpToPx(context)
             updatePaddingRelative(
                 top = verticalPadding + it.top,
-                bottom = verticalPadding + it.bottom,
+                bottom = bottomPadding + verticalPadding + it.bottom,
                 start = horizontalPadding + it.start,
                 end = horizontalPadding + it.end,
             )
@@ -451,6 +469,10 @@ class UiViewModel(
             callback.onStateChanged(view, state)
             callback.onSlide(view, if (state == STATE_EXPANDED) 1f else 0f)
             behavior.addBottomSheetCallback(callback)
+        }
+
+        fun SwipeRefreshLayout.configure(it: Insets = Insets()) {
+            setProgressViewOffset(true, it.top, 72.dpToPx(context) + it.top)
         }
     }
 }

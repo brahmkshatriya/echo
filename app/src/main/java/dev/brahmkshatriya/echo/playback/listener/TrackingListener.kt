@@ -7,10 +7,11 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
+import dev.brahmkshatriya.echo.common.clients.TrackerMarkClient
 import dev.brahmkshatriya.echo.common.models.TrackDetails
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.runIf
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -61,10 +62,10 @@ class TrackingListener(
                 ?.let { musicList.getExtension(it) }
             val extension = musicList.getExtension(details?.extensionId)
             val trackers = trackerList.value.filter { it.isEnabled }
-            prevExtension?.get<TrackerClient, Unit>(throwableFlow) { block(prevExtension, null) }
-            extension?.get<TrackerClient, Unit>(throwableFlow) { block(extension, details) }
+            prevExtension?.runIf<TrackerClient>(throwableFlow) { block(prevExtension, null) }
+            extension?.runIf<TrackerClient>(throwableFlow) { block(extension, details) }
             trackers.forEach {
-                launch { it.get<TrackerClient, Unit>(throwableFlow) { block(it, details) } }
+                launch { it.runIf<TrackerClient>(throwableFlow) { block(it, details) } }
             }
         }
     }
@@ -82,11 +83,12 @@ class TrackingListener(
             trackMedia { extension, details ->
                 onTrackChanged(details)
                 details ?: return@trackMedia
-                val duration = markAsPlayedDuration ?: return@trackMedia
+                val duration = (this as? TrackerMarkClient)?.getMarkAsPlayedDuration(details)
+                    ?: return@trackMedia
                 mutex.withLock {
                     timers[extension.id] = PauseTimer(scope, duration) {
                         scope.launch {
-                            extension.get<TrackerClient, Unit>(throwableFlow) {
+                            extension.runIf<TrackerMarkClient>(throwableFlow) {
                                 onMarkAsPlayed(details)
                             }
                         }

@@ -8,8 +8,8 @@ import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
+import dev.brahmkshatriya.echo.databinding.ItemExtensionButtonBinding
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
@@ -46,6 +46,7 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
             ext ?: return@observe
 
             binding.title.setOnMenuItemClickListener {
+                dismiss()
                 viewModel.setLoginUser(CurrentUser(ext.type, ext.id, null))
                 true
             }
@@ -67,7 +68,7 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
             }
 
             list.forEachIndexed { index, (user, selected) ->
-                val button = ButtonExtensionBinding.inflate(
+                val button = ItemExtensionButtonBinding.inflate(
                     layoutInflater, binding.accountListToggleGroup, false
                 ).root
                 button.text = user.name
@@ -92,7 +93,7 @@ class LoginUserListBottomSheet : BottomSheetDialogFragment() {
                     dismiss()
                 }
             }
-            binding.accountListToggleGroup.addOnButtonCheckedListener(listener!!)
+            binding.accountListToggleGroup.addOnButtonCheckedListener(listener)
         }
     }
 }

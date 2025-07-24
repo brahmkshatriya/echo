@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.extensions.repo
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.Metadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +16,7 @@ class CombinedRepository(
     context: Context,
     fileIgnoreFlow: Flow<File?>,
     extensionParser: ExtensionParser,
-    vararg builtIns: Pair<Metadata, Injectable<ExtensionClient>>
+    vararg builtIns: Pair<Metadata, Lazy<ExtensionClient>>
 ) : ExtensionRepository {
 
     private val list = builtIns.map { Result.success(it) }

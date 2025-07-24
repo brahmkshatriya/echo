@@ -4,4 +4,4 @@
     android:id="@+id/main_fragment_container_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:layout="@layout/fragment_home"/>
+    tools:layout="@layout/fragment_home" />

@@ -8,7 +8,6 @@ import androidx.work.WorkManager
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.DownloadContext
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Progress
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -20,10 +19,9 @@ import dev.brahmkshatriya.echo.download.db.models.TaskType
 import dev.brahmkshatriya.echo.download.exceptions.DownloaderExtensionNotFoundException
 import dev.brahmkshatriya.echo.download.tasks.TaskManager
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
-import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.withExtensionId
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
@@ -59,7 +57,7 @@ class Downloader(
     val dao = database.downloadDao()
     val downloadFlow = dao.getDownloadsFlow()
     private val contextFlow = dao.getContextFlow()
-    private val downloadsFlow = downloadFlow.combine(contextFlow) { downloads, contexts ->
+    private val downloadInfoFlow = downloadFlow.combine(contextFlow) { downloads, contexts ->
         downloads.map { download ->
             val context = contexts.find { download.contextId == it.id }
             Info(download, context, listOf())
@@ -72,7 +70,7 @@ class Downloader(
         downloads: List<DownloadContext>
     ) = scope.launch {
         val concurrentDownloads = downloadExtension()
-            .get<DownloadClient, Int> { concurrentDownloads }
+            .getAs<DownloadClient, Int> { concurrentDownloads }
             .getOrNull()?.takeIf { it > 0 } ?: 2
         taskManager.setConcurrency(concurrentDownloads)
         val contexts = downloads.mapNotNull { it.context }.distinctBy { it.id }.associate {
@@ -113,7 +111,7 @@ class Downloader(
             val extensionId = download.extensionId
             val extension = extensionLoader.music.getExtensionOrThrow(extensionId)
             val streamable = download.track.streamables.find { it.id == download.streamableId }!!
-            extension.get<TrackClient, Streamable.Media.Server> {
+            extension.getAs<TrackClient, Streamable.Media.Server> {
                 val media =
                     loadStreamableMedia(streamable, true) as Streamable.Media.Server
                 media.sources.ifEmpty {
@@ -197,7 +195,7 @@ class Downloader(
         val workers: List<Pair<TaskType, Progress>>
     )
 
-    val flow = downloadsFlow.combine(taskManager.progressFlow) { downloads, info ->
+    val flow = downloadInfoFlow.combine(taskManager.progressFlow) { downloads, info ->
         downloads.map { (dl, context) ->
             val workers = info.filter { it.first.trackId == dl.id }.map { (a, b) -> a.type to b }
             Info(dl, context, workers)
@@ -206,19 +204,17 @@ class Downloader(
 
     init {
         scope.launch {
-            downloadsFlow.map { info ->
-                val unifiedExtension = extensionLoader.unified.value as UnifiedExtension
-
+            downloadInfoFlow.map { info ->
+                val unifiedExtension = extensionLoader.unified.value
                 info.filter { it.download.fullyDownloaded }.groupBy {
                     it.context?.id
                 }.flatMap { (id, infos) ->
                     if (id == null) infos.map {
-                        it.download.track.toMediaItem().toShelf()
-                            .withExtensionId(it.download.extensionId)
+                        it.download.track.toShelf()
+                            .withExtensionId(it.download.extensionId, false)
                     }
                     else listOfNotNull(infos.first().run {
-                        unifiedExtension.db.getPlaylist(context!!.mediaItem)?.toMediaItem()
-                            ?.toShelf()
+                        unifiedExtension.db.getPlaylist(context!!.mediaItem)?.toShelf()
                     })
                 }
             }.collect(downloadShelf)

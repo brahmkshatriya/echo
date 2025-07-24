@@ -3,7 +3,9 @@ package dev.brahmkshatriya.echo.ui.extensions.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toCurrentUser
@@ -12,9 +14,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -42,8 +45,15 @@ class LoginUserListViewModel(
                     ent.user to selected
                 }
                 ext to users
-            } ?: flow { }
+            } ?: emptyFlow()
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null to listOf())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val allUsersWithClient = allUsers.mapLatest {
+        val (ext, users) = it
+        val isLoginClient = ext?.isClient<LoginClient>() ?: false
+        Triple(ext, isLoginClient, users)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, Triple(null, false, emptyList()))
 
     val currentUser = allUsers.map {
         it.second.find { user -> user.second }?.first

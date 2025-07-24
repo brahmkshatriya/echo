@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
@@ -19,15 +18,12 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.download.DownloadFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.WebViewUtils.onWebViewIntent
-import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -51,6 +47,8 @@ object FragmentUtils {
             setReorderingAllowed(true)
             addToBackStack(null)
             val fragment = createFragment<T>(bundle)
+            val old = manager.findFragmentById(cont)
+            if (old != null) hide(old)
             add(cont, fragment)
             setPrimaryNavigationFragment(fragment)
         }
@@ -75,7 +73,8 @@ object FragmentUtils {
     ) {
         childFragmentManager.run {
             if (findFragmentByTag(tag) == null) commit {
-                add<F>(id, tag, args)
+                val fragment = createFragment<F>(args)
+                add(id, fragment, tag)
             }
         }
     }
@@ -100,17 +99,12 @@ object FragmentUtils {
         val fromDownload = intent.hasExtra("fromDownload")
         if (fromDownload) {
             uiViewModel.selectedSettingsTab.value = 0
-            if (supportFragmentManager.findFragmentById(R.id.navHostFragment) is MainFragment) {
-                uiViewModel.navigation.value = uiViewModel.navIds.indexOf(R.id.settingsFragment)
-            } else {
-                openFragment<DownloadFragment.WithHeader>()
-            }
+            openFragment<DownloadFragment>()
             return
         }
         val webViewRequest = intent.hasExtra("webViewRequest")
         if (webViewRequest) {
-            val webViewClient = uiViewModel.extensionLoader.webViewClientFactory
-            onWebViewIntent(intent, webViewClient)
+            onWebViewIntent(intent)
             return
         }
         val uri = intent.data
@@ -140,11 +134,10 @@ object FragmentUtils {
                 }
                 val name = uri.getQueryParameter("name").orEmpty()
                 val item: EchoMediaItem? = when (type) {
-                    "user" -> User(id, name).toMediaItem()
-                    "artist" -> Artist(id, name).toMediaItem()
-                    "track" -> Track(id, name).toMediaItem()
-                    "album" -> Album(id, name).toMediaItem()
-                    "playlist" -> Playlist(id, name, false).toMediaItem()
+                    "artist" -> Artist(id, name)
+                    "track" -> Track(id, name)
+                    "album" -> Album(id, name)
+                    "playlist" -> Playlist(id, name, false)
                     else -> null
                 }
                 if (item == null) {

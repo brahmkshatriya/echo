@@ -25,8 +25,6 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.main.settings.AudioFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getSelected
@@ -53,7 +51,7 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
         binding.topAppBar.setOnMenuItemClickListener {
             dismiss()
-            requireActivity().openFragment<AudioFragment>()
+//            requireActivity().openFragment<AudioFragment>()
             true
         }
 

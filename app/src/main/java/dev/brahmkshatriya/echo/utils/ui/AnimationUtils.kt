@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.utils.ui
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.view.View
@@ -12,7 +13,9 @@ import android.view.animation.Interpolator
 import android.view.animation.RotateAnimation
 import android.view.animation.ScaleAnimation
 import android.view.animation.TranslateAnimation
+import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnLayout
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
 import androidx.core.view.isVisible
@@ -42,6 +45,34 @@ object AnimationUtils {
         context, com.google.android.material.R.attr.motionEasingStandardInterpolator,
         FastOutSlowInInterpolator()
     )
+
+    fun View.animateMarginTop(hide: Boolean, onEnd: (() -> Unit)? = null) {
+        if (!animations) {
+            isVisible = hide
+            return
+        }
+        isVisible = true
+        val fromMargin = (layoutParams as ViewGroup.MarginLayoutParams).topMargin
+        val toMargin = if (hide) 0 else -height
+        val fromAlpha = alpha
+        val toAlpha = if (hide) 1f else 0f
+
+        val animator = ValueAnimator.ofFloat(0f, 1f)
+        animator.addUpdateListener { valueAnimator ->
+            val fraction = valueAnimator.animatedFraction
+            val params = layoutParams as ViewGroup.MarginLayoutParams
+            params.topMargin = (fromMargin + (toMargin - fromMargin) * fraction).toInt()
+            layoutParams = params
+            alpha = fromAlpha + (toAlpha - fromAlpha) * fraction
+        }
+        animator.duration = animationDuration
+        animator.interpolator = getInterpolator(context)
+        animator.doOnEnd {
+            isVisible = hide
+            onEnd?.invoke()
+        }
+        animator.start()
+    }
 
     fun NavigationBarView.animateTranslation(
         isRail: Boolean,
@@ -135,7 +166,7 @@ object AnimationUtils {
         }
 
     fun Fragment.setupTransition(
-        view: View, applyBackground: Boolean = true, useZ: Boolean = true
+        view: View, applyBackground: Boolean = true, axis: Int = MaterialSharedAxis.Z
     ) {
         if (applyBackground) {
             val color = MaterialColors.getColor(view, R.attr.echoBackground, 0)
@@ -154,18 +185,17 @@ object AnimationUtils {
 //            sharedElementEnterTransition = transition
 //        }
             (view as? ViewGroup)?.isTransitionGroup = true
-            val axis = if (useZ) MaterialSharedAxis.Z else MaterialSharedAxis.X
             exitTransition = MaterialSharedAxis(axis, true)
             reenterTransition = MaterialSharedAxis(axis, false)
             enterTransition = MaterialSharedAxis(axis, true)
             returnTransition = MaterialSharedAxis(axis, false)
 
-//            postponeEnterTransition()
-//            view.doOnPreDraw { startPostponedEnterTransition() }
+            postponeEnterTransition()
+            view.doOnPreDraw { startPostponedEnterTransition() }
         }
     }
 
-    private fun View.animatedWithAlpha(delay: Long = 0, vararg anim: Animation) {
+    fun View.animatedWithAlpha(delay: Long = 0, vararg anim: Animation) {
         if (!animations) return
         val set = AnimationSet(true)
         set.interpolator = getInterpolator(context) as Interpolator
@@ -181,6 +211,7 @@ object AnimationUtils {
         amount: Int, delay: Long = 0
     ) {
         if (!animations) return
+        if (!scrollAnimations) return
         val multiplier = amount.sign
         val rotateAnimation = RotateAnimation(
             5f * multiplier, 0f,

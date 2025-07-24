@@ -45,12 +45,12 @@
                 android:id="@+id/trackArtist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ellipsize="marquee"
-                android:maxLines="1"
-                android:minHeight="32dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:paddingBottom="8dp"
                 android:textColorLink="@color/button_player"
                 android:textSize="16sp"
-                tools:text="burhhh" />
+                tools:text="@tools:sample/lorem/random" />
         </LinearLayout>
 
         <com.google.android.material.checkbox.MaterialCheckBox

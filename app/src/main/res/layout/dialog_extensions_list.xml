@@ -19,6 +19,7 @@
             android:background="@null"
             android:paddingStart="0dp"
             android:paddingEnd="4dp"
+            app:menu="@menu/settings_menu"
             app:navigationIcon="@drawable/ic_close"
             app:title="@string/extensions"
             app:titleCentered="true" />
@@ -56,7 +57,7 @@
                 android:layout_weight="1"
                 android:enabled="false"
                 android:minHeight="64dp"
-                android:text="@string/extensions"
+                android:text="@string/manage"
                 app:icon="@drawable/ic_extension" />
 
             <com.google.android.material.button.MaterialButton

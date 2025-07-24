@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
@@ -18,12 +17,27 @@ import dev.brahmkshatriya.echo.download.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.download.db.models.TaskType
 import dev.brahmkshatriya.echo.download.tasks.BaseTask.Companion.getTitle
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils
+import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
 
 class DownloadsAdapter(
-    val listener: Listener
-) : ListAdapter<DownloadsAdapter.Item, DownloadsAdapter.ViewHolder>(DiffCallback) {
+    private val listener: Listener
+) : ScrollAnimListAdapter<DownloadsAdapter.Item, DownloadsAdapter.ViewHolder>(
+    object : DiffUtil.ItemCallback<Item>() {
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
+        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+            return when (oldItem) {
+                is Download -> if (newItem !is Download) false
+                else oldItem.downloadEntity.id == newItem.downloadEntity.id
+
+                is Task -> if (newItem !is Task) false
+                else oldItem.id == newItem.id
+            }
+        }
+    }
+), GridAdapter {
 
     interface Listener {
         fun onExceptionClicked(data: ExceptionUtils.Data)
@@ -33,8 +47,12 @@ class DownloadsAdapter(
 
     sealed class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    inner class DownloadViewHolder(
-        private val binding: ItemDownloadBinding
+    class DownloadViewHolder(
+        parent: ViewGroup,
+        private val listener: Listener,
+        private val binding: ItemDownloadBinding = ItemDownloadBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
     ) : ViewHolder(binding.root) {
         init {
             binding.imageView.clipToOutline = true
@@ -73,39 +91,23 @@ class DownloadsAdapter(
         }
     }
 
-    inner class TaskViewHolder(
-        private val binding: ItemDownloadTaskBinding
+    class TaskViewHolder(
+        parent: ViewGroup,
+        private val binding: ItemDownloadTaskBinding = ItemDownloadTaskBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
     ) : ViewHolder(binding.root) {
-
-        fun bind(item: Task) {
-            binding.apply {
-                progressBar.isIndeterminate = item.progress.size == 0L
-                progressBar.max = item.progress.size.toInt()
-                progressBar.progress = item.progress.progress.toInt()
-                subtitle.text = item.progress.toText()
-                title.text = root.context.run {
-                    getTitle(item.taskType, getString(R.string.download))
-                }
+        fun bind(item: Task) = binding.apply {
+            progressBar.isIndeterminate = item.progress.size == 0L
+            progressBar.max = item.progress.size.toInt()
+            progressBar.progress = item.progress.progress.toInt()
+            subtitle.text = item.progress.toText()
+            title.text = root.context.run {
+                getTitle(item.taskType, getString(R.string.download))
             }
         }
     }
 
-    object DiffCallback : DiffUtil.ItemCallback<Item>() {
-        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return when (oldItem) {
-                is Download -> if (newItem !is Download) false
-                else oldItem.downloadEntity.id == newItem.downloadEntity.id
-
-                is Task -> if (newItem !is Task) false
-                else oldItem.id == newItem.id
-            }
-        }
-
-        override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return oldItem == newItem
-        }
-
-    }
 
     sealed interface Item
     data class Download(
@@ -116,7 +118,6 @@ class DownloadsAdapter(
 
     data class Task(val taskType: TaskType, val progress: Progress, val id: Long) : Item
 
-
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is Download -> 0
@@ -124,22 +125,17 @@ class DownloadsAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        return when (viewType) {
-            0 -> DownloadViewHolder(
-                ItemDownloadBinding.inflate(inflater, parent, false)
-            )
+    override val adapter = this
+    override fun getSpanSize(position: Int, width: Int, count: Int) = 2.coerceAtLeast(count)
 
-            1 -> TaskViewHolder(
-                ItemDownloadTaskBinding.inflate(inflater, parent, false)
-            )
-
-            else -> throw IllegalArgumentException("Invalid view type")
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
+        0 -> DownloadViewHolder(parent, listener)
+        1 -> TaskViewHolder(parent)
+        else -> throw IllegalArgumentException("Invalid view type")
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        super.onBindViewHolder(holder, position)
         when (holder) {
             is DownloadViewHolder -> {
                 val item = getItem(position) as Download
@@ -152,6 +148,7 @@ class DownloadsAdapter(
             }
         }
     }
+
 
     companion object {
         fun List<Downloader.Info>.toItems(extensions: List<Extension<*>>) = filter {

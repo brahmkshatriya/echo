@@ -10,14 +10,11 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
@@ -50,20 +47,14 @@ class PlayerRadio(
             item: EchoMediaItem,
             itemContext: EchoMediaItem?
         ): PlayerState.Radio.Loaded? {
-            return extension.get<RadioClient, PlayerState.Radio.Loaded?>(throwableFlow) {
-                val radio = when (item) {
-                    is TrackItem -> radio(item.track, itemContext)
-                    is Lists.PlaylistItem -> radio(item.playlist)
-                    is Lists.AlbumItem -> radio(item.album)
-                    is Profile.ArtistItem -> radio(item.artist)
-                    is Profile.UserItem -> radio(item.user)
-                    is Lists.RadioItem -> throw IllegalStateException()
+            if (!item.isRadioSupported) return null
+            return extension.getIf<RadioClient, PlayerState.Radio.Loaded?> {
+                val radio = radio(item, itemContext)
+                val tracks = loadTracks(radio).run { getPagedData(tabs.firstOrNull()).pagedData }
+                PlayerState.Radio.Loaded(extension.id, radio, null) {
+                    extension.get { tracks.loadList(it) }.getOrThrow(throwableFlow)
                 }
-                val tracks = loadTracks(radio)
-                PlayerState.Radio.Loaded(extension.id, radio.toMediaItem(), null) {
-                    extension.run(throwableFlow) { tracks.loadList(it) }
-                }
-            }
+            }.getOrThrow(throwableFlow)
         }
 
         suspend fun play(
@@ -97,7 +88,7 @@ class PlayerRadio(
     private suspend fun loadPlaylist() {
         val mediaItem = withContext(Dispatchers.Main) { player.currentMediaItem } ?: return
         val extensionId = mediaItem.extensionId
-        val item = mediaItem.track.toMediaItem()
+        val item = mediaItem.track
         val itemContext = mediaItem.context
         stateFlow.value = PlayerState.Radio.Loading
         val extension = extensionList.getExtension(extensionId) ?: return

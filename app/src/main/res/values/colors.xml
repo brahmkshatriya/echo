@@ -4,5 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="ic_launcher_background">#2EB9FF</color>
     <color name="amoled_bg">@color/white</color>
+    <color name="amoled_bg_semi">#54FFFFFF</color>
     <color name="amoled_fg">@color/black</color>
+    <color name="amoled_fg_semi">#14000000</color>
 </resources>

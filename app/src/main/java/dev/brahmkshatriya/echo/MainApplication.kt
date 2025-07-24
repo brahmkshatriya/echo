@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Looper
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
 import androidx.core.os.LocaleListCompat
 import coil3.ImageLoader
 import coil3.PlatformContext
@@ -36,13 +37,13 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
         workManagerFactory()
     }
 
-//    private val settings by inject<SharedPreferences>()
+    private val settings by inject<SharedPreferences>()
     private val extensionLoader by inject<ExtensionLoader>()
 
     override fun onCreate() {
         super.onCreate()
         CoroutineUtils.setDebug()
-//        applyLocale(settings)
+        applyLocale(settings)
         configureAppShortcuts(extensionLoader)
     }
 
@@ -91,11 +92,39 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
         private const val CLASS_NAME = "org.chromium.base.BuildInfo"
         private val FUNCTION_SET = setOf("getAll", "getPackageName", "<init>")
 
+        fun getCurrentLanguage(sharedPref: SharedPreferences) =
+            sharedPref.getString("language", "system") ?: "system"
+
+        fun setCurrentLanguage(sharedPref: SharedPreferences, locale: String?) {
+            sharedPref.edit { putString("language", locale) }
+            applyLocale(sharedPref)
+        }
+
         fun applyLocale(sharedPref: SharedPreferences) {
             val value = sharedPref.getString("language", "system") ?: "system"
             val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()
             else LocaleListCompat.forLanguageTags(value)
             AppCompatDelegate.setApplicationLocales(locale)
         }
+
+        val languages = mapOf(
+            "as" to "Assamese",
+            "de" to "Deutsch",
+            "fr" to "Français",
+            "en" to "English",
+            "hi" to "हिन्दी",
+            "hng" to "Hinglish",
+            "hu" to "Magyar",
+            "ja" to "日本語",
+            "nb-rNO" to "Norsk bokmål",
+            "nl" to "Nederlands",
+            "pl" to "Polski",
+            "pt" to "Português",
+            "ru" to "Русский",
+            "sa" to "संस्कृतम्",
+            "sr" to "Српски",
+            "tr" to "Türkçe",
+            "zh-rCN" to "中文 (简体)",
+        )
     }
 }

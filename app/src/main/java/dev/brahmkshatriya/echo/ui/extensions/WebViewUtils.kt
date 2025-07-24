@@ -23,10 +23,10 @@ import com.acsbendi.requestinspectorwebview.RequestInspectorWebViewClient
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
 import dev.brahmkshatriya.echo.common.models.Message
-import dev.brahmkshatriya.echo.common.models.Request
+import dev.brahmkshatriya.echo.common.models.NetworkRequest
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.databinding.FragmentWebviewBinding
-import dev.brahmkshatriya.echo.extensions.WebViewClientFactory
+import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
@@ -41,6 +41,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -96,7 +97,7 @@ object WebViewUtils {
         val stopRegex = target.stopUrlRegex
         val timeout = target.maxTimeout
         val bridge = Bridge()
-        val requests = mutableListOf<Request>()
+        val requests = mutableListOf<NetworkRequest>()
         val timeoutJob = if (!skipTimeout) scope.launch {
             delay(timeout)
             onComplete(
@@ -129,7 +130,7 @@ object WebViewUtils {
 
             val mutex = Mutex()
             fun intercept(
-                request: Request
+                request: NetworkRequest
             ) {
                 if (target is WebViewRequest.Headers) requests.add(request)
                 if (stopRegex.find(request.url) == null) return
@@ -164,7 +165,16 @@ object WebViewUtils {
             override fun shouldInterceptRequest(
                 view: WebView, webViewRequest: com.acsbendi.requestinspectorwebview.WebViewRequest
             ): WebResourceResponse? {
-                intercept(webViewRequest.run { Request(url, headers) })
+                intercept(
+                    webViewRequest.run {
+                        NetworkRequest(
+                            NetworkRequest.Method.valueOf(method),
+                            url,
+                            headers,
+                            body.encodeToByteArray()
+                        )
+                    }
+                )
                 return null
             }
 
@@ -175,7 +185,7 @@ object WebViewUtils {
                     val headers = requestHeaders?.toMutableMap() ?: mutableMapOf()
                     val cookie = CookieManager.getInstance().getCookie(url.toString())
                     if (cookie != null) headers["Cookie"] = cookie
-                    intercept(Request(url.toString(), headers))
+                    intercept(NetworkRequest(url.toString(), headers))
                 }
                 return false
             }
@@ -186,7 +196,7 @@ object WebViewUtils {
             if (runCatching { target.dontCache }.getOrNull() == true) WebSettings.LOAD_NO_CACHE
             else WebSettings.LOAD_DEFAULT
         target.initialUrl.run {
-            settings.userAgentString = headers["user-agent"] ?: settings.userAgentString
+            settings.userAgentString = lowerCaseHeaders["user-agent"] ?: settings.userAgentString
             loadUrl(url, headers)
         }
     }
@@ -249,10 +259,11 @@ object WebViewUtils {
 
     fun FragmentActivity.onWebViewIntent(
         intent: Intent,
-        webViewClient: WebViewClientFactory
     ) {
         val id = intent.getIntExtra("webViewRequest", -1)
         if (id == -1) return
+        val extensionLoader by inject<ExtensionLoader>()
+        val webViewClient = extensionLoader.webViewClientFactory
         val wrapper = webViewClient.requests[id] ?: return
         createSnack(Message(getString(R.string.opening_webview_x, wrapper.reason)))
         if (wrapper.showWebView) openFragment<WithAppbar>(null, getBundle(id))
@@ -311,7 +322,7 @@ object WebViewUtils {
             binding.bind(this)
             binding.toolBar.title = wrapper.extension.name
             wrapper.extension.icon.loadAsCircle(
-                binding.extensionIcon, R.drawable.ic_extension_48dp
+                binding.extensionIcon, R.drawable.ic_extension_32dp
             ) {
                 binding.extensionIcon.setImageDrawable(it)
             }

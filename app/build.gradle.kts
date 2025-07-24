@@ -14,12 +14,12 @@ val version = "2.1.$gitCount"
 
 android {
     namespace = "dev.brahmkshatriya.echo"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.brahmkshatriya.echo"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = gitCount
         versionName = "v${version}_$gitHash($gitCount)"
     }
@@ -47,19 +47,19 @@ android {
         viewBinding = true
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     androidResources {
         @Suppress("UnstableApiUsage")
         generateLocaleConfig = true
     }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.pikolo)
     implementation(libs.fadingedgelayout)
     implementation(libs.fastscroll)
+    implementation(libs.fastscroll.other)
     implementation(libs.kenburnsview)
     implementation(libs.nestedscrollwebview)
     implementation(libs.acsbendi.webview)

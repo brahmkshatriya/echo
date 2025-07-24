@@ -4,11 +4,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class Injectable<T>(
-    private val getter: () -> T
+    private val getter: () -> T,
+    private val injections: MutableList<suspend T.() -> Unit>
 ) {
 
     val data = lazy { runCatching { getter() } }
-    private val injections: MutableList<suspend T.() -> Unit> = mutableListOf()
     private val mutex = Mutex()
     val value: T?
         get() = data.value.getOrNull()
@@ -22,10 +22,6 @@ class Injectable<T>(
         }
     }
 
-    suspend fun injectOnce(block: suspend T.() -> Unit) {
-        if (!data.isInitialized() && injections.isEmpty()) mutex.withLock { injections.add(block) }
-    }
-
     suspend fun injectOrRun(block: suspend T.() -> Unit) {
         if (data.isInitialized()) data.value.getOrThrow().block()
         else mutex.withLock { injections.add(block) }
@@ -33,6 +29,7 @@ class Injectable<T>(
 
     @Suppress("UNCHECKED_CAST")
     fun <R> casted() = run {
+        if (data.isInitialized()) throw IllegalStateException("Cannot cast an already initialized Injectable")
         injections.add { this as R }
         this as Injectable<R>
     }

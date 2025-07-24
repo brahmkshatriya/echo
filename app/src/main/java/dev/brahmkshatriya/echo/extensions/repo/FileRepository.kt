@@ -2,8 +2,7 @@ package dev.brahmkshatriya.echo.extensions.repo
 
 import android.content.Context
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.helpers.ImportType
-import dev.brahmkshatriya.echo.common.helpers.Injectable
+import dev.brahmkshatriya.echo.common.models.ImportType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -22,7 +21,7 @@ class FileRepository(
 ) : ExtensionRepository {
 
     private val map =
-        WeakHashMap<String, Pair<String, Result<Pair<Metadata, Injectable<ExtensionClient>>>>>()
+        WeakHashMap<String, Pair<String, Result<Pair<Metadata, Lazy<ExtensionClient>>>>>()
     private val mutex = Mutex()
 
     private var toIgnoreFile: File? = null

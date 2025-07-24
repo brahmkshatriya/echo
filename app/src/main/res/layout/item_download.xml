@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
+    android:layout_marginStart="-12dp"
+    android:layout_marginEnd="-12dp"
     android:orientation="vertical"
     android:paddingVertical="4dp">
 

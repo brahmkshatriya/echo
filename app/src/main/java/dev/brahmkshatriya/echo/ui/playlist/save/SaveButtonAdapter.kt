@@ -1,14 +1,15 @@
 package dev.brahmkshatriya.echo.ui.playlist.save
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistSaveFooterBinding
+import dev.brahmkshatriya.echo.ui.common.GridAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
 
 class SaveButtonAdapter(
     private val onSave: () -> Unit
-) : RecyclerView.Adapter<SaveButtonAdapter.ViewHolder>() {
+) : ScrollAnimRecyclerAdapter<SaveButtonAdapter.ViewHolder>(), GridAdapter {
     class ViewHolder(val binding: ItemPlaylistSaveFooterBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -22,13 +23,15 @@ class SaveButtonAdapter(
     override fun getItemCount() = 1
     private var enabled = false
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setEnabled(enabled: Boolean) {
         this.enabled = enabled
-        notifyDataSetChanged()
+        notifyItemChanged(0)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        super.onBindViewHolder(holder, position)
         holder.binding.root.isEnabled = enabled
     }
+    override val adapter = this
+    override fun getSpanSize(position: Int, width: Int, count: Int) = count
 }

@@ -8,9 +8,9 @@ import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.TrackerExtension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
 import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.helpers.WebViewClient
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
@@ -22,9 +22,11 @@ import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.WebViewClientProvider
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.inject
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.injectWith
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.injectIf
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.runIf
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
+import dev.brahmkshatriya.echo.extensions.builtin.test.DownloadExtension
+import dev.brahmkshatriya.echo.extensions.builtin.test.TestExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
@@ -42,7 +44,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -69,16 +70,14 @@ class ExtensionLoader(
         }
     }
 
-    val unified =
-        Injectable<ExtensionClient> { UnifiedExtension(app.context, downloadShelf, null) }
-
+    val unified = lazy { UnifiedExtension(app.context, downloadShelf, null) }
     val fileIgnoreFlow = MutableSharedFlow<File?>()
     private val repository = CombinedRepository(
         scope, app.context, fileIgnoreFlow, parser,
         UnifiedExtension.metadata to unified,
-        OfflineExtension.metadata to Injectable { OfflineExtension(app.context) },
-//        TestExtension.metadata to Injectable { TestExtension() },
-//        DownloadExtension.metadata to Injectable { DownloadExtension(app.context) }
+        OfflineExtension.metadata to lazy { OfflineExtension(app.context) },
+        TestExtension.metadata to lazy { TestExtension() },
+        DownloadExtension.metadata to lazy { DownloadExtension(app.context) }
 //        TrackerTestExtension.metadata to Injectable { TrackerTestExtension() },
     )
 
@@ -102,18 +101,20 @@ class ExtensionLoader(
     fun setupMusicExtension(extension: MusicExtension, manual: Boolean) {
         if (manual) settings.edit { putString(LAST_EXTENSION_KEY, extension.id) }
         current.value = extension
-        scope.launch { extension.run(app.throwFlow) { onExtensionSelected() } }
+        scope.launch {
+            extension.runIf<ExtensionClient>(app.throwFlow) { onExtensionSelected() }
+        }
     }
 
     private val injected = repository.flow.map { list ->
         list?.groupBy { it.getOrNull()?.first?.run { type to id } }?.map { entry ->
             entry.value.minBy { it.getOrNull()?.first?.importType?.ordinal ?: Int.MAX_VALUE }
-        }
-    }.onEach { list ->
-        list?.onEach { it.getOrNull()?.run { second.injected(first) } }
+        }.orEmpty()
+    }.map { list ->
+        list.map { result -> result.map { it.first to it.second.injected(it.first) } }
     }.combine(db.extensionEnabledFlow) { list, enabledList ->
         val enabledMap = enabledList.associate { (it.type to it.id) to it.enabled }
-        list?.map { result ->
+        list.map { result ->
             result.mapCatching { (metadata, injectable) ->
                 val key = metadata.run { type to id }
                 val isEnabled = enabledMap[key] ?: metadata.isEnabled
@@ -129,33 +130,28 @@ class ExtensionLoader(
         return webViewClientFactory.createFor(metadata)
     }
 
-    private suspend fun Injectable<ExtensionClient>.injected(
+    private fun Lazy<ExtensionClient>.injected(
         metadata: Metadata
-    ) = injectOnce {
+    ) = Injectable(::value, mutableListOf({
         if (this is MetadataProvider) setMetadata(metadata)
         if (this is MessageFlowProvider) setMessageFlow(app.messageFlow)
         setSettings(ExtensionUtils.getSettings(app.context, metadata))
         if (this is WebViewClientProvider) setWebViewClient(createWebClient(metadata))
         onInitialize()
         onExtensionSelected()
-    }
+    }))
 
-    private fun <T : Extension<*>> mappedNull(
+    private fun <T : Extension<*>> mapped(
         type: ExtensionType, transform: (Metadata, Injectable<ExtensionClient>) -> T
     ) = injected.map { list ->
-        list?.mapNotNull {
+        list.mapNotNull {
             val (meta, injectable) = it.getOrNull() ?: return@mapNotNull null
             if (meta.type != type) return@mapNotNull null
             transform(meta, injectable)
         }
     }.combine(priorityMap[type]!!) { list, _ ->
-        list?.sorted(type) { it.id }
-    }
-
-    private fun <T : Extension<*>> mapped(
-        type: ExtensionType, transform: (Metadata, Injectable<ExtensionClient>) -> T
-    ) = mappedNull(type, transform).map { it.orEmpty() }
-        .stateIn(scope, SharingStarted.Lazily, emptyList())
+        list.sorted(type) { it.id }
+    }.stateIn(scope, SharingStarted.Lazily, emptyList())
 
     val music = mapped(ExtensionType.MUSIC) { m, i -> MusicExtension(m, i) }
     val tracker = mapped(ExtensionType.TRACKER) { m, i -> TrackerExtension(m, i.casted()) }
@@ -184,7 +180,7 @@ class ExtensionLoader(
                     stickyUser.initialized = true
                     stickyUser.current = newCurr
                     scope.launch {
-                        ext.injectWith<LoginClient>(app.throwFlow) {
+                        ext.injectIf<LoginClient>(app.throwFlow) {
                             val user = newCurr?.let { db.getUser(it) }
                             onSetLoginUser(user)
                         }

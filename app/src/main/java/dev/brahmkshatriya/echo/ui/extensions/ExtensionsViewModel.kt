@@ -7,16 +7,14 @@ import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.helpers.ImportType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ImportType
 import dev.brahmkshatriya.echo.common.models.Message
-import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.with
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installApp
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installFile
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.uninstallApp
@@ -52,14 +50,6 @@ class ExtensionsViewModel(
         extensionLoader.setupMusicExtension(extension, true)
     }
 
-    fun onSettingsChanged(extension: Extension<*>, settings: Settings, key: String?) {
-        viewModelScope.launch {
-            extension.get<SettingsChangeListenerClient, Unit>(app.throwFlow) {
-                onSettingsChanged(settings, key)
-            }
-        }
-    }
-
     private val extensionDao = extensionLoader.db.extensionDao()
     fun setExtensionEnabled(extensionType: ExtensionType, id: String, checked: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -93,7 +83,7 @@ class ExtensionsViewModel(
 
     private val updateTime = 1000 * 60 * 60 * 2 // Check every 2hrs
     private fun shouldCheckForExtensionUpdates(): Boolean {
-        val check = app.settings.getBoolean("check_for_extension_updates", true)
+        val check = app.settings.getBoolean("check_for_updates", true)
         if (!check) return false
         val lastUpdateCheck = app.context.getFromCache<Long>("last_update_check") ?: 0
         return System.currentTimeMillis() - lastUpdateCheck > updateTime
@@ -107,7 +97,7 @@ class ExtensionsViewModel(
         if (!force && !shouldCheckForExtensionUpdates()) return@launch
         activity.saveToCache("last_update_check", System.currentTimeMillis())
         activity.cleanupTempApks()
-        message(app.context.getString(R.string.checking_for_extension_updates))
+        message(app.context.getString(R.string.checking_for_updates))
         val appApk = updateApp(app)
         runCatching {
             if (appApk != null) {
@@ -223,9 +213,9 @@ class ExtensionsViewModel(
     ): File? {
         val currentVersion = extension.version
         val updateUrl = extension.metadata.updateUrl ?: return null
-        val url = extension.with(app.throwFlow) {
+        val url = extension.get {
             getUpdateFileUrl(currentVersion, updateUrl, client).getOrThrow()
-        }
+        }.getOrThrow(app.throwFlow)
         if (url == null) {
             if (show) message(
                 app.context.getString(R.string.no_update_available_for_x, extension.name)
@@ -233,11 +223,10 @@ class ExtensionsViewModel(
             return null
         }
         message(app.context.getString(R.string.downloading_update_for_x, extension.name))
-        val file = extension.with(app.throwFlow) {
+        val file = extension.get {
             downloadUpdate(app.context, url, client).getOrThrow()
-        } ?: return null
+        }.getOrThrow(app.throwFlow) ?: return null
         return file
     }
-
 
 }

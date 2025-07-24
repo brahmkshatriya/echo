@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <com.google.android.material.button.MaterialButtonGroup
+        android:id="@+id/buttonGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:spacing="0dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/shuffleButton"
+            style="@style/IconButtonTertiary"
+            android:layout_width="48dp"
+            android:contentDescription="@string/shuffle"
+            app:icon="@drawable/ic_shuffle" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/playButton"
+            style="@style/Widget.Material3Expressive.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:insetLeft="4dp"
+            android:insetRight="4dp"
+            android:maxLines="1"
+            android:paddingStart="16dp"
+            android:paddingEnd="24dp"
+            android:text="@string/play"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium.Emphasized"
+            app:icon="@drawable/ic_play"
+            app:iconSize="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonPadding"
+            style="@style/IconButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:visibility="invisible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/searchToggleButton"
+            style="@style/IconButton"
+            app:materialThemeOverlay="@style/TabButtonOverlay"
+            android:checkable="true"
+            android:checked="true"
+            android:contentDescription="@string/search"
+            app:icon="@drawable/ic_search_outline" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sortToggleButton"
+            style="@style/IconButtonOutlined"
+            android:contentDescription="@string/sort"
+            android:scaleX="-1"
+            app:icon="@drawable/ic_sort" />
+    </com.google.android.material.button.MaterialButtonGroup>
+
+    <LinearLayout
+        android:id="@+id/searchBarContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alpha="1"
+        android:gravity="end|center_vertical"
+        android:orientation="horizontal"
+        android:translationZ="-1dp"
+        android:visibility="gone">
+
+        <FrameLayout
+            android:id="@+id/searchContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/searchLayout"
+                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search"
+                android:paddingVertical="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                app:boxBackgroundColor="?navBackground"
+                app:boxCornerRadiusBottomEnd="24dp"
+                app:boxCornerRadiusBottomStart="24dp"
+                app:boxCornerRadiusTopEnd="24dp"
+                app:boxCornerRadiusTopStart="24dp"
+                app:boxStrokeWidth="0dp"
+                app:boxStrokeWidthFocused="1dp"
+                app:startIconDrawable="@drawable/ic_search_outline">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/searchBarText"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:inputType="text"
+                    android:padding="0dp"
+                    android:singleLine="true" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+        </FrameLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/searchClose"
+            style="@style/IconButtonTonal"
+            android:layout_gravity="bottom"
+            app:icon="@drawable/ic_close" />
+
+    </LinearLayout>
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:layout_marginBottom="4dp">
+
+    </com.google.android.material.chip.ChipGroup>
+
+</LinearLayout>

@@ -8,15 +8,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
+import dev.brahmkshatriya.echo.databinding.ItemExtensionButtonBinding
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddBottomSheet
 import dev.brahmkshatriya.echo.ui.extensions.manage.ManageExtensionsFragment
-import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
+import dev.brahmkshatriya.echo.ui.player.more.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -61,6 +62,16 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
             else -> throw IllegalStateException("Not supported")
         }
 
+        binding.topAppBar.setOnMenuItemClickListener {
+            val extension =
+                viewModel.currentSelectionFlow.value ?: return@setOnMenuItemClickListener false
+            requireActivity().openFragment<ExtensionInfoFragment>(
+                null, ExtensionInfoFragment.getBundle(extension)
+            )
+            dismiss()
+            true
+        }
+
         val listener = object : OnButtonCheckedListener {
             var enabled = false
             override fun onButtonChecked(
@@ -80,7 +91,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
             val selected = viewModel.currentSelectionFlow.value
             list.forEachIndexed { index, extension ->
                 if (!extension.isEnabled) return@forEachIndexed
-                val button = ButtonExtensionBinding.inflate(
+                val button = ItemExtensionButtonBinding.inflate(
                     layoutInflater,
                     binding.buttonToggleGroup,
                     false
@@ -92,7 +103,7 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
                     if (it != null) {
                         button.icon = it
                         button.iconTint = null
-                    } else button.setIconResource(R.drawable.ic_extension_48dp)
+                    } else button.setIconResource(R.drawable.ic_extension_32dp)
                 }
                 button.id = index
             }

@@ -5,7 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity
 import kotlinx.coroutines.flow.Flow

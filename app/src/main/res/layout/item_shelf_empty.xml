@@ -1,26 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingVertical="48dp"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingVertical="48dp">
 
-
-    <TextView
-        android:textAlignment="center"
-        android:typeface="monospace"
-        android:textAppearance="@style/TextAppearance.Material3.DisplayLarge"
+    <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxLines="2"
-        android:text="@string/crying_af" />
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.loadingindicator.LoadingIndicator
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:containerHeight="128sp"
+            app:containerColor="?colorPrimaryInverse"
+            app:containerWidth="128sp"
+            app:indicatorSize="104sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:maxLines="1"
+            android:text="@string/crying_af"
+            android:textSize="36sp"
+            android:textAppearance="@style/TextAppearance.Material3.DisplayMedium"
+            android:textColor="?colorOnPrimary"
+            android:typeface="monospace" />
+    </FrameLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
-        android:maxLines="2"
+        android:textSize="16sp"
         android:text="@string/so_empty" />
 
 </LinearLayout>

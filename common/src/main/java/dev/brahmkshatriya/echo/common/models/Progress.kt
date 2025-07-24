@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.common.models
 
+import kotlinx.serialization.Serializable
+
 /**
  * Progress data class to hold the progress of the download.
  *
@@ -7,6 +9,7 @@ package dev.brahmkshatriya.echo.common.models
  * @param progress The progress of the download.
  * @param speed The speed of the download in bytes per second, 0 if unknown.
  */
+@Serializable
 data class Progress(
     val size: Long = 0,
     val progress: Long = 0,

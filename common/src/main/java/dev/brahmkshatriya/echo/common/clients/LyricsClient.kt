@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.common.clients
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.common.models.Track
 
@@ -32,7 +33,7 @@ interface LyricsClient : ExtensionClient {
      * @see Track
      * @see PagedData
      */
-    fun searchTrackLyrics(clientId: String, track: Track): PagedData<Lyrics>
+    suspend fun searchTrackLyrics(clientId: String, track: Track): Feed<Lyrics>
 
     /**
      * Loads the unloaded lyrics.

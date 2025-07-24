@@ -1,15 +1,14 @@
 package dev.brahmkshatriya.echo.extensions.builtin.test
 
-import dev.brahmkshatriya.echo.common.clients.TrackerClient
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.common.helpers.ImportType
+import dev.brahmkshatriya.echo.common.clients.TrackerMarkClient
+import dev.brahmkshatriya.echo.common.models.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ImportType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.TrackDetails
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 
-class TrackerTestExtension : TrackerClient {
-
+class TrackerTestExtension : TrackerMarkClient {
     companion object {
         val metadata = Metadata(
             "TrackerTestExtension",
@@ -24,14 +23,16 @@ class TrackerTestExtension : TrackerClient {
         )
     }
 
-    override val settingItems = listOf<Setting>()
+    override suspend fun getSettingItems() = listOf<Setting>()
     override fun setSettings(settings: Settings) {}
 
     override suspend fun onTrackChanged(details: TrackDetails?) {
         println("onTrackChanged ${details?.track?.id}")
     }
 
-    override val markAsPlayedDuration = 30000L
+    override suspend fun getMarkAsPlayedDuration(details: TrackDetails): Long? {
+        return details.totalDuration?.div(3)
+    }
 
     override suspend fun onMarkAsPlayed(details: TrackDetails) {
         println("onMarkAsPlayed: ${details.track.id}")

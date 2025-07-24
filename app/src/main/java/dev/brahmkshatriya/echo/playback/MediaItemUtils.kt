@@ -15,7 +15,6 @@ import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
@@ -171,7 +170,7 @@ object MediaItemUtils {
         .setTitle(title)
         .setAlbumTitle(album?.title)
         .setAlbumArtist(album?.artists?.joinToString(", ") { it.name })
-        .setArtist(toMediaItem().subtitle)
+        .setArtist(artists.joinToString(", ") { it.name })
         .setArtworkUri(cover?.toUriWithJson())
         .setUserRating(
             if (isLiked) ThumbRating(true) else ThumbRating()
@@ -246,9 +245,10 @@ object MediaItemUtils {
 
     private fun ImageHolder.toUriWithJson(): Uri {
         val main = when (this) {
-            is ImageHolder.UriImageHolder -> uri
-            is ImageHolder.UrlRequestImageHolder -> request.url
-            is ImageHolder.ResourceImageHolder -> "res://$resId"
+            is ImageHolder.ResourceUriImageHolder -> uri
+            is ImageHolder.NetworkRequestImageHolder -> request.url
+            is ImageHolder.ResourceIdImageHolder -> "res://$resId"
+            is ImageHolder.HexColorImageHolder -> ""
         }.toUri()
         val json = toJson()
         return main.buildUpon().appendQueryParameter("actual_data", json).build()

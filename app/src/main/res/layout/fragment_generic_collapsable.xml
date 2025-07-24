@@ -17,6 +17,7 @@
             style="@style/EchoCollapsingBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:expandedSubtitleTextAppearance="@style/TextAppearance.Material3.BodyLarge"
             app:maxLines="2">
 
             <FrameLayout
@@ -31,7 +32,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:contentDescription="@string/settings"
-                    app:srcCompat="@drawable/ic_extension_48dp" />
+                    app:srcCompat="@drawable/ic_extension_32dp" />
 
             </FrameLayout>
 

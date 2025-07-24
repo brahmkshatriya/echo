@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Base.Theme.Echo" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.Echo" parent="Theme.Material3Expressive.DynamicColors.DayNight.NoActionBar">
         <item name="android:windowSplashScreenBackground" tools:targetApi="s">
             @color/amoled_bg
         </item>
@@ -38,6 +38,14 @@
 
     <style name="Amoled">
         <item name="echoBackground">@color/amoled_bg</item>
-        <item name="navBackground">@color/amoled_bg</item>
+        <item name="navBackground">?colorSurfaceContainerLowest</item>
+    </style>
+
+    <style name="BigCover" parent="Default.Theme.Echo">
+        <item name="itemCoverSize">128dp</item>
+    </style>
+
+    <style name="AmoledBigCover" parent="Amoled">
+        <item name="itemCoverSize">128dp</item>
     </style>
 </resources>

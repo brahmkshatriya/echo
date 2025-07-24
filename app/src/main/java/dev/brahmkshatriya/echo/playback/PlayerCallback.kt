@@ -22,18 +22,22 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
-import dev.brahmkshatriya.echo.common.clients.UserClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
@@ -152,10 +156,12 @@ class PlayerCallback(
         val error = SessionResult(SessionError.ERROR_UNKNOWN)
         val extId = args.getString("extId") ?: return@future error
         val item = args.getSerialized<EchoMediaItem>("item") ?: return@future error
+        val itemLoaded = args.getBoolean("loaded", false)
         val extension = extensions.music.getExtension(extId) ?: return@future error
+        val newItem = if (itemLoaded) item else loadItem(extension, item)
         radioFlow.value = PlayerState.Radio.Loading
         val loaded = PlayerRadio.start(
-            throwableFlow, extension, item, null
+            throwableFlow, extension, newItem, null
         )
         if (loaded == null) return@future error
         player.with {
@@ -167,34 +173,41 @@ class PlayerCallback(
         SessionResult(RESULT_SUCCESS)
     }
 
+    private suspend fun loadItem(
+        extension: Extension<*>, item: EchoMediaItem
+    ) = when (item) {
+        is Track -> extension.getAs<TrackClient, EchoMediaItem> { loadTrack(item, false) }
+        is Album -> extension.getAs<AlbumClient, EchoMediaItem> { loadAlbum(item) }
+        is Playlist -> extension.getAs<PlaylistClient, EchoMediaItem> { loadPlaylist(item) }
+        is Artist -> extension.getAs<ArtistClient, EchoMediaItem> { loadArtist(item) }
+        is Radio -> throw IllegalStateException()
+    }.getOrThrow()
+
     private suspend fun listTracks(
         extension: Extension<*>, item: EchoMediaItem, loaded: Boolean
     ) = when (item) {
-        is EchoMediaItem.Lists.AlbumItem -> extension.get<AlbumClient, PagedData<Track>> {
-            val album = if (!loaded) loadAlbum(item.album) else item.album
-            loadTracks(album)
+        is Album -> extension.getAs<AlbumClient, PagedData<Track>> {
+            val album = if (!loaded) loadAlbum(item) else item
+            loadTracks(album)?.run { getPagedData(tabs.firstOrNull()).pagedData }
+                ?: PagedData.empty()
         }
 
-        is EchoMediaItem.Lists.PlaylistItem -> extension.get<PlaylistClient, PagedData<Track>> {
-            val playlist = if (!loaded) loadPlaylist(item.playlist) else item.playlist
-            loadTracks(playlist)
+        is Playlist -> extension.getAs<PlaylistClient, PagedData<Track>> {
+            val playlist = if (!loaded) loadPlaylist(item) else item
+            loadTracks(playlist).run { getPagedData(tabs.firstOrNull()).pagedData }
         }
 
-        is EchoMediaItem.Lists.RadioItem -> extension.get<RadioClient, PagedData<Track>> {
-            loadTracks(item.radio)
+        is Radio -> extension.getAs<RadioClient, PagedData<Track>> {
+            val radio = if (!loaded) loadRadio(item) else item
+            loadTracks(radio).run { getPagedData(tabs.firstOrNull()).pagedData }
         }
 
-        is EchoMediaItem.Profile.ArtistItem -> extension.get<ArtistClient, PagedData<Track>> {
-            val artist = if (!loaded) loadArtist(item.artist) else item.artist
-            getShelves(artist).toTracks()
+        is Artist -> extension.getAs<ArtistClient, PagedData<Track>> {
+            val artist = if (!loaded) loadArtist(item) else item
+            loadFeed(artist).run { getPagedData(tabs.firstOrNull()).pagedData }.toTracks()
         }
 
-        is EchoMediaItem.Profile.UserItem -> extension.get<UserClient, PagedData<Track>> {
-            val user = if (!loaded) loadUser(item.user) else item.user
-            getShelves(user).toTracks()
-        }
-
-        is EchoMediaItem.TrackItem -> Result.success(PagedData.Single { listOf(item.track) })
+        is Track -> Result.success(PagedData.Single { listOf(item) })
     }
 
 
@@ -206,14 +219,14 @@ class PlayerCallback(
         val shuffle = args.getBoolean("shuffle", false)
         val extension = extensions.music.getExtension(extId) ?: return@future error
         when (item) {
-            is EchoMediaItem.TrackItem -> {
-                val track = item.track
+            is Track -> {
                 val mediaItem = MediaItemUtils.build(
-                    context, downloadFlow.value, track, extId, null
+                    context, downloadFlow.value, item, extId, null
                 )
                 player.with {
                     setMediaItem(mediaItem)
                     prepare()
+                    seekTo(item.playedDuration ?: 0)
                     play()
                 }
             }
@@ -224,37 +237,32 @@ class PlayerCallback(
                     return@future error
                 }
 
-                val list = if (shuffle)
-                    extension.run(throwableFlow) { tracks.loadAll() } ?: return@future error
-                else {
-                    val (list, continuation) = extension.run(throwableFlow) { tracks.loadList(null) }
-                        ?: return@future error
+                val result = if (shuffle) extension.get { tracks.loadAll() }
+                else runCatching {
+                    val (list, continuation) = extension.get { tracks.loadList(null) }.getOrThrow()
                     if (continuation != null) scope.launch {
-                        extension.run(throwableFlow) {
-                            val all = tracks.loadAll().drop(list.size)
-                            player.with {
-                                addMediaItems(list.size, all.map {
-                                    MediaItemUtils.build(
-                                        this@PlayerCallback.context,
-                                        downloadFlow.value,
-                                        it,
-                                        extId,
-                                        item
-                                    )
-                                })
-                            }
+                        val all = extension.get { tracks.loadAll() }.getOrElse {
+                            throwableFlow.emit(it)
+                            return@launch
+                        }.drop(list.size).map {
+                            MediaItemUtils.build(
+                                context, downloadFlow.value, it, extId, item
+                            )
                         }
+                        player.with { addMediaItems(list.size, all) }
                     }
                     list
                 }
+                val list = result.getOrElse {
+                    throwableFlow.emit(it)
+                    return@future error
+                }
                 player.with {
                     setMediaItems(list.map {
-                        MediaItemUtils.build(
-                            this@PlayerCallback.context, downloadFlow.value, it, extId, item
-                        )
+                        MediaItemUtils.build(context, downloadFlow.value, it, extId, item)
                     })
                     shuffleModeEnabled = shuffle
-                    seekTo(0, 0)
+                    seekTo(0, list.firstOrNull()?.playedDuration ?: 0)
                     play()
                 }
             }
@@ -325,6 +333,7 @@ class PlayerCallback(
             MediaItemUtils.build(context, downloadFlow.value, track, extId, null)
         }
         player.with {
+            if (mediaItemCount == 0) playWhenReady = true
             addMediaItems(currentMediaItemIndex + 1 + next, mediaItems)
             prepare()
         }
@@ -346,7 +355,7 @@ class PlayerCallback(
             val track = item.track
             runCatching {
                 val extension = extensions.music.getExtensionOrThrow(item.extensionId)
-                extension.get<TrackLikeClient, Unit> {
+                extension.getAs<TrackLikeClient, Unit> {
                     likeTrack(track, rating.isThumbsUp)
                 }
             }.getOrElse {
@@ -383,15 +392,9 @@ class PlayerCallback(
             it.getOrThrow().mapNotNull { shelf ->
                 when (shelf) {
                     is Shelf.Category -> null
-                    is Shelf.Item -> listOfNotNull(
-                        (shelf.media as? EchoMediaItem.TrackItem)?.track
-                    )
-
+                    is Shelf.Item -> listOfNotNull(shelf.media as? Track)
                     is Shelf.Lists.Categories -> null
-                    is Shelf.Lists.Items -> shelf.list.mapNotNull { mediaItem ->
-                        (mediaItem as? EchoMediaItem.TrackItem)?.track
-                    }
-
+                    is Shelf.Lists.Items -> shelf.list.filterIsInstance<Track>()
                     is Shelf.Lists.Tracks -> shelf.list
                 }
             }.flatten()

@@ -6,8 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.helpers.ImportType
-import dev.brahmkshatriya.echo.common.helpers.Injectable
+import dev.brahmkshatriya.echo.common.models.ImportType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.extensions.repo.ExtensionParser.Companion.FEATURE
 import dev.brahmkshatriya.echo.extensions.repo.ExtensionParser.Companion.PACKAGE_FLAGS
@@ -41,7 +40,7 @@ class AppRepository(
     }
 
     private val map =
-        WeakHashMap<String, Pair<String, Result<Pair<Metadata, Injectable<ExtensionClient>>>>>()
+        WeakHashMap<String, Pair<String, Result<Pair<Metadata, Lazy<ExtensionClient>>>>>()
     private val mutex = Mutex()
 
     override suspend fun loadExtensions() = mutex.withLock {

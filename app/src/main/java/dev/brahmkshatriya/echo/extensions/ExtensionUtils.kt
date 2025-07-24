@@ -10,81 +10,87 @@ import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionNotFoundException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 object ExtensionUtils {
 
-    suspend fun <R> Extension<*>.with(
-        throwableFlow: MutableSharedFlow<Throwable>,
-        block: suspend () -> R
-    ): R? = runCatching {
-        block()
-    }.getOrElse {
-        throwableFlow.emit(it.toAppException(this))
+    suspend fun <R> Extension<*>.get(
+        block: suspend ExtensionClient.() -> R
+    ) = runCatching {
+        runCatching {
+            withContext(Dispatchers.IO) { instance.value().getOrThrow().block() }
+        }.getOrElse { throw it.toAppException(this) }
+    }
+
+    suspend inline fun <reified C, R> Extension<*>.getAs(
+        crossinline block: suspend C.() -> R
+    ): Result<R> = get {
+        val client = this as? C
+            ?: throw ClientException.NotSupported(C::class.simpleName ?: "Unknown Class")
+        block(client)
+    }
+
+    suspend inline fun <reified C, R> Extension<*>.getIf(
+        crossinline block: suspend C.() -> R
+    ): Result<R?> = get {
+        val client = this as? C
+        client?.let { block(it) }
+    }
+
+    suspend fun <T> Result<T>.getOrThrow(
+        throwableFlow: MutableSharedFlow<Throwable>
+    ) = getOrElse {
+        throwableFlow.emit(it)
         it.printStackTrace()
         null
     }
 
-    suspend fun <T : ExtensionClient, R> Extension<T>.run(
+    suspend inline fun <reified C> Extension<*>.runIf(
         throwableFlow: MutableSharedFlow<Throwable>,
-        block: suspend T.() -> R
-    ): R? = with(throwableFlow) {
-        block(instance.value().getOrThrow())
-    }
+        crossinline block: suspend C.() -> Unit
+    ) { getIf<C, Unit>(block).getOrThrow(throwableFlow) }
 
-    suspend inline fun <reified C, R> Extension<*>.get(
+    suspend inline fun <reified C, R> Extension<*>.getIf(
         throwableFlow: MutableSharedFlow<Throwable>,
         crossinline block: suspend C.() -> R
-    ): R? = with(throwableFlow) {
-        val client = instance.value().getOrThrow() as? C ?: return@with null
-        block(client)
-    }
-
-    suspend inline fun <reified C, R> Extension<*>.run(
-        crossinline block: suspend C.() -> R
-    ): Result<R?> = runCatching top@{
-        runCatching {
-            val client = instance.value().getOrThrow() as? C ?: return@runCatching null
-            block(client)
-        }.getOrElse { throw it.toAppException(this) }
-    }
-
-    suspend inline fun <reified C, R> Extension<*>.get(
-        crossinline block: suspend C.() -> R
-    ): Result<R> = runCatching {
-        runCatching {
-            val client = instance.value().getOrThrow() as? C
-                ?: throw ClientException.NotSupported(C::class.simpleName ?: "")
-            block(client)
-        }.getOrElse { throw it.toAppException(this) }
-    }
+    ): R? = getIf<C, R>(block).getOrThrow(throwableFlow)
 
     suspend fun Extension<*>.inject(
         throwableFlow: MutableSharedFlow<Throwable>,
         block: suspend ExtensionClient.() -> Unit
     ) = runCatching {
-        instance.injectOrRun { block() }
+        instance.injectOrRun { withContext(Dispatchers.IO) { block() } }
     }.getOrElse {
         throwableFlow.emit(it.toAppException(this))
     }
 
-    suspend inline fun <reified T> Extension<*>.injectWith(
+    suspend inline fun <reified T> Extension<*>.injectIf(
         throwableFlow: MutableSharedFlow<Throwable>,
         crossinline block: suspend T.() -> Unit
     ) = runCatching {
-        instance.injectOrRun { if (this is T) block() }
+        instance.injectOrRun { if (this is T) withContext(Dispatchers.IO) { block() } }
     }.getOrElse {
         throwableFlow.emit(it.toAppException(this))
     }
 
     suspend inline fun <reified T> Extension<*>.isClient() = instance.value().getOrNull() is T
 
-    fun <T : Extension<*>> StateFlow<List<T>>.getExtension(id: String?) =
-        value.find { it.id == id }
+    suspend fun <T : Extension<*>> Flow<List<T>>.getExtension(id: String?): T? {
+        val list = first { it.isNotEmpty() }
+        return list.find { it.id == id }
+    }
 
-    fun <T : Extension<*>> StateFlow<List<T>>.getExtensionOrThrow(id: String?) =
-        value.find { it.id == id } ?: throw ExtensionNotFoundException(id)
+    suspend fun <T : Extension<*>> Flow<List<T>>.getExtensionOrThrow(id: String?) =
+        getExtension(id) ?: throw ExtensionNotFoundException(id)
+
+    fun <T : Extension<*>> Flow<List<T>>.getExtensionFlow(id: String?): Flow<T?> {
+        return map { list -> list.find { it.id == id } }
+    }
 
     fun extensionPrefId(extensionType: String, extensionId: String) = "$extensionType-$extensionId"
     fun String.prefs(context: Context) =
@@ -124,7 +130,7 @@ object ExtensionUtils {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun SharedPreferences.copyTo(dest: SharedPreferences) = with(dest.edit()) {
+    fun SharedPreferences.copyTo(dest: SharedPreferences) = dest.edit {
         all.entries.forEach { entry ->
             val value = entry.value ?: return@forEach
             val key = entry.key
@@ -138,6 +144,5 @@ object ExtensionUtils {
                 else -> {}
             }
         }
-        apply()
     }
 }

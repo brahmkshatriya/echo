@@ -17,11 +17,12 @@ import androidx.core.net.toUri
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
-import dev.brahmkshatriya.echo.common.models.Date.Companion.toDate
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toUriImageHolder
+import dev.brahmkshatriya.echo.common.models.Date.Companion.toYearDate
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceUriImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.getAllSongs
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import java.io.File
 
@@ -308,15 +309,15 @@ object MediaStoreUtils {
             val albumId = cursor.getLongOrNull(albumIdColumn)
             val genre = genreColumn?.let { col -> cursor.getStringOrNull(col) }
             val addDate = cursor.getLongOrNull(addDateColumn)
-
-            // Since we're using glide, we can get album cover with a uri.
             val imgUri = ContentUris.appendId(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id
-            ).appendPath("albumart").build()
+            ).appendPath("albumart").build().takeIf { uri ->
+                context.contentResolver.runCatching { openInputStream(uri)!!.close() }.isSuccess
+            }
 
             val artists = artist.toArtists()
             val album = albumName?.let {
-                Album(albumId.toString(), it, null, albumArtist.toArtists())
+                Album(albumId.toString(), it, null, null, albumArtist.toArtists())
             }
             val liked = likedAudios.contains(id)
             val song = Track(
@@ -324,9 +325,9 @@ object MediaStoreUtils {
                 title = title,
                 artists = artists,
                 album = album,
-                cover = imgUri.toString().toUriImageHolder(),
+                cover = imgUri?.toString()?.toResourceUriImageHolder(),
                 duration = duration,
-                releaseDate = year?.toDate(),
+                releaseDate = year?.toYearDate(),
                 isLiked = liked,
                 streamables = listOf(Streamable.server(path, 0, path)),
                 extras = mapOf(

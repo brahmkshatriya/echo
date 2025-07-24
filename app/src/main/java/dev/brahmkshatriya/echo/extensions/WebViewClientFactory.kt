@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.extensions
 
-import android.app.Application
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.common.helpers.WebViewClient
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 
 class WebViewClientFactory(
-    private val context: Application
+    private val context: Context
 ) {
 
     val requests = mutableMapOf<Int, Wrapper>()

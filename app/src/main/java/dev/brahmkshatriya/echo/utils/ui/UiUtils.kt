@@ -12,7 +12,6 @@ import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.AppBarLayout
 import java.util.Locale
 import kotlin.math.roundToLong
@@ -41,11 +40,6 @@ object UiUtils {
         }
     }
 
-    fun SwipeRefreshLayout.configure(block: () -> Unit) {
-        setProgressViewOffset(true, 0, 64.dpToPx(context))
-        setOnRefreshListener(block)
-    }
-
     fun Context.isRTL() =
         resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
 
@@ -56,6 +50,12 @@ object UiUtils {
         resources.configuration.uiMode and UI_MODE_NIGHT_MASK != UI_MODE_NIGHT_NO
 
     fun Int.dpToPx(context: Context) = (this * context.resources.displayMetrics.density).toInt()
+
+    fun Context.resolveStyledDimension(attr: Int): Int {
+        val typed = theme.obtainStyledAttributes(intArrayOf(attr))
+        val itemWidth = typed.getDimensionPixelSize(typed.getIndex(0), 0)
+        return itemWidth
+    }
 
     fun Long.toTimeString(): String {
         val seconds = (this.toFloat() / 1000).roundToLong()

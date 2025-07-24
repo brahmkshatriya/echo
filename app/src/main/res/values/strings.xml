@@ -4,6 +4,7 @@
     <string name="okay">Okay</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
+    <string name="feed">Feed</string>
     <string name="x_permission_required">%1$s Permission Required</string>
     <string name="x_was_not_granted">%1$s was not granted</string>
     <string name="audio">Audio</string>
@@ -36,6 +37,11 @@
     <string name="show_tab_summary">will show tabs of the extensions as category</string>
     <string name="unified_liked_playlist_summary">Your liked tracks from various extensions</string>
     <string name="n_items">%1$d Items</string>
+    <string name="item">Item</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d Item</item>
+        <item quantity="other">%1$d Items</item>
+    </plurals>
     <string name="playlist_liked">Liked</string>
     <string name="playlist_liked_desc">Your liked tracks</string>
     <string name="unknown">Unknown</string>
@@ -53,7 +59,7 @@
     <string name="cancel_all">Cancel All</string>
     <string name="download_progress">Download Progress</string>
     <string name="downloads">Downloads</string>
-    <string name="x_items">%1$d Items</string>
+
     <string name="downloaded_x">Downloaded %1$s</string>
 
     <string name="logout_and_login">Logout and Login</string>
@@ -128,11 +134,10 @@
     <string name="cache_size_summary">Size in MB to cache audio and video</string>
 
     <string name="version">Version</string>
-    <string name="language">Language</string>
+    <string name="select_language">Select Language</string>
     <string name="system">System</string>
-    <string name="language_summary">Language of the app, System will default to English</string>
-    <string name="check_for_extension_updates">Check for Extension Updates</string>
-    <string name="check_for_extension_updates_summary">Look for new updates of extensions, when you open the app.</string>
+    <string name="check_for_updates">Check for Updates</string>
+    <string name="check_for_updates_summary">Look for new updates of both app and extensions, when you open the app.</string>
 
     <string name="install">Install</string>
     <string name="app">App</string>
@@ -154,7 +159,7 @@
     <string name="extension_installed">%1$s (Installed)</string>
     <string name="add_extensions">Add Extensions</string>
     <string name="invalid_extension_list">Invalid extensions list</string>
-    <string name="checking_for_extension_updates">Checking for extension updates</string>
+    <string name="checking_for_updates">Checking for updates</string>
 
     <string name="look_and_feel">Look and Feel</string>
 
@@ -262,7 +267,7 @@
     <string name="off">Off</string>
     <string name="unknown_quality">Unknown Quality</string>
 
-    <string name="crying_af" translatable="false">(;-;)</string>
+    <string name="crying_af" translatable="false">;-;</string>
     <string name="so_empty">So empty…</string>
     <string name="not_loading">Not Loading</string>
     <string name="n_dot_x" translatable="false">%1$d. %2$s</string>
@@ -312,14 +317,31 @@
     <string name="more_brain_capacity">More Brain Capacity</string>
     <string name="more_brain_capacity_summary">Enabling this, can help fix audio lag and increase battery usage (Disables the audio offloading).</string>
 
+    <string name="track">Track</string>
+    <string name="tracks">Tracks</string>
     <string name="sort">Sort</string>
     <string name="explicit">Explicit</string>
     <string name="x_plays">%1$s Plays</string>
     <string name="x_followers">%1$s Followers</string>
-    <string name="x_songs">%1$d Songs</string>
-    <plurals name="n_songs">
+    <string name="n_songs">%1$d Songs</string>
+    <string name="n_episodes">%1$d Episodes</string>
+    <string name="n_chapters">%1$d Chapters</string>
+    <string name="n_tracks">%1$d Tracks</string>
+    <plurals name="number_songs">
         <item quantity="one">%1$d Song</item>
         <item quantity="other">%1$d Songs</item>
+    </plurals>
+    <plurals name="number_episodes">
+        <item quantity="one">%1$d Episode</item>
+        <item quantity="other">%1$d Episodes</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one">%1$d Chapter</item>
+        <item quantity="other">%1$d Chapters</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one">%1$d Track</item>
+        <item quantity="other">%1$d Tracks</item>
     </plurals>
     <string name="shuffling_x">Shuffling %1$s</string>
     <string name="copying_the_error">Copying the error</string>
@@ -328,16 +350,19 @@
     <string name="reversed">Reversed</string>
     <string name="apply">Apply</string>
     <string name="save">Save</string>
+    <string name="unsave">Unsave</string>
     <string name="sort_title">Title</string>
     <string name="sort_date">Date</string>
+    <string name="sort_date_added">Date Added</string>
     <string name="sort_duration">Duration</string>
     <string name="sort_artist">Artist</string>
     <string name="sort_album">Album</string>
     <string name="sort_plays">Plays</string>
     <string name="sort_explicit">Explicit</string>
+    <string name="sort_subtitle">Subtitle</string>
+
     <string name="scroll_animations">Scroll Animations</string>
     <string name="scroll_animations_summary">Animations when you scroll stuff</string>
-    <string name="sort_subtitle">Subtitle</string>
     <string name="delete">Delete</string>
     <string name="playlist_name">Playlist Name</string>
     <string name="playlist_description">Playlist Description</string>
@@ -375,5 +400,37 @@
     <string name="no_update_available_for_x">No update available for %1$s</string>
     <string name="other">Other</string>
     <string name="accounts">Accounts</string>
+    <string name="manage_extensions">Manage Extensions</string>
+    <string name="player">Player</string>
+    <string name="about">About</string>
+    <string name="language_x">Language: %1$s</string>
+    <string name="guide">Guide</string>
+    <string name="donate">Donate</string>
+    <string name="contributors">Contributors</string>
+    <string name="app_desc">Just a music player.</string>
+    <string name="manage">Manage</string>
+    <string name="no_account">No Account</string>
+    <string name="other_settings">Other Settings</string>
 
+    <string name="no_x_found">No %1$s found</string>
+    <string name="playlist">Playlist</string>
+    <string name="album">Album</string>
+    <string name="pre_release">Pre Release</string>
+    <string name="single">Single</string>
+    <string name="ep">EP</string>
+    <string name="lp">LP</string>
+    <string name="compilation">Compilation</string>
+    <string name="show">Show</string>
+    <string name="book">Book</string>
+    <string name="video">Video</string>
+    <string name="isrc_x">ISRC: %1$s</string>
+    <string name="genres_x">Genres: %1$s</string>
+    <string name="disc_number_n">Disc Number: %1$d</string>
+    <string name="album_order_n">Album Order Number: %1$d</string>
+    <string name="remove_from_playlist">Remove from playlist</string>
+    <string name="confirmation">Conformation</string>
+    <string name="delete_playlist_confirmation">Are you sure you want to delete %1$s?</string>
+    <string name="confirm">Confirm</string>
+    <string name="big_cover">Bigger Covers</string>
+    <string name="big_cover_summary">Good for devices with larger screens</string>
 </resources>

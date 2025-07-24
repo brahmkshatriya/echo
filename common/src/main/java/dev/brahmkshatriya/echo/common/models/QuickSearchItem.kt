@@ -1,11 +1,18 @@
 package dev.brahmkshatriya.echo.common.models
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
+
 /**
  * Represents a quick search item.
  * This can be a [Query] or a [Media] item.
  *
  * @property searched whether the item was already searched by the user.
  */
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("quickSearchItemType")
+@Serializable
 sealed class QuickSearchItem {
     abstract val searched: Boolean
 
@@ -15,6 +22,7 @@ sealed class QuickSearchItem {
      * @property query the search query.
      * @property extras additional information about the search query.
      */
+    @Serializable
     data class Query(
         val query: String,
         override val searched: Boolean,
@@ -28,6 +36,7 @@ sealed class QuickSearchItem {
      *
      * @see EchoMediaItem
      */
+    @Serializable
     data class Media(
         val media: EchoMediaItem,
         override val searched: Boolean

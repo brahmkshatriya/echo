@@ -10,7 +10,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
@@ -55,12 +55,12 @@ class StreamableLoader(
         block: suspend TrackClient.() -> T
     ): Result<T> {
         val extension = extensionListFlow.getExtensionOrThrow(mediaItem.extensionId)
-        return extension.get<TrackClient, T> { block() }
+        return extension.getAs<TrackClient, T> { block() }
     }
 
     private suspend fun loadTrack(item: MediaItem): Track {
         val track = withClient(item) {
-            loadTrack(item.track)
+            loadTrack(item.track, false)
         }
         return track.getOrElse {
             downloadFlow.value.find { info ->

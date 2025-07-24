@@ -19,8 +19,6 @@ import dev.brahmkshatriya.echo.extensions.exceptions.RequiredExtensionsMissingEx
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.playback.exceptions.NoServersException
-import dev.brahmkshatriya.echo.playback.exceptions.NoSourceException
 import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginFragment
@@ -74,8 +72,6 @@ object ExceptionUtils {
         is AppUpdater.UpdateException -> getString(R.string.error_updating_extension)
 
         is PlayerException -> "${throwable.mediaItem?.track?.title}: ${getFinalTitle(throwable.cause)}"
-        is NoServersException -> getString(R.string.no_servers_found)
-        is NoSourceException -> getString(R.string.no_source_found)
 
         is DownloadException -> {
             val title = getTitle(throwable.type, throwable.downloadEntity.track.title)

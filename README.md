@@ -45,7 +45,7 @@ Join our communities to stay updated and contribute to the discussion:
 ## Contribute
 
 We welcome contributions, from translations to new features. For inquiries, join
-our [Discord server](https://discord.gg/J3WvbBUU8Z) or [Telegram group](https://t.me/echo_app). Pull
+our [Discord server](https://discord.gg/J3WvbBUU8Z) or [Telegram group](https://t.me/echo_extension). Pull
 requests are welcome; check the [issues](https://github.com/brahmkshatriya/echo/issues?q=is%3Aissue%20) for
 guidance on major changes.
 

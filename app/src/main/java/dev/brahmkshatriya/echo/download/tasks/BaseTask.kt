@@ -20,7 +20,7 @@ import dev.brahmkshatriya.echo.download.DownloadWorker.Companion.getMainIntent
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
 import dev.brahmkshatriya.echo.download.exceptions.DownloadException
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.toData
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.throttleLatest
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
@@ -39,7 +39,7 @@ abstract class BaseTask(
     val throttledProgressFlow = progressFlow.throttleLatest(500L)
     val running = MutableStateFlow(false)
     suspend fun <T> withDownloadExtension(block: suspend DownloadClient.() -> T) =
-        downloader.downloadExtension().get<DownloadClient, T> { block() }.getOrThrow()
+        downloader.downloadExtension().getAs<DownloadClient, T> { block() }.getOrThrow()
 
     val dao = downloader.dao
 

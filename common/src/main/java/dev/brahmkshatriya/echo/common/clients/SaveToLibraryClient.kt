@@ -1,9 +1,13 @@
 package dev.brahmkshatriya.echo.common.clients
 
+import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 
 /**
- * Used to save media items to the library.
+ * Used to save media items with [EchoMediaItem.isSavable] set to true to the library
+ * @see EchoMediaItem.isSavable
+ * @see LibraryFeedClient
+ * @see MusicExtension
  */
 interface SaveToLibraryClient {
 

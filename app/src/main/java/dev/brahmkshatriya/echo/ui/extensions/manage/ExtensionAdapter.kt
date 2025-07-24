@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
-import dev.brahmkshatriya.echo.ui.shelf.adapter.other.ShelfEmptyAdapter
+import dev.brahmkshatriya.echo.ui.feed.EmptyAdapter
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 
 class
@@ -37,7 +37,7 @@ ExtensionAdapter(
             oldItem == newItem
     }
 
-    private val empty = ShelfEmptyAdapter()
+    private val empty = EmptyAdapter()
     fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :
@@ -46,14 +46,17 @@ ExtensionAdapter(
         fun bind(extension: Extension<*>) {
             val metadata = extension.metadata
             binding.root.transitionName = metadata.id
-            binding.root.setOnClickListener { listener.onClick(extension, binding.root) }
+            binding.root.setOnClickListener {
+                if (extension.type == ExtensionType.MUSIC) listener.onOpenClick(extension)
+                else listener.onClick(extension, binding.root)
+            }
             binding.extensionName.apply {
                 text = if (metadata.isEnabled) metadata.name
                 else context.getString(R.string.x_disabled, metadata.name)
             }
             binding.extensionVersion.text = "${metadata.version} • ${metadata.importType.name}"
             binding.itemExtension.apply {
-                metadata.icon.loadAsCircle(this, R.drawable.ic_extension_48dp) {
+                metadata.icon.loadAsCircle(this, R.drawable.ic_extension_32dp) {
                     setImageDrawable(it)
                 }
             }
@@ -64,9 +67,9 @@ ExtensionAdapter(
                 true
             }
 
-            binding.extensionOpen.isVisible = extension.type == ExtensionType.MUSIC
-            binding.extensionOpen.setOnClickListener {
-                listener.onOpenClick(extension)
+            binding.extensionSettings.isVisible = extension.type == ExtensionType.MUSIC
+            binding.extensionSettings.setOnClickListener {
+                listener.onClick(extension, it)
             }
         }
     }

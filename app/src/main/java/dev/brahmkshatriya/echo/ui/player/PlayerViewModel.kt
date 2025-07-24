@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.player
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.annotation.OptIn
-import androidx.core.bundle.bundleOf
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -213,7 +213,7 @@ class PlayerViewModel(
         }
     }
 
-    fun radio(id: String, item: EchoMediaItem) = viewModelScope.launch {
+    fun radio(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
         app.messageFlow.emit(
             Message(app.context.getString(R.string.loading_radio_for_x, item.title))
         )
@@ -221,12 +221,13 @@ class PlayerViewModel(
             it.sendCustomCommand(radioCommand, Bundle().apply {
                 putString("extId", id)
                 putSerialized("item", item)
+                putBoolean("loaded", loaded)
             })
         }
     }
 
     fun play(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (item !is Track) app.messageFlow.emit(
             Message(app.context.getString(R.string.playing_x, item.title))
         )
         withBrowser {
@@ -240,7 +241,7 @@ class PlayerViewModel(
     }
 
     fun shuffle(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (item !is Track) app.messageFlow.emit(
             Message(app.context.getString(R.string.shuffling_x, item.title))
         )
         withBrowser {
@@ -255,7 +256,7 @@ class PlayerViewModel(
 
 
     fun addToQueue(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (item !is Track) app.messageFlow.emit(
             Message(app.context.getString(R.string.adding_x_to_queue, item.title))
         )
         withBrowser {
@@ -268,7 +269,7 @@ class PlayerViewModel(
     }
 
     fun addToNext(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (!(browser.value?.mediaItemCount == 0 && item is Track)) app.messageFlow.emit(
             Message(app.context.getString(R.string.adding_x_to_next, item.title))
         )
         withBrowser {

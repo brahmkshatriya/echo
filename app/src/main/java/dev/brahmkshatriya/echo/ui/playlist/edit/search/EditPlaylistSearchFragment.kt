@@ -9,17 +9,15 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.FragmentPlaylistSearchBinding
+import dev.brahmkshatriya.echo.ui.common.GridAdapter.Companion.configureGridLayout
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.main.search.SearchFragment
-import dev.brahmkshatriya.echo.ui.media.adapter.MediaItemSelectableAdapter
-import dev.brahmkshatriya.echo.ui.media.adapter.MediaItemSelectableAdapter.Companion.mediaItemSpanCount
+import dev.brahmkshatriya.echo.ui.playlist.SelectableMediaAdapter
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
@@ -85,24 +83,18 @@ class EditPlaylistSearchFragment : Fragment() {
         val searchFragment = binding.playlistSearchContainer.getFragment<SearchFragment>()
         searchFragment.arguments = Bundle().apply {
             putString("extensionId", extensionId)
-            putString("itemListener", "search")
+            putString("feedListener", "playlist_search")
         }
         searchFragment.parentFragmentManager.addFragmentOnAttachListener { _, fragment ->
             val arguments = fragment.arguments ?: Bundle()
-            arguments.putString("itemListener", "search")
+            arguments.putAll(searchFragment.arguments)
             fragment.arguments = arguments
         }
 
-        val adapter = MediaItemSelectableAdapter { _, item ->
-            item as EchoMediaItem.TrackItem
-            viewModel.toggleTrack(item.track)
+        val adapter = SelectableMediaAdapter { _, item ->
+            viewModel.toggleTrack(item as Track)
         }
-
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.mediaItemSpanCount {
-            (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = it
-        }
-
+        configureGridLayout(binding.recyclerView, adapter, false)
         binding.addTracks.setOnClickListener {
             parentFragmentManager.setFragmentResult("searchedTracks", Bundle().apply {
                 putSerialized("tracks", viewModel.selectedTracks.value)
@@ -113,14 +105,14 @@ class EditPlaylistSearchFragment : Fragment() {
 
         observe(viewModel.selectedTracks) { list ->
             val items = list.map {
-                it.toMediaItem() to (it in viewModel.selectedTracks.value)
+                it to (it in viewModel.selectedTracks.value)
             }
             adapter.submitList(items)
             binding.addTracks.isEnabled = items.isNotEmpty()
             val tracks = items.size
             binding.selectedSongs.text = runCatching {
-                resources.getQuantityString(R.plurals.n_songs, tracks, tracks)
-            }.getOrNull() ?: getString(R.string.x_songs, tracks)
+                resources.getQuantityString(R.plurals.number_songs, tracks, tracks)
+            }.getOrNull() ?: getString(R.string.n_songs, tracks)
         }
     }
 }

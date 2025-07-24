@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
@@ -13,7 +12,6 @@ import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
-import com.google.android.material.color.ThemeUtils
 import com.google.android.material.navigation.NavigationBarView
 import dev.brahmkshatriya.echo.databinding.ActivityMainBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
@@ -41,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(getAppTheme())
         DynamicColors.applyToActivityIfAvailable(
             this, applyUiChanges(this, uiViewModel)
         )
@@ -69,15 +68,20 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val THEME_KEY = "theme"
         const val AMOLED_KEY = "amoled"
+        const val BIG_COVER = "big_cover"
         const val CUSTOM_THEME_KEY = "custom_theme"
         const val COLOR_KEY = "color"
 
-        private var theme: Int? = null
-
-        @SuppressLint("RestrictedApi")
-        private val onAppliedCallback = DynamicColors.OnAppliedCallback {
-            val theme = theme ?: return@OnAppliedCallback
-            ThemeUtils.applyThemeOverlay(it, theme)
+        fun Context.getAppTheme(): Int {
+            val settings = getSettings()
+            val bigCover = settings.getBoolean(BIG_COVER, false)
+            val amoled = settings.getBoolean(AMOLED_KEY, false)
+            return when {
+                amoled && bigCover -> R.style.AmoledBigCover
+                amoled -> R.style.Amoled
+                bigCover -> R.style.BigCover
+                else -> R.style.Default_Theme_Echo
+            }
         }
 
         fun Context.defaultColor() =
@@ -94,15 +98,12 @@ class MainActivity : AppCompatActivity() {
             }
             AppCompatDelegate.setDefaultNightMode(mode)
 
-            theme = if (settings.getBoolean(AMOLED_KEY, false)) R.style.Amoled else null
-
             val custom = settings.getBoolean(CUSTOM_THEME_KEY, true)
             val color = if (custom) settings.getInt(COLOR_KEY, context.defaultColor()) else null
             val playerColor = settings.getBoolean(PLAYER_COLOR, false)
             val customColor = uiViewModel.playerColors.value?.accent?.takeIf { playerColor }
 
             val builder = DynamicColorsOptions.Builder()
-            builder.setOnAppliedCallback(onAppliedCallback)
             (customColor ?: color)?.let { builder.setContentBasedSource(it) }
             return builder.build()
         }

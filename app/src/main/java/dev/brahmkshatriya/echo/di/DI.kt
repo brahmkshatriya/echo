@@ -7,23 +7,24 @@ import dev.brahmkshatriya.echo.download.db.DownloadDatabase
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.PlayerService
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler
+import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoViewModel
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.ui.extensions.add.AddViewModel
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
 import dev.brahmkshatriya.echo.ui.extensions.login.LoginViewModel
-import dev.brahmkshatriya.echo.ui.main.home.HomeFeedViewModel
-import dev.brahmkshatriya.echo.ui.main.library.LibraryViewModel
+import dev.brahmkshatriya.echo.ui.feed.FeedViewModel
 import dev.brahmkshatriya.echo.ui.main.search.SearchViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
-import dev.brahmkshatriya.echo.ui.player.info.TrackInfoViewModel
-import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
+import dev.brahmkshatriya.echo.ui.player.more.info.TrackInfoViewModel
+import dev.brahmkshatriya.echo.ui.player.more.lyrics.LyricsViewModel
+import dev.brahmkshatriya.echo.ui.playlist.create.CreatePlaylistViewModel
+import dev.brahmkshatriya.echo.ui.playlist.delete.DeletePlaylistViewModel
 import dev.brahmkshatriya.echo.ui.playlist.edit.EditPlaylistViewModel
 import dev.brahmkshatriya.echo.ui.playlist.save.SaveToPlaylistViewModel
-import dev.brahmkshatriya.echo.ui.shelf.ShelfViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.android.ext.koin.androidApplication
@@ -67,17 +68,17 @@ object DI {
         viewModelOf(::TrackInfoViewModel)
 
         viewModelOf(::ExtensionsViewModel)
+        viewModelOf(::ExtensionInfoViewModel)
         viewModelOf(::LoginUserListViewModel)
         viewModelOf(::AddViewModel)
         viewModelOf(::LoginViewModel)
 
-        viewModelOf(::HomeFeedViewModel)
-        viewModelOf(::LibraryViewModel)
+        viewModelOf(::FeedViewModel)
         viewModelOf(::SearchViewModel)
-
         viewModelOf(::MediaViewModel)
-        viewModelOf(::ShelfViewModel)
 
+        viewModelOf(::CreatePlaylistViewModel)
+        viewModelOf(::DeletePlaylistViewModel)
         viewModelOf(::SaveToPlaylistViewModel)
         viewModelOf(::EditPlaylistViewModel)
 
