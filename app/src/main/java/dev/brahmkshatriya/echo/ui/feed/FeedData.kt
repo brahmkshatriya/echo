@@ -1,9 +1,6 @@
 package dev.brahmkshatriya.echo.ui.feed
 
 import android.os.Parcelable
-import androidx.paging.LoadState
-import androidx.paging.LoadStates
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -37,7 +34,6 @@ import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
@@ -242,8 +238,10 @@ data class FeedData(
 
     fun selectTab(extensionId: String?, pos: Int) {
         val state = feedState.value?.getOrNull()
-        selectedTabFlow.value = state?.feed?.tabs?.getOrNull(pos)
+        val tab = state?.feed?.tabs?.getOrNull(pos)
             ?.takeIf { state.extensionId == extensionId }
+        app.context.saveToCache(feedId, tab?.id, "selected_tab")
+        selectedTabFlow.value = tab
     }
 
     fun refresh() = scope.launch { refreshFlow.emit(Unit) }
@@ -261,8 +259,8 @@ data class FeedData(
             feedState.collect { result ->
                 val feed = result?.getOrNull()?.feed?.tabs
                 selectedTabFlow.value = if (feed == null) null else {
-                    val last = selectedTabFlow.value
-                    feed.find { it.id == last?.id } ?: feed.firstOrNull()
+                    val last = app.context.getFromCache<String>(feedId, "selected_tab")
+                    feed.find { it.id == last } ?: feed.firstOrNull()
                 }
             }
         }

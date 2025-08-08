@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.player.more.lyrics
 
+import androidx.core.content.edit
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.common.Extension
@@ -21,6 +22,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.common.PagedSource
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionListViewModel
+import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
+import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.combineTransformLatest
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -60,13 +63,22 @@ class LyricsViewModel(
         }
         listOfNotNull(trackExtension) + lyrics
     }.onEach { extensions ->
-        val id = app.settings.getString(LAST_LYRICS_KEY, null)
-        val extension = extensions.find { it.id == id } ?: extensions.firstOrNull()
         currentSelectionFlow.value = null
         queryFlow.value = ""
-        currentSelectionFlow.value = extension
+        val media = mediaFlow.value?.track?.id
+        currentSelectionFlow.value = media?.let {
+            val id = app.context.getFromCache<String>(media, "lyrics_ext")
+                ?: app.settings.getString(LAST_LYRICS_KEY, null)
+            extensions.find { it.id == id } ?: extensions.firstOrNull()
+        }
         lyricsState.value = State.Loading
     }.stateIn(viewModelScope, Eagerly, emptyList())
+
+    override fun onExtensionSelected(extension: Extension<*>) {
+        app.settings.edit { putString(LAST_LYRICS_KEY, extension.id) }
+        val media = mediaFlow.value?.track?.id ?: return
+        app.context.saveToCache<String>(media, extension.id, "lyrics_ext")
+    }
 
     private val feedData = currentSelectionFlow.combineTransformLatest(queryFlow) { e, q ->
         emit(null)

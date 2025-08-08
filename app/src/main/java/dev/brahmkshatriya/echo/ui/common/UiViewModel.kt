@@ -32,6 +32,8 @@ import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.main.MainFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerColors
+import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
+import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.ContextUtils.emit
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -48,6 +50,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.lang.ref.WeakReference
@@ -77,7 +80,9 @@ class UiViewModel(
     }
 
     var currentAppColor: String? = null
-    val navigation = MutableStateFlow(0)
+    val navigation = MutableStateFlow(context.getFromCache("main_nav") ?: 0).also { flow ->
+        viewModelScope.launch { flow.collect { context.saveToCache("main_nav", it) } }
+    }
     val selectedSettingsTab = MutableStateFlow(0)
     val navigationReselected = MutableSharedFlow<Int>()
     val navIds = listOf(
