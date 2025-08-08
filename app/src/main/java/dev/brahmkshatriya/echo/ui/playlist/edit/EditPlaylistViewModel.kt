@@ -205,17 +205,12 @@ class EditPlaylistViewModel(
             val before = old.toMutableList()
 
             val afterIds = new.map { it }.toSet()
-            val removeIndexes = mutableListOf<Int>()
-            var index = 0
-            while (index < before.size) {
-                if (before[index] !in afterIds) {
-                    removeIndexes.add(index)
-                    before.removeAt(index)
-                } else {
-                    index++
-                }
+            val removeIndexes = before.mapIndexedNotNull { index, item ->
+                if (item !in afterIds) index else null
             }
+
             if (removeIndexes.isNotEmpty()) {
+                removeIndexes.sortedDescending().forEach { before.removeAt(it) }
                 out.add(Action.Remove(indexes = removeIndexes))
             }
 
