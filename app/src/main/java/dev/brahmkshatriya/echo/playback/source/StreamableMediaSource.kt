@@ -180,8 +180,7 @@ class StreamableMediaSource(
         )
 
         private val dataSource = ResolvingDataSource.Factory(
-            CacheDataSource.Factory()
-                .setCache(cache)
+            CacheDataSource.Factory().setCache(cache)
                 .setUpstreamDataSourceFactory(StreamableDataSource.Factory(context)),
             StreamableResolver(state.servers)
         )

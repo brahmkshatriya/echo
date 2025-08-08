@@ -3,6 +3,8 @@ package dev.brahmkshatriya.echo.ui.feed
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
@@ -39,6 +41,12 @@ class TabsAdapter<T>(
         val parent = holder.binding.buttonGroup
         this.parent = parent
         apply(parent)
+        parent.doOnLayout {
+            val scrollX = parent.children.filter { it.isVisible }
+                .take(selected + 1)
+                .sumOf { it.width }
+            holder.binding.root.scrollTo(scrollX, 0)
+        }
     }
 
     fun apply(parent: MaterialButtonGroup) {

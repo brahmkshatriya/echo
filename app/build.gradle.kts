@@ -77,7 +77,6 @@ dependencies {
     implementation(libs.pikolo)
     implementation(libs.fadingedgelayout)
     implementation(libs.fastscroll)
-    implementation(libs.fastscroll.other)
     implementation(libs.kenburnsview)
     implementation(libs.nestedscrollwebview)
     implementation(libs.acsbendi.webview)

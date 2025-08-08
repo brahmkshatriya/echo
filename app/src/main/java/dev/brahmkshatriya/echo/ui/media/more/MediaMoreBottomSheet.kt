@@ -30,6 +30,7 @@ import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.ico
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.MediaState
 import dev.brahmkshatriya.echo.ui.media.MediaDetailsViewModel
+import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.media.more.MoreButton.Companion.button
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet
@@ -84,7 +85,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
     private val delete by lazy { args.getBoolean("delete", false) }
 
-    private val vm by viewModel<MediaDetailsViewModel> {
+    private val vm by viewModel<MediaViewModel> {
         parametersOf(false, extensionId, item, loaded, delete)
     }
     private val playerViewModel by activityViewModel<PlayerViewModel>()

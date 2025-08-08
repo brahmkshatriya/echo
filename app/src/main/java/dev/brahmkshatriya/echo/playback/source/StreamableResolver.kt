@@ -7,6 +7,7 @@ import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.ResolvingDataSource.Resolver
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
+import dev.brahmkshatriya.echo.playback.source.StreamableDataSource.Companion.uri
 import java.util.WeakHashMap
 
 class StreamableResolver(
@@ -17,7 +18,7 @@ class StreamableResolver(
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
         val (id, index) = dataSpec.uri.toString().toIdAndIndex() ?: return dataSpec
         val streamable = runCatching { current[id]!!.getOrThrow().sources[index] }
-        return dataSpec.copy(customData = streamable)
+        return dataSpec.copy(uri = streamable.getOrNull()?.uri, customData = streamable)
     }
 
     companion object {

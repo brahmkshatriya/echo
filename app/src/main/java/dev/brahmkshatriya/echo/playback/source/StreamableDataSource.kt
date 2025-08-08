@@ -50,7 +50,9 @@ class StreamableDataSource(
         val (factory, spec) = when (result) {
             null -> defaultDataSourceFactory to dataSpec
             else -> when (val streamable = result.getOrThrow() as Streamable.Source) {
-                is Streamable.Source.Raw -> rawDataSourceFactory to dataSpec.copy(customData = streamable)
+                is Streamable.Source.Raw -> rawDataSourceFactory to
+                        dataSpec.copy(uri = streamable.uri, customData = streamable)
+
                 is Streamable.Source.Http -> {
                     val spec = streamable.request.run {
                         defaultHttpDataSourceFactory.value.setDefaultRequestProperties(headers)
@@ -63,5 +65,13 @@ class StreamableDataSource(
         val source = factory.value.createDataSource()
         this.source = source
         return source.open(spec)
+    }
+
+    companion object {
+        val Streamable.Source.uri
+            get() = when (this) {
+                is Streamable.Source.Http -> request.url.toUri()
+                is Streamable.Source.Raw -> "raw://${id.hashCode()}".toUri()
+            }
     }
 }
