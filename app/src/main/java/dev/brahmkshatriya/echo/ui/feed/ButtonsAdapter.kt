@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemFeedButtonsBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
-import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateVisibility
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateMarginTop
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
 
 class ButtonsAdapter(
@@ -62,7 +62,7 @@ class ButtonsAdapter(
                     viewModel.searchQuery = null
                     viewModel.onSearchClicked()
                 }
-                binding.searchBarContainer.animateVisibility(isChecked)
+                binding.searchBarContainer.animateMarginTop(isChecked)
             }
             binding.searchBarText.addTextChangedListener { text ->
                 viewModel.searchQuery = text?.toString()?.takeIf { it.isNotBlank() }

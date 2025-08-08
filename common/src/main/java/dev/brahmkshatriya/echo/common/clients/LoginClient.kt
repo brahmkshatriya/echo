@@ -1,7 +1,5 @@
 package dev.brahmkshatriya.echo.common.clients
 
-import dev.brahmkshatriya.echo.common.clients.LoginClient.CustomInput
-import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView
 import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
 import dev.brahmkshatriya.echo.common.models.User
 

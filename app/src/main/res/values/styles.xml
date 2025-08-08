@@ -313,10 +313,6 @@
         <item name="iconSize">32dp</item>
     </style>
 
-    <style name="MoreShapeOverlay" parent="ShapeAppearanceOverlay.Material3.Button">
-        <item name="cornerSize">10%</item>
-    </style>
-    
     <style name="ButtonOutlinedOverlay" parent="ThemeOverlay.Material3Expressive.Button.Outlined">
         <item name="colorContainerUnchecked">?navBackground</item>
         <item name="colorContainer">?navBackground</item>

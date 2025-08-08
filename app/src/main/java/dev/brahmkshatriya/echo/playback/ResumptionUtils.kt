@@ -66,7 +66,7 @@ object ResumptionUtils {
             val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
             MediaItemUtils.build(this, downloads, track, extensionId, item)
-        } ?: return null
+        }
     }
 
     private fun Context.recoverIndex() = getFromCache<Int>(INDEX, FOLDER)

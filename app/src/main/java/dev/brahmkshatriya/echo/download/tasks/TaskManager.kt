@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.download.tasks
 
-import dev.brahmkshatriya.echo.common.models.Progress
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.models.TaskType
 import kotlinx.coroutines.Job
@@ -29,7 +28,7 @@ class TaskManager(private val downloader: Downloader) {
         taskSemaphores = TaskType.entries.associateWith { Semaphore(limit) }
     }
 
-    val progressFlow = channelFlow<Array<Pair<BaseTask, Progress>>> {
+    val progressFlow = channelFlow {
         taskFlow.map { items ->
             items.flatMap { it.queue }.flatMap { it.tasks }
         }.collectLatest { tasks ->

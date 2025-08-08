@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.utils
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 object Serializer {

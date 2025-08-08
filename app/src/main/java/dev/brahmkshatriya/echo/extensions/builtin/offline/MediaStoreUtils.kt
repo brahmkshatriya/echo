@@ -661,7 +661,7 @@ object MediaStoreUtils {
         if (s.isEmpty()) return n
         if (t.isEmpty()) return m
 
-        val d = Array(m + 1) { IntArray(n + 1) { 0 } }
+        val d = Array(m + 1) { IntArray(n + 1) }
 
         for (i in 1..m) {
             d[i][0] = i

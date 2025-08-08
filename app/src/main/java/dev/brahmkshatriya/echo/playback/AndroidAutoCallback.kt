@@ -133,16 +133,16 @@ abstract class AndroidAutoCallback(
             }
 
             HOME -> extension.getFeed<HomeFeedClient>(
-                context, parentId, HOME, page, { loadHomeFeed() }
-            )
+                context, parentId, HOME, page
+            ) { loadHomeFeed() }
 
             LIBRARY -> extension.getFeed<LibraryFeedClient>(
-                context, parentId, LIBRARY, page, { loadLibraryFeed() }
-            )
+                context, parentId, LIBRARY, page
+            ){ loadLibraryFeed() }
 
             SEARCH -> extension.getFeed<SearchFeedClient>(
-                context, parentId, SEARCH, page, { loadSearchFeed(searchQuery) }
-            )
+                context, parentId, SEARCH, page
+            ) { loadSearchFeed(searchQuery) }
 
             else -> LibraryResult.ofItemList(
                 listOfNotNull(

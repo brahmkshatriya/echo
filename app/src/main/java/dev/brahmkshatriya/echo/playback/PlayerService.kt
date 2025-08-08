@@ -224,7 +224,7 @@ class PlayerService : MediaLibraryService() {
 
         private suspend fun isUnmetered(context: Context) = withContext(Dispatchers.IO) {
             val connectivityManager =
-                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
             val network = connectivityManager.activeNetwork ?: return@withContext false
             val networkCapabilities =
                 connectivityManager.getNetworkCapabilities(network) ?: return@withContext false

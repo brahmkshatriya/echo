@@ -74,8 +74,6 @@
     <string name="x_login_required">%1$s login required</string>
     <string name="x_is_not_supported_in_x">%1$s is not supported in %2$s</string>
     <string name="account_session_expired_in_x">Account session expired in %1$s</string>
-    <string name="no_servers_found">No servers found</string>
-    <string name="no_source_found">No source found</string>
     <string name="error_x">Error: %1$s</string>
     <string name="str_copy">Copy</string>
     <string name="extensions">Extensions</string>
@@ -88,7 +86,6 @@
     <string name="value">Value</string>
     <string name="value_not_set">Not Set</string>
 
-    <string name="audio_summary">(Audiophiles gather here)</string>
     <string name="playback">Playback</string>
 
     <string name="audio_fx">Audio Effects</string>
@@ -290,13 +287,6 @@
     <string name="unfollowing_x">Unfollowing %1$s</string>
     <string name="unfollowed_x">Unfollowed %1$s</string>
 
-    <string name="hide">Hide</string>
-    <string name="hiding_x">Hiding %1$s</string>
-    <string name="hid_x">Hid %1$s</string>
-    <string name="unhide">Un-hide</string>
-    <string name="unhiding_x">Un-hiding %1$s</string>
-    <string name="unhid_x">Un-hid %1$s</string>
-
     <string name="liking_x">Liking %1$s</string>
     <string name="liked_x">Liked %1$s</string>
     <string name="unliking_x">Unliked %1$s</string>
@@ -399,8 +389,6 @@
     <string name="opening_webview_x">Opening Webview: %1$s</string>
     <string name="no_update_available_for_x">No update available for %1$s</string>
     <string name="other">Other</string>
-    <string name="accounts">Accounts</string>
-    <string name="manage_extensions">Manage Extensions</string>
     <string name="player">Player</string>
     <string name="about">About</string>
     <string name="language_x">Language: %1$s</string>
@@ -427,7 +415,6 @@
     <string name="genres_x">Genres: %1$s</string>
     <string name="disc_number_n">Disc Number: %1$d</string>
     <string name="album_order_n">Album Order Number: %1$d</string>
-    <string name="remove_from_playlist">Remove from playlist</string>
     <string name="confirmation">Conformation</string>
     <string name="delete_playlist_confirmation">Are you sure you want to delete %1$s?</string>
     <string name="confirm">Confirm</string>

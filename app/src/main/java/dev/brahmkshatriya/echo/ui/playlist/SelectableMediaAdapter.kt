@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.ui.playlist
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
