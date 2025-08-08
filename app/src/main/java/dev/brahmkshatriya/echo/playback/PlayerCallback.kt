@@ -28,6 +28,7 @@ import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.pagedDataOfFirst
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -188,23 +189,23 @@ class PlayerCallback(
     ) = when (item) {
         is Album -> extension.getAs<AlbumClient, PagedData<Track>> {
             val album = if (!loaded) loadAlbum(item) else item
-            loadTracks(album)?.run { getPagedData(tabs.firstOrNull()).pagedData }
+            loadTracks(album)?.pagedDataOfFirst()
                 ?: PagedData.empty()
         }
 
         is Playlist -> extension.getAs<PlaylistClient, PagedData<Track>> {
             val playlist = if (!loaded) loadPlaylist(item) else item
-            loadTracks(playlist).run { getPagedData(tabs.firstOrNull()).pagedData }
+            loadTracks(playlist).pagedDataOfFirst()
         }
 
         is Radio -> extension.getAs<RadioClient, PagedData<Track>> {
             val radio = if (!loaded) loadRadio(item) else item
-            loadTracks(radio).run { getPagedData(tabs.firstOrNull()).pagedData }
+            loadTracks(radio).pagedDataOfFirst()
         }
 
         is Artist -> extension.getAs<ArtistClient, PagedData<Track>> {
             val artist = if (!loaded) loadArtist(item) else item
-            loadFeed(artist).run { getPagedData(tabs.firstOrNull()).pagedData }.toTracks()
+            loadFeed(artist).pagedDataOfFirst().toTracks()
         }
 
         is Track -> Result.success(PagedData.Single { listOf(item) })

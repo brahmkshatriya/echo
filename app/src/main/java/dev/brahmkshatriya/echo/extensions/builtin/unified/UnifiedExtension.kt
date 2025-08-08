@@ -33,6 +33,7 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.loadAll
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeedData
 import dev.brahmkshatriya.echo.common.models.ImportType
@@ -502,7 +503,7 @@ class UnifiedExtension(
 
     override suspend fun likeTrack(track: Track, isLiked: Boolean) {
         val likedPlaylist = db.getLikedPlaylist(context)
-        val tracks = loadTracks(likedPlaylist).getPagedData(null).pagedData.loadAll()
+        val tracks = loadTracks(likedPlaylist).loadAll()
         if (isLiked) addTracksToPlaylist(likedPlaylist, tracks, 0, listOf(track))
         else removeTracksFromPlaylist(
             likedPlaylist, tracks, listOf(tracks.indexOfFirst { it.id == track.id })

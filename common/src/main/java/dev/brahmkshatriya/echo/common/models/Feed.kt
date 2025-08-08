@@ -66,6 +66,12 @@ data class Feed<T : Any>(
 ) {
 
     /**
+     * A list of [Tab] items that are not sort tabs.
+     * These tabs are used to load data in the feed and are not considered for sorting.
+     **/
+    val notSortTabs = tabs.filterNot { it.isSort }
+
+    /**
      * Represents the loaded data of the [Feed].
      *
      * @property pagedData The [PagedData] containing the items for the feed.
@@ -138,14 +144,14 @@ data class Feed<T : Any>(
          * Please use sparringly.
          */
         suspend fun <T : Any> Feed<T>.loadAll() = run {
-            tabs.flatMap { getPagedData(it).pagedData.loadAll() }
+            notSortTabs.flatMap { getPagedData(it).pagedData.loadAll() }
         }
 
         /**
          * Convenience function to load all items in the [Feed] for the firstOrNull [Tab].
          */
-        suspend fun <T : Any> Feed<T>.loadAllOfFirstOrNull() = run {
-            getPagedData(tabs.firstOrNull()).pagedData.loadAll()
+        suspend fun <T : Any> Feed<T>.pagedDataOfFirst() = run {
+            getPagedData(notSortTabs.firstOrNull()).pagedData
         }
     }
 }

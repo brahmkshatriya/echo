@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.pagedDataOfFirst
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
@@ -50,7 +51,7 @@ class PlayerRadio(
             if (!item.isRadioSupported) return null
             return extension.getIf<RadioClient, PlayerState.Radio.Loaded?> {
                 val radio = radio(item, itemContext)
-                val tracks = loadTracks(radio).run { getPagedData(tabs.firstOrNull()).pagedData }
+                val tracks = loadTracks(radio).pagedDataOfFirst()
                 PlayerState.Radio.Loaded(extension.id, radio, null) {
                     extension.get { tracks.loadList(it) }.getOrThrow(throwableFlow)
                 }
