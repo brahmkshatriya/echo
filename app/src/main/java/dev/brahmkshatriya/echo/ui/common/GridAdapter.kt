@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.resolveStyledDimension
-import kotlin.math.roundToInt
+import kotlin.math.floor
 
 interface GridAdapter {
     val adapter: RecyclerView.Adapter<*>
@@ -39,7 +39,7 @@ interface GridAdapter {
             recycler.doOnLayout {
                 val itemWidth = context.resolveStyledDimension(R.attr.itemCoverSize)
                 val width = it.width - it.paddingLeft - it.paddingRight
-                val calc = (width.toFloat() / (itemWidth + 8.dpToPx(context))).roundToInt()
+                val calc = floor(width.toFloat() / (itemWidth + 8.dpToPx(context))).toInt()
                 val count = if (calc > 1) calc - if (even) calc % 2 else 0 else 1
                 layoutManager.spanCount = count
                 layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {

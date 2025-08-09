@@ -60,6 +60,6 @@ class MediaGridViewHolder(
     override fun onCurrentChanged(current: PlayerState.Current?) {
         val isPlaying = current.isPlaying(feed?.item?.id)
         binding.coverContainer.isPlaying.isVisible = isPlaying
-        (binding.coverContainer.isPlaying.drawable as Animatable).start()
+        (binding.coverContainer.isPlaying.icon as Animatable).start()
     }
 }

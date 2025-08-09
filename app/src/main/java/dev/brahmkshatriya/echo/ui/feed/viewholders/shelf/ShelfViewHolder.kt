@@ -163,7 +163,7 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
                 val track = tracks.getOrNull(index) ?: return@forEachIndexed
                 val isPlaying = current.isPlaying(track.id)
                 binding.coverContainer.isPlaying.isVisible = isPlaying
-                (binding.coverContainer.isPlaying.drawable as Animatable).start()
+                (binding.coverContainer.isPlaying.icon as Animatable).start()
             }
         }
     }

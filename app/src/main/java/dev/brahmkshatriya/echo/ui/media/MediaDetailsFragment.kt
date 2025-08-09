@@ -64,7 +64,10 @@ class MediaDetailsFragment : Fragment(R.layout.fragment_media_details) {
     }
 
     private val mediaHeaderAdapter by lazy {
-        MediaHeaderAdapter(getMediaHeaderListener(viewModel), parent.fromPlayer)
+        MediaHeaderAdapter(
+            requireParentFragment().getMediaHeaderListener(viewModel),
+            parent.fromPlayer
+        )
     }
 
     private val feedListener by lazy {

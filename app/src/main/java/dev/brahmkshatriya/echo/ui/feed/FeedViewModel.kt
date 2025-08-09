@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
 
 class FeedViewModel(
-    private val app: App,
+    val app: App,
     private val extensionLoader: ExtensionLoader,
 ) : ViewModel() {
     val feedDataMap = hashMapOf<String, FeedData>()

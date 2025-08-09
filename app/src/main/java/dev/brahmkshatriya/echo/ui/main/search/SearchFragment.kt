@@ -46,7 +46,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         vm.getFeedData("search", EMPTY, false, searchViewModel.queryFlow) {
             val curr = music.getExtension(argId) ?: current.value!!
             val query = searchViewModel.queryFlow.value
-            curr.saveInHistory(requireContext(), query)
+            curr.saveInHistory(vm.app.context, query)
             val feed = curr.getAs<SearchFeedClient, Feed<Shelf>> {
                 loadSearchFeed(searchViewModel.queryFlow.value)
             }.getOrThrow()
