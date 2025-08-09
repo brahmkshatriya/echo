@@ -410,6 +410,8 @@
     <string name="compilation">Compilation</string>
     <string name="show">Show</string>
     <string name="book">Book</string>
+    <string name="song">Song</string>
+    <string name="podcast">Podcast</string>
     <string name="video">Video</string>
     <string name="isrc_x">ISRC: %1$s</string>
     <string name="genres_x">Genres: %1$s</string>

@@ -48,7 +48,7 @@ import java.util.Locale
 data class Track(
     override val id: String,
     override val title: String,
-    val type: Type = Type.Audio,
+    val type: Type = Type.Song,
     override val cover: ImageHolder? = null,
     val artists: List<Artist> = listOf(),
     val album: Album? = null,
@@ -77,7 +77,7 @@ data class Track(
 ) : EchoMediaItem {
 
     enum class Type {
-        Audio, Video, HorizontalVideo
+        Song, Podcast, VideoSong, Video, HorizontalVideo
     }
 
     sealed interface Playable {

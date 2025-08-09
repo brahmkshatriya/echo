@@ -327,8 +327,9 @@ class MediaHeaderAdapter(
                     val firstRow = listOfNotNull(
                         getString(
                             when (item.type) {
-                                Track.Type.Audio -> R.string.audio
+                                Track.Type.Song, Track.Type.VideoSong -> R.string.song
                                 Track.Type.Video, Track.Type.HorizontalVideo -> R.string.video
+                                Track.Type.Podcast -> R.string.podcast
                             }
                         ),
                         item.releaseDate

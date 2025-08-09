@@ -110,11 +110,11 @@ sealed interface FeedType {
 
                 is Shelf.Item -> when (val item = shelf.media) {
                     is Track -> if (!noVideos) when (item.type) {
-                        Track.Type.Audio -> listOf(Media(feedId, extId, context, tabId, item, null))
                         Track.Type.Video -> listOf(Video(feedId, extId, context, tabId, item))
                         Track.Type.HorizontalVideo -> listOf(
                             Video(feedId, extId, context, tabId, item, Enum.VideoHorizontal)
                         )
+                        else -> listOf(Media(feedId, extId, context, tabId, item, null))
                     } else {
                         val index = index.toLong()
                         listOf(Media(feedId, extId, context, tabId, item, index))
