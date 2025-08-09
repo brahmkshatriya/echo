@@ -132,7 +132,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         override val stopUrlRegex = "https://www\\.iana\\.org/.*".toRegex()
     }
 
-    override suspend fun onSetLoginUser(user: User?) {
+    override fun setLoginUser(user: User?) {
 //        println("setLoginUser: $user")
     }
 

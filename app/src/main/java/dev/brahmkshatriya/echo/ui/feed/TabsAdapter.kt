@@ -42,9 +42,9 @@ class TabsAdapter<T>(
         this.parent = parent
         apply(parent)
         parent.doOnLayout {
+            if (selected < 0) return@doOnLayout
             val scrollX = parent.children.filter { it.isVisible }
-                .take(selected + 1)
-                .sumOf { it.width }
+                .take(selected).sumOf { it.width }
             holder.binding.root.scrollTo(scrollX, 0)
         }
     }

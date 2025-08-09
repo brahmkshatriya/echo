@@ -102,10 +102,10 @@ sealed interface LoginClient {
     }
 
     /**
-     * Called when the extension starts or when user selects a user.
+     * Called when the extension starts or when the user changes.
      * `null` if no user is logged in (can also be Incognito mode)
      */
-    suspend fun onSetLoginUser(user: User?)
+    fun setLoginUser(user: User?)
 
     /**
      * To be called when any other extension needs the current user.

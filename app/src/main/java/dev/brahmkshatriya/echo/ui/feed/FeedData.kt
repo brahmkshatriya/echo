@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -41,7 +43,7 @@ import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 data class FeedData(
     private val feedId: String,
     private val scope: CoroutineScope,
@@ -53,6 +55,7 @@ data class FeedData(
     private val extraLoadFlow: Flow<*>
 ) {
     val current = extensionLoader.current
+    val usersFlow = extensionLoader.db.currentUsersFlow
     suspend fun getExtension(id: String) =
         extensionLoader.getFlow(ExtensionType.MUSIC).getExtensionOrThrow(id)
 
@@ -248,8 +251,8 @@ data class FeedData(
 
     init {
         scope.launch {
-            listOfNotNull(current, refreshFlow, extraLoadFlow)
-                .merge().collectLatest {
+            listOfNotNull(current, refreshFlow, usersFlow, extraLoadFlow)
+                .merge().debounce(250L).collectLatest {
                     feedState.value = null
                     extensionLoader.current.value ?: return@collectLatest
                     feedState.value = runCatching { load(extensionLoader) }

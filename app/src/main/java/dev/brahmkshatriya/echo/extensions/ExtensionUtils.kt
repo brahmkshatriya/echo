@@ -61,19 +61,11 @@ object ExtensionUtils {
     ): R? = getIf<C, R>(block).getOrThrow(throwableFlow)
 
     suspend fun Extension<*>.inject(
+        id: String,
         throwableFlow: MutableSharedFlow<Throwable>,
         block: suspend ExtensionClient.() -> Unit
     ) = runCatching {
-        instance.injectOrRun { withContext(Dispatchers.IO) { block() } }
-    }.getOrElse {
-        throwableFlow.emit(it.toAppException(this))
-    }
-
-    suspend inline fun <reified T> Extension<*>.injectIf(
-        throwableFlow: MutableSharedFlow<Throwable>,
-        crossinline block: suspend T.() -> Unit
-    ) = runCatching {
-        instance.injectOrRun { if (this is T) withContext(Dispatchers.IO) { block() } }
+        instance.injectOrRun(id) { withContext(Dispatchers.IO) { block() } }
     }.getOrElse {
         throwableFlow.emit(it.toAppException(this))
     }

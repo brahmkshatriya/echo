@@ -21,20 +21,19 @@ import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.WebViewClientProvider
 import dev.brahmkshatriya.echo.di.App
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.inject
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.injectIf
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.runIf
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.builtin.test.DownloadExtension
 import dev.brahmkshatriya.echo.extensions.builtin.test.TestExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
+import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.extensions.exceptions.RequiredExtensionsMissingException
 import dev.brahmkshatriya.echo.extensions.repo.CombinedRepository
 import dev.brahmkshatriya.echo.extensions.repo.ExtensionParser
-import dev.brahmkshatriya.echo.utils.CoroutineUtils.collectWith
-import dev.brahmkshatriya.echo.utils.Sticky.Companion.sticky
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -102,7 +101,7 @@ class ExtensionLoader(
         if (manual) settings.edit { putString(LAST_EXTENSION_KEY, extension.id) }
         current.value = extension
         scope.launch {
-            extension.runIf<ExtensionClient>(app.throwFlow) { onExtensionSelected() }
+            extension.get { onExtensionSelected() }.getOrThrow(app.throwFlow)
         }
     }
 
@@ -110,8 +109,6 @@ class ExtensionLoader(
         list?.groupBy { it.getOrNull()?.first?.run { type to id } }?.map { entry ->
             entry.value.minBy { it.getOrNull()?.first?.importType?.ordinal ?: Int.MAX_VALUE }
         }.orEmpty()
-    }.map { list ->
-        list.map { result -> result.map { it.first to it.second.injected(it.first) } }
     }.combine(db.extensionEnabledFlow) { list, enabledList ->
         val enabledMap = enabledList.associate { (it.type to it.id) to it.enabled }
         list.map { result ->
@@ -119,6 +116,28 @@ class ExtensionLoader(
                 val key = metadata.run { type to id }
                 val isEnabled = enabledMap[key] ?: metadata.isEnabled
                 metadata.copy(isEnabled = isEnabled) to injectable
+            }
+        }
+    }.map { list ->
+        list.map { result ->
+            result.map {
+                it.first to it.second.injected(it.first)
+            }
+        }
+    }.combine(db.currentUsersFlow) { list, users ->
+        list.onEach { result ->
+            scope.launch(Dispatchers.IO) {
+                val (metadata, injectable) = result.getOrNull() ?: return@launch
+                runCatching {
+                    injectable.injectOrRun("user") {
+                        if (this !is LoginClient) return@injectOrRun
+                        val newCurr = users.getUser(metadata)
+                        val user = newCurr?.let { db.getUser(it) }
+                        setLoginUser(user)
+                    }
+                }.onFailure {
+                    app.throwFlow.emit(it.toAppException(metadata))
+                }
             }
         }
     }
@@ -166,25 +185,7 @@ class ExtensionLoader(
             all.collect { list ->
                 list.forEach {
                     if (!it.isEnabled) return@forEach
-                    it.inject(app.throwFlow) { injectProviders(this) }
-                }
-            }
-        }
-        scope.launch {
-            all.collectWith(db.currentUsersFlow) { list, users ->
-                list.forEach { ext ->
-                    val newCurr = users.getUser(ext)
-                    val stickyUser = ext.instance.stickyUser
-                    val shouldInject = !stickyUser.initialized || stickyUser.current != newCurr
-                    if (!shouldInject) return@forEach
-                    stickyUser.initialized = true
-                    stickyUser.current = newCurr
-                    scope.launch {
-                        ext.injectIf<LoginClient>(app.throwFlow) {
-                            val user = newCurr?.let { db.getUser(it) }
-                            onSetLoginUser(user)
-                        }
-                    }
+                    it.inject("providers", app.throwFlow) { injectProviders(this) }
                 }
             }
         }
@@ -192,11 +193,6 @@ class ExtensionLoader(
             music.collectLatest { setCurrentExtension() }
         }
     }
-
-    private data class StickyUser(
-        var initialized: Boolean = false,
-        var current: CurrentUser? = null
-    )
 
     private fun <T> List<T>.sorted(type: ExtensionType, id: (T) -> String): List<T> {
         val priority = priorityMap[type]!!.value
@@ -239,8 +235,7 @@ class ExtensionLoader(
             }
         }
 
-        private val Injectable<*>.stickyUser by sticky { StickyUser(false) }
-        fun List<CurrentUser>.getUser(ext: Extension<*>): CurrentUser? {
+        fun List<CurrentUser>.getUser(ext: Metadata): CurrentUser? {
             val curr = find { it.type == ext.type && it.extId == ext.id }
             return curr
         }

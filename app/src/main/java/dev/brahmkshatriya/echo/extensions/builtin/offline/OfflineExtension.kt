@@ -132,9 +132,6 @@ class OfflineExtension(
     private fun find(playlist: Playlist) =
         library.playlistList.find { it.id == playlist.id.toLong() }
 
-
-    override suspend fun onExtensionSelected() {}
-
     private fun List<EchoMediaItem>.toShelves(buttons: Feed.Buttons? = null): Feed<Shelf> =
         map { it.toShelf() }.toFeed(buttons)
 
