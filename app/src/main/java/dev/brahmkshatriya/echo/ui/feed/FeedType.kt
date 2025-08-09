@@ -52,6 +52,7 @@ sealed interface FeedType {
         override val context: EchoMediaItem?,
         override val tabId: String?,
         val item: EchoMediaItem,
+        val number: Long?,
     ) : FeedType {
         override val id = item.id
         override val type: Enum = Enum.Media
@@ -98,7 +99,8 @@ sealed interface FeedType {
             context: EchoMediaItem?,
             tabId: String?,
             noVideos: Boolean = false
-        ): List<FeedType> = map { shelf ->
+        ): List<FeedType> = mapIndexed { index, shelf ->
+
             when (shelf) {
                 is Shelf.Category -> if (shelf.feed == null) listOf(
                     Header(
@@ -108,14 +110,17 @@ sealed interface FeedType {
 
                 is Shelf.Item -> when (val item = shelf.media) {
                     is Track -> if (!noVideos) when (item.type) {
-                        Track.Type.Audio -> listOf(Media(feedId, extId, context, tabId, item))
+                        Track.Type.Audio -> listOf(Media(feedId, extId, context, tabId, item, null))
                         Track.Type.Video -> listOf(Video(feedId, extId, context, tabId, item))
                         Track.Type.HorizontalVideo -> listOf(
                             Video(feedId, extId, context, tabId, item, Enum.VideoHorizontal)
                         )
-                    } else listOf(Media(feedId, extId, context, tabId, item))
+                    } else {
+                        val index = index.toLong()
+                        listOf(Media(feedId, extId, context, tabId, item, index))
+                    }
 
-                    else -> listOf(Media(feedId, extId, context, tabId, item))
+                    else -> listOf(Media(feedId, extId, context, tabId, item, null))
                 }
 
                 is Shelf.Lists<*> -> listOf(

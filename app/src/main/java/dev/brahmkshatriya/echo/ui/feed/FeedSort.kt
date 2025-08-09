@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.feed
 
+import android.content.Context
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
@@ -7,6 +8,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.ui.feed.FeedSort.entries
+import dev.brahmkshatriya.echo.ui.media.MediaHeaderAdapter.Companion.toTrackString
 import kotlinx.serialization.Serializable
 
 fun getSorts(data: List<Shelf>): List<FeedSort> {
@@ -76,6 +78,27 @@ private fun Shelf.album() = when (this) {
         is Track -> item.album
         else -> null
     }
+
+    is Shelf.Lists<*> -> null
+}
+
+private fun Shelf.trackCount() = when (this) {
+    is Shelf.Category -> null
+    is Shelf.Item -> when (val item = this.media) {
+        is EchoMediaItem.Lists -> item.trackCount
+        else -> null
+    }
+
+    is Shelf.Lists<*> -> null
+}
+
+private fun Shelf.ifListItem(): EchoMediaItem.Lists? = when (this) {
+    is Shelf.Category -> null
+    is Shelf.Item -> when (media) {
+        is EchoMediaItem.Lists -> media as EchoMediaItem.Lists
+        else -> null
+    }
+
     is Shelf.Lists<*> -> null
 }
 
@@ -87,7 +110,7 @@ private fun Shelf.copy(subtitle: String) = when (this) {
 
 enum class FeedSort(
     val title: Int,
-    val sorter: (List<Shelf>) -> List<Shelf>
+    val sorter: Context.(List<Shelf>) -> List<Shelf>
 ) {
     Title(R.string.sort_title, { list -> list.sortedBy { it.title() } }),
     Subtitle(R.string.sort_subtitle, { list -> list.sortedBy { it.subtitle() } }),
@@ -118,7 +141,13 @@ enum class FeedSort(
                 listOf(shelf.copy(subtitle = album.title))
             } ?: emptyList()
         }.sortedBy { it.subtitle() }
-    });
+    }),
+    Tracks(R.string.tracks, { list ->
+        list.sortedBy { it.trackCount() }
+            .filter { it.trackCount() != null }
+            .map { it.copy(subtitle = it.ifListItem()?.toTrackString(this) ?: "???") }
+    })
+    ;
 
     fun shouldBeVisible(data: List<Shelf>): FeedSort? {
         val take = when (this) {
@@ -129,6 +158,7 @@ enum class FeedSort(
             Duration -> data.any { it.duration() != null }
             Artists -> data.any { it.artists()?.isNotEmpty() ?: false }
             Album -> data.mapNotNull { it.album() }.toSet().size > 1
+            Tracks -> data.any { it.trackCount() != null }
         }
         return if (take) this else null
     }

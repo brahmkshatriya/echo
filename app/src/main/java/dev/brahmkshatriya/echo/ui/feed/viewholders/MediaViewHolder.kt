@@ -65,7 +65,7 @@ class MediaViewHolder(
 
     override fun bind(feed: FeedType.Media) {
         this.feed = feed
-        binding.bind(feed.item)
+        binding.bind(feed.item, feed.number?.toInt())
     }
 
     override fun canBeSwiped() = feed?.item is Track

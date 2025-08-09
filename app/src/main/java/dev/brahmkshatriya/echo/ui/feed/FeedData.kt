@@ -189,7 +189,7 @@ data class FeedData(
                 else shelves
                 loadedShelves.value = shelves
                 if (sortState != null) {
-                    shelves = sortState.feedSort?.sorter?.invoke(shelves) ?: shelves
+                    shelves = sortState.feedSort?.sorter?.invoke(app.context, shelves) ?: shelves
                     if (sortState.reversed) shelves = shelves.reversed()
                     if (sortState.save)
                         app.context.saveToCache("${feedId}_$extensionId", sortState, "sort")

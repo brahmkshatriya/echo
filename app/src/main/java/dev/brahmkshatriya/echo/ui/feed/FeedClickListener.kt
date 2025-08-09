@@ -75,7 +75,8 @@ open class FeedClickListener(
             return true
         }
         if (context == null) return notFoundSnack(R.string.item)
-        vm.play(extensionId, context, true)
+        if (shuffle) vm.shuffle(extensionId, context, true)
+        else vm.play(extensionId, context, true)
         return true
     }
 

@@ -42,7 +42,10 @@ class MediaDetailsFragment : Fragment(R.layout.fragment_media_details) {
 
     private val trackFeedData by lazy {
         feedViewModel.getFeedData(
-            "${parent.feedId}_tracks", Feed.Buttons(), true, viewModel.tracksFlow
+            "${parent.feedId}_tracks",
+            Feed.Buttons(showPlayAndShuffle = true),
+            true,
+            viewModel.tracksFlow
         ) {
             val state = viewModel.itemResultFlow.value?.getOrNull() ?: return@getFeedData null
             val feed = viewModel.tracksFlow.value?.getOrThrow() ?: return@getFeedData null

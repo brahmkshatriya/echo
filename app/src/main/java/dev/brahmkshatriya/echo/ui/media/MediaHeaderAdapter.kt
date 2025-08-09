@@ -281,27 +281,8 @@ class MediaHeaderAdapter(
                         getString(item.typeInt),
                         item.date?.toString(),
                     ).joinToString(DIVIDER)
-                    val tracks = item.trackCount?.toInt()
                     val secondRow = listOfNotNull(
-                        if (tracks != null) {
-                            when (item.type) {
-                                PreRelease, Single, EP, LP, Compilation -> unfuckedString(
-                                    R.plurals.number_songs, R.string.n_songs, tracks
-                                )
-
-                                Show -> unfuckedString(
-                                    R.plurals.number_episodes, R.string.n_episodes, tracks
-                                )
-
-                                Book -> unfuckedString(
-                                    R.plurals.number_chapters, R.string.n_chapters, tracks
-                                )
-
-                                null -> unfuckedString(
-                                    R.plurals.number_tracks, R.string.n_tracks, tracks
-                                )
-                            }
-                        } else null,
+                        item.toTrackString(this@getSpan),
                         item.duration?.toTimeString()
                     ).joinToString(DIVIDER)
                     if (firstRow.isNotEmpty()) appendLine(firstRow)
@@ -483,5 +464,28 @@ class MediaHeaderAdapter(
                 is Playlist -> R.string.playlist
                 is Radio -> R.string.radio
             }
+
+        fun EchoMediaItem.Lists.toTrackString(context: Context) = context.run {
+            val tracks = trackCount?.toInt()
+            if (tracks != null) {
+                when (type) {
+                    PreRelease, Single, EP, LP, Compilation -> unfuckedString(
+                        R.plurals.number_songs, R.string.n_songs, tracks
+                    )
+
+                    Show -> unfuckedString(
+                        R.plurals.number_episodes, R.string.n_episodes, tracks
+                    )
+
+                    Book -> unfuckedString(
+                        R.plurals.number_chapters, R.string.n_chapters, tracks
+                    )
+
+                    null -> unfuckedString(
+                        R.plurals.number_tracks, R.string.n_tracks, tracks
+                    )
+                }
+            } else null
+        }
     }
 }

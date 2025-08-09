@@ -208,7 +208,7 @@ class PlayerViewModel(
             val mediaItems = list.map {
                 MediaItemUtils.build(app.context, downloadFlow.value, it, id, context)
             }
-            controller.setMediaItems(mediaItems, index, 0)
+            controller.setMediaItems(mediaItems, index, list[index].playedDuration ?: 0)
             controller.prepare()
         }
     }
