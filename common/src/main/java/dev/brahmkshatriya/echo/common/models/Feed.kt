@@ -144,6 +144,7 @@ data class Feed<T : Any>(
          * Please use sparringly.
          */
         suspend fun <T : Any> Feed<T>.loadAll() = run {
+            if (tabs.isEmpty()) return@run pagedDataOfFirst().loadAll()
             notSortTabs.flatMap { getPagedData(it).pagedData.loadAll() }
         }
 
