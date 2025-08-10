@@ -86,21 +86,6 @@ dependencies {
     "nightlyImplementation"(libs.bundles.firebase)
 }
 
-fun execute(vararg command: String): String {
-    val process = ProcessBuilder(*command)
-        .redirectOutput(ProcessBuilder.Redirect.PIPE)
-        .redirectError(ProcessBuilder.Redirect.PIPE)
-        .start()
-    val output = process.inputStream.bufferedReader().readText()
-    val errorOutput = process.errorStream.bufferedReader().readText()
-    val exitCode = process.waitFor()
-    if (exitCode != 0) throw Exception(
-        """
-        Command failed with exit code $exitCode. 
-        Command: ${command.joinToString(" ")}
-        Stdout: $output
-        Stderr: $errorOutput
-        """.trimIndent()
-    )
-    return output.trim()
-}
+fun execute(vararg command: String): String = providers.exec {
+    commandLine(*command)
+}.standardOutput.asText.get().trim()
