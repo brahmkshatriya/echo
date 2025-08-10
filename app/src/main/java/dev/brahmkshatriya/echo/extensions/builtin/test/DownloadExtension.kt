@@ -77,7 +77,8 @@ class DownloadExtension(
 
     override suspend fun getDownloadTracks(
         extensionId: String,
-        item: EchoMediaItem
+        item: EchoMediaItem,
+        context: EchoMediaItem?
     ): List<DownloadContext> {
         return when (item) {
             is Track -> listOf(DownloadContext(extensionId, item))
