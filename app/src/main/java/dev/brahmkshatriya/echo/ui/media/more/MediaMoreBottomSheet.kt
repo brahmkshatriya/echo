@@ -29,7 +29,6 @@ import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter.Companion.createListen
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.MediaState
-import dev.brahmkshatriya.echo.ui.media.MediaDetailsViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.media.more.MoreButton.Companion.button
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
@@ -233,7 +232,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
                 "download", R.string.download, R.drawable.ic_download_for_offline
             ) {
                 val downloadViewModel by activityViewModel<DownloadViewModel>()
-                downloadViewModel.addToDownload(requireActivity(), extensionId, item)
+                downloadViewModel.addToDownload(requireActivity(), extensionId, item, itemContext)
             } else null,
             if (shouldShowDelete) button(
                 "delete_download", R.string.delete_download, R.drawable.ic_delete

@@ -11,13 +11,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.loadingindicator.LoadingIndicator
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:containerHeight="128sp"
-            app:containerColor="?colorPrimaryInverse"
-            app:containerWidth="128sp"
-            app:indicatorSize="104sp" />
+        <View
+            android:layout_width="128sp"
+            android:layout_height="128sp"
+            android:background="@drawable/rounded_rectangle_cover_profile"
+            android:backgroundTint="?colorPrimaryInverse" />
+
+        <View
+            android:layout_gravity="center"
+            android:layout_width="96sp"
+            android:layout_height="96sp"
+            android:background="@drawable/rounded_rectangle_cover_profile"
+            android:backgroundTint="?colorPrimary" />
 
         <TextView
             android:layout_width="wrap_content"

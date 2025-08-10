@@ -29,7 +29,7 @@ class DownloadViewModel(
     val downloader: Downloader,
 ) : ViewModel() {
 
-    private val context = app.context
+    private val app = app.context
     private val messageFlow = app.messageFlow
     private val throwableFlow = app.throwFlow
 
@@ -43,13 +43,13 @@ class DownloadViewModel(
     val flow = downloader.flow
 
     fun addToDownload(
-        activity: FragmentActivity, extensionId: String, item: EchoMediaItem
+        activity: FragmentActivity, extensionId: String, item: EchoMediaItem, context: EchoMediaItem?
     ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
             messageFlow.emit(Message(getString(R.string.downloading_x, item.title)))
             val downloadExt = downloadExtension.value ?: return@with messageFlow.emit(
                 Message(
-                    context.getString(R.string.no_download_extension),
+                    app.getString(R.string.no_download_extension),
                     Message.Action(getString(R.string.add_extension)) {
                         ExtensionsAddBottomSheet().show(supportFragmentManager, null)
                     }
@@ -57,11 +57,11 @@ class DownloadViewModel(
             )
 
             val downloads = downloadExt.getIf<DownloadClient, List<DownloadContext>>(throwableFlow) {
-                getDownloadTracks(extensionId, item)
+                getDownloadTracks(extensionId, item, context)
             } ?: return@with
 
             if (downloads.isEmpty()) return@with messageFlow.emit(
-                Message(context.getString(R.string.nothing_to_download_in_x, item.title))
+                Message(app.getString(R.string.nothing_to_download_in_x, item.title))
             )
 
             downloader.add(downloads)
@@ -95,7 +95,7 @@ class DownloadViewModel(
         }
         viewModelScope.launch {
             messageFlow.emit(
-                Message(context.getString(R.string.removed_x_from_downloads, item.title))
+                Message(app.getString(R.string.removed_x_from_downloads, item.title))
             )
         }
     }
