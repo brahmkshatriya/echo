@@ -11,13 +11,13 @@ import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.SettingsChangeListenerClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -60,7 +60,7 @@ import java.io.File
 class OfflineExtension(
     private val context: Context,
 ) : ExtensionClient, HomeFeedClient, TrackClient, AlbumClient, ArtistClient, PlaylistClient,
-    RadioClient, LibraryFeedClient, TrackLikeClient, PlaylistEditorListenerClient,
+    RadioClient, LibraryFeedClient, LikeClient, PlaylistEditorListenerClient,
     SearchFeedClient, SettingsChangeListenerClient {
 
     companion object {
@@ -179,9 +179,7 @@ class OfflineExtension(
         )
     }
 
-    override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = track.copy(
-        isLiked = library.likedPlaylist?.songList.orEmpty().any { it.id == track.id }
-    )
+    override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = track
 
     override suspend fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean) =
         Uri.fromFile(File(streamable.id)).toString().toSource().toMedia()
@@ -405,17 +403,20 @@ class OfflineExtension(
         it.toPlaylist() to has
     }
 
-    override suspend fun likeTrack(track: Track, isLiked: Boolean) {
+    override suspend fun likeItem(item: EchoMediaItem, shouldLike: Boolean) {
         val library = library
         val playlist = library.likedPlaylist?.id
             ?: throw ClientException.NotSupported("Couldn't create Liked Playlist")
-        if (isLiked) context.addSongToPlaylist(playlist, track.id.toLong(), 0)
+        if (shouldLike) context.addSongToPlaylist(playlist, item.id.toLong(), 0)
         else {
-            val index = library.likedPlaylist.songList.indexOfFirst { it.id == track.id }
+            val index = library.likedPlaylist.songList.indexOfFirst { it.id == item.id }
             context.removeSongFromPlaylist(playlist, index)
         }
         refreshLibrary()
     }
+
+    override suspend fun isItemLiked(item: EchoMediaItem) =
+        library.likedPlaylist?.songList?.find { it.id == item.id } != null
 
     override suspend fun createPlaylist(title: String, description: String?): Playlist {
         val id = context.createPlaylist(title)

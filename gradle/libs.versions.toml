@@ -27,14 +27,14 @@ fragment = { module = "androidx.fragment:fragment-ktx", version = "1.8.8" }
 
 splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 palette = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
+material = { group = "com.google.android.material", name = "material", version = "1.14.0-alpha03" }
 
 preference = { module = "androidx.preference:preference-ktx", version = "1.2.1" }
 
 paging-common = { module = "androidx.paging:paging-common-ktx", version.ref = "androidx-paging" }
 paging-runtime = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging" }
 
-
-material = { group = "com.google.android.material", name = "material", version = "1.14.0-alpha03" }
+filekache = { module = "com.mayakapps.kache:file-kache", version = "2.1.1" }
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx" }

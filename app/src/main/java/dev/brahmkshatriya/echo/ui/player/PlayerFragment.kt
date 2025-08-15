@@ -588,7 +588,7 @@ class PlayerFragment : Fragment() {
             trackHeart.isChecked = item.isLiked
             likeListener.enabled = true
             lifecycleScope.launch {
-                val isTrackClient = viewModel.isTrackClient(item.extensionId)
+                val isTrackClient = viewModel.isLikeClient(item.extensionId)
                 trackHeart.isVisible = isTrackClient
             }
         }

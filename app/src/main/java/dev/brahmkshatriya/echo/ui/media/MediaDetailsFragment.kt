@@ -18,11 +18,11 @@ import dev.brahmkshatriya.echo.ui.feed.FeedAdapter.Companion.getFeedAdapter
 import dev.brahmkshatriya.echo.ui.feed.FeedAdapter.Companion.getTouchHelper
 import dev.brahmkshatriya.echo.ui.feed.FeedClickListener
 import dev.brahmkshatriya.echo.ui.feed.FeedClickListener.Companion.getFeedListener
-import dev.brahmkshatriya.echo.ui.feed.FeedData
 import dev.brahmkshatriya.echo.ui.feed.FeedViewModel
 import dev.brahmkshatriya.echo.ui.media.MediaHeaderAdapter.Companion.getMediaHeaderListener
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -45,22 +45,21 @@ class MediaDetailsFragment : Fragment(R.layout.fragment_media_details) {
             "${parent.feedId}_tracks",
             Feed.Buttons(showPlayAndShuffle = true),
             true,
-            viewModel.tracksFlow
-        ) {
-            val state = viewModel.itemResultFlow.value?.getOrNull() ?: return@getFeedData null
-            val feed = viewModel.tracksFlow.value?.getOrThrow() ?: return@getFeedData null
-            FeedData.State(state.extensionId, state.item, feed)
-        }
+            viewModel.tracksLoadedFlow, viewModel.trackCachedFlow,
+            cached = { viewModel.trackCachedFlow.value?.getOrThrow() },
+            loader = { viewModel.tracksLoadedFlow.value?.getOrThrow() }
+        )
     }
 
     private val feedData by lazy {
         feedViewModel.getFeedData(
-            "${parent.feedId}_feed", Feed.Buttons(), false, viewModel.feedFlow
-        ) {
-            val state = viewModel.itemResultFlow.value?.getOrNull() ?: return@getFeedData null
-            val feed = viewModel.feedFlow.value?.getOrThrow() ?: return@getFeedData null
-            FeedData.State(state.extensionId, state.item, feed)
-        }
+            "${parent.feedId}_feed",
+            Feed.Buttons(),
+            false,
+            viewModel.feedCachedFlow, viewModel.feedLoadedFlow,
+            cached = { viewModel.feedCachedFlow.value?.getOrThrow() },
+            loader = { viewModel.feedLoadedFlow.value?.getOrThrow() }
+        )
     }
 
     private val mediaHeaderAdapter by lazy {
@@ -114,10 +113,14 @@ class MediaDetailsFragment : Fragment(R.layout.fragment_media_details) {
                 feedAdapter.withLoading(this)
             )
         )
+        val loadingFlow = viewModel.isRefreshingFlow
+            .combine(trackFeedData.isRefreshingFlow) { a, b ->
+                a || b
+            }.combine(feedData.isRefreshingFlow) { a, b -> a || b }
         binding.swipeRefresh.run {
             configure()
             setOnRefreshListener { viewModel.refresh() }
-            observe(viewModel.isRefreshingFlow) {
+            observe(loadingFlow) {
                 isRefreshing = it
             }
         }

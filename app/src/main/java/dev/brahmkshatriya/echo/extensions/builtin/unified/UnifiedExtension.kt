@@ -13,17 +13,18 @@ import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.clients.TrackerMarkClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
@@ -60,9 +61,11 @@ class UnifiedExtension(
     private val context: Context,
     private val downloadFeed: MutableStateFlow<List<Shelf>>,
     private val cache: SimpleCache?
-) : ExtensionClient, MusicExtensionsProvider, HomeFeedClient, SearchFeedClient, LibraryFeedClient,
-    PlaylistClient, AlbumClient, ArtistClient, FollowClient, RadioClient, LyricsClient, TrackClient,
-    TrackLikeClient, SaveToLibraryClient, PlaylistEditClient, TrackerMarkClient, ShareClient {
+) : ExtensionClient, MusicExtensionsProvider,
+    HomeFeedClient, SearchFeedClient, LibraryFeedClient,
+    PlaylistClient, AlbumClient, ArtistClient, TrackClient,
+    FollowClient, RadioClient, LikeClient, SaveClient, HideClient, ShareClient,
+    PlaylistEditClient, LyricsClient, TrackerMarkClient {
 
     companion object {
         const val UNIFIED_ID = "unified"
@@ -111,44 +114,54 @@ class UnifiedExtension(
                     extras = it.extras + mapOf(EXTENSION_ID to id, "cached" to cached.toString())
                 )
             },
-            isSavable = true,
+            isSaveable = true,
+            isLikeable = true,
+            isHideable = client is HideClient && isHideable,
             isRadioSupported = client is RadioClient && isRadioSupported,
             isFollowable = client is FollowClient && isFollowable,
-            isSharable = client is ShareClient && isSharable
+            isShareable = client is ShareClient && isShareable
         )
 
         private fun Album.withExtensionId(id: String, client: Any?) = copy(
             artists = artists.map { it.withExtensionId(id, client) },
             extras = extras + mapOf(EXTENSION_ID to id),
-            isSavable = true,
+            isSaveable = true,
+            isLikeable = false,
+            isHideable = client is HideClient && isHideable,
             isRadioSupported = client is RadioClient && isRadioSupported,
             isFollowable = client is FollowClient && isFollowable,
-            isSharable = client is ShareClient && isSharable
+            isShareable = client is ShareClient && isShareable
         )
 
         private fun Artist.withExtensionId(id: String, client: Any?) = copy(
             extras = extras + mapOf(EXTENSION_ID to id),
-            isSavable = true,
+            isSaveable = true,
+            isLikeable = false,
+            isHideable = client is HideClient && isHideable,
             isRadioSupported = client is RadioClient && isRadioSupported,
             isFollowable = client is FollowClient && isFollowable,
-            isSharable = client is ShareClient && isSharable
+            isShareable = client is ShareClient && isShareable
         )
 
         private fun Playlist.withExtensionId(id: String, client: Any?) = copy(
             isEditable = false,
             authors = authors.map { it.withExtensionId(id, client) },
             extras = extras + mapOf(EXTENSION_ID to id),
-            isSavable = true,
+            isSaveable = true,
+            isLikeable = false,
+            isHideable = client is HideClient && isHideable,
             isRadioSupported = client is RadioClient && isRadioSupported,
             isFollowable = client is FollowClient && isFollowable,
-            isSharable = client is ShareClient && isSharable
+            isShareable = client is ShareClient && isShareable
         )
 
         private fun Radio.withExtensionId(id: String, client: Any?) = copy(
             extras = extras + mapOf(EXTENSION_ID to id),
-            isSavable = true,
+            isSaveable = true,
+            isLikeable = false,
+            isHideable = client is HideClient && isHideable,
             isFollowable = client is FollowClient && isFollowable,
-            isSharable = client is ShareClient && isSharable
+            isShareable = client is ShareClient && isShareable
         )
 
         private fun EchoMediaItem.withExtensionId(
@@ -403,7 +416,7 @@ class UnifiedExtension(
         val id = track.extras.extensionId
         return extensions().get(id).client<TrackClient, Track> {
             loadTrack(track, isDownload).withExtensionId(id, this)
-        }.copy(isLiked = db.isLiked(track))
+        }
     }
 
     override suspend fun loadStreamableMedia(
@@ -493,23 +506,12 @@ class UnifiedExtension(
         }
     }
 
-    override suspend fun saveToLibrary(mediaItem: EchoMediaItem, save: Boolean) {
-        if (save) db.save(mediaItem) else db.deleteSaved(mediaItem)
+    override suspend fun saveToLibrary(item: EchoMediaItem, shouldSave: Boolean) {
+        if (shouldSave) db.save(item) else db.deleteSaved(item)
     }
 
-    override suspend fun isSavedToLibrary(mediaItem: EchoMediaItem): Boolean {
-        return db.isSaved(mediaItem)
-    }
-
-    override suspend fun likeTrack(track: Track, isLiked: Boolean) {
-        val likedPlaylist = db.getLikedPlaylist(context)
-        val tracks = loadTracks(likedPlaylist).loadAll()
-        if (isLiked) addTracksToPlaylist(likedPlaylist, tracks, 0, listOf(track))
-        else removeTracksFromPlaylist(
-            likedPlaylist, tracks, listOf(tracks.indexOfFirst { it.id == track.id })
-        )
-        val extension = extensions().get(track.extras.extensionId)
-        extension.client<TrackLikeClient, Unit> { likeTrack(track, isLiked) }
+    override suspend fun isItemSaved(item: EchoMediaItem): Boolean {
+        return db.isSaved(item)
     }
 
     override suspend fun listEditablePlaylists(track: Track?) = db.getCreatedPlaylists().map {
@@ -607,9 +609,36 @@ class UnifiedExtension(
         return extension.client<FollowClient, Long?> { getFollowersCount(item) }
     }
 
-    override suspend fun followItem(item: EchoMediaItem, follow: Boolean) {
+    override suspend fun followItem(item: EchoMediaItem, shouldFollow: Boolean) {
         val id = item.extras.extensionId
         val extension = extensions().get(id)
-        extension.client<FollowClient, Unit> { followItem(item, follow) }
+        extension.client<FollowClient, Unit> { followItem(item, shouldFollow) }
+    }
+
+    override suspend fun likeItem(item: EchoMediaItem, shouldLike: Boolean) {
+        if (item !is Track) throw ClientException.NotSupported("LikeItem only supports Track")
+        val likedPlaylist = db.getLikedPlaylist(context)
+        val tracks = loadTracks(likedPlaylist).loadAll()
+        if (shouldLike) addTracksToPlaylist(likedPlaylist, tracks, 0, listOf(item))
+        else removeTracksFromPlaylist(
+            likedPlaylist, tracks, listOf(tracks.indexOfFirst { it.id == item.id })
+        )
+    }
+
+    override suspend fun isItemLiked(item: EchoMediaItem): Boolean {
+        if (item !is Track) throw ClientException.NotSupported("IsItemLiked only supports Track")
+        return db.isLiked(item)
+    }
+
+    override suspend fun hideItem(item: EchoMediaItem, shouldHide: Boolean) {
+        val id = item.extras.extensionId
+        val extension = extensions().get(id)
+        extension.client<HideClient, Unit> { hideItem(item, shouldHide) }
+    }
+
+    override suspend fun isItemHidden(item: EchoMediaItem): Boolean {
+        val id = item.extras.extensionId
+        val extension = extensions().get(id)
+        return extension.client<HideClient, Boolean> { isItemHidden(item) }
     }
 }

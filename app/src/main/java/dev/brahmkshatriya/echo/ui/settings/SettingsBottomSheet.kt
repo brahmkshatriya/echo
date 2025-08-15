@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Toast
-import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -255,16 +254,14 @@ class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) 
         val screen = requireContext().resources.displayMetrics.heightPixels - barHeight - system
         val peek = (behavior.peekHeight - barHeight).coerceAtMost(screen)
         val toScroll = screen - peek
+        view.y = peek.toFloat()
         val callback = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(p0: View, p1: Int) {}
             override fun onSlide(p0: View, p1: Float) {
                 val offset = p1.coerceAtLeast(0f)
-                view.doOnLayout {
-                    it.y = peek + toScroll * offset
-                }
+                view.y = peek + toScroll * offset
             }
         }
         behavior.addBottomSheetCallback(callback)
-        callback.onSlide(view, 0f)
     }
 }

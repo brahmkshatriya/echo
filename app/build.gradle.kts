@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.bundles.androidx)
     implementation(libs.material)
     implementation(libs.bundles.paging)
+    implementation(libs.filekache)
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
     implementation(libs.bundles.koin)

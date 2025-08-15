@@ -4,7 +4,14 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonClassDiscriminator
 
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("clazzType")
+@Serializable
 sealed interface FeedType {
 
     enum class Enum {
@@ -21,6 +28,7 @@ sealed interface FeedType {
     val context: EchoMediaItem?
     val tabId: String?
 
+    @Serializable
     data class Header(
         override val feedId: String,
         override val extensionId: String,
@@ -29,12 +37,13 @@ sealed interface FeedType {
         override val id: String,
         val title: String,
         val subtitle: String? = null,
-        val more: Feed<Shelf>? = null,
+        @Transient val more: Feed<Shelf>? = null,
         val tracks: List<Track>? = null,
     ) : FeedType {
         override val type = Enum.Header
     }
 
+    @Serializable
     data class Category(
         override val feedId: String,
         override val extensionId: String,
@@ -46,6 +55,7 @@ sealed interface FeedType {
         override val id = shelf.id
     }
 
+    @Serializable
     data class Media(
         override val feedId: String,
         override val extensionId: String,
@@ -58,6 +68,7 @@ sealed interface FeedType {
         override val type: Enum = Enum.Media
     }
 
+    @Serializable
     data class Video(
         override val feedId: String,
         override val extensionId: String,
@@ -69,6 +80,7 @@ sealed interface FeedType {
         override val id = item.id
     }
 
+    @Serializable
     data class MediaGrid(
         override val feedId: String,
         override val extensionId: String,
@@ -81,6 +93,7 @@ sealed interface FeedType {
         override val type: Enum = Enum.MediaGrid
     }
 
+    @Serializable
     data class HorizontalList(
         override val feedId: String,
         override val extensionId: String,
@@ -114,6 +127,7 @@ sealed interface FeedType {
                         Track.Type.HorizontalVideo -> listOf(
                             Video(feedId, extId, context, tabId, item, Enum.VideoHorizontal)
                         )
+
                         else -> listOf(Media(feedId, extId, context, tabId, item, null))
                     } else {
                         val index = index.toLong()

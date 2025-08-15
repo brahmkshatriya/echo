@@ -34,7 +34,7 @@ interface FollowClient {
      * This will only be called if the [EchoMediaItem.isFollowable] is true.
      *
      * @param item the item to follow.
-     * @param follow whether to follow or unfollow the artist.
+     * @param shouldFollow whether to follow or unfollow the artist.
      */
-    suspend fun followItem(item: EchoMediaItem, follow: Boolean)
+    suspend fun followItem(item: EchoMediaItem, shouldFollow: Boolean)
 }

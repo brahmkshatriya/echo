@@ -3,17 +3,18 @@ package dev.brahmkshatriya.echo.extensions.builtin.test
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackHideClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.clients.TrackerMarkClient
+import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.helpers.WebViewClient
 import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
@@ -44,13 +45,15 @@ import dev.brahmkshatriya.echo.common.providers.WebViewClientProvider
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.Settings
 import kotlinx.coroutines.delay
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import kotlin.random.Random
 
 @Suppress("unused")
 class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, LoginClient.WebView,
     HomeFeedClient, FollowClient, RadioClient, WebViewClientProvider, ArtistClient,
     LyricsSearchClient,
-    SaveToLibraryClient, TrackLikeClient, TrackHideClient, TrackerMarkClient, ShareClient {
+    SaveClient, LikeClient, HideClient, TrackerMarkClient, ShareClient {
 
     companion object {
         val metadata = Metadata(
@@ -188,6 +191,9 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         }
         PagedData.Single {
             if (tab?.id == "Music") delay(5000)
+            OkHttpClient().newCall(
+                Request.Builder().url("https://example.com").build()
+            ).await().body
             listOf(
                 Shelf.Lists.Categories(
                     "bruh",
@@ -244,33 +250,44 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     override suspend fun loadArtist(artist: Artist) = artist
 
     private var isSaved = false
-    override suspend fun saveToLibrary(mediaItem: EchoMediaItem, save: Boolean) {
-        println(mediaItem.extras["loaded"])
-        isSaved = save
-        println("save $save")
+    override suspend fun saveToLibrary(item: EchoMediaItem, shouldSave: Boolean) {
+        println(item.extras["loaded"])
+        isSaved = shouldSave
+        println("save $shouldSave")
     }
 
-    override suspend fun isSavedToLibrary(mediaItem: EchoMediaItem): Boolean {
-        println(mediaItem.extras["loaded"])
+    override suspend fun isItemSaved(item: EchoMediaItem): Boolean {
+        println(item.extras["loaded"])
         println("isSaved : $isSaved")
         return isSaved
     }
 
+
     private var isLiked = false
-    override suspend fun likeTrack(track: Track, isLiked: Boolean) {
-        this.isLiked = isLiked
-        println("like")
+    override suspend fun likeItem(item: EchoMediaItem, shouldLike: Boolean) {
+        println(item.extras["loaded"])
+        isLiked = shouldLike
+        println("like $shouldLike")
+    }
+
+    override suspend fun isItemLiked(item: EchoMediaItem): Boolean {
+        println(item.extras["loaded"])
+        println("isLiked : $isLiked")
+        return isLiked
     }
 
     private var isHidden = false
-    override suspend fun hideTrack(track: Track, isHidden: Boolean) {
+    override suspend fun hideItem(item: EchoMediaItem, shouldHide: Boolean) {
         println("hide")
-        this.isHidden = isHidden
+        this.isHidden = shouldHide
+    }
+
+    override suspend fun isItemHidden(item: EchoMediaItem): Boolean {
+        println("isHidden : $isHidden")
+        return isHidden
     }
 
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = track.copy(
-        isLiked = isLiked,
-        isHidden = isHidden,
         extras = mapOf("loaded" to "Loaded bro")
     )
 
@@ -290,9 +307,9 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     private var isFollowing = false
     override suspend fun isFollowing(item: EchoMediaItem) = isFollowing
     override suspend fun getFollowersCount(item: EchoMediaItem): Long = 1000L
-    override suspend fun followItem(item: EchoMediaItem, follow: Boolean) {
-        println("followItem: $item, follow: $follow")
-        isFollowing = follow
+    override suspend fun followItem(item: EchoMediaItem, shouldFollow: Boolean) {
+        println("followItem: $item, follow: $shouldFollow")
+        isFollowing = shouldFollow
     }
 
     override suspend fun onShare(item: EchoMediaItem): String {
@@ -340,4 +357,5 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     }
 
     override suspend fun loadLyrics(lyrics: Lyrics) = lyrics
+
 }

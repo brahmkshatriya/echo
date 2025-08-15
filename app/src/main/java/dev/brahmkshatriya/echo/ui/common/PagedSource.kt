@@ -8,11 +8,10 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.flow.flow
 
 class PagedSource<T : Any>(
-    private val result: Deferred<Result<PagedData<T>?>>
+    private val loaded: Result<PagedData<T>>?,
+    private val cached: Result<PagedData<T>>? = null
 ) : PagingSource<String, T>() {
 
     val flow = Pager(
@@ -31,37 +30,33 @@ class PagedSource<T : Any>(
         return key
     }
 
-    private var data: PagedData<T>? = null
     private fun invalidate(key: String?) {
-        data?.invalidate(key)
+        cached?.getOrNull()?.invalidate(key)
+        loaded?.getOrNull()?.invalidate(key)
     }
 
     override suspend fun load(params: LoadParams<String>): LoadResult<String, T> {
         val key = params.key
-        val data = result.await().getOrElse {
-            return LoadResult.Error(it)
-        } ?: return LoadResult.Page(
-            data = emptyList(), prevKey = null, nextKey = null
-        )
         return runCatching {
-            val page = data.loadList(key)
+            val page = loaded?.getOrThrow()?.loadPage(key) ?: throw LoadingException()
             LoadResult.Page(page.data, key, page.continuation)
         }.getOrElse {
-            LoadResult.Error(it)
+            println("Error $it")
+            val cachedPage = cached?.getOrNull()?.loadPage(key)
+            return if (cachedPage == null || cachedPage.data.isEmpty()) LoadResult.Error(it)
+            else LoadResult.Page(cachedPage.data, key, cachedPage.continuation)
         }
     }
 
     companion object {
-        fun <T : Any> emptyFlow() = flow {
-            emit(
-                PagingData.Companion.empty<T>(
-                    LoadStates(
-                        LoadState.Loading,
-                        LoadState.NotLoading(false),
-                        LoadState.NotLoading(true)
-                    )
-                )
+        fun <T : Any> empty() = PagingData.Companion.empty<T>(
+            LoadStates(
+                LoadState.Loading,
+                LoadState.NotLoading(false),
+                LoadState.NotLoading(true)
             )
-        }
+        )
     }
+
+    class LoadingException() : Exception("Loading PagedSource")
 }

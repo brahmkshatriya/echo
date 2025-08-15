@@ -48,7 +48,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/more"
-        style="@style/IconButtonTonal"
+        style="@style/IconButtonOutlined"
         android:contentDescription="@string/more"
         app:icon="@drawable/ic_chevron_forward" />
 </LinearLayout>

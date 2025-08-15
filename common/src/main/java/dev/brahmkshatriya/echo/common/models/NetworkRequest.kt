@@ -1,11 +1,15 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.models.NetworkRequest.Companion.toGetRequest
+import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.CONNECT
 import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.DELETE
 import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.GET
+import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.HEAD
+import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.OPTIONS
 import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.PATCH
 import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.POST
 import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.PUT
+import dev.brahmkshatriya.echo.common.models.NetworkRequest.Method.TRACE
 import kotlinx.serialization.Serializable
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -36,9 +40,13 @@ data class NetworkRequest(
      * - [PUT] for updating data
      * - [DELETE] for deleting data
      * - [PATCH] for partially updating data
+     * - [HEAD] for retrieving the headers of a resource without the body
+     * - [OPTIONS] for requesting information about the communication options available
+     * - [TRACE] for tracing the path to the resource
+     * - [CONNECT] for establishing a tunnel to the server
      */
     enum class Method {
-        GET, POST, PUT, DELETE, PATCH
+        GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE, CONNECT
     }
 
     /**

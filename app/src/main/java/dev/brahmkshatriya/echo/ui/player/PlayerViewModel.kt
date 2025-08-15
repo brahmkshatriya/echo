@@ -15,7 +15,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.MediaController
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -141,8 +142,8 @@ class PlayerViewModel(
         withBrowser { it.repeatMode = repeatMode }
     }
 
-    suspend fun isTrackClient(extensionId: String): Boolean = withContext(Dispatchers.IO) {
-        extensions.music.getExtension(extensionId)?.isClient<TrackLikeClient>() ?: false
+    suspend fun isLikeClient(extensionId: String): Boolean = withContext(Dispatchers.IO) {
+        extensions.music.getExtension(extensionId)?.isClient<LikeClient>() ?: false
     }
 
     private fun createException(throwable: Throwable) {
@@ -206,7 +207,12 @@ class PlayerViewModel(
     fun setQueue(id: String, list: List<Track>, index: Int, context: EchoMediaItem?) {
         withBrowser { controller ->
             val mediaItems = list.map {
-                MediaItemUtils.build(app.context, downloadFlow.value, it, id, context)
+                MediaItemUtils.build(
+                    app.context,
+                    downloadFlow.value,
+                    MediaState.Unloaded(id, it),
+                    context
+                )
             }
             controller.setMediaItems(mediaItems, index, list[index].playedDuration ?: 0)
             controller.prepare()

@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.feed.viewholders
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.updatePaddingRelative
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -16,6 +17,7 @@ import dev.brahmkshatriya.echo.ui.feed.FeedType
 import dev.brahmkshatriya.echo.ui.feed.viewholders.shelf.ShelfType
 import dev.brahmkshatriya.echo.ui.feed.viewholders.shelf.ShelfViewHolder
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationAndScaleAnimation
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 
 class HorizontalListViewHolder(
     parent: ViewGroup,
@@ -34,6 +36,8 @@ class HorizontalListViewHolder(
     }
 
     override fun bind(feed: FeedType.HorizontalList) {
+        val endPadding = if (feed.shelf is Shelf.Lists.Tracks) 8 else 20
+        binding.root.updatePaddingRelative(end = endPadding.dpToPx(binding.root.context))
         adapter.tracks = feed.shelf.list.filterIsInstance<Track>()
         adapter.submitList(feed.shelf.toShelfType(feed.extensionId, feed.context, feed.tabId)) {
             binding.root.adapter = adapter

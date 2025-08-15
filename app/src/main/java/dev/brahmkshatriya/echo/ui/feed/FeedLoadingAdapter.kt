@@ -9,11 +9,13 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemShelfErrorBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfNotLoadingBinding
+import dev.brahmkshatriya.echo.extensions.cache.Cached
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.getFinalTitle
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.getMessage
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.openLoginException
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
+import dev.brahmkshatriya.echo.ui.common.PagedSource
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimLoadStateAdapter
 
 class FeedLoadingAdapter(
@@ -106,6 +108,8 @@ class FeedLoadingAdapter(
             is LoadState.Error -> {
                 when (loadState.error) {
                     is AppException.LoginRequired -> 3
+                    is PagedSource.LoadingException -> 0
+                    is Cached.NotFound -> 1
                     else -> 2
                 }
             }

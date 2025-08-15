@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
@@ -53,7 +54,7 @@ class PlayerRadio(
                 val radio = radio(item, itemContext)
                 val tracks = loadTracks(radio).pagedDataOfFirst()
                 PlayerState.Radio.Loaded(extension.id, radio, null) {
-                    extension.get { tracks.loadList(it) }.getOrThrow(throwableFlow)
+                    extension.get { tracks.loadPage(it) }.getOrThrow(throwableFlow)
                 }
             }.getOrThrow(throwableFlow)
         }
@@ -73,7 +74,10 @@ class PlayerRadio(
 
             val item = tracks.data.map {
                 MediaItemUtils.build(
-                    context, downloadFlow.value, it, loaded.clientId, loaded.context
+                    context,
+                    downloadFlow.value,
+                    MediaState.Unloaded(loaded.clientId, it),
+                    loaded.context
                 )
             }
 

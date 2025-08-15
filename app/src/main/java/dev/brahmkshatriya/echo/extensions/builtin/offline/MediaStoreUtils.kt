@@ -271,7 +271,6 @@ object MediaStoreUtils {
         songs: MutableList<Track>,
         foundPlaylistContent: Boolean,
         idMap: MutableMap<Long, Track>?,
-        likedAudios: List<Long>,
         block: (Track) -> Unit
     ) = use { cursor ->
         // Get columns from mediaStore.
@@ -319,7 +318,6 @@ object MediaStoreUtils {
             val album = albumName?.let {
                 Album(albumId.toString(), it, null, null, albumArtist.toArtists())
             }
-            val liked = likedAudios.contains(id)
             val song = Track(
                 id = id.toString(),
                 title = title,
@@ -328,7 +326,6 @@ object MediaStoreUtils {
                 cover = imgUri?.toString()?.toResourceUriImageHolder(),
                 duration = duration,
                 releaseDate = year?.toYearDate(),
-                isLiked = liked,
                 streamables = listOf(Streamable.server(path, 0, path)),
                 extras = mapOf(
                     "genre" to (genre ?: context.getString(R.string.unknown)),
@@ -454,7 +451,6 @@ object MediaStoreUtils {
         val foundPlaylistContent =
             runCatching { playlistContent(context, playlists) }.getOrNull() ?: false
         val idMap = hashMapOf<Long, Track>()
-        val likedAudios = playlists.find { it.first.title == "Liked" }?.second ?: emptyList()
         val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
@@ -470,7 +466,6 @@ object MediaStoreUtils {
             songs,
             foundPlaylistContent,
             idMap,
-            likedAudios
         ) { song ->
             song.artists.map {
                 val id = it.id.toLongOrNull()

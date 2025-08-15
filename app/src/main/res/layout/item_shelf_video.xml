@@ -5,8 +5,12 @@
     style="@style/Selectable"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
-    android:orientation="vertical">
+    android:layout_marginStart="-20dp"
+    android:layout_marginEnd="-20dp"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="4dp">
 
     <ImageView
         android:id="@+id/cover"
@@ -31,8 +35,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="-20dp"
+        android:layout_marginEnd="-20dp"
+        android:clipToPadding="false"
         android:gravity="center"
         android:orientation="horizontal"
+        android:paddingHorizontal="20dp"
         android:paddingTop="8dp">
 
         <ImageView
@@ -75,8 +83,8 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/more"
-            style="@style/IconButtonOutlined"
-            android:layout_marginEnd="-4dp"
+            style="@style/IconButtonTransparent"
+            android:layout_marginEnd="-12dp"
             android:contentDescription="@string/more"
             app:icon="@drawable/ic_more_horiz" />
     </LinearLayout>

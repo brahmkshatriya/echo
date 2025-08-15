@@ -42,6 +42,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
@@ -138,7 +139,7 @@ abstract class AndroidAutoCallback(
 
             LIBRARY -> extension.getFeed<LibraryFeedClient>(
                 context, parentId, LIBRARY, page
-            ){ loadLibraryFeed() }
+            ) { loadLibraryFeed() }
 
             SEARCH -> extension.getFeed<SearchFeedClient>(
                 context, parentId, SEARCH, page
@@ -198,7 +199,12 @@ abstract class AndroidAutoCallback(
                 val (track, extId, con) =
                     context.getFromCache<Triple<Track, String, EchoMediaItem?>>(id, "auto")
                         ?: return@mapNotNull null
-                MediaItemUtils.build(context, downloadFlow.value, track, extId, con)
+                MediaItemUtils.build(
+                    context,
+                    downloadFlow.value,
+                    MediaState.Unloaded(extId, track),
+                    con
+                )
             } else it
         }
         val future = super.onSetMediaItems(
@@ -378,7 +384,7 @@ abstract class AndroidAutoCallback(
             context: Context, id: String, extId: String, page: Int
         ): List<MediaItem> {
             val shelf = shelvesMap[id]!!
-            val (list, next) = shelf.loadList(continuations[id to page])
+            val (list, next) = shelf.loadPage(continuations[id to page])
             continuations[id to page + 1] = next
             return listOfNotNull(
                 *list.map { it.toMediaItem(context, extId) }.toTypedArray()
@@ -420,7 +426,7 @@ abstract class AndroidAutoCallback(
                 tracksMap[id] = tracks
                 tracks
             }
-            val (list, next) = tracks.loadList(continuations[id to page])
+            val (list, next) = tracks.loadPage(continuations[id to page])
             continuations[id to page + 1] = next
             return list.map { it.toItem(context, id, item) }
         }

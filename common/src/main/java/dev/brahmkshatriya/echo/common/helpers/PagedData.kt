@@ -49,7 +49,7 @@ sealed class PagedData<T : Any> {
     abstract suspend fun loadListInternal(continuation: String?): Page<T>
 
     private val mutex = Mutex()
-    suspend fun loadList(continuation: String?): Page<T> {
+    suspend fun loadPage(continuation: String?): Page<T> {
         return mutex.withLock { loadListInternal(continuation) }
     }
 
@@ -213,7 +213,7 @@ sealed class PagedData<T : Any> {
         override suspend fun loadListInternal(continuation: String?): Page<T> {
             val (index, token) = splitContinuation(continuation)
             val source = sources.getOrNull(index) ?: return Page(emptyList(), null)
-            val page = source.loadList(token)
+            val page = source.loadPage(token)
             return if (page.continuation != null) Page(page.data, combine(index, page.continuation))
             else Page(page.data, combine(index + 1, null))
         }
@@ -247,7 +247,7 @@ sealed class PagedData<T : Any> {
         }
 
         override suspend fun loadListInternal(continuation: String?): Page<T> {
-            return data().loadList(continuation)
+            return data().loadPage(continuation)
         }
 
         override fun invalidate(continuation: String?) {

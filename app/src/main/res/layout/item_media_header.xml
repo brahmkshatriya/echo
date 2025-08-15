@@ -28,6 +28,7 @@
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
                 android:text="@string/follow"
+                app:icon="@drawable/anim_check_circle"
                 android:visibility="gone"
                 app:iconPadding="8dp" />
 
@@ -59,7 +60,16 @@
                 app:icon="@drawable/anim_heart_40dp" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/hideButton"
+                style="@style/IconButtonTonal"
+                android:checkable="true"
+                android:checked="false"
+                android:contentDescription="@string/hide"
+                app:icon="@drawable/anim_hide" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/radioButton"
+                android:visibility="gone"
                 style="@style/IconButtonTonal"
                 android:contentDescription="@string/radio"
                 app:icon="@drawable/ic_sensors" />

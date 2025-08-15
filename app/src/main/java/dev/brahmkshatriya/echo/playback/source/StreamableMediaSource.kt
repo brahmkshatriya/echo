@@ -22,6 +22,7 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.upstream.Allocator
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
@@ -162,7 +163,7 @@ class StreamableMediaSource(
     }
 
     class Factory(
-        private val context: Context,
+        private val app: App,
         private val scope: CoroutineScope,
         private val state: PlayerState,
         extensions: ExtensionLoader,
@@ -171,7 +172,7 @@ class StreamableMediaSource(
         private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>
     ) : MediaSource.Factory {
 
-        private val loader = StreamableLoader(context, extensions.music, downloadFlow)
+        private val loader = StreamableLoader(app, extensions.music, downloadFlow)
 
         private val factories = Factories(
             lazily { DashMediaSource.Factory(dataSource) },
@@ -181,7 +182,7 @@ class StreamableMediaSource(
 
         private val dataSource = ResolvingDataSource.Factory(
             CacheDataSource.Factory().setCache(cache)
-                .setUpstreamDataSourceFactory(StreamableDataSource.Factory(context)),
+                .setUpstreamDataSourceFactory(StreamableDataSource.Factory(app.context)),
             StreamableResolver(state.servers)
         )
 
@@ -216,7 +217,7 @@ class StreamableMediaSource(
         }
 
         override fun createMediaSource(mediaItem: MediaItem) = StreamableMediaSource(
-            mediaItem, context, scope, state, loader, factories, changeFlow
+            mediaItem, app.context, scope, state, loader, factories, changeFlow
         )
     }
 }

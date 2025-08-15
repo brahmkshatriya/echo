@@ -111,7 +111,7 @@ class EditPlaylistViewModel(
     }
 
     private val saveFlow = MutableSharedFlow<Unit>()
-    val isSavable = newActions.combine(pairFlow) { actions, pair ->
+    val isSaveable = newActions.combine(pairFlow) { actions, pair ->
         val playlist = playlistFlow.value?.getOrNull() ?: return@combine false
         if (playlist.title != pair.first) return@combine true
         if (playlist.description != pair.second) return@combine true

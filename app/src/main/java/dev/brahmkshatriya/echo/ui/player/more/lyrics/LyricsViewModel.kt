@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -116,13 +116,11 @@ class LyricsViewModel(
         feedData.combineTransformLatest(selectedTabIndexFlow) { result, index ->
             emit(null)
             if (result == null) return@combineTransformLatest
-            emit(viewModelScope.async(Dispatchers.IO, CoroutineStart.LAZY) {
-                result.await().mapCatching {
-                    val data =
-                        it.getPagedData(it.tabs.run { getOrNull(index) ?: firstOrNull() }).pagedData
-                    if (queryFlow.value.isEmpty()) onLyricsSelected(data.loadList(null).data.firstOrNull())
-                    data
-                }
+            emit(result.await().mapCatching {
+                val data =
+                    it.getPagedData(it.tabs.run { getOrNull(index) ?: firstOrNull() }).pagedData
+                if (queryFlow.value.isEmpty()) onLyricsSelected(data.loadPage(null).data.firstOrNull())
+                data
             })
         }.flowOn(Dispatchers.IO).stateIn(viewModelScope, Eagerly, null)
 
@@ -130,9 +128,9 @@ class LyricsViewModel(
         .stateIn(viewModelScope, Eagerly, false)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagingFlow = pagedDataFlow.flatMapLatest { result ->
-        if (result == null) PagedSource.emptyFlow()
-        else PagedSource(result).flow
+    val pagingFlow = pagedDataFlow.transformLatest { result ->
+        emit(PagedSource.empty())
+        if (result != null) emitAll(PagedSource(result).flow)
     }.cachedIn(viewModelScope)
 
     sealed interface State {

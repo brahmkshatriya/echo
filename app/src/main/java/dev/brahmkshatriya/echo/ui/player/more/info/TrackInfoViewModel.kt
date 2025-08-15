@@ -5,6 +5,8 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.MediaState
+import dev.brahmkshatriya.echo.extensions.cache.Cached.loadMedia
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -40,8 +42,13 @@ class TrackInfoViewModel(
             listOf(extensionFlow, refreshFlow).merge().collectLatest {
                 itemResultFlow.value = null
                 val extension = extensionFlow.value ?: return@collectLatest
-                val track = currentFlow.value?.mediaItem?.takeIf { it.isLoaded }?.track ?: return@collectLatest
-                itemResultFlow.value = loadMedia(extension, track, true)
+                val track = currentFlow.value?.mediaItem?.takeIf { it.isLoaded }?.track
+                    ?: return@collectLatest
+                itemResultFlow.value = loadMedia(
+                    app,
+                    extension,
+                    MediaState.Unloaded(extension.id, track)
+                )
             }
         }
     }

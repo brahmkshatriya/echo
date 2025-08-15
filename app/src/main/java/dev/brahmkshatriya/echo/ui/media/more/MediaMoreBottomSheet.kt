@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.DialogMediaMoreBinding
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
@@ -28,7 +29,6 @@ import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter
 import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
-import dev.brahmkshatriya.echo.ui.media.MediaState
 import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.media.more.MoreButton.Companion.button
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
@@ -141,7 +141,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
 
     private fun getButtons(
         client: ExtensionClient?,
-        state: MediaState?,
+        state: MediaState.Loaded<*>?,
         loaded: Boolean,
         downloads: List<Downloader.Info>
     ) = getPlayerButtons() +
@@ -182,7 +182,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
     ) else listOf()
 
     fun getPlaylistEditButtons(
-        client: ExtensionClient?, state: MediaState?, loaded: Boolean
+        client: ExtensionClient?, state: MediaState<*>?, loaded: Boolean
     ) = run {
         if (client !is PlaylistEditClient) return@run listOf()
         val item = state?.item ?: item
@@ -207,7 +207,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
                 DeletePlaylistBottomSheet.show(requireParentFragment(), extensionId, item, loaded)
             } else null,
             if (itemContext is Playlist && item is Track) button(
-                "remove_from_playlist", R.string.remove, R.drawable.ic_delete
+                "remove_from_playlist", R.string.remove, R.drawable.ic_cancel
             ) {
                 EditPlaylistBottomSheet.newInstance(
                     extensionId, itemContext as Playlist, tabId, pos
@@ -217,7 +217,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
     }
 
     fun getDownloadButtons(
-        client: ExtensionClient?, state: MediaState?, downloads: List<Downloader.Info>
+        client: ExtensionClient?, state: MediaState<*>?, downloads: List<Downloader.Info>
     ) = run {
         val item = state?.item ?: item
         val shouldShowDelete = when (item) {
@@ -235,7 +235,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
                 downloadViewModel.addToDownload(requireActivity(), extensionId, item, itemContext)
             } else null,
             if (shouldShowDelete) button(
-                "delete_download", R.string.delete_download, R.drawable.ic_delete
+                "delete_download", R.string.delete_download, R.drawable.ic_scan_delete
             ) {
                 val downloadViewModel by activityViewModel<DownloadViewModel>()
                 downloadViewModel.deleteDownload(item)
@@ -245,11 +245,11 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
     }
 
     fun getActionButtons(
-        state: MediaState?,
+        state: MediaState.Loaded<*>?,
     ) = listOfNotNull(
         if (state?.isFollowed != null) button(
             "follow", if (state.isFollowed) R.string.unfollow else R.string.follow,
-            if (state.isFollowed) R.drawable.ic_heart_filled_40dp else R.drawable.ic_heart_outline_40dp
+            if (state.isFollowed) R.drawable.ic_check_circle_filled else R.drawable.ic_check_circle
         ) {
             vm.followItem(!state.isFollowed)
         } else null,
@@ -264,7 +264,13 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
             "like", if (state.isLiked) R.string.unlike else R.string.like,
             if (state.isLiked) R.drawable.ic_heart_filled_40dp else R.drawable.ic_heart_outline_40dp
         ) {
-            vm.likeTrack(!state.isLiked)
+            vm.likeItem(!state.isLiked)
+        } else null,
+        if (state?.isHidden != null) button(
+            "hide", if (state.isHidden) R.string.unhide else R.string.hide,
+            if (state.isHidden) R.drawable.ic_unhide else R.drawable.ic_hide
+        ) {
+            vm.hideItem(!state.isHidden)
         } else null,
         if (state?.showRadio == true) button(
             "radio", R.string.radio, R.drawable.ic_sensors

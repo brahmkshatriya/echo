@@ -13,9 +13,11 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.FragmentMainBinding
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.addIfNull
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.BACKGROUND_GRADIENT
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyGradient
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.main.search.SearchFragment
+import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -24,6 +26,7 @@ import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import kotlin.math.max
 
 class MainFragment : Fragment() {
 
@@ -83,9 +86,13 @@ class MainFragment : Fragment() {
         ) {
             recyclerView.run {
                 val height = 48.dpToPx(context)
+                val settings = context.getSettings()
+                val isGradient = settings.getBoolean(BACKGROUND_GRADIENT, true)
+                val extra = if (isGradient) 0.5f else 0f
                 setOnScrollChangeListener { _, _, _, _, _ ->
-                    outline.alpha =
+                    val offset =
                         computeVerticalScrollOffset().coerceAtMost(height) / height.toFloat()
+                    outline.alpha = max(0f, offset - extra)
                 }
             }
             FastScrollerHelper.applyTo(recyclerView)

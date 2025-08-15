@@ -1,11 +1,14 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditPrivacyClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
+import dev.brahmkshatriya.echo.common.clients.ShareClient
 import kotlinx.serialization.Serializable
 
 /**
@@ -26,7 +29,10 @@ import kotlinx.serialization.Serializable
  * @property extras Any extra data you want to associate with the playlist
  * @property isRadioSupported Whether the playlist can be used to create a radio. Checkout [RadioClient]
  * @property isFollowable Whether the playlist can be followed. Checkout [FollowClient]
- * @property isSavable Whether the playlist can be saved to a library. Checkout [SaveToLibraryClient]
+ * @property isSaveable Whether the playlist can be saved to library. Checkout [SaveClient]
+ * @property isLikeable Whether the playlist can be liked. Checkout [LikeClient]
+ * @property isHideable Whether the playlist can be hidden. Checkout [HideClient]
+ * @property isShareable Whether the playlist can be shared. Checkout [ShareClient]
  *
  * @see PlaylistClient
  */
@@ -47,8 +53,10 @@ data class Playlist(
     override val extras: Map<String, String> = mapOf(),
     override val isRadioSupported: Boolean = true,
     override val isFollowable: Boolean = false,
-    override val isSavable: Boolean = true,
-    override val isSharable: Boolean = true,
+    override val isSaveable: Boolean = true,
+    override val isLikeable: Boolean = false,
+    override val isHideable: Boolean = false,
+    override val isShareable: Boolean = true,
 ) : EchoMediaItem.Lists {
     override val artists = authors
     override val date = creationDate

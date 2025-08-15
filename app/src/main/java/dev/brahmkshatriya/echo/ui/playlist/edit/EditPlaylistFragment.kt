@@ -92,7 +92,7 @@ class EditPlaylistFragment : Fragment() {
         binding.save.setOnClickListener {
             vm.save()
         }
-        observe(vm.isSavable) {
+        observe(vm.isSaveable) {
             binding.save.isEnabled = it
         }
 

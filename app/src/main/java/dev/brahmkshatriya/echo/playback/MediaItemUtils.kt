@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.selectServerIndex
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
@@ -32,16 +33,14 @@ object MediaItemUtils {
     suspend fun build(
         appContext: Context,
         downloads: List<Downloader.Info>,
-        track: Track,
-        extensionId: String,
+        state: MediaState.Unloaded<Track>,
         context: EchoMediaItem?,
     ): MediaItem {
         val item = MediaItem.Builder()
-        val metadata =
-            track.toMetaData(bundleOf(), downloads, extensionId, context, false, appContext)
+        val metadata = state.toMetaData(bundleOf(), downloads, context, false, appContext)
         item.setMediaMetadata(metadata)
-        item.setMediaId(track.id)
-        item.setUri(track.id)
+        item.setMediaId(state.item.id)
+        item.setUri(state.item.id)
         return item.build()
     }
 
@@ -49,11 +48,11 @@ object MediaItemUtils {
         appContext: Context,
         downloads: List<Downloader.Info>,
         mediaItem: MediaItem,
-        track: Track
+        state: MediaState.Loaded<Track>
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
-        val metadata = track.toMetaData(
-            mediaMetadata.extras!!, downloads, extensionId, context, true, appContext
+        val metadata = state.toMetaData(
+            mediaMetadata.extras!!, downloads, context, true, appContext
         )
         item.setMediaMetadata(metadata)
         return item.build()
@@ -156,60 +155,63 @@ object MediaItemUtils {
 
 
     @OptIn(UnstableApi::class)
-    private suspend fun Track.toMetaData(
+    private suspend fun MediaState<Track>.toMetaData(
         bundle: Bundle,
         downloads: List<Downloader.Info>,
-        extensionId: String = bundle.getString("extensionId")!!,
         context: EchoMediaItem? = bundle.getSerialized("context"),
         loaded: Boolean = bundle.getBoolean("loaded"),
         appContext: Context,
         serverIndex: Int? = null,
         backgroundIndex: Int? = null,
         subtitleIndex: Int? = null
-    ) = MediaMetadata.Builder()
-        .setTitle(title)
-        .setAlbumTitle(album?.title)
-        .setAlbumArtist(album?.artists?.joinToString(", ") { it.name })
-        .setArtist(artists.joinToString(", ") { it.name })
-        .setArtworkUri(cover?.toUriWithJson())
-        .setUserRating(
-            if (isLiked) ThumbRating(true) else ThumbRating()
-        )
-        .setExtras(Bundle().apply {
-            val settings = appContext.getSettings()
-            putAll(bundle)
-            putSerialized("unloadedCover", bundle.trackNullable?.cover)
-            putSerialized("track", this@toMetaData)
-            putString("extensionId", extensionId)
-            putSerialized("context", context)
-            putBoolean("loaded", loaded)
-            putInt("subtitleIndex", subtitleIndex ?: 0.takeIf { subtitles.isNotEmpty() } ?: -1)
-            putInt(
-                "backgroundIndex",
-                backgroundIndex
-                    ?: 0.takeIf { backgrounds.isNotEmpty() && settings.showBackground() } ?: -1
+    ) = with(item) {
+        val isLiked = (this@toMetaData as? MediaState.Loaded<*>)?.isLiked == true
+        MediaMetadata.Builder()
+            .setTitle(title)
+            .setAlbumTitle(album?.title)
+            .setAlbumArtist(album?.artists?.joinToString(", ") { it.name })
+            .setArtist(artists.joinToString(", ") { it.name })
+            .setArtworkUri(cover?.toUriWithJson())
+            .setUserRating(
+                if (isLiked) ThumbRating(true) else ThumbRating()
             )
-            val downloaded =
-                downloads.filter { it.download.trackId == id }.mapNotNull { it.download.finalFile }
-            putInt(
-                "serverIndex",
-                serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded)
-            )
-            putSerialized("downloaded", downloaded)
-        })
-        .setSubtitle(bundle.indexes())
-        .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
-        .setIsPlayable(true)
-        .setIsBrowsable(false)
-        .build()
+            .setExtras(Bundle().apply {
+                val settings = appContext.getSettings()
+                putAll(bundle)
+                putSerialized("unloadedCover", bundle.stateNullable?.item?.cover)
+                putSerialized("state", this@toMetaData)
+                putSerialized("context", context)
+                putBoolean("loaded", loaded)
+                putInt("subtitleIndex", subtitleIndex ?: 0.takeIf { subtitles.isNotEmpty() } ?: -1)
+                putInt(
+                    "backgroundIndex",
+                    backgroundIndex
+                        ?: 0.takeIf { backgrounds.isNotEmpty() && settings.showBackground() } ?: -1
+                )
+                val downloaded =
+                    downloads.filter { it.download.trackId == id }
+                        .mapNotNull { it.download.finalFile }
+                putInt(
+                    "serverIndex",
+                    serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded)
+                )
+                putSerialized("downloaded", downloaded)
+            })
+            .setSubtitle(bundle.indexes())
+            .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+            .setIsPlayable(true)
+            .setIsBrowsable(false)
+            .build()
+    }
 
     private fun Bundle.indexes() =
         "${getInt("serverIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
 
-    private val Bundle?.trackNullable get() = this?.getSerialized<Track>("track")
-    val Bundle?.track get() = requireNotNull(trackNullable)
+    private val Bundle?.stateNullable get() = this?.getSerialized<MediaState<Track>>("state")
+    val Bundle?.state get() = requireNotNull(stateNullable)
+    val Bundle?.track get() = state.item
     val Bundle?.isLoaded get() = this?.getBoolean("loaded") ?: false
-    val Bundle?.extensionId get() = requireNotNull(this?.getString("extensionId"))
+    val Bundle?.extensionId get() = state.extensionId
     val Bundle?.context get() = this?.getSerialized<EchoMediaItem?>("context")
     val Bundle?.serverIndex get() = this?.getInt("serverIndex", -1) ?: -1
     val Bundle?.sourceIndex get() = this?.getInt("sourceIndex", -1) ?: -1
@@ -220,6 +222,7 @@ object MediaItemUtils {
     val Bundle?.unloadedCover get() = this?.getSerialized<ImageHolder?>("unloadedCover")
     val Bundle?.downloaded get() = this?.getSerialized<List<String>>("downloaded")
 
+    val MediaItem.state get() = mediaMetadata.extras.state
     val MediaItem.track get() = mediaMetadata.extras.track
     val MediaItem.extensionId get() = mediaMetadata.extras.extensionId
     val MediaItem.context get() = mediaMetadata.extras.context

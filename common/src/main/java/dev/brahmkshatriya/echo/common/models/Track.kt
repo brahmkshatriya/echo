@@ -1,11 +1,12 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
+import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackHideClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import kotlinx.serialization.Serializable
 import java.util.Locale
 
@@ -34,12 +35,12 @@ import java.util.Locale
  * @property extras Any extra data you want to associate with the track
  * @property isPlayable Whether the track is playable.
  * @property streamables The streamables of the track
- * @property isLiked Whether the track is liked. Checkout [TrackLikeClient]
- * @property isHidden Whether the track is hidden. Checkout [TrackHideClient]
  * @property isRadioSupported Whether the track can used to create a radio. Checkout [RadioClient]
  * @property isFollowable Whether the track can be followed. Checkout [FollowClient]
- * @property isSavable Whether the track can be saved to a library. Checkout [SaveToLibraryClient]
- * @property isSharable Whether the track can be shared. Checkout [TrackClient]
+ * @property isSaveable Whether the track can be saved to library. Checkout [SaveClient]
+ * @property isLikeable Whether the track can be liked. Checkout [LikeClient]
+ * @property isHideable Whether the track can be hidden. Checkout [HideClient]
+ * @property isShareable Whether the track can be shared. Checkout [ShareClient]
  *
  * @see Streamable
  * @see TrackClient
@@ -68,12 +69,12 @@ data class Track(
     override val extras: Map<String, String> = mapOf(),
     val isPlayable: Playable = Playable.Yes,
     val streamables: List<Streamable> = listOf(),
-    val isLiked: Boolean = false,
-    val isHidden: Boolean = false,
     override val isRadioSupported: Boolean = true,
     override val isFollowable: Boolean = false,
-    override val isSavable: Boolean = true,
-    override val isSharable: Boolean = true,
+    override val isSaveable: Boolean = true,
+    override val isLikeable: Boolean = true,
+    override val isHideable: Boolean = true,
+    override val isShareable: Boolean = true,
 ) : EchoMediaItem {
 
     enum class Type {

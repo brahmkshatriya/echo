@@ -1,8 +1,10 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -26,9 +28,11 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  * @property subtitle The subtitle of the media item, used to display information under the title
  * @property extras Any extra data you want to associate with the media item
  * @property isFollowable Whether the media item can be followed. Checkout [FollowClient]
- * @property isSavable Whether the media item can be saved to a library. Checkout [SaveToLibraryClient]
+ * @property isSaveable Whether the media item can be saved to library. Checkout [SaveClient]
+ * @property isLikeable Whether the media item can be liked. Checkout [LikeClient]
+ * @property isHideable Whether the media item can be hidden. Checkout [HideClient]
  * @property isRadioSupported Whether the media item can be loaded to get [Radio]. Checkout [RadioClient]
- * @property isSharable Whether the media item can be shared. Checkout [ShareClient]
+ * @property isShareable Whether the media item can be shared. Checkout [ShareClient]
  *
  * @see Track
  * @see Artist
@@ -50,8 +54,10 @@ sealed interface EchoMediaItem {
     val extras: Map<String, String>
     val isRadioSupported: Boolean
     val isFollowable: Boolean
-    val isSavable: Boolean
-    val isSharable: Boolean
+    val isSaveable: Boolean
+    val isLikeable: Boolean
+    val isHideable: Boolean
+    val isShareable: Boolean
     val isExplicit: Boolean get() = false
     val isPrivate: Boolean get() = false
 
@@ -94,7 +100,7 @@ sealed interface EchoMediaItem {
         extras: Map<String, String> = this.extras,
         isRadioSupported: Boolean = this.isRadioSupported,
         isFollowable: Boolean = this.isFollowable,
-        isSavable: Boolean = this.isSavable
+        isSaveable: Boolean = this.isSaveable
     ): EchoMediaItem = when (this) {
         is Artist -> copy(
             id = id,
@@ -105,7 +111,7 @@ sealed interface EchoMediaItem {
             extras = extras,
             isRadioSupported = isRadioSupported,
             isFollowable = isFollowable,
-            isSavable = isSavable
+            isSaveable = isSaveable
         )
 
         is Album -> copy(
@@ -117,7 +123,7 @@ sealed interface EchoMediaItem {
             extras = extras,
             isRadioSupported = isRadioSupported,
             isFollowable = isFollowable,
-            isSavable = isSavable
+            isSaveable = isSaveable
         )
 
         is Playlist -> copy(
@@ -129,7 +135,7 @@ sealed interface EchoMediaItem {
             extras = extras,
             isRadioSupported = isRadioSupported,
             isFollowable = isFollowable,
-            isSavable = isSavable
+            isSaveable = isSaveable
         )
 
         is Radio -> copy(
@@ -140,7 +146,7 @@ sealed interface EchoMediaItem {
             subtitle = subtitle,
             extras = extras,
             isFollowable = isFollowable,
-            isSavable = isSavable
+            isSaveable = isSaveable
         )
 
         is Track -> copy(
@@ -152,7 +158,7 @@ sealed interface EchoMediaItem {
             extras = extras,
             isRadioSupported = isRadioSupported,
             isFollowable = isFollowable,
-            isSavable = isSavable
+            isSaveable = isSaveable
         )
     }
 }

@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.common.models.Feed.Buttons.Companion.EMPTY
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentHomeBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
+import dev.brahmkshatriya.echo.extensions.cache.Cached
 import dev.brahmkshatriya.echo.ui.common.GridAdapter.Companion.configureGridLayout
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
@@ -33,9 +34,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val feedData by lazy {
         val vm by viewModel<FeedViewModel>()
-        vm.getFeedData("home", EMPTY) {
+        val id = "home"
+        vm.getFeedData(id, EMPTY, cached = {
             val curr = current.value!!
-            val feed = curr.getAs<HomeFeedClient, Feed<Shelf>> { loadHomeFeed() }.getOrThrow()
+            val feed = Cached.getFeed<Shelf>(app, curr.id, id)
+            FeedData.State(curr.id, null, feed)
+        }) {
+            val curr = current.value!!
+            val feed = Cached.savingFeed(
+                app, curr, id,
+                curr.getAs<HomeFeedClient, Feed<Shelf>> { loadHomeFeed() }.getOrThrow()
+            )
             FeedData.State(curr.id, null, feed)
         }
     }
@@ -73,6 +82,5 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 isRefreshing = it
             }
         }
-
     }
 }

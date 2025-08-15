@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -65,7 +66,7 @@ object ResumptionUtils {
         return tracks?.mapIndexedNotNull { index, track ->
             val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
-            MediaItemUtils.build(this, downloads, track, extensionId, item)
+            MediaItemUtils.build(this, downloads, MediaState.Unloaded(extensionId, track), item)
         }
     }
 

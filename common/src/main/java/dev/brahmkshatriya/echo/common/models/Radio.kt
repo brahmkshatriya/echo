@@ -1,7 +1,9 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.clients.FollowClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import kotlinx.serialization.Serializable
 
@@ -16,8 +18,10 @@ import kotlinx.serialization.Serializable
  * @property subtitle The subtitle of the radio, used to display information under the title
  * @property extras Any extra data you want to associate with the radio
  * @property isFollowable Whether the radio can be followed. Checkout [FollowClient]
- * @property isSavable Whether the radio can be saved to a library. Checkout [SaveToLibraryClient]
- * @property isSharable Whether the radio can be shared. Checkout [ShareClient]
+ * @property isSaveable Whether the radio can be saved to library. Checkout [SaveClient]
+ * @property isLikeable Whether the radio can be liked. Checkout [LikeClient]
+ * @property isHideable Whether the radio can be hidden. Checkout [HideClient]
+ * @property isShareable Whether the radio can be shared. Checkout [ShareClient]
  */
 @Serializable
 data class Radio(
@@ -30,8 +34,10 @@ data class Radio(
     override val subtitle: String? = null,
     override val extras: Map<String, String> = mapOf(),
     override val isFollowable: Boolean = false,
-    override val isSavable: Boolean = false,
-    override val isSharable: Boolean = true,
+    override val isSaveable: Boolean = false,
+    override val isLikeable: Boolean = false,
+    override val isHideable: Boolean = false,
+    override val isShareable: Boolean = true,
 ) : EchoMediaItem.Lists {
     override val isRadioSupported = false
     override val artists = authors

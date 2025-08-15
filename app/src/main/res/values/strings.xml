@@ -271,12 +271,14 @@
 
     <string name="share">Share</string>
     <string name="sharing_x">Sharing %1$s</string>
+
     <string name="save_to_library">Save to library</string>
     <string name="saving_x_to_library">Saving %1$s to library</string>
     <string name="saved_x_to_library">Saved %1$s to library</string>
     <string name="remove_from_library">Remove from library</string>
     <string name="removing_x_from_library">Removing %1$s from library</string>
     <string name="removed_x_from_library">Removed %1$s from library</string>
+
     <string name="radio">Radio</string>
     <string name="download">Download</string>
 
@@ -291,6 +293,11 @@
     <string name="liked_x">Liked %1$s</string>
     <string name="unliking_x">Unliked %1$s</string>
     <string name="unliked_x">Unliked %1$s</string>
+
+    <string name="hiding_x">Hiding %1$s</string>
+    <string name="unhiding_x">Unhiding %1$s</string>
+    <string name="hidden_x">Hidden %1$s</string>
+    <string name="unhidden_x">Unhidden %1$s</string>
 
     <string name="save_to_playlist">Save to playlist</string>
     <string name="delete_playlist">Delete playlist</string>
@@ -422,4 +429,6 @@
     <string name="confirm">Confirm</string>
     <string name="big_cover">Bigger Covers</string>
     <string name="big_cover_summary">Good for devices with larger screens</string>
+    <string name="unhide">Unhide</string>
+    <string name="hide">Hide</string>
 </resources>

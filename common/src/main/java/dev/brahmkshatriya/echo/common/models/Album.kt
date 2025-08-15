@@ -2,8 +2,10 @@ package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.Album.Type.Book
 import dev.brahmkshatriya.echo.common.models.Album.Type.Compilation
@@ -33,8 +35,10 @@ import kotlinx.serialization.Serializable
  * @property extras Any extra data you want to associate with the album
  * @property isRadioSupported Whether the album can be used to create a radio. Checkout [RadioClient]
  * @property isFollowable Whether the album can be followed. Checkout [FollowClient]
- * @property isSavable Whether the album can be saved to a library. Checkout [SaveToLibraryClient]
- * @property isSharable Whether the album can be shared. Checkout [ShareClient]
+ * @property isSaveable Whether the album can be saved to library. Checkout [SaveClient]
+ * @property isLikeable Whether the album can be liked. Checkout [LikeClient]
+ * @property isHideable Whether the album can be hidden. Checkout [HideClient]
+ * @property isShareable Whether the album can be shared. Checkout [ShareClient]
  *
  * @see AlbumClient
  */
@@ -56,8 +60,10 @@ data class Album(
     override val extras: Map<String, String> = mapOf(),
     override val isRadioSupported: Boolean = true,
     override val isFollowable: Boolean = false,
-    override val isSavable: Boolean = true,
-    override val isSharable: Boolean = true,
+    override val isSaveable: Boolean = true,
+    override val isLikeable: Boolean = false,
+    override val isHideable: Boolean = false,
+    override val isShareable: Boolean = true,
 ) : EchoMediaItem.Lists {
 
     override val date = releaseDate

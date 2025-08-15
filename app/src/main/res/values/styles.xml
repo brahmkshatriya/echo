@@ -52,6 +52,7 @@
     <style name="Toolbar" parent="Widget.Material3.Toolbar">
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:paddingEnd">4dp</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">?actionBarSize</item>
         <item name="android:background">@android:color/transparent</item>
@@ -93,7 +94,7 @@
         <item name="android:layout_marginTop">-1dp</item>
         <item name="android:translationZ">1dp</item>
         <item name="android:alpha">0</item>
-        <item name="android:background">?colorOutlineVariant</item>
+        <item name="android:background">@color/amoled_fg_semi</item>
     </style>
 
     <style name="EchoTabLayout" parent="Widget.Material3.TabLayout">
@@ -303,6 +304,15 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:textSize">14sp</item>
         <item name="materialThemeOverlay">@style/ButtonOutlinedOverlay</item>
+    </style>
+
+    <style name="IconButtonTransparent" parent="Widget.Material3Expressive.Button.IconButton.Outlined">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:textSize">14sp</item>
+        <item name="iconTint">?colorOnSurface</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="backgroundTint">@android:color/transparent</item>
     </style>
 
     <style name="IconButtonOutlinedBig" parent="IconButtonOutlined">

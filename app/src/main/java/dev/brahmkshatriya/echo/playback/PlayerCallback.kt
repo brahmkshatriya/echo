@@ -20,10 +20,10 @@ import com.google.common.util.concurrent.ListenableFuture
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -39,6 +39,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
@@ -222,7 +223,7 @@ class PlayerCallback(
         when (item) {
             is Track -> {
                 val mediaItem = MediaItemUtils.build(
-                    context, downloadFlow.value, item, extId, null
+                    context, downloadFlow.value, MediaState.Unloaded(extId, item), null
                 )
                 player.with {
                     setMediaItem(mediaItem)
@@ -240,14 +241,14 @@ class PlayerCallback(
 
                 val result = if (shuffle) extension.get { tracks.loadAll() }
                 else runCatching {
-                    val (list, continuation) = extension.get { tracks.loadList(null) }.getOrThrow()
+                    val (list, continuation) = extension.get { tracks.loadPage(null) }.getOrThrow()
                     if (continuation != null) scope.launch {
                         val all = extension.get { tracks.loadAll() }.getOrElse {
                             throwableFlow.emit(it)
                             return@launch
                         }.drop(list.size).map {
                             MediaItemUtils.build(
-                                context, downloadFlow.value, it, extId, item
+                                context, downloadFlow.value, MediaState.Unloaded(extId, it), item
                             )
                         }
                         player.with { addMediaItems(list.size, all) }
@@ -260,7 +261,9 @@ class PlayerCallback(
                 }
                 player.with {
                     setMediaItems(list.map {
-                        MediaItemUtils.build(context, downloadFlow.value, it, extId, item)
+                        MediaItemUtils.build(
+                            context, downloadFlow.value, MediaState.Unloaded(extId, it), item
+                        )
                     })
                     shuffleModeEnabled = shuffle
                     seekTo(0, list.firstOrNull()?.playedDuration ?: 0)
@@ -278,11 +281,11 @@ class PlayerCallback(
         pages: Int = 5
     ) = runCatching {
         val list = mutableListOf<T>()
-        var page = loadList(null)
+        var page = loadPage(null)
         list.addAll(page.data)
         var count = 0
         while (page.continuation != null && count < pages) {
-            page = loadList(page.continuation)
+            page = loadPage(page.continuation)
             list.addAll(page.data)
             count++
         }
@@ -304,7 +307,12 @@ class PlayerCallback(
         }
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
-            MediaItemUtils.build(context, downloadFlow.value, track, extId, null)
+            MediaItemUtils.build(
+                context,
+                downloadFlow.value,
+                MediaState.Unloaded(extId, track),
+                null
+            )
         }
         player.with {
             addMediaItems(mediaItems)
@@ -331,7 +339,12 @@ class PlayerCallback(
         }
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
-            MediaItemUtils.build(context, downloadFlow.value, track, extId, null)
+            MediaItemUtils.build(
+                context,
+                downloadFlow.value,
+                MediaState.Unloaded(extId, track),
+                null
+            )
         }
         player.with {
             if (mediaItemCount == 0) playWhenReady = true
@@ -356,8 +369,8 @@ class PlayerCallback(
             val track = item.track
             runCatching {
                 val extension = extensions.music.getExtensionOrThrow(item.extensionId)
-                extension.getAs<TrackLikeClient, Unit> {
-                    likeTrack(track, rating.isThumbsUp)
+                extension.getAs<LikeClient, Unit> {
+                    likeItem(track, rating.isThumbsUp)
                 }
             }.getOrElse {
                 throwableFlow.emit(PlayerException(item, it))

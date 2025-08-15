@@ -7,7 +7,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.session.MediaSession
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
@@ -43,7 +43,7 @@ class PlayerEventListener(
     private fun updateCustomLayout() = scope.launch(Dispatchers.Main) {
         val item = player.currentMediaItem ?: return@launch
         val supportsLike = withContext(Dispatchers.IO) {
-            extensions.music.getExtension(item.extensionId)?.isClient<TrackLikeClient>() ?: false
+            extensions.music.getExtension(item.extensionId)?.isClient<LikeClient>() ?: false
         }
         val commandButtons = listOfNotNull(
             getRepeatButton(context, player.repeatMode),

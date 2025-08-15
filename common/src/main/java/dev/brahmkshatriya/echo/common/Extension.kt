@@ -5,8 +5,10 @@ import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.LyricsSearchClient
@@ -17,13 +19,11 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistEditPrivacyClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.QuickSearchClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackChapterClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackHideClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.clients.TrackerClient
 import dev.brahmkshatriya.echo.common.clients.TrackerMarkClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
@@ -85,7 +85,6 @@ sealed class Extension<T : ExtensionClient>(
  * Music Extension supports the following types of clients:
  * - [ExtensionClient] - Mandatory Base Client
  * - [LoginClient] - For login support
- * - [ShareClient] - For showing a share button on media items
  *
  * ### Feed
  * To show feed of media items on main screen, the extension should implement the following clients:
@@ -108,9 +107,10 @@ sealed class Extension<T : ExtensionClient>(
  * ### Library
  * To allow library functionality, The extension can implement the following clients:
  * - [FollowClient] - To follow/unfollow items with [EchoMediaItem.isFollowable] set to true
- * - [SaveToLibraryClient] - To save media items with [EchoMediaItem.isSavable] set to true
- * - [TrackLikeClient] - To like/unlike tracks
- * - [TrackHideClient] - To hide tracks
+ * - [SaveClient] - To save media items with [EchoMediaItem.isSaveable] set to true
+ * - [LikeClient] - To like/unlike items with [EchoMediaItem.isLikeable] set to true
+ * - [HideClient] - To hide items with [EchoMediaItem.isHideable] set to true
+ * - [ShareClient] - To share items with [EchoMediaItem.isShareable] set to true
  *
  * ### Tracking and Lyrics
  * - [TrackerClient] - For tracking what the user is listening to

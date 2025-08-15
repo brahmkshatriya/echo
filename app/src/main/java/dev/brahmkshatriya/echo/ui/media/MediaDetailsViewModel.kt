@@ -8,31 +8,28 @@ import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.clients.AlbumClient
-import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.FollowClient
-import dev.brahmkshatriya.echo.common.clients.PlaylistClient
-import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
-import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.models.Album
-import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.Message
-import dev.brahmkshatriya.echo.common.models.Playlist
-import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.MediaState
+import dev.brahmkshatriya.echo.extensions.cache.Cached.getFeed
+import dev.brahmkshatriya.echo.extensions.cache.Cached.getTracks
+import dev.brahmkshatriya.echo.extensions.cache.Cached.loadFeed
+import dev.brahmkshatriya.echo.extensions.cache.Cached.loadItem
+import dev.brahmkshatriya.echo.extensions.cache.Cached.loadTracks
+import dev.brahmkshatriya.echo.ui.feed.FeedData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -55,20 +52,17 @@ abstract class MediaDetailsViewModel(
     val downloadsFlow = downloader.flow
 
     val refreshFlow = MutableSharedFlow<Unit>()
-    val itemResultFlow = MutableStateFlow<Result<MediaState>?>(null)
+    val itemResultFlow = MutableStateFlow<Result<MediaState.Loaded<*>>?>(null)
 
-    val tracksFlow = itemResultFlow.transformLatest { result ->
-        emit(null)
-        if (!loadFeeds) return@transformLatest
-        val extension = extensionFlow.value ?: return@transformLatest
-        val (item) = result?.getOrElse {
-            emit(Result.failure(it))
-            null
-        } ?: return@transformLatest
-        val feed = if (item is Track) runCatching {
+    val extensionItemFlow = itemResultFlow.map { result ->
+        extensionFlow.value to result?.getOrNull()?.item
+    }.stateIn(viewModelScope, Eagerly, null to null)
+
+    private fun trackFeed(item: EchoMediaItem, extension: Extension<*>) =
+        if (item is Track) runCatching {
             PagedData.Concat(
                 PagedData.Single {
-                    val album = item.album?.let { loadItem(extension, it).getOrNull() ?: it }
+                    val album = item.album?.let { loadItem(app, extension, it).getOrNull() ?: it }
                     listOfNotNull(album?.toShelf())
                 },
                 PagedData.Single {
@@ -81,29 +75,76 @@ abstract class MediaDetailsViewModel(
                         )
                     )
                 },
-            ).toFeed()
-        } else loadTracks(extension, item)?.map { feed -> feed?.map { it.toShelf() } }
-        emit(feed)
-    }.stateIn(viewModelScope, Eagerly, null)
+            ).toFeed(Feed.Buttons.EMPTY)
+        } else null
 
-    val feedFlow = itemResultFlow.transformLatest { result ->
+    val trackCachedFlow = extensionItemFlow.transformLatest { (extension, item) ->
         emit(null)
         if (!loadFeeds) return@transformLatest
-        val extension = extensionFlow.value ?: return@transformLatest
-        val (item) = result?.getOrElse {
-            emit(Result.failure(it))
-            null
-        } ?: return@transformLatest
-        emit(loadFeed(extension, item))
+        extension ?: return@transformLatest
+        item ?: return@transformLatest
+        val feed = trackFeed(item, extension)
+            ?: getTracks(app, extension.id, item).map { feed -> feed?.map { it.toShelf() } }
+        emit(feed.map {
+            it ?: return@map null
+            FeedData.State(extension.id, item, it)
+        })
     }.stateIn(viewModelScope, Eagerly, null)
 
-    fun refresh() = viewModelScope.launch { refreshFlow.emit(Unit) }
+    val tracksLoadedFlow = extensionItemFlow.transformLatest { (extension, item) ->
+        emit(null)
+        if (!loadFeeds) return@transformLatest
+        extension ?: return@transformLatest
+        item ?: return@transformLatest
+        val feed = trackFeed(item, extension)
+            ?: loadTracks(app, extension, item).map { feed -> feed?.map { it.toShelf() } }
+        emit(feed.map {
+            it ?: return@map null
+            FeedData.State(extension.id, item, it)
+        })
+    }.stateIn(viewModelScope, Eagerly, null)
+
+    val feedCachedFlow = extensionItemFlow.transformLatest { (extension, item) ->
+        emit(null)
+        if (!loadFeeds) return@transformLatest
+        extension ?: return@transformLatest
+        item ?: return@transformLatest
+        val feed = getFeed(app, extension.id, item)
+        emit(feed.map {
+            it ?: return@map null
+            FeedData.State(extension.id, item, it)
+        })
+    }.stateIn(viewModelScope, Eagerly, null)
+
+    val feedLoadedFlow = extensionItemFlow.transformLatest { (extension, item) ->
+        emit(null)
+        if (!loadFeeds) return@transformLatest
+        extension ?: return@transformLatest
+        item ?: return@transformLatest
+        val feed = loadFeed(app, extension, item)
+        emit(feed.map {
+            it ?: return@map null
+            FeedData.State(extension.id, item, it)
+        })
+    }.stateIn(viewModelScope, Eagerly, null)
+
+    fun refresh() = viewModelScope.launch {
+        refreshFlow.emit(Unit)
+    }
+
     abstract fun getItem(): Triple<String, EchoMediaItem, Boolean>?
 
-    fun likeTrack(liked: Boolean) = app.scope.launch {
-        val track = itemResultFlow.value?.getOrNull()?.item ?: return@launch
+    fun likeItem(liked: Boolean) = app.scope.launch {
+        val item = itemResultFlow.value?.getOrNull()?.item ?: return@launch
         val extension = extensionFlow.value
-        like(app, extension, track, liked)
+        like(app, extension, item, liked)
+        refresh()
+    }
+
+    fun hideItem(hidden: Boolean) = app.scope.launch {
+        val item = itemResultFlow.value?.getOrNull()?.item ?: return@launch
+        val extension = extensionFlow.value
+        hide(app, extension, item, hidden)
         refresh()
     }
 
@@ -128,59 +169,11 @@ abstract class MediaDetailsViewModel(
     }
 
     val isRefreshing get() = itemResultFlow.value == null
-    val isRefreshingFlow = itemResultFlow.map { isRefreshing }
+    val isRefreshingFlow = itemResultFlow.map {
+        isRefreshing
+    }
 
     companion object {
-
-        suspend fun loadMedia(
-            extension: Extension<*>,
-            item: EchoMediaItem,
-            loaded: Boolean
-        ) = runCatching {
-            val new = if (loaded) item else loadItem(extension, item).getOrThrow()
-            MediaState(
-                item = new,
-                extensionId = extension.id,
-                isSaved = if (new.isSavable) extension.getIf<SaveToLibraryClient, Boolean> {
-                    isSavedToLibrary(new)
-                }.getOrThrow() else null,
-                isFollowed = if (new.isFollowable) extension.getIf<FollowClient, Boolean> {
-                    isFollowing(new)
-                }.getOrThrow() else null,
-                followers = if (new.isFollowable) extension.getIf<FollowClient, Long?> {
-                    getFollowersCount(new)
-                }.getOrThrow() else null,
-                isLiked = if (new is Track) {
-                    extension.getIf<TrackLikeClient, Boolean> { new.isLiked }.getOrThrow()
-                } else null,
-                showRadio = new.isRadioSupported && extension.isClient<RadioClient>(),
-                showShare = new.isSharable && extension.isClient<ShareClient>(),
-            )
-        }
-
-        suspend fun loadItem(extension: Extension<*>, item: EchoMediaItem) = when (item) {
-            is Artist -> extension.getAs<ArtistClient, Artist> { loadArtist(item) }
-            is Album -> extension.getAs<AlbumClient, Album> { loadAlbum(item) }
-            is Playlist -> extension.getAs<PlaylistClient, Playlist> { loadPlaylist(item) }
-            is Track -> extension.getAs<TrackClient, Track> { loadTrack(item, false) }
-            is Radio -> extension.getAs<RadioClient, Radio> { loadRadio(item) }
-        }
-
-        suspend fun loadTracks(extension: Extension<*>, item: EchoMediaItem) = when (item) {
-            is Album -> extension.getAs<AlbumClient, Feed<Track>?> { loadTracks(item) }
-            is Playlist -> extension.getAs<PlaylistClient, Feed<Track>> { loadTracks(item) }
-            is Radio -> extension.getAs<RadioClient, Feed<Track>> { loadTracks(item) }
-            is Artist -> null
-            is Track -> null
-        }
-
-        suspend fun loadFeed(extension: Extension<*>, item: EchoMediaItem) = when (item) {
-            is Artist -> extension.getAs<ArtistClient, Feed<Shelf>> { loadFeed(item) }
-            is Album -> extension.getAs<AlbumClient, Feed<Shelf>?> { loadFeed(item) }
-            is Playlist -> extension.getAs<PlaylistClient, Feed<Shelf>?> { loadFeed(item) }
-            is Track -> extension.getAs<TrackClient, Feed<Shelf>?> { loadFeed(item) }
-            is Radio -> null
-        }
 
         suspend fun notFound(app: App, id: Int) {
             val notFound = app.context.run { getString(R.string.no_x_found, getString(id)) }
@@ -201,12 +194,33 @@ abstract class MediaDetailsViewModel(
                     item.title
                 )
             }
-            val result = extension.getIf<TrackLikeClient, Unit>(app.throwFlow) {
-                likeTrack(item as Track, like)
+            val result = extension.getIf<LikeClient, Unit>(app.throwFlow) {
+                likeItem(item, like)
             }
             if (result != null) createMessage(app) {
                 getString(
                     if (like) R.string.liked_x else R.string.unliked_x, item.title
+                )
+            }
+        }
+
+        suspend fun hide(
+            app: App, extension: Extension<*>?, item: EchoMediaItem, hide: Boolean
+        ) {
+            val extension = extension ?: return notFound(app, R.string.extension)
+            createMessage(app) {
+                getString(
+                    if (hide) R.string.hiding_x else R.string.unhiding_x,
+                    item.title
+                )
+            }
+            val result = extension.getIf<HideClient, Unit>(app.throwFlow) {
+                hideItem(item, hide)
+            }
+            if (result != null) createMessage(app) {
+                getString(
+                    if (hide) R.string.hidden_x else R.string.unhidden_x,
+                    item.title
                 )
             }
         }
@@ -242,7 +256,7 @@ abstract class MediaDetailsViewModel(
                     item.title
                 )
             }
-            val result = extension.getIf<SaveToLibraryClient, Unit>(app.throwFlow) {
+            val result = extension.getIf<SaveClient, Unit>(app.throwFlow) {
                 saveToLibrary(item, save)
             }
             if (result != null) createMessage(app) {

@@ -5,11 +5,14 @@
     style="@style/Selectable"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginStart="-20dp"
+    android:layout_marginEnd="-20dp"
     android:baselineAligned="false"
     android:clipToPadding="false"
     android:gravity="center"
     android:orientation="horizontal"
-    android:padding="4dp">
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="4dp">
 
     <include
         android:id="@+id/coverContainer"
@@ -52,7 +55,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="-4dp">
+        android:layout_marginEnd="-12dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/play"
@@ -63,7 +66,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/more"
-            style="@style/IconButtonOutlined"
+            style="@style/IconButtonTransparent"
             android:contentDescription="@string/more"
             app:icon="@drawable/ic_more_horiz" />
     </LinearLayout>

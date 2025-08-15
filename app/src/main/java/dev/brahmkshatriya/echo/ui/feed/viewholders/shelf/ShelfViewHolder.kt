@@ -13,8 +13,8 @@ import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemShelfCategoryBinding
-import dev.brahmkshatriya.echo.databinding.ItemShelfListsFourTracksBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfListsMediaBinding
+import dev.brahmkshatriya.echo.databinding.ItemShelfListsThreeTracksBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.feed.FeedClickListener
@@ -111,7 +111,7 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
         parent: ViewGroup,
         listener: FeedClickListener,
         getAllTracks: () -> List<Track>,
-        binding: ItemShelfListsFourTracksBinding = ItemShelfListsFourTracksBinding.inflate(
+        binding: ItemShelfListsThreeTracksBinding = ItemShelfListsThreeTracksBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
     ) : ShelfViewHolder<ShelfType.ThreeTracks>(binding.root) {

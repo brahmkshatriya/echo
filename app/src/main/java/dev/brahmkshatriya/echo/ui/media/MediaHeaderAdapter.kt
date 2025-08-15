@@ -34,6 +34,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemLoadingBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaHeaderBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfErrorBinding
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.getFinalTitle
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.getMessage
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
@@ -61,6 +62,7 @@ class MediaHeaderAdapter(
         fun onPlayClicked(view: View)
         fun onRadioClicked(view: View)
         fun onShareClicked(view: View)
+        fun onHideClicked(view: View, hidden: Boolean)
     }
 
     override val adapter = this
@@ -96,7 +98,7 @@ class MediaHeaderAdapter(
         null -> 2
     }
 
-    var result: Result<MediaState>? = null
+    var result: Result<MediaState.Loaded<*>>? = null
         set(value) {
             field = value
             notifyItemChanged(0)
@@ -112,7 +114,10 @@ class MediaHeaderAdapter(
         )
     ) : ViewHolder(binding.root) {
         val buttons = binding.run {
-            listOf(followButton, playButton, savedButton, likeButton, radioButton, shareButton)
+            listOf(
+                followButton, playButton, savedButton, likeButton, hideButton,
+                radioButton, shareButton
+            )
         }
 
         init {
@@ -126,6 +131,10 @@ class MediaHeaderAdapter(
             }
             binding.likeButton.setOnClickListener {
                 listener.onLikeClicked(it, binding.likeButton.isChecked)
+                it.isEnabled = false
+            }
+            binding.hideButton.setOnClickListener {
+                listener.onHideClicked(it, binding.hideButton.isChecked)
                 it.isEnabled = false
             }
             binding.playButton.setOnClickListener {
@@ -146,6 +155,7 @@ class MediaHeaderAdapter(
             binding.buttonGroup.isVisible = visible.isNotEmpty()
             val isNotOne = visible.size > 1
             visible.forEachIndexed { index, button ->
+                button.isEnabled = true
                 if (index == 0 && isNotOne) button.run {
                     updatePaddingRelative(
                         start = if (icon != null) 16.dpToPx(context) else 24.dpToPx(context),
@@ -170,9 +180,9 @@ class MediaHeaderAdapter(
         }
 
         var clickEnabled = true
-        var state: MediaState? = null
+        var state: MediaState.Loaded<*>? = null
 
-        fun bind(state: MediaState) = with(binding) {
+        fun bind(state: MediaState.Loaded<*>) = with(binding) {
             this@Success.state = state
             followButton.isVisible = state.isFollowed != null
             followButton.isChecked = state.isFollowed ?: false
@@ -190,6 +200,12 @@ class MediaHeaderAdapter(
             likeButton.isChecked = state.isLiked ?: false
             likeButton.contentDescription = root.context.getString(
                 if (state.isLiked == true) R.string.unlike else R.string.like
+            )
+
+            hideButton.isVisible = state.isHidden != null
+            hideButton.isChecked = state.isHidden ?: false
+            hideButton.contentDescription = root.context.getString(
+                if (state.isHidden == true) R.string.unhide else R.string.hide
             )
 
             playButton.isVisible = state.item is Track && !fromPlayer
@@ -407,7 +423,11 @@ class MediaHeaderAdapter(
             }
 
             override fun onLikeClicked(view: View, liked: Boolean) {
-                viewModel.likeTrack(liked)
+                viewModel.likeItem(liked)
+            }
+
+            override fun onHideClicked(view: View, hidden: Boolean) {
+                viewModel.hideItem(hidden)
             }
 
             override fun onPlayClicked(view: View) {
