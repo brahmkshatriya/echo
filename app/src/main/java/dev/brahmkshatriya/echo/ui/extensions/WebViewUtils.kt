@@ -95,6 +95,7 @@ object WebViewUtils {
         onComplete: suspend (Result<T>?) -> Unit
     ) {
         val stopRegex = target.stopUrlRegex
+        val interceptRegex = if (target is WebViewRequest.Headers) target.interceptUrlRegex else null
         val timeout = target.maxTimeout
         val bridge = Bridge()
         val requests = mutableListOf<NetworkRequest>()
@@ -116,6 +117,7 @@ object WebViewUtils {
 
             var done = false
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
                 if (target !is WebViewRequest.Evaluate) return
                 if (done) return
                 target.javascriptToEvaluateOnPageStart?.let { js ->
@@ -132,7 +134,11 @@ object WebViewUtils {
             fun intercept(
                 request: NetworkRequest
             ) {
-                if (target is WebViewRequest.Headers) requests.add(request)
+                if (target is WebViewRequest.Headers) {
+                    if (interceptRegex == null || interceptRegex.matches(request.url)) {
+                        requests.add(request)
+                    }
+                }
                 if (stopRegex.find(request.url) == null) return
                 done = true
                 timeoutJob?.cancel()
