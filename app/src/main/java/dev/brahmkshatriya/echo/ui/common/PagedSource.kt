@@ -40,10 +40,9 @@ class PagedSource<T : Any>(
         return runCatching {
             val page = loaded?.getOrThrow()?.loadPage(key) ?: throw LoadingException()
             LoadResult.Page(page.data, key, page.continuation)
-        }.getOrElse {
-            println("Error $it")
-            val cachedPage = cached?.getOrNull()?.loadPage(key)
-            return if (cachedPage == null || cachedPage.data.isEmpty()) LoadResult.Error(it)
+        }.getOrElse { error ->
+            val cachedPage = cached?.mapCatching { it.loadPage(key) }?.getOrNull()
+            return if (cachedPage == null || cachedPage.data.isEmpty()) LoadResult.Error(error)
             else LoadResult.Page(cachedPage.data, key, cachedPage.continuation)
         }
     }

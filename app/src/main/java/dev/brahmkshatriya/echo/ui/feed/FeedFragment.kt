@@ -25,6 +25,7 @@ import dev.brahmkshatriya.echo.ui.feed.FeedClickListener.Companion.getFeedListen
 import dev.brahmkshatriya.echo.ui.main.MainFragment.Companion.applyPlayerBg
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
+import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class FeedFragment : Fragment(R.layout.fragment_generic_collapsable) {
@@ -67,7 +68,9 @@ class FeedFragment : Fragment(R.layout.fragment_generic_collapsable) {
         binding.extensionIcon.isVisible = false
         binding.toolBar.title = title
         binding.toolBar.subtitle = subtitle
-        applyPlayerBg(view) { feedData.backgroundImageFlow }
+        applyPlayerBg(view) {
+            mainBgDrawable.combine(feedData.backgroundImageFlow) { a, b -> b ?: a }
+        }
         if (savedInstanceState == null) childFragmentManager.commit {
             replace<Actual>(R.id.genericFragmentContainer, null, arguments)
         }

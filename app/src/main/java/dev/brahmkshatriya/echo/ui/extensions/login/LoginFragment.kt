@@ -206,7 +206,9 @@ class LoginFragment : Fragment() {
             setupTransition(view, axis = MaterialSharedAxis.X)
             val binding = FragmentWebviewBinding.bind(view)
             val req = webViewRequest ?: return
-            val callback = requireActivity().configure(binding.root, req, true) {
+            val callback = requireActivity().configure(
+                binding.webview, binding.progress, req, true
+            ) {
                 if (it == null) loginViewModel.loading.value = true
                 else loginViewModel.onWebViewStop(it)
             }

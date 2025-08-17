@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentLibraryBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.cache.Cached
 import dev.brahmkshatriya.echo.ui.common.GridAdapter.Companion.configureGridLayout
 import dev.brahmkshatriya.echo.ui.common.SnackBarHandler.Companion.createSnack
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
@@ -40,9 +41,17 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class LibraryFragment : Fragment(R.layout.fragment_library) {
     private val feedData by lazy {
         val vm by viewModel<FeedViewModel>()
-        vm.getFeedData("library", EMPTY) {
+        val id = "library"
+        vm.getFeedData(id, EMPTY, cached = {
             val curr = current.value!!
-            val feed = curr.getAs<LibraryFeedClient, Feed<Shelf>> { loadLibraryFeed() }.getOrThrow()
+            val feed = Cached.getFeed<Shelf>(app, curr.id, id)
+            FeedData.State(curr.id, null, feed)
+        }) {
+            val curr = current.value!!
+            val feed = Cached.savingFeed(
+                app, curr, id,
+                curr.getAs<LibraryFeedClient, Feed<Shelf>> { loadLibraryFeed() }.getOrThrow()
+            )
             FeedData.State(curr.id, null, feed)
         }
     }

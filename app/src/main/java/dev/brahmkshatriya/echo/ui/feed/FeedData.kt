@@ -20,12 +20,8 @@ import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.combineTransformLatest
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,9 +31,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -72,31 +68,30 @@ data class FeedData(
     val feedSortState = MutableStateFlow<FeedSort.State?>(null)
     val searchClickedFlow = MutableSharedFlow<Unit>()
 
-    private val feedState = cachedState.combine(loadedState) { cached, loaded ->
-        loaded ?: cached
+    private val stateFlow = cachedState.combine(loadedState) { a, b -> a to b }
+        .stateIn(scope, Lazily, null to null)
+
+    private val cachedDataFlow = cachedState.combineTransformLatest(selectedTabFlow) { feed, tab ->
+        emit(null)
+        if (feed == null) return@combineTransformLatest
+        emit(getData(feed, tab))
     }.stateIn(scope, Lazily, null)
 
-    private val cachedDataFlow = cachedState.combine(selectedTabFlow) { feed, tab ->
-        if (feed == null) return@combine null
-        getData(feed, tab)
+    private val loadedDataFlow = loadedState.combineTransformLatest(selectedTabFlow) { feed, tab ->
+        emit(null)
+        if (feed == null) return@combineTransformLatest
+        emit(getData(feed, tab))
     }.stateIn(scope, Lazily, null)
 
-    private val loadedDataFlow = loadedState.combine(selectedTabFlow) { feed, tab ->
-        if (feed == null) return@combine null
-        getData(feed, tab)
-    }.stateIn(scope, Lazily, null)
-
-    private fun getData(
+    private suspend fun getData(
         state: Result<State<Feed<Shelf>>?>, tab: Tab?
-    ) = scope.async(Dispatchers.IO, CoroutineStart.LAZY) {
-        runCatching {
-            val (extensionId, item, feed) = state.getOrThrow() ?: return@runCatching null
-            State(extensionId, item, feed.getPagedData(tab))
-        }
+    ) = runCatching {
+        val (extensionId, item, feed) = state.getOrThrow() ?: return@runCatching null
+        State(extensionId, item, feed.getPagedData(tab))
     }
 
     val dataFlow = cachedDataFlow.combine(loadedDataFlow) { cached, loaded ->
-        val extensionId = feedState.value?.getOrNull()?.extensionId
+        val extensionId = (loaded?.getOrNull() ?: cached?.getOrNull())?.extensionId
         val tabId = selectedTabFlow.value?.id
         searchQuery = null
         searchToggled = false
@@ -106,14 +101,13 @@ data class FeedData(
         cached to loaded
     }
 
-    val shouldShowEmpty = dataFlow.transformLatest { (cached, loaded) ->
-        emit(false)
-        val data = loaded ?: cached
-        emit(data?.await()?.getOrNull() != null)
+    val shouldShowEmpty = dataFlow.map { (cached, loaded) ->
+        val data = loaded?.getOrNull() ?: cached?.getOrNull()
+        data != null
     }.stateIn(scope, Lazily, false)
 
-    val tabsFlow = feedState.map { pair ->
-        val state = pair?.getOrNull() ?: return@map listOf()
+    val tabsFlow = stateFlow.map { (cached, loaded) ->
+        val state = (loaded?.getOrNull() ?: cached?.getOrNull()) ?: return@map listOf()
         state.feed.tabs.map {
             FeedTab(feedId, state.extensionId, it)
         }
@@ -137,36 +131,24 @@ data class FeedData(
         val sortState: FeedSort.State? = null,
     )
 
-    val buttonsFlow = dataFlow.combineTransformLatest(feedSortState) { data, state ->
-        emit(null)
-        suspend fun emitFeed(feed: Deferred<Result<State<Feed.Data<Shelf>>?>>?) {
-            val feed = feed?.await()?.getOrNull() ?: return
-            emit(
-                Buttons(
-                    feedId,
-                    feed.extensionId,
-                    feed.feed.buttons ?: defaultButtons,
-                    feed.item,
-                    state,
-                )
-            )
-        }
-        emitFeed(data.first)
-        emitFeed(data.second)
+    val buttonsFlow = dataFlow.combine(feedSortState) { data, state ->
+        val feed = data.run { second?.getOrNull() ?: first?.getOrNull() } ?: return@combine null
+        Buttons(
+            feedId,
+            feed.extensionId,
+            feed.feed.buttons ?: defaultButtons,
+            feed.item,
+            state,
+        )
     }
 
-    val backgroundImageFlow = dataFlow.transformLatest { (cached, loaded) ->
-        emit(null)
-        val cachedDrawable =
-            cached?.await()?.getOrNull()?.feed?.background ?: return@transformLatest
-        emit(cachedDrawable.loadDrawable(app.context))
-        val loadedDrawable =
-            loaded?.await()?.getOrNull()?.feed?.background ?: return@transformLatest
-        if (loadedDrawable != cachedDrawable) {
-            emit(loadedDrawable.loadDrawable(app.context))
-        }
+    private val imageFlow = dataFlow.map { (cached, loaded) ->
+        (loaded?.getOrNull() ?: cached?.getOrNull())?.feed?.background
     }.stateIn(scope, Lazily, null)
 
+    val backgroundImageFlow = imageFlow.mapLatest { image ->
+        image?.loadDrawable(app.context)
+    }.stateIn(scope, Lazily, null)
 
     val cachedFeedTypeFlow =
         combineTransformLatest(cachedDataFlow, feedSortState, searchClickedFlow) { _ ->
@@ -188,11 +170,11 @@ data class FeedData(
         }.cachedIn(scope)
 
     private suspend fun getFeedSourceData(
-        deferred: Deferred<Result<State<Feed.Data<Shelf>>?>>
+        result: Result<State<Feed.Data<Shelf>>?>
     ): Result<PagedData<FeedType>> {
         val tabId = selectedTabFlow.value?.id
         val data = if (feedSortState.value != null || searchQuery != null) {
-            val result = deferred.await().mapCatching { state ->
+            result.mapCatching { state ->
                 state ?: return@mapCatching PagedData.empty()
                 val extensionId = state.extensionId
                 val data = state.feed.pagedData
@@ -233,8 +215,7 @@ data class FeedData(
                     )
                 }
             }
-            result
-        } else deferred.await().mapCatching { state ->
+        } else result.mapCatching { state ->
             state ?: return@mapCatching PagedData.empty()
             val extensionId = state.extensionId
             val data = state.feed.pagedData
@@ -259,13 +240,13 @@ data class FeedData(
         return list
     }
 
-    val isRefreshing get() = loadedState.value?.getOrNull() != null && loadedFeedTypeFlow.value == null
+    val isRefreshing get() = loadedFeedTypeFlow.value == null
     val isRefreshingFlow = loadedFeedTypeFlow.map {
         isRefreshing
     }
 
     fun selectTab(extensionId: String?, pos: Int) {
-        val state = feedState.value?.getOrNull()
+        val state = stateFlow.value.run { second?.getOrNull() ?: first?.getOrNull() }
         val tab = state?.feed?.tabs?.getOrNull(pos)
             ?.takeIf { state.extensionId == extensionId }
         app.context.saveToCache(feedId, tab?.id, "selected_tab")
@@ -286,8 +267,8 @@ data class FeedData(
                 }
         }
         scope.launch {
-            feedState.collect { result ->
-                val feed = result?.getOrNull()?.feed?.tabs
+            stateFlow.collect { result ->
+                val feed = result.run { second?.getOrNull() ?: first?.getOrNull() }?.feed?.tabs
                 selectedTabFlow.value = if (feed == null) null else {
                     val last = app.context.getFromCache<String>(feedId, "selected_tab")
                     feed.find { it.id == last } ?: feed.firstOrNull()

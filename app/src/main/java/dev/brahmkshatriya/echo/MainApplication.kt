@@ -93,7 +93,7 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
         private val FUNCTION_SET = setOf("getAll", "getPackageName", "<init>")
 
         fun getCurrentLanguage(sharedPref: SharedPreferences) =
-            sharedPref.getString("language", "system") ?: "system"
+            sharedPref.getString("language", null) ?: "system"
 
         fun setCurrentLanguage(sharedPref: SharedPreferences, locale: String?) {
             sharedPref.edit { putString("language", locale) }
@@ -101,7 +101,7 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
         }
 
         fun applyLocale(sharedPref: SharedPreferences) {
-            val value = sharedPref.getString("language", "system") ?: "system"
+            val value = sharedPref.getString("language", null) ?: "system"
             val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()
             else LocaleListCompat.forLanguageTags(value)
             AppCompatDelegate.setApplicationLocales(locale)

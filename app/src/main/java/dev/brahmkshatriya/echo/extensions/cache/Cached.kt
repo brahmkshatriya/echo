@@ -63,36 +63,36 @@ object Cached {
                 val isSaved = async {
                     if (new.isSaveable) extension.getIf<SaveClient, Boolean> {
                         isItemSaved(new)
-                    }.getOrThrow() else null
+                    } else null
                 }
                 val isFollowed = async {
                     if (new.isFollowable) extension.getIf<FollowClient, Boolean> {
                         isFollowing(new)
-                    }.getOrThrow() else null
+                    } else null
                 }
                 val followers = async {
                     if (new.isFollowable) extension.getIf<FollowClient, Long?> {
                         getFollowersCount(new)
-                    }.getOrThrow() else null
+                    } else null
                 }
                 val isLiked = async {
                     if (new.isLikeable) extension.getIf<LikeClient, Boolean> {
                         isItemLiked(new)
-                    }.getOrThrow() else null
+                    }else null
                 }
                 val isHidden = async {
                     if (new.isHideable) extension.getIf<HideClient, Boolean> {
                         isItemHidden(new)
-                    }.getOrThrow() else null
+                    } else null
                 }
                 val newState = MediaState.Loaded(
                     item = new,
                     extensionId = extension.id,
-                    isSaved = isSaved.await(),
-                    isFollowed = isFollowed.await(),
-                    followers = followers.await(),
-                    isLiked = isLiked.await(),
-                    isHidden = isHidden.await(),
+                    isSaved = isSaved.await()?.getOrThrow(),
+                    isFollowed = isFollowed.await()?.getOrThrow(),
+                    followers = followers.await()?.getOrThrow(),
+                    isLiked = isLiked.await()?.getOrThrow(),
+                    isHidden = isHidden.await()?.getOrThrow(),
                     showRadio = new.isRadioSupported && extension.isClient<RadioClient>(),
                     showShare = new.isShareable && extension.isClient<ShareClient>(),
                 )
@@ -140,13 +140,15 @@ object Cached {
     ) = runCatching {
         val fileCache = app.fileCache.await()
         val id = "media-${extension.id}-${track.id}-${streamable.id}"
-        val cached = fileCache.get(id)?.let {
-            File(it).readText().toData<Streamable.Media>()
-        }
-        if (cached != null) return@runCatching cached
         val media = extension.getAs<TrackClient, Streamable.Media> {
             loadStreamableMedia(streamable, false)
-        }.getOrThrow()
+        }.getOrElse { throwable ->
+            runCatching {
+                fileCache.get(id)?.let {
+                    File(it).readText().toData<Streamable.Media>()
+                }
+            }.getOrNull() ?: throw throwable
+        }
         fileCache.put(id) {
             runCatching {
                 File(it).writeText(media.toJson())

@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentSearchBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
+import dev.brahmkshatriya.echo.extensions.cache.Cached
 import dev.brahmkshatriya.echo.ui.common.GridAdapter.Companion.configureGridLayout
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
@@ -43,13 +44,26 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
     private val feedData by lazy {
         val vm by viewModel<FeedViewModel>()
-        vm.getFeedData("search", EMPTY, false, searchViewModel.queryFlow) {
+        val id = "search"
+        vm.getFeedData(
+            id,
+            EMPTY,
+            false,
+            searchViewModel.queryFlow,
+            cached = {
+                val curr = music.getExtension(argId) ?: current.value!!
+                val query = searchViewModel.queryFlow.value
+                val feed = Cached.getFeed<Shelf>(app, curr.id, "$id-$query")
+                FeedData.State(curr.id, null, feed)
+            }
+        ) {
             val curr = music.getExtension(argId) ?: current.value!!
             val query = searchViewModel.queryFlow.value
             curr.saveInHistory(vm.app.context, query)
-            val feed = curr.getAs<SearchFeedClient, Feed<Shelf>> {
-                loadSearchFeed(searchViewModel.queryFlow.value)
-            }.getOrThrow()
+            val feed = Cached.savingFeed(
+                app, curr, "$id-$query",
+                curr.getAs<SearchFeedClient, Feed<Shelf>> { loadSearchFeed(query) }.getOrThrow()
+            )
             extensionId = curr.id
             FeedData.State(curr.id, null, feed)
         }
