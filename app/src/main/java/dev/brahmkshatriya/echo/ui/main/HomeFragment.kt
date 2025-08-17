@@ -37,7 +37,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val id = "home"
         vm.getFeedData(id, EMPTY, cached = {
             val curr = current.value!!
-            val feed = Cached.getFeed<Shelf>(app, curr.id, id)
+            val feed = Cached.getFeedShelf(app, curr.id, id).getOrThrow()
             FeedData.State(curr.id, null, feed)
         }) {
             val curr = current.value!!

@@ -111,7 +111,8 @@ sealed interface FeedType {
             extId: String,
             context: EchoMediaItem?,
             tabId: String?,
-            noVideos: Boolean = false
+            noVideos: Boolean = false,
+            start: Long = 0
         ): List<FeedType> = mapIndexed { index, shelf ->
 
             when (shelf) {
@@ -130,7 +131,7 @@ sealed interface FeedType {
 
                         else -> listOf(Media(feedId, extId, context, tabId, item, null))
                     } else {
-                        val index = index.toLong()
+                        val index = start + index
                         listOf(Media(feedId, extId, context, tabId, item, index))
                     }
 

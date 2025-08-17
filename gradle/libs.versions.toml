@@ -1,6 +1,6 @@
 [versions]
 agp = "8.12.0"
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 
 androidx-paging = "3.3.6"
 room = "2.7.2"
@@ -19,7 +19,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.1
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.1" }
 androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.1" }
 
-protobuf-java = { module = "com.google.protobuf:protobuf-java", version = "4.31.1" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version = "4.32.0" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 swiperefresh = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 
@@ -85,6 +85,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
+ksp = { id = "com.google.devtools.ksp", version = "2.2.10-2.0.2" }
 gms = { id = "com.google.gms.google-services", version = "4.4.3" }
 crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }

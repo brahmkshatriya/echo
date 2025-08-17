@@ -53,8 +53,8 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             cached = {
                 val curr = music.getExtension(argId) ?: current.value!!
                 val query = searchViewModel.queryFlow.value
-                val feed = Cached.getFeed<Shelf>(app, curr.id, "$id-$query")
-                FeedData.State(curr.id, null, feed)
+                val feed = Cached.getFeedShelf(app, curr.id, "$id-$query")
+                FeedData.State(curr.id, null, feed.getOrThrow())
             }
         ) {
             val curr = music.getExtension(argId) ?: current.value!!

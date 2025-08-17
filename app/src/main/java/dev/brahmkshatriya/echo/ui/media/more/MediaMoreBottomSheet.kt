@@ -2,8 +2,6 @@ package dev.brahmkshatriya.echo.ui.media.more
 
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -24,7 +22,6 @@ import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.ui.common.GridAdapter.Companion.configureGridLayout
 import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
-import dev.brahmkshatriya.echo.ui.feed.FeedAdapter
 import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter
 import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.icon
@@ -33,6 +30,7 @@ import dev.brahmkshatriya.echo.ui.media.MediaViewModel
 import dev.brahmkshatriya.echo.ui.media.more.MoreButton.Companion.button
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet
+import dev.brahmkshatriya.echo.ui.player.more.lyrics.LyricsItemAdapter
 import dev.brahmkshatriya.echo.ui.player.quality.QualitySelectionBottomSheet
 import dev.brahmkshatriya.echo.ui.player.sleep.SleepTimerBottomSheet
 import dev.brahmkshatriya.echo.ui.playlist.delete.DeletePlaylistBottomSheet
@@ -42,7 +40,6 @@ import dev.brahmkshatriya.echo.ui.playlist.save.SaveToPlaylistBottomSheet
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
-import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoClearedNullable
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -97,12 +94,9 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
         })
     }
 
-    private var loadingTextView by autoClearedNullable<TextView>()
     private val loadingAdapter by lazy {
         FeedLoadingAdapter(createListener { vm.refresh() }) {
-            val holder = FeedAdapter.LoadingViewHolder(it)
-            holder.binding.textView.isVisible = true
-            loadingTextView = holder.binding.textView
+            val holder = LyricsItemAdapter.Loading(it)
             holder
         }
     }

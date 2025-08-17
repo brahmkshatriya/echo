@@ -78,7 +78,7 @@ object Cached {
                 val isLiked = async {
                     if (new.isLikeable) extension.getIf<LikeClient, Boolean> {
                         isItemLiked(new)
-                    }else null
+                    } else null
                 }
                 val isHidden = async {
                     if (new.isHideable) extension.getIf<HideClient, Boolean> {
@@ -162,7 +162,7 @@ object Cached {
     ) = runCatching {
         if (item !is EchoMediaItem.Lists) return@runCatching null
         val itemId = item.id
-        getFeed<Track>(app, extensionId, "$itemId-tracks")
+        getFeed<Track>(app, extensionId, "$itemId-tracks") { it }
     }
 
     suspend fun loadTracks(app: App, extension: Extension<*>, item: EchoMediaItem) = runCatching {
@@ -178,10 +178,10 @@ object Cached {
 
     suspend fun getFeed(
         app: App, extensionId: String, item: EchoMediaItem
-    ) = runCatching {
-        if (item !is EchoMediaItem.Lists) return@runCatching null
+    ) = run {
+        if (item !is EchoMediaItem.Lists) return@run null
         val itemId = item.id
-        getFeed<Shelf>(app, extensionId, itemId)
+        getFeedShelf(app, extensionId, itemId)
     }
 
     suspend fun loadFeed(app: App, extension: Extension<*>, item: EchoMediaItem) = runCatching {
@@ -198,7 +198,7 @@ object Cached {
     suspend fun getLyrics(
         app: App, extensionId: String, clientId: String, track: Track
     ) = runCatching {
-        getFeed<Lyrics>(app, extensionId, "lyrics-$clientId-${track.id}")
+        getFeed<Lyrics>(app, extensionId, "lyrics-$clientId-${track.id}") { it }
     }
 
     suspend fun loadLyrics(app: App, extension: Extension<*>, clientId: String, track: Track) =
@@ -212,7 +212,7 @@ object Cached {
     suspend fun getLyricsSearch(
         app: App, extensionId: String, query: String
     ) = runCatching {
-        getFeed<Lyrics>(app, extensionId, "lyrics-search-$query")
+        getFeed<Lyrics>(app, extensionId, "lyrics-search-$query") { it }
     }
 
     suspend fun loadLyricsSearch(app: App, extension: Extension<*>, query: String) =
@@ -223,10 +223,39 @@ object Cached {
             savingFeed(app, extension, "lyrics-search-$query", feed)
         }
 
+    suspend fun getFeedShelf(
+        app: App, extensionId: String, feedId: String
+    ): Result<Feed<Shelf>> = runCatching {
+        getFeed<Shelf>(app, extensionId, feedId) { shelf ->
+            when (shelf) {
+                is Shelf.Item -> shelf
+                is Shelf.Category -> shelf.copy(
+                    feed = getFeedShelf(app, extensionId, shelf.id).getOrNull()
+                )
+
+                is Shelf.Lists.Categories -> shelf.copy(
+                    list = shelf.list.map {
+                        it.copy(feed = getFeedShelf(app, extensionId, it.id).getOrNull())
+                    },
+                    more = getFeedShelf(app, extensionId, shelf.id).getOrNull()
+                )
+
+                is Shelf.Lists.Items -> shelf.copy(
+                    more = getFeedShelf(app, extensionId, shelf.id).getOrNull()
+                )
+
+                is Shelf.Lists.Tracks -> shelf.copy(
+                    more = getFeedShelf(app, extensionId, shelf.id).getOrNull()
+                )
+            }
+        }
+    }
+
+
     // FEED STUFF
 
     suspend inline fun <reified T : Any> getFeed(
-        app: App, extensionId: String, feedId: String
+        app: App, extensionId: String, feedId: String, crossinline transform: suspend (T) -> T
     ): Feed<T> {
         val fileCache = app.fileCache.await()
         val tabId = "feed-$extensionId-$feedId"
@@ -240,10 +269,12 @@ object Cached {
             } ?: throw NotFound(id)
             PagedData.Continuous { token ->
                 val id = "$id-$token"
-                val data = fileCache.get(id)?.let {
+                val page = fileCache.get(id)?.let {
                     File(it).readText().toData<Page<T>>()
                 } ?: throw NotFound(id)
-                data
+                page.copy(
+                    page.data.map { transform(it) }
+                )
             }.toFeedData(buttons, bg)
         }
     }

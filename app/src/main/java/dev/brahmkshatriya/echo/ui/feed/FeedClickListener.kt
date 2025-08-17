@@ -33,7 +33,12 @@ open class FeedClickListener(
             val key = arguments?.getString("feedListener")
             return when (key) {
                 "playlist_search" -> EditPlaylistSearchClickListener(this)
-                else -> FeedClickListener(this, navFragment.parentFragmentManager, navFragment.id, afterOpen)
+                else -> FeedClickListener(
+                    this,
+                    navFragment.parentFragmentManager,
+                    navFragment.id,
+                    afterOpen
+                )
             }
         }
     }

@@ -109,9 +109,8 @@ abstract class MediaDetailsViewModel(
         if (!loadFeeds) return@transformLatest
         extension ?: return@transformLatest
         item ?: return@transformLatest
-        val feed = getFeed(app, extension.id, item)
+        val feed = getFeed(app, extension.id, item) ?: return@transformLatest
         emit(feed.map {
-            it ?: return@map null
             FeedData.State(extension.id, item, it)
         })
     }.stateIn(viewModelScope, Eagerly, null)

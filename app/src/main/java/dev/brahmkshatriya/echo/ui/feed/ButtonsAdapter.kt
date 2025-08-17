@@ -12,7 +12,7 @@ import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemFeedButtonsBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
-import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateMarginTop
+import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateVisibility
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
 
 class ButtonsAdapter(
@@ -62,7 +62,7 @@ class ButtonsAdapter(
                     viewModel.searchQuery = null
                     viewModel.onSearchClicked()
                 }
-                binding.searchBarContainer.animateMarginTop(isChecked)
+                binding.searchBarContainer.animateVisibility(isChecked)
             }
             binding.searchBarText.addTextChangedListener { text ->
                 viewModel.searchQuery = text?.toString()?.takeIf { it.isNotBlank() }
@@ -115,7 +115,9 @@ class ButtonsAdapter(
 
         private fun ChipGroup.configure(state: FeedSort.State?) {
             removeAllViews()
+            var visible = false
             if (state?.feedSort != null) {
+                visible = true
                 val chip = Chip(context)
                 chip.text = context.getString(state.feedSort.title)
                 chip.isCheckable = true
@@ -126,6 +128,7 @@ class ButtonsAdapter(
                 }
             }
             if (state?.reversed == true) {
+                visible = true
                 val chip = Chip(context)
                 chip.text = context.getString(R.string.reversed)
                 chip.isCheckable = true
@@ -135,6 +138,7 @@ class ButtonsAdapter(
                     viewModel.feedSortState.value = state.copy(reversed = false)
                 }
             }
+            isVisible = visible
         }
     }
 }

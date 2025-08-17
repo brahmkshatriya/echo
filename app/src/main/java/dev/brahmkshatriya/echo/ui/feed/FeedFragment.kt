@@ -14,6 +14,9 @@ import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.databinding.FragmentGenericCollapsableBinding
 import dev.brahmkshatriya.echo.databinding.FragmentRecyclerWithRefreshBinding
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
+import dev.brahmkshatriya.echo.extensions.cache.Cached
+import dev.brahmkshatriya.echo.extensions.cache.Cached.savingFeed
 import dev.brahmkshatriya.echo.ui.common.GridAdapter.Companion.configureGridLayout
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyContentInsets
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
@@ -54,8 +57,16 @@ class FeedFragment : Fragment(R.layout.fragment_generic_collapsable) {
             vm.feedId = activityVm.feedId
             vm.feed = activityVm.feed
         }
-        feedViewModel.getFeedData(vm.feedId) {
-            FeedData.State(vm.extensionId, null, vm.feed)
+        feedViewModel.getFeedData(
+            vm.feedId,
+            cached = {
+                val feed = Cached.getFeedShelf(app, vm.extensionId, vm.feedId)
+                FeedData.State(vm.extensionId, null, feed.getOrThrow())
+            }
+        ) {
+            val extension = music.getExtensionOrThrow(vm.extensionId)
+            val feed = savingFeed(app, extension, vm.feedId, vm.feed)
+            FeedData.State(extension.id, null, feed)
         }
     }
 

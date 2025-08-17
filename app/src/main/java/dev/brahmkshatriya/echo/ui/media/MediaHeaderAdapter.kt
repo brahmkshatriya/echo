@@ -278,7 +278,7 @@ class MediaHeaderAdapter(
     ) : ViewHolder(binding.root)
 
     companion object {
-        private const val MAX_DESC_TEXT = 128
+        private const val MAX_DESC_TEXT = 144
         private fun String.ellipsize() = if (length > MAX_DESC_TEXT) {
             substring(0, MAX_DESC_TEXT) + "..."
         } else this

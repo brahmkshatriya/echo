@@ -217,12 +217,15 @@ data class FeedData(
             }
         } else result.mapCatching { state ->
             state ?: return@mapCatching PagedData.empty()
-            val extensionId = state.extensionId
+            val extId = state.extensionId
             val data = state.feed.pagedData
             data.loadPage(null)
+            var start = 0L
             data.map { result ->
                 result.map {
-                    it.toFeedType(feedId, extensionId, state.item, tabId, noVideos)
+                    val list = it.toFeedType(feedId, extId, state.item, tabId, noVideos, start)
+                    start += list.size
+                    list
                 }.getOrThrow()
             }
         }
