@@ -51,7 +51,7 @@ class StreamableMediaSource(
     private val scope: CoroutineScope,
     private val state: PlayerState,
     private val loader: StreamableLoader,
-    private val cachedFactories: Factories,
+    private val cacheFactories: Factories,
     private val factories: Factories,
     private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>
 ) : CompositeMediaSource<Nothing>() {
@@ -83,21 +83,21 @@ class StreamableMediaSource(
                 )
             }
 
-            fun getFactory(cachedFactories: Factories, factories: Factories, source: Streamable.Source) =
-                if (source.isLive) factories else cachedFactories
+            fun getFactory(cacheFactories: Factories, factories: Factories, source: Streamable.Source) =
+                if (source.isLive) factories else cacheFactories
 
             val sources = server?.sources
             actualSource = when (sources?.size) {
                 0, null -> factories.create(new, -1, null)
                 1 -> {
                     val source = sources.first()
-                    getFactory(cachedFactories, factories, source)
+                    getFactory(cacheFactories, factories, source)
                         .create(new, 0, source)
                 }
                 else -> {
                     if (server.merged) MergingMediaSource(
                         *sources.mapIndexed { index, source ->
-                            getFactory(cachedFactories, factories, source)
+                            getFactory(cacheFactories, factories, source)
                                 .create(new, index, source)
                         }.toTypedArray()
                     ) else {
@@ -106,7 +106,7 @@ class StreamableMediaSource(
                             ?: sources.select(context, new.extensionId) { it.quality }
                         val newIndex = sources.indexOf(source)
                         new = MediaItemUtils.buildSource(new, newIndex)
-                        getFactory(cachedFactories, factories, source)
+                        getFactory(cacheFactories, factories, source)
                             .create(new, newIndex, source)
                     }
                 }
@@ -184,18 +184,20 @@ class StreamableMediaSource(
 
         private val loader = StreamableLoader(app, extensions.music, downloadFlow)
 
-        private val cachedDataSource = ResolvingDataSource.Factory(
+        val dataSourceFactory = StreamableDataSource.Factory(app.context)
+        val streamableResolver = StreamableResolver(state.servers)
+
+        private val cacheDataSource = ResolvingDataSource.Factory(
             CacheDataSource.Factory().setCache(cache)
-                .setUpstreamDataSourceFactory(StreamableDataSource.Factory(app.context)),
-            StreamableResolver(state.servers)
+                .setUpstreamDataSourceFactory(dataSourceFactory),
+            streamableResolver
         )
 
         private val dataSource = ResolvingDataSource.Factory(
-            StreamableDataSource.Factory(app.context),
-            StreamableResolver(state.servers)
+            dataSourceFactory, streamableResolver
         )
 
-        private val cachedFactories = createFactories(cachedDataSource)
+        private val cacheFactories = createFactories(cacheDataSource)
 
         private val factories = createFactories(dataSource)
 
@@ -233,7 +235,7 @@ class StreamableMediaSource(
         }
 
         override fun createMediaSource(mediaItem: MediaItem) = StreamableMediaSource(
-            mediaItem, app.context, scope, state, loader, cachedFactories, factories, changeFlow
+            mediaItem, app.context, scope, state, loader, cacheFactories, factories, changeFlow
         )
     }
 }
