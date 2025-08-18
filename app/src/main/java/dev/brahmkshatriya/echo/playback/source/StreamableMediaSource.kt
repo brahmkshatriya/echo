@@ -148,15 +148,19 @@ class StreamableMediaSource(
     data class Factories(
         val dash: Lazy<MediaSource.Factory>,
         val hls: Lazy<MediaSource.Factory>,
-        val noCacheHls: Lazy<MediaSource.Factory>,
         val default: Lazy<MediaSource.Factory>
     ) {
+        companion object {
+            lateinit var noCache: Factories
+        }
+
         fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source?): MediaSource {
+            val factories = if (source?.isLive == true) noCache else this
             val type = (source as? Streamable.Source.Http)?.type
             val factory = when (type) {
-                Streamable.SourceType.DASH -> dash
-                Streamable.SourceType.HLS -> if (source.isLive) noCacheHls else hls
-                Streamable.SourceType.Progressive, null -> default
+                Streamable.SourceType.DASH -> factories.dash
+                Streamable.SourceType.HLS -> factories.hls
+                Streamable.SourceType.Progressive, null -> factories.default
             }
             val new = MediaItemUtils.buildForSource(mediaItem, index, source)
             return factory.value.createMediaSource(new)
@@ -175,22 +179,27 @@ class StreamableMediaSource(
 
         private val loader = StreamableLoader(app, extensions.music, downloadFlow)
 
-        private val factories = Factories(
-            lazily { DashMediaSource.Factory(dataSource) },
-            lazily { HlsMediaSource.Factory(dataSource) },
-            lazily { HlsMediaSource.Factory(noCacheDataSource) },
-            lazily { DefaultMediaSourceFactory(dataSource) }
-        )
-
-        private val dataSource = ResolvingDataSource.Factory(
+        private val cachedDataSource = ResolvingDataSource.Factory(
             CacheDataSource.Factory().setCache(cache)
                 .setUpstreamDataSourceFactory(StreamableDataSource.Factory(app.context)),
             StreamableResolver(state.servers)
         )
 
-        private val noCacheDataSource = ResolvingDataSource.Factory(
-            StreamableDataSource.Factory(context),
+        private val dataSource = ResolvingDataSource.Factory(
+            StreamableDataSource.Factory(app.context),
             StreamableResolver(state.servers)
+        )
+
+        private val factories = createFactories(cachedDataSource)
+
+        init {
+            Factories.noCache = createFactories(dataSource)
+        }
+
+        private fun createFactories(dataSource: ResolvingDataSource.Factory) = Factories(
+            lazily { DashMediaSource.Factory(dataSource) },
+            lazily { HlsMediaSource.Factory(dataSource) },
+            lazily { DefaultMediaSourceFactory(dataSource) }
         )
 
         private var drmSessionManagerProvider: DrmSessionManagerProvider? = null
