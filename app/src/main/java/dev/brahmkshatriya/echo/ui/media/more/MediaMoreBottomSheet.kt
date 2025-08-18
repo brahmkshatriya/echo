@@ -198,7 +198,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
             if (isEditable) button(
                 "delete_playlist", R.string.delete_playlist, R.drawable.ic_delete
             ) {
-                DeletePlaylistBottomSheet.show(requireParentFragment(), extensionId, item, loaded)
+                DeletePlaylistBottomSheet.show(requireActivity(), extensionId, item, loaded)
             } else null,
             if (itemContext is Playlist && item is Track) button(
                 "remove_from_playlist", R.string.remove, R.drawable.ic_cancel

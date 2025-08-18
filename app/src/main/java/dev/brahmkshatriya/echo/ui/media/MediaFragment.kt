@@ -104,7 +104,7 @@ class MediaFragment : Fragment(R.layout.fragment_media), MediaDetailsFragment.Pa
         parentFragmentManager.setFragmentResultListener("delete", this) { _, data ->
             val playlist = item as? Playlist ?: return@setFragmentResultListener
             DeletePlaylistBottomSheet.show(
-                this, extensionId, playlist, !viewModel.isRefreshing
+                requireActivity(), extensionId, playlist, !viewModel.isRefreshing
             )
         }
         parentFragmentManager.setFragmentResultListener("deleted", this) { _, data ->

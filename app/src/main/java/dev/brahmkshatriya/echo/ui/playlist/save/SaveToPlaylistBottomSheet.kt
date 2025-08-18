@@ -75,6 +75,9 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         itemAdapter.submitList(listOf(MediaItemAdapter.Item(extensionId, item)))
+        val combined = viewModel.playlistsFlow.combine(viewModel.saveFlow) { playlists, save ->
+            playlists to save
+        }
         configureGridLayout(
             binding.recyclerView,
             GridAdapter.Concat(
@@ -85,27 +88,11 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
             ),
             false
         )
-
-        val combined = viewModel.playlistsFlow.combine(viewModel.saveFlow) { playlists, save ->
-            playlists to save
-        }
         observe(combined) { (state, save) ->
-            val playlistLoading = when (state) {
-                is SaveToPlaylistViewModel.PlaylistState.Loaded -> {
-                    if (state.list == null) {
-                        dismiss()
-                        return@observe
-                    }
-                    adapter.submitList(state.list)
-                    bottomSaveAdapter.setEnabled(state.list.any { it.second })
-                    false
-                }
-
-                else -> true
-            }
+            val playlistLoading = state !is SaveToPlaylistViewModel.PlaylistState.Loaded
             val saving = save != SaveToPlaylistViewModel.SaveState.Initial
             val loading = playlistLoading || saving
-            binding.recyclerView.isVisible = !loading
+            binding.recyclerView.isVisible = !saving
             binding.loading.root.isVisible = loading
             binding.loading.textView.text = when (save) {
                 SaveToPlaylistViewModel.SaveState.Initial -> getString(R.string.loading)
@@ -124,6 +111,14 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
 
                 is SaveToPlaylistViewModel.SaveState.Saving ->
                     getString(R.string.saving_x, save.playlist.title)
+            }
+            if (state is SaveToPlaylistViewModel.PlaylistState.Loaded) {
+                if (state.list == null) {
+                    dismiss()
+                    return@observe
+                }
+                adapter.submitList(state.list)
+                bottomSaveAdapter.setEnabled(state.list.any { it.second })
             }
         }
 

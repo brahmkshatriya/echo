@@ -424,7 +424,7 @@
     <string name="genres_x">Genres: %1$s</string>
     <string name="disc_number_n">Disc Number: %1$d</string>
     <string name="album_order_n">Album Order Number: %1$d</string>
-    <string name="confirmation">Conformation</string>
+    <string name="confirmation">Confirmation</string>
     <string name="delete_playlist_confirmation">Are you sure you want to delete %1$s?</string>
     <string name="confirm">Confirm</string>
     <string name="big_cover">Bigger Covers</string>

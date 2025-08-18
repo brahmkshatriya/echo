@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
@@ -22,13 +22,13 @@ class DeletePlaylistBottomSheet : BottomSheetDialogFragment(R.layout.item_loadin
 
     companion object {
         fun show(
-            fragment: Fragment, extensionId: String, item: Playlist, loaded: Boolean = false
-        ): AlertDialog = with(fragment) {
-            MaterialAlertDialogBuilder(requireContext())
+            activity: FragmentActivity, extensionId: String, item: Playlist, loaded: Boolean = false
+        ): AlertDialog = with(activity) {
+            MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.confirmation))
                 .setMessage(getString(R.string.delete_playlist_confirmation, item.title))
                 .setPositiveButton(getString(R.string.confirm)) { _, _ ->
-                    newInstance(extensionId, item, loaded).show(parentFragmentManager, null)
+                    newInstance(extensionId, item, loaded).show(supportFragmentManager, null)
                 }
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                     dialog.dismiss()

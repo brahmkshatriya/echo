@@ -31,7 +31,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.databinding.ItemLoadingBinding
+import dev.brahmkshatriya.echo.databinding.ItemLineBinding
 import dev.brahmkshatriya.echo.databinding.ItemMediaHeaderBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfErrorBinding
 import dev.brahmkshatriya.echo.extensions.MediaState
@@ -272,10 +272,14 @@ class MediaHeaderAdapter(
 
     class Loading(
         parent: ViewGroup,
-        binding: ItemLoadingBinding = ItemLoadingBinding.inflate(
+        binding: ItemLineBinding = ItemLineBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : ViewHolder(binding.root)
+    ) : ViewHolder(binding.root) {
+        init {
+            itemView.alpha = 0f
+        }
+    }
 
     companion object {
         private const val MAX_DESC_TEXT = 144

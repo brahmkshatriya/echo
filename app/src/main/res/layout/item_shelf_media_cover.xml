@@ -53,6 +53,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/isPlaying"
+        android:visibility="gone"
         style="@style/SmallNowPlayingButton" />
 
 </FrameLayout>

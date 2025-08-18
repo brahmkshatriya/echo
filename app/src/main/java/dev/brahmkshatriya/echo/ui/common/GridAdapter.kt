@@ -41,10 +41,14 @@ interface GridAdapter {
                 val width = it.width - it.paddingLeft - it.paddingRight
                 val calc = floor(width.toFloat() / (itemWidth + 8.dpToPx(context))).toInt()
                 val count = if (calc > 1) calc - if (even) calc % 2 else 0 else 1
+                println("GridAdapter: count = $count, width = $width, itemWidth = $itemWidth")
                 layoutManager.spanCount = count
                 layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(position: Int) =
-                        gridAdapter.getSpanSize(position, width, count)
+                    override fun getSpanSize(position: Int): Int {
+                        val size = gridAdapter.getSpanSize(position, width, count)
+                        println("GridAdapter: position = $position, size = $size")
+                        return size
+                    }
                 }
             }
             recycler.adapter = gridAdapter.adapter
