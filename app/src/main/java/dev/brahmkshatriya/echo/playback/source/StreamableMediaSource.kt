@@ -51,6 +51,7 @@ class StreamableMediaSource(
     private val scope: CoroutineScope,
     private val state: PlayerState,
     private val loader: StreamableLoader,
+    private val cacheFactories: Factories,
     private val factories: Factories,
     private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>
 ) : CompositeMediaSource<Nothing>() {
@@ -82,14 +83,22 @@ class StreamableMediaSource(
                 )
             }
 
+            fun getFactory(cacheFactories: Factories, factories: Factories, source: Streamable.Source) =
+                if (source.isLive) factories else cacheFactories
+
             val sources = server?.sources
             actualSource = when (sources?.size) {
                 0, null -> factories.create(new, -1, null)
-                1 -> factories.create(new, 0, sources.first())
+                1 -> {
+                    val source = sources.first()
+                    getFactory(cacheFactories, factories, source)
+                        .create(new, 0, source)
+                }
                 else -> {
                     if (server.merged) MergingMediaSource(
                         *sources.mapIndexed { index, source ->
-                            factories.create(new, index, source)
+                            getFactory(cacheFactories, factories, source)
+                                .create(new, index, source)
                         }.toTypedArray()
                     ) else {
                         val index = mediaItem.sourceIndex
@@ -97,7 +106,8 @@ class StreamableMediaSource(
                             ?: sources.select(context, new.extensionId) { it.quality }
                         val newIndex = sources.indexOf(source)
                         new = MediaItemUtils.buildSource(new, newIndex)
-                        factories.create(new, newIndex, source)
+                        getFactory(cacheFactories, factories, source)
+                            .create(new, newIndex, source)
                     }
                 }
             }
@@ -174,22 +184,30 @@ class StreamableMediaSource(
 
         private val loader = StreamableLoader(app, extensions.music, downloadFlow)
 
-        private val factories = Factories(
+        val dataSourceFactory = StreamableDataSource.Factory(app.context)
+        val streamableResolver = StreamableResolver(state.servers)
+
+        private val cacheDataSource = ResolvingDataSource.Factory(
+            CacheDataSource.Factory().setCache(cache)
+                .setUpstreamDataSourceFactory(dataSourceFactory),
+            streamableResolver
+        )
+
+        private val dataSource = ResolvingDataSource.Factory(
+            dataSourceFactory, streamableResolver
+        )
+
+        private val cacheFactories = createFactories(cacheDataSource)
+
+        private val factories = createFactories(dataSource)
+
+        private fun createFactories(dataSource: ResolvingDataSource.Factory) = Factories(
             lazily { DashMediaSource.Factory(dataSource) },
             lazily { HlsMediaSource.Factory(dataSource) },
             lazily { DefaultMediaSourceFactory(dataSource) }
         )
 
-        private val dataSource = ResolvingDataSource.Factory(
-            CacheDataSource.Factory().setCache(cache)
-                .setUpstreamDataSourceFactory(StreamableDataSource.Factory(app.context)),
-            StreamableResolver(state.servers)
-        )
-
-        private val provider = DefaultDrmSessionManagerProvider().apply {
-            setDrmHttpDataSourceFactory(dataSource)
-        }
-        private var drmSessionManagerProvider: DrmSessionManagerProvider? = provider
+        private var drmSessionManagerProvider: DrmSessionManagerProvider? = null
         private var loadErrorHandlingPolicy: LoadErrorHandlingPolicy? = null
         private fun lazily(factory: () -> MediaSource.Factory) = lazy {
             factory().apply {
@@ -217,7 +235,7 @@ class StreamableMediaSource(
         }
 
         override fun createMediaSource(mediaItem: MediaItem) = StreamableMediaSource(
-            mediaItem, app.context, scope, state, loader, factories, changeFlow
+            mediaItem, app.context, scope, state, loader, cacheFactories, factories, changeFlow
         )
     }
 }
