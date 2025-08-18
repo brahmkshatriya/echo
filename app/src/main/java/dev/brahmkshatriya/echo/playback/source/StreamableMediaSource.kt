@@ -51,6 +51,7 @@ class StreamableMediaSource(
     private val scope: CoroutineScope,
     private val state: PlayerState,
     private val loader: StreamableLoader,
+    private val cachedFactories: Factories,
     private val factories: Factories,
     private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>
 ) : CompositeMediaSource<Nothing>() {
@@ -82,14 +83,22 @@ class StreamableMediaSource(
                 )
             }
 
+            fun getFactory(cachedFactories: Factories, factories: Factories, source: Streamable.Source) =
+                if (source.isLive) factories else cachedFactories
+
             val sources = server?.sources
             actualSource = when (sources?.size) {
                 0, null -> factories.create(new, -1, null)
-                1 -> factories.create(new, 0, sources.first())
+                1 -> {
+                    val source = sources.first()
+                    getFactory(cachedFactories, factories, source)
+                        .create(new, 0, source)
+                }
                 else -> {
                     if (server.merged) MergingMediaSource(
                         *sources.mapIndexed { index, source ->
-                            factories.create(new, index, source)
+                            getFactory(cachedFactories, factories, source)
+                                .create(new, index, source)
                         }.toTypedArray()
                     ) else {
                         val index = mediaItem.sourceIndex
@@ -97,7 +106,8 @@ class StreamableMediaSource(
                             ?: sources.select(context, new.extensionId) { it.quality }
                         val newIndex = sources.indexOf(source)
                         new = MediaItemUtils.buildSource(new, newIndex)
-                        factories.create(new, newIndex, source)
+                        getFactory(cachedFactories, factories, source)
+                            .create(new, newIndex, source)
                     }
                 }
             }
@@ -150,17 +160,12 @@ class StreamableMediaSource(
         val hls: Lazy<MediaSource.Factory>,
         val default: Lazy<MediaSource.Factory>
     ) {
-        companion object {
-            lateinit var noCache: Factories
-        }
-
         fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source?): MediaSource {
-            val factories = if (source?.isLive == true) noCache else this
             val type = (source as? Streamable.Source.Http)?.type
             val factory = when (type) {
-                Streamable.SourceType.DASH -> factories.dash
-                Streamable.SourceType.HLS -> factories.hls
-                Streamable.SourceType.Progressive, null -> factories.default
+                Streamable.SourceType.DASH -> dash
+                Streamable.SourceType.HLS -> hls
+                Streamable.SourceType.Progressive, null -> default
             }
             val new = MediaItemUtils.buildForSource(mediaItem, index, source)
             return factory.value.createMediaSource(new)
@@ -190,11 +195,9 @@ class StreamableMediaSource(
             StreamableResolver(state.servers)
         )
 
-        private val factories = createFactories(cachedDataSource)
+        private val cachedFactories = createFactories(cachedDataSource)
 
-        init {
-            Factories.noCache = createFactories(dataSource)
-        }
+        private val factories = createFactories(dataSource)
 
         private fun createFactories(dataSource: ResolvingDataSource.Factory) = Factories(
             lazily { DashMediaSource.Factory(dataSource) },
@@ -230,7 +233,7 @@ class StreamableMediaSource(
         }
 
         override fun createMediaSource(mediaItem: MediaItem) = StreamableMediaSource(
-            mediaItem, app.context, scope, state, loader, factories, changeFlow
+            mediaItem, app.context, scope, state, loader, cachedFactories, factories, changeFlow
         )
     }
 }
