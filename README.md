@@ -16,6 +16,15 @@ An Extension-based Music Player for Android, designed with a clean and intuitive
 > Echo is intended for offline use only by default; the user manages any external sources. Echo does
 > not condone or supports piracy.
 
+## Screenshots
+
+<p align="center">
+  <a href="screenshots/screenshot-home.jpg"><img src="screenshots/screenshot-home.jpg" width="20%"></a>
+  <a href="screenshots/screenshot-add-extension.jpg"><img src="screenshots/screenshot-add-extension.jpg" width="20%"></a>
+  <a href="screenshots/screenshot-extension-list.jpg"><img src="screenshots/screenshot-extension-list.jpg" width="20%"></a>
+  <a href="screenshots/screenshot-settings-lookandfeel.jpg"><img src="screenshots/screenshot-settings-lookandfeel.jpg" width="20%"></a>
+</p>
+
 ## Downloads
 
 <!--<a href="https://github.com/brahmkshatriya/echo/releases/latest"><img src="https://img.shields.io/badge/Stable-2EB9FF?label=Recommended&style=for-the-badge"  alt="Latest Stable Release"/></a>-->
