@@ -58,8 +58,7 @@ object Cached {
     ) = coroutineScope {
         runCatching {
             val result = runCatching {
-                val new = if (state.loaded) state.item
-                else loadItem(app, extension, state.item).getOrThrow()
+                val new = loadItem(app, extension, state.item).getOrThrow()
                 val isSaved = async {
                     if (new.isSaveable) extension.getIf<SaveClient, Boolean> {
                         isItemSaved(new)
@@ -116,17 +115,19 @@ object Cached {
         app: App, extension: Extension<*>, item: T
     ) = runCatching {
         val fileCache = app.fileCache.await()
-        val cached = fileCache.get("media-${extension.id}-${item.id}")?.let {
-            File(it).readText().toData<T>()
-        }
-        if (cached != null) return@runCatching cached
         val new = when (item) {
             is Artist -> extension.getAs<ArtistClient, Artist> { loadArtist(item) }
             is Album -> extension.getAs<AlbumClient, Album> { loadAlbum(item) }
             is Playlist -> extension.getAs<PlaylistClient, Playlist> { loadPlaylist(item) }
             is Track -> extension.getAs<TrackClient, Track> { loadTrack(item, false) }
             is Radio -> extension.getAs<RadioClient, Radio> { loadRadio(item) }
-        }.getOrThrow() as T
+        }.getOrElse { error ->
+            runCatching {
+                fileCache.get("media-${extension.id}-${item.id}")?.let {
+                    File(it).readText().toData<T>()
+                }
+            }.getOrNull() ?: throw error
+        } as T
         fileCache.put("media-${extension.id}-${new.id}") {
             runCatching {
                 File(it).writeText(new.toJson())
