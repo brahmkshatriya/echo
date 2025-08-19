@@ -294,6 +294,10 @@ class PlayerFragment : Fragment() {
         override fun onClick() = uiViewModel.run {
             if (playerSheetState.value != STATE_EXPANDED) changePlayerState(STATE_EXPANDED)
             else {
+                if (moreSheetState.value == STATE_EXPANDED) {
+                    changeMoreState(STATE_COLLAPSED)
+                    return
+                }
                 val shouldBeVisible = !playerBgVisible.value
                 if (shouldBeVisible) {
                     val binding = binding ?: return@run
