@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
     var binding by autoCleared<DialogExtensionsAddListBinding>()
@@ -23,7 +24,9 @@ class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
     }
 
     private var clicked = false
-    private val viewModel by activityViewModel<AddViewModel>()
+    private val viewModel by lazy {
+        requireParentFragment().viewModel<AddViewModel>().value
+    }
     private val extensionsViewModel by activityViewModel<ExtensionsViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
