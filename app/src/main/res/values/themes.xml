@@ -34,14 +34,14 @@
         <item name="itemCorner">8dp</item>
     </style>
 
-    <style name="Default.Theme.Echo" parent="Base.Theme.Echo" />
+    <style name="Default" parent="Base.Theme.Echo" />
 
-    <style name="Amoled">
+    <style name="Amoled" parent="Base.Theme.Echo" >
         <item name="echoBackground">@color/amoled_bg</item>
         <item name="navBackground">?colorSurfaceContainerLowest</item>
     </style>
 
-    <style name="BigCover" parent="Default.Theme.Echo">
+    <style name="BigCover" parent="Base.Theme.Echo" >
         <item name="itemCoverSize">128dp</item>
     </style>
 

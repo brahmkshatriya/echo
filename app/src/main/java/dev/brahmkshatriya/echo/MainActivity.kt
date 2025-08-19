@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
                 amoled && bigCover -> R.style.AmoledBigCover
                 amoled -> R.style.Amoled
                 bigCover -> R.style.BigCover
-                else -> R.style.Default_Theme_Echo
+                else -> R.style.Default
             }
         }
 
