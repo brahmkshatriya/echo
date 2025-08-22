@@ -6,7 +6,6 @@ import androidx.core.content.edit
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
-import dev.brahmkshatriya.echo.common.models.GlobalSettings
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
@@ -97,6 +96,10 @@ object ExtensionUtils {
         return toSettings(metadata.prefs(context))
     }
 
+    fun getGlobalSettings(context: Context): Settings {
+        return toSettings(context.getSettings())
+    }
+
     fun toSettings(prefs: SharedPreferences) = object : Settings {
         override fun getString(key: String) = prefs.getString(key, null)
         override fun putString(key: String, value: String?) {
@@ -120,38 +123,6 @@ object ExtensionUtils {
         override fun getStringSet(key: String) = prefs.getStringSet(key, null)
         override fun putStringSet(key: String, value: Set<String>?) {
             prefs.edit { putStringSet(key, value) }
-        }
-    }
-
-    fun getGlobalSettings(context: Context): GlobalSettings {
-        return toGlobalSettings(context.getSettings())
-    }
-
-    fun toGlobalSettings(prefs: SharedPreferences) = object : GlobalSettings {
-        override fun getString(key: String): String? = prefs.getString(key, null)
-
-        override fun putString(key: String, value: String?) {
-            prefs.edit { if (value != null) putString(key, value) else remove(key) }
-        }
-
-        override fun getStringSet(key: String): Set<String>? = prefs.getStringSet(key, null)
-
-        override fun putStringSet(key: String, value: Set<String>?) {
-            prefs.edit { if (value != null) putStringSet(key, value) else remove(key) }
-        }
-
-        override fun getInt(key: String): Int? =
-            if (prefs.contains(key)) prefs.getInt(key, 0) else null
-
-        override fun putInt(key: String, value: Int?) {
-            prefs.edit { if (value != null) putInt(key, value) else remove(key) }
-        }
-
-        override fun getBoolean(key: String): Boolean? =
-            if (prefs.contains(key)) prefs.getBoolean(key, false) else null
-
-        override fun putBoolean(key: String, value: Boolean?) {
-            prefs.edit { if (value != null) putBoolean(key, value) else remove(key) }
         }
     }
 
