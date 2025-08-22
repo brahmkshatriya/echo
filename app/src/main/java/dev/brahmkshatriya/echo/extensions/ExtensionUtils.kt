@@ -6,10 +6,16 @@ import androidx.core.content.edit
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.helpers.ClientException
+import dev.brahmkshatriya.echo.common.models.GlobalSettings
 import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.common.models.StreamQuality
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionNotFoundException
+import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.UNMETERED_STREAM_QUALITY
+import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -119,6 +125,25 @@ object ExtensionUtils {
         override fun putStringSet(key: String, value: Set<String>?) {
             prefs.edit { putStringSet(key, value) }
         }
+    }
+
+    fun toStreamQuality(quality: String?) : StreamQuality? {
+        return when (quality) {
+            streamQualities[0] -> StreamQuality.Highest
+            streamQualities[1] -> StreamQuality.Medium
+            streamQualities[2] -> StreamQuality.Lowest
+            else -> null
+        }
+    }
+
+    fun getGlobalSettings(context: Context): GlobalSettings {
+        val settings = context.getSettings()
+        val streamQuality = settings.getString(STREAM_QUALITY, streamQualities[1])
+        val meteredStreamQuality = settings.getString(UNMETERED_STREAM_QUALITY, null)
+        return GlobalSettings(
+            toStreamQuality(streamQuality)!!,
+            toStreamQuality(meteredStreamQuality)
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
