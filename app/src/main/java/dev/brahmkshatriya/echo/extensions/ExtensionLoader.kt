@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.common.helpers.WebViewClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.providers.GlobalSettingsProvider
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MessageFlowProvider
 import dev.brahmkshatriya.echo.common.providers.MetadataProvider
@@ -152,6 +153,8 @@ class ExtensionLoader(
     ) = Injectable(::value, mutableListOf({
         if (this is MetadataProvider) setMetadata(metadata)
         if (this is MessageFlowProvider) setMessageFlow(app.messageFlow)
+        if (this is GlobalSettingsProvider)
+            setGlobalSettings(ExtensionUtils.getGlobalSettings(app.context))
         setSettings(ExtensionUtils.getSettings(app.context, metadata))
         if (this is WebViewClientProvider) setWebViewClient(createWebClient(metadata))
         onInitialize()

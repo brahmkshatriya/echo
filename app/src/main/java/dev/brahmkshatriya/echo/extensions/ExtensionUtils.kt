@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.extensions.exceptions.ExtensionNotFoundException
+import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -93,6 +94,10 @@ object ExtensionUtils {
 
     fun getSettings(context: Context, metadata: Metadata): Settings {
         return toSettings(metadata.prefs(context))
+    }
+
+    fun getGlobalSettings(context: Context): Settings {
+        return toSettings(context.getSettings())
     }
 
     fun toSettings(prefs: SharedPreferences) = object : Settings {
