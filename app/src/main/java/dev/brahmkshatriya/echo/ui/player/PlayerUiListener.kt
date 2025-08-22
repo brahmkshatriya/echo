@@ -19,7 +19,7 @@ class PlayerUiListener(
     init {
         updateList()
         with(viewModel) {
-            tracks.value = player.currentTracks
+            tracksFlow.value = player.currentTracks
             isPlaying.value = player.isPlaying
             buffering.value = player.playbackState == Player.STATE_BUFFERING
             shuffleMode.value = player.shuffleModeEnabled
@@ -113,6 +113,6 @@ class PlayerUiListener(
     }
 
     override fun onTracksChanged(tracks: Tracks) {
-        viewModel.tracks.value = tracks
+        viewModel.tracksFlow.value = tracks
     }
 }

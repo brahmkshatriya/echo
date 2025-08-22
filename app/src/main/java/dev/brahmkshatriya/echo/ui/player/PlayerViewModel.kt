@@ -28,6 +28,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerCommands.addToNextCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.addToQueueCommand
@@ -42,6 +43,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -298,7 +300,13 @@ class PlayerViewModel(
     val repeatMode = MutableStateFlow(0)
     val shuffleMode = MutableStateFlow(false)
 
-    val tracks = MutableStateFlow<Tracks?>(null)
+    val tracksFlow = MutableStateFlow<Tracks?>(null)
+    val serverAndTracks = tracksFlow.combine(playerState.serverChanged) { tracks, _ -> tracks }
+        .combine(playerState.current) { tracks, current ->
+            val server = playerState.servers[current?.mediaItem?.mediaId]?.getOrNull()
+            val index = current?.mediaItem?.sourceIndex
+            Triple(tracks, server, index)
+        }
 
     companion object {
         const val KEEP_QUEUE = "keep_queue"

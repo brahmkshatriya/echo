@@ -99,7 +99,7 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         return binding!!.root
@@ -474,12 +474,11 @@ class PlayerFragment : Fragment() {
             }
             observe(viewModel.repeatMode) { changeRepeatDrawable(it) }
 
-            trackSubtitle.marquee()
             trackSubtitle.setOnClickListener {
                 QualitySelectionBottomSheet().show(parentFragmentManager, null)
             }
-            observe(viewModel.tracks) { tracks ->
-                trackSubtitle.text = tracks?.getDetails(requireContext())
+            observe(viewModel.serverAndTracks) { (tracks, server, index) ->
+                trackSubtitle.text = tracks?.getDetails(requireContext(), server, index)
                     ?.joinToString(" ⦿ ")?.takeIf { it.isNotBlank() }
             }
         }
@@ -660,8 +659,7 @@ class PlayerFragment : Fragment() {
                 EDGE_TYPE_OUTLINE, Color.BLACK, null
             )
         )
-        observe(viewModel.playerState.current) { applyPlayer() }
-        observe(viewModel.tracks) { applyPlayer() }
+        observe(viewModel.serverAndTracks) { applyPlayer() }
     }
 
     companion object {
@@ -676,7 +674,7 @@ class PlayerFragment : Fragment() {
 
         @OptIn(UnstableApi::class)
         fun getPlayer(
-            context: Context, cache: SimpleCache, video: Streamable.Media.Background
+            context: Context, cache: SimpleCache, video: Streamable.Media.Background,
         ): ExoPlayer {
             val cacheFactory = CacheDataSource
                 .Factory().setCache(cache)
