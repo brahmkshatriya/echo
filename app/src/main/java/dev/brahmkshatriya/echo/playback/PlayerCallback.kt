@@ -37,6 +37,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
@@ -68,13 +69,13 @@ import kotlinx.coroutines.withContext
 
 @OptIn(UnstableApi::class)
 class PlayerCallback(
-    override val context: Context,
+    override val app: App,
     override val scope: CoroutineScope,
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val extensions: ExtensionLoader,
     private val radioFlow: MutableStateFlow<PlayerState.Radio>,
     override val downloadFlow: StateFlow<List<Downloader.Info>>
-) : AndroidAutoCallback(context, scope, extensions.music, downloadFlow) {
+) : AndroidAutoCallback(app, scope, extensions.music, downloadFlow) {
 
     override fun onConnect(
         session: MediaSession, controller: MediaSession.ControllerInfo
@@ -117,7 +118,7 @@ class PlayerCallback(
 
     private fun getImage(player: Player) = scope.future {
         val item = player.with { currentMediaItem }
-            ?: context.recoverPlaylist(downloadFlow.value, false).run { first.getOrNull(second) }
+            ?: context.recoverPlaylist(app, downloadFlow.value, false).run { first.getOrNull(second) }
             ?: return@future SessionResult(SessionError.ERROR_UNKNOWN)
         val image = item.track.cover.loadDrawable(context)?.toBitmap(1024, -1)
         SessionResult(RESULT_SUCCESS, Bundle().apply { putParcelable("image", image) })
@@ -128,7 +129,7 @@ class PlayerCallback(
             player.shuffleModeEnabled = context.recoverShuffle() == true
             player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
         }
-        val (items, index, pos) = context.recoverPlaylist(downloadFlow.value, withClear)
+        val (items, index, pos) = context.recoverPlaylist(app,downloadFlow.value, withClear)
         withContext(Dispatchers.Main) {
             player.setMediaItems(items, index, pos)
             player.prepare()
@@ -175,7 +176,7 @@ class PlayerCallback(
             clearMediaItems()
             shuffleModeEnabled = false
         }
-        PlayerRadio.play(player, downloadFlow, context, radioFlow, loaded)
+        PlayerRadio.play(player, downloadFlow, app, radioFlow, loaded)
         player.with { play() }
         SessionResult(RESULT_SUCCESS)
     }
@@ -228,7 +229,7 @@ class PlayerCallback(
         when (item) {
             is Track -> {
                 val mediaItem = MediaItemUtils.build(
-                    context, downloadFlow.value, MediaState.Unloaded(extId, item), null
+                    app, downloadFlow.value, MediaState.Unloaded(extId, item), null
                 )
                 player.with {
                     setMediaItem(mediaItem)
@@ -253,7 +254,7 @@ class PlayerCallback(
                             return@launch
                         }.drop(list.size).map {
                             MediaItemUtils.build(
-                                context, downloadFlow.value, MediaState.Unloaded(extId, it), item
+                                app, downloadFlow.value, MediaState.Unloaded(extId, it), item
                             )
                         }
                         player.with { addMediaItems(list.size, all) }
@@ -267,7 +268,7 @@ class PlayerCallback(
                 player.with {
                     setMediaItems(list.map {
                         MediaItemUtils.build(
-                            context, downloadFlow.value, MediaState.Unloaded(extId, it), item
+                            app, downloadFlow.value, MediaState.Unloaded(extId, it), item
                         )
                     })
                     shuffleModeEnabled = shuffle
@@ -313,7 +314,7 @@ class PlayerCallback(
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
             MediaItemUtils.build(
-                context,
+                app,
                 downloadFlow.value,
                 MediaState.Unloaded(extId, track),
                 null
@@ -345,7 +346,7 @@ class PlayerCallback(
         if (tracks.isEmpty()) return@future error
         val mediaItems = tracks.map { track ->
             MediaItemUtils.build(
-                context,
+                app,
                 downloadFlow.value,
                 MediaState.Unloaded(extId, track),
                 null
@@ -402,7 +403,7 @@ class PlayerCallback(
             mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false
             mediaSession.player.repeatMode = context.recoverRepeat() ?: Player.REPEAT_MODE_OFF
         }
-        val (items, index, pos) = context.recoverPlaylist(downloadFlow.value)
+        val (items, index, pos) = context.recoverPlaylist(app, downloadFlow.value)
         MediaItemsWithStartPosition(items, index, pos)
     }
 

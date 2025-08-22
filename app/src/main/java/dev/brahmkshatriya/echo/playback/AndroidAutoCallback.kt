@@ -40,6 +40,7 @@ import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.MediaState
@@ -54,11 +55,13 @@ import java.util.WeakHashMap
 
 @UnstableApi
 abstract class AndroidAutoCallback(
-    open val context: Context,
+    open val app: App,
     open val scope: CoroutineScope,
     open val extensionList: StateFlow<List<MusicExtension>>,
     open val downloadFlow: StateFlow<List<Downloader.Info>>
 ) : MediaLibrarySession.Callback {
+
+    val context get() = app.context
 
     @CallSuper
     override fun onGetLibraryRoot(
@@ -200,7 +203,7 @@ abstract class AndroidAutoCallback(
                     context.getFromCache<Triple<Track, String, EchoMediaItem?>>(id, "auto")
                         ?: return@mapNotNull null
                 MediaItemUtils.build(
-                    context,
+                    app,
                     downloadFlow.value,
                     MediaState.Unloaded(extId, track),
                     con

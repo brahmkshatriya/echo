@@ -31,11 +31,13 @@ import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
+import dev.brahmkshatriya.echo.common.providers.GlobalSettingsProvider
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MessageFlowProvider
 import dev.brahmkshatriya.echo.common.providers.MetadataProvider
 import dev.brahmkshatriya.echo.common.providers.MiscExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
+import dev.brahmkshatriya.echo.common.providers.NetworkConnectionProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 
 /**
@@ -133,6 +135,8 @@ sealed class Extension<T : ExtensionClient>(
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
  * - [MiscExtensionsProvider] - To get installed misc extensions
+ * - [GlobalSettingsProvider] - To get global settings of the app
+ * - [NetworkConnectionProvider] - To get network connection status
  *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [ExtensionClient] client
@@ -157,6 +161,8 @@ data class MusicExtension(
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
  * - [MiscExtensionsProvider] - To get installed misc extensions
+ * - [GlobalSettingsProvider] - To get global settings of the app
+ * - [NetworkConnectionProvider] - To get network connection status
  *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [TrackerClient] client
@@ -180,6 +186,8 @@ data class TrackerExtension(
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
  * - [MiscExtensionsProvider] - To get installed misc extensions
+ * - [GlobalSettingsProvider] - To get global settings of the app
+ * - [NetworkConnectionProvider] - To get network connection status
  *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [LyricsClient] client
@@ -204,6 +212,8 @@ data class LyricsExtension(
  * - [LyricsExtensionsProvider] - To get installed lyrics extensions
  * - [TrackerExtensionsProvider] - To get installed tracker extensions
  * - [MiscExtensionsProvider] - To get installed misc extensions
+ * - [GlobalSettingsProvider] - To get global settings of the app
+ * - [NetworkConnectionProvider] - To get network connection status
  *
  * @param metadata The metadata of the extension
  * @param instance An injectable instance of the [ExtensionClient] client

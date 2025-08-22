@@ -22,14 +22,15 @@ class WidgetPlayerListener(
     private var image: Bitmap? = null
     private fun getImage() {
         result?.cancel(true)
-        result = controller?.sendCustomCommand(imageCommand, Bundle.EMPTY)
-        result?.addListener({
-            val result = result?.get()
+        val future = controller?.sendCustomCommand(imageCommand, Bundle.EMPTY)
+        future?.addListener({
+            val result = future.get()
             if (result?.resultCode == SessionResult.RESULT_SUCCESS) {
                 image = result.extras.getParcel<Bitmap>("image")
                 update(image)
             }
         }, MoreExecutors.directExecutor())
+        result = future
     }
 
     fun removed() {

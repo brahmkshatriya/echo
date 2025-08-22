@@ -6,8 +6,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -43,7 +41,6 @@ import dev.brahmkshatriya.echo.playback.listener.TrackingListener
 import dev.brahmkshatriya.echo.playback.renderer.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.renderer.RenderersFactory
 import dev.brahmkshatriya.echo.playback.source.StreamableMediaSource
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.listenFuture
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -51,7 +48,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.File
 
@@ -95,7 +91,7 @@ class PlayerService : MediaLibraryService() {
         }
 
         val callback = PlayerCallback(
-            this, scope, app.throwFlow, extensions, state.radio, downloadFlow
+            app, scope, app.throwFlow, extensions, state.radio, downloadFlow
         )
 
         val session = MediaLibrarySession.Builder(this, player, callback)
@@ -109,7 +105,7 @@ class PlayerService : MediaLibraryService() {
         )
         player.addListener(
             PlayerRadio(
-                this, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow
+                app, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow
             )
         )
         player.addListener(
@@ -211,33 +207,24 @@ class PlayerService : MediaLibraryService() {
         const val UNMETERED_STREAM_QUALITY = "unmetered_stream_quality"
         val streamQualities = arrayOf("highest", "medium", "lowest")
 
-        suspend fun selectServerIndex(
-            context: Context,
+        fun selectServerIndex(
+            app: App,
             extensionId: String,
             streamables: List<Streamable>,
             downloaded: List<String>
         ) = if (downloaded.isNotEmpty()) streamables.size
         else if (streamables.isNotEmpty()) {
-            val streamable = streamables.select(context, extensionId) { it.quality }
+            val streamable = streamables.select(app, extensionId) { it.quality }
             streamables.indexOf(streamable)
         } else -1
 
-        private suspend fun isUnmetered(context: Context) = withContext(Dispatchers.IO) {
-            val connectivityManager =
-                context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-            val network = connectivityManager.activeNetwork ?: return@withContext false
-            val networkCapabilities =
-                connectivityManager.getNetworkCapabilities(network) ?: return@withContext false
-            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
-        }
-
-        private suspend fun <E> List<E>.select(
-            context: Context,
+        private fun <E> List<E>.select(
+            app: App,
             settings: SharedPreferences,
             quality: (E) -> Int,
             default: String = streamQualities[1]
         ): E? {
-            val unmetered = if (isUnmetered(context)) selectQuality(
+            val unmetered = if (app.isUnmetered) selectQuality(
                 settings.getString(UNMETERED_STREAM_QUALITY, "off"),
                 quality
             ) else null
@@ -257,12 +244,13 @@ class PlayerService : MediaLibraryService() {
         }
 
 
-        suspend fun <T> List<T>.select(
-            context: Context, extensionId: String, quality: (T) -> Int
+        fun <T> List<T>.select(
+            app: App, extensionId: String, quality: (T) -> Int
         ): T {
-            val extSettings = extensionPrefId(ExtensionType.MUSIC.name, extensionId).prefs(context)
-            return select(context, extSettings, quality, "off")
-                ?: select(context, context.getSettings(), quality)
+            val extSettings =
+                extensionPrefId(ExtensionType.MUSIC.name, extensionId).prefs(app.context)
+            return select(app, extSettings, quality, "off")
+                ?: select(app, app.settings, quality)
                 ?: first()
         }
 

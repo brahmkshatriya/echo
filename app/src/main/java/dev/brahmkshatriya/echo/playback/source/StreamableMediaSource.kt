@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.playback.source
 
-import android.content.Context
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
@@ -11,7 +10,6 @@ import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.dash.DashMediaSource
-import androidx.media3.exoplayer.drm.DefaultDrmSessionManagerProvider
 import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.CompositeMediaSource
@@ -47,7 +45,7 @@ import java.io.IOException
 @UnstableApi
 class StreamableMediaSource(
     private var mediaItem: MediaItem,
-    private val context: Context,
+    private val app: App,
     private val scope: CoroutineScope,
     private val state: PlayerState,
     private val loader: StreamableLoader,
@@ -78,7 +76,7 @@ class StreamableMediaSource(
             val isOffline = new.actualExtensionId != OfflineExtension.metadata.id
             if (isOffline && !server?.sources.isNullOrEmpty()) {
                 val track = mediaItem.track
-                context.saveToCache(
+                app.context.saveToCache(
                     track.id.hashCode().toString(), new.actualExtensionId to track, "track"
                 )
             }
@@ -103,7 +101,7 @@ class StreamableMediaSource(
                     ) else {
                         val index = mediaItem.sourceIndex
                         val source = sources.getOrNull(index)
-                            ?: sources.select(context, new.extensionId) { it.quality }
+                            ?: sources.select(app, new.extensionId) { it.quality }
                         val newIndex = sources.indexOf(source)
                         new = MediaItemUtils.buildSource(new, newIndex)
                         getFactory(cacheFactories, factories, source)
@@ -235,7 +233,7 @@ class StreamableMediaSource(
         }
 
         override fun createMediaSource(mediaItem: MediaItem) = StreamableMediaSource(
-            mediaItem, app.context, scope, state, loader, cacheFactories, factories, changeFlow
+            mediaItem, app, scope, state, loader, cacheFactories, factories, changeFlow
         )
     }
 }

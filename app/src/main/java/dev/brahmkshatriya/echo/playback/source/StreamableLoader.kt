@@ -38,7 +38,7 @@ class StreamableLoader(
         extensionListFlow.first { it.isNotEmpty() }
         val new = if (mediaItem.isLoaded) mediaItem
         else MediaItemUtils.buildLoaded(
-            app.context, downloadFlow.value, mediaItem, loadTrack(mediaItem)
+            app, downloadFlow.value, mediaItem, loadTrack(mediaItem)
         )
 
         val server = async { loadServer(new) }

@@ -208,7 +208,7 @@ class PlayerViewModel(
         withBrowser { controller ->
             val mediaItems = list.map {
                 MediaItemUtils.build(
-                    app.context,
+                    app,
                     downloadFlow.value,
                     MediaState.Unloaded(id, it),
                     context

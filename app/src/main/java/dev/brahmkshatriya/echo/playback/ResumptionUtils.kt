@@ -1,13 +1,12 @@
 package dev.brahmkshatriya.echo.playback
 
 import android.content.Context
-import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
@@ -67,17 +66,18 @@ object ResumptionUtils {
         }
     }
 
-    private suspend fun Context.recoverQueue(
+    private fun Context.recoverQueue(
+        app: App,
         downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): List<MediaItem>? {
         val tracks = recoverTracks(withClear) ?: return null
         return tracks.map { (state, item) ->
-            MediaItemUtils.build(this, downloads, state, item)
+            MediaItemUtils.build(app, downloads, state, item)
         }
     }
 
-    private fun Context.recoverIndex() = getFromCache<Int>(INDEX, FOLDER)
+    fun Context.recoverIndex() = getFromCache<Int>(INDEX, FOLDER)
     private fun Context.recoverPosition() = getFromCache<Long>(POSITION, FOLDER)
 
 
@@ -91,12 +91,12 @@ object ResumptionUtils {
         context.saveToCache(REPEAT, repeat, FOLDER)
     }
 
-    @OptIn(UnstableApi::class)
-    suspend fun Context.recoverPlaylist(
+    fun Context.recoverPlaylist(
+        app: App,
         downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): Triple<List<MediaItem>, Int, Long> {
-        val items = recoverQueue(downloads, withClear) ?: emptyList()
+        val items = recoverQueue(app, downloads, withClear) ?: emptyList()
         val index = recoverIndex() ?: C.INDEX_UNSET
         val position = recoverPosition() ?: -1L
         return Triple(items, index, position)

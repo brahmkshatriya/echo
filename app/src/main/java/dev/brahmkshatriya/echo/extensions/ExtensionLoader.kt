@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.common.providers.MessageFlowProvider
 import dev.brahmkshatriya.echo.common.providers.MetadataProvider
 import dev.brahmkshatriya.echo.common.providers.MiscExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
+import dev.brahmkshatriya.echo.common.providers.NetworkConnectionProvider
 import dev.brahmkshatriya.echo.common.providers.TrackerExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.WebViewClientProvider
 import dev.brahmkshatriya.echo.di.App
@@ -192,6 +193,17 @@ class ExtensionLoader(
         }
         scope.launch {
             music.collectLatest { setCurrentExtension() }
+        }
+        scope.launch {
+            app.networkFlow.combine(all) { a, b -> a to b }.collect { (conn, all) ->
+                all.forEach {
+                    if (!it.isEnabled) return@forEach
+                    it.inject("network", app.throwFlow) {
+                        if (this !is NetworkConnectionProvider) return@inject
+                        setNetworkConnection(conn)
+                    }
+                }
+            }
         }
     }
 

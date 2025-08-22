@@ -18,11 +18,11 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.selectServerIndex
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.toData
@@ -30,29 +30,29 @@ import dev.brahmkshatriya.echo.utils.Serializer.toJson
 
 object MediaItemUtils {
 
-    suspend fun build(
-        appContext: Context,
+    fun build(
+        app: App,
         downloads: List<Downloader.Info>,
         state: MediaState.Unloaded<Track>,
         context: EchoMediaItem?,
     ): MediaItem {
         val item = MediaItem.Builder()
-        val metadata = state.toMetaData(bundleOf(), downloads, context, false, appContext)
+        val metadata = state.toMetaData(bundleOf(), downloads, context, false, app)
         item.setMediaMetadata(metadata)
         item.setMediaId(state.item.id)
         item.setUri(state.item.id)
         return item.build()
     }
 
-    suspend fun buildLoaded(
-        appContext: Context,
+    fun buildLoaded(
+        app: App,
         downloads: List<Downloader.Info>,
         mediaItem: MediaItem,
         state: MediaState.Loaded<Track>
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
         val metadata = state.toMetaData(
-            mediaMetadata.extras!!, downloads, context, true, appContext
+            mediaMetadata.extras!!, downloads, context, true, app
         )
         item.setMediaMetadata(metadata)
         return item.build()
@@ -155,12 +155,12 @@ object MediaItemUtils {
 
 
     @OptIn(UnstableApi::class)
-    private suspend fun MediaState<Track>.toMetaData(
+    private fun MediaState<Track>.toMetaData(
         bundle: Bundle,
         downloads: List<Downloader.Info>,
         context: EchoMediaItem? = bundle.getSerialized("context"),
         loaded: Boolean = bundle.getBoolean("loaded"),
-        appContext: Context,
+        app: App,
         serverIndex: Int? = null,
         backgroundIndex: Int? = null,
         subtitleIndex: Int? = null
@@ -176,7 +176,6 @@ object MediaItemUtils {
                 if (isLiked) ThumbRating(true) else ThumbRating()
             )
             .setExtras(Bundle().apply {
-                val settings = appContext.getSettings()
                 putAll(bundle)
                 putSerialized("unloadedCover", bundle.stateNullable?.item?.cover)
                 putSerialized("state", this@toMetaData)
@@ -184,16 +183,16 @@ object MediaItemUtils {
                 putBoolean("loaded", loaded)
                 putInt("subtitleIndex", subtitleIndex ?: 0.takeIf { subtitles.isNotEmpty() } ?: -1)
                 putInt(
-                    "backgroundIndex",
-                    backgroundIndex
-                        ?: 0.takeIf { backgrounds.isNotEmpty() && settings.showBackground() } ?: -1
+                    "backgroundIndex", backgroundIndex ?: 0.takeIf {
+                        backgrounds.isNotEmpty() && app.settings.showBackground()
+                    } ?: -1
                 )
                 val downloaded =
                     downloads.filter { it.download.trackId == id }
                         .mapNotNull { it.download.finalFile }
                 putInt(
                     "serverIndex",
-                    serverIndex ?: selectServerIndex(appContext, extensionId, servers, downloaded)
+                    serverIndex ?: selectServerIndex(app, extensionId, servers, downloaded)
                 )
                 putSerialized("downloaded", downloaded)
             })

@@ -16,7 +16,8 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.App
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
+import dev.brahmkshatriya.echo.extensions.MediaState
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.state
 import dev.brahmkshatriya.echo.playback.PlayerCommands.likeCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatOffCommand
@@ -25,8 +26,8 @@ import dev.brahmkshatriya.echo.playback.PlayerCommands.resumeCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.unlikeCommand
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getController
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getPendingIntent
-import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
-import kotlinx.coroutines.runBlocking
+import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverIndex
+import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverTracks
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -173,12 +174,13 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
             views: RemoteViews,
         ) {
             val current = controller?.currentMediaItem
-            val item = current ?: context.run {
-                val (list, index) = runBlocking { recoverPlaylist(listOf(), false) }
-                list.getOrNull(index)
+            val item = current?.state ?: context.run {
+                val list = recoverTracks().orEmpty()
+                val index = recoverIndex() ?: 0
+                list.getOrNull(index)?.first
             }
-            val title = item?.mediaMetadata?.title
-            val artist = item?.mediaMetadata?.artist
+            val title = item?.item?.title
+            val artist = item?.item?.subtitleWithE
             views.setTextViewText(R.id.trackTitle, title ?: context.getString(R.string.so_empty))
             views.setTextViewText(
                 R.id.trackArtist,
@@ -224,7 +226,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 if ((controller?.currentMediaItemIndex ?: -1) >= 0) 1f else 0.5f
             )
 
-            val isLiked = item?.isLiked ?: false
+            val isLiked = (item as? MediaState.Loaded)?.isLiked ?: false
             views.setOnClickPendingIntent(
                 R.id.likeButton, context.createIntent(if (isLiked) ACTION_UNLIKE else ACTION_LIKE)
             )
