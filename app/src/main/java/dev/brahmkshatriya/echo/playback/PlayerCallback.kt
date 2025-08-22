@@ -1,7 +1,9 @@
 package dev.brahmkshatriya.echo.playback
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.os.bundleOf
@@ -9,6 +11,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Rating
 import androidx.media3.common.ThumbRating
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaButtonReceiver
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
@@ -17,6 +20,7 @@ import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionResult.RESULT_SUCCESS
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
@@ -45,6 +49,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverRepeat
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverShuffle
+import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverTracks
 import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
@@ -399,6 +404,18 @@ class PlayerCallback(
         }
         val (items, index, pos) = context.recoverPlaylist(downloadFlow.value)
         MediaItemsWithStartPosition(items, index, pos)
+    }
+
+    class ButtonReceiver : MediaButtonReceiver() {
+        override fun shouldStartForegroundService(context: Context, intent: Intent): Boolean {
+            val isEmpty = context.recoverTracks().isNullOrEmpty()
+            if (isEmpty) Toast.makeText(
+                context,
+                context.getString(R.string.no_last_played_track_found),
+                Toast.LENGTH_SHORT
+            ).show()
+            return !isEmpty
+        }
     }
 
     companion object {

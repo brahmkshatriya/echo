@@ -55,10 +55,7 @@ object ResumptionUtils {
         context.saveToCache(POSITION, position, FOLDER)
     }
 
-    private suspend fun Context.recoverQueue(
-        downloads: List<Downloader.Info>,
-        withClear: Boolean = false
-    ): List<MediaItem>? {
+    fun Context.recoverTracks(withClear: Boolean = false): List<Pair<MediaState.Unloaded<Track>, EchoMediaItem?>>? {
         if (withClear && getFromCache<Boolean>(CLEARED) != false) return null
         val tracks = getFromCache<List<Track>>(TRACKS, FOLDER)
         val extensionIds = getFromCache<List<String>>(EXTENSIONS, FOLDER)
@@ -66,7 +63,17 @@ object ResumptionUtils {
         return tracks?.mapIndexedNotNull { index, track ->
             val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
-            MediaItemUtils.build(this, downloads, MediaState.Unloaded(extensionId, track), item)
+            MediaState.Unloaded(extensionId, track) to item
+        }
+    }
+
+    private suspend fun Context.recoverQueue(
+        downloads: List<Downloader.Info>,
+        withClear: Boolean = false
+    ): List<MediaItem>? {
+        val tracks = recoverTracks(withClear) ?: return null
+        return tracks.map { (state, item) ->
+            MediaItemUtils.build(this, downloads, state, item)
         }
     }
 
@@ -91,8 +98,7 @@ object ResumptionUtils {
     ): Triple<List<MediaItem>, Int, Long> {
         val items = recoverQueue(downloads, withClear) ?: emptyList()
         val index = recoverIndex() ?: C.INDEX_UNSET
-        val position = recoverPosition() ?: 0L
+        val position = recoverPosition() ?: -1L
         return Triple(items, index, position)
     }
-
 }

@@ -183,11 +183,12 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         this.webViewClient = webViewClient
     }
 
-    override suspend fun loadHomeFeed() = Feed(
+    override suspend fun loadHomeFeed(): Feed<Shelf> = Feed(
         listOf("All", "Music", "Podcasts").map { Tab(it, it) }
     ) { tab ->
         if (tab?.id == "Podcasts") {
-            return@Feed PagedData.empty<Shelf>().toFeedData()
+            throw Exception("Test exception for Podcasts tab")
+//            return@Feed PagedData.empty<Shelf>().toFeedData()
         }
         PagedData.Single {
             if (tab?.id == "Music") delay(5000)
@@ -200,14 +201,14 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
                     "Bruh ${tab?.title}",
                     listOf(
                         "Burhhhhhhh", "brjdksls", "sbajkxclllll", "a", "b", " b"
-                    ).map { Shelf.Category(it, it, null) }
+                    ).map { Shelf.Category(it, it, loadHomeFeed()) }
                 ),
                 Shelf.Lists.Categories(
                     "bruh",
                     "Bruh ${tab?.title}",
                     listOf(
                         "Burhhhhhhh", "brjdksls", "sbajkxclllll", "a", "b", " b"
-                    ).map { Shelf.Category(it, it, null) },
+                    ).map { Shelf.Category(it, it, loadHomeFeed()) },
                     type = Shelf.Lists.Type.Grid
                 ),
                 Artist(

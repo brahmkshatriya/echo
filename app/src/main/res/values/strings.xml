@@ -431,4 +431,5 @@
     <string name="big_cover_summary">Good for devices with larger screens</string>
     <string name="unhide">Unhide</string>
     <string name="hide">Hide</string>
+    <string name="no_last_played_track_found">No last played track found.</string>
 </resources>
