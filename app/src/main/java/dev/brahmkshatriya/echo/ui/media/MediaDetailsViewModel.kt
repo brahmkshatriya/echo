@@ -60,6 +60,10 @@ abstract class MediaDetailsViewModel(
         item ?: cache
     }.stateIn(viewModelScope, Eagerly, null)
 
+    val cacheExtensionItemFlow = uiResultFlow.map {
+        extensionFlow.value to it?.getOrNull()?.item
+    }.stateIn(viewModelScope, Eagerly, null to null)
+
     val extensionItemFlow = itemResultFlow.map { result ->
         extensionFlow.value to result?.getOrNull()?.item
     }.stateIn(viewModelScope, Eagerly, null to null)
@@ -86,7 +90,7 @@ abstract class MediaDetailsViewModel(
             ).toFeed(Feed.Buttons.EMPTY)
         } else null
 
-    val trackCachedFlow = extensionItemFlow.transformLatest { (extension, item) ->
+    val trackCachedFlow = cacheExtensionItemFlow.transformLatest { (extension, item) ->
         emit(null)
         if (!loadFeeds) return@transformLatest
         extension ?: return@transformLatest
@@ -112,7 +116,7 @@ abstract class MediaDetailsViewModel(
         })
     }.stateIn(viewModelScope, Eagerly, null)
 
-    val feedCachedFlow = extensionItemFlow.transformLatest { (extension, item) ->
+    val feedCachedFlow = cacheExtensionItemFlow.transformLatest { (extension, item) ->
         emit(null)
         if (!loadFeeds) return@transformLatest
         extension ?: return@transformLatest
