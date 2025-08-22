@@ -114,9 +114,8 @@ class MediaDetailsFragment : Fragment(R.layout.fragment_media_details) {
             )
         )
         val loadingFlow = viewModel.isRefreshingFlow
-            .combine(trackFeedData.isRefreshingFlow) { a, b ->
-                a || b
-            }.combine(feedData.isRefreshingFlow) { a, b -> a || b }
+            .combine(trackFeedData.isRefreshingFlow) { a, b -> a || b }
+                .combine(feedData.isRefreshingFlow) { a, b -> a || b }
         binding.swipeRefresh.run {
             configure()
             setOnRefreshListener { viewModel.refresh() }

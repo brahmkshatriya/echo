@@ -243,10 +243,9 @@ data class FeedData(
         return list
     }
 
-    val isRefreshing get() = loadedFeedTypeFlow.value == null
     val isRefreshingFlow = loadedFeedTypeFlow.map {
-        isRefreshing
-    }
+        loadedFeedTypeFlow.value == null
+    }.stateIn(scope, Lazily, true)
 
     fun selectTab(extensionId: String?, pos: Int) {
         val state = stateFlow.value.run { second?.getOrNull() ?: first?.getOrNull() }

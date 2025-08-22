@@ -93,7 +93,7 @@ class FeedFragment : Fragment(R.layout.fragment_generic_collapsable) {
             vm.feedDataMap.values.first()
         }
 
-        private val listener by lazy { getFeedListener(requireParentFragment()) }
+        private val listener by lazy { requireParentFragment().getFeedListener() }
         private val feedAdapter by lazy {
             getFeedAdapter(feedData, listener)
         }
