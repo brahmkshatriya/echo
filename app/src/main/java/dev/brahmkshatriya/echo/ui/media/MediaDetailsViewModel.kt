@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
@@ -52,7 +53,12 @@ abstract class MediaDetailsViewModel(
     val downloadsFlow = downloader.flow
 
     val refreshFlow = MutableSharedFlow<Unit>()
+    val cacheResultFlow = MutableStateFlow<Result<MediaState.Loaded<*>>?>(null)
     val itemResultFlow = MutableStateFlow<Result<MediaState.Loaded<*>>?>(null)
+
+    val uiResultFlow = itemResultFlow.combine(cacheResultFlow) { item, cache ->
+        item ?: cache
+    }.stateIn(viewModelScope, Eagerly, null)
 
     val extensionItemFlow = itemResultFlow.map { result ->
         extensionFlow.value to result?.getOrNull()?.item
@@ -62,7 +68,7 @@ abstract class MediaDetailsViewModel(
         if (item is Track) runCatching {
             PagedData.Concat(
                 PagedData.Single {
-                    val album = item.album?.let { loadItem(app, extension, it).getOrNull() ?: it }
+                    val album = item.album?.let { loadItem(extension, it).getOrNull() ?: it }
                     listOfNotNull(album?.toShelf())
                 },
                 PagedData.Single {
@@ -71,7 +77,9 @@ abstract class MediaDetailsViewModel(
                         Shelf.Lists.Items(
                             item.id + "_artists",
                             app.context.getString(R.string.artists),
-                            item.artists,
+                            item.artists.map {
+                                loadItem(extension, it).getOrNull() ?: it
+                            },
                         )
                     )
                 },
@@ -82,7 +90,7 @@ abstract class MediaDetailsViewModel(
         emit(null)
         if (!loadFeeds) return@transformLatest
         extension ?: return@transformLatest
-        item ?: return@transformLatest
+        val item = item ?: cacheResultFlow.value?.getOrNull()?.item ?: return@transformLatest
         val feed = trackFeed(item, extension)
             ?: getTracks(app, extension.id, item).map { feed -> feed?.map { it.toShelf() } }
         emit(feed.map {
@@ -108,7 +116,7 @@ abstract class MediaDetailsViewModel(
         emit(null)
         if (!loadFeeds) return@transformLatest
         extension ?: return@transformLatest
-        item ?: return@transformLatest
+        val item = item ?: cacheResultFlow.value?.getOrNull()?.item ?: return@transformLatest
         val feed = getFeed(app, extension.id, item) ?: return@transformLatest
         emit(feed.map {
             FeedData.State(extension.id, item, it)
@@ -184,7 +192,7 @@ abstract class MediaDetailsViewModel(
         }
 
         suspend fun like(
-            app: App, extension: Extension<*>?, item: EchoMediaItem, like: Boolean
+            app: App, extension: Extension<*>?, item: EchoMediaItem, like: Boolean,
         ) {
             val extension = extension ?: return notFound(app, R.string.extension)
             createMessage(app) {
@@ -204,7 +212,7 @@ abstract class MediaDetailsViewModel(
         }
 
         suspend fun hide(
-            app: App, extension: Extension<*>?, item: EchoMediaItem, hide: Boolean
+            app: App, extension: Extension<*>?, item: EchoMediaItem, hide: Boolean,
         ) {
             val extension = extension ?: return notFound(app, R.string.extension)
             createMessage(app) {
@@ -225,7 +233,7 @@ abstract class MediaDetailsViewModel(
         }
 
         suspend fun follow(
-            app: App, extension: Extension<*>?, item: EchoMediaItem, follow: Boolean
+            app: App, extension: Extension<*>?, item: EchoMediaItem, follow: Boolean,
         ) {
             val extension = extension ?: return notFound(app, R.string.extension)
             createMessage(app) {
@@ -246,7 +254,7 @@ abstract class MediaDetailsViewModel(
         }
 
         suspend fun save(
-            app: App, extension: Extension<*>?, item: EchoMediaItem, save: Boolean
+            app: App, extension: Extension<*>?, item: EchoMediaItem, save: Boolean,
         ) {
             val extension = extension ?: return notFound(app, R.string.extension)
             createMessage(app) {
@@ -267,7 +275,7 @@ abstract class MediaDetailsViewModel(
         }
 
         suspend fun share(
-            app: App, extension: Extension<*>?, item: EchoMediaItem
+            app: App, extension: Extension<*>?, item: EchoMediaItem,
         ) {
             val extension = extension ?: return notFound(app, R.string.extension)
             createMessage(app) { getString(R.string.sharing_x, item.title) }

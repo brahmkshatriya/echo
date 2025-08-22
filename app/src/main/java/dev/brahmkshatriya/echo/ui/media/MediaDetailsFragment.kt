@@ -91,8 +91,8 @@ class MediaDetailsFragment : Fragment(R.layout.fragment_media_details) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val binding = FragmentMediaDetailsBinding.bind(view)
         FastScrollerHelper.applyTo(binding.recyclerView)
-        applyInsets(viewModel.itemResultFlow) {
-            val item = viewModel.itemResultFlow.value?.getOrNull()?.item as? Playlist
+        applyInsets(viewModel.uiResultFlow) {
+            val item = viewModel.uiResultFlow.value?.getOrNull()?.item as? Playlist
             val bottom = if (item?.isEditable == true) 72 else 16
             binding.recyclerView.applyContentInsets(it, 20, 8, bottom)
         }
@@ -100,7 +100,7 @@ class MediaDetailsFragment : Fragment(R.layout.fragment_media_details) {
         observe(trackFeedData.shouldShowEmpty) {
             lineAdapter.loadState = if (it) LoadState.Loading else LoadState.NotLoading(false)
         }
-        observe(viewModel.itemResultFlow) { result ->
+        observe(viewModel.uiResultFlow) { result ->
             mediaHeaderAdapter.result = result
         }
         getTouchHelper(feedListener).attachToRecyclerView(binding.recyclerView)

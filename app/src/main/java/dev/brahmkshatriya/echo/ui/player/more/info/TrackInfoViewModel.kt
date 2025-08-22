@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.ui.media.MediaDetailsViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.merge
@@ -38,7 +39,7 @@ class TrackInfoViewModel(
     }
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             listOf(playerState.current, extensionFlow, refreshFlow).merge().collectLatest {
                 itemResultFlow.value = null
                 val extension = extensionFlow.value ?: return@collectLatest

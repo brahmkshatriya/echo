@@ -44,7 +44,7 @@ object Cached {
     class NotFound(id: String) : Exception("Cache not found for $id")
 
     suspend inline fun <reified T : EchoMediaItem> getMedia(
-        app: App, extensionId: String, itemId: String
+        app: App, extensionId: String, itemId: String,
     ) = runCatching {
         val fileCache = app.fileCache.await()
         val id = "media-$extensionId-$itemId-state"
@@ -54,11 +54,11 @@ object Cached {
     }
 
     suspend inline fun <reified T : EchoMediaItem> loadMedia(
-        app: App, extension: Extension<*>, state: MediaState<T>
+        app: App, extension: Extension<*>, state: MediaState<T>,
     ) = coroutineScope {
         runCatching {
             val result = runCatching {
-                val new = loadItem(app, extension, state.item).getOrThrow()
+                val new = loadItem(extension, state.item).getOrThrow()
                 val isSaved = async {
                     if (new.isSaveable) extension.getIf<SaveClient, Boolean> {
                         isItemSaved(new)
@@ -112,32 +112,19 @@ object Cached {
     }
 
     suspend inline fun <reified T : EchoMediaItem> loadItem(
-        app: App, extension: Extension<*>, item: T
+        extension: Extension<*>, item: T,
     ) = runCatching {
-        val fileCache = app.fileCache.await()
-        val new = when (item) {
+        when (item) {
             is Artist -> extension.getAs<ArtistClient, Artist> { loadArtist(item) }
             is Album -> extension.getAs<AlbumClient, Album> { loadAlbum(item) }
             is Playlist -> extension.getAs<PlaylistClient, Playlist> { loadPlaylist(item) }
             is Track -> extension.getAs<TrackClient, Track> { loadTrack(item, false) }
             is Radio -> extension.getAs<RadioClient, Radio> { loadRadio(item) }
-        }.getOrElse { error ->
-            runCatching {
-                fileCache.get("media-${extension.id}-${item.id}")?.let {
-                    File(it).readText().toData<T>()
-                }
-            }.getOrNull() ?: throw error
-        } as T
-        fileCache.put("media-${extension.id}-${new.id}") {
-            runCatching {
-                File(it).writeText(new.toJson())
-            }.isSuccess
-        }
-        new
+        }.getOrThrow() as T
     }
 
     suspend fun loadStreamableMedia(
-        app: App, extension: Extension<*>, track: Track, streamable: Streamable
+        app: App, extension: Extension<*>, track: Track, streamable: Streamable,
     ) = runCatching {
         val fileCache = app.fileCache.await()
         val id = "media-${extension.id}-${track.id}-${streamable.id}"
@@ -159,7 +146,7 @@ object Cached {
     }
 
     suspend fun getTracks(
-        app: App, extensionId: String, item: EchoMediaItem
+        app: App, extensionId: String, item: EchoMediaItem,
     ) = runCatching {
         if (item !is EchoMediaItem.Lists) return@runCatching null
         val itemId = item.id
@@ -178,7 +165,7 @@ object Cached {
     }
 
     suspend fun getFeed(
-        app: App, extensionId: String, item: EchoMediaItem
+        app: App, extensionId: String, item: EchoMediaItem,
     ) = run {
         if (item !is EchoMediaItem.Lists) return@run null
         val itemId = item.id
@@ -197,7 +184,7 @@ object Cached {
     }
 
     suspend fun getLyrics(
-        app: App, extensionId: String, clientId: String, track: Track
+        app: App, extensionId: String, clientId: String, track: Track,
     ) = runCatching {
         getFeed<Lyrics>(app, extensionId, "lyrics-$clientId-${track.id}") { it }
     }
@@ -211,7 +198,7 @@ object Cached {
         }
 
     suspend fun getLyricsSearch(
-        app: App, extensionId: String, query: String
+        app: App, extensionId: String, query: String,
     ) = runCatching {
         getFeed<Lyrics>(app, extensionId, "lyrics-search-$query") { it }
     }
@@ -225,7 +212,7 @@ object Cached {
         }
 
     suspend fun getFeedShelf(
-        app: App, extensionId: String, feedId: String
+        app: App, extensionId: String, feedId: String,
     ): Result<Feed<Shelf>> = runCatching {
         getFeed<Shelf>(app, extensionId, feedId) { shelf ->
             when (shelf) {
@@ -256,7 +243,7 @@ object Cached {
     // FEED STUFF
 
     suspend inline fun <reified T : Any> getFeed(
-        app: App, extensionId: String, feedId: String, crossinline transform: suspend (T) -> T
+        app: App, extensionId: String, feedId: String, crossinline transform: suspend (T) -> T,
     ): Feed<T> {
         val fileCache = app.fileCache.await()
         val tabId = "feed-$extensionId-$feedId"

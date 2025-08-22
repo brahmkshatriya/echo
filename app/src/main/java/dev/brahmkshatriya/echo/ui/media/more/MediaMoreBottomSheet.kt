@@ -107,10 +107,10 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
             headerAdapter.onCurrentChanged(it)
         }
         val actionFlow =
-            combine(vm.downloadsFlow, vm.itemResultFlow) { _, _ -> }
+            combine(vm.downloadsFlow, vm.uiResultFlow) { _, _ -> }
         observe(actionFlow) {
             val client = vm.extensionFlow.value?.instance?.value()?.getOrNull()
-            val result = vm.itemResultFlow.value?.getOrNull()
+            val result = vm.uiResultFlow.value?.getOrNull()
             val downloads = vm.downloadsFlow.value.filter { it.download.finalFile != null }
             val loaded = if (result != null) true else loaded
             val list = getButtons(client, result, loaded, downloads)
