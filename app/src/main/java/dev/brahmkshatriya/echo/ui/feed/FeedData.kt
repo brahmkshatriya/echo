@@ -20,6 +20,7 @@ import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.combineTransformLatest
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -30,11 +31,13 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -85,9 +88,11 @@ data class FeedData(
 
     private suspend fun getData(
         state: Result<State<Feed<Shelf>>?>, tab: Tab?
-    ) = runCatching {
-        val (extensionId, item, feed) = state.getOrThrow() ?: return@runCatching null
-        State(extensionId, item, feed.getPagedData(tab))
+    ) = withContext(Dispatchers.IO) {
+        runCatching {
+            val (extensionId, item, feed) = state.getOrThrow() ?: return@runCatching null
+            State(extensionId, item, feed.getPagedData(tab))
+        }
     }
 
     val dataFlow = cachedDataFlow.combine(loadedDataFlow) { cached, loaded ->
@@ -148,7 +153,7 @@ data class FeedData(
 
     val backgroundImageFlow = imageFlow.mapLatest { image ->
         image?.loadDrawable(app.context)
-    }.stateIn(scope, Lazily, null)
+    }.flowOn(Dispatchers.IO).stateIn(scope, Lazily, null)
 
     val cachedFeedTypeFlow =
         combineTransformLatest(cachedDataFlow, feedSortState, searchClickedFlow) { _ ->
@@ -171,7 +176,7 @@ data class FeedData(
 
     private suspend fun getFeedSourceData(
         result: Result<State<Feed.Data<Shelf>>?>
-    ): Result<PagedData<FeedType>> {
+    ): Result<PagedData<FeedType>> = withContext(Dispatchers.IO) {
         val tabId = selectedTabFlow.value?.id
         val data = if (feedSortState.value != null || searchQuery != null) {
             result.mapCatching { state ->
@@ -229,7 +234,7 @@ data class FeedData(
                 }.getOrThrow()
             }
         }
-        return data
+        data
     }
 
     private suspend fun <T : Any> PagedData<T>.loadTill(limit: Long): List<T> {
@@ -258,7 +263,7 @@ data class FeedData(
     fun refresh() = scope.launch { refreshFlow.emit(Unit) }
 
     init {
-        scope.launch {
+        scope.launch(Dispatchers.IO) {
             listOfNotNull(current, refreshFlow, usersFlow, extraLoadFlow)
                 .merge().debounce(100L).collectLatest {
                     cachedState.value = null

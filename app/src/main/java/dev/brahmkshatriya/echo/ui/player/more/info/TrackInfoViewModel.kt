@@ -39,7 +39,7 @@ class TrackInfoViewModel(
 
     init {
         viewModelScope.launch {
-            listOf(extensionFlow, refreshFlow).merge().collectLatest {
+            listOf(playerState.current, extensionFlow, refreshFlow).merge().collectLatest {
                 itemResultFlow.value = null
                 val extension = extensionFlow.value ?: return@collectLatest
                 val track = currentFlow.value?.mediaItem?.takeIf { it.isLoaded }?.track
