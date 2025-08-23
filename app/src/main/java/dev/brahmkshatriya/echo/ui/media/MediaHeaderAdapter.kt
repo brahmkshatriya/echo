@@ -48,7 +48,7 @@ import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
 
 class MediaHeaderAdapter(
     private val listener: Listener,
-    private val fromPlayer: Boolean
+    private val fromPlayer: Boolean,
 ) : ScrollAnimRecyclerAdapter<MediaHeaderAdapter.ViewHolder>(), GridAdapter {
 
     interface Listener {
@@ -111,7 +111,7 @@ class MediaHeaderAdapter(
         private val fromPlayer: Boolean,
         private val binding: ItemMediaHeaderBinding = ItemMediaHeaderBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ViewHolder(binding.root) {
         val buttons = binding.run {
             listOf(
@@ -208,7 +208,7 @@ class MediaHeaderAdapter(
                 if (state.isHidden == true) R.string.unhide else R.string.hide
             )
 
-            playButton.isVisible = state.item is Track && !fromPlayer
+            playButton.isVisible = state.item is Track && !fromPlayer && state.item.isPlayable == Track.Playable.Yes
             radioButton.isVisible = state.showRadio
             shareButton.isVisible = state.showShare
             configureButtons()
@@ -248,7 +248,7 @@ class MediaHeaderAdapter(
         listener: Listener,
         private val binding: ItemShelfErrorBinding = ItemShelfErrorBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ViewHolder(binding.root) {
         var throwable: Throwable? = null
 
@@ -274,7 +274,7 @@ class MediaHeaderAdapter(
         parent: ViewGroup,
         binding: ItemLineBinding = ItemLineBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ViewHolder(binding.root) {
         init {
             itemView.alpha = 0f
@@ -292,7 +292,7 @@ class MediaHeaderAdapter(
             compact: Boolean,
             extensionId: String,
             item: EchoMediaItem,
-            openMediaItem: (String, EchoMediaItem) -> Unit = { a, b -> }
+            openMediaItem: (String, EchoMediaItem) -> Unit = { a, b -> },
         ): SpannableString = when (item) {
             is EchoMediaItem.Lists -> {
                 val madeBy = item.artists.joinToString(", ") { it.name }
@@ -363,6 +363,11 @@ class MediaHeaderAdapter(
                     ).joinToString(DIVIDER)
                     if (firstRow.isNotEmpty()) appendLine(firstRow)
                     if (secondRow.isNotEmpty()) appendLine(secondRow)
+                    val notPlayable = item.playableString(this@getSpan)
+                    if (!notPlayable.isNullOrEmpty()) {
+                        appendLine()
+                        appendLine(notPlayable)
+                    }
                     val desc = item.description
                     if (desc != null) {
                         appendLine()
@@ -399,7 +404,7 @@ class MediaHeaderAdapter(
         }
 
         fun Context.unfuckedString(
-            numberStringId: Int, nStringId: Int, count: Int
+            numberStringId: Int, nStringId: Int, count: Int,
         ) = runCatching {
             resources.getQuantityString(numberStringId, count, count)
         }.getOrNull() ?: getString(nStringId, count)
@@ -451,7 +456,7 @@ class MediaHeaderAdapter(
             }
 
             override fun onDescriptionClicked(
-                view: View, extensionId: String?, item: EchoMediaItem?
+                view: View, extensionId: String?, item: EchoMediaItem?,
             ) {
                 item ?: return
                 extensionId ?: return
@@ -511,6 +516,15 @@ class MediaHeaderAdapter(
                     )
                 }
             } else null
+        }
+
+        fun Track.playableString(context: Context) = when (val play = isPlayable) {
+            is Track.Playable.No -> context.getString(R.string.not_playable_x, play.reason)
+            Track.Playable.Yes -> null
+            Track.Playable.RegionLocked -> context.getString(R.string.unavailable_in_your_region)
+            Track.Playable.Unreleased -> if (releaseDate != null) context.getString(
+                R.string.releases_on_x, releaseDate.toString()
+            ) else context.getString(R.string.not_yet_released)
         }
     }
 }

@@ -34,14 +34,17 @@
         <item name="itemCorner">8dp</item>
     </style>
 
-    <style name="Default" parent="Base.Theme.Echo" />
+    <style name="Default" parent="Base.Theme.Echo">
+        <item name="navBarForeground">?colorPrimary</item>
+        <item name="navBarBackground">?colorPrimaryInverse</item>
+    </style>
 
-    <style name="Amoled" parent="Base.Theme.Echo" >
+    <style name="Amoled" parent="Default">
         <item name="echoBackground">@color/amoled_bg</item>
         <item name="navBackground">?colorSurfaceContainerLowest</item>
     </style>
 
-    <style name="BigCover" parent="Base.Theme.Echo" >
+    <style name="BigCover" parent="Default">
         <item name="itemCoverSize">128dp</item>
     </style>
 

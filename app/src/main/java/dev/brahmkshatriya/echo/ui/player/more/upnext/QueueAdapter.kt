@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistTrackBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
@@ -122,7 +123,7 @@ class QueueAdapter(
             }
 
             track.cover.loadInto(playlistItemImageView, R.drawable.art_music)
-            val subtitle = track.subtitleWithE
+            val subtitle = track.subtitle(root.context)
             playlistItemAuthor.run {
                 isVisible = !subtitle.isNullOrEmpty()
                 text = subtitle

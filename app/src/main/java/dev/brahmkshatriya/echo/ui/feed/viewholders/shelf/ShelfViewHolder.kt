@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.ui.feed.FeedClickListener
 import dev.brahmkshatriya.echo.ui.feed.viewholders.CategoryViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.applyCover
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.bind
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
 
 sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolder(view) {
     var scrollX = 0
@@ -32,7 +33,7 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
         listener: FeedClickListener,
         private val binding: ItemShelfCategoryBinding = ItemShelfCategoryBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ShelfViewHolder<ShelfType.Category>(binding.root) {
 
         private var item: ShelfType.Category? = null
@@ -64,7 +65,7 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
         listener: FeedClickListener,
         private val binding: ItemShelfListsMediaBinding = ItemShelfListsMediaBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ShelfViewHolder<ShelfType.Media>(binding.root) {
         var shelf: ShelfType.Media? = null
 
@@ -73,12 +74,10 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
             binding.root.setOnClickListener {
                 when (val item = shelf?.media) {
                     is Track -> {
-                        listener.onTracksClicked(
-                            it,
-                            shelf?.extensionId,
-                            shelf?.context,
-                            listOf(item),
-                            0
+                        if (item.isPlayable != Track.Playable.Yes) {
+                            listener.onMediaClicked(it, shelf?.extensionId, item, shelf?.context)
+                        } else listener.onTracksClicked(
+                            it, shelf?.extensionId, shelf?.context, listOf(item), 0
                         )
                     }
 
@@ -113,7 +112,7 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
         getAllTracks: () -> List<Track>,
         binding: ItemShelfListsThreeTracksBinding = ItemShelfListsThreeTracksBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ShelfViewHolder<ShelfType.ThreeTracks>(binding.root) {
         private val bindings = listOf(binding.track1, binding.track2, binding.track3)
 
@@ -126,7 +125,12 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
                 binding.root.setOnClickListener { view ->
                     val tracks = getAllTracks()
                     val pos = shelf?.number?.let { it * 3 + index } ?: index
-                    listener.onTracksClicked(view, shelf?.extensionId, shelf?.context, tracks, pos)
+                    val track = tracks.getOrNull(index)
+                    if (track?.isPlayable != Track.Playable.Yes) listener.onMediaClicked(
+                        view, shelf?.extensionId, track, shelf?.context
+                    ) else listener.onTracksClicked(
+                        view, shelf?.extensionId, shelf?.context, tracks, pos
+                    )
                 }
                 binding.root.setOnLongClickListener {
                     listener.onMediaLongClicked(
@@ -173,9 +177,10 @@ sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolde
             val gravity = if (item is Artist) Gravity.CENTER else Gravity.NO_GRAVITY
             title.text = item.title
             title.gravity = gravity
-            subtitle.text = item.subtitleWithE
+            val sub = item.subtitle(root.context)
+            subtitle.text = sub
             subtitle.gravity = gravity
-            subtitle.isVisible = !item.subtitleWithE.isNullOrBlank()
+            subtitle.isVisible = !sub.isNullOrBlank()
             coverContainer.run { applyCover(item, cover, listBg1, listBg2, icon) }
         }
     }

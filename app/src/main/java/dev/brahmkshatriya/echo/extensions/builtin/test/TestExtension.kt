@@ -217,6 +217,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
                     cover = "https://www.easygifanimator.net/images/samples/video-to-gif-sample.gif"
                         .toImageHolder()
                 ).toShelf(),
+                Track("not","Not Playable", isPlayable = Track.Playable.Unreleased).toShelf(),
                 createTrack(
                     "all", "All", listOf(
                         Streamable.server(Srcs.Single.name, 0),
@@ -235,7 +236,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     private val radio = Radio("empty", "empty")
     override suspend fun loadRadio(radio: Radio) = radio
     override suspend fun loadTracks(radio: Radio) = listOf(
-        Srcs.Merged.createTrack().media as Track
+        Track("", "Bruh")
     ).toFeed()
 
     override suspend fun radio(item: EchoMediaItem, context: EchoMediaItem?) = radio

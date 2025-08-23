@@ -116,7 +116,6 @@ open class FeedClickListener(
         if (extensionId == null) return notFoundSnack(R.string.extension)
         if (item == null) return notFoundSnack(R.string.item)
         return when (item) {
-            is Track -> throw IllegalStateException()
             is Radio -> {
                 val vm by fragment.activityViewModels<PlayerViewModel>()
                 vm.play(extensionId, item, false)

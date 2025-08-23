@@ -4,6 +4,7 @@ import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.ItemShelfVideoBinding
 import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
@@ -11,6 +12,7 @@ import dev.brahmkshatriya.echo.ui.feed.FeedClickListener
 import dev.brahmkshatriya.echo.ui.feed.FeedType
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 
 class VideoViewHolder(
@@ -28,6 +30,10 @@ class VideoViewHolder(
         binding.cover.clipToOutline = true
         binding.root.setOnClickListener {
             val track = feed?.item
+            if (track?.isPlayable != Track.Playable.Yes) {
+                listener.onMediaClicked(it, feed?.extensionId, track, feed?.context)
+                return@setOnClickListener
+            }
             listener.onTracksClicked(it, feed?.extensionId, feed?.context, listOfNotNull(track), 0)
         }
         binding.root.setOnLongClickListener {
@@ -49,8 +55,9 @@ class VideoViewHolder(
         this@VideoViewHolder.feed = feed
         val track = feed.item
         title.text = track.title
-        subtitle.text = track.subtitleWithE
-        subtitle.isVisible = !track.subtitleWithE.isNullOrBlank()
+        val sub = track.subtitle(root.context)
+        subtitle.text = sub
+        subtitle.isVisible = !sub.isNullOrBlank()
         track.cover.loadInto(binding.cover, track.placeHolder)
         val artist = track.artists.firstOrNull()
         artist?.cover.loadInto(binding.artistCover, artist?.icon)

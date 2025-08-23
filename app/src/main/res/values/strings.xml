@@ -432,4 +432,8 @@
     <string name="unhide">Unhide</string>
     <string name="hide">Hide</string>
     <string name="no_last_played_track_found">No last played track found.</string>
+    <string name="not_yet_released">Not yet released</string>
+    <string name="releases_on_x">Releases on %1$s</string>
+    <string name="unavailable_in_your_region">Unavailable in your region</string>
+    <string name="not_playable_x">Not playable: %1$s</string>
 </resources>

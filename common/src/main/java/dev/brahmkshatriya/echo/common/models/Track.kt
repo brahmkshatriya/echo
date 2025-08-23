@@ -81,10 +81,18 @@ data class Track(
         Song, Podcast, VideoSong, Video, HorizontalVideo
     }
 
+    @Serializable
     sealed interface Playable {
+        @Serializable
         data object Yes : Playable
+
+        @Serializable
         data object RegionLocked : Playable
+
+        @Serializable
         data object Unreleased : Playable
+
+        @Serializable
         data class No(val reason: String) : Playable
     }
 

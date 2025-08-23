@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 
 sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -56,8 +57,9 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override fun bind(item:  QuickSearchAdapter.Item) {
             val item = item.actual as QuickSearchItem.Media
             binding.title.text = item.media.title
-            binding.subtitle.text = item.media.subtitleWithE
-            binding.subtitle.isVisible = !item.media.subtitleWithE.isNullOrEmpty()
+            val subtitle = item.media.subtitle(binding.root.context)
+            binding.subtitle.text = subtitle
+            binding.subtitle.isVisible = !subtitle.isNullOrEmpty()
             transitionView.transitionName = ("quick" + item.media.id).hashCode().toString()
             item.media.cover.loadInto(binding.cover, item.media.placeHolder)
         }

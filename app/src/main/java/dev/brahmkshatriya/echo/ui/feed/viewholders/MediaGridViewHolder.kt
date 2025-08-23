@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.feed.FeedClickListener
 import dev.brahmkshatriya.echo.ui.feed.FeedType
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.applyCover
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
 
 class MediaGridViewHolder(
     parent: ViewGroup,
@@ -28,6 +29,10 @@ class MediaGridViewHolder(
         binding.root.setOnClickListener {
             when (val item = feed?.item) {
                 is Track -> {
+                    if (item.isPlayable != Track.Playable.Yes) {
+                        listener.onMediaClicked(it, feed?.extensionId, item, feed?.context)
+                        return@setOnClickListener
+                    }
                     val (tracks, pos) = getAllTracks(feed!!)
                     listener.onTracksClicked(it, feed?.extensionId, feed?.context, tracks, pos)
                 }
@@ -50,7 +55,7 @@ class MediaGridViewHolder(
         val index = feed.number
         title.text = if (index == null) item.title
         else root.context.getString(R.string.n_dot_x, index + 1, item.title)
-        val subtitleText = item.subtitleWithE
+        val subtitleText = item.subtitle(root.context)
         subtitle.text = subtitleText
         subtitle.isVisible = !subtitleText.isNullOrBlank()
         coverContainer.run { applyCover(item, cover, listBg1, listBg2, icon) }

@@ -60,7 +60,7 @@ import kotlinx.coroutines.flow.first
 class UnifiedExtension(
     private val context: Context,
     private val downloadFeed: MutableStateFlow<List<Shelf>>,
-    private val cache: SimpleCache?
+    private val cache: SimpleCache?,
 ) : ExtensionClient, MusicExtensionsProvider,
     HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, ArtistClient, TrackClient,
@@ -104,15 +104,13 @@ class UnifiedExtension(
             get() = this[EXTENSION_ID] ?: throw Exception("Extension id not found")
 
         fun Track.withExtensionId(
-            id: String, client: Any?, cached: Boolean = false
+            id: String, client: Any?, cached: Boolean = false,
         ) = copy(
             extras = extras + mapOf(EXTENSION_ID to id, "cached" to cached.toString()),
             album = album?.withExtensionId(id, client),
             artists = artists.map { it.withExtensionId(id, client) },
             streamables = streamables.map {
-                it.copy(
-                    extras = it.extras + mapOf(EXTENSION_ID to id, "cached" to cached.toString())
-                )
+                it.copy(extras = it.extras + mapOf(EXTENSION_ID to id))
             },
             isSaveable = true,
             isLikeable = true,
@@ -165,7 +163,7 @@ class UnifiedExtension(
         )
 
         private fun EchoMediaItem.withExtensionId(
-            id: String, client: Any?
+            id: String, client: Any?,
         ) = when (this) {
             is Artist -> this.withExtensionId(id, client)
             is Album -> this.withExtensionId(id, client)
@@ -286,7 +284,7 @@ class UnifiedExtension(
     }
 
     private suspend inline fun <reified T> Extension<*>.getFeedData(
-        crossinline loadFeed: suspend T.() -> Feed<Shelf>
+        crossinline loadFeed: suspend T.() -> Feed<Shelf>,
     ): Feed.Data<Shelf> {
         val feed = client<T, Feed<Shelf>> { loadFeed() }.injectExtensionId(this)
         val data = feed.run { getPagedData(tabs.firstOrNull()) }
@@ -318,7 +316,7 @@ class UnifiedExtension(
     }
 
     private suspend inline fun <reified T> feed(
-        crossinline loadFeed: suspend T.() -> Feed<Shelf>
+        crossinline loadFeed: suspend T.() -> Feed<Shelf>,
     ): Feed<Shelf> {
         val list = extensions()
         return if (list.size == 1) {
@@ -347,7 +345,7 @@ class UnifiedExtension(
         val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
         context.getFromCache<Pair<String, Track>>(id.hashCode().toString(), "track")
     }?.reversed().orEmpty()
-        .map { it.second.withExtensionId(it.first, this) } //FIX THIS
+        .map { it.second.withExtensionId(it.first, this, true) }
         .groupBy { it.id }.map { it.value.first() }
 
     private var cachedTracks = listOf<Track>()
@@ -420,7 +418,7 @@ class UnifiedExtension(
     }
 
     override suspend fun loadStreamableMedia(
-        streamable: Streamable, isDownload: Boolean
+        streamable: Streamable, isDownload: Boolean,
     ): Streamable.Media {
         val id = streamable.extras.extensionId
         return extensions().get(id).client<TrackClient, Streamable.Media> {
@@ -528,25 +526,25 @@ class UnifiedExtension(
     }
 
     override suspend fun editPlaylistMetadata(
-        playlist: Playlist, title: String, description: String?
+        playlist: Playlist, title: String, description: String?,
     ) {
         db.editPlaylistMetadata(playlist, title, description)
     }
 
     override suspend fun addTracksToPlaylist(
-        playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>
+        playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>,
     ) {
         db.addTracksToPlaylist(playlist, tracks, index, new)
     }
 
     override suspend fun removeTracksFromPlaylist(
-        playlist: Playlist, tracks: List<Track>, indexes: List<Int>
+        playlist: Playlist, tracks: List<Track>, indexes: List<Int>,
     ) {
         db.removeTracksFromPlaylist(playlist, tracks, indexes)
     }
 
     override suspend fun moveTrackInPlaylist(
-        playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int
+        playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int,
     ) {
         db.moveTrack(playlist, tracks, fromIndex, toIndex)
     }

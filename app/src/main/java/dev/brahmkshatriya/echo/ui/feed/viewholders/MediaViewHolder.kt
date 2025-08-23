@@ -1,11 +1,14 @@
 package dev.brahmkshatriya.echo.ui.feed.viewholders
 
+import android.content.Context
 import android.graphics.drawable.Animatable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
@@ -18,6 +21,7 @@ import dev.brahmkshatriya.echo.playback.PlayerState
 import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.feed.FeedClickListener
 import dev.brahmkshatriya.echo.ui.feed.FeedType
+import dev.brahmkshatriya.echo.ui.media.MediaHeaderAdapter.Companion.playableString
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 
 class MediaViewHolder(
@@ -26,7 +30,7 @@ class MediaViewHolder(
     getAllTracks: (FeedType) -> Pair<List<Track>, Int>,
     private val binding: ItemShelfMediaBinding = ItemShelfMediaBinding.inflate(
         LayoutInflater.from(parent.context), parent, false
-    )
+    ),
 ) : FeedViewHolder<FeedType.Media>(binding.root) {
     var feed: FeedType.Media? = null
 
@@ -35,6 +39,10 @@ class MediaViewHolder(
         binding.root.setOnClickListener {
             when (val item = feed?.item) {
                 is Track -> {
+                    if (item.isPlayable != Track.Playable.Yes) {
+                        listener.onMediaClicked(it, feed?.extensionId, item, feed?.context)
+                        return@setOnClickListener
+                    }
                     val (tracks, pos) = getAllTracks(feed!!)
                     listener.onTracksClicked(it, feed?.extensionId, feed?.context, tracks, pos)
                 }
@@ -71,11 +79,17 @@ class MediaViewHolder(
     override fun canBeSwiped() = feed?.item is Track
     override fun onSwipe() = feed
 
+    override fun onCurrentChanged(current: PlayerState.Current?) {
+        val isPlaying = current.isPlaying(feed?.item?.id)
+        binding.coverContainer.isPlaying.isVisible = isPlaying
+        (binding.coverContainer.isPlaying.icon as Animatable).start()
+    }
+
     companion object {
         fun ItemShelfMediaBinding.bind(item: EchoMediaItem, index: Int? = null) {
             title.text = if (index == null) item.title
             else root.context.getString(R.string.n_dot_x, index + 1, item.title)
-            val subtitleText = item.subtitleWithE
+            val subtitleText = item.subtitle(root.context)
             subtitle.text = subtitleText
             subtitle.isVisible = !subtitleText.isNullOrBlank()
             coverContainer.run {
@@ -125,13 +139,15 @@ class MediaViewHolder(
             val bgVisible = item is EchoMediaItem.Lists
             listBg1.isVisible = bgVisible
             listBg2.isVisible = bgVisible
+            cover.updateLayoutParams {
+                height = if (item is Artist) width else WRAP_CONTENT
+            }
             item.cover.loadInto(cover, item.placeHolder)
         }
-    }
 
-    override fun onCurrentChanged(current: PlayerState.Current?) {
-        val isPlaying = current.isPlaying(feed?.item?.id)
-        binding.coverContainer.isPlaying.isVisible = isPlaying
-        (binding.coverContainer.isPlaying.icon as Animatable).start()
+        fun EchoMediaItem.subtitle(context: Context) = when (this) {
+            is Track -> playableString(context) ?: subtitleWithE
+            else -> subtitleWithE
+        }
     }
 }

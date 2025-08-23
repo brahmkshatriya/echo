@@ -68,7 +68,7 @@
     <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:width">56dp</item>
         <item name="android:height">32dp</item>
-        <item name="android:color">?colorPrimaryInverse</item>
+        <item name="android:color">?navBarBackground</item>
     </style>
 
     <style name="NavView" parent="Widget.Material3.BottomNavigationView">

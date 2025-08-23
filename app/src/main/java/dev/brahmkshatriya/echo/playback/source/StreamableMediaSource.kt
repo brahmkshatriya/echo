@@ -23,19 +23,15 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.actualExtensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.retries
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.select
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +47,7 @@ class StreamableMediaSource(
     private val loader: StreamableLoader,
     private val cacheFactories: Factories,
     private val factories: Factories,
-    private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>
+    private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>,
 ) : CompositeMediaSource<Nothing>() {
 
     private var error: Throwable? = null
@@ -59,6 +55,8 @@ class StreamableMediaSource(
         error?.let { throw IOException(it) }
         super.maybeThrowSourceInfoRefreshError()
     }
+
+    fun getFactory(source: Streamable.Source) = if (source.isLive) factories else cacheFactories
 
     private lateinit var actualSource: MediaSource
     override fun prepareSourceInternal(mediaTransferListener: TransferListener?) {
@@ -72,31 +70,18 @@ class StreamableMediaSource(
             val server = serv.getOrNull()
             state.servers[new.mediaId] = serv
             state.serverChanged.emit(Unit)
-
-            val isOffline = new.actualExtensionId != OfflineExtension.metadata.id
-            if (isOffline && !server?.sources.isNullOrEmpty()) {
-                val track = mediaItem.track
-                app.context.saveToCache(
-                    track.id.hashCode().toString(), new.actualExtensionId to track, "track"
-                )
-            }
-
-            fun getFactory(cacheFactories: Factories, factories: Factories, source: Streamable.Source) =
-                if (source.isLive) factories else cacheFactories
-
             val sources = server?.sources
             actualSource = when (sources?.size) {
                 0, null -> factories.create(new, -1, null)
                 1 -> {
                     val source = sources.first()
-                    getFactory(cacheFactories, factories, source)
-                        .create(new, 0, source)
+                    getFactory(source).create(new, 0, source)
                 }
+
                 else -> {
                     if (server.merged) MergingMediaSource(
                         *sources.mapIndexed { index, source ->
-                            getFactory(cacheFactories, factories, source)
-                                .create(new, index, source)
+                            getFactory(source).create(new, index, source)
                         }.toTypedArray()
                     ) else {
                         val index = mediaItem.sourceIndex
@@ -104,8 +89,7 @@ class StreamableMediaSource(
                             ?: sources.select(app, new.extensionId) { it.quality }
                         val newIndex = sources.indexOf(source)
                         new = MediaItemUtils.buildSource(new, newIndex)
-                        getFactory(cacheFactories, factories, source)
-                            .create(new, newIndex, source)
+                        getFactory(source).create(new, newIndex, source)
                     }
                 }
             }
@@ -124,13 +108,13 @@ class StreamableMediaSource(
     }
 
     override fun onChildSourceInfoRefreshed(
-        childSourceId: Nothing?, mediaSource: MediaSource, newTimeline: Timeline
+        childSourceId: Nothing?, mediaSource: MediaSource, newTimeline: Timeline,
     ) = refreshSourceInfo(newTimeline)
 
     override fun getMediaItem() = mediaItem
 
     override fun createPeriod(
-        id: MediaSource.MediaPeriodId, allocator: Allocator, startPositionUs: Long
+        id: MediaSource.MediaPeriodId, allocator: Allocator, startPositionUs: Long,
     ) = actualSource.createPeriod(id, allocator, startPositionUs)
 
     override fun releasePeriod(mediaPeriod: MediaPeriod) =
@@ -156,7 +140,7 @@ class StreamableMediaSource(
     data class Factories(
         val dash: Lazy<MediaSource.Factory>,
         val hls: Lazy<MediaSource.Factory>,
-        val default: Lazy<MediaSource.Factory>
+        val default: Lazy<MediaSource.Factory>,
     ) {
         fun create(mediaItem: MediaItem, index: Int, source: Streamable.Source?): MediaSource {
             val type = (source as? Streamable.Source.Http)?.type
@@ -177,7 +161,7 @@ class StreamableMediaSource(
         extensions: ExtensionLoader,
         cache: SimpleCache,
         downloadFlow: StateFlow<List<Downloader.Info>>,
-        private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>
+        private val changeFlow: MutableSharedFlow<Pair<MediaItem, MediaItem>>,
     ) : MediaSource.Factory {
 
         private val loader = StreamableLoader(app, extensions.music, downloadFlow)
@@ -219,14 +203,14 @@ class StreamableMediaSource(
         )
 
         override fun setDrmSessionManagerProvider(
-            drmSessionManagerProvider: DrmSessionManagerProvider
+            drmSessionManagerProvider: DrmSessionManagerProvider,
         ): MediaSource.Factory {
             this.drmSessionManagerProvider = drmSessionManagerProvider
             return this
         }
 
         override fun setLoadErrorHandlingPolicy(
-            loadErrorHandlingPolicy: LoadErrorHandlingPolicy
+            loadErrorHandlingPolicy: LoadErrorHandlingPolicy,
         ): MediaSource.Factory {
             this.loadErrorHandlingPolicy = loadErrorHandlingPolicy
             return this

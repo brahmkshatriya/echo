@@ -182,7 +182,7 @@ class OfflineExtension(
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = track
 
     override suspend fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean) =
-        Uri.fromFile(File(streamable.id)).toString().toSource().toMedia()
+        Uri.fromFile(File(streamable.id)).toString().toSource(isLive = false).toMedia()
 
     override suspend fun loadFeed(track: Track): Feed<Shelf>? = null
 
