@@ -3,9 +3,9 @@ package dev.brahmkshatriya.echo.ui.media.more
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemMoreButtonBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class MoreButtonAdapter
     : ListAdapter<MoreButton, MoreButtonAdapter.ViewHolder>(MoreButton.DiffCallback), GridAdapter {
@@ -21,7 +21,7 @@ class MoreButtonAdapter
         val binding: ItemMoreButtonBinding = ItemMoreButtonBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
         fun bind(item: MoreButton) = with(binding.root) {
             text = item.title
             setOnClickListener { item.onClick() }

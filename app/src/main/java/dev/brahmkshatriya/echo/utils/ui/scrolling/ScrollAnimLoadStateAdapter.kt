@@ -4,10 +4,9 @@ import androidx.annotation.CallSuper
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.ui.feed.viewholders.FeedViewHolder
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 
-abstract class ScrollAnimLoadStateAdapter<T: RecyclerView.ViewHolder> : LoadStateAdapter<T>() {
+abstract class ScrollAnimLoadStateAdapter<T: ScrollAnimViewHolder> : LoadStateAdapter<T>() {
 
     @CallSuper
     override fun onBindViewHolder(holder: T, loadState: LoadState) {
@@ -33,10 +32,11 @@ abstract class ScrollAnimLoadStateAdapter<T: RecyclerView.ViewHolder> : LoadStat
         }
     }
 
-    fun onEachViewHolder(action: FeedViewHolder<*>.() -> Unit) {
+    @Suppress("UNCHECKED_CAST")
+    fun onEachViewHolder(action: T.() -> Unit) {
         recyclerView?.let { rv ->
             for (i in 0 until rv.childCount) {
-                val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? FeedViewHolder<*>
+                val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? T
                 if (holder?.bindingAdapter == this) holder.action()
             }
         }

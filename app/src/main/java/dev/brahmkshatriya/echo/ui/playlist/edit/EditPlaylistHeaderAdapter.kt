@@ -2,15 +2,15 @@ package dev.brahmkshatriya.echo.ui.playlist.edit
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemEditPlaylistHeaderBinding
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class EditPlaylistHeaderAdapter(
     private val viewModel: EditPlaylistViewModel,
 ) : ScrollAnimRecyclerAdapter<EditPlaylistHeaderAdapter.ViewHolder>() {
     class ViewHolder(val binding: ItemEditPlaylistHeaderBinding)
-        : RecyclerView.ViewHolder(binding.root)
+        : ScrollAnimViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)

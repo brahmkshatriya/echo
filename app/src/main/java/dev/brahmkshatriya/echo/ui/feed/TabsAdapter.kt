@@ -6,13 +6,13 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonGroup
 import dev.brahmkshatriya.echo.databinding.ItemTabBinding
 import dev.brahmkshatriya.echo.databinding.ItemTabContainerBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class TabsAdapter<T>(
     private val getTitle: T.() -> String,
@@ -82,7 +82,7 @@ class TabsAdapter<T>(
         val binding: ItemTabContainerBinding = ItemTabContainerBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
         init {
             binding.buttonGroup.removeAllViews()
         }

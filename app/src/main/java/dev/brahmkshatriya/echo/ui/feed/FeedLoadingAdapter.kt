@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemShelfErrorBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfLoginRequiredBinding
 import dev.brahmkshatriya.echo.databinding.ItemShelfNotLoadingBinding
@@ -17,6 +16,7 @@ import dev.brahmkshatriya.echo.ui.common.ExceptionUtils.openLoginException
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.ui.common.PagedSource
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimLoadStateAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class FeedLoadingAdapter(
     val listener: Listener? = null,
@@ -29,7 +29,7 @@ class FeedLoadingAdapter(
         fun onLoginRequired(view: View, error: AppException.LoginRequired)
     }
 
-    abstract class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    abstract class ViewHolder(val view: View) : ScrollAnimViewHolder(view) {
         open fun bind(loadState: LoadState) {}
     }
 

@@ -2,10 +2,9 @@ package dev.brahmkshatriya.echo.utils.ui.scrolling
 
 import androidx.annotation.CallSuper
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.ui.feed.viewholders.FeedViewHolder
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 
-abstract class ScrollAnimRecyclerAdapter<T: RecyclerView.ViewHolder> : RecyclerView.Adapter<T>() {
+abstract class ScrollAnimRecyclerAdapter<T: ScrollAnimViewHolder> : RecyclerView.Adapter<T>() {
 
     @CallSuper
     override fun onBindViewHolder(holder: T, position: Int) {
@@ -31,10 +30,11 @@ abstract class ScrollAnimRecyclerAdapter<T: RecyclerView.ViewHolder> : RecyclerV
         }
     }
 
-    fun onEachViewHolder(action: FeedViewHolder<*>.() -> Unit) {
+    @Suppress("UNCHECKED_CAST")
+    fun onEachViewHolder(action: T.() -> Unit) {
         recyclerView?.let { rv ->
             for (i in 0 until rv.childCount) {
-                val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? FeedViewHolder<*>
+                val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? T
                 if (holder?.bindingAdapter == this) holder.action()
             }
         }

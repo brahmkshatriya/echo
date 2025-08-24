@@ -31,6 +31,7 @@ import dev.brahmkshatriya.echo.utils.ui.GestureListener.Companion.handleGestures
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isLandscape
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isRTL
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.max
 
@@ -58,7 +59,7 @@ class PlayerTrackAdapter(
 
     inner class ViewHolder(
         private val binding: ItemPlayerTrackBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
 
         private val context = binding.root.context
 

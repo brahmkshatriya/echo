@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
@@ -22,8 +21,9 @@ import dev.brahmkshatriya.echo.ui.feed.viewholders.CategoryViewHolder.Companion.
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.applyCover
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
-sealed class ShelfViewHolder<T : ShelfType>(view: View) : RecyclerView.ViewHolder(view) {
+sealed class ShelfViewHolder<T : ShelfType>(view: View) : ScrollAnimViewHolder(view) {
     var scrollX = 0
     abstract fun bind(index: Int, list: List<T>)
     open fun onCurrentChanged(current: PlayerState.Current?) {}

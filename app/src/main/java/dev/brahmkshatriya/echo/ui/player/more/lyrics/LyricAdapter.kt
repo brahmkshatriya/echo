@@ -3,17 +3,17 @@ package dev.brahmkshatriya.echo.ui.player.more.lyrics
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.databinding.ItemLyricBinding
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class LyricAdapter(
-    val uiViewModel: UiViewModel, val listener: Listener
-) : ListAdapter<Lyrics.Item, LyricAdapter.ViewHolder>(DiffCallback) {
+    val uiViewModel: UiViewModel, val listener: Listener,
+) : ScrollAnimListAdapter<Lyrics.Item, LyricAdapter.ViewHolder>(DiffCallback) {
     fun interface Listener {
         fun onLyricSelected(adapter: LyricAdapter, lyric: Lyrics.Item)
     }
@@ -26,7 +26,7 @@ class LyricAdapter(
             oldItem == newItem
     }
 
-    inner class ViewHolder(val binding: ItemLyricBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(val binding: ItemLyricBinding) : ScrollAnimViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
                 val lyrics = getItem(bindingAdapterPosition) ?: return@setOnClickListener
@@ -63,38 +63,11 @@ class LyricAdapter(
         holder.binding.root.text = lyric.text.trim().trim('\n').ifEmpty { "♪" }
         holder.updateColors()
         holder.updateCurrent()
-        holder.itemView.applyTranslationYAnimation(scrollAmount)
+        holder.itemView.applyTranslationYAnimation(scrollY)
     }
 
     override fun onViewAttachedToWindow(holder: ViewHolder) {
         holder.updateColors()
-    }
-
-    private var scrollAmount: Int = 0
-    private val scrollListener = object : RecyclerView.OnScrollListener() {
-        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-            scrollAmount = dy
-        }
-    }
-
-    var recyclerView: RecyclerView? = null
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        this.recyclerView = recyclerView
-        recyclerView.addOnScrollListener(scrollListener)
-    }
-
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.removeOnScrollListener(scrollListener)
-        this.recyclerView = null
-    }
-
-    private fun onEachViewHolder(block: ViewHolder.() -> Unit) {
-        recyclerView?.let { rv ->
-            for (i in 0 until rv.childCount) {
-                val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? ViewHolder ?: continue
-                holder.block()
-            }
-        }
     }
 
     fun updateColors() {

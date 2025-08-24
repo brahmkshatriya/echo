@@ -15,6 +15,7 @@ import dev.brahmkshatriya.echo.playback.PlayerState.Current.Companion.isPlaying
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.applyCover
 import dev.brahmkshatriya.echo.ui.media.MediaHeaderAdapter.Companion.typeInt
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class MoreHeaderAdapter(
     private val onCloseClicked: () -> Unit,
@@ -52,7 +53,7 @@ class MoreHeaderAdapter(
         val binding: ItemMoreHeaderBinding = ItemMoreHeaderBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
 
         fun bind(item: EchoMediaItem?) = with(binding) {
             if (item == null) return@with

@@ -12,7 +12,6 @@ import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.ExtensionType
@@ -20,6 +19,7 @@ import dev.brahmkshatriya.echo.databinding.ItemExtensionBinding
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader.Companion.priorityKey
 import dev.brahmkshatriya.echo.ui.feed.EmptyAdapter
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class
 ExtensionAdapter(
@@ -44,7 +44,7 @@ ExtensionAdapter(
     fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :
-        RecyclerView.ViewHolder(binding.root) {
+        ScrollAnimViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
         fun bind(extension: Extension<*>) {
             val metadata = extension.metadata

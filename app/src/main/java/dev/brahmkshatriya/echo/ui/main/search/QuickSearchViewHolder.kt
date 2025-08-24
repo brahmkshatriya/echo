@@ -4,15 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.placeHolder
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
-sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+sealed class QuickSearchViewHolder(itemView: View) : ScrollAnimViewHolder(itemView) {
     abstract fun bind(item: QuickSearchAdapter.Item)
     abstract val insertView: View
     abstract val deleteView: View

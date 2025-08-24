@@ -6,7 +6,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.databinding.ItemLoadingSmallBinding
@@ -19,6 +18,7 @@ import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter.Companion.createListen
 import dev.brahmkshatriya.echo.ui.feed.TabsAdapter
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimPagingAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 import kotlinx.coroutines.flow.combine
 
 class LyricsItemAdapter(
@@ -34,7 +34,7 @@ class LyricsItemAdapter(
         fun onLyricsSelected(lyrics: Lyrics)
     }
 
-    class ViewHolder(val binding: ItemShelfCategoryBinding) : RecyclerView.ViewHolder(binding.root)
+    class ViewHolder(val binding: ItemShelfCategoryBinding) : ScrollAnimViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)

@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import dev.brahmkshatriya.echo.R
@@ -14,6 +13,7 @@ import dev.brahmkshatriya.echo.databinding.ItemFeedButtonsBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.animateVisibility
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class ButtonsAdapter(
     private val viewModel: FeedData,
@@ -50,7 +50,7 @@ class ButtonsAdapter(
         private val binding: ItemFeedButtonsBinding = ItemFeedButtonsBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
 
         private var feed: FeedData.Buttons? = null
 

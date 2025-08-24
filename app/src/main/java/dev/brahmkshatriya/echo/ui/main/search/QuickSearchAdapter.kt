@@ -4,14 +4,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
 
-class QuickSearchAdapter(val listener: Listener) :
-    ListAdapter<QuickSearchAdapter.Item, QuickSearchViewHolder>(DiffCallback) {
+class QuickSearchAdapter(
+    val listener: Listener,
+) : ScrollAnimListAdapter<QuickSearchAdapter.Item, QuickSearchViewHolder>(DiffCallback) {
     data class Item(
         val extensionId: String,
-        val actual: QuickSearchItem
+        val actual: QuickSearchItem,
     )
 
     object DiffCallback : DiffUtil.ItemCallback<Item>() {

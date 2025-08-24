@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.models.Progress
@@ -21,6 +20,7 @@ import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class DownloadsAdapter(
     private val listener: Listener
@@ -45,7 +45,7 @@ class DownloadsAdapter(
         fun onRestart(trackId: Long)
     }
 
-    sealed class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    sealed class ViewHolder(itemView: View) : ScrollAnimViewHolder(itemView)
 
     class DownloadViewHolder(
         parent: ViewGroup,

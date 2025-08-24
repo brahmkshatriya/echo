@@ -34,7 +34,7 @@ import org.koin.core.component.inject
 class AppWidget : AppWidgetProvider(), KoinComponent {
 
     override fun onUpdate(
-        context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray
+        context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray,
     ) {
         updateWidgets(context)
     }
@@ -79,7 +79,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
         context: Context?,
         appWidgetManager: AppWidgetManager?,
         appWidgetId: Int,
-        newOptions: Bundle?
+        newOptions: Bundle?,
     ) {
         context ?: return
         appWidgetManager ?: return
@@ -137,7 +137,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
             controller: MediaController?,
             context: Context,
             appWidgetId: Int,
-            appWidgetManager: AppWidgetManager
+            appWidgetManager: AppWidgetManager,
         ) {
             val packageName = context.packageName
             val large = RemoteViews(packageName, R.layout.app_widget_large)
@@ -180,11 +180,13 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 list.getOrNull(index)?.first
             }
             val title = item?.item?.title
-            val artist = item?.item?.subtitleWithE
+            val artist = item?.item?.artists?.takeIf { it.isNotEmpty() }
+                ?.joinToString(", ") { it.name }
             views.setTextViewText(R.id.trackTitle, title ?: context.getString(R.string.so_empty))
             views.setTextViewText(
-                R.id.trackArtist,
-                artist ?: context.getString(R.string.unknown).takeIf { title != null })
+                R.id.trackArtist, artist ?: context.getString(R.string.unknown).takeIf { title != null }
+            )
+            val image = image
             if (image == null) views.setImageViewResource(R.id.trackCover, R.drawable.art_music)
             else views.setImageViewBitmap(R.id.trackCover, image)
 

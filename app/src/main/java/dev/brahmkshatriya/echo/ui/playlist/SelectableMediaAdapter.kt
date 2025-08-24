@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemMediaSelectableBinding
@@ -13,6 +12,7 @@ import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.ui.feed.viewholders.shelf.ShelfViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class SelectableMediaAdapter(
     val listener: Listener
@@ -44,7 +44,7 @@ class SelectableMediaAdapter(
         val binding: ItemMediaSelectableBinding = ItemMediaSelectableBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
 
         private var item: EchoMediaItem? = null
 
@@ -89,7 +89,7 @@ class SelectableMediaAdapter(
         private val onSelectAll: (Boolean) -> Unit
     ) : ScrollAnimRecyclerAdapter<Header.ViewHolder>(), GridAdapter {
         class ViewHolder(val binding: ItemSelectableHeaderBinding) :
-            RecyclerView.ViewHolder(binding.root)
+            ScrollAnimViewHolder(binding.root)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)

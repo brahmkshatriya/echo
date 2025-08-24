@@ -5,12 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemShelfMediaBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.bind
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class MediaItemAdapter(
     private val listener: Listener,
@@ -37,7 +37,7 @@ class MediaItemAdapter(
         val binding: ItemShelfMediaBinding = ItemShelfMediaBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
         var item: Item? = null
 
         init {

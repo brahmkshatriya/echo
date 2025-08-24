@@ -19,6 +19,7 @@ import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.sub
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class QueueAdapter(
     private val listener: Listener,
@@ -47,7 +48,7 @@ class QueueAdapter(
     @SuppressLint("ClickableViewAccessibility")
     inner class ViewHolder(
         val binding: ItemPlaylistTrackBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
 
         init {
             binding.playlistItemClose.setOnClickListener {

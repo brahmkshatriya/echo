@@ -2,10 +2,10 @@ package dev.brahmkshatriya.echo.ui.playlist.save
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistSaveHeaderBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class TopAppBarAdapter(
     private val onClose: () -> Unit,
@@ -13,7 +13,7 @@ class TopAppBarAdapter(
 ) : ScrollAnimRecyclerAdapter<TopAppBarAdapter.ViewHolder>(), GridAdapter {
     inner class ViewHolder(
         val binding: ItemPlaylistSaveHeaderBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
         init {
             binding.root.setNavigationOnClickListener {
                 onClose()

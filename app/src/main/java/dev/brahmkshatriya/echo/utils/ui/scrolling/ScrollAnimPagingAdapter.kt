@@ -3,10 +3,9 @@ package dev.brahmkshatriya.echo.utils.ui.scrolling
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import dev.brahmkshatriya.echo.ui.feed.viewholders.FeedViewHolder
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 
-abstract class ScrollAnimPagingAdapter<T : Any, VH : RecyclerView.ViewHolder>(
+abstract class ScrollAnimPagingAdapter<T : Any, VH : ScrollAnimViewHolder>(
     diffCallback: DiffUtil.ItemCallback<T>
 ) : PagingDataAdapter<T, VH>(diffCallback) {
 
@@ -33,10 +32,11 @@ abstract class ScrollAnimPagingAdapter<T : Any, VH : RecyclerView.ViewHolder>(
         }
     }
 
-    fun onEachViewHolder(action: FeedViewHolder<*>.() -> Unit) {
+    @Suppress("UNCHECKED_CAST")
+    fun onEachViewHolder(action: VH.() -> Unit) {
         recyclerView?.let { rv ->
             for (i in 0 until rv.childCount) {
-                val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? FeedViewHolder<*>
+                val holder = rv.getChildViewHolder(rv.getChildAt(i)) as? VH
                 if (holder?.bindingAdapter == this) holder.action()
             }
         }

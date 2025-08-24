@@ -130,7 +130,7 @@ class PlayerViewModel(
     }
 
     fun previous() {
-        withBrowser { it.seekToPreviousMediaItem() }
+        withBrowser { it.seekToPrevious() }
     }
 
     fun setShuffle(isShuffled: Boolean, changeCurrent: Boolean = false) {

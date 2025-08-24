@@ -2,10 +2,12 @@ package dev.brahmkshatriya.echo.playback
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.scale
 import androidx.core.os.bundleOf
 import androidx.media3.common.Player
 import androidx.media3.common.Rating
@@ -74,11 +76,11 @@ class PlayerCallback(
     private val throwableFlow: MutableSharedFlow<Throwable>,
     private val extensions: ExtensionLoader,
     private val radioFlow: MutableStateFlow<PlayerState.Radio>,
-    override val downloadFlow: StateFlow<List<Downloader.Info>>
+    override val downloadFlow: StateFlow<List<Downloader.Info>>,
 ) : AndroidAutoCallback(app, scope, extensions.music, downloadFlow) {
 
     override fun onConnect(
-        session: MediaSession, controller: MediaSession.ControllerInfo
+        session: MediaSession, controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
         val sessionCommands = with(PlayerCommands) {
             MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
@@ -96,7 +98,7 @@ class PlayerCallback(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
         customCommand: SessionCommand,
-        args: Bundle
+        args: Bundle,
     ): ListenableFuture<SessionResult> = with(PlayerCommands) {
         val player = session.player
         when (customCommand) {
@@ -120,8 +122,14 @@ class PlayerCallback(
         val item = player.with { currentMediaItem }
             ?: context.recoverPlaylist(app, downloadFlow.value, false).run { first.getOrNull(second) }
             ?: return@future SessionResult(SessionError.ERROR_UNKNOWN)
-        val image = item.track.cover.loadDrawable(context)?.toBitmap(1024, -1)
+        val image = item.track.cover.loadDrawable(context)?.toScaledBitmap(720)
         SessionResult(RESULT_SUCCESS, Bundle().apply { putParcelable("image", image) })
+    }
+
+    private fun Drawable.toScaledBitmap(width: Int) = toBitmap().let { bmp ->
+        val ratio = width.toFloat() / bmp.width
+        val height = (bmp.height * ratio).toInt()
+        bmp.scale(width, height)
     }
 
     private fun resume(player: Player, withClear: Boolean) = scope.future {
@@ -182,7 +190,7 @@ class PlayerCallback(
     }
 
     private suspend fun loadItem(
-        extension: Extension<*>, item: EchoMediaItem
+        extension: Extension<*>, item: EchoMediaItem,
     ) = when (item) {
         is Track -> extension.getAs<TrackClient, EchoMediaItem> { loadTrack(item, false) }
         is Album -> extension.getAs<AlbumClient, EchoMediaItem> { loadAlbum(item) }
@@ -192,7 +200,7 @@ class PlayerCallback(
     }.getOrThrow()
 
     private suspend fun listTracks(
-        extension: Extension<*>, item: EchoMediaItem, loaded: Boolean
+        extension: Extension<*>, item: EchoMediaItem, loaded: Boolean,
     ) = when (item) {
         is Album -> extension.getAs<AlbumClient, PagedData<Track>> {
             val album = if (!loaded) loadAlbum(item) else item
@@ -284,7 +292,7 @@ class PlayerCallback(
         withContext(Dispatchers.Main) { block() }
 
     private suspend fun <T : Any> PagedData<T>.load(
-        pages: Int = 5
+        pages: Int = 5,
     ) = runCatching {
         val list = mutableListOf<T>()
         var page = loadPage(null)
@@ -366,7 +374,7 @@ class PlayerCallback(
     }
 
     override fun onSetRating(
-        session: MediaSession, controller: MediaSession.ControllerInfo, rating: Rating
+        session: MediaSession, controller: MediaSession.ControllerInfo, rating: Rating,
     ): ListenableFuture<SessionResult> {
         return if (rating !is ThumbRating) super.onSetRating(session, controller, rating)
         else scope.future {
@@ -397,7 +405,7 @@ class PlayerCallback(
 
     override fun onPlaybackResumption(
         mediaSession: MediaSession,
-        controller: MediaSession.ControllerInfo
+        controller: MediaSession.ControllerInfo,
     ) = scope.future {
         withContext(Dispatchers.Main) {
             mediaSession.player.shuffleModeEnabled = context.recoverShuffle() ?: false

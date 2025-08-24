@@ -16,6 +16,7 @@ import dev.brahmkshatriya.echo.databinding.ItemPlaylistTrackBinding
 import dev.brahmkshatriya.echo.ui.player.more.upnext.QueueAdapter.Companion.bind
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class PlaylistTrackAdapter(
     private val listener: Listener,
@@ -43,7 +44,7 @@ class PlaylistTrackAdapter(
         val binding: ItemPlaylistTrackBinding = ItemPlaylistTrackBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
         var track: Track? = null
 
         init {

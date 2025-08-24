@@ -3,10 +3,10 @@ package dev.brahmkshatriya.echo.ui.media
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.LoadState
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemLineBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimLoadStateAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class LineAdapter : ScrollAnimLoadStateAdapter<LineAdapter.ViewHolder>(), GridAdapter {
     override val adapter = this
@@ -17,5 +17,5 @@ class LineAdapter : ScrollAnimLoadStateAdapter<LineAdapter.ViewHolder>(), GridAd
         binding: ItemLineBinding = ItemLineBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root)
+    ) : ScrollAnimViewHolder(binding.root)
 }

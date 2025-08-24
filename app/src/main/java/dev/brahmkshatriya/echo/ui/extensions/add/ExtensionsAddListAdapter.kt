@@ -11,6 +11,7 @@ import dev.brahmkshatriya.echo.databinding.ItemExtensionAddBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddFooterBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddHeaderBinding
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class ExtensionsAddListAdapter(
     val listener: Listener
@@ -36,7 +37,7 @@ class ExtensionsAddListAdapter(
 
     inner class ViewHolder(
         val binding: ItemExtensionAddBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
         init {
             binding.extensionSwitch.setOnCheckedChangeListener { _, checked ->
                 val item = runCatching { getItem(bindingAdapterPosition) }.getOrNull()
@@ -80,7 +81,7 @@ class ExtensionsAddListAdapter(
         }
 
         class ViewHolder(val binding: ItemExtensionAddHeaderBinding) :
-            RecyclerView.ViewHolder(binding.root)
+            ScrollAnimViewHolder(binding.root)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)
@@ -107,7 +108,7 @@ class ExtensionsAddListAdapter(
         }
 
         class ViewHolder(val binding: ItemExtensionAddFooterBinding) :
-            RecyclerView.ViewHolder(binding.root)
+            ScrollAnimViewHolder(binding.root)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)

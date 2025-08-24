@@ -15,7 +15,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
@@ -45,6 +44,7 @@ import dev.brahmkshatriya.echo.utils.ui.SimpleItemSpan
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class MediaHeaderAdapter(
     private val listener: Listener,
@@ -104,7 +104,7 @@ class MediaHeaderAdapter(
             notifyItemChanged(0)
         }
 
-    sealed class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    sealed class ViewHolder(itemView: View) : ScrollAnimViewHolder(itemView)
     class Success(
         parent: ViewGroup,
         private val listener: Listener,

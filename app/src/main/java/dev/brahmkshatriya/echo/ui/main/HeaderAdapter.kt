@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.R
@@ -23,6 +22,7 @@ import dev.brahmkshatriya.echo.ui.settings.SettingsBottomSheet
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class HeaderAdapter(
@@ -93,7 +93,7 @@ class HeaderAdapter(
         val binding: ItemMainHeaderBinding = ItemMainHeaderBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-    ) : RecyclerView.ViewHolder(binding.root)
+    ) : ScrollAnimViewHolder(binding.root)
 
     init {
         with(fragment) {

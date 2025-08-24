@@ -2,16 +2,16 @@ package dev.brahmkshatriya.echo.ui.playlist.save
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistSaveFooterBinding
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class SaveButtonAdapter(
-    private val onSave: () -> Unit
+    private val onSave: () -> Unit,
 ) : ScrollAnimRecyclerAdapter<SaveButtonAdapter.ViewHolder>(), GridAdapter {
     class ViewHolder(val binding: ItemPlaylistSaveFooterBinding) :
-        RecyclerView.ViewHolder(binding.root)
+        ScrollAnimViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -32,6 +32,7 @@ class SaveButtonAdapter(
         super.onBindViewHolder(holder, position)
         holder.binding.root.isEnabled = enabled
     }
+
     override val adapter = this
     override fun getSpanSize(position: Int, width: Int, count: Int) = count
 }
