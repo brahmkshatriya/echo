@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.net.toUri
 import androidx.core.view.iterator
+import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -14,6 +16,8 @@ import androidx.preference.PreferenceGroup
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
+import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.ImportType
@@ -28,18 +32,24 @@ import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.SettingTextInput
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.extensionPrefId
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.toSettings
+import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
+import dev.brahmkshatriya.echo.ui.extensions.export.ExportPlaylistUtils.Companion.deserializePlaylists
+import dev.brahmkshatriya.echo.ui.extensions.export.ExportPlaylistUtils.Companion.serializePlaylists
+import dev.brahmkshatriya.echo.ui.extensions.export.PickerActivity
 import dev.brahmkshatriya.echo.ui.settings.BaseSettingsFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
+import dev.brahmkshatriya.echo.utils.ui.prefs.ClickPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.LoadingPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialMultipleChoicePreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialSliderPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialTextInputPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.TransitionPreference
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -154,6 +164,32 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                     this@ExtensionPreference, extension, isLoginClient
                 )
                 screen.addPreference(infoPreference)
+
+                val client = extension.instance.value().getOrThrow()
+                if (extension.id == UnifiedExtension.metadata.id) {
+                    ClickPreference(context).apply {
+                        key = "export_playlists"
+                        title = getString(R.string.export_playlists)
+                        summary = getString(R.string.export_playlists_summary)
+                        layoutResource = R.layout.preference
+                        isIconSpaceReserved = false
+                        setOnClickListener {
+                            exportPlaylists(client)
+                        }
+                        screen.addPreference(this)
+                    }
+                    ClickPreference(context).apply {
+                        key = "import_playlists"
+                        title = getString(R.string.import_playlists)
+                        summary = getString(R.string.import_playlists_summary)
+                        layoutResource = R.layout.preference
+                        isIconSpaceReserved = false
+                        setOnClickListener {
+                            importPlaylists(client)
+                        }
+                        screen.addPreference(this)
+                    }
+                }
                 if (extension.type == ExtensionType.MUSIC) MaterialListPreference(context).apply {
                     key = STREAM_QUALITY
                     title = getString(R.string.stream_quality)
@@ -167,6 +203,48 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                     screen.addPreference(this)
                 }
                 setting.forEach { it.addPreferenceTo(screen) }
+            }
+        }
+
+        private fun exportPlaylists(client: ExtensionClient) {
+            val context = preferenceManager.context
+            if (client is PlaylistEditClient) {
+                PickerActivity.openFolder(context) { uri ->
+                    val directory = DocumentFile.fromTreeUri(context, uri) ?: run {
+                        throw Exception("Failed to get directory from URI")
+                    }
+
+                    val file = directory.createFile("application/json", "playlists") ?: run {
+                        throw Exception("Failed to create file")
+                    }
+
+                    viewModel.viewModelScope.launch {
+                        try {
+                            context.contentResolver.openOutputStream(file.uri)?.use { outputStream ->
+                                outputStream.write(client.serializePlaylists().toByteArray())
+                            }
+                        } catch (e: Exception) {
+                            file.delete()
+                            throw e
+                        }
+                    }
+                }
+            }
+        }
+
+        private fun importPlaylists(client: ExtensionClient) {
+            val context = preferenceManager.context
+            if (client is PlaylistEditClient) {
+                PickerActivity.openFile(context) { uri ->
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        inputStream.bufferedReader().use { reader ->
+                            val text = reader.readText()
+                            viewModel.viewModelScope.launch {
+                                client.deserializePlaylists(text)
+                            }
+                        }
+                    } ?: throw Exception("Cannot open input stream for $uri")
+                }
             }
         }
 
