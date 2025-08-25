@@ -167,9 +167,27 @@ class LyricsViewModel(
         val extension = currentSelectionFlow.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             lyricsState.value = State.Loading
-            lyricsState.value = extension.getIf<LyricsClient, Lyrics>(app.throwFlow) {
+            
+            // Try to get cached lyrics first
+            val cacheKey = "lyrics-content-${extension.id}-${lyrics.id}"
+            val cachedLyrics = app.context.getFromCache<Lyrics>(cacheKey)
+            if (cachedLyrics != null) {
+                lyricsState.value = State.Loaded(cachedLyrics.fillGaps())
+            }
+            
+            // Load fresh lyrics and update cache
+            val freshLyrics = extension.getIf<LyricsClient, Lyrics>(app.throwFlow) {
                 loadLyrics(lyrics)
-            }?.fillGaps()?.let { State.Loaded(it) } ?: State.Empty
+            }
+            
+            if (freshLyrics != null) {
+                // Cache the fresh lyrics
+                app.context.saveToCache(cacheKey, freshLyrics)
+                lyricsState.value = State.Loaded(freshLyrics.fillGaps())
+            } else if (cachedLyrics == null) {
+                // Only set to Empty if we don't have cached data
+                lyricsState.value = State.Empty
+            }
         }
     }
 
