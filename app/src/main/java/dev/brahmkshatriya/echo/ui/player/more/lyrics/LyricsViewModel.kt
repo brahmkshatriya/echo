@@ -15,6 +15,10 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.cache.Cached.getLyrics
+import dev.brahmkshatriya.echo.extensions.cache.Cached.getLyricsSearch
+import dev.brahmkshatriya.echo.extensions.cache.Cached.loadLyrics
+import dev.brahmkshatriya.echo.extensions.cache.Cached.loadLyricsSearch
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
@@ -80,18 +84,37 @@ class LyricsViewModel(
         app.context.saveToCache<String>(media, extension.id, "lyrics_ext")
     }
 
-    private val feedData = currentSelectionFlow.combineTransformLatest(queryFlow) { e, q ->
+    private val lyricsCachedFlow = currentSelectionFlow.combineTransformLatest(queryFlow) { extension, query ->
         emit(null)
-        if (e == null) return@combineTransformLatest
+        if (extension == null) return@combineTransformLatest
         val item = mediaFlow.value ?: return@combineTransformLatest
         val result = viewModelScope.async(Dispatchers.IO, CoroutineStart.LAZY) {
-            if (q.isEmpty()) e.getAs<LyricsClient, Feed<Lyrics>> {
-                searchTrackLyrics(item.extensionId, item.track).toApp(e)
-            } else e.getAs<LyricsSearchClient, Feed<Lyrics>> {
-                searchLyrics(q).toApp(e)
+            if (query.isEmpty()) {
+                getLyrics(app, extension.id, item.extensionId, item.track).map { it.toApp(extension) }
+            } else {
+                getLyricsSearch(app, extension.id, query).map { it.toApp(extension) }
             }
         }
         emit(result)
+    }.stateIn(viewModelScope, Eagerly, null)
+
+    private val lyricsLoadedFlow = currentSelectionFlow.combineTransformLatest(queryFlow) { extension, query ->
+        emit(null)
+        if (extension == null) return@combineTransformLatest
+        val item = mediaFlow.value ?: return@combineTransformLatest
+        val result = viewModelScope.async(Dispatchers.IO, CoroutineStart.LAZY) {
+            if (query.isEmpty()) {
+                loadLyrics(app, extension, item.extensionId, item.track).map { it.toApp(extension) }
+            } else {
+                loadLyricsSearch(app, extension, query).map { it.toApp(extension) }
+            }
+        }
+        emit(result)
+    }.stateIn(viewModelScope, Eagerly, null)
+
+    private val feedData = lyricsCachedFlow.combine(lyricsLoadedFlow) { cached, loaded ->
+        // Show cached data first, then loaded data
+        loaded?.takeIf { it.isCompleted } ?: cached
     }.stateIn(viewModelScope, Eagerly, null)
 
     fun <T : Any> Feed<T>.toApp(extension: Extension<*>) = Feed(tabs) { tab ->
@@ -144,9 +167,27 @@ class LyricsViewModel(
         val extension = currentSelectionFlow.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             lyricsState.value = State.Loading
-            lyricsState.value = extension.getIf<LyricsClient, Lyrics>(app.throwFlow) {
+            
+            // Try to get cached lyrics first
+            val cacheKey = "lyrics-content-${extension.id}-${lyrics.id}"
+            val cachedLyrics = app.context.getFromCache<Lyrics>(cacheKey)
+            if (cachedLyrics != null) {
+                lyricsState.value = State.Loaded(cachedLyrics.fillGaps())
+            }
+            
+            // Load fresh lyrics and update cache
+            val freshLyrics = extension.getIf<LyricsClient, Lyrics>(app.throwFlow) {
                 loadLyrics(lyrics)
-            }?.fillGaps()?.let { State.Loaded(it) } ?: State.Empty
+            }
+            
+            if (freshLyrics != null) {
+                // Cache the fresh lyrics
+                app.context.saveToCache(cacheKey, freshLyrics)
+                lyricsState.value = State.Loaded(freshLyrics.fillGaps())
+            } else if (cachedLyrics == null) {
+                // Only set to Empty if we don't have cached data
+                lyricsState.value = State.Empty
+            }
         }
     }
 
