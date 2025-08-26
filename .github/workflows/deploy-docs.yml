@@ -25,7 +25,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Dokka docs
-        run: ./gradlew :common:dokkaHtml --no-configuration-cache
+        run: ./gradlew :common:dokkaGenerate
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
