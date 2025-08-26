@@ -1,4 +1,4 @@
-# Common Package for Echo Extensions
+# Module common
 
 This package contains common classes and interfaces that are used by all the extensions of Echo.
 
@@ -8,7 +8,7 @@ This package contains common classes and interfaces that are used by all the ext
 
 To create a new extension, you can use the following template repo:
 
-https://github.com/brahmkshatriya/echo-extension-template
+[https://github.com/brahmkshatriya/echo-extension-template](https://github.com/brahmkshatriya/echo-extension-template)
 
 ### Manual
 
