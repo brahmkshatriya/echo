@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'common/**'
   workflow_dispatch:
 
 jobs:
@@ -29,5 +31,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./common/build/dokka
-          publish_branch: gh-pages
+          publish_dir: ./common/build/dokka/html
+          publish_branch: docs
