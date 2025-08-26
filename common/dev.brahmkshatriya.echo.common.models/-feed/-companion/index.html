@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Companion</title>
+    <link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<link href="../../../../styles/styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../../index.html">
+                    common
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+1.0        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":common/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":common/main"
+                                       data-filter=":common/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    common
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="common::dev.brahmkshatriya.echo.common.models/Feed.Companion///PointingToDeclaration//1278595499">
+  <div class="breadcrumbs"><a href="../../../../index.html">common</a><span class="delimiter">/</span><a href="../../index.html">dev.brahmkshatriya.echo.common.models</a><span class="delimiter">/</span><a href="../index.html">Feed</a><span class="delimiter">/</span><span class="current">Companion</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Companion</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">Companion</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/brahmkshatriya/echo/tree/main/common/src/main/java/dev/brahmkshatriya/echo/common/models/Feed.kt#L112">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1297249153%2FFunctions%2F1278595499" anchor-label="loadAll" id="1297249153%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
+          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="load-all.html"><span>load</span><wbr></wbr><span><span>All</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1297249153%2FFunctions%2F1278595499"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="load-all.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../index.html">Feed</a><span class="token operator">&lt;</span><a href="load-all.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="load-all.html"><span class="token function">loadAll</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to load all items in the <a href="../index.html">Feed</a>. Please use sparringly.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-894372800%2FFunctions%2F1278595499" anchor-label="pagedDataOfFirst" id="-894372800%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
+          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="paged-data-of-first.html"><span>paged</span><wbr></wbr><span>Data</span><wbr></wbr><span>Of</span><wbr></wbr><span><span>First</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-894372800%2FFunctions%2F1278595499"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="paged-data-of-first.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../index.html">Feed</a><span class="token operator">&lt;</span><a href="paged-data-of-first.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="paged-data-of-first.html"><span class="token function">pagedDataOfFirst</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to load all items in the <a href="../index.html">Feed</a> for the firstOrNull <a href="../../-tab/index.html">Tab</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1314943613%2FFunctions%2F1278595499" anchor-label="toFeed" id="-1314943613%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
+          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-feed.html"><span>to</span><wbr></wbr><span><span>Feed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1314943613%2FFunctions%2F1278595499"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="to-feed.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../../../dev.brahmkshatriya.echo.common.helpers/-paged-data/index.html">PagedData</a><span class="token operator">&lt;</span><a href="to-feed.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="to-feed.html"><span class="token function">toFeed</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Feed</a><span class="token operator">&lt;</span><a href="to-feed.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to create a <a href="../index.html">Feed</a> from a <a href="../../../dev.brahmkshatriya.echo.common.helpers/-paged-data/index.html">PagedData</a> of <a href="to-feed.html">T</a> items.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="to-feed.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="to-feed.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="to-feed.html"><span class="token function">toFeed</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">Feed</a><span class="token operator">&lt;</span><a href="to-feed.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to create a <a href="../index.html">Feed</a> from a list of <a href="to-feed.html">T</a> items.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-744207081%2FFunctions%2F1278595499" anchor-label="toFeedData" id="-744207081%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
+          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-feed-data.html"><span>to</span><wbr></wbr><span>Feed</span><wbr></wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-744207081%2FFunctions%2F1278595499"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="to-feed-data.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../../../dev.brahmkshatriya.echo.common.helpers/-paged-data/index.html">PagedData</a><span class="token operator">&lt;</span><a href="to-feed-data.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="to-feed-data.html"><span class="token function">toFeedData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-data/index.html">Feed.Data</a><span class="token operator">&lt;</span><a href="to-feed-data.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to convert a <a href="../../../dev.brahmkshatriya.echo.common.helpers/-paged-data/index.html">PagedData</a> to a <a href="../-data/index.html">Feed.Data</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="to-feed-data.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="to-feed-data.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="to-feed-data.html"><span class="token function">toFeedData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-data/index.html">Feed.Data</a><span class="token operator">&lt;</span><a href="to-feed-data.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to convert a list of <a href="to-feed-data.html">T</a> items to a <a href="../-data/index.html">Feed.Data</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>made by <a style="color: inherit; text-decoration: underline;" href="https://github.com/brahmkshatriya">@brahmkshatriya</a></span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
