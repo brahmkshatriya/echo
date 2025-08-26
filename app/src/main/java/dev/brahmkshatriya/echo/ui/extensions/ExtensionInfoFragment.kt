@@ -63,7 +63,7 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
 
     companion object {
         fun getBundle(
-            name: String, id: String, type: ExtensionType, icon: ImageHolder?
+            name: String, id: String, type: ExtensionType, icon: ImageHolder?,
         ) = Bundle().apply {
             putString("name", name)
             putString("id", id)
@@ -82,8 +82,8 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observe(viewModel.extension) { (extension) ->
-            extension ?: return@observe
+        observe(viewModel.stateFlow) { state ->
+            val extension = state?.extension ?: return@observe
             val metadata = extension.metadata
             binding.toolBar.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
@@ -143,7 +143,8 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                 viewModel.onSettingsChanged(settings, it.key)
                 true
             }
-            observe(viewModel.extension) { (extension, isLoginClient, setting) ->
+            observe(viewModel.stateFlow) { state ->
+                val extension = state?.extension
                 val screen = preferenceManager.createPreferenceScreen(context)
                 preferenceScreen = screen
                 if (extension == null) {
@@ -151,7 +152,7 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                     return@observe
                 }
                 val infoPreference = ExtensionInfoPreference(
-                    this@ExtensionPreference, extension, isLoginClient
+                    this@ExtensionPreference, extension, state.isLoginClient
                 )
                 screen.addPreference(infoPreference)
                 if (extension.type == ExtensionType.MUSIC) MaterialListPreference(context).apply {
@@ -166,7 +167,8 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                     setDefaultValue("off")
                     screen.addPreference(this)
                 }
-                setting.forEach { it.addPreferenceTo(screen) }
+                state.settings.forEach { it.addPreferenceTo(screen) }
+
             }
         }
 
