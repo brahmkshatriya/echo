@@ -1,8 +1,13 @@
+// Disable configuration cache for Dokka tasks (required for Gradle 9+)
+tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+    outputs.cacheIf { false }
+}
 plugins {
     id("java-library")
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlinx.serialization)
     id("maven-publish")
+    id("org.jetbrains.dokka") version "1.9.10"
 }
 
 java {
