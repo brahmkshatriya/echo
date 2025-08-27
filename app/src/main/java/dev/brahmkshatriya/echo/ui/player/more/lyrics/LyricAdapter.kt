@@ -4,8 +4,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import dev.brahmkshatriya.echo.common.models.Lyrics
+import dev.brahmkshatriya.echo.databinding.ItemLoadingBinding
 import dev.brahmkshatriya.echo.databinding.ItemLyricBinding
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
+import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.applyTranslationYAnimation
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
@@ -78,4 +80,10 @@ class LyricAdapter(
         this.currentPos = currentPos
         onEachViewHolder { updateCurrent() }
     }
+    class Loading(
+        parent: ViewGroup,
+        val binding: ItemLoadingBinding = ItemLoadingBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+    ) : FeedLoadingAdapter.ViewHolder(binding.root)
 }

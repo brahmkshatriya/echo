@@ -12,6 +12,8 @@ import androidx.core.view.WindowInsetsCompat.CONSUMED
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +30,8 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.ui.common.GridAdapter
 import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionsListBottomSheet
+import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter
+import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter.Companion.createListener
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -49,7 +53,7 @@ class LyricsFragment : Fragment() {
     private val uiViewModel by activityViewModel<UiViewModel>()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View {
         binding = FragmentPlayerLyricsBinding.inflate(inflater, container, false)
         return binding.root
@@ -64,6 +68,12 @@ class LyricsFragment : Fragment() {
             playerVM.seekTo(lyric.startTime)
             updateLyrics(lyric.startTime)
         }
+    }
+
+    private val lyricsErrorAdapter by lazy {
+        FeedLoadingAdapter(createListener {
+            viewModel.reloadCurrent()
+        }) { LyricAdapter.Loading(it) }
     }
 
     private var shouldAutoScroll = true
@@ -141,7 +151,7 @@ class LyricsFragment : Fragment() {
         }
 
         binding.searchView.editText.setOnEditorActionListener { v, _, _ ->
-            viewModel.queryFlow.value =  v.text.toString().trim()
+            viewModel.queryFlow.value = v.text.toString().trim()
             true
         }
 
@@ -170,16 +180,22 @@ class LyricsFragment : Fragment() {
             lyricAdapter.updateColors()
             val colors = it ?: requireContext().defaultPlayerColors()
             binding.noLyrics.setTextColor(colors.onBackground)
-            binding.loading.apply {
-                progress.setIndicatorColor(colors.accent)
-                textView.setTextColor(colors.onBackground)
-            }
         }
 
-        binding.lyricsRecyclerView.adapter = lyricAdapter
+        binding.lyricsRecyclerView.adapter = ConcatAdapter(lyricsErrorAdapter, lyricAdapter)
         binding.lyricsRecyclerView.itemAnimator = null
-        observe(viewModel.lyricsState) {
-            val lyricsItem = (it as? LyricsViewModel.State.Loaded)?.lyrics
+        observe(viewModel.lyricsState) { state ->
+            binding.noLyrics.isVisible = state == LyricsViewModel.State.Empty
+            lyricsErrorAdapter.loadState = when (state) {
+                LyricsViewModel.State.Empty -> LoadState.NotLoading(true)
+                LyricsViewModel.State.Loading -> LoadState.Loading
+                is LyricsViewModel.State.Loaded -> state.result.fold({
+                    LoadState.NotLoading(true)
+                }, {
+                    LoadState.Error(it)
+                })
+            }
+            val lyricsItem = (state as? LyricsViewModel.State.Loaded)?.result?.getOrNull()
             binding.lyricsItem.bind(lyricsItem)
             currentLyricsPos = -1
             currentLyrics = lyricsItem?.lyrics
@@ -190,12 +206,6 @@ class LyricsFragment : Fragment() {
                 null -> emptyList()
             }
             lyricAdapter.submitList(list)
-            binding.noLyrics.isVisible = when (it) {
-                LyricsViewModel.State.Empty -> true
-                is LyricsViewModel.State.Loaded -> list.isEmpty()
-                else -> false
-            }
-            binding.loading.root.isVisible = it == LyricsViewModel.State.Loading
         }
 
         observe(playerVM.progress) { updateLyrics(it.first) }
@@ -214,7 +224,7 @@ class LyricsFragment : Fragment() {
 
     class CenterSmoothScroller(context: Context) : LinearSmoothScroller(context) {
         override fun calculateDtToFit(
-            viewStart: Int, viewEnd: Int, boxStart: Int, boxEnd: Int, snapPreference: Int
+            viewStart: Int, viewEnd: Int, boxStart: Int, boxEnd: Int, snapPreference: Int,
         ): Int {
             val midPoint = boxEnd / 2
             val targetMidPoint = ((viewEnd - viewStart) / 2) + viewStart

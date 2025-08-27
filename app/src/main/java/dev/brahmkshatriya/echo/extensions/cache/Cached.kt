@@ -183,33 +183,44 @@ object Cached {
         savingFeed(app, extension, item.id, feed)
     }
 
-    suspend fun getLyrics(
-        app: App, extensionId: String, clientId: String, track: Track,
-    ) = runCatching {
-        getFeed<Lyrics>(app, extensionId, "lyrics-$clientId-${track.id}") { it }
+    suspend fun loadLyrics(app: App, extension: Extension<*>, lyrics: Lyrics) = runCatching {
+        val fileCache = app.fileCache.await()
+        val id = "lyrics-${extension.id}-${lyrics.id}"
+        val loaded = extension.getAs<LyricsClient, Lyrics> {
+            loadLyrics(lyrics)
+        }.getOrElse { throwable ->
+            runCatching {
+                fileCache.get(id)?.let {
+                    File(it).readText().toData<Lyrics>()
+                }
+            }.getOrNull() ?: throw throwable
+        }
+        fileCache.put(id) {
+            runCatching {
+                File(it).writeText(loaded.toJson())
+            }.isSuccess
+        }
+        loaded
     }
 
-    suspend fun loadLyrics(app: App, extension: Extension<*>, clientId: String, track: Track) =
-        runCatching {
-            val feed = extension.getAs<LyricsClient, Feed<Lyrics>> {
-                searchTrackLyrics(clientId, track)
-            }.getOrThrow()
-            savingFeed(app, extension, "lyrics-$clientId-${track.id}", feed)
-        }
-
-    suspend fun getLyricsSearch(
-        app: App, extensionId: String, query: String,
+    suspend fun getLyricsFeed(
+        app: App, extensionId: String, clientId: String, track: Track, query: String,
     ) = runCatching {
-        getFeed<Lyrics>(app, extensionId, "lyrics-search-$query") { it }
+        val id = if (query.isEmpty()) "lyrics-$clientId-${track.id}" else "lyrics-search-$query"
+        getFeed<Lyrics>(app, extensionId, id) { it }
     }
 
-    suspend fun loadLyricsSearch(app: App, extension: Extension<*>, query: String) =
-        runCatching {
-            val feed = extension.getAs<LyricsSearchClient, Feed<Lyrics>> {
-                searchLyrics(query)
-            }.getOrThrow()
-            savingFeed(app, extension, "lyrics-search-$query", feed)
-        }
+    suspend fun loadLyricsFeed(
+        app: App, extension: Extension<*>, clientId: String, track: Track, query: String,
+    ) = runCatching {
+        val feed = if (query.isEmpty()) extension.getAs<LyricsClient, Feed<Lyrics>> {
+            searchTrackLyrics(clientId, track)
+        }.getOrThrow() else extension.getAs<LyricsSearchClient, Feed<Lyrics>> {
+            searchLyrics(query)
+        }.getOrThrow()
+        val id = if (query.isEmpty()) "lyrics-$clientId-${track.id}" else "lyrics-search-$query"
+        savingFeed(app, extension, id, feed)
+    }
 
     suspend fun getFeedShelf(
         app: App, extensionId: String, feedId: String,
