@@ -53,10 +53,10 @@
 
         <activity
             android:name=".MainActivity"
-            android:enableOnBackInvokedCallback="true"
+            android:enableOnBackInvokedCallback="false"
             android:exported="true"
-            android:windowSoftInputMode="stateVisible|adjustPan"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="stateVisible|adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
@@ -76,6 +76,34 @@
                 <data android:scheme="echo" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity$Back"
+            android:enableOnBackInvokedCallback="true"
+            android:enabled="false"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="stateVisible|adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.MUSIC_PLAYER" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.APP_MUSIC" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="echo" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".ui.extensions.ExtensionOpenerActivity"
             android:exported="true">

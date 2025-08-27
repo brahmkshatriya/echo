@@ -1,13 +1,17 @@
 package dev.brahmkshatriya.echo.ui.settings
 
+import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.MainActivity.Companion.AMOLED_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.BIG_COVER
 import dev.brahmkshatriya.echo.MainActivity.Companion.COLOR_KEY
@@ -167,6 +171,16 @@ class SettingsLookFragment : BaseSettingsFragment() {
                 screen.addPreference(this)
 
                 SwitchPreferenceCompat(context).apply {
+                    key = BACK_ANIM
+                    title = getString(R.string.back_animations)
+                    summary = getString(R.string.back_animations_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
                     key = ANIMATIONS_KEY
                     title = getString(R.string.animations)
                     summary = getString(R.string.animations_summary)
@@ -194,6 +208,16 @@ class SettingsLookFragment : BaseSettingsFragment() {
                 BIG_COVER, NAVBAR_GRADIENT, BACKGROUND_GRADIENT -> {
                     requireActivity().recreate()
                 }
+                BACK_ANIM -> {
+                    val pref = preferenceScreen.findPreference<SwitchPreferenceCompat>(key)
+                    val enabled = pref?.isChecked == true
+                    val backActivity = MainActivity.Back::class.java.name
+                    val mainActivity = MainActivity::class.java.name
+                    requireActivity().changeEnabledComponent(
+                        if (enabled) backActivity else mainActivity,
+                        if (enabled) mainActivity else backActivity
+                    )
+                }
             }
         }
 
@@ -207,6 +231,23 @@ class SettingsLookFragment : BaseSettingsFragment() {
             super.onPause()
             preferenceManager.sharedPreferences!!
                 .unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    companion object {
+        const val BACK_ANIM = "back_anim"
+
+        fun Activity.changeEnabledComponent(enabled: String, disabled: String) {
+            packageManager.setComponentEnabledSetting(
+                ComponentName(this, enabled),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP
+            )
+            packageManager.setComponentEnabledSetting(
+                ComponentName(this, disabled),
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            )
         }
     }
 }

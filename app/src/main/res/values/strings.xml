@@ -189,6 +189,9 @@
 
     <string name="animation">Animation</string>
 
+    <string name="back_animations">Back Animations</string>
+    <string name="back_animations_summary">Can cause visual bug due to android, but you can just open recents to fix it.</string>
+
     <string name="animations">Animations</string>
     <string name="animations_summary">Feeling too much stutter? turning this off, might help</string>
 
