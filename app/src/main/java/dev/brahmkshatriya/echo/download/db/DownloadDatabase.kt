@@ -19,7 +19,7 @@ abstract class DownloadDatabase : RoomDatabase() {
     abstract fun downloadDao(): DownloadDao
 
     companion object {
-        private const val DATABASE_NAME = "download_db"
+        private const val DATABASE_NAME = "download-db"
         fun create(app: Application) = Room.databaseBuilder(
                 app, DownloadDatabase::class.java, DATABASE_NAME
             ).fallbackToDestructiveMigration(true).build()

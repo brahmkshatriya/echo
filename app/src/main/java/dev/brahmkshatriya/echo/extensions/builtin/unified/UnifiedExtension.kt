@@ -338,7 +338,7 @@ class UnifiedExtension(
     }
 
     val db = Room.databaseBuilder(
-        context, UnifiedDatabase::class.java, "unified-database"
+        context, UnifiedDatabase::class.java, "unified-db"
     ).fallbackToDestructiveMigration(true).build()
 
     private fun getCachedTracks() = cache?.keys?.mapNotNull { key ->
