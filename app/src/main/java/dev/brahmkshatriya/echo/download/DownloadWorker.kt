@@ -14,7 +14,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
-import dev.brahmkshatriya.echo.MainActivity
+import dev.brahmkshatriya.echo.MainActivity.Companion.getMainActivity
 import dev.brahmkshatriya.echo.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
@@ -28,6 +28,7 @@ class DownloadWorker(
 
     private val manager = downloader.taskManager
     override suspend fun doWork(): Result {
+        setForeground(createNotification(0))
         val job = manager.scope.launch {
             manager.taskFlow.collectLatest {
                 if (it.isEmpty()) removeNotification()
@@ -80,7 +81,7 @@ class DownloadWorker(
         fun getMainIntent(context: Context) = PendingIntent.getActivity(
             context,
             0,
-            Intent(context, MainActivity::class.java).apply {
+            Intent(context, context.getMainActivity()).apply {
                 putExtra("fromDownload", true)
             },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,

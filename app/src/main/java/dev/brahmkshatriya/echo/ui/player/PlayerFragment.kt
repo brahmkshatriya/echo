@@ -606,7 +606,7 @@ class PlayerFragment : Fragment() {
     private fun onMoreClicked(item: MediaItem) {
         MediaMoreBottomSheet.newInstance(
             R.id.navHostFragment, item.extensionId, item.track, item.isLoaded, true
-        ).show(parentFragmentManager, null)
+        ).show(requireActivity().supportFragmentManager, null)
     }
 
     private fun Player?.hasVideo() =

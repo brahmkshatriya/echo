@@ -109,5 +109,9 @@ open class MainActivity : AppCompatActivity() {
             (customColor ?: color)?.let { builder.setContentBasedSource(it) }
             return builder.build()
         }
+
+        const val BACK_ANIM = "back_anim"
+        fun Context.getMainActivity() = if (getSettings().getBoolean(BACK_ANIM, false))
+            Back::class.java else MainActivity::class.java
     }
 }

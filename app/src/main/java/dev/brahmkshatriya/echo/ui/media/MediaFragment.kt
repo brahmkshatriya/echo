@@ -69,7 +69,7 @@ class MediaFragment : Fragment(R.layout.fragment_media), MediaDetailsFragment.Pa
             val item = viewModel.itemResultFlow.value?.getOrNull()?.item ?: item
             MediaMoreBottomSheet.newInstance(
                 id, extensionId, item, !viewModel.isRefreshing
-            ).show(childFragmentManager, null)
+            ).show(parentFragmentManager, null)
             true
         }
         applyInsets {

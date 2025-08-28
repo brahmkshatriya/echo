@@ -41,7 +41,7 @@ import java.lang.ref.WeakReference
 class FeedAdapter(
     private val viewModel: FeedData,
     private val listener: FeedClickListener,
-    private val takeFullScreen: Boolean = false
+    private val takeFullScreen: Boolean = false,
 ) : ScrollAnimPagingAdapter<FeedType, FeedViewHolder<*>>(DiffCallback), GridAdapter {
 
     object DiffCallback : DiffUtil.ItemCallback<FeedType>() {
@@ -95,7 +95,7 @@ class FeedAdapter(
 
     override fun onBindViewHolder(holder: FeedViewHolder<*>, position: Int) {
         super.onBindViewHolder(holder, position)
-        val feed = getItem(position)!!
+        val feed = runCatching { getItem(position) }.getOrNull() ?: return
         when (holder) {
             is HeaderViewHolder -> holder.bind(feed as FeedType.Header)
             is CategoryViewHolder -> holder.bind(feed as FeedType.Category)
@@ -130,7 +130,7 @@ class FeedAdapter(
         parent: ViewGroup,
         val binding: ItemLoadingBinding = ItemLoadingBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : FeedLoadingAdapter.ViewHolder(binding.root) {
         init {
             binding.textView.isVisible = false
@@ -195,8 +195,8 @@ class FeedAdapter(
     }
 
     private fun saveScrollState(
-        holder: HorizontalListViewHolder, block: ((HorizontalListViewHolder) -> Unit)? = null
-    ) {
+        holder: HorizontalListViewHolder, block: ((HorizontalListViewHolder) -> Unit)? = null,
+    ) = runCatching {
         val layoutManagerStates = viewModel.layoutManagerStates
         layoutManagerStates[holder.bindingAdapterPosition] =
             holder.layoutManager.onSaveInstanceState()
@@ -226,7 +226,7 @@ class FeedAdapter(
         fun Fragment.getFeedAdapter(
             viewModel: FeedData,
             listener: FeedClickListener,
-            takeFullScreen: Boolean = false
+            takeFullScreen: Boolean = false,
         ): FeedAdapter {
             val playerViewModel by activityViewModel<PlayerViewModel>()
             val adapter = FeedAdapter(viewModel, listener, takeFullScreen)
@@ -241,7 +241,7 @@ class FeedAdapter(
         fun getTouchHelper(listener: FeedClickListener) = ItemTouchHelper(
             object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START) {
                 override fun getMovementFlags(
-                    recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
+                    recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
                 ): Int {
                     if (viewHolder !is MediaViewHolder) return 0
                     if (viewHolder.feed?.item !is Track) return 0
@@ -259,7 +259,7 @@ class FeedAdapter(
                 override fun onMove(
                     recyclerView: RecyclerView,
                     viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
+                    target: RecyclerView.ViewHolder,
                 ) = false
             }
         )

@@ -75,7 +75,7 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
 
         fun Activity.openLink(url: String) {
             val intent = Intent(Intent.ACTION_VIEW).apply { data = url.toUri() }
-            startActivity(intent)
+            runCatching { startActivity(intent) }
         }
     }
 

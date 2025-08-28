@@ -5,7 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.net.toFile
-import dev.brahmkshatriya.echo.MainActivity
+import dev.brahmkshatriya.echo.MainActivity.Companion.getMainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.getTempFile
 import dev.brahmkshatriya.echo.utils.ContextUtils.getTempApkFile
@@ -29,7 +29,7 @@ class ExtensionOpenerActivity : Activity() {
         ).show()
 
         finish()
-        val startIntent = Intent(this, MainActivity::class.java)
+        val startIntent = Intent(this, getMainActivity())
         startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startIntent.data = file?.let { Uri.fromFile(it) }
         startActivity(startIntent)

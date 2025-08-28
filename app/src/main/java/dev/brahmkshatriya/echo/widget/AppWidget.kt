@@ -184,9 +184,10 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 ?.joinToString(", ") { it.name }
             views.setTextViewText(R.id.trackTitle, title ?: context.getString(R.string.so_empty))
             views.setTextViewText(
-                R.id.trackArtist, artist ?: context.getString(R.string.unknown).takeIf { title != null }
+                R.id.trackArtist,
+                artist ?: context.getString(R.string.unknown).takeIf { title != null }
             )
-            val image = image
+            val image = image?.run { copy(config ?: Bitmap.Config.ARGB_8888, false) }
             if (image == null) views.setImageViewResource(R.id.trackCover, R.drawable.art_music)
             else views.setImageViewBitmap(R.id.trackCover, image)
 
@@ -206,10 +207,6 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 R.id.playPauseButton,
                 if (isPlaying) R.drawable.ic_pause_48dp else R.drawable.ic_play_48dp
             )
-
-//            views.setViewVisibility(
-//                R.id.playProgress, if (controller?.isLoading == true) VISIBLE else GONE
-//            )
 
             views.setOnClickPendingIntent(
                 R.id.nextButton, context.createIntent(ACTION_NEXT)

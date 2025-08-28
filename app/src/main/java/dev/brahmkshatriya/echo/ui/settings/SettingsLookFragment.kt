@@ -13,6 +13,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.MainActivity.Companion.AMOLED_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.BACK_ANIM
 import dev.brahmkshatriya.echo.MainActivity.Companion.BIG_COVER
 import dev.brahmkshatriya.echo.MainActivity.Companion.COLOR_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.CUSTOM_THEME_KEY
@@ -235,7 +236,6 @@ class SettingsLookFragment : BaseSettingsFragment() {
     }
 
     companion object {
-        const val BACK_ANIM = "back_anim"
 
         fun Activity.changeEnabledComponent(enabled: String, disabled: String) {
             packageManager.setComponentEnabledSetting(

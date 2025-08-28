@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.playback
 
+import android.app.Activity
 import android.app.Application
 import android.app.PendingIntent
 import android.content.ComponentName
@@ -23,7 +24,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
-import dev.brahmkshatriya.echo.MainActivity
+import dev.brahmkshatriya.echo.MainActivity.Companion.getMainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -211,7 +212,7 @@ class PlayerService : MediaLibraryService() {
             app: App,
             extensionId: String,
             streamables: List<Streamable>,
-            downloaded: List<String>
+            downloaded: List<String>,
         ) = if (downloaded.isNotEmpty()) streamables.size
         else if (streamables.isNotEmpty()) {
             val streamable = streamables.select(app, extensionId) { it.quality }
@@ -222,7 +223,7 @@ class PlayerService : MediaLibraryService() {
             app: App,
             settings: SharedPreferences,
             quality: (E) -> Int,
-            default: String = streamQualities[1]
+            default: String = streamQualities[1],
         ): E? {
             val unmetered = if (app.isUnmetered) selectQuality(
                 settings.getString(UNMETERED_STREAM_QUALITY, "off"),
@@ -245,7 +246,7 @@ class PlayerService : MediaLibraryService() {
 
 
         fun <T> List<T>.select(
-            app: App, extensionId: String, quality: (T) -> Int
+            app: App, extensionId: String, quality: (T) -> Int,
         ): T {
             val extSettings =
                 extensionPrefId(ExtensionType.MUSIC.name, extensionId).prefs(app.context)
@@ -256,7 +257,7 @@ class PlayerService : MediaLibraryService() {
 
         fun getController(
             context: Application,
-            block: (MediaController) -> Unit
+            block: (MediaController) -> Unit,
         ): () -> Unit {
             val sessionToken =
                 SessionToken(context, ComponentName(context, PlayerService::class.java))
@@ -273,10 +274,19 @@ class PlayerService : MediaLibraryService() {
         fun getPendingIntent(context: Context): PendingIntent = PendingIntent.getActivity(
             context,
             0,
-            Intent(context, MainActivity::class.java).apply {
-                putExtra("fromNotification", true)
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            Intent(context, MainActivityOpener::class.java),
+            PendingIntent.FLAG_IMMUTABLE,
         )
+    }
+
+    class MainActivityOpener : Activity() {
+        override fun onStart() {
+            super.onStart()
+            finish()
+            startActivity(Intent(this, getMainActivity()).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra("fromNotification", true)
+            })
+        }
     }
 }

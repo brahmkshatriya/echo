@@ -54,6 +54,7 @@
         <activity
             android:name=".MainActivity"
             android:enableOnBackInvokedCallback="false"
+            android:enabled="false"
             android:exported="true"
             android:launchMode="singleTop"
             android:windowSoftInputMode="stateVisible|adjustPan">
@@ -80,7 +81,7 @@
         <activity
             android:name=".MainActivity$Back"
             android:enableOnBackInvokedCallback="true"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true"
             android:launchMode="singleTop"
             android:windowSoftInputMode="stateVisible|adjustPan">
@@ -152,6 +153,8 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+
+        <activity android:name=".playback.PlayerService$MainActivityOpener" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

@@ -41,9 +41,9 @@ class FeedFragment : Fragment(R.layout.fragment_generic_collapsable) {
 
     class VM : ViewModel() {
         var initialized = false
-        lateinit var extensionId: String
-        lateinit var feedId: String
-        lateinit var feed: Feed<Shelf>
+        var extensionId: String? = null
+        var feedId: String? = null
+        var feed: Feed<Shelf>? = null
     }
 
     private val activityVm by activityViewModels<VM>()
@@ -58,14 +58,15 @@ class FeedFragment : Fragment(R.layout.fragment_generic_collapsable) {
             vm.feed = activityVm.feed
         }
         feedViewModel.getFeedData(
-            vm.feedId,
+            vm.feedId ?: "",
             cached = {
-                val feed = Cached.getFeedShelf(app, vm.extensionId, vm.feedId)
-                FeedData.State(vm.extensionId, null, feed.getOrThrow())
+                val extId = vm.extensionId!!
+                val feed = Cached.getFeedShelf(app, extId, vm.feedId!!)
+                FeedData.State(extId, null, feed.getOrThrow())
             }
         ) {
             val extension = music.getExtensionOrThrow(vm.extensionId)
-            val feed = savingFeed(app, extension, vm.feedId, vm.feed)
+            val feed = savingFeed(app, extension, vm.feedId!!, vm.feed!!)
             FeedData.State(extension.id, null, feed)
         }
     }
