@@ -58,7 +58,6 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
 
     override val title get() = name
     override val icon get() = extIcon
-    override val circleIcon = true
     override val creator = { ExtensionPreference().apply { arguments = args } }
 
     companion object {

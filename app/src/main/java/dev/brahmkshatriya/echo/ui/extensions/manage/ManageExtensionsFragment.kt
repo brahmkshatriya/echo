@@ -41,7 +41,7 @@ class ManageExtensionsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsetsWithChild(binding.appBarLayout, binding.recyclerView) {
+        applyInsetsWithChild(binding.appBarLayout, binding.recyclerView, 24) {
             binding.fabContainer.applyInsets(it)
         }
         applyBackPressCallback()

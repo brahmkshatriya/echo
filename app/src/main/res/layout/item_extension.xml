@@ -5,15 +5,17 @@
     style="@style/Selectable"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:background="?echoBackground"
-    android:orientation="horizontal">
+    android:layout_marginHorizontal="24dp"
+    android:layout_marginVertical="4dp"
+    android:background="@drawable/shape_rounded_item_corner"
+    android:backgroundTint="@color/amoled_fg_semi"
+    android:orientation="horizontal"
+    android:paddingHorizontal="8dp">
 
     <FrameLayout
         android:id="@+id/itemContainer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="8dp">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/itemExtension"
@@ -59,20 +61,14 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/extensionSettings"
-            style="@style/IconButtonTonal"
-            android:contentDescription="@string/settings"
-            android:layout_marginHorizontal="4dp"
-            app:icon="@drawable/ic_settings_outline" />
+            android:id="@+id/extensionUse"
+            style="@style/IconButton"
+            android:contentDescription="@string/extension"
+            app:icon="@drawable/ic_chevron_forward" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/extensionDrag"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            app:icon="@drawable/ic_drag_20dp"
-            app:iconSize="24dp"
-            app:iconTint="?colorOnSurface" />
+            style="@style/IconButtonTransparent"
+            app:icon="@drawable/ic_drag_20dp" />
     </LinearLayout>
 </LinearLayout>

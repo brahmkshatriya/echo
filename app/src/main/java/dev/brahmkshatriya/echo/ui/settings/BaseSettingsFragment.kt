@@ -24,7 +24,6 @@ abstract class BaseSettingsFragment : Fragment() {
     abstract val title: String
     abstract val icon: ImageHolder?
     abstract val creator: () -> Fragment
-    open val circleIcon: Boolean = false
 
     var binding: FragmentGenericCollapsableBinding by autoCleared()
 
@@ -50,11 +49,7 @@ abstract class BaseSettingsFragment : Fragment() {
         }
 
         binding.toolBar.title = title
-        val icon = icon
-        if (icon is ImageHolder.ResourceIdImageHolder && !circleIcon) {
-            binding.extensionIcon.setImageResource(icon.resId)
-        } else icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_32dp) {
-            binding.extensionIcon.imageTintList = null
+        icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_32dp) {
             binding.extensionIcon.setImageDrawable(it)
         }
 

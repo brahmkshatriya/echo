@@ -50,8 +50,7 @@ ExtensionAdapter(
             val metadata = extension.metadata
             binding.root.transitionName = metadata.id
             binding.root.setOnClickListener {
-                if (extension.type == ExtensionType.MUSIC) listener.onOpenClick(extension)
-                else listener.onClick(extension, binding.root)
+                listener.onClick(extension, binding.root)
             }
             binding.extensionName.apply {
                 text = if (metadata.isEnabled) metadata.name
@@ -70,9 +69,9 @@ ExtensionAdapter(
                 true
             }
 
-            binding.extensionSettings.isVisible = extension.type == ExtensionType.MUSIC
-            binding.extensionSettings.setOnClickListener {
-                listener.onClick(extension, it)
+            binding.extensionUse.isVisible = extension.type == ExtensionType.MUSIC
+            binding.extensionUse.setOnClickListener {
+                listener.onOpenClick(extension)
             }
         }
     }

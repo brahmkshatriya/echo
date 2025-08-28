@@ -23,7 +23,7 @@ import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
 import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class DownloadsAdapter(
-    private val listener: Listener
+    private val listener: Listener,
 ) : ScrollAnimListAdapter<DownloadsAdapter.Item, DownloadsAdapter.ViewHolder>(
     object : DiffUtil.ItemCallback<Item>() {
         override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
@@ -52,7 +52,7 @@ class DownloadsAdapter(
         private val listener: Listener,
         private val binding: ItemDownloadBinding = ItemDownloadBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ViewHolder(binding.root) {
         init {
             binding.imageView.clipToOutline = true
@@ -95,7 +95,7 @@ class DownloadsAdapter(
         parent: ViewGroup,
         private val binding: ItemDownloadTaskBinding = ItemDownloadTaskBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ViewHolder(binding.root) {
         fun bind(item: Task) = binding.apply {
             progressBar.isIndeterminate = item.progress.size == 0L
@@ -113,7 +113,7 @@ class DownloadsAdapter(
     data class Download(
         val context: ContextEntity?,
         val downloadEntity: DownloadEntity,
-        val extension: Extension<*>?
+        val extension: Extension<*>?,
     ) : Item
 
     data class Task(val taskType: TaskType, val progress: Progress, val id: Long) : Item

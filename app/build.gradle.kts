@@ -10,7 +10,7 @@ plugins {
 
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
-val version = "2.1.$gitCount"
+val version = "3.0.$gitCount"
 
 android {
     namespace = "dev.brahmkshatriya.echo"

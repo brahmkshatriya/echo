@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "8.12.1"
 kotlin = "2.2.10"
 
 androidx-paging = "3.3.6"
@@ -27,7 +27,7 @@ fragment = { module = "androidx.fragment:fragment-ktx", version = "1.8.9" }
 
 splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 palette = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
-material = { group = "com.google.android.material", name = "material", version = "1.14.0-alpha03" }
+material = { group = "com.google.android.material", name = "material", version = "1.14.0-alpha04" }
 
 preference = { module = "androidx.preference:preference-ktx", version = "1.2.1" }
 

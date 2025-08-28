@@ -38,6 +38,7 @@ import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -119,8 +120,12 @@ class LoginFragment : Fragment() {
         binding.toolBar.title = getString(R.string.x_login, extName)
 
         observe(loginViewModel.extension) { ext ->
-            ext?.metadata?.icon.loadAsCircle(view, R.drawable.ic_extension_32dp) {
+            ext?.metadata?.icon.loadAsCircle(binding.extensionIcon, R.drawable.ic_extension_32dp) {
                 binding.extensionIcon.setImageDrawable(it)
+                lifecycleScope.launch {
+                    delay(2000)
+                    binding.appBarLayout.setExpanded(false)
+                }
             }
         }
 

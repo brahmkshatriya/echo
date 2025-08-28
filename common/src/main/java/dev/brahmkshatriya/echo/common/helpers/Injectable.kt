@@ -35,7 +35,6 @@ class Injectable<T>(
 
     @Suppress("UNCHECKED_CAST")
     fun <R> casted() = run {
-        if (data.isInitialized()) throw IllegalStateException("Cannot cast an already initialized Injectable")
         injections = injections + listOf { this as R }
         this as Injectable<R>
     }
