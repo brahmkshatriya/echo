@@ -10,6 +10,7 @@
 -keep class kotlinx.serialization.json.JsonTransformingSerializer { *; }
 -keep class kotlin.jvm.internal.MutablePropertyReference1Impl { *; }
 -keep class com.google.protobuf.GeneratedMessageV3 { *; }
+-keep class com.google.protobuf.GeneratedMessageV3$Builder { *; }
 
 -dontwarn com.oracle.svm.core.annotate.Delete
 -dontwarn com.oracle.svm.core.annotate.Substitute
