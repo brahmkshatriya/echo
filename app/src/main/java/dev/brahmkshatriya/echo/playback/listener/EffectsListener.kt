@@ -14,7 +14,7 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import dev.brahmkshatriya.echo.utils.SettingsUtils.copyTo
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.copyTo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -35,11 +35,12 @@ class EffectsListener(
     private var oldSettings = settings
     private fun applyCustomEffects() {
         oldSettings.unregisterOnSharedPreferenceChangeListener(listener)
-        val settings = context.getFxPrefs(exoPlayer.currentMediaItem?.mediaId)
-        oldSettings = settings
-        oldSettings.registerOnSharedPreferenceChangeListener(listener)
-        applyPlayback(settings)
-        effects.applySettings(settings)
+        val current = context.getFxPrefs(settings, exoPlayer.currentMediaItem?.mediaId?.hashCode())
+            ?: settings
+        oldSettings = current
+        current.registerOnSharedPreferenceChangeListener(listener)
+        applyPlayback(current)
+        effects.applySettings(current)
     }
 
     private fun createEffects() = Effects(exoPlayer.audioSessionId)
@@ -115,19 +116,20 @@ class EffectsListener(
 
         fun Context.globalFx() = getSharedPreferences(GLOBAL_FX, Context.MODE_PRIVATE)!!
         fun Context.deleteGlobalFx() = deleteSharedPreferences(GLOBAL_FX)
-        fun Context.getFxPrefs(id: String? = null): SharedPreferences {
-            val settings = globalFx()
-            if (id == null) return settings
-            val hasCustom = settings.getStringSet(CUSTOM_EFFECTS, emptySet())?.contains(id) ?: false
-            return if (!hasCustom) settings
-            else getSharedPreferences("fx_$id", Context.MODE_PRIVATE)!!.apply {
+        fun Context.getFxPrefs(settings: SharedPreferences, id: Int? = null): SharedPreferences? {
+            if (id == null) return null
+            val string = id.toString()
+            val hasCustom = settings.getStringSet(CUSTOM_EFFECTS, emptySet())?.contains(string)
+                ?: false
+            return if (!hasCustom) null
+            else getSharedPreferences("fx_$string", Context.MODE_PRIVATE)!!.apply {
                 if (getBoolean("init", false)) return@apply
                 settings.copyTo(this)
                 edit { putBoolean("init", true) }
             }
         }
 
-        fun Context.deleteFxPrefs(id: String) =
+        fun Context.deleteFxPrefs(id: Int) =
             deleteSharedPreferences("fx_$id")
     }
 

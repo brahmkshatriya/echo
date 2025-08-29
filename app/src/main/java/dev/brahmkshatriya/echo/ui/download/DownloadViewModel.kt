@@ -5,70 +5,63 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
-import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
-import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
-import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.withExtensionId
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.common.PagingUtils
-import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddBottomSheet
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class DownloadViewModel(
     app: App,
     extensionLoader: ExtensionLoader,
-    private val downloader: Downloader,
+    val downloader: Downloader,
 ) : ViewModel() {
 
-    val downloaded = MutableStateFlow(PagingUtils.Data<Shelf>(null, null, null, null))
-    private val context = app.context
+    private val app = app.context
     private val messageFlow = app.messageFlow
     private val throwableFlow = app.throwFlow
-    private val downloadList = extensionLoader.extensions.misc
 
-    val extensions = extensionLoader.extensions
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val downloadExtension = extensionLoader.misc.mapLatest { list ->
+        list.find { it.isEnabled && it.isClient<DownloadClient>() }
+    }.stateIn(viewModelScope, Eagerly, null)
 
-    @OptIn(FlowPreview::class)
-    val flow = downloader.flow.debounce(1000)
+    val extensions = extensionLoader
+
+    val flow = downloader.flow
 
     fun addToDownload(
-        activity: FragmentActivity, clientId: String, item: EchoMediaItem
+        activity: FragmentActivity, extensionId: String, item: EchoMediaItem, context: EchoMediaItem?
     ) = viewModelScope.launch(Dispatchers.IO) {
         with(activity) {
             messageFlow.emit(Message(getString(R.string.downloading_x, item.title)))
-            val downloadExt = downloadList.value?.firstOrNull {
-                it.metadata.isEnabled && it.isClient<DownloadClient>()
-            } ?: return@with messageFlow.emit(
+            val downloadExt = downloadExtension.value ?: return@with messageFlow.emit(
                 Message(
-                    context.getString(R.string.no_download_extension),
+                    app.getString(R.string.no_download_extension),
                     Message.Action(getString(R.string.add_extension)) {
-                        ExtensionsAddListBottomSheet.LinkFile()
-                            .show(supportFragmentManager, null)
+                        ExtensionsAddBottomSheet().show(supportFragmentManager, null)
                     }
                 )
             )
 
-            val downloads = downloadExt.get<DownloadClient, List<DownloadContext>>(throwableFlow) {
-                getDownloadTracks(clientId, item)
+            val downloads = downloadExt.getIf<DownloadClient, List<DownloadContext>>(throwableFlow) {
+                getDownloadTracks(extensionId, item, context)
             } ?: return@with
 
             if (downloads.isEmpty()) return@with messageFlow.emit(
-                Message(context.getString(R.string.nothing_to_download_in_x, item.title))
+                Message(app.getString(R.string.nothing_to_download_in_x, item.title))
             )
 
             downloader.add(downloads)
@@ -96,39 +89,14 @@ class DownloadViewModel(
     }
 
     fun deleteDownload(item: EchoMediaItem) {
-        when(item) {
-            is EchoMediaItem.TrackItem -> downloader.deleteDownload(item.id)
+        when (item) {
+            is Track -> downloader.deleteDownload(item.id)
             else -> downloader.deleteContext(item.id)
         }
         viewModelScope.launch {
             messageFlow.emit(
-                Message(context.getString(R.string.removed_x_from_downloads, item.title))
+                Message(app.getString(R.string.removed_x_from_downloads, item.title))
             )
-        }
-    }
-
-    init {
-        viewModelScope.launch {
-            flow.collectLatest { infos ->
-                val downloads = infos.filter { it.download.finalFile != null }.groupBy {
-                    it.context?.id
-                }.flatMap { (id, infos) ->
-                    if (id == null) infos.map {
-                        it.download.track.toMediaItem().toShelf()
-                            .withExtensionId(it.download.extensionId)
-                    }
-                    else listOf(infos.first().run {
-                        context!!.mediaItem.toShelf().withExtensionId(download.extensionId)
-                    })
-                }
-                val extension = extensions.music.getExtensionOrThrow(UnifiedExtension.metadata.id)
-                downloaded.value = PagingUtils.Data(
-                    extension,
-                    "downloaded",
-                    PagedData.Single { downloads },
-                    PagingUtils.from(downloads)
-                )
-            }
         }
     }
 }

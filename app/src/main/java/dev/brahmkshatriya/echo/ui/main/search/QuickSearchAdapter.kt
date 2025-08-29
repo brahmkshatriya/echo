@@ -1,34 +1,37 @@
-package dev.brahmkshatriya.echo.ui.search
+package dev.brahmkshatriya.echo.ui.main.search
 
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
 
-class QuickSearchAdapter(val listener: Listener) :
-    ListAdapter<QuickSearchItem, QuickSearchViewHolder>(diff) {
+class QuickSearchAdapter(
+    val listener: Listener,
+) : ScrollAnimListAdapter<QuickSearchAdapter.Item, QuickSearchViewHolder>(DiffCallback) {
+    data class Item(
+        val extensionId: String,
+        val actual: QuickSearchItem,
+    )
+
+    object DiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+            if (oldItem.extensionId != newItem.extensionId) return false
+            return oldItem.actual.sameAs(newItem.actual)
+        }
+
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
+    }
 
     interface Listener {
-        fun onClick(item: QuickSearchItem, transitionView: View)
-        fun onLongClick(item: QuickSearchItem, transitionView: View): Boolean
-        fun onInsert(item: QuickSearchItem)
-        fun onDeleteClick(item: QuickSearchItem)
+        fun onClick(item: Item, transitionView: View)
+        fun onLongClick(item: Item, transitionView: View): Boolean
+        fun onInsert(item: Item)
+        fun onDeleteClick(item: Item)
     }
 
-    companion object {
-        val diff = object : DiffUtil.ItemCallback<QuickSearchItem>() {
-            override fun areItemsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
-                oldItem.sameAs(newItem)
-
-            override fun areContentsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
-                oldItem == newItem
-
-        }
-    }
-
-    override fun getItemViewType(position: Int) = when (getItem(position)) {
+    override fun getItemViewType(position: Int) = when (getItem(position).actual) {
         is QuickSearchItem.Query -> 0
         is QuickSearchItem.Media -> 1
     }
@@ -52,7 +55,7 @@ class QuickSearchAdapter(val listener: Listener) :
             listener.onInsert(item)
         }
 
-        holder.deleteView.isVisible = item.searched
+        holder.deleteView.isVisible = item.actual.searched
         holder.deleteView.setOnClickListener {
             listener.onDeleteClick(item)
         }

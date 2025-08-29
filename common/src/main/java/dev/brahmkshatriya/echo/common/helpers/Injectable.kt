@@ -4,31 +4,38 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class Injectable<T>(
-    private val getter: () -> T
+    private val getter: () -> T,
+    private var injections: List<suspend T.() -> Unit>
 ) {
 
-    private val _data = lazy { runCatching { getter() } }
-
+    val data = lazy { runCatching { getter() } }
     private val mutex = Mutex()
-    private val injections = mutableListOf<suspend T.() -> Unit>()
     val value: T?
-        get() = _data.value.getOrNull()
+        get() = data.value.getOrNull()
+
 
     suspend fun value() = runCatching {
         mutex.withLock {
-            val t = _data.value.getOrThrow()
+            val t = data.value.getOrThrow()
             injections.forEach { it(t) }
-            injections.clear()
+            injections = emptyList()
+            injectionsMap.values.forEach { it(t) }
+            injectionsMap.clear()
             t
         }
     }
 
-    fun injectIfNotInitialized(block: suspend T.() -> Unit) {
-        if (!_data.isInitialized()) injections.add(block)
+    private val injectionsMap = mutableMapOf<String, suspend T.() -> Unit>()
+    suspend fun injectOrRun(id: String, block: suspend T.() -> Unit) {
+        if (data.isInitialized()) data.value.getOrThrow().block()
+        else mutex.withLock {
+            injectionsMap[id] = block
+        }
     }
 
-    suspend fun injectOrRun(block: suspend T.() -> Unit) {
-        if (_data.isInitialized()) _data.value.getOrThrow().block()
-        else mutex.withLock { injections.add(block) }
+    @Suppress("UNCHECKED_CAST")
+    fun <R> casted() = run {
+        injections = injections + listOf { this as R }
+        this as Injectable<R>
     }
 }

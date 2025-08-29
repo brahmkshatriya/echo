@@ -9,27 +9,28 @@
     <View
         android:id="@+id/listBg2"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/collapsed_cover_size"
+        android:layout_height="24dp"
         android:layout_marginHorizontal="6dp"
         android:layout_marginTop="-4dp"
-        android:alpha="0.35"
+        android:alpha="0.15"
         android:background="@drawable/rounded_rectangle_cover"
-        tools:backgroundTint="#8B9DFE" />
+        android:backgroundTint="@color/amoled_fg" />
 
     <View
         android:id="@+id/listBg1"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/collapsed_cover_size"
+        android:layout_height="24dp"
         android:layout_marginHorizontal="2.5dp"
         android:layout_marginTop="-2.5dp"
-        android:alpha="0.35"
+        android:alpha="0.25"
         android:background="@drawable/rounded_rectangle_cover"
-        tools:backgroundTint="#8B9DFE" />
+        android:backgroundTint="@color/amoled_fg" />
 
     <ImageView
         android:id="@+id/cover"
         android:layout_width="@dimen/collapsed_cover_size"
-        android:layout_height="@dimen/collapsed_cover_size"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
         android:background="@drawable/rounded_rectangle_cover"
         android:importantForAccessibility="no"
         tools:clipToOutline="true"
@@ -50,17 +51,9 @@
         android:src="@drawable/ic_queue_music"
         app:tint="?attr/colorOnSurface" />
 
-    <ImageView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/isPlaying"
-        android:layout_width="@dimen/collapsed_cover_size"
-        android:layout_height="@dimen/collapsed_cover_size"
-        android:alpha="0.66"
-        android:background="@drawable/shape_rounded_item_corner"
-        android:backgroundTint="@color/amoled_bg"
-        android:importantForAccessibility="no"
-        android:scaleType="center"
         android:visibility="gone"
-        app:srcCompat="@drawable/anim_now_playing"
-        app:tint="@color/amoled_fg" />
+        style="@style/SmallNowPlayingButton" />
 
 </FrameLayout>

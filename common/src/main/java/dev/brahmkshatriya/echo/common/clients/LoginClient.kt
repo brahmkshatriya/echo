@@ -1,11 +1,6 @@
 package dev.brahmkshatriya.echo.common.clients
 
-import dev.brahmkshatriya.echo.common.clients.LoginClient.CustomTextInput
-import dev.brahmkshatriya.echo.common.clients.LoginClient.UsernamePassword
-import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView
-import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView.Cookie
-import dev.brahmkshatriya.echo.common.clients.LoginClient.WebView.Evaluate
-import dev.brahmkshatriya.echo.common.models.Request
+import dev.brahmkshatriya.echo.common.helpers.WebViewRequest
 import dev.brahmkshatriya.echo.common.models.User
 
 /**
@@ -14,100 +9,46 @@ import dev.brahmkshatriya.echo.common.models.User
  * Do not implement this interface directly, use the sub-interfaces.
  * The extension can implement all of the sub-interfaces.
  *
- * @see [UsernamePassword]
  * @see [WebView]
- * @see [CustomTextInput]
+ * @see [CustomInput]
  */
 sealed interface LoginClient {
 
-    /**
-     * To be implemented when the login screen has username and password fields.
-     *
-     * @see [CustomTextInput]
-     */
-    interface UsernamePassword : LoginClient {
-
-        /**
-         * Called when the user submits the login form.
-         *
-         * @param username The username entered by the user
-         * @param password The password entered by the user
-         *
-         * @return A list of users that are logged in
-         */
-        suspend fun onLogin(username: String, password: String): List<User>
-    }
 
     /**
      * Interface when the login requires a webview.
      *
-     * The extension should provide the [loginWebViewInitialUrl] and [loginWebViewStopUrlRegex].
+     * The extension should provide the [webViewRequest]
      *
-     * Do not implement this interface directly, you can implement either of the sub-interfaces.
-     * - [Cookie] - if the login requires cookies
-     * - [Evaluate] - if the login requires evaluating javascript
-     *
-     * Do not implement both the sub-interfaces,
-     * [Cookie] will take priority if both are implemented.
+     * @see [WebViewRequest]
      */
-    sealed interface WebView : LoginClient {
+    interface WebView : LoginClient {
 
         /**
-         * The initial URL to be loaded in the webview.
-         */
-        val loginWebViewInitialUrl: Request
-
-        /**
-         * The regex to match the URL when the login process is assumed to be complete.
-         */
-        val loginWebViewStopUrlRegex: Regex
-
-        /**
-         * The regex to match the URL to intercept requests made by the webview for cookies.
-         */
-        val loginWebViewCookieUrlRegex: Regex?
-            get() = null
-
-        /**
-         * Called when the webview stops loading a URL with the [loginWebViewStopUrlRegex].
+         * The request to be made to the webview, should return a list of users.
          *
-         * @param url The URL that the webview stopped at
-         * @param data The data from the webview
+         * The [WebViewRequest.maxTimeout] is ignored for login.
          *
-         * @return A list of users that are logged in
+         * @see WebViewRequest
+         * @see LoginClient.WebView
          */
-        suspend fun onLoginWebviewStop(url: String, data: Map<String, String>): List<User>
-
-        /**
-         * To be implemented when the login requires cookies in [onLoginWebviewStop].
-         */
-        interface Cookie : WebView
-
-        /**
-         * To be implemented when the login requires data after the evaluating javascript in [onLoginWebviewStop].
-         */
-        interface Evaluate : WebView {
-
-            /**
-             * The javascript to be evaluated in the webview.
-             * Make sure this a function that can return some data that can be
-             * used in the [onLoginWebviewStop] method.
-             */
-            val javascriptToEvaluate: String
-        }
+        val webViewRequest: WebViewRequest<List<User>>
     }
 
     /**
      * To be implemented when the login screen has custom text input fields.
      *
-     * The extension needs to provide the [loginInputFields].
+     * The extension needs to provide the [forms].
      */
-    interface CustomTextInput : LoginClient {
+    interface CustomInput : LoginClient {
 
         /**
-         * List of input fields to be displayed on the login screen.
+         * List of forms to be displayed on the login screen.
+         *
+         * @see Form
+         * @see LoginClient.CustomInput
          */
-        val loginInputFields: List<InputField>
+        val forms: List<Form>
 
         /**
          * Called when the user submits the login form.
@@ -115,30 +56,56 @@ sealed interface LoginClient {
          * @param data A map of the input fields with the key as the `key` from the `InputField` and the value as the user input
          *
          * @return A list of users that are logged in
+         *
+         * @see LoginClient.CustomInput
          */
-        suspend fun onLogin(data: Map<String, String?>): List<User>
+        suspend fun onLogin(key: String, data: Map<String, String?>): List<User>
     }
+
+    /**
+     * Represents a form for the login screen.
+     *
+     * @param key The key to be used to identify the `data` in the `onLogin` method
+     * @param label The label to be displayed for the form
+     * @param icon The icon to be displayed for the form
+     * @param inputFields The list of input fields to be displayed in the form
+     *
+     * @see InputField
+     * @see LoginClient.CustomInput
+     */
+    data class Form(
+        val key: String,
+        val label: String,
+        val icon: InputField.Type,
+        val inputFields: List<InputField>,
+    )
 
     /**
      * Represents an input field for the login screen.
      *
+     * @param type The type of the input field
      * @param key The key to be used in the `data` map in the `onLogin` method
      * @param label The label to be displayed for the input field
      * @param isRequired If the field is required
-     * @param isPassword If the field is a password field
+     * @param regex The regex to be used for validation of the input field
      */
     data class InputField(
+        val type: Type,
         val key: String,
         val label: String,
         val isRequired: Boolean,
-        val isPassword: Boolean = false
-    )
+        val regex: Regex? = null
+    ) {
+        enum class Type {
+            Email, Username, Password, Number, Url, Misc
+        }
+    }
 
     /**
-     * Called when the extension starts or when user selects a user.
+     * Called when the extension starts or when the user changes.
      * `null` if no user is logged in (can also be Incognito mode)
      */
-    suspend fun onSetLoginUser(user: User?)
+    fun setLoginUser(user: User?)
 
     /**
      * To be called when any other extension needs the current user.

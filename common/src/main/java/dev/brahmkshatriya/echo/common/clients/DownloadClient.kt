@@ -25,13 +25,16 @@ interface DownloadClient : ExtensionClient {
      *
      * @param extensionId The client ID.
      * @param item The media item to get the download tracks for.
+     * @param context The context of the downloading track, can be null if not applicable.
      *
      * @return The download tracks.
      *
      * @see DownloadContext
      * @see EchoMediaItem
      */
-    suspend fun getDownloadTracks(extensionId: String, item: EchoMediaItem): List<DownloadContext>
+    suspend fun getDownloadTracks(
+        extensionId: String, item: EchoMediaItem, context: EchoMediaItem?
+    ): List<DownloadContext>
 
     /**
      * The maximum number of concurrent downloads allowed.

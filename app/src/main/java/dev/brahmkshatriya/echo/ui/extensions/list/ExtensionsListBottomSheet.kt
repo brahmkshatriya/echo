@@ -4,20 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
-import dev.brahmkshatriya.echo.databinding.ButtonExtensionBinding
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsListBinding
+import dev.brahmkshatriya.echo.databinding.ItemExtensionButtonBinding
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment.Companion.getType
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
-import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddBottomSheet
 import dev.brahmkshatriya.echo.ui.extensions.manage.ManageExtensionsFragment
-import dev.brahmkshatriya.echo.ui.player.lyrics.LyricsViewModel
+import dev.brahmkshatriya.echo.ui.player.more.lyrics.LyricsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
@@ -48,25 +48,28 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
 
         binding.addExtension.setOnClickListener {
             dismiss()
-            ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
+            ExtensionsAddBottomSheet().show(parentFragmentManager, null)
         }
 
-        binding.topAppBar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.menu_settings -> {
-                    dismiss()
-                    requireActivity().openFragment<ManageExtensionsFragment>()
-                    true
-                }
-
-                else -> false
-            }
+        binding.manageExtension.setOnClickListener {
+            dismiss()
+            requireActivity().openFragment<ManageExtensionsFragment>()
         }
 
         val viewModel = when (type) {
             ExtensionType.MUSIC -> activityViewModel<ExtensionsViewModel>().value
             ExtensionType.LYRICS -> activityViewModel<LyricsViewModel>().value
             else -> throw IllegalStateException("Not supported")
+        }
+
+        binding.topAppBar.setOnMenuItemClickListener {
+            val extension =
+                viewModel.currentSelectionFlow.value ?: return@setOnMenuItemClickListener false
+            requireActivity().openFragment<ExtensionInfoFragment>(
+                null, ExtensionInfoFragment.getBundle(extension)
+            )
+            dismiss()
+            true
         }
 
         val listener = object : OnButtonCheckedListener {
@@ -84,31 +87,28 @@ class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
         val extensionFlow = viewModel.extensionsFlow
         observe(extensionFlow) { list ->
             binding.buttonToggleGroup.removeAllViews()
-            binding.progressIndicator.isVisible = list == null
             listener.enabled = false
-            val extensions = list ?: emptyList()
-
-            extensions.forEachIndexed { index, extension ->
+            val selected = viewModel.currentSelectionFlow.value
+            list.forEachIndexed { index, extension ->
                 if (!extension.isEnabled) return@forEachIndexed
-                val button = ButtonExtensionBinding.inflate(
+                val button = ItemExtensionButtonBinding.inflate(
                     layoutInflater,
                     binding.buttonToggleGroup,
                     false
                 ).root
                 button.text = extension.name
                 binding.buttonToggleGroup.addView(button)
-                button.isChecked = extension == viewModel.currentSelectionFlow.value
+                button.isChecked = extension == selected
                 extension.metadata.icon.loadAsCircle(button) {
                     if (it != null) {
                         button.icon = it
                         button.iconTint = null
-                    } else button.setIconResource(R.drawable.ic_extension_48dp)
+                    } else button.setIconResource(R.drawable.ic_extension_32dp)
                 }
                 button.id = index
             }
 
-            val checked = extensions.indexOf(viewModel.currentSelectionFlow.value)
-                .takeIf { it != -1 }
+            val checked = list.indexOf(selected).takeIf { it != -1 }
             if (checked != null) binding.buttonToggleGroup.check(checked)
             listener.enabled = true
         }

@@ -1,12 +1,10 @@
 package dev.brahmkshatriya.echo.common.models
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.models.Shelf.Category
-import dev.brahmkshatriya.echo.common.models.Shelf.Item
-import dev.brahmkshatriya.echo.common.models.Shelf.Lists
-import dev.brahmkshatriya.echo.common.models.Shelf.Lists.Categories
-import dev.brahmkshatriya.echo.common.models.Shelf.Lists.Items
-import dev.brahmkshatriya.echo.common.models.Shelf.Lists.Tracks
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 /**
  * Represents a shelf (group of Media Items or Categories) in the app feed.
@@ -17,7 +15,13 @@ import dev.brahmkshatriya.echo.common.models.Shelf.Lists.Tracks
  * @see Item
  * @see Category
  */
-sealed class Shelf {
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("shelfType")
+@Serializable
+sealed interface Shelf {
+    val id: String
+    val title: String
+    val extras: Map<String, String>
 
     /**
      * Represents a list of media items or categories.
@@ -36,19 +40,20 @@ sealed class Shelf {
      * @see Tracks
      * @see Categories
      */
-    sealed class Lists<T : Any>(
-        open val title: String,
-        open val list: List<T>,
-        open val subtitle: String?,
-        open val type: Type,
-        open val more: PagedData<T>?
-    ) : Shelf() {
+    @OptIn(ExperimentalSerializationApi::class)
+    @JsonClassDiscriminator("shelfType")
+    @Serializable
+    sealed interface Lists<T : Any> : Shelf {
+        val list: List<T>
+        val subtitle: String?
+        val type: Type
+        val more: Feed<Shelf>?
 
         /**
          * Represents the type of the list.
          *
-         * If [Type.Linear], the list will be displayed in a horizontal linear layout.
-         * If [Type.Grid], the list will be displayed in a grid layout.
+         * - [Type.Linear] items displayed in a horizontally.
+         * - [Type.Grid] items displayed in a grid layout, vertically. limited to 8 items.
          */
         enum class Type {
             Linear, Grid
@@ -57,120 +62,103 @@ sealed class Shelf {
         /**
          * Represents a list of [EchoMediaItem].
          *
+         * @property id the unique identifier of the list.
          * @property title the title of the list.
          * @property list the list of media items.
          * @property subtitle the subtitle of the list.
          * @property type the type of the list.
          * @property more the more data of the list.
          */
+        @Serializable
         data class Items(
+            override val id: String,
             override val title: String,
             override val list: List<EchoMediaItem>,
             override val subtitle: String? = null,
             override val type: Type = Type.Linear,
-            override val more: PagedData<EchoMediaItem>? = null
-        ) : Lists<EchoMediaItem>(
-            title = title,
-            list = list,
-            subtitle = subtitle,
-            type = type,
-            more = more
-        )
+            @Transient override val more: Feed<Shelf>? = null,
+            override val extras: Map<String, String> = mapOf()
+        ) : Lists<EchoMediaItem>
 
         /**
-         * Represents a list of [Track].
-         * If [isNumbered] is true, the tracks will be numbered and
-         * clicking on any track will load the entire list into the playing queue.
+         * Represents a list of [Track], these will be numbered, otherwise use [Items] instead.
          *
+         * @property id the unique identifier of the list.
          * @property title the title of the list.
          * @property list the list of tracks.
          * @property subtitle the subtitle of the list.
          * @property type the type of the list.
-         * @property isNumbered whether the tracks are numbered.
          * @property more the more data of the list.
          */
+        @Serializable
         data class Tracks(
+            override val id: String,
             override val title: String,
             override val list: List<Track>,
             override val subtitle: String? = null,
             override val type: Type = Type.Linear,
-            val isNumbered: Boolean = false,
-            override val more: PagedData<Track>? = null
-        ) : Lists<Track>(
-            title = title,
-            list = list,
-            type = type,
-            subtitle = subtitle,
-            more = more
-        )
+            @Transient override val more: Feed<Shelf>? = null,
+            override val extras: Map<String, String> = mapOf()
+        ) : Lists<Track>
 
         /**
          * Represents a list of [Category].
          *
+         * @property id the unique identifier of the list.
          * @property title the title of the list.
          * @property list the list of categories.
          * @property subtitle the subtitle of the list.
          * @property type the type of the list.
          * @property more the more data of the list.
          */
+        @Serializable
         data class Categories(
+            override val id: String,
             override val title: String,
             override val list: List<Category>,
             override val subtitle: String? = null,
             override val type: Type = Type.Linear,
-            override val more: PagedData<Category>? = null,
-        ) : Lists<Category>(
-            title = title,
-            list = list,
-            type = type,
-            subtitle = subtitle,
-            more = more
-        )
+            @Transient override val more: Feed<Shelf>? = null,
+            override val extras: Map<String, String> = mapOf()
+        ) : Lists<Category>
     }
 
     /**
      * Represents a media item.
      *
      * @property media the media item.
-     * @property loadTracks whether to load the tracks of the media item.
      */
+    @Serializable
     data class Item(
-        val media: EchoMediaItem,
-        //TODO: rename this to also be useful for showing Track with full width (without loading)
-        val loadTracks: Boolean = false
-    ) : Shelf()
+        val media: EchoMediaItem
+    ) : Shelf {
+        override val id = media.id
+        override val title = media.title
+        override val extras = media.extras
+    }
 
     /**
      * Represents a category of media items.
      *
-     * If [items] is not null, a "More" button will be displayed
-     * and clicking on it will load a separate page for loading the [PagedData].
+     * If [feed] is not null, clicking on this will load a separate page for loading the [Feed].
+     * If [feed] is null, the category will act as a header.
      *
-     * If [items] is null, the category will act as a header.
-     *
+     * @property id the unique identifier of the category.
      * @property title the title of the category.
-     * @property items the items of the category.
+     * @property feed the items of the category.
      * @property subtitle the subtitle of the category.
+     * @property image the image of the category.
+     * @property backgroundColor the background color in hex. (#RRGGBB & #AARRGGBB)
      * @property extras additional information about the category.
      */
+    @Serializable
     data class Category(
-        val title: String,
-        val items: PagedData<Shelf>?,
+        override val id: String,
+        override val title: String,
+        @Transient val feed: Feed<Shelf>? = null,
         val subtitle: String? = null,
-        val extras: Map<String, String> = mapOf()
-    ) : Shelf()
-
-    fun sameAs(other: Shelf) = when (this) {
-        is Item -> other is Item && media.sameAs(other.media)
-        is Category -> other is Category && this.id == other.id
-        is Categories -> other is Categories && this.id == other.id
-        is Items -> other is Items && this.id == other.id
-        is Tracks -> other is Tracks && this.id == other.id
-    }
-
-    val id
-        get() = when (this) {
-            is Item -> media.id
-            else -> this.hashCode().toString()
-        }
+        val image: ImageHolder? = null,
+        val backgroundColor: String? = null,
+        override val extras: Map<String, String> = mapOf(),
+    ) : Shelf
 }

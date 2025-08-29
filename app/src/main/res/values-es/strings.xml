@@ -7,7 +7,6 @@
     <string name="link">Enlace</string>
     <string name="link_or_code">Enlace o código</string>
     <string name="list_is_empty">La lista está vacía</string>
-    <string name="checking_for_extension_updates">Buscando actualizaciones de extensiones</string>
     <string name="look_and_feel">Apariencia</string>
     <string name="next">Siguiente</string>
     <string name="all">Todo</string>
@@ -17,7 +16,6 @@
     <string name="audio">Audio</string>
     <string name="audio_permission_summary">Para acceder a su colección local de música</string>
     <string name="video">Vídeo</string>
-    <string name="video_permission_summary">Para acceder a su colección local de vídeos</string>
     <string name="read_storage">Leer almacenamiento</string>
     <string name="write_storage">Escribir en almacenamiento</string>
     <string name="write_storage_permission_summary">Para crear y editar listas de reproducción locales</string>
@@ -40,7 +38,6 @@
     <string name="blacklist_folders_summary">Carpetas para excluir de la colección</string>
     <string name="blacklist_folder_keywords">Palabras clave para carpetas en lista negra</string>
     <string name="blacklist_folder_keywords_summary">Palabras clave para incluir carpetas en la lista negra. Use la coma para separar</string>
-    <string name="playlists">Listas de reproducción</string>
     <string name="saved">Guardadas</string>
     <string name="show_tabs">Mostrar pestañas</string>
     <string name="show_tab_summary">Mostrar pestañas de las extensiones como categorías</string>
@@ -61,10 +58,8 @@
     <string name="extension">Extensión</string>
     <string name="downloading_x">Descargando %1$s</string>
     <string name="cancel_all">Cancelar todo</string>
-    <string name="progress_x_percentage">Progreso %1$d %%</string>
     <string name="download_progress">Progreso de la descarga</string>
     <string name="downloads">Descargas</string>
-    <string name="x_items">%1$d elementos</string>
     <string name="downloaded_x">Descargado %1$s</string>
     <string name="logout_and_login">Finalizar sesión y acceder</string>
     <string name="login">Acceder</string>
@@ -77,13 +72,9 @@
     <string name="x_login_required">Se requiere acceder a %1$s</string>
     <string name="x_is_not_supported_in_x">%1$s no se admite en %2$s</string>
     <string name="account_session_expired_in_x">La sesión de la cuenta caducó el %1$s</string>
-    <string name="no_servers_found">No se encontró ningún servidor</string>
-    <string name="no_source_found">No se encontró ninguna fuente</string>
-    <string name="task_cancelled">Tarea cancelada</string>
     <string name="error_x">Error: %1$s</string>
     <string name="str_copy">Copiar</string>
     <string name="extensions">Extensiones</string>
-    <string name="manage_extensions">Gestionar extensiones</string>
     <string name="choose_a_color">Elegir un color</string>
     <string name="random">Al azar</string>
     <string name="add">Añadir</string>
@@ -91,7 +82,6 @@
     <string name="settings">Configuración</string>
     <string name="value">Valor</string>
     <string name="value_not_set">No establecido</string>
-    <string name="audio_summary">(Los audiófilos se reúnen aquí)</string>
     <string name="playback">Reproducción</string>
     <string name="audio_fx">Efectos de audio</string>
     <string name="audio_fx_summary">Efectos aplicados a todas las canciones</string>
@@ -118,13 +108,7 @@
     <string name="cache_size">Tamaño de antememoria</string>
     <string name="version">Versión</string>
     <string name="cache_size_summary">Tamaño en MB de prealmacenamiento de audio y vídeo</string>
-    <string name="extensions_summary">Gestionar las extensiones instaladas</string>
-    <string name="misc_summary">Configuración diversa</string>
-    <string name="language">Idioma</string>
     <string name="system">Sistema</string>
-    <string name="language_summary">Idioma de la aplicación; «Sistema» equivale a inglés</string>
-    <string name="check_for_extension_updates">Buscar actualizaciones de extensiones</string>
-    <string name="check_for_extension_updates_summary">Buscar actualizaciones de extensiones al abrir la aplicación.</string>
     <string name="install">Instalar</string>
     <string name="app">Aplicación</string>
     <string name="file">Archivo</string>
@@ -133,18 +117,14 @@
     <string name="installation_type_warning">No está disponible si instala la extensión como un archivo.</string>
     <string name="could_not_find_the_file">No se pudo encontrar el archivo.</string>
     <string name="extension_installer">Instalador de extensiones</string>
-    <string name="uninstall">Desinstalar</string>
-    <string name="invalid_extension">Extensión no válida</string>
     <string name="extension_installed_successfully">Extensión instalada correctamente.</string>
     <string name="extension_uninstalled_successfully">Extensión desinstalada correctamente.</string>
     <string name="allow_opening_links">Permitir abrir enlaces</string>
     <string name="open_links_instruction">Para permitir abrir estos enlaces, necesita:\n- Desplazarse hacia abajo y tocar «Abrir de manera predeterminada»\n- Tocar «+ Añadir enlace»</string>
-    <string name="extension_requires_following_extensions">%1$s requiere %2$s</string>
     <string name="downloading_update_for_x">Descargando actualización para %1$s</string>
     <string name="extension_installed">%1$s (instalada)</string>
     <string name="add_extensions">Añadir extensiones</string>
     <string name="invalid_extension_list">Lista de extensiones no válida</string>
-    <string name="look_and_feel_summary">Configuración de interfaz y animación</string>
     <string name="ui">Interfaz</string>
     <string name="theme">Tema</string>
     <string name="theme_summary">¿Quiere perder la visión?</string>
@@ -176,14 +156,9 @@
     <string name="disabled">Desactivado</string>
     <string name="no_user_found">No se encontró ningún usuario</string>
     <string name="select_x_account">Seleccionar cuenta de %1$s</string>
-    <string name="add_account">Añadir cuenta</string>
     <string name="add_extension">Añadir extensión</string>
     <string name="error_updating_extension">Error al actualizar</string>
     <string name="webview">WebView</string>
-    <string name="username_and_password">Nombre de usuario y contraseña</string>
-    <string name="manual">Manual</string>
-    <string name="username">Nombre de usuario</string>
-    <string name="password">Contraseña</string>
     <string name="logout">Salir</string>
     <string name="switch_account">Cambiar cuenta</string>
     <string name="incognito">Incógnito</string>
@@ -238,10 +213,8 @@
     <string name="share">Compartir</string>
     <string name="sharing_x">Compartiendo %1$s</string>
     <string name="save_to_library">Guardar en la colección</string>
-    <string name="saving_x_to_library">Guardando %1$s en la colección</string>
     <string name="saved_x_to_library">Se guardó %1$s en la colección</string>
     <string name="remove_from_library">Eliminar de la colección</string>
-    <string name="removing_x_from_library">Eliminando %1$s de la colección</string>
     <string name="removed_x_from_library">Se eliminó %1$s de la colección</string>
     <string name="radio">Radio</string>
     <string name="download">Descargar</string>
@@ -253,10 +226,8 @@
     <string name="unfollowed_x">Dejó de seguir a %1$s</string>
     <string name="hide">Ocultar</string>
     <string name="hiding_x">Ocultando %1$s</string>
-    <string name="hid_x">Ocultado %1$s</string>
     <string name="unhide">Mostrar</string>
     <string name="unhiding_x">Mostrando %1$s</string>
-    <string name="unhid_x">Mostrado %1$s</string>
     <string name="liking_x">Dando me gusta a %1$s</string>
     <string name="liked_x">Me gustó %1$s</string>
     <string name="unliking_x">Quitando me gusta a %1$s</string>
@@ -278,25 +249,15 @@
     <string name="explicit">Explícito</string>
     <string name="x_plays">%1$s reproducciones</string>
     <string name="x_followers">%1$s seguidores</string>
-    <plurals name="n_songs">
-        <item quantity="one">%1$d canción</item>
-        <item quantity="many">%1$d canciones</item>
-        <item quantity="other">%1$d canciones</item>
-    </plurals>
     <string name="shuffling_x">Reproduciendo al azar %1$s</string>
     <string name="copying_the_error">Copiando el error</string>
     <string name="sort_and_filter">Ordenar y filtrar</string>
     <string name="reversed">Invertido</string>
-    <string name="remember">Recordar</string>
     <string name="apply">Aplicar</string>
     <string name="save">Guardar</string>
     <string name="sort_title">Título</string>
     <string name="sort_date">Fecha</string>
     <string name="sort_duration">Duración</string>
-    <string name="sort_artist">Artista</string>
-    <string name="sort_album">Álbum</string>
-    <string name="sort_plays">Reproducciones</string>
-    <string name="sort_explicit">Explícito</string>
     <string name="scroll_animations">Animaciones al desplazar</string>
     <string name="scroll_animations_summary">Animaciones durante el desplazamiento</string>
     <string name="sort_subtitle">Subtítulo</string>
@@ -324,7 +285,6 @@
     <string name="download_started">Descarga iniciada</string>
     <string name="merging_x">Uniendo %1$s</string>
     <string name="tagging_x">Etiquetando %1$s</string>
-    <string name="downloads_summary">Todas sus descargas</string>
     <string name="okay">Aceptar</string>
     <string name="apply_player_color_to_app">Aplicar el color del reproductor a toda la aplicación</string>
     <string name="apply_player_color_to_app_summary">¡ALERTA DE DESFASE!</string>
@@ -332,5 +292,4 @@
     <string name="removed_x_from_downloads">Eliminado %1$s de las descargas</string>
     <string name="download_complete">Descarga completada</string>
     <string name="app_widget_description">Echo en su pantalla de inicio</string>
-    <string name="add_widget">Widget de minirreproductor</string>
 </resources>

@@ -3,17 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Selectable"
-    android:background="?echoBackground"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:orientation="horizontal">
+    android:layout_marginHorizontal="24dp"
+    android:layout_marginVertical="4dp"
+    android:background="@drawable/shape_rounded_item_corner"
+    android:backgroundTint="@color/amoled_fg_semi"
+    android:orientation="horizontal"
+    android:paddingHorizontal="8dp">
 
     <FrameLayout
         android:id="@+id/itemContainer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="8dp">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/itemExtension"
@@ -22,7 +24,7 @@
             android:layout_marginHorizontal="8dp"
             android:contentDescription="@string/extension"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/ic_extension_48dp" />
+            app:srcCompat="@drawable/ic_extension_32dp" />
 
     </FrameLayout>
 
@@ -39,7 +41,8 @@
             android:layout_weight="1"
             android:baselineAligned="false"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="8dp">
 
             <TextView
                 android:id="@+id/extensionName"
@@ -56,25 +59,16 @@
                 android:maxLines="1"
                 tools:text="@tools:sample/cities" />
         </LinearLayout>
+
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/extensionOpen"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:scaleX="-1"
-            android:rotation="-45"
-            app:icon="@drawable/ic_back"
-            app:iconSize="24dp" />
+            android:id="@+id/extensionUse"
+            style="@style/IconButton"
+            android:contentDescription="@string/extension"
+            app:icon="@drawable/ic_chevron_forward" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/extensionDrag"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            app:icon="@drawable/ic_drag_20dp"
-            app:iconSize="24dp"
-            app:iconTint="?colorOnSurface" />
+            style="@style/IconButtonTransparent"
+            app:icon="@drawable/ic_drag_20dp" />
     </LinearLayout>
 </LinearLayout>

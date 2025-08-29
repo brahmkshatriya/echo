@@ -32,7 +32,7 @@ abstract class ExtensionDatabase : RoomDatabase() {
     }
 
     companion object {
-        private const val DATABASE_NAME = "extension-database"
+        private const val DATABASE_NAME = "extension-db"
         fun create(app: Application) = Room.databaseBuilder(
             app, ExtensionDatabase::class.java, DATABASE_NAME
         ).fallbackToDestructiveMigration(true).build()

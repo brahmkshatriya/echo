@@ -1,46 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:liftOnScrollTargetViewId="@id/recyclerView">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolBar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_marginHorizontal="8dp"
-            app:layout_scrollEffect="compress"
-            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
-            app:menu="@menu/top_bar_menu"
-            app:title="@string/library" />
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <View
-        android:id="@+id/appBarOutline"
-        style="@style/AppBarOutline"
-        app:layout_anchor="@id/appBarLayout"
-        app:layout_anchorGravity="bottom" />
+    android:layout_height="match_parent"
+    tools:context="dev.brahmkshatriya.echo.ui.main.LibraryFragment">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -49,27 +18,43 @@
             android:clipToPadding="false"
             android:contentDescription="@string/home"
             android:orientation="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="8dp"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/item_shelf_lists" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-
     <FrameLayout
-        android:id="@+id/fabContainer"
-        android:layout_width="wrap_content"
+        android:id="@+id/appBarOutline"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom">
+        android:background="?navBackground"
+        android:paddingTop="12dp">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabCreatePlaylist"
-            style="?floatingActionButtonTertiaryStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="24dp"
-            android:contentDescription="@string/create_playlist"
-            android:transitionName="createPlaylist"
-            app:srcCompat="@drawable/ic_playlist_add" />
-
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?colorOutlineVariant" />
     </FrameLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <FrameLayout
+        android:id="@+id/createPlaylistContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:clipToPadding="false">
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/createPlaylist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create"
+            android:maxLines="2"
+            android:backgroundTint="?colorTertiary"
+            android:textColor="?colorOnTertiary"
+            app:iconTint="?colorOnTertiary"
+            app:icon="@drawable/ic_playlist_add"
+            android:layout_margin="24dp" />
+    </FrameLayout>
+</FrameLayout>

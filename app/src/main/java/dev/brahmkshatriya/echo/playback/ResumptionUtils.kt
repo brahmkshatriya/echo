@@ -1,19 +1,21 @@
 package dev.brahmkshatriya.echo.playback
 
 import android.content.Context
-import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object ResumptionUtils {
 
@@ -32,29 +34,27 @@ object ResumptionUtils {
         context.saveToCache(INDEX, index, FOLDER)
     }
 
-    fun saveQueue(context: Context, player: Player) {
+    suspend fun saveQueue(context: Context, player: Player) = withContext(Dispatchers.Main) {
         val list = player.mediaItems()
         context.saveToCache(CLEARED, list.isEmpty())
-        if (list.isEmpty()) return
+        if (list.isEmpty()) return@withContext
         val currentIndex = player.currentMediaItemIndex
-        val extensionIds = list.map { it.extensionId }
-        val tracks = list.map { it.track }
-        val contexts = list.map { it.context }
-        context.saveToCache(INDEX, currentIndex, FOLDER)
-        context.saveToCache(EXTENSIONS, extensionIds, FOLDER)
-        context.saveToCache(TRACKS, tracks, FOLDER)
-        context.saveToCache(CONTEXTS, contexts, FOLDER)
+        withContext(Dispatchers.IO) {
+            val extensionIds = list.map { it.extensionId }
+            val tracks = list.map { it.track }
+            val contexts = list.map { it.context }
+            context.saveToCache(INDEX, currentIndex, FOLDER)
+            context.saveToCache(EXTENSIONS, extensionIds, FOLDER)
+            context.saveToCache(TRACKS, tracks, FOLDER)
+            context.saveToCache(CONTEXTS, contexts, FOLDER)
+        }
     }
 
     fun saveCurrentPos(context: Context, position: Long) {
         context.saveToCache(POSITION, position, FOLDER)
     }
 
-    private fun Context.recoverQueue(
-        downloads: List<Downloader.Info>,
-        withClear: Boolean = false
-    ): List<MediaItem>? {
-        val settings = getSharedPreferences("settings", Context.MODE_PRIVATE)
+    fun Context.recoverTracks(withClear: Boolean = false): List<Pair<MediaState.Unloaded<Track>, EchoMediaItem?>>? {
         if (withClear && getFromCache<Boolean>(CLEARED) != false) return null
         val tracks = getFromCache<List<Track>>(TRACKS, FOLDER)
         val extensionIds = getFromCache<List<String>>(EXTENSIONS, FOLDER)
@@ -62,11 +62,22 @@ object ResumptionUtils {
         return tracks?.mapIndexedNotNull { index, track ->
             val extensionId = extensionIds?.getOrNull(index) ?: return@mapIndexedNotNull null
             val item = contexts?.getOrNull(index)
-            MediaItemUtils.build(settings, downloads, track, extensionId, item)
-        } ?: return null
+            MediaState.Unloaded(extensionId, track) to item
+        }
     }
 
-    private fun Context.recoverIndex() = getFromCache<Int>(INDEX, FOLDER)
+    private fun Context.recoverQueue(
+        app: App,
+        downloads: List<Downloader.Info>,
+        withClear: Boolean = false
+    ): List<MediaItem>? {
+        val tracks = recoverTracks(withClear) ?: return null
+        return tracks.map { (state, item) ->
+            MediaItemUtils.build(app, downloads, state, item)
+        }
+    }
+
+    fun Context.recoverIndex() = getFromCache<Int>(INDEX, FOLDER)
     private fun Context.recoverPosition() = getFromCache<Long>(POSITION, FOLDER)
 
 
@@ -80,15 +91,14 @@ object ResumptionUtils {
         context.saveToCache(REPEAT, repeat, FOLDER)
     }
 
-    @OptIn(UnstableApi::class)
     fun Context.recoverPlaylist(
+        app: App,
         downloads: List<Downloader.Info>,
         withClear: Boolean = false
     ): Triple<List<MediaItem>, Int, Long> {
-        val items = recoverQueue(downloads, withClear) ?: emptyList()
+        val items = recoverQueue(app, downloads, withClear) ?: emptyList()
         val index = recoverIndex() ?: C.INDEX_UNSET
-        val position = recoverPosition() ?: 0L
+        val position = recoverPosition() ?: -1L
         return Triple(items, index, position)
     }
-
 }

@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.playback.listener
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -10,20 +9,19 @@ import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Lists
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Profile
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.TrackItem
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.pagedDataOfFirst
+import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,12 +31,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PlayerRadio(
-    context: Context,
+    private val app: App,
     private val scope: CoroutineScope,
     private val player: Player,
     private val throwFlow: MutableSharedFlow<Throwable>,
     private val stateFlow: MutableStateFlow<PlayerState.Radio>,
-    private val extensionList: StateFlow<List<MusicExtension>?>,
+    private val extensionList: StateFlow<List<MusicExtension>>,
     private val downloadFlow: StateFlow<List<Downloader.Info>>
 ) : Player.Listener {
 
@@ -50,26 +48,20 @@ class PlayerRadio(
             item: EchoMediaItem,
             itemContext: EchoMediaItem?
         ): PlayerState.Radio.Loaded? {
-            return extension.get<RadioClient, PlayerState.Radio.Loaded?>(throwableFlow) {
-                val radio = when (item) {
-                    is TrackItem -> radio(item.track, itemContext)
-                    is Lists.PlaylistItem -> radio(item.playlist)
-                    is Lists.AlbumItem -> radio(item.album)
-                    is Profile.ArtistItem -> radio(item.artist)
-                    is Profile.UserItem -> radio(item.user)
-                    is Lists.RadioItem -> throw IllegalStateException()
+            if (!item.isRadioSupported) return null
+            return extension.getIf<RadioClient, PlayerState.Radio.Loaded?> {
+                val radio = radio(item, itemContext)
+                val tracks = loadTracks(radio).pagedDataOfFirst()
+                PlayerState.Radio.Loaded(extension.id, radio, null) {
+                    extension.get { tracks.loadPage(it) }.getOrThrow(throwableFlow)
                 }
-                val tracks = loadTracks(radio)
-                PlayerState.Radio.Loaded(extension.id, radio.toMediaItem(), null) {
-                    extension.run(throwableFlow) { tracks.loadList(it) }
-                }
-            }
+            }.getOrThrow(throwableFlow)
         }
 
         suspend fun play(
             player: Player,
             downloadFlow: StateFlow<List<Downloader.Info>>,
-            settings: SharedPreferences,
+            app: App,
             stateFlow: MutableStateFlow<PlayerState.Radio>,
             loaded: PlayerState.Radio.Loaded
         ) {
@@ -81,7 +73,10 @@ class PlayerRadio(
 
             val item = tracks.data.map {
                 MediaItemUtils.build(
-                    settings, downloadFlow.value, it, loaded.clientId, loaded.context
+                    app,
+                    downloadFlow.value,
+                    MediaState.Unloaded(loaded.clientId, it),
+                    loaded.context
                 )
             }
 
@@ -92,21 +87,19 @@ class PlayerRadio(
         }
     }
 
-    private val settings = context.getSettings()
-
     private suspend fun loadPlaylist() {
         val mediaItem = withContext(Dispatchers.Main) { player.currentMediaItem } ?: return
         val extensionId = mediaItem.extensionId
-        val item = mediaItem.track.toMediaItem()
+        val item = mediaItem.track
         val itemContext = mediaItem.context
         stateFlow.value = PlayerState.Radio.Loading
         val extension = extensionList.getExtension(extensionId) ?: return
         val loaded = start(throwFlow, extension, item, itemContext)
         stateFlow.value = loaded ?: PlayerState.Radio.Empty
-        if (loaded != null) play(player, downloadFlow, settings, stateFlow, loaded)
+        if (loaded != null) play(player, downloadFlow, app, stateFlow, loaded)
     }
 
-    private var autoStartRadio = settings.getBoolean(AUTO_START_RADIO, true)
+    private var autoStartRadio = app.settings.getBoolean(AUTO_START_RADIO, true)
 
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
         if (key != AUTO_START_RADIO) return@OnSharedPreferenceChangeListener
@@ -114,7 +107,7 @@ class PlayerRadio(
     }
 
     init {
-        settings.registerOnSharedPreferenceChangeListener(listener)
+        app.settings.registerOnSharedPreferenceChangeListener(listener)
     }
 
     private suspend fun startRadio() {
@@ -128,7 +121,7 @@ class PlayerRadio(
         when (val state = stateFlow.value) {
             is PlayerState.Radio.Loading -> {}
             is PlayerState.Radio.Empty -> loadPlaylist()
-            is PlayerState.Radio.Loaded -> play(player, downloadFlow, settings, stateFlow, state)
+            is PlayerState.Radio.Loaded -> play(player, downloadFlow, app, stateFlow, state)
         }
     }
 

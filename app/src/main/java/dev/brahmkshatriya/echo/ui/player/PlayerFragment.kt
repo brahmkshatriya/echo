@@ -2,10 +2,11 @@ package dev.brahmkshatriya.echo.ui.player
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -17,6 +18,7 @@ import android.view.ViewOutlineProvider
 import android.widget.ProgressBar
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
@@ -36,13 +38,14 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
 import androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+import androidx.media3.ui.CaptionStyleCompat
+import androidx.media3.ui.CaptionStyleCompat.EDGE_TYPE_OUTLINE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.background
@@ -52,12 +55,12 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLoaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.showBackground
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.UiViewModel
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyHorizontalInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.isFinalState
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.setupPlayerMoreBehavior
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.common.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyHorizontalInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.isFinalState
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.setupPlayerMoreBehavior
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.more.MediaMoreBottomSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
@@ -96,7 +99,7 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         return binding!!.root
@@ -235,6 +238,10 @@ class PlayerFragment : Fragment() {
                 else getCombined()
             }
             binding.playerCollapsedContainer.root.applyHorizontalInsets(insets)
+            binding.playerControls.root.applyHorizontalInsets(
+                insets,
+                requireActivity().isLandscape()
+            )
             val left = if (requireContext().isRTL()) system.end + extraEndPadding else system.start
             leftPadding = collapsedTopPadding + left
             val right = if (requireContext().isRTL()) system.start else system.end + extraEndPadding
@@ -287,6 +294,10 @@ class PlayerFragment : Fragment() {
         override fun onClick() = uiViewModel.run {
             if (playerSheetState.value != STATE_EXPANDED) changePlayerState(STATE_EXPANDED)
             else {
+                if (moreSheetState.value == STATE_EXPANDED) {
+                    changeMoreState(STATE_COLLAPSED)
+                    return
+                }
                 val shouldBeVisible = !playerBgVisible.value
                 if (shouldBeVisible) {
                     val binding = binding ?: return@run
@@ -463,12 +474,11 @@ class PlayerFragment : Fragment() {
             }
             observe(viewModel.repeatMode) { changeRepeatDrawable(it) }
 
-            trackSubtitle.marquee()
             trackSubtitle.setOnClickListener {
                 QualitySelectionBottomSheet().show(parentFragmentManager, null)
             }
-            observe(viewModel.tracks) { tracks ->
-                trackSubtitle.text = tracks?.getDetails(requireContext())
+            observe(viewModel.serverAndTracks) { (tracks, server, index) ->
+                trackSubtitle.text = tracks?.getDetails(requireContext(), server, index)
                     ?.joinToString(" ⦿ ")?.takeIf { it.isNotBlank() }
             }
         }
@@ -478,19 +488,21 @@ class PlayerFragment : Fragment() {
 
     private fun configureColors() {
         observe(viewModel.playerState.current) { adapter.onCurrentUpdated() }
-        var last: Result<Bitmap?> = Result.failure(Exception())
-        adapter.currentBitmapListener = { bitmap ->
-            if (last.getOrNull() != bitmap) {
-                last = Result.success(bitmap)
+        var last: Drawable? = null
+        adapter.currentDrawableListener = { drawable ->
+            if (last != drawable) {
+                last = drawable
                 val context = requireContext()
-                val colors = if (context.isDynamic()) context.getColorsFrom(bitmap) else null
+                uiViewModel.playerDrawable.value = drawable
+                val colors =
+                    if (context.isDynamic()) context.getColorsFrom(drawable?.toBitmap()) else null
                 uiViewModel.playerColors.value = colors
-                if (context.showBackground()) binding?.bgImage?.loadBlurred(bitmap, 12f)
+                if (context.showBackground()) binding?.bgImage?.loadBlurred(drawable, 12f)
                 else binding?.bgImage?.setImageDrawable(null)
             }
         }
         val bufferView =
-            binding!!.playerView.findViewById<ProgressBar>(androidx.media3.ui.R.id.exo_buffering)!!
+            binding?.playerView?.findViewById<ProgressBar>(androidx.media3.ui.R.id.exo_buffering)
         observe(uiViewModel.playerColors) {
             val context = requireContext()
             if (context.isPlayerColor() && context.isDynamic()) {
@@ -512,7 +524,7 @@ class PlayerFragment : Fragment() {
                 val backgroundState = ColorStateList.valueOf(colors.background)
                 bgGradient.imageTintList = backgroundState
                 bgCollapsed.backgroundTintList = backgroundState
-                bufferView.indeterminateDrawable.setTint(colors.accent)
+                bufferView?.indeterminateDrawable?.setTint(colors.accent)
                 expandedToolbar.run {
                     setTitleTextColor(colors.onBackground)
                     setSubtitleTextColor(colors.onBackground)
@@ -557,33 +569,35 @@ class PlayerFragment : Fragment() {
             trackTitle.text = track.title
             trackTitle.marquee()
             val artists = track.artists
-            val artistNames = track.toMediaItem().subtitleWithE ?: ""
+            val artistNames = artists.joinToString(", ") { it.name }
             val span = SpannableString(artistNames)
 
             artists.forEach { artist ->
                 val start = artistNames.indexOf(artist.name)
                 val end = start + artist.name.length
                 val clickableSpan = SimpleItemSpan(trackArtist.context) {
-                    openItem(extId, artist.toMediaItem())
+                    openItem(extId, artist)
                 }
-                span.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                runCatching {
+                    span.setSpan(
+                        clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
             }
 
             trackArtist.text = span
-            trackArtist.marquee()
             trackArtist.movementMethod = LinkMovementMethod.getInstance()
             likeListener.enabled = false
             trackHeart.isChecked = item.isLiked
             likeListener.enabled = true
             lifecycleScope.launch {
-                val isTrackClient = viewModel.isTrackClient(item.extensionId)
+                val isTrackClient = viewModel.isLikeClient(item.extensionId)
                 trackHeart.isVisible = isTrackClient
             }
         }
     }
 
     private fun openItem(extension: String, item: EchoMediaItem) {
-        uiViewModel.collapsePlayer()
         requireActivity().openFragment<MediaFragment>(
             null, MediaFragment.getBundle(extension, item, false)
         )
@@ -591,8 +605,8 @@ class PlayerFragment : Fragment() {
 
     private fun onMoreClicked(item: MediaItem) {
         MediaMoreBottomSheet.newInstance(
-            R.id.navHostFragment, item.extensionId, item.track.toMediaItem(), item.isLoaded, true
-        ).show(parentFragmentManager, null)
+            R.id.navHostFragment, item.extensionId, item.track, item.isLoaded, true
+        ).show(requireActivity().supportFragmentManager, null)
     }
 
     private fun Player?.hasVideo() =
@@ -637,16 +651,22 @@ class PlayerFragment : Fragment() {
         applyVideoVisibility(visible)
     }
 
+    @OptIn(UnstableApi::class)
     private fun configureBackgroundPlayerView() {
-        observe(viewModel.playerState.current) { applyPlayer() }
-        observe(viewModel.tracks) { applyPlayer() }
+        binding?.playerView?.subtitleView?.setStyle(
+            CaptionStyleCompat(
+                Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT,
+                EDGE_TYPE_OUTLINE, Color.BLACK, null
+            )
+        )
+        observe(viewModel.serverAndTracks) { applyPlayer() }
     }
 
     companion object {
         private fun Context.showBackground() = getSettings().showBackground()
         const val DYNAMIC_PLAYER = "dynamic_player"
         const val PLAYER_COLOR = "player_color"
-        private fun Context.isDynamic() =
+        fun Context.isDynamic() =
             getSettings().getBoolean(DYNAMIC_PLAYER, true)
 
         private fun Context.isPlayerColor() =
@@ -654,7 +674,7 @@ class PlayerFragment : Fragment() {
 
         @OptIn(UnstableApi::class)
         fun getPlayer(
-            context: Context, cache: SimpleCache, video: Streamable.Media.Background
+            context: Context, cache: SimpleCache, video: Streamable.Media.Background,
         ): ExoPlayer {
             val cacheFactory = CacheDataSource
                 .Factory().setCache(cache)
@@ -666,7 +686,7 @@ class PlayerFragment : Fragment() {
                 .setDataSourceFactory(cacheFactory)
             val player = ExoPlayer.Builder(context).setMediaSourceFactory(factory).build()
             player.setMediaItem(MediaItem.fromUri(video.request.url.toUri()))
-            player.repeatMode = ExoPlayer.REPEAT_MODE_ONE
+            player.repeatMode = REPEAT_MODE_ONE
             player.volume = 0f
             player.prepare()
             player.play()

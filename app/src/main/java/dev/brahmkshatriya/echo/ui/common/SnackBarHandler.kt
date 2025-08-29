@@ -10,7 +10,6 @@ import com.google.android.material.snackbar.Snackbar
 import dev.brahmkshatriya.echo.MainActivity
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.di.App
-import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import kotlinx.coroutines.launch

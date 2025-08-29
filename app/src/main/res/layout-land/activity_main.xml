@@ -4,15 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?echoBackground">
+    android:layout_height="match_parent">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/hiddenWebViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/navHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout_marginStart="64dp"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home"
+        tools:layout_marginStart="64dp" />
 
     <com.google.android.material.navigationrail.NavigationRailView
         android:id="@+id/navView"

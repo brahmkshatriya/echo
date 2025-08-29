@@ -9,14 +9,16 @@ import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.loadAll
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Radio
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +33,7 @@ class SaveToPlaylistViewModel(
     extensionLoader: ExtensionLoader,
 ) : ViewModel() {
 
-    private val extensions = extensionLoader.extensions.music
+    private val extensions = extensionLoader.music
     private val extensionFlow = MutableStateFlow<Extension<*>?>(null)
 
     sealed class SaveState {
@@ -54,22 +56,22 @@ class SaveToPlaylistViewModel(
             if (playlists.isEmpty()) return@runCatching false
             saveFlow.value = SaveState.LoadingTracks
             val tracks = when (item) {
-                is EchoMediaItem.Lists.AlbumItem ->
-                    extension.get<AlbumClient, List<Track>> { loadTracks(item.album).load() }
+                is Album ->
+                    extension.getAs<AlbumClient, List<Track>> { loadTracks(item)?.loadAll().orEmpty() }
 
-                is EchoMediaItem.Lists.PlaylistItem ->
-                    extension.get<PlaylistClient, List<Track>> { loadTracks(item.playlist).load() }
+                is Playlist ->
+                    extension.getAs<PlaylistClient, List<Track>> { loadTracks(item).loadAll() }
 
-                is EchoMediaItem.Lists.RadioItem ->
-                    extension.get<RadioClient, List<Track>> { loadTracks(item.radio).load() }
+                is Radio ->
+                    extension.getAs<RadioClient, List<Track>> { loadTracks(item).loadAll() }
 
-                is EchoMediaItem.TrackItem -> Result.success(listOf(item.track))
+                is Track -> Result.success(listOf(item))
                 else -> null
             }?.getOrThrow().orEmpty()
             if (tracks.isEmpty()) return@runCatching false
 
             playlists.forEach { playlist ->
-                extension.get<PlaylistEditClient, Unit> {
+                extension.getAs<PlaylistEditClient, Unit> {
                     saveFlow.value = SaveState.LoadingPlaylist(playlist)
                     val loaded = loadPlaylist(playlist)
                     check(loaded.isEditable)
@@ -93,18 +95,6 @@ class SaveToPlaylistViewModel(
         saveFlow.value = SaveState.Saved(result)
     }
 
-    private suspend fun <T : Any> PagedData<T>.load(): MutableList<T> {
-        val list = mutableListOf<T>()
-        val maxCount = 5000
-        var page = loadList(null)
-        list.addAll(page.data)
-        while (page.continuation != null && list.size < maxCount) {
-            page = loadList(page.continuation)
-            list.addAll(page.data)
-        }
-        return list
-    }
-
     sealed class PlaylistState {
         data object Initial : PlaylistState()
         data object Loading : PlaylistState()
@@ -114,9 +104,9 @@ class SaveToPlaylistViewModel(
     val playlistsFlow = MutableStateFlow<PlaylistState>(PlaylistState.Initial)
     private suspend fun loadPlaylists(): List<Pair<Playlist, Boolean>> {
         val extension = extensions.getExtensionOrThrow(extensionId)
-        val track = item as? EchoMediaItem.TrackItem
-        return extension.get<PlaylistEditClient, List<Pair<Playlist, Boolean>>> {
-            listEditablePlaylists(track?.track)
+        val track = item as? Track
+        return extension.getAs<PlaylistEditClient, List<Pair<Playlist, Boolean>>> {
+            listEditablePlaylists(track)
         }.getOrThrow()
     }
 

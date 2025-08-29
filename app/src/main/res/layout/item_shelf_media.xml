@@ -5,12 +5,13 @@
     style="@style/Selectable"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
+    android:layout_marginStart="-20dp"
+    android:layout_marginEnd="-20dp"
     android:baselineAligned="false"
     android:clipToPadding="false"
     android:gravity="center"
     android:orientation="horizontal"
-    android:paddingHorizontal="8dp"
+    android:paddingHorizontal="24dp"
     android:paddingVertical="4dp">
 
     <include
@@ -18,7 +19,6 @@
         layout="@layout/item_shelf_media_cover"
         android:layout_width="@dimen/collapsed_cover_size"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="12dp"
         android:layout_marginTop="-4dp"
         android:layout_marginBottom="-4dp" />
 
@@ -26,7 +26,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginHorizontal="4dp"
+        android:layout_marginHorizontal="8dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -55,28 +55,19 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="-4dp">
+        android:layout_marginEnd="-12dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/play"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/IconButton"
             android:contentDescription="@string/play"
-            android:padding="8dp"
-            app:icon="@drawable/ic_play"
-            app:iconSize="24dp"
-            app:iconTint="?colorOnSurface" />
+            android:visibility="gone"
+            app:icon="@drawable/ic_play" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/more"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/IconButtonTransparent"
             android:contentDescription="@string/more"
-            android:padding="8dp"
-            app:icon="@drawable/ic_more_horiz"
-            app:iconSize="24dp"
-            app:iconTint="?colorOnSurface" />
+            app:icon="@drawable/ic_more_horiz" />
     </LinearLayout>
 </LinearLayout>

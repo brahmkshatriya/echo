@@ -2,70 +2,41 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context="dev.brahmkshatriya.echo.ui.main.HomeFragment">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+            android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:contentDescription="@string/home"
             android:orientation="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="8dp"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/item_shelf_lists" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout"
+    <FrameLayout
+        android:id="@+id/appBarOutline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:liftOnScrollTargetViewId="@id/recyclerView">
+        android:background="?navBackground"
+        android:paddingTop="12dp">
 
-        <com.google.android.material.search.SearchBar
-            android:id="@+id/searchBar"
+        <View
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginVertical="12dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="112dp"
-            android:hint="@string/search"
-            app:backgroundTint="?navBackground"
-            app:defaultMarginsEnabled="false"
-            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
-            app:navigationIcon="@drawable/ic_search_outline"
-            app:strokeColor="?colorSurfaceContainer"
-            app:strokeWidth="1dp" />
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolBar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="end"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="-64dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:menu="@menu/top_bar_menu" />
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <View
-        android:id="@+id/appBarOutline"
-        style="@style/AppBarOutline"
-        app:layout_anchor="@id/appBarLayout"
-        app:layout_anchorGravity="bottom" />
+            android:layout_height="1dp"
+            android:background="?colorOutlineVariant" />
+    </FrameLayout>
 
     <com.google.android.material.search.SearchView
         android:id="@+id/quickSearchView"
@@ -75,12 +46,14 @@
         android:hint="@string/search"
         app:backHandlingEnabled="true"
         app:backgroundTint="?navBackground"
-        app:closeIcon="@drawable/ic_close">
+        app:closeIcon="@drawable/ic_close"
+        app:searchHintIcon="@drawable/ic_back">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/quickSearchRecyclerView"
+            android:background="?echoBackground"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:clipToPadding="false"
             android:contentDescription="@string/search"
             android:orientation="vertical"

@@ -328,6 +328,5 @@
     </plurals>
     <string name="delete_download">İndirimi Kaldır</string>
     <string name="removed_x_from_downloads">İndirilenlerden %1$s kaldırıldı</string>
-    <string name="add_widget">Mini Oynatıcı Araç Kutusu</string>
     <string name="app_widget_description">Ana ekranında yankı!</string>
 </resources>

@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.common.models
 
+import kotlinx.serialization.Serializable
+
 /**
  * Download context for a track
  *
@@ -8,6 +10,7 @@ package dev.brahmkshatriya.echo.common.models
  * @param sortOrder The order of the [track] in the [context].
  * @param context The context of the media item, Album/Playlist/Artist.
  */
+@Serializable
 data class DownloadContext(
     val extensionId: String,
     val track: Track,

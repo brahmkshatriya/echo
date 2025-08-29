@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?colorTertiary">
+    android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/bg_container"
@@ -107,7 +106,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/player_more_container"
-        android:name="dev.brahmkshatriya.echo.ui.player.PlayerMoreFragment"
+        android:name="dev.brahmkshatriya.echo.ui.player.more.PlayerMoreFragment"
         style="@style/Widget.Material3.BottomSheet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

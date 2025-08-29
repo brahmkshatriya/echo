@@ -4,8 +4,8 @@
 An Extension-based Music Player for Android, designed with a clean and intuitive UI.
 </p>
 <p>
-  <a href="https://github.com/brahmkshatriya/echo/releases"><img src="https://img.shields.io/github/v/release/brahmkshatriya/echo?label=Downloads&style=for-the-badge" alt="GitHub Downloads"></a>
-<a href="https://www.codefactor.io/repository/github/brahmkshatriya/echo"><img src="https://img.shields.io/codefactor/grade/github/brahmkshatriya/echo?label=Codefactor&style=for-the-badge" alt="CodeFactor"/></a>
+  <!--<a href="https://github.com/brahmkshatriya/echo/releases"><img src="https://img.shields.io/github/v/release/brahmkshatriya/echo?label=Downloads&style=for-the-badge" alt="GitHub Downloads"></a>-->
+  <a href="https://www.codefactor.io/repository/github/brahmkshatriya/echo"><img src="https://img.shields.io/codefactor/grade/github/brahmkshatriya/echo?label=Codefactor&style=for-the-badge" alt="CodeFactor"/></a>
   <a href="https://hosted.weblate.org/engage/echo"><img alt="Weblate project translated" src="https://img.shields.io/weblate/progress/echo?label=Translated&style=for-the-badge"></a>
 </p>
 
@@ -18,7 +18,7 @@ An Extension-based Music Player for Android, designed with a clean and intuitive
 
 ## Downloads
 
-<a href="https://github.com/brahmkshatriya/echo/releases/latest"><img src="https://img.shields.io/badge/Stable-2EB9FF?label=Recommended&style=for-the-badge"  alt="Latest Stable Release"/></a>
+<!--<a href="https://github.com/brahmkshatriya/echo/releases/latest"><img src="https://img.shields.io/badge/Stable-2EB9FF?label=Recommended&style=for-the-badge"  alt="Latest Stable Release"/></a>-->
 <a href="https://nightly.link/brahmkshatriya/echo/workflows/nightly/main/artifact.zip"><img src="https://img.shields.io/badge/Nigthly-9999FF?label=Experimental&style=for-the-badge" alt="Latest Nightly Release"/></a>
 
 ## Support Us
@@ -45,11 +45,11 @@ Join our communities to stay updated and contribute to the discussion:
 ## Contribute
 
 We welcome contributions, from translations to new features. For inquiries, join
-our [Discord server](https://discord.gg/J3WvbBUU8Z) or [Telegram group](https://t.me/echo_app). Pull
+our [Discord server](https://discord.gg/J3WvbBUU8Z) or [Telegram group](https://t.me/echo_extension). Pull
 requests are welcome; check the [issues](https://github.com/brahmkshatriya/echo/issues?q=is%3Aissue%20) for
 guidance on major changes.
 
-### Translation
+### Translation [Currently turned off]
 
 You can help us by translating the app into your language here
 

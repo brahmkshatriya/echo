@@ -1,0 +1,42 @@
+name: Handle Extension Issues
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  check-extension-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug Issue Body
+        run: |
+          echo "Issue body: ${{ github.event.issue.body }}"
+      - name: Check for Extension Checkbox
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issueBody = context.payload.issue.body || '';
+            const extensionCheckboxPattern = /- \[[xX]\]\s*If this is an issue with an extension, I should be opening an issue in the extension's repository\./;
+            console.log(`Checking issue body for checkbox pattern: ${extensionCheckboxPattern}`);
+            if (extensionCheckboxPattern.test(issueBody)) {
+              console.log("Checkbox found! Posting comment and closing issue.");
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                body: "If this is an issue with an extension, please open an issue in the extension's repository."
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                state: "closed",
+                state_reason: "not_planned"
+              });
+            } else {
+              console.log("Checkbox not found in issue body.");
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

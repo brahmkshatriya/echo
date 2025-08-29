@@ -1,8 +1,8 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
 
@@ -25,21 +25,21 @@ interface AlbumClient {
      * Loads the tracks of an album.
      *
      * @param album the loaded album to load the tracks of.
-     * @return the paged tracks.
+     * @return the paged tracks or null if the tracks cannot be loaded for this [album].
      *
-     * @see PagedData
+     * @see Feed
      * @see Track
      */
-    fun loadTracks(album: Album): PagedData<Track>
+    suspend fun loadTracks(album: Album): Feed<Track>?
 
     /**
-     * Gets the shelves of an album. (Like "More from this artist", "Similar albums", etc.)
+     * Gets the feed of an album.
      *
-     * @param album the album to get the shelves of.
-     * @return the paged shelves.
+     * @param album the album to get the feed of.
+     * @return the feed of the album, or null if not available.
      *
-     * @see PagedData
-     * @see Shelf
+     * @see Feed
+     * @see Album
      */
-    fun getShelves(album: Album): PagedData<Shelf>
+    suspend fun loadFeed(album: Album): Feed<Shelf>?
 }

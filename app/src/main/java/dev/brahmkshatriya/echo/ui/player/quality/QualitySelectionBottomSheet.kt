@@ -22,10 +22,8 @@ import dev.brahmkshatriya.echo.databinding.DialogPlayerQualitySelectionBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.backgroundIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
-import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getDetails
@@ -33,7 +31,7 @@ import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.getSelected
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toAudioDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toSubtitleDetails
 import dev.brahmkshatriya.echo.ui.player.quality.FormatUtils.toVideoDetails
-import dev.brahmkshatriya.echo.ui.settings.AudioFragment
+import dev.brahmkshatriya.echo.ui.settings.SettingsPlayerFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -41,10 +39,9 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
     var binding by autoCleared<DialogPlayerQualitySelectionBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
-    private val uiViewModel by activityViewModel<UiViewModel>()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View {
         binding = DialogPlayerQualitySelectionBinding.inflate(inflater, container, false)
         return binding.root
@@ -55,8 +52,7 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
         binding.topAppBar.setNavigationOnClickListener { dismiss() }
         binding.topAppBar.setOnMenuItemClickListener {
             dismiss()
-            uiViewModel.collapsePlayer()
-            requireActivity().openFragment<AudioFragment>()
+            requireActivity().openFragment<SettingsPlayerFragment>()
             true
         }
 
@@ -92,24 +88,17 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
-        fun applyServer() {
-            val servers = viewModel.playerState.servers
-            val item = viewModel.playerState.current.value?.mediaItem
-            val server = servers[item?.mediaId]
+
+        observe(viewModel.serverAndTracks) { (tracks, server, index) ->
             val list = if (server != null && !server.merged) server.sources else listOf()
             binding.run {
                 applyChips(
-                    list, streamableSource, streamableSourceGroup, item?.sourceIndex,
+                    list, streamableSource, streamableSourceGroup, index,
                     { viewModel.changeCurrentSource(list.indexOf(it)) }) {
                     it.title ?: getString(R.string.quality_x, it.quality)
                 }
             }
-        }
-        applyServer()
-        observe(viewModel.playerState.serverChanged) { applyServer() }
-
-        observe(viewModel.tracks) { tracks ->
-            val details = tracks?.getDetails(requireContext())?.joinToString("\n")
+            val details = tracks?.getDetails(requireContext(), server, index)?.joinToString("\n")
             binding.streamableInfo.text = details
             binding.streamableInfo.isVisible = !details.isNullOrBlank()
 
@@ -156,7 +145,7 @@ class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
         textView: TextView,
         chipGroup: ChipGroup,
         selected: Int?,
-        onClick: Chip.(Streamable?) -> Unit
+        onClick: Chip.(Streamable?) -> Unit,
     ) {
         val context = chipGroup.context
         applyChips(streamables, textView, chipGroup, selected, onClick) {

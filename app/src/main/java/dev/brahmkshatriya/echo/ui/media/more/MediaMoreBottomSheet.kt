@@ -1,342 +1,303 @@
 package dev.brahmkshatriya.echo.ui.media.more
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.ConcatAdapter
+import androidx.fragment.app.Fragment
+import androidx.paging.LoadState
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.ArtistFollowClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
-import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
-import dev.brahmkshatriya.echo.common.clients.RadioClient
-import dev.brahmkshatriya.echo.common.clients.SaveToLibraryClient
-import dev.brahmkshatriya.echo.common.clients.ShareClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
-import dev.brahmkshatriya.echo.common.clients.TrackHideClient
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.databinding.DialogMediaMoreBinding
 import dev.brahmkshatriya.echo.download.Downloader
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
-import dev.brahmkshatriya.echo.ui.UiViewModel
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.common.GridAdapter
+import dev.brahmkshatriya.echo.ui.common.GridAdapter.Companion.configureGridLayout
 import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
+import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter
+import dev.brahmkshatriya.echo.ui.feed.FeedLoadingAdapter.Companion.createListener
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.icon
 import dev.brahmkshatriya.echo.ui.media.MediaFragment
 import dev.brahmkshatriya.echo.ui.media.MediaViewModel
-import dev.brahmkshatriya.echo.ui.media.adapter.GenericItemAdapter
-import dev.brahmkshatriya.echo.ui.media.more.Action.Companion.resource
-import dev.brahmkshatriya.echo.ui.media.more.Action.ResourceImage
+import dev.brahmkshatriya.echo.ui.media.more.MoreButton.Companion.button
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel
 import dev.brahmkshatriya.echo.ui.player.audiofx.AudioEffectsBottomSheet
+import dev.brahmkshatriya.echo.ui.player.more.lyrics.LyricsItemAdapter
 import dev.brahmkshatriya.echo.ui.player.quality.QualitySelectionBottomSheet
 import dev.brahmkshatriya.echo.ui.player.sleep.SleepTimerBottomSheet
+import dev.brahmkshatriya.echo.ui.playlist.delete.DeletePlaylistBottomSheet
+import dev.brahmkshatriya.echo.ui.playlist.edit.EditPlaylistBottomSheet
+import dev.brahmkshatriya.echo.ui.playlist.edit.EditPlaylistFragment
 import dev.brahmkshatriya.echo.ui.playlist.save.SaveToPlaylistBottomSheet
-import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
-import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-class MediaMoreBottomSheet : BottomSheetDialogFragment() {
-
+class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_more) {
     companion object {
         fun newInstance(
             contId: Int,
             extensionId: String,
             item: EchoMediaItem,
             loaded: Boolean,
-            fromPlayer: Boolean = false
+            fromPlayer: Boolean = false,
+            context: EchoMediaItem? = null,
+            tabId: String? = null,
+            pos: Int? = null,
         ) = MediaMoreBottomSheet().apply {
             arguments = Bundle().apply {
                 putInt("contId", contId)
                 putString("extensionId", extensionId)
                 putSerialized("item", item)
                 putBoolean("loaded", loaded)
+                putSerialized("context", context)
                 putBoolean("fromPlayer", fromPlayer)
+                putString("tabId", tabId)
+                putInt("pos", pos ?: -1)
             }
         }
     }
 
-    private var binding by autoCleared<DialogMediaMoreBinding>()
-    private val playerViewModel by activityViewModel<PlayerViewModel>()
-    private val uiViewModel by activityViewModel<UiViewModel>()
-    private val vm by viewModel<MediaViewModel> { parametersOf(extensionId, item, loaded, false) }
-
-    private val itemAdapter by lazy {
-        GenericItemAdapter(
-            playerViewModel.playerState.current,
-            object : MediaItemViewHolder.Listener {
-                override fun onMediaItemClicked(
-                    extensionId: String?, item: EchoMediaItem?, it: View?
-                ) {
-                    openItemFragment(extensionId, item)
-                    dismiss()
-                }
-            }
-        )
-    }
-    private val actionAdapter by lazy { Action.Adapter() }
-    private val loadingAdapter by lazy { LoadingAdapter() }
-
     private val args by lazy { requireArguments() }
+    private val contId by lazy { args.getInt("contId", -1).takeIf { it != -1 }!! }
     private val extensionId by lazy { args.getString("extensionId")!! }
     private val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
     private val loaded by lazy { args.getBoolean("loaded") }
+    private val itemContext by lazy { args.getSerialized<EchoMediaItem>("context") }
+    private val tabId by lazy { args.getString("tabId") }
+    private val pos by lazy { args.getInt("pos") }
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }
-    private val contId by lazy { args.getInt("contId") }
+    private val delete by lazy { args.getBoolean("delete", false) }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = DialogMediaMoreBinding.inflate(inflater, container, false)
-        return binding.root
+    private val vm by viewModel<MediaViewModel> {
+        parametersOf(false, extensionId, item, loaded, delete)
+    }
+    private val playerViewModel by activityViewModel<PlayerViewModel>()
+
+    private val actionAdapter by lazy { MoreButtonAdapter() }
+    private val headerAdapter by lazy {
+        MoreHeaderAdapter({ dismiss() }, {
+            openItemFragment(extensionId, item, loaded)
+            dismiss()
+        })
+    }
+
+    private val loadingAdapter by lazy {
+        FeedLoadingAdapter(createListener { vm.refresh() }) {
+            val holder = LyricsItemAdapter.Loading(it)
+            holder
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.root.adapter = ConcatAdapter(itemAdapter, actionAdapter, loadingAdapter)
-        observe(vm.itemFlow) {
-            itemAdapter.submitList(extensionId, listOf(item))
+        val binding = DialogMediaMoreBinding.bind(view)
+        observe(playerViewModel.playerState.current) {
+            headerAdapter.onCurrentChanged(it)
         }
-        observe(playerViewModel.playerState.current) { itemAdapter.onCurrentChanged() }
-        val loadFlow = vm.loadingFlow.combine(vm.deleteFlow) { a, b ->
-            a || b == MediaViewModel.State.Deleting
-        }
-        observe(loadFlow) { loadingAdapter.setLoading(it) }
-        val actionFlow = vm.run {
-            itemFlow.combine(extensionFlow) { _, _ -> }
-                .combine(savedState) { _, _ -> }
-                .combine(deleteFlow) { _, _ -> }
-        }
+        val actionFlow =
+            combine(vm.downloadsFlow, vm.uiResultFlow) { _, _ -> }
         observe(actionFlow) {
             val client = vm.extensionFlow.value?.instance?.value()?.getOrNull()
+            val result = vm.uiResultFlow.value?.getOrNull()
             val downloads = vm.downloadsFlow.value.filter { it.download.finalFile != null }
-            val list = if (vm.deleteFlow.value == MediaViewModel.State.Deleting) listOf()
-            else getActions(client, vm.itemFlow.value, !vm.loadingFlow.value, downloads)
+            val loaded = if (result != null) true else loaded
+            val list = getButtons(client, result, loaded, downloads)
             actionAdapter.submitList(list)
+            headerAdapter.item = result?.item ?: item
         }
-        observe(vm.deleteFlow) {
-            val deleted = it as? MediaViewModel.State.PlaylistDeleted ?: return@observe
-            val id = deleted.playlist?.id
-            if (id != null)
-                parentFragmentManager.setFragmentResult("deleted", bundleOf("id" to id))
-            dismiss()
+        observe(vm.itemResultFlow) { result ->
+            loadingAdapter.loadState = result?.map { LoadState.NotLoading(false) }?.getOrElse {
+                LoadState.Error(it)
+            } ?: LoadState.Loading
         }
+        configureGridLayout(
+            binding.root,
+            GridAdapter.Concat(
+                headerAdapter,
+                actionAdapter,
+                loadingAdapter
+            )
+        )
     }
 
-    private fun getActions(
+    private fun getButtons(
         client: ExtensionClient?,
-        item: EchoMediaItem,
+        state: MediaState.Loaded<*>?,
         loaded: Boolean,
         downloads: List<Downloader.Info>
-    ) = when (item) {
-        is EchoMediaItem.Lists -> getPlayButtons(client, item, loaded) + when (item) {
-            is EchoMediaItem.Lists.AlbumItem -> listOfNotNull(
-                radioButton(client, item, loaded),
-                saveToPlaylist(client, item, loaded),
-                saveToLibraryButton(client, loaded),
-            ) + downloadButton(client, item, downloads) + item.album.artists.map {
-                Action(it.name, Action.CustomImage(it.cover, R.drawable.ic_artist, true)) {
-                    openItemFragment(extensionId, it.toMediaItem())
-                }
-            }
+    ) = getPlayerButtons() +
+            getPlayButtons(client, state?.item ?: item, loaded) +
+            getPlaylistEditButtons(client, state, loaded) +
+            getDownloadButtons(client, state, downloads) +
+            getActionButtons(state) +
+            getItemButtons(state?.item ?: item)
 
-            is EchoMediaItem.Lists.PlaylistItem -> listOfNotNull(
-                radioButton(client, item, loaded),
-                saveToPlaylist(client, item, loaded),
-                saveToLibraryButton(client, loaded),
-                if (client is LibraryFeedClient && item.playlist.isEditable) Action(
-                    getString(R.string.delete_playlist),
-                    ResourceImage(R.drawable.ic_delete)
-                ) {
-                    vm.deletePlaylist(item.playlist)
-                }
-                else null,
-            ) + downloadButton(client, item, downloads) + item.playlist.authors.map {
-                Action(it.name, Action.CustomImage(it.cover, R.drawable.ic_person, true)) {
-                    openItemFragment(extensionId, it.toMediaItem())
-                }
-            }
-
-            is EchoMediaItem.Lists.RadioItem ->
-                listOfNotNull(saveToLibraryButton(client, loaded))
+    private fun getPlayerButtons() = if (fromPlayer) listOf(
+        button("audio_fx", R.string.audio_fx, R.drawable.ic_equalizer) {
+            AudioEffectsBottomSheet().show(parentFragmentManager, null)
+        },
+        button("sleep_timer", R.string.sleep_timer, R.drawable.ic_snooze) {
+            SleepTimerBottomSheet().show(parentFragmentManager, null)
+        },
+        button("quality_selection", R.string.quality_selection, R.drawable.ic_high_quality) {
+            QualitySelectionBottomSheet().show(parentFragmentManager, null)
         }
-
-        is EchoMediaItem.Profile -> getPlayButtons(client, item, loaded) + when (item) {
-            is EchoMediaItem.Profile.ArtistItem -> listOfNotNull(
-                radioButton(client, item, loaded),
-                saveToLibraryButton(client, loaded),
-                followButton(client, item.artist, loaded)
-            )
-
-            is EchoMediaItem.Profile.UserItem -> listOf()
-        }
-
-        is EchoMediaItem.TrackItem -> getTrackButtons(client, item.track, loaded) + listOfNotNull(
-            likeButton(client, item.track, loaded),
-            hideButton(client, item.track, loaded),
-            radioButton(client, item, loaded),
-            saveToPlaylist(client, item, loaded),
-            saveToLibraryButton(client, loaded)
-        ) + downloadButton(client, item, downloads) + item.track.album.let {
-            it ?: return@let listOf()
-            listOf(
-                Action(it.title, Action.CustomImage(it.cover, R.drawable.ic_album, false)) {
-                    openItemFragment(extensionId, it.toMediaItem())
-                }
-            )
-        } + item.track.artists.map {
-            Action(it.name, Action.CustomImage(it.cover, R.drawable.ic_artist, true)) {
-                openItemFragment(extensionId, it.toMediaItem())
-            }
-        }
-
-    } + listOfNotNull(shareButton(client, loaded))
+    ) else listOf()
 
     private fun getPlayButtons(
         client: ExtensionClient?, item: EchoMediaItem, loaded: Boolean
     ) = if (client is TrackClient) listOfNotNull(
-        resource(R.drawable.ic_play, R.string.play) {
+        button("play", R.string.play, R.drawable.ic_play) {
             playerViewModel.play(extensionId, item, loaded)
         },
         if (playerViewModel.queue.isNotEmpty())
-            resource(R.drawable.ic_playlist_play, R.string.add_to_next) {
+            button("next", R.string.add_to_next, R.drawable.ic_playlist_play) {
                 playerViewModel.addToNext(extensionId, item, loaded)
             }
         else null,
         if (playerViewModel.queue.size > 1)
-            resource(R.drawable.ic_playlist_add, R.string.add_to_queue) {
+            button("queue", R.string.add_to_queue, R.drawable.ic_playlist_add) {
                 playerViewModel.addToQueue(extensionId, item, loaded)
             }
         else null
     ) else listOf()
 
-    private fun getTrackButtons(client: ExtensionClient?, track: Track, loaded: Boolean) =
-        if (client is TrackClient && !fromPlayer) getPlayButtons(
-            client,
-            track.toMediaItem(),
-            loaded
+    fun getPlaylistEditButtons(
+        client: ExtensionClient?, state: MediaState<*>?, loaded: Boolean
+    ) = run {
+        if (client !is PlaylistEditClient) return@run listOf()
+        val item = state?.item ?: item
+        val isEditable = item is Playlist && item.isEditable
+        listOfNotNull(
+            if (loaded) button(
+                "save_to_playlist", R.string.save_to_playlist, R.drawable.ic_library_music
+            ) {
+                SaveToPlaylistBottomSheet.newInstance(extensionId, item)
+                    .show(parentFragmentManager, null)
+            } else null,
+            if (isEditable) button(
+                "edit_playlist", R.string.edit_playlist, R.drawable.ic_edit_note
+            ) {
+                openFragment<EditPlaylistFragment>(
+                    EditPlaylistFragment.getBundle(extensionId, item, loaded)
+                )
+            } else null,
+            if (isEditable) button(
+                "delete_playlist", R.string.delete_playlist, R.drawable.ic_delete
+            ) {
+                DeletePlaylistBottomSheet.show(requireActivity(), extensionId, item, loaded)
+            } else null,
+            if ((itemContext as? Playlist)?.isEditable == true && item is Track) button(
+                "remove_from_playlist", R.string.remove, R.drawable.ic_cancel
+            ) {
+                EditPlaylistBottomSheet.newInstance(
+                    extensionId, itemContext as Playlist, tabId, pos
+                ).show(parentFragmentManager, null)
+            } else null
         )
-        else listOf(
-            resource(R.drawable.ic_equalizer, R.string.audio_fx) {
-                AudioEffectsBottomSheet().show(parentFragmentManager, null)
-            },
-            resource(R.drawable.ic_snooze, R.string.sleep_timer) {
-                SleepTimerBottomSheet().show(parentFragmentManager, null)
-            },
-            resource(R.drawable.ic_high_quality, R.string.quality_selection) {
-                QualitySelectionBottomSheet().show(parentFragmentManager, null)
-            }
-        )
+    }
 
-    private fun likeButton(
-        client: ExtensionClient?, track: Track, loaded: Boolean
-    ) = if (client is TrackLikeClient && loaded && !fromPlayer)
-        if (!track.isLiked)
-            resource(R.drawable.ic_heart_outline_40dp, R.string.like) {
-                vm.like(track, true)
-            }
-        else resource(R.drawable.ic_heart_filled_40dp, R.string.unlike) {
-            vm.like(track, false)
-        }
-    else null
-
-    private fun hideButton(
-        client: ExtensionClient?, track: Track, loaded: Boolean
-    ) = if (client is TrackHideClient && loaded)
-        if (!track.isHidden)
-            resource(R.drawable.ic_hide_outline, R.string.hide) {
-                vm.hide(track, true)
-            }
-        else resource(R.drawable.ic_hide_filled, R.string.unhide) {
-            vm.hide(track, false)
-        }
-    else null
-
-    private fun followButton(
-        client: ExtensionClient?, artist: Artist, loaded: Boolean
-    ) = if (client is ArtistFollowClient && loaded)
-        if (!artist.isFollowing)
-            resource(R.drawable.ic_heart_outline_40dp, R.string.follow) {
-                vm.follow(artist, true)
-            }
-        else resource(R.drawable.ic_heart_filled_40dp, R.string.unfollow) {
-            vm.follow(artist, false)
-        }
-    else null
-
-    private fun saveToPlaylist(
-        client: ExtensionClient?, item: EchoMediaItem, loaded: Boolean
-    ) = if (client is LibraryFeedClient && loaded)
-        resource(R.drawable.ic_library_music, R.string.save_to_playlist) {
-            SaveToPlaylistBottomSheet.newInstance(extensionId, item)
-                .show(parentFragmentManager, null)
-        }
-    else null
-
-    private fun downloadButton(
-        client: ExtensionClient?, item: EchoMediaItem, downloads: List<Downloader.Info>
-    ) = if (item.extras[EXTENSION_ID] != OfflineExtension.metadata.id && client is TrackClient) {
+    fun getDownloadButtons(
+        client: ExtensionClient?, state: MediaState<*>?, downloads: List<Downloader.Info>
+    ) = run {
+        val item = state?.item ?: item
         val shouldShowDelete = when (item) {
-            is EchoMediaItem.TrackItem -> downloads.any { it.download.trackId == item.track.id }
+            is Track -> downloads.any { it.download.trackId == item.id }
             else -> downloads.any { it.context?.itemId == item.id }
         }
+        val downloadable =
+            state != null && client is TrackClient && state.item.extras[EXTENSION_ID] != OfflineExtension.metadata.id
+
         listOfNotNull(
-            resource(R.drawable.ic_download_for_offline, R.string.download) {
+            if (downloadable) button(
+                "download", R.string.download, R.drawable.ic_download_for_offline
+            ) {
                 val downloadViewModel by activityViewModel<DownloadViewModel>()
-                downloadViewModel.addToDownload(requireActivity(), extensionId, item)
-            },
-            if (shouldShowDelete) resource(R.drawable.ic_delete, R.string.delete_download) {
+                downloadViewModel.addToDownload(requireActivity(), extensionId, item, itemContext)
+            } else null,
+            if (shouldShowDelete) button(
+                "delete_download", R.string.delete_download, R.drawable.ic_scan_delete
+            ) {
                 val downloadViewModel by activityViewModel<DownloadViewModel>()
                 downloadViewModel.deleteDownload(item)
             } else null
         )
-    } else listOf()
 
-    private fun radioButton(
-        client: ExtensionClient?, item: EchoMediaItem, loaded: Boolean
-    ) = if (client is RadioClient && loaded) resource(
-        R.drawable.ic_sensors, R.string.radio
-    ) { playerViewModel.radio(extensionId, item) }
-    else null
+    }
 
-    private fun shareButton(client: ExtensionClient?, loaded: Boolean) =
-        if (client is ShareClient && loaded) resource(
-            R.drawable.ic_forward,
-            R.string.share
+    fun getActionButtons(
+        state: MediaState.Loaded<*>?,
+    ) = listOfNotNull(
+        if (state?.isFollowed != null) button(
+            "follow", if (state.isFollowed) R.string.unfollow else R.string.follow,
+            if (state.isFollowed) R.drawable.ic_check_circle_filled else R.drawable.ic_check_circle
         ) {
-            vm.onShare(requireActivity())
+            vm.followItem(!state.isFollowed)
+        } else null,
+        if (state?.isSaved != null) button(
+            "save_to_library",
+            if (state.isSaved) R.string.remove_from_library else R.string.save_to_library,
+            if (state.isSaved) R.drawable.ic_bookmark_filled else R.drawable.ic_bookmark_outline
+        ) {
+            vm.saveToLibrary(!state.isSaved)
+        } else null,
+        if (state?.isLiked != null) button(
+            "like", if (state.isLiked) R.string.unlike else R.string.like,
+            if (state.isLiked) R.drawable.ic_heart_filled_40dp else R.drawable.ic_heart_outline_40dp
+        ) {
+            vm.likeItem(!state.isLiked)
+        } else null,
+        if (state?.isHidden != null) button(
+            "hide", if (state.isHidden) R.string.unhide else R.string.hide,
+            if (state.isHidden) R.drawable.ic_unhide else R.drawable.ic_hide
+        ) {
+            vm.hideItem(!state.isHidden)
+        } else null,
+        if (state?.showRadio == true) button(
+            "radio", R.string.radio, R.drawable.ic_sensors
+        ) {
+            playerViewModel.radio(extensionId, state.item, true)
+        } else null,
+        if (state?.showShare == true) button(
+            "share", R.string.share, R.drawable.ic_share
+        ) {
+            vm.onShare()
         } else null
+    )
 
-    private fun saveToLibraryButton(
-        client: ExtensionClient?, loaded: Boolean
-    ) = if (client is SaveToLibraryClient && loaded) {
-        if (vm.savedState.value) resource(
-            R.drawable.ic_bookmark_filled, R.string.remove_from_library
-        ) { vm.saveToLibrary(false) }
-        else resource(
-            R.drawable.ic_bookmark_outline, R.string.save_to_library
-        ) { vm.saveToLibrary(true) }
-    } else null
+    private fun getItemButtons(item: EchoMediaItem) = when (item) {
+        is Track -> item.artists + listOfNotNull(item.album)
+        is EchoMediaItem.Lists -> item.artists
+        is Artist -> listOf()
+    }.map {
+        button(it.id, it.title, it.icon) {
+            openItemFragment(extensionId, it)
+        }
+    }
 
-    private fun openItemFragment(extensionId: String?, item: EchoMediaItem?) {
+    private inline fun <reified T : Fragment> openFragment(bundle: Bundle) {
+        parentFragmentManager.findFragmentById(contId)!!
+            .openFragment<T>(null, bundle)
+    }
+
+    private fun openItemFragment(
+        extensionId: String?, item: EchoMediaItem?, loaded: Boolean = false
+    ) {
         extensionId ?: return
         item ?: return
-        parentFragmentManager.findFragmentById(contId)!!.openFragment<MediaFragment>(
-            null,
-            MediaFragment.getBundle(extensionId, item, loaded)
-        )
+        openFragment<MediaFragment>(MediaFragment.getBundle(extensionId, item, loaded))
         dismiss()
-        uiViewModel.collapsePlayer()
     }
 }

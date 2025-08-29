@@ -329,6 +329,5 @@
     <string name="download_complete">डाउनलोड सम्पूर्ण</string>
     <string name="delete_download">डाउनलोड् विलोपयन्तु</string>
     <string name="removed_x_from_downloads">डाउनलोड्स तः %1$s निष्कासितम्</string>
-    <string name="add_widget">लघु-प्लेयर-साध्यम्</string>
     <string name="app_widget_description">Echo गृहपृष्ठे दृश्यताम्!</string>
 </resources>

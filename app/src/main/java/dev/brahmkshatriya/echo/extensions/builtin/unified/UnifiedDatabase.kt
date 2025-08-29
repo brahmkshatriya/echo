@@ -13,6 +13,7 @@ import androidx.room.RoomDatabase
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Date
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedDatabase.PlaylistEntity.Companion.toEntity
@@ -31,7 +32,7 @@ import java.util.Calendar
         UnifiedDatabase.PlaylistTrackEntity::class,
         UnifiedDatabase.SavedEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class UnifiedDatabase : RoomDatabase() {
@@ -39,8 +40,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
 
     private val dao by lazy { playlistDao() }
 
-    suspend fun getPlaylists(): List<Playlist> {
-        return dao.getPlaylists().map { it.playlist }
+    suspend fun getCreatedPlaylists(): List<Playlist> {
+        return dao.getPlaylists().filter { it.actualId.isEmpty() }.map { it.playlist }
     }
 
     suspend fun getSaved(): List<EchoMediaItem> {
@@ -85,13 +86,19 @@ abstract class UnifiedDatabase : RoomDatabase() {
         } else liked.playlist
     }
 
-    suspend fun createPlaylist(title: String, description: String?): Playlist {
+    suspend fun createPlaylist(
+        title: String,
+        description: String?,
+        cover: ImageHolder? = null,
+        actualId: String = ""
+    ): Playlist {
         val playlist = PlaylistEntity(
             0,
             getDateNow().toJson(),
             title,
             description ?: "",
-            null
+            cover?.toJson(),
+            actualId = actualId
         )
         val id = dao.insertPlaylist(playlist)
         return playlist.copy(id = id).playlist
@@ -110,10 +117,13 @@ abstract class UnifiedDatabase : RoomDatabase() {
     suspend fun loadPlaylist(playlist: Playlist): Playlist {
         val entity = dao.getPlaylist(playlist.toEntity().id)
         val tracks = dao.getTracks(entity.id).map { it.track }
-        if (tracks.isEmpty()) return playlist.copy(tracks = 0, duration = null)
+        if (tracks.isEmpty()) return playlist.copy(trackCount = 0, duration = null)
         val durations = tracks.mapNotNull { it.duration }
         val average = durations.average().toLong()
-        return entity.playlist.copy(tracks = tracks.size, duration = average * tracks.size)
+        return entity.playlist.copy(
+            trackCount = tracks.size.toLong(),
+            duration = average * tracks.size
+        )
     }
 
     suspend fun getTracks(playlist: Playlist): List<Track> {
@@ -122,6 +132,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val tracks = dao.getTracks(entity.id).associateBy { it.eid }
         if (tracks.isEmpty()) return emptyList()
         var last = entity.last
+        if (last !in tracks) return new // A workaround when last track of playlist is updated by removeTracksFromPlaylist() while having old playlist here
         while (last != null) {
             val track = tracks[last]!!
             new.add(track.track)
@@ -160,11 +171,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
             val track = dao.getTrack(tracks[it].toEntity().eid)!!
             dao.deletePlaylistTrack(track)
 
-            val before = dao.getTrack(track.after)
-            if (before != null) dao.insertPlaylistTrack(before.copy(after = track.after))
-
             val after = dao.getAfterTrack(track.eid)
-            if (after != null) dao.insertPlaylistTrack(track.copy(after = before?.eid))
+            if (after != null) dao.insertPlaylistTrack(after.copy(after = track.after))
 
             val entity = dao.getPlaylist(playlist.toEntity().id)
             if (entity.last == track.eid) dao.insertPlaylist(entity.copy(last = track.after))
@@ -207,6 +215,19 @@ abstract class UnifiedDatabase : RoomDatabase() {
             .any { it.trackId == track.id && it.extId == track.extras.extensionId }
     }
 
+    suspend fun getOrCreate(app: Context, context: EchoMediaItem): Playlist {
+        return dao.getPlaylistByActualId(context.id)?.playlist ?: createPlaylist(
+            context.title,
+            app.getString(R.string.downloaded_x, ""),
+            context.cover,
+            context.id
+        )
+    }
+
+    suspend fun getPlaylist(mediaItem: EchoMediaItem): Playlist? {
+        return dao.getPlaylistByActualId(mediaItem.id)?.playlist
+    }
+
     @Dao
     interface PlaylistDao {
         @Query("SELECT * FROM PlaylistEntity")
@@ -217,6 +238,9 @@ abstract class UnifiedDatabase : RoomDatabase() {
 
         @Query("SELECT * FROM PlaylistEntity WHERE name = :name")
         suspend fun getPlaylist(name: String): PlaylistEntity?
+
+        @Query("SELECT * FROM PlaylistEntity WHERE actualId = :actualId")
+        suspend fun getPlaylistByActualId(actualId: String): PlaylistEntity?
 
         @Insert(onConflict = REPLACE)
         suspend fun insertPlaylist(playlist: PlaylistEntity): Long
@@ -263,17 +287,23 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val name: String,
         val description: String,
         val cover: String?,
-        val last: Long? = null
+        val last: Long? = null,
+        val actualId: String = ""
     ) {
         val playlist by lazy {
             Playlist(
                 id.toString(),
                 name,
                 true,
-                cover?.toData(),
+                isPrivate = false,
+                cover = cover?.toData(),
                 creationDate = modified.toData<Date>(),
                 description = description.takeIf { it.isNotBlank() },
-                extras = mapOf(EXTENSION_ID to UNIFIED_ID, "last" to last.toString())
+                extras = mapOf(
+                    EXTENSION_ID to UNIFIED_ID,
+                    "last" to last.toString(),
+                    "actualId" to actualId
+                )
             )
         }
 
@@ -285,7 +315,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
                     title,
                     description ?: "",
                     cover?.toJson(),
-                    extras["last"]?.toLongOrNull()
+                    extras["last"]?.toLongOrNull(),
+                    extras["actualId"] ?: ""
                 )
             }
         }
@@ -303,7 +334,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
     ) {
         val track by lazy {
             data.toData<Track>().run {
-                copy(
+                this.copy(
+                    type = type,
                     extras = extras + mapOf(
                         "pId" to playlistId.toString(),
                         "eId" to eid.toString(),

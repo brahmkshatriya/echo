@@ -5,7 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity
 import kotlinx.coroutines.flow.Flow
@@ -20,20 +20,10 @@ interface UserDao {
     fun observeCurrentUser(): Flow<List<CurrentUser>>
 
     @Query("SELECT * FROM UserEntity WHERE type = :type AND extId = :extId")
-    suspend fun getAllUsers(type: ExtensionType, extId: String): List<UserEntity>
+    fun observeAllUsers(type: ExtensionType, extId: String): Flow<List<UserEntity>>
 
-    @Query(
-        """
-        SELECT UserEntity.* FROM UserEntity
-        INNER JOIN CurrentUser 
-        ON UserEntity.extId = CurrentUser.extId
-        AND UserEntity.type = CurrentUser.type
-        AND UserEntity.id = CurrentUser.userId
-        WHERE CurrentUser.extId = :extId
-        AND CurrentUser.type = :type
-    """
-    )
-    suspend fun getCurrentUser(type: ExtensionType, extId: String): UserEntity?
+    @Query("SELECT * FROM CurrentUser WHERE extId = :extId AND type = :type")
+    suspend fun getCurrentUser(type: ExtensionType, extId: String): CurrentUser?
 
     @Delete
     suspend fun deleteUser(user: UserEntity)

@@ -10,15 +10,15 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddFooterBinding
 import dev.brahmkshatriya.echo.databinding.ItemExtensionAddHeaderBinding
-import dev.brahmkshatriya.echo.extensions.Updater
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class ExtensionsAddListAdapter(
     val listener: Listener
 ) : ListAdapter<ExtensionsAddListAdapter.Item, ExtensionsAddListAdapter.ViewHolder>(DiffCallback) {
 
     data class Item(
-        val item: Updater.ExtensionAssetResponse,
+        val item: AddViewModel.ExtensionAssetResponse,
         val isChecked: Boolean,
         val isInstalled: Boolean
     )
@@ -32,11 +32,24 @@ class ExtensionsAddListAdapter(
     }
 
     fun interface Listener {
-        fun onChecked(item: Updater.ExtensionAssetResponse, isChecked: Boolean)
+        fun onChecked(item: AddViewModel.ExtensionAssetResponse, isChecked: Boolean)
     }
 
-    inner class ViewHolder(val binding: ItemExtensionAddBinding) :
-        RecyclerView.ViewHolder(binding.root)
+    inner class ViewHolder(
+        val binding: ItemExtensionAddBinding
+    ) : ScrollAnimViewHolder(binding.root) {
+        init {
+            binding.extensionSwitch.setOnCheckedChangeListener { _, checked ->
+                val item = runCatching { getItem(bindingAdapterPosition) }.getOrNull()
+                if (item == null) return@setOnCheckedChangeListener
+                listener.onChecked(item.item, checked)
+            }
+            binding.root.setOnClickListener {
+                binding.extensionSwitch.isChecked = !binding.extensionSwitch.isChecked
+            }
+            binding.extensionSwitch.isClickable = false
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -51,18 +64,11 @@ class ExtensionsAddListAdapter(
         else binding.root.context.getString(R.string.extension_installed, item.name)
         binding.extensionSubtitle.text = item.subtitle ?: item.id
         binding.itemExtension.apply {
-            item.iconUrl?.toImageHolder().loadAsCircle(this, R.drawable.ic_extension_48dp) {
+            item.iconUrl?.toImageHolder().loadAsCircle(this, R.drawable.ic_extension_32dp) {
                 setImageDrawable(it)
             }
         }
         binding.extensionSwitch.isChecked = isChecked
-        binding.extensionSwitch.setOnCheckedChangeListener { _, checked ->
-            listener.onChecked(item, checked)
-        }
-        binding.root.setOnClickListener {
-            binding.extensionSwitch.isChecked = !binding.extensionSwitch.isChecked
-        }
-        binding.extensionSwitch.isClickable = false
     }
 
     class Header(
@@ -75,7 +81,7 @@ class ExtensionsAddListAdapter(
         }
 
         class ViewHolder(val binding: ItemExtensionAddHeaderBinding) :
-            RecyclerView.ViewHolder(binding.root)
+            ScrollAnimViewHolder(binding.root)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)
@@ -102,7 +108,7 @@ class ExtensionsAddListAdapter(
         }
 
         class ViewHolder(val binding: ItemExtensionAddFooterBinding) :
-            RecyclerView.ViewHolder(binding.root)
+            ScrollAnimViewHolder(binding.root)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)

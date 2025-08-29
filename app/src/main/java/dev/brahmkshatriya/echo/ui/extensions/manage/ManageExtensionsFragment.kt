@@ -9,25 +9,23 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
-import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.MusicExtension
-import dev.brahmkshatriya.echo.common.helpers.ExtensionType
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.FragmentManageExtensionsBinding
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyBackPressCallback
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsetsMain
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyBackPressCallback
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsetsWithChild
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
-import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment.Companion.getType
+import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoPreference.Companion.getType
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
-import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddListBottomSheet
+import dev.brahmkshatriya.echo.ui.extensions.add.ExtensionsAddBottomSheet
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.configure
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.onAppBarChangeListener
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureAppBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ManageExtensionsFragment : Fragment() {
@@ -43,11 +41,11 @@ class ManageExtensionsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
-        applyInsetsMain(binding.appBarLayout, binding.recyclerView) {
+        applyInsetsWithChild(binding.appBarLayout, binding.recyclerView, 24) {
             binding.fabContainer.applyInsets(it)
         }
         applyBackPressCallback()
-        binding.appBarLayout.onAppBarChangeListener { offset ->
+        binding.appBarLayout.configureAppBar { offset ->
             binding.appBarOutline.alpha = offset
             binding.appBarOutline.isVisible = offset > 0
             binding.toolBar.alpha = 1 - offset
@@ -55,13 +53,14 @@ class ManageExtensionsFragment : Fragment() {
         binding.toolBar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        FastScrollerHelper.applyTo(binding.recyclerView)
-        val refresh = binding.toolBar.findViewById<View>(R.id.menu_refresh)
-        refresh.setOnClickListener { viewModel.refresh() }
-        binding.swipeRefresh.configure { viewModel.refresh() }
+        binding.toolBar.setOnMenuItemClickListener {
+            viewModel.update(requireActivity(), true)
+            true
+        }
 
+        FastScrollerHelper.applyTo(binding.recyclerView)
         binding.fabAddExtensions.setOnClickListener {
-            ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
+            ExtensionsAddBottomSheet().show(parentFragmentManager, null)
         }
 
         val tabs = ExtensionType.entries.map {
@@ -115,12 +114,14 @@ class ManageExtensionsFragment : Fragment() {
         })
 
         observe(viewModel.manageExtListFlow) { list ->
-            binding.swipeRefresh.isRefreshing = list == null
-            extensionAdapter.submit(list ?: emptyList())
+            extensionAdapter.submit(list, viewModel.lastSelectedManageExt.value, viewModel.app.settings)
         }
 
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            fun select(tab: TabLayout.Tab) { viewModel.lastSelectedManageExt.value = tab.position }
+            fun select(tab: TabLayout.Tab) {
+                viewModel.lastSelectedManageExt.value = tab.position
+            }
+
             override fun onTabSelected(tab: TabLayout.Tab) = select(tab)
             override fun onTabReselected(tab: TabLayout.Tab) = select(tab)
             override fun onTabUnselected(tab: TabLayout.Tab) {}

@@ -1,13 +1,12 @@
 package dev.brahmkshatriya.echo.ui.player
 
-import android.graphics.Bitmap
 import android.graphics.Outline
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
 import androidx.media3.common.MediaItem
@@ -16,15 +15,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.databinding.ItemClickPanelsBinding
 import dev.brahmkshatriya.echo.databinding.ItemPlayerTrackBinding
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.unloadedCover
 import dev.brahmkshatriya.echo.playback.PlayerState
-import dev.brahmkshatriya.echo.ui.UiViewModel
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyHorizontalInsets
-import dev.brahmkshatriya.echo.ui.UiViewModel.Companion.applyInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyHorizontalInsets
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.applyInsets
 import dev.brahmkshatriya.echo.ui.player.PlayerColors.Companion.defaultPlayerColors
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.getCachedDrawable
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadWithThumb
@@ -33,6 +31,7 @@ import dev.brahmkshatriya.echo.utils.ui.GestureListener.Companion.handleGestures
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isLandscape
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.isRTL
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.max
 
@@ -60,7 +59,7 @@ class PlayerTrackAdapter(
 
     inner class ViewHolder(
         private val binding: ItemPlayerTrackBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
 
         private val context = binding.root.context
 
@@ -140,29 +139,28 @@ class PlayerTrackAdapter(
             }
         }
 
-        private var bitmap: Result<Bitmap?> = Result.failure(Exception())
-        fun applyBitmap() {
-            if (bitmap.isFailure) return
+        private var coverDrawable: Drawable? = null
+        fun applyDrawable() {
             val index = bindingAdapterPosition.takeIf { it != RecyclerView.NO_POSITION } ?: return
             val item = getItem(index) ?: return
             val curr = current.value?.mediaItem
             if (curr != item) return
-            val bitmap = bitmap.getOrNull()
-            currentBitmapListener?.invoke(bitmap)
+            val drawable = coverDrawable
+            currentDrawableListener?.invoke(drawable)
         }
 
         fun bind(item: MediaItem?) {
             binding.playerCollapsed.run {
                 collapsedTrackTitle.text = item?.track?.title
-                collapsedTrackArtist.text = item?.track?.toMediaItem()?.subtitleWithE
+                collapsedTrackArtist.text = item?.track?.artists?.joinToString(", ") { it.name }
             }
             val old = item?.unloadedCover?.getCachedDrawable(binding.root.context)
             item?.track?.cover.loadWithThumb(binding.playerTrackCover, old) {
                 val image = it
                     ?: ResourcesCompat.getDrawable(resources, R.drawable.art_music, context.theme)
                 setImageDrawable(image)
-                bitmap = Result.success(it?.toBitmap())
-                applyBitmap()
+                coverDrawable = it
+                applyDrawable()
             }
             updateInsets()
             updateColors()
@@ -204,13 +202,13 @@ class PlayerTrackAdapter(
     override fun onViewAttachedToWindow(holder: ViewHolder) {
         holder.updateInsets()
         holder.updateColors()
-        holder.applyBitmap()
+        holder.applyDrawable()
     }
 
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
         holder.updateInsets()
         holder.updateColors()
-        holder.applyBitmap()
+        holder.applyDrawable()
     }
 
     private fun onEachViewHolder(block: ViewHolder.() -> Unit) {
@@ -230,8 +228,8 @@ class PlayerTrackAdapter(
     fun playerControlsHeightUpdated() = onEachViewHolder { updateInsets() }
     fun onColorsUpdated() = onEachViewHolder { updateColors() }
     fun onCurrentUpdated() {
-        onEachViewHolder { applyBitmap() }
-        if (current.value == null) currentBitmapListener?.invoke(null)
+        onEachViewHolder { applyDrawable() }
+        if (current.value == null) currentDrawableListener?.invoke(null)
     }
 
     private var isPlayerVisible = false
@@ -240,7 +238,7 @@ class PlayerTrackAdapter(
         onEachViewHolder { updateInsets() }
     }
 
-    var currentBitmapListener: ((Bitmap?) -> Unit)? = null
+    var currentDrawableListener: ((Drawable?) -> Unit)? = null
 
     companion object {
         fun ItemClickPanelsBinding.configureClicking(listener: Listener, uiViewModel: UiViewModel) {

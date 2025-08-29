@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.utils
 
 import android.Manifest
+import android.Manifest.permission.READ_MEDIA_AUDIO
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -13,13 +14,15 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 object PermsUtils {
 
-    fun ComponentActivity.checkAppPermissions() {
+    fun ComponentActivity.checkAppPermissions(onGranted: suspend () -> Unit) {
         val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOfNotNull(
             Triple(
                 Manifest.permission.POST_NOTIFICATIONS,
@@ -27,20 +30,20 @@ object PermsUtils {
                 getString(R.string.notifications_permission_summary)
             ),
             Triple(
-                Manifest.permission.READ_MEDIA_AUDIO,
+                READ_MEDIA_AUDIO,
                 getString(R.string.audio),
                 getString(R.string.audio_permission_summary)
             ),
-            Triple(
-                Manifest.permission.READ_MEDIA_VIDEO,
-                getString(R.string.video),
-                getString(R.string.video_permission_summary)
-            ),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) Triple(
-                Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-                getString(R.string.video),
-                getString(R.string.video_permission_summary)
-            ) else null
+//            Triple(
+//                Manifest.permission.READ_MEDIA_VIDEO,
+//                getString(R.string.video),
+//                getString(R.string.video_permission_summary)
+//            ),
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) Triple(
+//                Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+//                getString(R.string.video),
+//                getString(R.string.video_permission_summary)
+//            ) else null
         ) else listOfNotNull(
             Triple(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -53,7 +56,11 @@ object PermsUtils {
                 getString(R.string.write_storage_permission_summary)
             ) else null
         )
-        getPermissionsLauncher(perms)
+        getPermissionsLauncher(perms, onGranted = {
+            if (it == READ_MEDIA_AUDIO) lifecycleScope.launch {
+                onGranted()
+            }
+        })
     }
 
     private fun ComponentActivity.getPermissionsLauncher(

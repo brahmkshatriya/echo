@@ -1,18 +1,19 @@
-package dev.brahmkshatriya.echo.ui.search
+package dev.brahmkshatriya.echo.ui.main.search
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchMediaBinding
 import dev.brahmkshatriya.echo.databinding.ItemQuickSearchQueryBinding
-import dev.brahmkshatriya.echo.ui.shelf.adapter.MediaItemViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.placeHolder
+import dev.brahmkshatriya.echo.ui.feed.viewholders.MediaViewHolder.Companion.subtitle
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
-sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    abstract fun bind(item: QuickSearchItem)
+sealed class QuickSearchViewHolder(itemView: View) : ScrollAnimViewHolder(itemView) {
+    abstract fun bind(item: QuickSearchAdapter.Item)
     abstract val insertView: View
     abstract val deleteView: View
     open val transitionView: View
@@ -25,8 +26,8 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override val deleteView: View
             get() = binding.delete
 
-        override fun bind(item: QuickSearchItem) {
-            item as QuickSearchItem.Query
+        override fun bind(item:  QuickSearchAdapter.Item) {
+            val item = item.actual as QuickSearchItem.Query
             binding.history.visibility = if (item.searched) View.VISIBLE else View.INVISIBLE
             binding.query.text = item.query
         }
@@ -53,11 +54,12 @@ sealed class QuickSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         override val transitionView: View
             get() = binding.coverContainer
 
-        override fun bind(item: QuickSearchItem) {
-            item as QuickSearchItem.Media
+        override fun bind(item:  QuickSearchAdapter.Item) {
+            val item = item.actual as QuickSearchItem.Media
             binding.title.text = item.media.title
-            binding.subtitle.text = item.media.subtitleWithE
-            binding.subtitle.isVisible = !item.media.subtitleWithE.isNullOrEmpty()
+            val subtitle = item.media.subtitle(binding.root.context)
+            binding.subtitle.text = subtitle
+            binding.subtitle.isVisible = !subtitle.isNullOrEmpty()
             transitionView.transitionName = ("quick" + item.media.id).hashCode().toString()
             item.media.cover.loadInto(binding.cover, item.media.placeHolder)
         }

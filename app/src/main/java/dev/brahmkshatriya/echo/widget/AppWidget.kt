@@ -10,15 +10,14 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.util.SizeF
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.widget.RemoteViews
 import androidx.core.os.bundleOf
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.App
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
+import dev.brahmkshatriya.echo.extensions.MediaState
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.state
 import dev.brahmkshatriya.echo.playback.PlayerCommands.likeCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatOffCommand
@@ -27,14 +26,15 @@ import dev.brahmkshatriya.echo.playback.PlayerCommands.resumeCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.unlikeCommand
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getController
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getPendingIntent
-import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverPlaylist
+import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverIndex
+import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverTracks
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class AppWidget : AppWidgetProvider(), KoinComponent {
 
     override fun onUpdate(
-        context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray
+        context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray,
     ) {
         updateWidgets(context)
     }
@@ -79,7 +79,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
         context: Context?,
         appWidgetManager: AppWidgetManager?,
         appWidgetId: Int,
-        newOptions: Bundle?
+        newOptions: Bundle?,
     ) {
         context ?: return
         appWidgetManager ?: return
@@ -137,7 +137,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
             controller: MediaController?,
             context: Context,
             appWidgetId: Int,
-            appWidgetManager: AppWidgetManager
+            appWidgetManager: AppWidgetManager,
         ) {
             val packageName = context.packageName
             val large = RemoteViews(packageName, R.layout.app_widget_large)
@@ -174,16 +174,20 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
             views: RemoteViews,
         ) {
             val current = controller?.currentMediaItem
-            val item = current ?: context.run {
-                val (list, index) = recoverPlaylist(listOf(), false)
-                list.getOrNull(index)
+            val item = current?.state ?: context.run {
+                val list = recoverTracks().orEmpty()
+                val index = recoverIndex() ?: 0
+                list.getOrNull(index)?.first
             }
-            val title = item?.mediaMetadata?.title
-            val artist = item?.mediaMetadata?.artist
+            val title = item?.item?.title
+            val artist = item?.item?.artists?.takeIf { it.isNotEmpty() }
+                ?.joinToString(", ") { it.name }
             views.setTextViewText(R.id.trackTitle, title ?: context.getString(R.string.so_empty))
             views.setTextViewText(
                 R.id.trackArtist,
-                artist ?: context.getString(R.string.unknown).takeIf { title != null })
+                artist ?: context.getString(R.string.unknown).takeIf { title != null }
+            )
+            val image = image?.run { copy(config ?: Bitmap.Config.ARGB_8888, false) }
             if (image == null) views.setImageViewResource(R.id.trackCover, R.drawable.art_music)
             else views.setImageViewBitmap(R.id.trackCover, image)
 
@@ -204,10 +208,6 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 if (isPlaying) R.drawable.ic_pause_48dp else R.drawable.ic_play_48dp
             )
 
-            views.setViewVisibility(
-                R.id.playProgress, if (controller?.isLoading == true) VISIBLE else GONE
-            )
-
             views.setOnClickPendingIntent(
                 R.id.nextButton, context.createIntent(ACTION_NEXT)
             )
@@ -225,7 +225,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 if ((controller?.currentMediaItemIndex ?: -1) >= 0) 1f else 0.5f
             )
 
-            val isLiked = item?.isLiked ?: false
+            val isLiked = (item as? MediaState.Loaded)?.isLiked ?: false
             views.setOnClickPendingIntent(
                 R.id.likeButton, context.createIntent(if (isLiked) ACTION_UNLIKE else ACTION_LIKE)
             )

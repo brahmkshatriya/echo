@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.common.clients
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 
 /**
- * Interface for sharing media items of this extension
+ * Used for getting a link to share media items with [EchoMediaItem.isShareable] set to true.
  */
 interface ShareClient {
     /**

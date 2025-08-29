@@ -325,6 +325,5 @@
     <string name="delete_download">刪除下載</string>
     <string name="removed_x_from_downloads">已從下載中刪除 %1$s</string>
     <string name="download_complete">下載完整</string>
-    <string name="add_widget">迷你播放器小部件</string>
     <string name="app_widget_description">在您的主螢幕上回聲！</string>
 </resources>

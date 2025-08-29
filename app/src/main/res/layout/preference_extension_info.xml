@@ -1,0 +1,76 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp">
+
+    <LinearLayout
+        android:id="@+id/extensionEnabled"
+        style="@style/Selectable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-16dp"
+        android:layout_marginEnd="-16dp"
+        android:gravity="center"
+        android:minHeight="64dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:id="@+id/extensionEnabledText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="18sp"
+            tools:text="Enabled" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/extensionEnabledSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:clickable="false" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/extensionDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        tools:text="Tracker Extension [APK]\nid • version • author" />
+
+    <TextView
+        android:id="@+id/extensionDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:alpha="0.66"
+        android:ellipsize="end"
+        tools:text="@tools:sample/lorem" />
+
+    <include
+        android:id="@+id/extensionLoginUser"
+        layout="@layout/item_login_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="16dp"
+        android:layout_marginStart="-24dp"
+        android:layout_marginEnd="-24dp" />
+
+    <View
+        android:id="@+id/toolbarOutline"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="-24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="-24dp"
+        android:alpha="0.66"
+        android:background="?attr/colorOutline" />
+
+</LinearLayout>

@@ -331,6 +331,5 @@
     <string name="create">Criar</string>
     <string name="add_song">Adicionar música</string>
     <string name="download_complete">Download Completo</string>
-    <string name="add_widget">Mini Player Widget</string>
     <string name="app_widget_description">Eco na sua tela inicial!</string>
 </resources>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="playlists">再生リスト</string>
     <string name="off">オフ</string>
     <string name="albums">アルバム</string>
     <string name="notifications">通知</string>
@@ -36,19 +35,15 @@
     <string name="video">動画</string>
     <string name="playlist_liked_desc">いいねした曲</string>
     <string name="no_internet">インターネット接続がありません</string>
-    <string name="password">パスワード</string>
-    <string name="language">言語</string>
     <string name="file">ファイル</string>
     <string name="quality_x">品質 %1$d</string>
     <string name="app">アプリ</string>
-    <string name="uninstall">アンインストール</string>
     <string name="link">リンク</string>
     <string name="subtitle_selection">字幕選択</string>
     <string name="theme_summary">目に優しいダークモードを選びませんか？</string>
     <string name="music">音楽</string>
     <string name="lyrics">歌詞</string>
     <string name="video_selection">動画選択</string>
-    <string name="username">ユーザネーム</string>
     <string name="up_next">次へ</string>
     <string name="info">情報</string>
     <string name="_15min">15分</string>
@@ -59,7 +54,6 @@
     <string name="all">全部</string>
     <string name="logout_and_login">ログインとログアウト</string>
     <string name="choose_a_color">色を選択</string>
-    <string name="audio_summary">（オーディオ好き集まれ！）</string>
     <string name="stream_quality">ストリームクオリティ</string>
     <string name="skip_silence">無音部分をスキップ</string>
     <string name="version">バージョン</string>
@@ -67,7 +61,6 @@
     <string name="playback_speed">プレイバック速度</string>
     <string name="x_was_not_granted">%1$s は付与されませんでした</string>
     <string name="x_permission_required">%1$s 権限が必要です</string>
-    <string name="video_permission_summary">デバイス内の動画ライブラリにアクセス</string>
     <string name="audio_permission_summary">デバイスの音楽ライブラリにアクセス</string>
     <string name="notifications_permission_summary">ダウンロードと音楽に関する通知を表示する</string>
     <string name="write_storage_permission_summary">ローカルプレイリストの作成・編集</string>

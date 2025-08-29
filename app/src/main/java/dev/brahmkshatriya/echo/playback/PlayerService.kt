@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.playback
 
+import android.app.Activity
 import android.app.Application
 import android.app.PendingIntent
 import android.content.ComponentName
@@ -23,12 +24,15 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
-import dev.brahmkshatriya.echo.MainActivity
+import dev.brahmkshatriya.echo.MainActivity.Companion.getMainActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.extensionPrefId
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.prefs
 import dev.brahmkshatriya.echo.playback.listener.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener
 import dev.brahmkshatriya.echo.playback.listener.MediaSessionServiceListener
@@ -51,7 +55,7 @@ import java.io.File
 class PlayerService : MediaLibraryService() {
 
     private val extensionLoader by inject<ExtensionLoader>()
-    private val extensions by lazy { extensionLoader.extensions }
+    private val extensions by lazy { extensionLoader }
     private val exoPlayer by lazy { createExoplayer() }
 
     private var mediaSession: MediaLibrarySession? = null
@@ -88,7 +92,7 @@ class PlayerService : MediaLibraryService() {
         }
 
         val callback = PlayerCallback(
-            this, scope, app.throwFlow, extensions, state.radio, downloadFlow
+            app, scope, app.throwFlow, extensions, state.radio, downloadFlow
         )
 
         val session = MediaLibrarySession.Builder(this, player, callback)
@@ -102,7 +106,7 @@ class PlayerService : MediaLibraryService() {
         )
         player.addListener(
             PlayerRadio(
-                this, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow
+                app, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow
             )
         )
         player.addListener(
@@ -122,7 +126,6 @@ class PlayerService : MediaLibraryService() {
 
     override fun onDestroy() {
         mediaSession?.run {
-            ResumptionUtils.saveQueue(this@PlayerService, player)
             player.release()
             release()
             mediaSession = null
@@ -154,7 +157,7 @@ class PlayerService : MediaLibraryService() {
             offloadPreferences(app.settings.getBoolean(MORE_BRAIN_CAPACITY, false))
 
         val factory = StreamableMediaSource.Factory(
-            this, state, extensions, cache, downloadFlow, mediaChangeFlow
+            app, scope, state, extensions, cache, downloadFlow, mediaChangeFlow
         )
 
         ExoPlayer.Builder(this, factory)
@@ -168,7 +171,7 @@ class PlayerService : MediaLibraryService() {
                     .buildUpon()
                     .setAudioOffloadPreferences(audioOffloadPreferences)
                     .build()
-                it.preloadConfiguration = ExoPlayer.PreloadConfiguration(0)
+                it.preloadConfiguration = ExoPlayer.PreloadConfiguration(C.TIME_UNSET)
                 it.skipSilenceEnabled = app.settings.getBoolean(SKIP_SILENCE, true)
             }
     }
@@ -202,31 +205,59 @@ class PlayerService : MediaLibraryService() {
         }
 
         const val STREAM_QUALITY = "stream_quality"
+        const val UNMETERED_STREAM_QUALITY = "unmetered_stream_quality"
         val streamQualities = arrayOf("highest", "medium", "lowest")
 
         fun selectServerIndex(
-            settings: SharedPreferences?, streamables: List<Streamable>, downloaded: List<String>
+            app: App,
+            extensionId: String,
+            streamables: List<Streamable>,
+            downloaded: List<String>,
         ) = if (downloaded.isNotEmpty()) streamables.size
-        else if (streamables.isNotEmpty()) streamables.indexOf(streamables.select(settings))
-        else -1
+        else if (streamables.isNotEmpty()) {
+            val streamable = streamables.select(app, extensionId) { it.quality }
+            streamables.indexOf(streamable)
+        } else -1
 
-        private fun <E> List<E>.select(settings: SharedPreferences?, quality: (E) -> Int) =
-            when (settings?.getString(STREAM_QUALITY, streamQualities[1])) {
+        private fun <E> List<E>.select(
+            app: App,
+            settings: SharedPreferences,
+            quality: (E) -> Int,
+            default: String = streamQualities[1],
+        ): E? {
+            val unmetered = if (app.isUnmetered) selectQuality(
+                settings.getString(UNMETERED_STREAM_QUALITY, "off"),
+                quality
+            ) else null
+            return unmetered ?: selectQuality(
+                settings.getString(STREAM_QUALITY, default),
+                quality
+            )
+        }
+
+        private fun <E> List<E>.selectQuality(final: String?, quality: (E) -> Int): E? {
+            return when (final) {
                 streamQualities[0] -> maxBy { quality(it) }
                 streamQualities[1] -> sortedBy { quality(it) }[size / 2]
                 streamQualities[2] -> minBy { quality(it) }
-                else -> first()
+                else -> null
             }
+        }
 
-        private fun List<Streamable>.select(settings: SharedPreferences?) =
-            select(settings) { it.quality }
 
-        fun List<Streamable.Source>.select(settings: SharedPreferences?) =
-            select(settings) { it.quality }
+        fun <T> List<T>.select(
+            app: App, extensionId: String, quality: (T) -> Int,
+        ): T {
+            val extSettings =
+                extensionPrefId(ExtensionType.MUSIC.name, extensionId).prefs(app.context)
+            return select(app, extSettings, quality, "off")
+                ?: select(app, app.settings, quality)
+                ?: first()
+        }
 
         fun getController(
             context: Application,
-            block: (MediaController) -> Unit
+            block: (MediaController) -> Unit,
         ): () -> Unit {
             val sessionToken =
                 SessionToken(context, ComponentName(context, PlayerService::class.java))
@@ -243,10 +274,19 @@ class PlayerService : MediaLibraryService() {
         fun getPendingIntent(context: Context): PendingIntent = PendingIntent.getActivity(
             context,
             0,
-            Intent(context, MainActivity::class.java).apply {
-                putExtra("fromNotification", true)
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            Intent(context, MainActivityOpener::class.java),
+            PendingIntent.FLAG_IMMUTABLE,
         )
+    }
+
+    class MainActivityOpener : Activity() {
+        override fun onStart() {
+            super.onStart()
+            finish()
+            startActivity(Intent(this, getMainActivity()).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra("fromNotification", true)
+            })
+        }
     }
 }

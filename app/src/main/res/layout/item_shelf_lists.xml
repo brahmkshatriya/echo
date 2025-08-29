@@ -1,84 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="-8dp"
-    android:orientation="vertical">
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/titleCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="8dp"
-        app:cardBackgroundColor="@android:color/transparent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginVertical="8dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/title"
-                    android:visibility="gone"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textSize="20sp"
-                    tools:ignore="TextSizeCheck"
-                    tools:text="@tools:sample/full_names" />
-
-                <TextView
-                    android:id="@+id/subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:alpha="0.66"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:visibility="gone"
-                    tools:text="@tools:sample/first_names" />
-
-            </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/shuffle"
-                android:visibility="gone"
-                style="@style/IconButton"
-                android:contentDescription="@string/shuffle"
-                app:icon="@drawable/ic_shuffle" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/more"
-                style="@style/IconButton"
-                android:contentDescription="@string/more"
-                android:scaleX="-1"
-                app:icon="@drawable/ic_back"
-                tools:visibility="gone" />
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clipToPadding="false"
-        android:paddingHorizontal="20dp"
-        android:paddingBottom="12dp"
-        android:orientation="horizontal"
-        tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_shelf_lists_media" />
-
-</LinearLayout>
+    android:layout_marginStart="-20dp"
+    android:layout_marginEnd="-20dp"
+    android:clipToPadding="false"
+    android:orientation="horizontal"
+    android:paddingHorizontal="20dp"
+    android:paddingBottom="12dp"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+    tools:listitem="@layout/item_shelf_lists_media" />

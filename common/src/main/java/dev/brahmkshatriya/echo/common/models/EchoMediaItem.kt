@@ -1,29 +1,38 @@
 package dev.brahmkshatriya.echo.common.models
 
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
+import dev.brahmkshatriya.echo.common.clients.FollowClient
+import dev.brahmkshatriya.echo.common.clients.HideClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
+import dev.brahmkshatriya.echo.common.clients.SaveClient
+import dev.brahmkshatriya.echo.common.clients.ShareClient
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
-
 /**
  * A class representing a media item in Echo.
- *
- * Use [toMediaItem] to convert a media item to [EchoMediaItem].
  *
  * Use [toShelf] to convert a media item to [Shelf.Item].
  *
  * Example:
  * ```kotlin
  * val track = api.getTrack("track_id")
- * val mediaItem = track.toMediaItem()
  * val shelfItem = mediaItem.toShelf()
  * ```
  * @property id The id of the media item
  * @property title The title of the media item
  * @property cover The cover image of the media item
- * @property subtitleWithE The subtitle of the media item, used to display information under the title
+ * @property description A description of the media item, used to display additional information
+ * @property background The background image of the media item, used to display a background image
+ * @property subtitle The subtitle of the media item, used to display information under the title
  * @property extras Any extra data you want to associate with the media item
+ * @property isFollowable Whether the media item can be followed. Checkout [FollowClient]
+ * @property isSaveable Whether the media item can be saved to library. Checkout [SaveClient]
+ * @property isLikeable Whether the media item can be liked. Checkout [LikeClient]
+ * @property isHideable Whether the media item can be hidden. Checkout [HideClient]
+ * @property isRadioSupported Whether the media item can be loaded to get [Radio]. Checkout [RadioClient]
+ * @property isShareable Whether the media item can be shared. Checkout [ShareClient]
  *
  * @see Track
  * @see Artist
@@ -33,173 +42,123 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  * @see Radio
  */
 @OptIn(ExperimentalSerializationApi::class)
-@JsonClassDiscriminator("type")
+@JsonClassDiscriminator("mediaItemType")
 @Serializable
-sealed class EchoMediaItem {
+sealed interface EchoMediaItem {
+    val id: String
+    val title: String
+    val cover: ImageHolder?
+    val description: String?
+    val background: ImageHolder?
+    val subtitle: String?
+    val extras: Map<String, String>
+    val isRadioSupported: Boolean
+    val isFollowable: Boolean
+    val isSaveable: Boolean
+    val isLikeable: Boolean
+    val isHideable: Boolean
+    val isShareable: Boolean
+    val isExplicit: Boolean get() = false
+    val isPrivate: Boolean get() = false
 
     @Serializable
-    data class TrackItem(val track: Track) : EchoMediaItem()
+    sealed interface Lists : EchoMediaItem {
+        val artists: List<Artist>
+        val trackCount: Long?
+        val duration: Long? get() = null
+        val date: Date? get() = null
+        val label: String? get() = null
+        val type: Album.Type? get() = null
 
-    @Serializable
-    sealed class Profile : EchoMediaItem() {
-        @Serializable
-        data class ArtistItem(val artist: Artist) : Profile()
-
-        @Serializable
-        data class UserItem(val user: User) : Profile()
+        override val subtitleWithOutE
+            get() = subtitle ?: buildString {
+                append(artists.joinToString(", ") { it.name })
+            }.trim().ifBlank { null }
     }
 
-    @Serializable
-    sealed class Lists : EchoMediaItem() {
-        @Serializable
-        data class AlbumItem(val album: Album) : Lists()
 
-        @Serializable
-        data class PlaylistItem(val playlist: Playlist) : Lists()
+    val subtitleWithOutE: String?
 
-        @Serializable
-        data class RadioItem(val radio: Radio) : Lists()
+    val subtitleWithE
+        get() = buildString {
+            if (isExplicit) append("\uD83C\uDD74 ")
+            append(subtitleWithOutE ?: "")
+        }.trim().ifBlank { null }
 
-        val size
-            get() = when (this) {
-                is AlbumItem -> album.tracks
-                is PlaylistItem -> playlist.tracks
-                is RadioItem -> 0
-            }
+    fun sameAs(other: EchoMediaItem): Boolean {
+        return this::class == other::class && id == other.id
     }
 
-    companion object {
-        /**
-         * Converts a [Track] to a [EchoMediaItem]
-         */
-        fun Track.toMediaItem() = TrackItem(this)
+    fun toShelf() = Shelf.Item(this)
 
-        /**
-         * Converts an [Album] to an [EchoMediaItem]
-         */
-        fun Album.toMediaItem() = Lists.AlbumItem(this)
+    fun copyMediaItem(
+        id: String = this.id,
+        title: String = this.title,
+        cover: ImageHolder? = this.cover,
+        description: String? = this.description,
+        subtitle: String? = this.subtitle,
+        extras: Map<String, String> = this.extras,
+        isRadioSupported: Boolean = this.isRadioSupported,
+        isFollowable: Boolean = this.isFollowable,
+        isSaveable: Boolean = this.isSaveable
+    ): EchoMediaItem = when (this) {
+        is Artist -> copy(
+            id = id,
+            name = title,
+            cover = cover,
+            bio = description,
+            subtitle = subtitle,
+            extras = extras,
+            isRadioSupported = isRadioSupported,
+            isFollowable = isFollowable,
+            isSaveable = isSaveable
+        )
 
-        /**
-         * Converts a [Artist] to a [EchoMediaItem]
-         */
-        fun Artist.toMediaItem() = Profile.ArtistItem(this)
+        is Album -> copy(
+            id = id,
+            title = title,
+            cover = cover,
+            description = description,
+            subtitle = subtitle,
+            extras = extras,
+            isRadioSupported = isRadioSupported,
+            isFollowable = isFollowable,
+            isSaveable = isSaveable
+        )
 
-        /**
-         * Converts a [User] to a [EchoMediaItem]
-         */
-        fun User.toMediaItem() = Profile.UserItem(this)
+        is Playlist -> copy(
+            id = id,
+            title = title,
+            cover = cover,
+            description = description,
+            subtitle = subtitle,
+            extras = extras,
+            isRadioSupported = isRadioSupported,
+            isFollowable = isFollowable,
+            isSaveable = isSaveable
+        )
 
-        /**
-         * Converts a [Playlist] to a [EchoMediaItem]
-         */
-        fun Playlist.toMediaItem() = Lists.PlaylistItem(this)
+        is Radio -> copy(
+            id = id,
+            title = title,
+            cover = cover,
+            description = description,
+            subtitle = subtitle,
+            extras = extras,
+            isFollowable = isFollowable,
+            isSaveable = isSaveable
+        )
 
-        /**
-         * Converts a [Radio] to a [EchoMediaItem]
-         */
-        fun Radio.toMediaItem() = Lists.RadioItem(this)
+        is Track -> copy(
+            id = id,
+            title = title,
+            cover = cover,
+            description = description,
+            subtitle = subtitle,
+            extras = extras,
+            isRadioSupported = isRadioSupported,
+            isFollowable = isFollowable,
+            isSaveable = isSaveable
+        )
     }
-
-    /**
-     * Converts the media item to a [Shelf.Item]
-     *
-     * @param loadTrack Whether to load the tracks associated with the media item, only applicable for [Album], [Playlist] and [Radio].
-     */
-    fun toShelf(loadTrack: Boolean = false) = Shelf.Item(
-        when (this) {
-            is TrackItem -> track.toMediaItem()
-            is Profile.ArtistItem -> artist.toMediaItem()
-            is Profile.UserItem -> user.toMediaItem()
-            is Lists.AlbumItem -> album.toMediaItem()
-            is Lists.PlaylistItem -> playlist.toMediaItem()
-            is Lists.RadioItem -> radio.toMediaItem()
-        },
-        loadTrack
-    )
-
-    fun sameAs(other: EchoMediaItem) = when (this) {
-        is TrackItem -> other is TrackItem && track.id == other.track.id
-        is Profile.ArtistItem -> other is Profile.ArtistItem && artist.id == other.artist.id
-        is Profile.UserItem -> other is Profile.UserItem && user.id == other.user.id
-        is Lists.AlbumItem -> other is Lists.AlbumItem && album.id == other.album.id
-        is Lists.PlaylistItem -> other is Lists.PlaylistItem && playlist.id == other.playlist.id
-        is Lists.RadioItem -> other is Lists.RadioItem && radio.id == other.radio.id
-    }
-
-    fun copy(subtitle: String): EchoMediaItem {
-        return when (this) {
-            is TrackItem -> copy(track = track.copy(subtitle = subtitle))
-            is Profile.ArtistItem -> copy(artist = artist.copy(subtitle = subtitle))
-            is Profile.UserItem -> copy(user = user.copy(subtitle = subtitle))
-            is Lists.AlbumItem -> copy(album = album.copy(subtitle = subtitle))
-            is Lists.PlaylistItem -> copy(playlist = playlist.copy(subtitle = subtitle))
-            is Lists.RadioItem -> copy(radio = radio.copy(subtitle = subtitle))
-        }
-    }
-
-    val id
-        get() = when (this) {
-            is TrackItem -> track.id
-            is Profile.ArtistItem -> artist.id
-            is Profile.UserItem -> user.id
-            is Lists.AlbumItem -> album.id
-            is Lists.PlaylistItem -> playlist.id
-            is Lists.RadioItem -> radio.id
-        }
-
-    val title
-        get() = when (this) {
-            is TrackItem -> track.title
-            is Profile.ArtistItem -> artist.name
-            is Profile.UserItem -> user.name
-            is Lists.AlbumItem -> album.title
-            is Lists.PlaylistItem -> playlist.title
-            is Lists.RadioItem -> radio.title
-        }
-
-    val isExplicit by lazy {
-        when (this) {
-            is TrackItem -> track.isExplicit
-            is Lists.AlbumItem -> album.isExplicit
-            else -> false
-        }
-    }
-
-    val cover by lazy {
-        when (this) {
-            is TrackItem -> track.cover
-            is Profile.ArtistItem -> artist.cover
-            is Profile.UserItem -> user.cover
-            is Lists.AlbumItem -> album.cover
-            is Lists.PlaylistItem -> playlist.cover
-            is Lists.RadioItem -> radio.cover
-        }
-    }
-
-    val subtitleWithE by lazy {
-        if (isExplicit) "\uD83C\uDD74 " + (subtitle ?: "") else subtitle
-    }
-
-    val subtitle by lazy {
-        when (this) {
-            is TrackItem -> track.run { subtitle ?: artists.joinToString(", ") { it.name } }
-            is Profile.ArtistItem -> artist.subtitle
-            is Profile.UserItem -> null
-            is Lists.AlbumItem -> album.run { subtitle ?: artists.joinToString(", ") { it.name } }
-            is Lists.RadioItem -> radio.subtitle
-            is Lists.PlaylistItem -> playlist.run {
-                subtitle ?: authors.joinToString(", ") { it.name }
-            }
-        }
-    }
-
-    val extras
-        get() = when (this) {
-            is TrackItem -> track.extras
-            is Profile.ArtistItem -> artist.extras
-            is Profile.UserItem -> user.extras
-            is Lists.AlbumItem -> album.extras
-            is Lists.PlaylistItem -> playlist.extras
-            is Lists.RadioItem -> radio.extras
-        }
 }

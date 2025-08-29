@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.edit
 import androidx.media3.common.C
-import androidx.recyclerview.widget.PagerSnapHelper
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -34,16 +33,21 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
         return binding.root
     }
 
+    private val adapter by lazy {
+        RulerAdapter(object : RulerAdapter.Listener<Int> {
+            override fun intervalText(value: Int) = value.toString()
+            override fun onSelectItem(value: Int) {
+                rulerTime = value
+                binding.sleepTimerValue.text = requireContext().createString(value * 60L * 1000)
+            }
+        })
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding.sleepTimerRecycler.adapter = adapter
         val last = viewModel.settings.getInt("sleep_timer", 5)
-        RulerAdapter(
-            binding.sleepTimerRecycler, timeRangeWithIntervals, last, { it.toString() }
-        ) {
-            rulerTime = it
-            binding.sleepTimerValue.text = requireContext().createString(it * 60L * 1000)
-        }
-        PagerSnapHelper().attachToRecyclerView(binding.sleepTimerRecycler)
+        adapter.submitList(timeRangeWithIntervals, last)
 
         binding.okay.setOnClickListener { saveAndDismiss(rulerTime) }
         binding.endOfTrack.setOnClickListener { setTimerAndDismiss(Long.MAX_VALUE) }
@@ -128,10 +132,12 @@ class SleepTimerBottomSheet : BottomSheetDialogFragment() {
             val min = minutes % 60
             val str = StringBuilder()
             if (hrs > 0) str.append(
-                resources.getQuantityString(R.plurals.number_hour, hrs.toInt(), hrs)
+                runCatching { resources.getQuantityString(R.plurals.number_hour, hrs.toInt(), hrs) }
+                    .getOrNull() ?: getString(R.string.n_hours, hrs)
             ).append(if (min > 0) " " else "")
             if (min > 0) str.append(
-                resources.getQuantityString(R.plurals.number_min, min.toInt(), min)
+                runCatching { resources.getQuantityString(R.plurals.number_min, min.toInt(), min) }
+                    .getOrNull() ?: getString(R.string.n_minutes, min)
             )
             return str.toString()
         }

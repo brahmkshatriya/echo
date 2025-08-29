@@ -17,12 +17,15 @@ import androidx.core.net.toUri
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
-import dev.brahmkshatriya.echo.common.models.Date.Companion.toDate
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toUriImageHolder
+import dev.brahmkshatriya.echo.common.models.Date.Companion.toYearDate
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceUriImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.getAllSongs
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -56,7 +59,7 @@ object MediaStoreUtils {
         override val artists: List<MArtist?>,
         override val albumYear: Int?,
         override var cover: Uri?,
-        override val songList: MutableSet<Track>
+        override val songList: MutableSet<Track>,
     ) : MAlbum
 
     /**
@@ -95,7 +98,7 @@ object MediaStoreUtils {
         override val title: String?,
         override val songList: MutableSet<Track>,
         val description: String?,
-        val modifiedDate: Long
+        val modifiedDate: Long,
     ) : Item
 
 
@@ -114,11 +117,11 @@ object MediaStoreUtils {
         val likedPlaylist: MPlaylist?,
         val folderStructure: FileNode,
         val shallowFolder: FileNode,
-        val folders: Set<String>
+        val folders: Set<String>,
     )
 
     class FileNode(
-        val folderName: String
+        val folderName: String,
     ) {
         val folderList = hashMapOf<String, FileNode>()
         val songList = mutableListOf<Track>()
@@ -156,7 +159,7 @@ object MediaStoreUtils {
         albumId: Long?,
         path: String,
         shallowFolder: FileNode,
-        folderArray: MutableList<String>
+        folderArray: MutableList<String>,
     ) {
         val newPath = if (path.endsWith('/')) path.substring(0, path.length - 1) else path
         val splitPath = newPath.split('/')
@@ -210,7 +213,7 @@ object MediaStoreUtils {
 
     private fun playlistContent(
         context: Context,
-        playlists: MutableList<Pair<MPlaylist, MutableList<Long>>>
+        playlists: MutableList<Pair<MPlaylist, MutableList<Long>>>,
     ): Boolean {
         var foundPlaylistContent = false
         context.contentResolver.query(
@@ -270,8 +273,7 @@ object MediaStoreUtils {
         songs: MutableList<Track>,
         foundPlaylistContent: Boolean,
         idMap: MutableMap<Long, Track>?,
-        likedAudios: List<Long>,
-        block: (Track) -> Unit
+        block: (Track) -> Unit,
     ) = use { cursor ->
         // Get columns from mediaStore.
         val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
@@ -308,26 +310,24 @@ object MediaStoreUtils {
             val albumId = cursor.getLongOrNull(albumIdColumn)
             val genre = genreColumn?.let { col -> cursor.getStringOrNull(col) }
             val addDate = cursor.getLongOrNull(addDateColumn)
-
-            // Since we're using glide, we can get album cover with a uri.
             val imgUri = ContentUris.appendId(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon(), id
-            ).appendPath("albumart").build()
+            ).appendPath("albumart").build().takeIf { uri ->
+                context.contentResolver.runCatching { openInputStream(uri)!!.close() }.isSuccess
+            }
 
             val artists = artist.toArtists()
             val album = albumName?.let {
-                Album(albumId.toString(), it, null, albumArtist.toArtists())
+                Album(albumId.toString(), it, null, null, albumArtist.toArtists())
             }
-            val liked = likedAudios.contains(id)
             val song = Track(
                 id = id.toString(),
                 title = title,
                 artists = artists,
                 album = album,
-                cover = imgUri.toString().toUriImageHolder(),
+                cover = imgUri?.toString()?.toResourceUriImageHolder(),
                 duration = duration,
-                releaseDate = year?.toDate(),
-                isLiked = liked,
+                releaseDate = year?.toYearDate(),
                 streamables = listOf(Streamable.server(path, 0, path)),
                 extras = mapOf(
                     "genre" to (genre ?: context.getString(R.string.unknown)),
@@ -346,7 +346,7 @@ object MediaStoreUtils {
         }
     }
 
-    private val coverUri = Uri.parse("content://media/external/audio/albumart")
+    private val coverUri = "content://media/external/audio/albumart".toUri()
 
     private fun songAlbumMap(
         song: Track,
@@ -378,7 +378,7 @@ object MediaStoreUtils {
 
     private fun albumMapToAlbumList(
         albumMap: MutableMap<Long?, AlbumImpl>,
-        coverCache: HashMap<Long, Pair<File, FileNode>>?
+        coverCache: HashMap<Long, Pair<File, FileNode>>?,
     ) = albumMap.values.onEach {
         it.artists.forEach { mArtist ->
             mArtist?.albumList?.add(it)
@@ -429,7 +429,9 @@ object MediaStoreUtils {
      * @param context
      * @return
      */
-    fun getAllSongs(context: Context, settings: Settings): LibraryStoreClass {
+    suspend fun getAllSongs(
+        context: Context, settings: Settings
+    ) = withContext(Dispatchers.IO) {
         val limitValueSeconds = settings.getInt("limit_value") ?: 10
         val haveImgPerm = if (hasScopedStorage()) context.hasImagePermission() else false
         val folderFilter = settings.getStringSet("blacklist_folders") ?: setOf()
@@ -453,7 +455,6 @@ object MediaStoreUtils {
         val foundPlaylistContent =
             runCatching { playlistContent(context, playlists) }.getOrNull() ?: false
         val idMap = hashMapOf<Long, Track>()
-        val likedAudios = playlists.find { it.first.title == "Liked" }?.second ?: emptyList()
         val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
@@ -469,7 +470,6 @@ object MediaStoreUtils {
             songs,
             foundPlaylistContent,
             idMap,
-            likedAudios
         ) { song ->
             song.artists.map {
                 val id = it.id.toLongOrNull()
@@ -527,7 +527,7 @@ object MediaStoreUtils {
         likedPlaylist?.let { playlistsFinal.add(0, it) }
 
         folders.addAll(folderFilter)
-        return LibraryStoreClass(
+        LibraryStoreClass(
             songs, albumList, artistMap, genreList, dateList, playlistsFinal,
             likedPlaylist, root, shallowRoot, folders
         )
@@ -535,7 +535,7 @@ object MediaStoreUtils {
 
     private fun getLikedPlaylist(
         context: Context,
-        playlistsFinal: MutableList<MPlaylist>
+        playlistsFinal: MutableList<MPlaylist>,
     ) = run {
         val liked = playlistsFinal.find { it.title == "Liked" }
         val id = liked?.id ?: context.createPlaylist("Liked")
@@ -660,7 +660,7 @@ object MediaStoreUtils {
         if (s.isEmpty()) return n
         if (t.isEmpty()) return m
 
-        val d = Array(m + 1) { IntArray(n + 1) { 0 } }
+        val d = Array(m + 1) { IntArray(n + 1) }
 
         for (i in 1..m) {
             d[i][0] = i

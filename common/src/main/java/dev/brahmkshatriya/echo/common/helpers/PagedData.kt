@@ -1,19 +1,10 @@
 package dev.brahmkshatriya.echo.common.helpers
 
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Companion.empty
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Concat
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Continuous
-import dev.brahmkshatriya.echo.common.helpers.PagedData.Single
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * A class that represents a paged data source.
- *
- * It is be used to load data in chunks. If the data is not continuous, use [Single].
- * ```kotlin
- * val data = PagedData.Single { api.loadTracks() }
- * ```
+ * A class that represents a paginated data. Used to load data in chunks.
  *
  * If the data is continuous, use [Continuous].
  * ```kotlin
@@ -23,12 +14,12 @@ import kotlinx.coroutines.sync.withLock
  * }
  * ```
  *
- * If the data is empty, you can use [empty].
+ * If the data is not continuous, you can just use [Single].
  * ```kotlin
- * val data = PagedData.empty<Track>()
+ * val data = PagedData.Single { api.loadTracks() }
  * ```
  *
- * If you want to concatenate multiple data sources, use [Concat].
+ * If you want to concatenate multiple paged data, use [Concat].
  * ```kotlin
  * val data = PagedData.Concat(
  *     PagedData.Single { api.loadTracks() },
@@ -58,13 +49,13 @@ sealed class PagedData<T : Any> {
     abstract suspend fun loadListInternal(continuation: String?): Page<T>
 
     private val mutex = Mutex()
-    suspend fun loadList(continuation: String?): Page<T> {
+    suspend fun loadPage(continuation: String?): Page<T> {
         return mutex.withLock { loadListInternal(continuation) }
     }
 
     abstract fun invalidate(continuation: String?)
 
-    abstract fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R>
+    abstract fun <R : Any> map(block: suspend (Result<List<T>>) -> List<R>): PagedData<R>
 
     /**
      * A class representing a single page of data.
@@ -102,7 +93,7 @@ sealed class PagedData<T : Any> {
             clear()
         }
 
-        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
+        override fun <R : Any> map(block: suspend (Result<List<T>>) -> List<R>): PagedData<R> {
             return Single { block(runCatching { load() }) }
         }
     }
@@ -170,7 +161,7 @@ sealed class PagedData<T : Any> {
             return list
         }
 
-        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
+        override fun <R : Any> map(block: suspend (Result<List<T>>) -> List<R>): PagedData<R> {
             return Continuous { continuation ->
                 val result = runCatching { load(continuation) }
                 Page(block(result.map { it.data }), result.getOrNull()?.continuation)
@@ -204,7 +195,7 @@ sealed class PagedData<T : Any> {
         override fun clear() = sources.forEach { it.clear() }
         override suspend fun loadAllInternal(): List<T> = sources.flatMap { it.loadAll() }
 
-        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
+        override fun <R : Any> map(block:suspend (Result<List<T>>) -> List<R>): PagedData<R> {
             return Concat(*sources.map { it.map(block) }.toTypedArray())
         }
 
@@ -222,7 +213,7 @@ sealed class PagedData<T : Any> {
         override suspend fun loadListInternal(continuation: String?): Page<T> {
             val (index, token) = splitContinuation(continuation)
             val source = sources.getOrNull(index) ?: return Page(emptyList(), null)
-            val page = source.loadList(token)
+            val page = source.loadPage(token)
             return if (page.continuation != null) Page(page.data, combine(index, page.continuation))
             else Page(page.data, combine(index + 1, null))
         }
@@ -251,12 +242,12 @@ sealed class PagedData<T : Any> {
             return data().loadAll()
         }
 
-        override fun <R : Any> map(block: (Result<List<T>>) -> List<R>): PagedData<R> {
+        override fun <R : Any> map(block: suspend (Result<List<T>>) -> List<R>): PagedData<R> {
             return Suspend { data().map(block) }
         }
 
         override suspend fun loadListInternal(continuation: String?): Page<T> {
-            return data().loadList(continuation)
+            return data().loadPage(continuation)
         }
 
         override fun invalidate(continuation: String?) {

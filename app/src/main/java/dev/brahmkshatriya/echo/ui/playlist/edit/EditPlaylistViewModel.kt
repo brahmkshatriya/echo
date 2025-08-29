@@ -2,104 +2,80 @@ package dev.brahmkshatriya.echo.ui.playlist.edit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Playlist
+import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.run
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
+import dev.brahmkshatriya.echo.utils.CoroutineUtils.combineTransformLatest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class EditPlaylistViewModel(
-    private val extensionId: String,
-    val playlist: Playlist,
-    private val app: App,
     extensionLoader: ExtensionLoader,
+    private val app: App,
+    private val extensionId: String,
+    private val initial: Playlist,
+    private val loaded: Boolean,
+    private val selectedTab: String?,
+    private val removeIndex: Int
 ) : ViewModel() {
+    val extensionFlow = extensionLoader.music.map { list -> list.find { it.id == extensionId } }
+        .stateIn(viewModelScope, Eagerly, null)
 
-    val playlistName = MutableStateFlow(playlist.title)
-    val playlistDescription = MutableStateFlow(playlist.description)
+    val playlistFlow = extensionFlow.transformLatest { extension ->
+        emit(null)
+        if (extension == null) return@transformLatest
+        emit(extension.getAs<PlaylistClient, Playlist> {
+            if (!loaded) loadPlaylist(initial) else initial
+        })
+    }.stateIn(viewModelScope, Eagerly, null)
 
-    private val extensions = extensionLoader.extensions.music
-
-    sealed interface SaveState {
-        data object Initial : SaveState
-        data class Performing(val action: Action<Track>, val tracks: List<Track>) : SaveState
-        data object Saving : SaveState
-        data class Saved(val success: Boolean) : SaveState
+    private val feedFlow = playlistFlow.transformLatest { playlist ->
+        emit(null)
+        val extension = extensionFlow.value ?: return@transformLatest
+        if (playlist == null) return@transformLatest
+        emit(extension.getAs<PlaylistClient, Feed<Track>> {
+            loadTracks(playlist.getOrThrow())
+        })
     }
 
-    val saveState = MutableStateFlow<SaveState>(SaveState.Initial)
-    fun save() = viewModelScope.launch(Dispatchers.IO) {
-        val success = runCatching {
-            saveState.value = SaveState.Saving
+    val selectedTabFlow = MutableStateFlow<Tab?>(null)
+    val tabsFlow = feedFlow.map { result ->
+        val tabs = result?.getOrNull()?.tabs ?: emptyList()
+        selectedTabFlow.value = tabs.find { it.id == selectedTab } ?: tabs.firstOrNull()
+        tabs
+    }.stateIn(viewModelScope, Eagerly, emptyList())
 
-            val extension = extensions.getExtensionOrThrow(extensionId)
-            if (playlist.title != playlistName.value || playlist.description != playlistDescription.value) {
-                extension.get<PlaylistEditClient, Unit> {
-                    editPlaylistMetadata(playlist, playlistName.value, playlistDescription.value)
-                }.getOrThrow()
-            }
-            val original = (originalList.value as LoadingState.Loaded).list!!
-            val newActions = computeActions(original, currentTracks.value!!)
-            newActions.ifEmpty { return@runCatching true }
-
-            var tracks = original
-
-            extension.run<PlaylistEditorListenerClient, Unit> {
-                onEnterPlaylistEditor(playlist, tracks)
-            }.getOrThrow()
-
-            extension.get<PlaylistEditClient, Unit> {
-                newActions.forEach { action ->
-                    when (action) {
-                        is Action.Add -> {
-                            saveState.value = SaveState.Performing(action, action.items)
-                            addTracksToPlaylist(playlist, tracks, action.index, action.items)
-                            tracks = loadTracks(playlist).loadAll()
-                        }
-
-                        is Action.Move -> {
-                            saveState.value =
-                                SaveState.Performing(action, listOf(tracks[action.from]))
-                            moveTrackInPlaylist(playlist, tracks, action.from, action.to)
-                            tracks = tracks.toMutableList().apply {
-                                add(action.to, removeAt(action.from))
-                            }
-                        }
-
-                        is Action.Remove -> {
-                            saveState.value =
-                                SaveState.Performing(action, action.indexes.map { tracks[it] })
-                            removeTracksFromPlaylist(playlist, tracks, action.indexes)
-                            tracks = loadTracks(playlist).loadAll()
-                        }
-                    }
-                }
-            }.getOrThrow()
-
-            extension.run<PlaylistEditorListenerClient, Unit> {
-                onExitPlaylistEditor(playlist, tracks)
-            }.getOrThrow()
-            true
-        }.getOrElse {
-            app.throwFlow.emit(it)
-            false
+    val originalList = feedFlow.combineTransformLatest(selectedTabFlow) { result, tab ->
+        emit(null)
+        if (result == null) return@combineTransformLatest
+        val extension = extensionFlow.value ?: return@combineTransformLatest
+        val tracks = extension.getAs<PlaylistClient, List<Track>> {
+            result.getOrThrow().getPagedData(tab).pagedData.loadAll()
         }
-        saveState.value = SaveState.Saved(success)
-    }
+        emit(tracks)
+    }.stateIn(viewModelScope, Eagerly, null)
 
-    sealed interface LoadingState {
-        data object Loading : LoadingState
-        data class Loaded(val list: List<Track>?) : LoadingState
-    }
-
-    val originalList = MutableStateFlow<LoadingState>(LoadingState.Loading)
     val currentTracks = MutableStateFlow<List<Track>?>(null)
     fun edit(action: Action<Track>) {
         currentTracks.value = currentTracks.value?.toMutableList()?.apply {
@@ -115,19 +91,101 @@ class EditPlaylistViewModel(
         }
     }
 
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            val tracks = runCatching {
-                val extension = extensions.getExtensionOrThrow(extensionId)
-                extension.get<PlaylistEditClient, List<Track>> {
-                    loadTracks(playlist).loadAll()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val newActions = currentTracks.transformLatest { current ->
+        emit(null)
+        val list = originalList.value?.getOrNull()
+        if (list == null || current == null) return@transformLatest
+        emit(computeActions(list, current))
+    }.flowOn(Dispatchers.IO).stateIn(viewModelScope, Eagerly, null)
+
+    val nameFlow = MutableStateFlow(initial.title)
+    val descriptionFlow = MutableStateFlow(initial.description)
+    val pairFlow = nameFlow.combine(descriptionFlow) { a, b -> a to b }
+
+    sealed interface SaveState {
+        data object Initial : SaveState
+        data class Performing(val action: Action<Track>, val tracks: List<Track>) : SaveState
+        data object Saving : SaveState
+        data class Saved(val result: Result<Unit>) : SaveState
+    }
+
+    private val saveFlow = MutableSharedFlow<Unit>()
+    val isSaveable = newActions.combine(pairFlow) { actions, pair ->
+        val playlist = playlistFlow.value?.getOrNull() ?: return@combine false
+        if (playlist.title != pair.first) return@combine true
+        if (playlist.description != pair.second) return@combine true
+        !actions.isNullOrEmpty()
+    }
+
+    val saveState = saveFlow.transformLatest {
+        emit(SaveState.Saving)
+        val saved = SaveState.Saved(runCatching {
+            val playlist = playlistFlow.value!!.getOrThrow()
+            val extension = extensionFlow.value!!
+            if (playlist.title != nameFlow.value || playlist.description != descriptionFlow.value) {
+                extension.getAs<PlaylistEditClient, Unit> {
+                    editPlaylistMetadata(playlist, nameFlow.value, descriptionFlow.value)
                 }.getOrThrow()
-            }.getOrElse {
-                app.throwFlow.emit(it)
-                null
             }
-            originalList.value = LoadingState.Loaded(tracks)
-            currentTracks.value = tracks
+            val newActions = newActions.value!!
+            if (newActions.isEmpty()) return@transformLatest
+
+            var tracks = originalList.value!!.getOrThrow()
+            val selectedTab = selectedTabFlow.value
+            extension.getIf<PlaylistEditorListenerClient, Unit> {
+                onEnterPlaylistEditor(playlist, tracks)
+            }.getOrThrow()
+
+            extension.getAs<PlaylistEditClient, Unit> {
+                newActions.forEach { action ->
+                    when (action) {
+                        is Action.Add -> {
+                            addTracksToPlaylist(playlist, tracks, action.index, action.items)
+                            tracks =
+                                loadTracks(playlist).run { getPagedData(selectedTab).pagedData }
+                                    .loadAll()
+                        }
+
+                        is Action.Move -> {
+                            moveTrackInPlaylist(playlist, tracks, action.from, action.to)
+                            tracks = tracks.toMutableList().apply {
+                                add(action.to, removeAt(action.from))
+                            }
+                        }
+
+                        is Action.Remove -> {
+                            removeTracksFromPlaylist(playlist, tracks, action.indexes)
+                            tracks =
+                                loadTracks(playlist).run { getPagedData(selectedTab).pagedData }
+                                    .loadAll()
+                        }
+                    }
+                }
+            }.getOrThrow()
+            extension.getIf<PlaylistEditorListenerClient, Unit> {
+                onExitPlaylistEditor(playlist, tracks)
+            }.getOrThrow()
+            Unit
+        })
+        saved.result.getOrThrow(app.throwFlow)
+        emit(saved)
+    }.stateIn(viewModelScope, Eagerly, SaveState.Initial)
+
+    fun save() = viewModelScope.launch { saveFlow.emit(Unit) }
+
+    init {
+        viewModelScope.launch {
+            originalList.collectLatest {
+                currentTracks.value = it?.getOrNull()
+            }
+        }
+        viewModelScope.launch {
+            if (removeIndex == -1) return@launch
+            currentTracks.first { it != null }
+            edit(Action.Remove(listOf(removeIndex)))
+            newActions.first { it != null }
+            saveFlow.emit(Unit)
         }
     }
 
@@ -147,17 +205,12 @@ class EditPlaylistViewModel(
             val before = old.toMutableList()
 
             val afterIds = new.map { it }.toSet()
-            val removeIndexes = mutableListOf<Int>()
-            var index = 0
-            while (index < before.size) {
-                if (before[index] !in afterIds) {
-                    removeIndexes.add(index)
-                    before.removeAt(index)
-                } else {
-                    index++
-                }
+            val removeIndexes = before.mapIndexedNotNull { index, item ->
+                if (item !in afterIds) index else null
             }
+
             if (removeIndexes.isNotEmpty()) {
+                removeIndexes.sortedDescending().forEach { before.removeAt(it) }
                 out.add(Action.Remove(indexes = removeIndexes))
             }
 

@@ -329,7 +329,6 @@
     <string name="unhide">Показати</string>
     <string name="save_to_playlist">Зберегти в плейлист</string>
     <string name="add_to_next">Відтворити наступною</string>
-    <string name="add_widget">Віджет мініпрогравача</string>
     <string name="more_brain_capacity">Більше можливостей мозку</string>
     <string name="more_brain_capacity_summary">Увімкнення цього параметру може виправити затримку звуку, але різко збільшує використання батареї (Вимикає вивантаження звуку).</string>
     <string name="deleted_x">%1$s видалено</string>

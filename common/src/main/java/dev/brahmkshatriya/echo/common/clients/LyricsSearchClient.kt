@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.common.clients
 
 import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Lyrics
 
 /**
@@ -19,5 +20,5 @@ interface LyricsSearchClient : LyricsClient {
      * @see Lyrics
      * @see PagedData
      */
-    fun searchLyrics(query: String): PagedData<Lyrics>
+    suspend fun searchLyrics(query: String): Feed<Lyrics>
 }

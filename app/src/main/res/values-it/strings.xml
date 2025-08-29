@@ -13,17 +13,15 @@
     <string name="search">Cerca</string>
     <string name="library">Libreria</string>
     <string name="extension_x_not_found">Estensione %1$s non trovata</string>
-    <string name="language">Lingua</string>
     <string name="install">Installa</string>
     <string name="theme">Tema</string>
     <string name="save_to_library">Salva nella libreria</string>
-    <string name="unhid_x">%1$s rimosso dai nascosti</string>
     <string name="save">Salva</string>
     <string name="app_widget_description">Echo nella tua schermata home!</string>
     <plurals name="number_min">
         <item quantity="one">%1$d Minuto</item>
         <item quantity="many">%1$d Minuti</item>
-        <item quantity="other"/>
+        <item quantity="other" />
     </plurals>
     <string name="cache_playlist_warning">Funzione sperimentale. Solo l\'ascolto di essi è supportato.</string>
     <string name="x_permission_required">Permessi %1$s richiesti</string>
@@ -31,7 +29,6 @@
     <string name="audio">Audio</string>
     <string name="audio_permission_summary">Per accedere alla tua libreria musicale locale</string>
     <string name="video">Video</string>
-    <string name="video_permission_summary">Per accedere alla tua libreria video locale</string>
     <string name="read_storage">Lettura Memoria di Archiviazione</string>
     <string name="write_storage">Scrittura Memoria di Archiviazione</string>
     <string name="write_storage_permission_summary">Per creare o modificare le playlist locali</string>
@@ -49,7 +46,6 @@
     <string name="blacklist_folders_summary">Cartelle da escludere dalla liberia</string>
     <string name="blacklist_folder_keywords">Parole chiave Blacklist Cartelle</string>
     <string name="blacklist_folder_keywords_summary">Parole chiave per inserire nella blacklist le cartelle. Usa la virgola per il separatore</string>
-    <string name="playlists">Playlist</string>
     <string name="saved">Salvato</string>
     <string name="tabs">Schede</string>
     <string name="show_tabs">Mostra Schede</string>
@@ -65,11 +61,9 @@
     <string name="more">Altro</string>
     <string name="downloading_x">Download in corso di %1$s</string>
     <string name="cancel_all">Annulla Tutto</string>
-    <string name="progress_x_percentage">Progresso di %1$d%%</string>
     <string name="logout_and_login">Disconnetti e Accedi</string>
     <string name="download_progress">Progresso Download</string>
     <string name="downloads">Download</string>
-    <string name="x_items">%1$d Elementi</string>
     <string name="downloaded_x">%1$s Scaricato</string>
     <string name="login">Accedi</string>
     <string name="view">Visualizza</string>
@@ -80,13 +74,9 @@
     <string name="x_login_required">Accesso a %1$s necessario</string>
     <string name="x_is_not_supported_in_x">%1$s non è supportato da %2$s</string>
     <string name="account_session_expired_in_x">Sessione Account scaduta in %1$s</string>
-    <string name="no_servers_found">Nessun server trovato</string>
-    <string name="no_source_found">Nessuna fonte trovata</string>
-    <string name="task_cancelled">Attività interrotta</string>
     <string name="error_x">Errore: %1$s</string>
     <string name="str_copy">Copia</string>
     <string name="extensions">Estensioni</string>
-    <string name="manage_extensions">Gestisci Estensioni</string>
     <string name="choose_a_color">Scegli un colore</string>
     <string name="random">Casuale</string>
     <string name="add">Aggiungi</string>
@@ -95,7 +85,6 @@
     <string name="audio_fx">Effetti Audio</string>
     <string name="value">Valore</string>
     <string name="value_not_set">Non impostato</string>
-    <string name="audio_summary">(Punto di ritrovo per audiofili)</string>
     <string name="playback">Riproduzione</string>
     <string name="audio_fx_summary">Effetti applicati a tutti i brani</string>
     <string name="audio_fx_desc">Cambia gli effetti audio per il brano attualmente in riproduzione.</string>
@@ -118,13 +107,8 @@
     <string name="auto_start_radio_summary">Aggiungi automaticamente brani correlati nella playlist, per avere una coda infinita</string>
     <string name="cache_size">Dimensioni Cache</string>
     <string name="cache_size_summary">Spazio dedicato alla cache di audio e video, in MB</string>
-    <string name="extensions_summary">Gestisci le estensioni installate</string>
-    <string name="misc_summary">Impostazioni varie</string>
     <string name="version">Versione</string>
     <string name="system">Sistema</string>
-    <string name="language_summary">Lingua dell\'app, \'Sistema\' userà l\'Inglese di default</string>
-    <string name="check_for_extension_updates">Controlla Aggiornamenti per le Estensioni</string>
-    <string name="check_for_extension_updates_summary">Controlla se ci sono nuovi aggiornamenti per le estensioni quando apri l\'app.</string>
     <string name="app">App</string>
     <string name="file">File</string>
     <string name="installation_type">Tipo di Installazione</string>
@@ -132,24 +116,19 @@
     <string name="installation_type_warning">Non disponibile se si installa l\'estensione come file.</string>
     <string name="could_not_find_the_file">Impossibile trovare il file.</string>
     <string name="extension_installer">Installazione Estensioni</string>
-    <string name="uninstall">Disinstalla</string>
-    <string name="invalid_extension">Estensione Non Valida</string>
     <string name="extension_installed_successfully">Estensione installata con successo.</string>
     <string name="extension_uninstalled_successfully">Estensione disinstallata con successo.</string>
     <string name="allow_opening_links">Consenti l\'apertura dei link</string>
     <string name="link_or_code">Link o Codice</string>
     <string name="list_is_empty">La lista è vuota</string>
     <string name="open_links_instruction">Per consentire l\'apertura dei link, è necessario:\n- Scorrere giù e premere \"Apri per impostazione predefinita\"\n- Premere su \"+ Aggiungi Link\"</string>
-    <string name="extension_requires_following_extensions">%1$s neccessita di %2$s</string>
     <string name="downloading_update_for_x">Download aggiornamento di %1$s in corso</string>
     <string name="extension_updated_successfully">%1$s aggiornato con successo</string>
     <string name="link">Link</string>
     <string name="extension_installed">%1$s (Installato)</string>
     <string name="add_extensions">Aggiungi Estensioni</string>
     <string name="invalid_extension_list">Lista estensioni non valida</string>
-    <string name="checking_for_extension_updates">Controllo aggiornamenti estensioni in corso</string>
     <string name="look_and_feel">Aspetto</string>
-    <string name="look_and_feel_summary">Gestisci Interfaccia e Animazioni</string>
     <string name="ui">Interfaccia</string>
     <string name="theme_summary">Vuoi perdere la vista?</string>
     <string name="custom_theme_color">Colore Tema Personalizzato</string>
@@ -180,14 +159,9 @@
     <string name="disabled">Disabilitato</string>
     <string name="no_user_found">Nessun utente trovato</string>
     <string name="select_x_account">Seleziona account per %1$s</string>
-    <string name="add_account">Aggiungi Account</string>
     <string name="add_extension">Aggiungi Estensione</string>
     <string name="error_updating_extension">Errore durante l\'aggiornamento</string>
     <string name="webview">Visualizzazione Web</string>
-    <string name="username_and_password">Username e Password</string>
-    <string name="manual">Manuale</string>
-    <string name="username">Username</string>
-    <string name="password">Password</string>
     <string name="logout">Disconnetti</string>
     <string name="switch_account">Cambia Account</string>
     <string name="incognito">Incognito</string>
@@ -231,11 +205,9 @@
     <string name="not_loading">Non in Caricamento</string>
     <string name="share">Condividi</string>
     <string name="sharing_x">Condivisione di %1$s</string>
-    <string name="saving_x_to_library">Salvataggio di %1$s nella libreria</string>
     <string name="saved_x_to_library">%1$s salvato nella libreria</string>
     <string name="remove_from_library">Rimuovi dalla liberria</string>
     <string name="follow">Segui</string>
-    <string name="removing_x_from_library">Rimozione di %1$s dalla libreria</string>
     <string name="removed_x_from_library">%1$s rimosso dalla libreria</string>
     <string name="radio">Radio</string>
     <string name="download">Scarica</string>
@@ -246,7 +218,6 @@
     <string name="unfollowed_x">%1$s rimosso dai seguiti</string>
     <string name="hide">Nascondi</string>
     <string name="hiding_x">Aggiunta di %1$s tra i nascosti</string>
-    <string name="hid_x">%1$s nascosto</string>
     <string name="unhide">Rimuovi dai Nascosti</string>
     <string name="unhiding_x">Rimozione di %1$s dai nascosti</string>
     <string name="liking_x">Aggiunta di %1$s tra i preferiti</string>
@@ -276,15 +247,10 @@
     <string name="sort_and_filter">Ordina e Filtra</string>
     <string name="filter">Filtra</string>
     <string name="reversed">Inverti</string>
-    <string name="remember">Ricorda</string>
     <string name="apply">Applica</string>
     <string name="sort_title">Titolo</string>
     <string name="sort_date">Data</string>
     <string name="sort_duration">Durata</string>
-    <string name="sort_artist">Artista</string>
-    <string name="sort_album">Albuma</string>
-    <string name="sort_plays">Ascolti</string>
-    <string name="sort_explicit">Esplicito</string>
     <string name="scroll_animations">Animazioni di Scorrimento</string>
     <string name="scroll_animations_summary">Animazioni durante lo scorrimento</string>
     <string name="sort_subtitle">Sottotitoli</string>
@@ -309,7 +275,6 @@
     <string name="removing_x">Rimozione di %1$s</string>
     <string name="no_download_extension">Nessuna estensione per il download trovata, usa il codice \"echodown\" per ottenerla.</string>
     <string name="nothing_to_download_in_x">Nulla da scaricare in %1$s</string>
-    <string name="downloads_summary">Tutti i tuoi download</string>
     <string name="apply_player_color_to_app">Applica Colore Dinamico del Player Ovunque</string>
     <string name="apply_player_color_to_app_summary">PERICOLO DI LAG!!!</string>
     <string name="download_started">Download Avviato</string>
@@ -318,7 +283,6 @@
     <string name="delete_download">Elimina Download</string>
     <string name="removed_x_from_downloads">%1$s rimosso dai Download</string>
     <string name="download_complete">Download Completato</string>
-    <string name="add_widget">Widget del Mini Player</string>
     <string name="extension">Estensione</string>
     <string name="bass_boost_desc">Valori troppo elevati possono distorcere l\'audio.</string>
     <string name="skip_silence_summary">Salta la parte silenziosa del brano, per fornire una riproduzione senza interruzioni</string>
@@ -326,11 +290,6 @@
     <plurals name="number_hour">
         <item quantity="one">%1$d Ora</item>
         <item quantity="many">%1$d Ore</item>
-        <item quantity="other"/>
-    </plurals>
-    <plurals name="n_songs">
-        <item quantity="one">%1$d canzone</item>
-        <item quantity="many">%1$d canzoni</item>
-        <item quantity="other">%1$d canzoni</item>
+        <item quantity="other" />
     </plurals>
 </resources>

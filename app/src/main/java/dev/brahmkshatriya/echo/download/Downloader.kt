@@ -1,14 +1,15 @@
 package dev.brahmkshatriya.echo.download
 
+import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import androidx.work.WorkQuery
 import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.Progress
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.db.DownloadDatabase
@@ -16,78 +17,88 @@ import dev.brahmkshatriya.echo.download.db.models.ContextEntity
 import dev.brahmkshatriya.echo.download.db.models.DownloadEntity
 import dev.brahmkshatriya.echo.download.db.models.TaskType
 import dev.brahmkshatriya.echo.download.exceptions.DownloaderExtensionNotFoundException
-import dev.brahmkshatriya.echo.download.workers.BaseWorker.Companion.createInputData
-import dev.brahmkshatriya.echo.download.workers.BaseWorker.Companion.toProgress
-import dev.brahmkshatriya.echo.download.workers.LoadingWorker
+import dev.brahmkshatriya.echo.download.tasks.TaskManager
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.await
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
+import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.withExtensionId
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.File
 import java.util.WeakHashMap
-import java.util.concurrent.ThreadPoolExecutor
 
 class Downloader(
     val app: App,
+    val downloadShelf: MutableStateFlow<List<Shelf>>,
+    val extensionLoader: ExtensionLoader,
     database: DownloadDatabase,
-    extensionLoader: ExtensionLoader,
-    private val executor: ThreadPoolExecutor,
 ) {
-    suspend fun downloadExtension() = extensions.misc.await()
+
+    suspend fun downloadExtension() = extensionLoader.misc.value
         .find { it.isClient<DownloadClient>() && it.isEnabled }
         ?: throw DownloaderExtensionNotFoundException()
 
     val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("Downloader")
 
-    val extensions = extensionLoader.extensions
     val dao = database.downloadDao()
+    val downloadFlow = dao.getDownloadsFlow()
+    private val contextFlow = dao.getContextFlow()
+    private val downloadInfoFlow = downloadFlow.combine(contextFlow) { downloads, contexts ->
+        downloads.map { download ->
+            val context = contexts.find { download.contextId == it.id }
+            Info(download, context, listOf())
+        }
+    }
+
+    val taskManager = TaskManager(this)
 
     fun add(
         downloads: List<DownloadContext>
     ) = scope.launch {
-        val concurrentDownloads =
-            downloadExtension().get<DownloadClient, Int> { concurrentDownloads }.getOrNull() ?: 2
-        executor.maximumPoolSize = concurrentDownloads
-        executor.corePoolSize = concurrentDownloads
-
+        val concurrentDownloads = downloadExtension()
+            .getAs<DownloadClient, Int> { concurrentDownloads }
+            .getOrNull()?.takeIf { it > 0 } ?: 2
+        taskManager.setConcurrency(concurrentDownloads)
         val contexts = downloads.mapNotNull { it.context }.distinctBy { it.id }.associate {
             it.id to dao.insertContextEntity(ContextEntity(0, it.id, it.toJson()))
         }
-        val ids = downloads.map {
+        downloads.forEach {
             dao.insertDownloadEntity(
                 DownloadEntity(
                     0,
-                    it.extensionId,
+                    it.track.extras[EXTENSION_ID] ?: it.extensionId,
                     it.track.id,
                     contexts[it.context?.id],
+                    it.sortOrder,
                     it.track.toJson(),
-                    it.sortOrder
+                    TaskType.Loading,
                 )
             )
         }
-        ids.forEach { startDownload(it) }
+        ensureWorker()
     }
 
-    val workManager by lazy { WorkManager.getInstance(app.context) }
-    private fun startDownload(id: Long) {
-        val request = OneTimeWorkRequestBuilder<LoadingWorker>()
-            .setInputData(createInputData(id))
-            .addTag(id.toString())
+    private val workManager by lazy { WorkManager.getInstance(app.context) }
+    private fun ensureWorker() {
+        val request = OneTimeWorkRequestBuilder<DownloadWorker>()
+            .setConstraints(Constraints(NetworkType.CONNECTED, requiresStorageNotLow = true))
+            .addTag(TAG)
             .build()
-        workManager.beginUniqueWork(id.toString(), ExistingWorkPolicy.REPLACE, request)
-            .enqueue()
+        workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.KEEP, request)
     }
 
     private val servers = WeakHashMap<Long, Streamable.Media.Server>()
@@ -98,9 +109,9 @@ class Downloader(
     ): Streamable.Media.Server = mutexes.getOrPut(trackId) { Mutex() }.withLock {
         servers.getOrPut(trackId) {
             val extensionId = download.extensionId
-            val extension = extensions.music.getExtensionOrThrow(extensionId)
+            val extension = extensionLoader.music.getExtensionOrThrow(extensionId)
             val streamable = download.track.streamables.find { it.id == download.streamableId }!!
-            extension.get<TrackClient, Streamable.Media.Server> {
+            extension.getAs<TrackClient, Streamable.Media.Server> {
                 val media =
                     loadStreamableMedia(streamable, true) as Streamable.Media.Server
                 media.sources.ifEmpty {
@@ -112,25 +123,41 @@ class Downloader(
     }
 
     fun cancel(trackId: Long) {
-        workManager.cancelUniqueWork(trackId.toString())
+        taskManager.remove(trackId)
         scope.launch {
             val entity = dao.getDownloadEntity(trackId) ?: return@launch
             dao.deleteDownloadEntity(entity)
+            entity.exceptionFile?.let {
+                val file = File(it)
+                if (file.exists()) file.delete()
+            }
             servers.remove(trackId)
             mutexes.remove(trackId)
         }
     }
 
     fun restart(trackId: Long) {
-        workManager.cancelUniqueWork(trackId.toString())
-        startDownload(trackId)
+        taskManager.remove(trackId)
+        scope.launch {
+            val download = dao.getDownloadEntity(trackId) ?: return@launch
+            dao.insertDownloadEntity(
+                download.copy(exceptionFile = null, finalFile = null, fullyDownloaded = false)
+            )
+            download.exceptionFile?.let {
+                val file = File(it)
+                if (file.exists()) file.delete()
+            }
+            servers.remove(trackId)
+            mutexes.remove(trackId)
+            ensureWorker()
+        }
     }
 
     fun cancelAll() {
+        taskManager.removeAll()
         scope.launch {
-            val downloads = dao.getDownloadsFlow().first().filter { it.finalFile == null }
+            val downloads = downloadFlow.first().filter { it.finalFile == null }
             downloads.forEach { download ->
-                workManager.cancelUniqueWork(download.id.toString())
                 dao.deleteDownloadEntity(download)
                 servers.remove(download.id)
                 mutexes.remove(download.id)
@@ -140,7 +167,7 @@ class Downloader(
 
     fun deleteDownload(id: String) {
         scope.launch {
-            val downloads = dao.getDownloadsFlow().first().filter { it.trackId == id }
+            val downloads = downloadFlow.first().filter { it.trackId == id }
             downloads.forEach { download ->
                 dao.deleteDownloadEntity(download)
             }
@@ -149,10 +176,10 @@ class Downloader(
 
     fun deleteContext(id: String) {
         scope.launch {
-            val contexts = dao.getContextFlow().first().filter { it.itemId == id }
+            val contexts = contextFlow.first().filter { it.itemId == id }
             contexts.forEach { context ->
                 dao.deleteContextEntity(context)
-                val downloads = dao.getDownloadsFlow().first().filter {
+                val downloads = downloadFlow.first().filter {
                     it.contextId == context.id
                 }
                 downloads.forEach { download ->
@@ -168,24 +195,33 @@ class Downloader(
         val workers: List<Pair<TaskType, Progress>>
     )
 
-    val flow = dao.run {
-        val workFlow = workManager.getWorkInfosFlow(
-            WorkQuery.fromStates(WorkInfo.State.ENQUEUED, WorkInfo.State.RUNNING)
-        )
-        getDownloadsFlow().combine(getContextFlow()) { downloads, contexts ->
-            downloads.map { download ->
-                val context = contexts.find { download.contextId == it.id }
-                download to context
-            }
-        }.combine(workFlow) { downloads, infos ->
-            downloads.map { (download, context) ->
-                Info(
-                    download, context,
-                    infos.filter { it.tags.contains(download.id.toString()) }
-                        .mapNotNull { runCatching { it.progress.toProgress() }.getOrNull() }
-                )
-            }.sortedByDescending { it.workers.size }
-        }
+    val flow = downloadInfoFlow.combine(taskManager.progressFlow) { downloads, info ->
+        downloads.map { (dl, context) ->
+            val workers = info.filter { it.first.trackId == dl.id }.map { (a, b) -> a.type to b }
+            Info(dl, context, workers)
+        }.sortedByDescending { it.workers.size }
     }.stateIn(scope, SharingStarted.Eagerly, listOf())
 
+    init {
+        scope.launch {
+            downloadInfoFlow.map { info ->
+                val unifiedExtension = extensionLoader.unified.value
+                info.filter { it.download.fullyDownloaded }.groupBy {
+                    it.context?.id
+                }.flatMap { (id, infos) ->
+                    if (id == null) infos.map {
+                        it.download.track.toShelf()
+                            .withExtensionId(it.download.extensionId, false)
+                    }
+                    else listOfNotNull(infos.first().run {
+                        unifiedExtension.db.getPlaylist(context!!.mediaItem)?.toShelf()
+                    })
+                }
+            }.collect(downloadShelf)
+        }
+    }
+
+    companion object {
+        private const val TAG = "Downloader"
+    }
 }

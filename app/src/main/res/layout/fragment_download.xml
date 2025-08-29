@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -17,25 +16,27 @@
             style="@style/EchoCollapsingBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:maxLines="1">
+            app:expandedSubtitleTextAppearance="@style/TextAppearance.Material3.BodyLarge"
+            app:maxLines="2">
 
             <FrameLayout
-                android:id="@+id/toolbarIconContainer"
+                android:id="@+id/iconContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingHorizontal="24dp"
                 android:paddingVertical="64dp">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:contentDescription="@string/error_x"
-                    android:src="@drawable/art_download_for_offline" />
+                    android:id="@+id/extensionIcon"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/downloads"
+                    app:srcCompat="@drawable/ic_downloading" />
 
             </FrameLayout>
 
             <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
+                android:id="@+id/toolBar"
                 style="@style/Toolbar"
                 app:title="@string/downloads" />
 
@@ -49,12 +50,13 @@
         app:layout_anchor="@id/appBarLayout"
         app:layout_anchorGravity="bottom" />
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/item_download" />

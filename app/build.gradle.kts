@@ -4,27 +4,35 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinx.serialization)
 
-    alias(libs.plugins.gms)
-    alias(libs.plugins.crashlytics)
+    alias(libs.plugins.gms) apply false
+    alias(libs.plugins.crashlytics) apply false
 }
 
-val version = "2.0.0"
+val hasGoogleServices = file("google-services.json").exists()
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
+val version = "3.0.$gitCount"
 
 android {
     namespace = "dev.brahmkshatriya.echo"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.brahmkshatriya.echo"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = gitCount
         versionName = "v${version}_$gitHash($gitCount)"
     }
 
     buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+            )
+        }
         create("nightly") {
             initWith(getByName("release"))
             applicationIdSuffix = ".nightly"
@@ -40,19 +48,19 @@ android {
         viewBinding = true
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     androidResources {
         @Suppress("UnstableApiUsage")
         generateLocaleConfig = true
     }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -61,6 +69,7 @@ dependencies {
     implementation(libs.bundles.androidx)
     implementation(libs.material)
     implementation(libs.bundles.paging)
+    implementation(libs.filekache)
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
     implementation(libs.bundles.koin)
@@ -72,18 +81,17 @@ dependencies {
     implementation(libs.fastscroll)
     implementation(libs.kenburnsview)
     implementation(libs.nestedscrollwebview)
+    implementation(libs.acsbendi.webview)
 
-    debugImplementation(libs.bundles.firebase)
-    "stableImplementation"(libs.bundles.firebase)
-    "nightlyImplementation"(libs.bundles.firebase)
+    if (!hasGoogleServices) return@dependencies
+    implementation(libs.bundles.firebase)
 }
 
-fun execute(vararg command: String): String {
-    val processBuilder = ProcessBuilder(*command)
-    val hashCode = command.joinToString().hashCode().toString()
-    val output = File.createTempFile(hashCode, "")
-    processBuilder.redirectOutput(output)
-    val process = processBuilder.start()
-    process.waitFor()
-    return output.readText().dropLast(1)
+if (hasGoogleServices) {
+    apply(plugin = libs.plugins.gms.get().pluginId)
+    apply(plugin = libs.plugins.crashlytics.get().pluginId)
 }
+
+fun execute(vararg command: String): String = providers.exec {
+    commandLine(*command)
+}.standardOutput.asText.get().trim()

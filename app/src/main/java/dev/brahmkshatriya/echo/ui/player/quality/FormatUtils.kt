@@ -7,6 +7,7 @@ import androidx.media3.common.Format
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.Streamable
 
 object FormatUtils {
     @OptIn(UnstableApi::class)
@@ -25,9 +26,12 @@ object FormatUtils {
     private fun Format.getHertz() =
         sampleRate.takeIf { it > 0 }?.let { " • $it Hz" } ?: ""
 
+    private fun Format.getChannelCount() =
+        channelCount.takeIf { it > 0 }?.let { " • ${it}ch" } ?: ""
+
     @OptIn(UnstableApi::class)
     fun Format.toAudioDetails() =
-        "${getMimeType()}${getHertz()} • ${channelCount}ch${getBitrate()}"
+        "${getMimeType()}${getHertz()}${getChannelCount()}${getBitrate()}"
 
     fun Format.toVideoDetails() = "${height}p${getFrameRate()}${getBitrate()}"
     fun Format.toSubtitleDetails() = label ?: language ?: "Unknown"
@@ -55,11 +59,17 @@ object FormatUtils {
         return trackGroups to select
     }
 
-    fun Tracks.getDetails(context: Context): List<String> {
+    fun Tracks.getDetails(
+        context: Context, server: Streamable.Media.Server?, index: Int?,
+    ): List<String> {
         val audios = groups.filter { it.type == C.TRACK_TYPE_AUDIO }
         val videos = groups.filter { it.type == C.TRACK_TYPE_VIDEO }
         val subtitles = groups.filter { it.type == C.TRACK_TYPE_TEXT }
-        return listOfNotNull(
+        val sourceTitle = server?.run {
+            if (merged) sources.mapNotNull { it.title }
+            else listOfNotNull(sources.getOrNull(index ?: -1)?.title)
+        }.orEmpty()
+        return sourceTitle + listOfNotNull(
             audios.getSelectedFormat()?.toAudioDetails(),
             videos.getSelectedFormat()?.toVideoDetails(),
             subtitles.getSelectedFormat()?.toSubtitleDetails()

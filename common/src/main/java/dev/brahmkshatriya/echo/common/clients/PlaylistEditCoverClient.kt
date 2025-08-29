@@ -16,5 +16,5 @@ interface PlaylistEditCoverClient : PlaylistEditClient {
      * @param playlist the playlist to edit the cover of.
      * @param cover the new cover of the playlist.
      */
-    fun editPlaylistCover(playlist: Playlist, cover: File?)
+    suspend fun editPlaylistCover(playlist: Playlist, cover: File?)
 }

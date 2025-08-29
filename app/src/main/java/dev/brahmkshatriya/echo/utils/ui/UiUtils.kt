@@ -12,9 +12,11 @@ import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.AppBarLayout
+import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.BACKGROUND_GRADIENT
+import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import java.util.Locale
+import kotlin.math.max
 import kotlin.math.roundToLong
 
 object UiUtils {
@@ -33,16 +35,15 @@ object UiUtils {
         }
     }
 
-    fun AppBarLayout.onAppBarChangeListener(block: (offset: Float) -> Unit) {
-        addOnOffsetChangedListener { appBarLayout, verticalOffset ->
-            val offset = -verticalOffset / appBarLayout.totalScrollRange.toFloat()
+    fun AppBarLayout.configureAppBar(block: (offset: Float) -> Unit) {
+        val settings = context.getSettings()
+        val isGradient = settings.getBoolean(BACKGROUND_GRADIENT, true)
+        val extra = if (isGradient) -191 else 0
+        addOnOffsetChangedListener { _, verticalOffset ->
+            val offset = -verticalOffset / totalScrollRange.toFloat()
+            background?.mutate()?.alpha = max(0, extra + (offset * 255).toInt())
             runCatching { block(offset) }
         }
-    }
-
-    fun SwipeRefreshLayout.configure(block: () -> Unit) {
-        setProgressViewOffset(true, 0, 64.dpToPx(context))
-        setOnRefreshListener(block)
     }
 
     fun Context.isRTL() =
@@ -55,6 +56,12 @@ object UiUtils {
         resources.configuration.uiMode and UI_MODE_NIGHT_MASK != UI_MODE_NIGHT_NO
 
     fun Int.dpToPx(context: Context) = (this * context.resources.displayMetrics.density).toInt()
+
+    fun Context.resolveStyledDimension(attr: Int): Int {
+        val typed = theme.obtainStyledAttributes(intArrayOf(attr))
+        val itemWidth = typed.getDimensionPixelSize(typed.getIndex(0), 0)
+        return itemWidth
+    }
 
     fun Long.toTimeString(): String {
         val seconds = (this.toFloat() / 1000).roundToLong()

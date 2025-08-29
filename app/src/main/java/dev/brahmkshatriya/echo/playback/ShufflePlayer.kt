@@ -162,7 +162,11 @@ class ShufflePlayer(
         startPositionMs: Long
     ) {
         original = mediaItems
-        player.setMediaItems(mediaItems, startIndex, startPositionMs)
+        player.setMediaItems(
+            mediaItems,
+            startIndex.coerceAtMost(mediaItems.size - 1),
+            startPositionMs
+        )
         log("Set media items")
     }
 

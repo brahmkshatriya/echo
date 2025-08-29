@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.ui.player
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.annotation.OptIn
-import androidx.core.bundle.bundleOf
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -15,7 +15,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.MediaController
 import dev.brahmkshatriya.echo.R
-import dev.brahmkshatriya.echo.common.clients.TrackLikeClient
+import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -25,8 +25,10 @@ import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.MediaState
 import dev.brahmkshatriya.echo.playback.MediaItemUtils
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverWithDownloads
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.sourceIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerCommands.addToNextCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.addToQueueCommand
@@ -41,6 +43,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,11 +58,11 @@ class PlayerViewModel(
     extensionLoader: ExtensionLoader,
     downloader: Downloader,
 ) : ViewModel() {
-    private val extensions = extensionLoader.extensions
+    private val extensions = extensionLoader
     private val downloadFlow = downloader.flow
 
     val browser = MutableStateFlow<MediaController?>(null)
-    private fun withBrowser(block: (MediaController) -> Unit) {
+    private fun withBrowser(block: suspend (MediaController) -> Unit) {
         viewModelScope.launch {
             val browser = browser.first { it != null }!!
             block(browser)
@@ -127,7 +130,7 @@ class PlayerViewModel(
     }
 
     fun previous() {
-        withBrowser { it.seekToPreviousMediaItem() }
+        withBrowser { it.seekToPrevious() }
     }
 
     fun setShuffle(isShuffled: Boolean, changeCurrent: Boolean = false) {
@@ -141,8 +144,8 @@ class PlayerViewModel(
         withBrowser { it.repeatMode = repeatMode }
     }
 
-    suspend fun isTrackClient(extensionId: String): Boolean = withContext(Dispatchers.IO) {
-        extensions.music.getExtension(extensionId)?.isClient<TrackLikeClient>() ?: false
+    suspend fun isLikeClient(extensionId: String): Boolean = withContext(Dispatchers.IO) {
+        extensions.music.getExtension(extensionId)?.isClient<LikeClient>() ?: false
     }
 
     private fun createException(throwable: Throwable) {
@@ -204,15 +207,21 @@ class PlayerViewModel(
     }
 
     fun setQueue(id: String, list: List<Track>, index: Int, context: EchoMediaItem?) {
-        val mediaItems =
-            list.map { MediaItemUtils.build(settings, downloadFlow.value, it, id, context) }
-        withBrowser {
-            it.setMediaItems(mediaItems, index, 0)
-            it.prepare()
+        withBrowser { controller ->
+            val mediaItems = list.map {
+                MediaItemUtils.build(
+                    app,
+                    downloadFlow.value,
+                    MediaState.Unloaded(id, it),
+                    context
+                )
+            }
+            controller.setMediaItems(mediaItems, index, list[index].playedDuration ?: 0)
+            controller.prepare()
         }
     }
 
-    fun radio(id: String, item: EchoMediaItem) = viewModelScope.launch {
+    fun radio(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
         app.messageFlow.emit(
             Message(app.context.getString(R.string.loading_radio_for_x, item.title))
         )
@@ -220,12 +229,13 @@ class PlayerViewModel(
             it.sendCustomCommand(radioCommand, Bundle().apply {
                 putString("extId", id)
                 putSerialized("item", item)
+                putBoolean("loaded", loaded)
             })
         }
     }
 
     fun play(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (item !is Track) app.messageFlow.emit(
             Message(app.context.getString(R.string.playing_x, item.title))
         )
         withBrowser {
@@ -239,7 +249,7 @@ class PlayerViewModel(
     }
 
     fun shuffle(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (item !is Track) app.messageFlow.emit(
             Message(app.context.getString(R.string.shuffling_x, item.title))
         )
         withBrowser {
@@ -254,7 +264,7 @@ class PlayerViewModel(
 
 
     fun addToQueue(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (item !is Track) app.messageFlow.emit(
             Message(app.context.getString(R.string.adding_x_to_queue, item.title))
         )
         withBrowser {
@@ -267,7 +277,7 @@ class PlayerViewModel(
     }
 
     fun addToNext(id: String, item: EchoMediaItem, loaded: Boolean) = viewModelScope.launch {
-        if (item !is EchoMediaItem.TrackItem) app.messageFlow.emit(
+        if (!(browser.value?.mediaItemCount == 0 && item is Track)) app.messageFlow.emit(
             Message(app.context.getString(R.string.adding_x_to_next, item.title))
         )
         withBrowser {
@@ -290,7 +300,13 @@ class PlayerViewModel(
     val repeatMode = MutableStateFlow(0)
     val shuffleMode = MutableStateFlow(false)
 
-    val tracks = MutableStateFlow<Tracks?>(null)
+    val tracksFlow = MutableStateFlow<Tracks?>(null)
+    val serverAndTracks = tracksFlow.combine(playerState.serverChanged) { tracks, _ -> tracks }
+        .combine(playerState.current) { tracks, current ->
+            val server = playerState.servers[current?.mediaItem?.mediaId]?.getOrNull()
+            val index = current?.mediaItem?.sourceIndex
+            Triple(tracks, server, index)
+        }
 
     companion object {
         const val KEEP_QUEUE = "keep_queue"

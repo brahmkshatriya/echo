@@ -1,9 +1,6 @@
 package dev.brahmkshatriya.echo.common.helpers
 
 import dev.brahmkshatriya.echo.common.clients.LoginClient
-import dev.brahmkshatriya.echo.common.helpers.ClientException.LoginRequired
-import dev.brahmkshatriya.echo.common.helpers.ClientException.NotSupported
-import dev.brahmkshatriya.echo.common.helpers.ClientException.Unauthorized
 
 /**
  * A base exception class for handled client exceptions,

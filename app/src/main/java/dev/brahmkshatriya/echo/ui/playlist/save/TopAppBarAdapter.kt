@@ -2,16 +2,18 @@ package dev.brahmkshatriya.echo.ui.playlist.save
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
 import dev.brahmkshatriya.echo.databinding.ItemPlaylistSaveHeaderBinding
+import dev.brahmkshatriya.echo.ui.common.GridAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimRecyclerAdapter
+import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 
 class TopAppBarAdapter(
     private val onClose: () -> Unit,
     private val onCreateClicked: () -> Unit
-) : RecyclerView.Adapter<TopAppBarAdapter.ViewHolder>() {
+) : ScrollAnimRecyclerAdapter<TopAppBarAdapter.ViewHolder>(), GridAdapter {
     inner class ViewHolder(
         val binding: ItemPlaylistSaveHeaderBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : ScrollAnimViewHolder(binding.root) {
         init {
             binding.root.setNavigationOnClickListener {
                 onClose()
@@ -31,5 +33,6 @@ class TopAppBarAdapter(
     }
 
     override fun getItemCount() = 1
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {}
+    override val adapter = this
+    override fun getSpanSize(position: Int, width: Int, count: Int) = count
 }

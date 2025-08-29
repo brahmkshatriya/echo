@@ -10,7 +10,8 @@ interface SettingsProvider {
     /**
      * List of [Setting]s to be displayed in the settings screen
      */
-    val settingItems: List<Setting>
+    suspend fun getSettingItems() : List<Setting>
+
     /**
      * Called when the extension is initialized, to provide the [Settings] to the extension
      */

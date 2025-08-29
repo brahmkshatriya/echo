@@ -7,7 +7,6 @@
     <string name="x_was_not_granted">%1$s wurde nicht gewährt</string>
     <string name="audio">Audio</string>
     <string name="video">Video</string>
-    <string name="video_permission_summary">So greifen Sie auf Ihre lokale Videobibliothek zu</string>
     <string name="read_storage">Speicher lesen</string>
     <string name="write_storage_permission_summary">So erstellen und bearbeiten Sie lokale Wiedergabelisten</string>
     <string name="notifications">Benachrichtigungen</string>
@@ -37,9 +36,7 @@
     <string name="more">Mehr</string>
     <string name="downloading_x">Herunterladen von %1$s</string>
     <string name="cancel_all">Alle abbrechen</string>
-    <string name="progress_x_percentage">Fortschritt %1$d%%</string>
     <string name="downloads">Downloads</string>
-    <string name="x_items">%1$d Artikel</string>
     <string name="downloaded_x">Heruntergeladen %1$s</string>
     <string name="login">Einloggen</string>
     <string name="extension_out_of_date">Veraltet</string>
@@ -48,18 +45,15 @@
     <string name="required_extensions_missing_x">Erforderliche Erweiterungen fehlen: %1$s</string>
     <string name="x_login_required">%1$s Anmeldung erforderlich</string>
     <string name="account_session_expired_in_x">Kontositzung abgelaufen in %1$s</string>
-    <string name="no_servers_found">Keine Server gefunden</string>
     <string name="error_x">Fehler: %1$s</string>
     <string name="str_copy">Kopieren</string>
     <string name="extensions">Erweiterungen</string>
-    <string name="manage_extensions">Verwalten von Erweiterungen</string>
     <string name="random">Zufällig</string>
     <string name="add">Hinzufügen</string>
     <string name="loading">Laden…</string>
     <string name="settings">Einstellungen</string>
     <string name="value">Wert</string>
     <string name="value_not_set">Nicht festgelegt</string>
-    <string name="audio_summary">(Audiophile versammeln sich hier)</string>
     <string name="playback">Wiedergabe</string>
     <string name="audio_fx">Audio-Effekte</string>
     <string name="audio_fx_summary">Effekte, die auf alle Songs angewendet werden</string>
@@ -79,11 +73,8 @@
     <string name="auto_start_radio_summary">Fügen Sie automatisch verwandte Songs des Titels zur Wiedergabeliste hinzu, um eine unendliche Warteschlange zu haben</string>
     <string name="cache_size">Cache-Größe</string>
     <string name="cache_size_summary">Größe in MB zum Zwischenspeichern von Audio und Video</string>
-    <string name="misc_summary">Sonstige Einstellungen</string>
     <string name="version">Version</string>
-    <string name="language">Sprache</string>
     <string name="system">System</string>
-    <string name="language_summary">Sprache der App, System wird standardmäßig auf Englisch eingestellt</string>
     <string name="install">Installieren</string>
     <string name="app">App</string>
     <string name="file">Datei</string>
@@ -91,11 +82,8 @@
     <string name="installation_type_summary">Durch die App-Installation können die folgenden Links in Echo geöffnet werden:</string>
     <string name="could_not_find_the_file">Die Datei konnte nicht gefunden werden.</string>
     <string name="extension_installer">Installer für Erweiterungen</string>
-    <string name="uninstall">Deinstallieren</string>
-    <string name="invalid_extension">Ungültige Erweiterung</string>
     <string name="extension_uninstalled_successfully">Die Erweiterung wurde erfolgreich deinstalliert.</string>
     <string name="allow_opening_links">Öffnen von Links zulassen</string>
-    <string name="extension_requires_following_extensions">%1$s erfordert %2$s</string>
     <string name="downloading_update_for_x">Update für %1$s wird heruntergeladen</string>
     <string name="extension_updated_successfully">%1$s erfolgreich aktualisiert</string>
     <string name="link">Verbinden</string>
@@ -103,9 +91,7 @@
     <string name="list_is_empty">Liste ist leer</string>
     <string name="add_extensions">Erweiterungen hinzufügen</string>
     <string name="invalid_extension_list">Liste ungültiger Erweiterungen</string>
-    <string name="checking_for_extension_updates">Nach Erweiterungsupdates suchen</string>
     <string name="look_and_feel">Aussehen &amp; Haptik</string>
-    <string name="look_and_feel_summary">UI- und Animationseinstellungen</string>
     <string name="ui">UI</string>
     <string name="theme">Thema</string>
     <string name="theme_summary">Möchten Sie blind sein?</string>
@@ -128,14 +114,9 @@
     <string name="enabled">Ermöglichte</string>
     <string name="disabled">Arbeitsunfähig</string>
     <string name="no_user_found">Kein Benutzer gefunden</string>
-    <string name="add_account">Konto hinzufügen</string>
     <string name="add_extension">Erweiterung hinzufügen</string>
     <string name="error_updating_extension">Fehler beim Aktualisieren</string>
     <string name="webview">WebAnsicht</string>
-    <string name="username_and_password">Benutzername und Passwort</string>
-    <string name="manual">Manuell</string>
-    <string name="username">Nutzername</string>
-    <string name="password">Passwort</string>
     <string name="logout">Abmeldung</string>
     <string name="switch_account">Konto wechseln</string>
     <string name="incognito">Inkognito</string>
@@ -170,16 +151,13 @@
     <string name="audio_permission_summary">So greifst du auf deine lokale Musikbibliothek zu</string>
     <string name="write_storage">Schreibspeicher</string>
     <string name="x_is_not_supported_in_x">%1$s wird in %2$s nicht unterstützt</string>
-    <string name="check_for_extension_updates_summary">Suchen Sie nach neuen Updates von Erweiterungen, wenn Sie die App öffnen.</string>
     <string name="skip_silence_summary">Überspringen des stillen Teils des Songs, um eine lückenlose Wiedergabe zu ermöglichen</string>
-    <string name="playlists">Wiedergabelisten</string>
     <string name="cache_playlist_warning">Experimentelles Feature. Alles, außer dem Anhören, wird nicht unterstützt.</string>
     <string name="duration_filter_summary">Filtern Sie Audiodateien heraus, deren Dauer (in Sekunden) kleiner als der Wert ist</string>
     <string name="extension_installed">%1$s (Installiert)</string>
     <string name="unified_liked_playlist_summary">Ihre Lieblingstitel aus verschiedenen Erweiterungen</string>
     <string name="playlist_liked">Gemocht</string>
     <string name="unknown">Unbekannt</string>
-    <string name="no_source_found">Keine Quelle gefunden</string>
     <string name="x_disabled">%1$s (Deaktiviert)</string>
     <string name="sleep_timer_cancelled">Sleep-Timer abgebrochen</string>
     <string name="shuffle">Durchmischung</string>
@@ -190,13 +168,10 @@
     <string name="view">Ansehen</string>
     <string name="no_internet">Kein Internet</string>
     <string name="choose_a_color">Wählen Sie eine Farbe</string>
-    <string name="check_for_extension_updates">Nach Erweiterungsupdates suchen</string>
     <string name="installation_type_warning">Nicht verfügbar, wenn Sie die Erweiterung als Datei installieren.</string>
     <string name="reset">Zurücksetzen</string>
-    <string name="task_cancelled">Aufgabe abgebrochen</string>
     <string name="bass_boost_desc">Ein größerer Wert kann den Klang verzerren.</string>
     <string name="stream_quality_summary">Auswählen der Qualität des Streams</string>
-    <string name="extensions_summary">Verwalten der installierten Erweiterungen</string>
     <string name="custom_theme_color">Benutzerdefinierte Themenfarbe</string>
     <string name="previous">Vorhergehend</string>
     <string name="open_links_instruction">Um das Öffnen dieser Links zu ermöglichen, müssen Sie Folgendes tun:\n- Scrollen Sie nach unten und klicken Sie auf \"Standardmäßig öffnen\".\n- Klicken Sie auf \"+ Link hinzufügen\"</string>
@@ -234,8 +209,6 @@
     <string name="save_to_library">In Bibliothek speichern</string>
     <string name="saved_x_to_library">%1$s in der Bibliothek gespeichert</string>
     <string name="remove_from_library">Aus Bibliothek entfernen</string>
-    <string name="saving_x_to_library">Speichern von %1$s in der Bibliothek</string>
-    <string name="removing_x_from_library">Entfernen von %1$s aus der Bibliothek</string>
     <string name="removed_x_from_library">%1$s aus der Bibliothek entfernt</string>
     <string name="radio">Radio</string>
     <string name="download">Herunterladen</string>
@@ -247,10 +220,8 @@
     <string name="unfollowed_x">Nicht gefolgt %1$s</string>
     <string name="hide">Verstecken</string>
     <string name="hiding_x">Ausblenden von %1$s</string>
-    <string name="hid_x">Versteckt %1$s</string>
     <string name="unhide">Einblenden</string>
     <string name="unhiding_x">Aufheben des Ausblendens von %1$s</string>
-    <string name="unhid_x">Nicht ausgeblendet %1$s</string>
     <string name="liking_x">Liken von %1$s</string>
     <string name="liked_x">Gefällt mir %1$s</string>
     <string name="unliking_x">Unbeliebt %1$s</string>
@@ -273,7 +244,6 @@
     <string name="shuffling_x">Mischen von %1$s</string>
     <string name="copying_the_error">Kopieren des Fehlers</string>
     <string name="reversed">Umgekehrt</string>
-    <string name="remember">Merken</string>
     <string name="apply">Anwenden</string>
     <string name="save">Retten</string>
     <string name="sort_title">Titel</string>
@@ -308,11 +278,6 @@
     <string name="download_started">Download gestartet</string>
     <string name="merging_x">Zusammenführen von %1$s</string>
     <string name="tagging_x">Markieren von %1$s</string>
-    <string name="downloads_summary">Alle Ihre Downloads</string>
-    <plurals name="n_songs">
-        <item quantity="one">%1$d Lied</item>
-        <item quantity="other">%1$d Lieder</item>
-    </plurals>
     <string name="apply_player_color_to_app">Anwenden der Playerfarbe auf die gesamte App</string>
     <string name="apply_player_color_to_app_summary">VERZÖGERUNGS-WARNUNG!!</string>
     <string name="sort_and_filter">Sortieren und Filtern</string>
@@ -328,6 +293,5 @@
     <string name="delete_download">Download löschen</string>
     <string name="removed_x_from_downloads">%1$s aus Downloads entfernt</string>
     <string name="download_complete">Download Komplett</string>
-    <string name="add_widget">Mini-Player-Widget</string>
     <string name="app_widget_description">Echo auf Ihrem Startbildschirm!</string>
 </resources>

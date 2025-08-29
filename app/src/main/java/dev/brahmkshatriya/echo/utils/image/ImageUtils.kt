@@ -4,7 +4,8 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
-import coil3.Bitmap
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColorInt
 import coil3.Image
 import coil3.asDrawable
 import coil3.imageLoader
@@ -52,7 +53,7 @@ object ImageUtils {
     }
 
     fun ImageHolder.getCachedDrawable(context: Context): Drawable? {
-        val key = hashCode().toString()
+        val key = diskId ?: return null
         return context.imageLoader.diskCache?.openSnapshot(key)?.use {
             Drawable.createFromPath(it.data.toFile().absolutePath)
         }
@@ -103,30 +104,38 @@ object ImageUtils {
         context.imageLoader.execute(request.build()).image?.asDrawable(context.resources)
     }
 
-    fun ImageView.loadBlurred(bitmap: Bitmap?, radius: Float) = tryWith {
-        if (bitmap == null) setImageDrawable(null)
-        load(bitmap) {
+    fun ImageView.loadBlurred(drawable: Drawable?, radius: Float) = tryWith {
+        if (drawable == null) setImageDrawable(null)
+        load(drawable) {
             transformations(BlurTransformation(context, radius))
         }
     }
+
+    private val ImageHolder.diskId
+        get() = when (this) {
+            is ImageHolder.NetworkRequestImageHolder -> request.toString().hashCode().toString()
+            else -> null
+        }
 
     private fun createRequest(
         imageHolder: ImageHolder,
         builder: ImageRequest.Builder,
     ) = imageHolder.run {
-        val key = hashCode().toString()
+        builder.diskCacheKey(diskId)
         when (this) {
-            is ImageHolder.UriImageHolder -> builder.data(uri)
-            is ImageHolder.UrlRequestImageHolder -> {
-                if (request.headers.isNotEmpty())
-                    builder.httpHeaders(NetworkHeaders.Builder().apply {
-                        request.headers.forEach { (t, u) -> add(t, u) }
-                    }.build())
+            is ImageHolder.ResourceUriImageHolder -> builder.data(uri)
+            is ImageHolder.NetworkRequestImageHolder -> {
+                val headerBuilder = NetworkHeaders.Builder()
+                request.headers.forEach { (key, value) ->
+                    headerBuilder[key] = value
+                }
+                builder.httpHeaders(headerBuilder.build())
                 builder.data(request.url)
             }
 
-            is ImageHolder.ResourceImageHolder -> builder.data(resId)
-        }.diskCacheKey(key)
+            is ImageHolder.ResourceIdImageHolder -> builder.data(resId)
+            is ImageHolder.HexColorImageHolder -> builder.data(hex.toColorInt().toDrawable())
+        }
     }
 
     private fun ImageHolder?.createRequest(

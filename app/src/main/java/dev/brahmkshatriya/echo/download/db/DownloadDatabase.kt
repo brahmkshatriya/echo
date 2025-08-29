@@ -10,16 +10,16 @@ import dev.brahmkshatriya.echo.download.db.models.DownloadEntity
 @Database(
     entities = [
         ContextEntity::class,
-        DownloadEntity::class
+        DownloadEntity::class,
     ],
-    version = 3,
+    version = 8,
     exportSchema = false
 )
 abstract class DownloadDatabase : RoomDatabase() {
     abstract fun downloadDao(): DownloadDao
 
     companion object {
-        private const val DATABASE_NAME = "download_db"
+        private const val DATABASE_NAME = "download-db"
         fun create(app: Application) = Room.databaseBuilder(
                 app, DownloadDatabase::class.java, DATABASE_NAME
             ).fallbackToDestructiveMigration(true).build()
