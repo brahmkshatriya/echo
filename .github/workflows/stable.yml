@@ -28,6 +28,9 @@ jobs:
       - name: Cook KeyStore
         run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
 
+      - name: Cook Google Services
+        run: echo "${{ secrets.GOOGLE_SERVICES_B64 }}" | base64 -d > app/google-services.json
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 

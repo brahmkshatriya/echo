@@ -4,10 +4,11 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinx.serialization)
 
-    alias(libs.plugins.gms)
-    alias(libs.plugins.crashlytics)
+    alias(libs.plugins.gms) apply false
+    alias(libs.plugins.crashlytics) apply false
 }
 
+val hasGoogleServices = file("google-services.json").exists()
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
 val version = "3.0.$gitCount"
@@ -82,9 +83,13 @@ dependencies {
     implementation(libs.nestedscrollwebview)
     implementation(libs.acsbendi.webview)
 
-    debugImplementation(libs.bundles.firebase)
-    "stableImplementation"(libs.bundles.firebase)
-    "nightlyImplementation"(libs.bundles.firebase)
+    if (!hasGoogleServices) return@dependencies
+    implementation(libs.bundles.firebase)
+}
+
+if (hasGoogleServices) {
+    apply(plugin = libs.plugins.gms.get().pluginId)
+    apply(plugin = libs.plugins.crashlytics.get().pluginId)
 }
 
 fun execute(vararg command: String): String = providers.exec {

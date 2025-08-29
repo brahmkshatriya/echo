@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.extensions.cache
 
+import com.mayakapps.kache.FileKache
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
@@ -43,14 +44,25 @@ import java.io.File
 object Cached {
     class NotFound(id: String) : Exception("Cache not found for $id")
 
+    suspend inline fun <reified T> FileKache.getData(id: String) = runCatching {
+        val file = get(id) ?: throw NotFound(id)
+        File(file).readText().toData<T>()
+    }
+
+    suspend inline fun <reified T> FileKache.putData(id: String, data: T) = runCatching {
+        put(id) {
+            runCatching {
+                File(it).writeText(data.toJson())
+            }.isSuccess
+        }
+    }
+
     suspend inline fun <reified T : EchoMediaItem> getMedia(
         app: App, extensionId: String, itemId: String,
     ) = runCatching {
         val fileCache = app.fileCache.await()
         val id = "media-$extensionId-$itemId-state"
-        fileCache.get(id)?.let {
-            File(it).readText().toData<MediaState.Loaded<T>>()
-        } ?: throw NotFound(id)
+        fileCache.getData<MediaState.Loaded<T>>(id).getOrThrow()
     }
 
     suspend inline fun <reified T : EchoMediaItem> loadMedia(
@@ -97,11 +109,7 @@ object Cached {
                 )
                 val fileCache = app.fileCache.await()
                 val id = "media-${extension.id}-${newState.item.id}-state"
-                fileCache.put(id) {
-                    runCatching {
-                        File(it).writeText(newState.toJson())
-                    }.isSuccess
-                }
+                fileCache.putData(id, newState)
                 newState
             }
             result.getOrElse {
@@ -131,17 +139,9 @@ object Cached {
         val media = extension.getAs<TrackClient, Streamable.Media> {
             loadStreamableMedia(streamable, false)
         }.getOrElse { throwable ->
-            runCatching {
-                fileCache.get(id)?.let {
-                    File(it).readText().toData<Streamable.Media>()
-                }
-            }.getOrNull() ?: throw throwable
+            fileCache.getData<Streamable.Media>(id).getOrNull() ?: throw throwable
         }
-        fileCache.put(id) {
-            runCatching {
-                File(it).writeText(media.toJson())
-            }.isSuccess
-        }
+        fileCache.putData(id, media)
         media
     }
 
@@ -189,17 +189,9 @@ object Cached {
         val loaded = extension.getAs<LyricsClient, Lyrics> {
             loadLyrics(lyrics)
         }.getOrElse { throwable ->
-            runCatching {
-                fileCache.get(id)?.let {
-                    File(it).readText().toData<Lyrics>()
-                }
-            }.getOrNull() ?: throw throwable
+            fileCache.getData<Lyrics>(id).getOrNull() ?: throw throwable
         }
-        fileCache.put(id) {
-            runCatching {
-                File(it).writeText(loaded.toJson())
-            }.isSuccess
-        }
+        fileCache.putData(id, loaded)
         loaded
     }
 
@@ -258,22 +250,15 @@ object Cached {
     ): Feed<T> {
         val fileCache = app.fileCache.await()
         val tabId = "feed-$extensionId-$feedId"
-        val tabs = fileCache.get(tabId)?.let {
-            File(it).readText().toData<List<Tab>>()
-        } ?: throw NotFound(tabId)
+        val tabs = fileCache.getData<List<Tab>>(tabId).getOrThrow()
         return Feed(tabs) { tab ->
             val id = "$tabId-${tab?.id}"
-            val (buttons, bg) = fileCache.get(id)?.let {
-                File(it).readText().toData<Pair<Feed.Buttons?, ImageHolder?>>()
-            } ?: throw NotFound(id)
+            val (buttons, bg) = fileCache.getData<Pair<Feed.Buttons?, ImageHolder?>>(id)
+                .getOrThrow()
             PagedData.Continuous { token ->
                 val id = "$id-$token"
-                val page = fileCache.get(id)?.let {
-                    File(it).readText().toData<Page<T>>()
-                } ?: throw NotFound(id)
-                page.copy(
-                    page.data.map { transform(it) }
-                )
+                val page = fileCache.getData<Page<T>>(id).getOrThrow()
+                page.copy(page.data.map { transform(it) })
             }.toFeedData(buttons, bg)
         }
     }
@@ -283,11 +268,7 @@ object Cached {
     ): Feed<T> {
         val fileCache = app.fileCache.await()
         val tabId = "feed-${extension.id}-$feedId"
-        fileCache.put(tabId) {
-            runCatching {
-                File(it).writeText(feed.tabs.toJson())
-            }.isSuccess
-        }
+        fileCache.putData(tabId, feed.tabs)
         return Feed(feed.tabs) { tab ->
             val data = runCatching {
                 feed.getPagedData(tab)
@@ -296,13 +277,7 @@ object Cached {
             }
             val (pagedData, buttons, bg) = data
             val id = "$tabId-${tab?.id}"
-            fileCache.put(id) {
-                runCatching {
-                    File(it).writeText(
-                        Pair(buttons, bg).toJson()
-                    )
-                }.isSuccess
-            }
+            fileCache.putData(id, Pair(buttons, bg))
             PagedData.Continuous { token ->
                 val page = runCatching {
                     pagedData.loadPage(token)
@@ -310,9 +285,7 @@ object Cached {
                     throw it.toAppException(extension)
                 }
                 val id = "$id-$token"
-                fileCache.put(id) {
-                    runCatching { File(it).writeText(page.toJson()) }.isSuccess
-                }
+                fileCache.putData(id, page)
                 page
             }.toFeedData(buttons, bg)
         }

@@ -54,7 +54,7 @@
         <activity
             android:name=".MainActivity"
             android:enableOnBackInvokedCallback="false"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true"
             android:launchMode="singleTop"
             android:windowSoftInputMode="stateVisible|adjustPan">
@@ -81,7 +81,7 @@
         <activity
             android:name=".MainActivity$Back"
             android:enableOnBackInvokedCallback="true"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true"
             android:launchMode="singleTop"
             android:windowSoftInputMode="stateVisible|adjustPan">
