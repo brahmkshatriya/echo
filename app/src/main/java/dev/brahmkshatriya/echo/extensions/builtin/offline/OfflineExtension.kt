@@ -39,6 +39,7 @@ import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toMedia
 import dev.brahmkshatriya.echo.common.models.Streamable.Source.Companion.toSource
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingMultipleChoice
 import dev.brahmkshatriya.echo.common.settings.SettingSlider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
@@ -82,62 +83,69 @@ class OfflineExtension(
         refreshLibrary()
     }
 
-    override suspend fun getSettingItems() = listOf(
-        SettingSwitch(
-            context.getString(R.string.refresh_library_on_reload),
-            "refresh_library",
-            context.getString(R.string.refresh_library_on_reload_summary),
-            false
-        ),
-        SettingSlider(
-            context.getString(R.string.duration_filter),
-            "limit_value",
-            context.getString(R.string.duration_filter_summary),
-            10,
-            0,
-            120,
-            10
-        ),
-        SettingMultipleChoice(
-            context.getString(R.string.blacklist_folders),
-            "blacklist_folders",
-            context.getString(R.string.blacklist_folders_summary),
-            library.folders.toList(),
-            library.folders.toList()
-        ),
-        SettingTextInput(
-            context.getString(R.string.blacklist_folder_keywords),
-            "blacklist_keywords",
-            context.getString(R.string.blacklist_folder_keywords_summary)
+    override suspend fun getSettingItems(): List<Setting> {
+        val folders = getLibrary().folders
+        return listOf(
+            SettingSwitch(
+                context.getString(R.string.refresh_library_on_reload),
+                "refresh_library",
+                context.getString(R.string.refresh_library_on_reload_summary),
+                false
+            ),
+            SettingSlider(
+                context.getString(R.string.duration_filter),
+                "limit_value",
+                context.getString(R.string.duration_filter_summary),
+                10,
+                0,
+                120,
+                10
+            ),
+            SettingMultipleChoice(
+                context.getString(R.string.blacklist_folders),
+                "blacklist_folders",
+                context.getString(R.string.blacklist_folders_summary),
+                folders.toList(),
+                folders.toList()
+            ),
+            SettingTextInput(
+                context.getString(R.string.blacklist_folder_keywords),
+                "blacklist_keywords",
+                context.getString(R.string.blacklist_folder_keywords_summary)
+            )
         )
-    )
+    }
 
     private val settings = getSettings(context, metadata)
     override fun setSettings(settings: Settings) {}
     private val refreshLibrary
         get() = settings.getBoolean("refresh_library") ?: true
 
-    private var library = MediaStoreUtils.getAllSongs(context, settings)
-    private fun refreshLibrary() {
-        library = MediaStoreUtils.getAllSongs(context, settings)
+    private var _library: MediaStoreUtils.LibraryStoreClass? = null
+    private suspend fun getLibrary(): MediaStoreUtils.LibraryStoreClass {
+        if (_library == null) _library = MediaStoreUtils.getAllSongs(context, settings)
+        return _library!!
     }
 
+    private suspend fun refreshLibrary() {
+        _library = MediaStoreUtils.getAllSongs(context, settings)
+    }
 
-    private fun find(artist: Artist) =
-        library.artistMap[artist.id.toLongOrNull()]
+    private suspend fun find(artist: Artist) =
+        getLibrary().artistMap[artist.id.toLongOrNull()]
 
-    private fun find(album: Album) =
-        library.albumList.find { it.id == album.id.toLong() }
+    private suspend fun find(album: Album) =
+        getLibrary().albumList.find { it.id == album.id.toLong() }
 
-    private fun find(playlist: Playlist) =
-        library.playlistList.find { it.id == playlist.id.toLong() }
+    private suspend fun find(playlist: Playlist) =
+        getLibrary().playlistList.find { it.id == playlist.id.toLong() }
 
     private fun List<EchoMediaItem>.toShelves(buttons: Feed.Buttons? = null): Feed<Shelf> =
         map { it.toShelf() }.toFeed(buttons)
 
     override suspend fun loadHomeFeed() = Feed(listOf()) {
         if (refreshLibrary) refreshLibrary()
-
+        val library = getLibrary()
         val recentlyAdded = library.songList.sortedByDescending {
             it.extras["addDate"]?.toLongOrNull()
         }.map { it }
@@ -196,8 +204,8 @@ class OfflineExtension(
     override suspend fun loadFeed(album: Album) =
         getArtistsWithCategories(album.artists) { it.album?.id != album.id }
 
-    private fun getArtistsWithCategories(
-        artists: List<Artist>, filter: (Track) -> Boolean
+    private suspend fun getArtistsWithCategories(
+        artists: List<Artist>, filter: (Track) -> Boolean,
     ) = artists.map { small ->
         val artist = find(small)
         val category = artist?.songList?.filter {
@@ -261,12 +269,13 @@ class OfflineExtension(
 
     override suspend fun loadTracks(radio: Radio): Feed<Track> = PagedData.Single {
         val mediaItem = radio.extras["mediaItem"]!!.toData<EchoMediaItem>()
+        val library = getLibrary()
         when (mediaItem) {
             is Album -> {
                 val tracks = loadTracks(mediaItem).loadAll().asSequence()
-                    .map { it.artists }.flatten()
-                    .map { artist -> find(artist)?.songList?.map { it }!! }.flatten()
-                    .filter { it.album?.id != mediaItem.id }.take(25)
+                    .map { it.artists }.flatten().map { artist ->
+                        library.artistMap[artist.id.toLongOrNull()]?.songList?.map { it }!!
+                    }.flatten().filter { it.album?.id != mediaItem.id }.take(25)
 
                 val randomTracks = library.songList.shuffled().take(25).map { it }
                 (tracks + randomTracks).distinctBy { it.id }.toMutableList()
@@ -274,13 +283,13 @@ class OfflineExtension(
 
             is Playlist -> {
                 val tracks = loadTracks(mediaItem).loadAll()
-                val randomTracks = library.songList.shuffled().take(25).map { it }
+                val randomTracks = getLibrary().songList.shuffled().take(25).map { it }
                 (tracks + randomTracks).distinctBy { it.id }.toMutableList()
             }
 
             is Artist -> {
                 val tracks = find(mediaItem)?.songList?.map { it } ?: emptyList()
-                val randomTracks = library.songList.shuffled().take(25).map { it }
+                val randomTracks = getLibrary().songList.shuffled().take(25).map { it }
                 (tracks + randomTracks).distinctBy { it.id }.toMutableList()
             }
 
@@ -289,7 +298,7 @@ class OfflineExtension(
                 val artistTracks = mediaItem.artists.map { artist ->
                     find(artist)?.songList ?: emptyList()
                 }.flatten().map { it }
-                val randomTracks = library.songList.shuffled().take(25).map { it }
+                val randomTracks = getLibrary().songList.shuffled().take(25).map { it }
                 val allTracks =
                     listOfNotNull(albumTracks, artistTracks, randomTracks).flatten()
                         .distinctBy { it.id }
@@ -328,16 +337,16 @@ class OfflineExtension(
         if (query.isBlank()) {
             if (refreshLibrary) refreshLibrary()
             when (tab?.id) {
-                "Albums" -> library.albumList.map { it.toAlbum() }.sorted().toPair(
+                "Albums" -> getLibrary().albumList.map { it.toAlbum() }.sorted().toPair(
                     Feed.Buttons(showSearch = false, showSort = true)
                 )
 
-                "Artists" -> library.artistMap.values.map { it.toArtist() }.sorted().toPair(
+                "Artists" -> getLibrary().artistMap.values.map { it.toArtist() }.sorted().toPair(
                     Feed.Buttons(showSearch = false, showSort = true)
                 )
 
-                "Genres" -> library.genreList.map { it.toShelf() }.toPair()
-                else -> library.songList.sortedByDescending {
+                "Genres" -> getLibrary().genreList.map { it.toShelf() }.toPair()
+                else -> getLibrary().songList.sortedByDescending {
                     it.extras["addDate"]?.toLongOrNull()
                 }.map { it.toShelf() }.toPair(
                     Feed.Buttons(
@@ -346,13 +355,13 @@ class OfflineExtension(
                 )
             }
         } else {
-            val tracks = library.songList.map { it }.searchBy(query) {
+            val tracks = getLibrary().songList.map { it }.searchBy(query) {
                 listOf(it.title, it.album?.title) + it.artists.map { artist -> artist.name }
             }
-            val albums = library.albumList.map { it.toAlbum() }.searchBy(query) {
+            val albums = getLibrary().albumList.map { it.toAlbum() }.searchBy(query) {
                 listOf(it.title) + it.artists.map { artist -> artist.name }
             }
-            val artists = library.artistMap.values.map { it.toArtist() }.searchBy(query) {
+            val artists = getLibrary().artistMap.values.map { it.toArtist() }.searchBy(query) {
                 listOf(it.name)
             }
 
@@ -387,24 +396,24 @@ class OfflineExtension(
     ) { tab ->
         if (refreshLibrary) refreshLibrary()
         val pagedData: PagedData<Shelf> = when (tab?.id) {
-            "Folders" -> library.folderStructure.folderList.entries.firstOrNull()?.value
+            "Folders" -> getLibrary().folderStructure.folderList.entries.firstOrNull()?.value
                 ?.toShelf(context, null)?.feed?.getPagedData?.invoke(null)?.pagedData
                 ?: PagedData.Single { listOf() }
 
             else -> PagedData.Single {
-                library.playlistList.map { it.toPlaylist().toShelf() }
+                getLibrary().playlistList.map { it.toPlaylist().toShelf() }
             }
         }
         pagedData.toFeedData(Feed.Buttons())
     }
 
-    override suspend fun listEditablePlaylists(track: Track?) = library.playlistList.map {
+    override suspend fun listEditablePlaylists(track: Track?) = getLibrary().playlistList.map {
         val has = it.songList.any { song -> song.id == track?.id }
         it.toPlaylist() to has
     }
 
     override suspend fun likeItem(item: EchoMediaItem, shouldLike: Boolean) {
-        val library = library
+        val library = getLibrary()
         val playlist = library.likedPlaylist?.id
             ?: throw ClientException.NotSupported("Couldn't create Liked Playlist")
         if (shouldLike) context.addSongToPlaylist(playlist, item.id.toLong(), 0)
@@ -416,12 +425,12 @@ class OfflineExtension(
     }
 
     override suspend fun isItemLiked(item: EchoMediaItem) =
-        library.likedPlaylist?.songList?.find { it.id == item.id } != null
+        getLibrary().likedPlaylist?.songList?.find { it.id == item.id } != null
 
     override suspend fun createPlaylist(title: String, description: String?): Playlist {
         val id = context.createPlaylist(title)
         refreshLibrary()
-        return library.playlistList.find { it.id == id }!!.toPlaylist()
+        return getLibrary().playlistList.find { it.id == id }!!.toPlaylist()
     }
 
     override suspend fun deletePlaylist(playlist: Playlist) {
@@ -430,13 +439,13 @@ class OfflineExtension(
     }
 
     override suspend fun editPlaylistMetadata(
-        playlist: Playlist, title: String, description: String?
+        playlist: Playlist, title: String, description: String?,
     ) {
         context.editPlaylist(playlist.id.toLong(), title)
     }
 
     override suspend fun addTracksToPlaylist(
-        playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>
+        playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>,
     ) {
         new.forEach {
             context.addSongToPlaylist(playlist.id.toLong(), it.id.toLong(), index)
@@ -444,7 +453,7 @@ class OfflineExtension(
     }
 
     override suspend fun removeTracksFromPlaylist(
-        playlist: Playlist, tracks: List<Track>, indexes: List<Int>
+        playlist: Playlist, tracks: List<Track>, indexes: List<Int>,
     ) {
         indexes.forEach { index ->
             context.removeSongFromPlaylist(playlist.id.toLong(), index)
@@ -452,7 +461,7 @@ class OfflineExtension(
     }
 
     override suspend fun moveTrackInPlaylist(
-        playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int
+        playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int,
     ) {
         val song = tracks[fromIndex].id.toLong()
         context.moveSongInPlaylist(playlist.id.toLong(), song, fromIndex, toIndex)

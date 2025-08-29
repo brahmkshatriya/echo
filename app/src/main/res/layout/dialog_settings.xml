@@ -291,10 +291,22 @@
         android:padding="8dp"
         tools:layout_gravity="bottom|end">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/currentAccountIcon"
-            style="@style/IconButtonOutlinedBig"
-            app:icon="@drawable/ic_account_circle_32dp" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/accountsCont"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            app:cardBackgroundColor="?navBackground"
+            app:cardCornerRadius="24dp"
+            app:contentPadding="5dp">
+
+            <ImageView
+                android:id="@+id/accounts"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:contentDescription="@string/extensions"
+                android:src="@drawable/ic_account_circle_32dp" />
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/currentAccountName"
@@ -311,10 +323,22 @@
             app:iconTint="?colorControlActivated"
             app:strokeWidth="0dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/currentExtension"
-            style="@style/IconButtonOutlinedBig"
-            app:icon="@drawable/ic_extension_32dp" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/extensionsCont"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            app:cardBackgroundColor="?navBackground"
+            app:cardCornerRadius="24dp"
+            app:contentPadding="5dp">
+
+            <ImageView
+                android:id="@+id/extensions"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:contentDescription="@string/extensions"
+                android:src="@drawable/ic_extension_32dp" />
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/currentExtensionSettings"

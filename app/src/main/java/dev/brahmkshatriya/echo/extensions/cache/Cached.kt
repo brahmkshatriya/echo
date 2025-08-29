@@ -258,8 +258,14 @@ object Cached {
             PagedData.Continuous { token ->
                 val id = "$id-$token"
                 val page = fileCache.getData<Page<T>>(id).getOrThrow()
-                page.copy(page.data.map { transform(it) })
-            }.toFeedData(buttons, bg)
+                page.copy(page.data.map { transform(it) }).also {
+                    println("Got page $id with ${it.data.size} items" )
+                }
+            }.toFeedData(buttons, bg).also {
+                println("Got feed data $id with $it" )
+            }
+        }.also {
+            println("Got $tabId from cache with ${tabs.size} tabs")
         }
     }
 

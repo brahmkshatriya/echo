@@ -11,12 +11,11 @@
     android:insetRight="4dp"
     android:insetBottom="4dp"
     android:padding="12dp"
-    app:backgroundTint="@color/amoled_bg_semi"
-    app:backgroundTintMode="multiply"
+    app:backgroundTint="?echoBackground"
+    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
     app:iconGravity="textTop"
     app:iconPadding="8dp"
     app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Xsmall.Square"
     app:strokeWidth="0dp"
-    tools:background="@tools:sample/backgrounds/scenic"
     tools:icon="@drawable/ic_artist"
-    tools:text="@tools:sample/full_names" />
+    tools:text="@tools:sample/lorem/random" />

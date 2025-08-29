@@ -26,23 +26,48 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:clipToPadding="false"
+        android:gravity="center"
         android:paddingHorizontal="20dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/extensions"
-            style="@style/IconButtonOutlinedBig"
-            app:icon="@drawable/ic_extension_32dp" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/extensionsCont"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            app:cardBackgroundColor="?navBackground"
+            app:cardCornerRadius="24dp"
+            app:contentPadding="5dp">
+
+            <ImageView
+                android:id="@+id/extensions"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:contentDescription="@string/extensions"
+                android:src="@drawable/ic_extension_32dp" />
+        </com.google.android.material.card.MaterialCardView>
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/accounts"
-            style="@style/IconButtonOutlinedBig"
-            app:icon="@drawable/ic_account_circle_32dp" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/accountsCont"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            app:cardBackgroundColor="?navBackground"
+            app:cardCornerRadius="24dp"
+            app:contentPadding="5dp">
+
+            <ImageView
+                android:id="@+id/accounts"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:contentDescription="@string/extensions"
+                android:src="@drawable/ic_account_circle_32dp" />
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 </FrameLayout>

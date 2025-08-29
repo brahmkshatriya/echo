@@ -4,8 +4,8 @@ import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.Extension
@@ -26,7 +26,7 @@ import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimViewHolder
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class HeaderAdapter(
-    private val fragment: Fragment
+    private val fragment: Fragment,
 ) : ScrollAnimRecyclerAdapter<HeaderAdapter.ViewHolder>(), GridAdapter {
     private val viewModel by fragment.activityViewModel<LoginUserListViewModel>()
 
@@ -37,12 +37,12 @@ class HeaderAdapter(
         val holder = ViewHolder(parent)
         val binding = holder.binding
         val parentFragmentManager = fragment.parentFragmentManager
-        binding.extensions.setOnClickListener {
+        binding.extensionsCont.setOnClickListener {
             ExtensionsListBottomSheet.newInstance(ExtensionType.MUSIC)
                 .show(parentFragmentManager, null)
         }
 
-        binding.accounts.setOnClickListener {
+        binding.accountsCont.setOnClickListener {
             SettingsBottomSheet().show(parentFragmentManager, null)
         }
         return holder
@@ -65,26 +65,22 @@ class HeaderAdapter(
         super.onBindViewHolder(holder, position)
         val context = root.context
         title.text = extension?.name ?: context.getString(R.string.app_name)
-        extensions.run {
-            loadBigIcon(extension?.metadata?.icon, R.drawable.ic_extension_32dp)
-            setLoopedLongClick(
-                viewModel.extensionLoader.music.value.filter { it.isEnabled },
-                { viewModel.extensionLoader.current.value }
-            ) {
-                viewModel.extensionLoader.setupMusicExtension(it, true)
-            }
+        extensions.loadBigIcon(extension?.metadata?.icon, R.drawable.ic_extension_32dp)
+        extensionsCont.setLoopedLongClick(
+            viewModel.extensionLoader.music.value.filter { it.isEnabled },
+            { viewModel.extensionLoader.current.value }
+        ) {
+            viewModel.extensionLoader.setupMusicExtension(it, true)
         }
 
         val (ext, isLoginClient, all) = triple
-        accounts.run {
-            loadBigIcon(
-                viewModel.currentUser.value?.cover,
-                if (isLoginClient) R.drawable.ic_account_circle_32dp else R.drawable.ic_settings_outline_32dp
-            )
-            setLoopedLongClick(all, { all.find { it.second } }) {
-                ext ?: return@setLoopedLongClick
-                viewModel.setLoginUser(it.first.toEntity(ext.type, ext.id))
-            }
+        accounts.loadBigIcon(
+            viewModel.currentUser.value?.cover,
+            if (isLoginClient) R.drawable.ic_account_circle_32dp else R.drawable.ic_settings_outline_32dp
+        )
+        accountsCont.setLoopedLongClick(all, { all.find { it.second } }) {
+            ext ?: return@setLoopedLongClick
+            viewModel.setLoginUser(it.first.toEntity(ext.type, ext.id))
         }
     }
 
@@ -92,7 +88,7 @@ class HeaderAdapter(
         parent: ViewGroup,
         val binding: ItemMainHeaderBinding = ItemMainHeaderBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
-        )
+        ),
     ) : ScrollAnimViewHolder(binding.root)
 
     init {
@@ -112,7 +108,7 @@ class HeaderAdapter(
         fun <T> View.setLoopedLongClick(
             list: List<T>,
             getCurrent: (View) -> T?,
-            onSelect: (T) -> Unit
+            onSelect: (T) -> Unit,
         ) {
             setOnLongClickListener {
                 val current = getCurrent(this)
@@ -125,7 +121,7 @@ class HeaderAdapter(
             }
         }
 
-        fun MaterialButton.loadBigIcon(image: ImageHolder?, placeholder: Int) {
+        fun ImageView.loadBigIcon(image: ImageHolder?, placeholder: Int) {
             val color = ColorStateList.valueOf(
                 MaterialColors.getColor(
                     this,
@@ -134,11 +130,11 @@ class HeaderAdapter(
             )
             image.loadAsCircle(this) {
                 if (it == null) {
-                    iconTint = color
-                    setIconResource(placeholder)
+                    imageTintList = color
+                    setImageResource(placeholder)
                 } else {
-                    iconTint = null
-                    icon = it
+                    imageTintList = null
+                    setImageDrawable(it)
                 }
             }
         }

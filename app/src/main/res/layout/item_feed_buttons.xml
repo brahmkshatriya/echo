@@ -5,17 +5,16 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="-20dp"
     android:layout_marginEnd="-20dp"
-    android:paddingHorizontal="20dp"
     android:clipToPadding="false"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp">
 
-    <com.google.android.material.button.MaterialButtonGroup
+    <LinearLayout
         android:id="@+id/buttonGroup"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="-8dp"
         android:layout_marginTop="4dp"
+        android:layout_marginEnd="-8dp"
         android:spacing="0dp">
 
         <com.google.android.material.button.MaterialButton
@@ -41,22 +40,21 @@
             app:icon="@drawable/ic_play"
             app:iconSize="24dp" />
 
-        <com.google.android.material.button.MaterialButton
+        <View
             android:id="@+id/buttonPadding"
-            style="@style/IconButton"
             android:layout_width="0dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:enabled="false"
             android:visibility="invisible" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/searchToggleButton"
             style="@style/IconButton"
-            app:materialThemeOverlay="@style/TabButtonOverlay"
             android:checkable="true"
             android:checked="true"
             android:contentDescription="@string/search"
-            app:icon="@drawable/ic_search_outline" />
+            app:icon="@drawable/ic_search_outline"
+            app:materialThemeOverlay="@style/TabButtonOverlay" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sortToggleButton"
@@ -64,7 +62,7 @@
             android:contentDescription="@string/sort"
             android:scaleX="-1"
             app:icon="@drawable/ic_sort" />
-    </com.google.android.material.button.MaterialButtonGroup>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/searchBarContainer"

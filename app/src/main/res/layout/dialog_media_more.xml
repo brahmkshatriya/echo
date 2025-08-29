@@ -8,5 +8,7 @@
     android:paddingHorizontal="20dp"
     android:paddingBottom="20dp"
     app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-    tools:itemCount="1"
-    tools:listitem="@layout/item_more_header" />
+    tools:background="?navBackground"
+    tools:itemCount="10"
+    tools:listitem="@layout/item_more_button"
+    tools:spanCount="3" />

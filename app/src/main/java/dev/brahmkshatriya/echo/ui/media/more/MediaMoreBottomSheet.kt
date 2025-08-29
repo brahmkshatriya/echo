@@ -128,8 +128,7 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
                 headerAdapter,
                 actionAdapter,
                 loadingAdapter
-            ),
-            false
+            )
         )
     }
 

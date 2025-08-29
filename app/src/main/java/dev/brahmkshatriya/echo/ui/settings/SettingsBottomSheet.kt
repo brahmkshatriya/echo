@@ -189,7 +189,7 @@ class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) 
         }
 
         configureBottomBar(binding.extensionBar)
-        binding.currentExtension.setOnClickListener {
+        binding.extensionsCont.setOnClickListener {
             dismiss()
             ExtensionsListBottomSheet.newInstance(ExtensionType.MUSIC)
                 .show(parentFragmentManager, null)
@@ -204,14 +204,12 @@ class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) 
                     null, ExtensionInfoFragment.getBundle(ext)
                 )
             }
-            binding.currentExtension.run {
-                loadBigIcon(ext?.metadata?.icon, R.drawable.ic_extension_32dp)
-                setLoopedLongClick(
-                    viewModel.extensionLoader.music.value.filter { it.isEnabled },
-                    { viewModel.extensionLoader.current.value }
-                ) {
-                    viewModel.extensionLoader.setupMusicExtension(it, true)
-                }
+            binding.extensions.loadBigIcon(ext?.metadata?.icon, R.drawable.ic_extension_32dp)
+            binding.extensionsCont.setLoopedLongClick(
+                viewModel.extensionLoader.music.value.filter { it.isEnabled },
+                { viewModel.extensionLoader.current.value }
+            ) {
+                viewModel.extensionLoader.setupMusicExtension(it, true)
             }
         }
 
@@ -219,7 +217,7 @@ class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) 
             dismiss()
             LoginUserListBottomSheet().show(parentFragmentManager, null)
         }
-        binding.currentAccountIcon.setOnClickListener {
+        binding.accountsCont.setOnClickListener {
             dismiss()
             LoginUserListBottomSheet().show(parentFragmentManager, null)
         }
@@ -235,9 +233,11 @@ class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) 
                     viewModel.setLoginUser(it.first.toEntity(ext.type, ext.id))
                 }
             }
-            binding.currentAccountIcon.run {
+            binding.accounts.loadBigIcon(
+                viewModel.currentUser.value?.cover, R.drawable.ic_account_circle_32dp
+            )
+            binding.accountsCont.run {
                 isVisible = isLoginClient
-                loadBigIcon(viewModel.currentUser.value?.cover, R.drawable.ic_account_circle_32dp)
                 setLoopedLongClick(all, { all.find { it.second } }) {
                     ext ?: return@setLoopedLongClick
                     viewModel.setLoginUser(it.first.toEntity(ext.type, ext.id))
