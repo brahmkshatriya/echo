@@ -49,7 +49,7 @@ our [Discord server](https://discord.gg/J3WvbBUU8Z) or [Telegram group](https://
 requests are welcome; check the [issues](https://github.com/brahmkshatriya/echo/issues?q=is%3Aissue%20) for
 guidance on major changes.
 
-### Translation [Currently turned off]
+### Translation
 
 You can help us by translating the app into your language here
 
