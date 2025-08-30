@@ -300,4 +300,6 @@
     <string name="removed_x_from_downloads">Удален %1$s из загрузок</string>
     <string name="download_complete">Скачать полностью</string>
     <string name="app_widget_description">Эхо на главном экране!</string>
+    <string name="feed">Лента</string>
+    <string name="item">Элемент</string>
 </resources>
