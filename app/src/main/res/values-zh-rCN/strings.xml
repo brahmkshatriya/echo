@@ -65,7 +65,7 @@
     <string name="custom_colors">自定义颜色</string>
     <string name="show_background">显示背景</string>
     <string name="animations_summary">感觉太卡顿了？关闭此选项或许会有所帮助</string>
-    <string name="misc">杂项</string>
+    <string name="misc">其它</string>
     <string name="tracker">跟踪器</string>
     <string name="previous">上一曲</string>
     <string name="next">下一曲</string>
@@ -156,7 +156,7 @@
     <string name="custom_theme_color">自定义主题颜色</string>
     <string name="custom_theme_color_summary">使用自定义主题颜色</string>
     <string name="amoled">黑色主题</string>
-    <string name="amoled_summary">将背景色替换为漆黑。可用于 AMOLED 屏幕，以减少电池消耗并防止屏幕老化</string>
+    <string name="amoled_summary">漆黑，纯黑色</string>
     <string name="navbar_gradient">渐变导航栏</string>
     <string name="navbar_gradient_summary">导航栏逐渐变得透明</string>
     <string name="dynamic_player">动态播放器颜色</string>
@@ -301,4 +301,40 @@
     <string name="checking_for_updates">正在检查更新</string>
     <string name="back_animations">返回动画</string>
     <string name="back_animations_summary">由于安卓系统可能会导致视觉错误，你可以通过打开最近记录来修复它</string>
+    <string name="regex_invalid">%1$s 是无效的, 请跟随正则表达式: %2$s</string>
+    <string name="n_hours">%1$d 小时</string>
+    <string name="n_minutes">%1$d 分钟</string>
+    <string name="hidden_x">已隐藏 %1$s</string>
+    <string name="unhidden_x">未隐藏 %1$s</string>
+    <string name="track">曲目</string>
+    <string name="tracks">曲目</string>
+    <string name="n_episodes">%1$d 插曲</string>
+    <string name="n_chapters">%1$d 章节</string>
+    <string name="n_tracks">%1$d 曲目</string>
+    <plurals name="number_songs">
+        <item quantity="other">%1$d 歌曲</item>
+    </plurals>
+    <plurals name="number_episodes">
+        <item quantity="other">%1$d 插曲</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="other">%1$d 章节</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="other">%1$d 曲目</item>
+    </plurals>
+    <string name="unsave">不保存</string>
+    <string name="sort_date_added">添加日期</string>
+    <string name="opening_webview_x">正在打开网页视图: %1$s</string>
+    <string name="no_update_available_for_x">更新不可用 %1$s</string>
+    <string name="other">其它的</string>
+    <string name="player">播发器</string>
+    <string name="about">关于</string>
+    <string name="language_x">语言: %1$s</string>
+    <string name="guide">指南</string>
+    <string name="donate">捐赠</string>
+    <string name="contributors">贡献者</string>
+    <string name="app_desc">只是一个音乐播放器。</string>
+    <string name="manage">管理</string>
+    <string name="no_account">没有账户</string>
 </resources>
