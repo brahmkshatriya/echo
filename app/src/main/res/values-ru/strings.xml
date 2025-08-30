@@ -172,7 +172,7 @@
     <string name="theme">Тема</string>
     <string name="file">Файл</string>
     <string name="extension_installed_successfully">Расширение установлено успешно.</string>
-    <string name="n_items">%1$d Товаров</string>
+    <string name="n_items">%1$d Элементов</string>
     <string name="like">Любить</string>
     <string name="unlike">В отличие от</string>
     <string name="repeat_one">Повторите один раз</string>
