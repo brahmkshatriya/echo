@@ -16,7 +16,7 @@
     <string name="blacklist_folder_keywords">अवरोध-सूची फोल्डर-कुंजिकाशब्दः</string>
     <string name="login">लॉगिनः</string>
     <string name="view">द्रष्टुम्</string>
-    <string name="extension_out_of_date">पुरातन विस्तार</string>
+    <string name="extension_out_of_date">कालातीतम्</string>
     <string name="no_internet">कोऽपि जालम् नास्ति</string>
     <string name="str_copy">प्रतिकृतिः</string>
     <string name="extensions">विस्तारः</string>
@@ -25,7 +25,7 @@
     <string name="random">यदृच्छया</string>
     <string name="add">योजयतु</string>
     <string name="value">मूल्य</string>
-    <string name="auto_start_radio">स्वतः-प्रारंभ रेडियो</string>
+    <string name="auto_start_radio">स्वचालितरूपेण रेडियो प्रारम्भः</string>
     <string name="animations_summary">अधिकं रुकावटः? इतः त्यागः साहाय्यम् कर्तुं शक्नोति</string>
     <string name="refresh">नवीकृतं करोतु</string>
     <string name="music">सङ्गीतम्</string>
@@ -128,7 +128,7 @@
     <string name="unknown_quality">अज्ञातगुणः</string>
     <string name="so_empty">इत्थं रिक्तम्…</string>
     <string name="sharing_x">%1$s साझीकरणम्</string>
-    <string name="x_is_required">$1%sआवश्यकम्</string>
+    <string name="x_is_required">%1$sआवश्यकम्</string>
     <string name="saved_x_to_library">%1$s ग्रन्थालये सुरक्षितम्</string>
     <string name="removing_x_from_library">%1$s ग्रन्थालयात् अपसारणम्</string>
     <string name="removed_x_from_library">%1$s ग्रन्थालयात् अपासृतम्</string>
@@ -187,12 +187,12 @@
     <string name="recently_added">अधुना योजितम्</string>
     <string name="refresh_library_on_reload">पुनः लोड् इत्यत्र पुस्तकालयः ताजगः कुर्वन्तु</string>
     <string name="refresh_library_on_reload_summary">प्रत्येकं फीड् लोड् भवति तदा यन्त्रं स्कैन् कुर्वन्तु</string>
-    <string name="blacklist_folder_keywords_summary">फ़ोल्डरों को ब्लैकलिस्ट करने के लिए कीवर्ड्स। separator के रूप में कॉमा का उपयोग करें</string>
+    <string name="blacklist_folder_keywords_summary">निषिद्धफोल्डरार्थपदाः, अल्पविरामं प्रयुञ्जीत</string>
     <string name="playlists">प्लेलिस्ट्स</string>
     <string name="saved">रक्षितम्</string>
     <string name="tabs">टब्स्</string>
     <string name="show_tabs">ट्याब्स् दर्शयतु</string>
-    <string name="show_tab_summary">एक्सटेंशन के टैब्स को श्रेणियों के रूप में दिखाएँ</string>
+    <string name="show_tab_summary">विस्तारणस्य वर्गरूपेण ट्याब्स् प्रदर्शयिष्यति</string>
     <string name="unknown">अज्ञात</string>
     <string name="like">इष्टम्</string>
     <string name="unlike">अस्वीकृतं करोतु</string>
@@ -220,16 +220,16 @@
     <string name="bass_boost_desc">बृहत्तरं मूल्यं ध्वनिं विकृतं कर्तुं शक्नोति।</string>
     <string name="change_pitch_with_speed_desc">तत् मन्दगतिध्वनिं प्राप्नुत</string>
     <string name="equalizer">इक्वलाइज़रः</string>
-    <string name="equalizer_summary">सिस्टम समतुल्यक सेटिंग्स खोलें</string>
+    <string name="equalizer_summary">उपकरणस्य इक्वालाइजर् विकल्पान् उद्घाटयतु</string>
     <string name="stream_quality">प्रवाहस्य गुणवत्ता</string>
-    <string name="stream_quality_summary">प्रवाहस्य गुणवत्ता चयनय</string>
+    <string name="stream_quality_summary">स्रावस्य पूर्वनिर्धारितगुणवत्तां चयनयतु।</string>
     <string name="behavior">आचारः</string>
     <string name="keep_queue">संगीतपङ्क्तिं धारयतु</string>
     <string name="keep_queue_summary">यदा अनुप्रयोगः पुनः उद्घाटयति, तदा संगीतपङ्क्तिं पुनः प्राप्तुं।</string>
-    <string name="stop_player">खिलाड़ी रोकें</string>
+    <string name="stop_player">सङ्गीतकः रोधयतु</string>
     <string name="stop_player_summary">यदा ऍप्प् हाल ही में निवारणं कृतम्, प्लेयरम् स्थगय</string>
     <string name="skip_silence">मौनं लङ्घयतु</string>
-    <string name="skip_silence_summary">गाने में मौन भाग को छोड़ें, निरंतर प्लेबैक प्रदान करने के लिए</string>
+    <string name="skip_silence_summary">गीतस्य मौनभागं तिरस्कुरु, निरन्तरप्रवहपठनाय।</string>
     <string name="auto_start_radio_summary">प्लेलिस्ट् मध्ये ट्रैकस्य सम्बन्धित गीतानि स्वयमेव योजयेत्, अनन्तम् कतारम् करणाय</string>
     <string name="cache_size">सङ्ग्राहक परिमाण</string>
     <string name="cache_size_summary">श्रव्यं विडियो च संग्रहणार्थं MB मध्ये आकारः</string>
@@ -245,7 +245,7 @@
     <string name="file">सञ्चिका</string>
     <string name="installation_type">संस्थापनप्रकारः</string>
     <string name="installation_type_summary">अनुप्रयोगस्य संस्थापनं निम्नलिखितान् सम्पर्कान् प्रतिध्वन्यां उद्घाटनं अनुमन्यते:</string>
-    <string name="installation_type_warning">यदि आप एक्सटेंशन को फ़ाइल के रूप में इंस्टॉल करते हैं, तो यह उपलब्ध नहीं है।</string>
+    <string name="installation_type_warning">यदि त्वं विस्तारणं फाइलरूपेण स्थापयसि तदा उपलब्धं न भविष्यति।</string>
     <string name="could_not_find_the_file">सञ्चिका न प्राप्ता।</string>
     <string name="extension_installer">संस्थापकः</string>
     <string name="uninstall">अपाक्रियताम्</string>
@@ -264,17 +264,17 @@
     <string name="add_extensions">विस्तारकान् योजयतु</string>
     <string name="invalid_extension_list">अमङ्गल-प्रायः विस्तारक-सूची</string>
     <string name="checking_for_extension_updates">विस्तारस्य अद्यतनस्य जाँचः</string>
-    <string name="look_and_feel">रूपं च अनुभव</string>
+    <string name="look_and_feel">दर्शनम् एवं अनुभूति</string>
     <string name="look_and_feel_summary">यूआई एवं एनिमेशन सेटिङ्स्</string>
     <string name="ui">यूआई</string>
     <string name="theme">थीमः</string>
     <string name="theme_summary">अन्धकारम् इच्छसि?</string>
     <string name="custom_theme_color">स्वरूपस्य वर्णः</string>
-    <string name="custom_theme_color_summary">प्रणालीयस्य स्थाने स्वकीयं विषयवर्णं उपयोगयतु</string>
+    <string name="custom_theme_color_summary">प्रणालीयस्य स्थाने स्वकीयं विषयवर्णं उपयोगयतु।</string>
     <string name="add_color">वर्णं योजयतु</string>
     <string name="custom_colors">स्वयं रूपित वर्णः</string>
     <string name="amoled">अमोल्ड्</string>
-    <string name="amoled_summary">पृष्ठभूमिवर्णं घनकृष्णवर्णेन प्रतिस्थापयतु। एषः AMOLED पर्देषु शक्तिक्षयस्य न्यूनीकरणाय च पर्दाहानिं प्रतिषेधitum उपयोगी</string>
+    <string name="amoled_summary">अतीतः कृष्ण, शुद्धकृष्ण</string>
     <string name="navbar_gradient">आभासं नेवबार</string>
     <string name="navbar_gradient_summary">नेवबार शनैः पारदर्शं भवति</string>
     <string name="dynamic_player">डायनामिक प्लेयर वर्णः</string>
@@ -322,7 +322,7 @@
     <string name="off">दूरे</string>
     <string name="not_loading">लोड् न कुर्वन् अस्ति</string>
     <string name="saving_x_to_library">%1$s ग्रन्थालये संरक्ष्यमाणम्</string>
-    <string name="more_brain_capacity_summary">इसे सक्षम करने से ऑडियो लैग ठीक हो सकता है, लेकिन बैटरी उपयोग में अत्यधिक वृद्धि होती है (ऑडियो ऑफ़लोडिंग को अक्षम करता है)।</string>
+    <string name="more_brain_capacity_summary">इदं सक्रियं कृत्वा, श्रवणविलम्बं सम्यक् कर्तुं तथा बैटरी उपयोगं वर्धयितुं शक्यते (श्रवणस्थानान्तरणं निष्क्रियं करोत)।</string>
     <string name="downloading_update_for_x">%1$s कृते अद्यतनं डाउनलोड् करणम्</string>
     <string name="apply_player_color_to_app">सङ्गीतक्रीडकवर्णं सर्वे अनुप्रयोगे योजयतु</string>
     <string name="apply_player_color_to_app_summary">विलम्ब-सूचना!!!</string>
@@ -330,4 +330,22 @@
     <string name="delete_download">डाउनलोड् विलोपयन्तु</string>
     <string name="removed_x_from_downloads">डाउनलोड्स तः %1$s निष्कासितम्</string>
     <string name="app_widget_description">Echo गृहपृष्ठे दृश्यताम्!</string>
+    <string name="feed">सञ्चिका</string>
+    <string name="item">वस्तवः</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d वस्तवः</item>
+        <item quantity="other">%1$d वस्तूनि</item>
+    </plurals>
+    <string name="x_specific_quality_summary">%1$s विशेषस्रावगुणवत्ता, पूर्वनिर्धारितस्रावगुणवत्ता चयनं अतिक्रमिष्यति</string>
+    <string name="unmetered_stream_quality">अमितस्रावगुणवत्ता</string>
+    <string name="unmetered_stream_quality_summary">यदा अमितजालसन्निवेशनम् अस्ति तदा स्रावस्य गुणवत्ता। एतत् पूर्वनिर्धारितस्रावगुणवत्तां अतिक्रमिष्यति।</string>
+    <string name="select_language">भाषां चयनयतु</string>
+    <string name="check_for_updates">अद्यतनानां परीक्षणं कुरु</string>
+    <string name="check_for_updates_summary">एप् तथा विस्तारणयोः नवीन अद्यतनानां परीक्षणं कुरु यदा एप् उद्घाटयसे।</string>
+    <string name="checking_for_updates">अद्यतनानां परीक्षणं क्रियते</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d गीतः</item>
+        <item quantity="other">%1$d गीतानि</item>
+    </plurals>
+    <string name="back_animations">पृष्ठपृष्ठगतिः</string>
 </resources>
