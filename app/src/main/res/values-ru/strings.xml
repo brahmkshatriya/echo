@@ -173,8 +173,8 @@
     <string name="file">Файл</string>
     <string name="extension_installed_successfully">Расширение установлено успешно.</string>
     <string name="n_items">%1$d Элементов</string>
-    <string name="like">Любить</string>
-    <string name="unlike">В отличие от</string>
+    <string name="like">Добавить в Любимые</string>
+    <string name="unlike">Удалить из Любимых</string>
     <string name="repeat_one">Повторите один раз</string>
     <string name="repeat_off">Повторить выключение</string>
     <string name="extension_out_of_date">Устаревшее расширение</string>
