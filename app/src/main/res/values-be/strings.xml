@@ -22,11 +22,11 @@
     <string name="artists">Выканаўцы</string>
     <string name="recently_added">Нядаўна дадана</string>
     <string name="refresh_library_on_reload">Аднавіць бібліятэку пры перазагрузцы</string>
-    <string name="refresh_library_on_reload_summary">Сканаваць прыладу штораз пры загрузцы канала</string>
+    <string name="refresh_library_on_reload_summary">Сканаваць прыладу штораз пры загрузцы стужкі</string>
     <string name="duration_filter">Фільтр працягласці</string>
     <string name="duration_filter_summary">Фільтраваць аўдыяфайлы з працягласцю менш за значэнне (у секундах)</string>
     <string name="blacklist_folders">Чорны спіс тэчак</string>
-    <string name="feed">Канал</string>
+    <string name="feed">Стужка</string>
     <string name="blacklist_folders_summary">Тэчкі да вынятку з бібліятэкі</string>
     <string name="blacklist_folder_keywords">Ключавыя словы тэчкі для чорнага спісу</string>
     <string name="blacklist_folder_keywords_summary">Ключавыя словы для тэчак чорнага спісу, выкарыстоўвайце коску як падзельнік</string>
