@@ -157,10 +157,10 @@
     <string name="stream_quality">流媒体质量</string>
     <string name="stream_quality_summary">选择流媒体的质量</string>
     <string name="keep_queue">保留播放队列</string>
-    <string name="stop_player">停止玩家</string>
+    <string name="stop_player">停止播放器</string>
     <string name="stop_player_summary">当应用程序从最近使用记录中删除时，停止播放器</string>
     <string name="skip_silence">跳过静音</string>
-    <string name="skip_silence_summary">跳过歌曲中的静音部分，以提供无缝播放</string>
+    <string name="skip_silence_summary">跳过歌曲中的静音部分，以提供无缝播放。</string>
     <string name="auto_start_radio">自动启动无线电</string>
     <string name="auto_start_radio_summary">自动添加播放列表中曲目的相关歌曲，以获得无限队列</string>
     <string name="misc_summary">其他设置</string>
@@ -328,4 +328,8 @@
     <string name="app_widget_description">在你的主屏幕上回响！</string>
     <string name="feed">反馈</string>
     <string name="item">项目</string>
+    <string name="unmetered_stream_quality_summary">当连接到不限制流媒体质量时，将覆盖默认的流媒体质量。</string>
+    <string name="unmetered_stream_quality">不限制流媒体质量</string>
+    <string name="select_language">语言选择</string>
+    <string name="check_for_updates">检查更新</string>
 </resources>
