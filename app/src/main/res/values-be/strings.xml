@@ -44,4 +44,5 @@
         <item quantity="other">%1$d элементаў</item>
     </plurals>
     <string name="playlist_liked">Улюбёныя</string>
+    <string name="playlist_liked_desc">Вашы улюбёныя песні</string>
 </resources>
