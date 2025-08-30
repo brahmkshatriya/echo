@@ -31,4 +31,17 @@
     <string name="blacklist_folder_keywords">Ключавыя словы тэчкі для чорнага спісу</string>
     <string name="blacklist_folder_keywords_summary">Ключавыя словы для тэчак чорнага спісу, выкарыстоўвайце коску як падзельнік</string>
     <string name="saved">Захаванае</string>
+    <string name="tabs">Укладкі</string>
+    <string name="show_tabs">Паказаць укладкі</string>
+    <string name="show_tab_summary">Паказываць укладкі пашырэнняў як катэгоріі</string>
+    <string name="unified_liked_playlist_summary">Вашы ўлюбёныя трэкі з розных пашырэнняў</string>
+    <string name="n_items">%1$d Элементаў</string>
+    <string name="item">Элемент</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d элемент</item>
+        <item quantity="few">%1$d элементы</item>
+        <item quantity="many">%1$d элементаў</item>
+        <item quantity="other">%1$d элементаў</item>
+    </plurals>
+    <string name="playlist_liked">Улюбёныя</string>
 </resources>
