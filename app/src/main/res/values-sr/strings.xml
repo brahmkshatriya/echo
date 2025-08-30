@@ -131,7 +131,6 @@
     <string name="custom_theme_color_summary">Koristi proizvoljnu boju teme umesto sistemskih boja.</string>
     <string name="add_color">Dodaj boju</string>
     <string name="custom_colors">Prozivoljne boje</string>
-    <string name="amoled"></string>
     <string name="refresh">Osveži</string>
     <string name="x_disabled">%1$s (Onemogućeno)</string>
     <string name="by_x">Od %1$s</string>
