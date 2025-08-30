@@ -166,7 +166,7 @@
     <string name="download">Télécharger</string>
     <string name="hiding_x">Masquage de %1$s</string>
     <string name="hide">Masquer</string>
-    <string name="unhide">Démasquer</string>
+    <string name="unhide">Afficher</string>
     <string name="liking_x">Aime %1$s</string>
     <string name="unliking_x">%1$s Plus Aimé</string>
     <string name="save_to_playlist">Enregistrer dans la playlist</string>
@@ -269,7 +269,7 @@
     <string name="deleted_x">%1$s Supprimé</string>
     <string name="explicit">Explicite</string>
     <string name="adding_x">Ajout de %1$s</string>
-    <string name="scroll_animations_summary">Animations lors du défilement</string>
+    <string name="scroll_animations_summary">Animations lorsque vous defilez des choses</string>
     <string name="create">Créer</string>
     <string name="deleting_x">Suppression de %1$s</string>
     <string name="no_download_extension">Aucune extension de téléchargement trouvée, utilisez le code \"echodown\" pour l\'obtenir.</string>
@@ -295,9 +295,9 @@
     <string name="feed">Flux</string>
     <string name="item">Objet</string>
     <plurals name="number_items">
-        <item quantity="one">Objet</item>
-        <item quantity="many">Objets</item>
-        <item quantity="other">Objets</item>
+        <item quantity="one">%1$d Objet</item>
+        <item quantity="many">%1$d Objets</item>
+        <item quantity="other">%1$d Objets</item>
     </plurals>
     <string name="x_specific_quality_summary">Quality spécifique de %1$s, cette option va remplacer la qualité du flux par défaut</string>
     <string name="unmetered_stream_quality">Qualité du flux sur connection non limitée</string>
@@ -339,4 +339,45 @@
         <item quantity="many">%1$d Pistes</item>
         <item quantity="other">%1$d Pistes</item>
     </plurals>
+    <string name="unsave">Annuler la sauvegarde</string>
+    <string name="sort_date_added">Date d\'ajout</string>
+    <string name="opening_webview_x">Overture de la vue web : %1$s</string>
+    <string name="no_update_available_for_x">Pas de mises à jour disponibles pour %1$s</string>
+    <string name="other">Autre</string>
+    <string name="player">Lecteur</string>
+    <string name="about">À propos</string>
+    <string name="language_x">Langue : %1$s</string>
+    <string name="guide">Guide</string>
+    <string name="donate">Faire un don</string>
+    <string name="contributors">Contributeurs</string>
+    <string name="app_desc">Juste un lecteur de musique.</string>
+    <string name="manage">Gérer</string>
+    <string name="no_account">Pas de compte</string>
+    <string name="other_settings">Autres Paramètres</string>
+    <string name="no_x_found">%1$s non trouvé</string>
+    <string name="playlist">Liste de lecture</string>
+    <string name="album">Album</string>
+    <string name="pre_release">Pré-version</string>
+    <string name="single">Single</string>
+    <string name="ep">EP</string>
+    <string name="lp">LP</string>
+    <string name="compilation">Compilation</string>
+    <string name="show">Montrer</string>
+    <string name="book">Livre</string>
+    <string name="song">Chanson</string>
+    <string name="podcast">Podcast</string>
+    <string name="isrc_x">ISRC : %1$s</string>
+    <string name="genres_x">Genres : %1$s</string>
+    <string name="disc_number_n">Nombre du Disque : %1$d</string>
+    <string name="album_order_n">Nombre de l\'ordre de l\'album : %1$d</string>
+    <string name="confirmation">Confirmation</string>
+    <string name="delete_playlist_confirmation">Êtes vous sûr de vouloir supprimer %1$s?</string>
+    <string name="confirm">Confirmer</string>
+    <string name="big_cover">Couvertures plus grandes</string>
+    <string name="big_cover_summary">Bon pour les appareils avec un écran plus large</string>
+    <string name="no_last_played_track_found">La dernière piste jouée n\'a pas été trouvée.</string>
+    <string name="not_yet_released">Pas encore sorti</string>
+    <string name="releases_on_x">Sorties sur %1$s</string>
+    <string name="unavailable_in_your_region">Non disponible dans votre région</string>
+    <string name="not_playable_x">Non jouable : %1$s</string>
 </resources>
