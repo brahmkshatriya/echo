@@ -82,7 +82,6 @@
     <string name="reset">Redetuj</string>
     <string name="playback_speed">Brzina reprodukcije</string>
     <string name="change_pitch_with_speed">Promeni pitch sa brzinom</string>
-    <string name="bass_boost"></string>
     <string name="bass_boost_desc">Veća vrednost može poremetiti zvuk.</string>
     <string name="stream_quality">Kvalitet strima</string>
     <string name="stream_quality_summary">Izaberi podrazumevani kvalitet strima</string>
