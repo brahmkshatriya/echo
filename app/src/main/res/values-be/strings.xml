@@ -1,3 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">Акей</string>
+    <string name="cancel">Адмяніць</string>
+    <string name="back">Назад</string>
+    <string name="x_permission_required">Патрэбна %1$s дазваленняў</string>
+    <string name="x_was_not_granted">%1$s не было дадзена</string>
+    <string name="audio">Гук</string>
+    <string name="audio_permission_summary">Каб атрымаць доступ да вашай лакальнай бібліятэкі музыкі</string>
+    <string name="read_storage">Чытанне сховішча</string>
+    <string name="write_storage">Запіс у сховішча</string>
+    <string name="write_storage_permission_summary">Каб ствараць альбо змяняць лакальныя плэйлісты</string>
+    <string name="notifications">Паведамленні</string>
+    <string name="notifications_permission_summary">Каб паказаць паведамленні для спампаванняў і музыкі</string>
+    <string name="remove">Выдаліць</string>
+    <string name="more_by_x">Болей ад %1$s</string>
+    <string name="songs">Песні</string>
+    <string name="albums">Альбомы</string>
+    <string name="x_radio">Радыё %1$s</string>
+    <string name="cached_songs">Кэшаваныя песні</string>
+    <string name="cache_playlist_warning">Эксперыментальная функцыя. Усё, акрамя праслухвання, не падтрымліваецца.</string>
+    <string name="artists">Выканаўцы</string>
+    <string name="recently_added">Нядаўна дадана</string>
+    <string name="refresh_library_on_reload">Аднавіць бібліятэку пры перазагрузцы</string>
+    <string name="refresh_library_on_reload_summary">Сканаваць прыладу штораз пры загрузцы канала</string>
+    <string name="duration_filter">Фільтр працягласці</string>
+    <string name="duration_filter_summary">Фільтраваць аўдыяфайлы з працягласцю менш за значэнне (у секундах)</string>
+    <string name="blacklist_folders">Чорны спіс тэчак</string>
+    <string name="feed">Канал</string>
+    <string name="blacklist_folders_summary">Тэчкі да вынятку з бібліятэкі</string>
+    <string name="blacklist_folder_keywords">Ключавыя словы тэчкі для чорнага спісу</string>
+    <string name="blacklist_folder_keywords_summary">Ключавыя словы для тэчак чорнага спісу, выкарыстоўвайце коску як падзельнік</string>
+    <string name="saved">Захаванае</string>
 </resources>
