@@ -123,6 +123,9 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.extensions.export.PickerActivity"
+            android:exported="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
