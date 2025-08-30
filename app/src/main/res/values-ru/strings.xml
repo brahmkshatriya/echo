@@ -294,7 +294,7 @@
     <string name="x_plays">%1$s Прослушивания</string>
     <string name="save">Спасать</string>
     <string name="sort_title">Титул</string>
-    <string name="scroll_animations_summary">Анимация при прокрутке</string>
+    <string name="scroll_animations_summary">Анимации при прокрутке элементов</string>
     <string name="merging_x">Слияние %1$s</string>
     <string name="delete_download">Удалить загрузку</string>
     <string name="removed_x_from_downloads">Удален %1$s из загрузок</string>
@@ -327,9 +327,36 @@
     <string name="n_chapters">%1$d Главы</string>
     <string name="n_tracks">%1$d Треки</string>
     <plurals name="number_songs">
-        <item quantity="one"></item>
-        <item quantity="few"></item>
+        <item quantity="one"/>
+        <item quantity="few"/>
         <item quantity="many">%1$d Песни</item>
         <item quantity="other">%1$d Песни</item>
     </plurals>
+    <plurals name="number_episodes">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many">Эпизоды %1$d</item>
+        <item quantity="other">Эпизоды %1$d</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many">%1$d Главы</item>
+        <item quantity="other">%1$d Главы</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many">%1$d Треки</item>
+        <item quantity="other">%1$d Треки</item>
+    </plurals>
+    <string name="unsave">Несохранить</string>
+    <string name="sort_date_added">Дата добавления</string>
+    <string name="opening_webview_x">Открытие Webview: %1$s</string>
+    <string name="no_update_available_for_x">Обновление для %1$s недоступно</string>
+    <string name="other">Другой</string>
+    <string name="player">Игрок</string>
+    <string name="about">О нас</string>
+    <string name="language_x">Язык: %1$s</string>
+    <string name="guide">Руководство</string>
 </resources>
