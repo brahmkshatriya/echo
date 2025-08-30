@@ -332,4 +332,5 @@
     <string name="unmetered_stream_quality">不限制流媒体质量</string>
     <string name="select_language">语言选择</string>
     <string name="check_for_updates">检查更新</string>
+    <string name="check_for_updates_summary">当启动软件时，对播放器和拓展进行更新寻查。</string>
 </resources>
