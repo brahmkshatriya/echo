@@ -327,4 +327,5 @@
     <string name="removed_x_from_downloads">已将 %1$s 从下载移除</string>
     <string name="app_widget_description">在你的主屏幕上回响！</string>
     <string name="feed">反馈</string>
+    <string name="item">项目</string>
 </resources>
