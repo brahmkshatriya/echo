@@ -281,10 +281,10 @@
     <string name="save">保存</string>
     <string name="playing_x">正在播放 %1$s</string>
     <string name="x_created">%1$s 已创建</string>
-    <string name="more_brain_capacity_summary">启用此选项可以修复音频延迟，但会大幅增加电池消耗（会禁用音频卸载功能）。</string>
+    <string name="more_brain_capacity_summary">启用此选项可以修复音频延迟，但会大幅增加电池消耗（会禁用音频卸载功能）.</string>
     <string name="saved_to_x">已保存至 %1$s</string>
     <string name="merging_x">正在合并 %1$s</string>
-    <string name="no_download_extension">未找到下载扩展，请使用代码“echodown”获取。</string>
+    <string name="no_download_extension">未找到下载扩展，请使用代码“echodown”获取.</string>
     <string name="apply_player_color_to_app_summary">延迟警告！！！</string>
     <string name="apply_player_color_to_app">将播放器颜色应用到整个应用程序</string>
     <string name="delete_download">删除下载</string>
@@ -300,7 +300,7 @@
     <string name="check_for_updates_summary">当启动软件时，对播放器和扩展进行更新寻查.</string>
     <string name="checking_for_updates">正在检查更新</string>
     <string name="back_animations">返回动画</string>
-    <string name="back_animations_summary">由于安卓系统可能会导致视觉错误，你可以通过打开最近记录来修复它。</string>
+    <string name="back_animations_summary">由于安卓系统可能会导致视觉错误，你可以通过打开最近记录来修复它.</string>
     <string name="regex_invalid">%1$s 是无效的, 请跟随正则表达式: %2$s</string>
     <string name="n_hours">%1$d 小时</string>
     <string name="n_minutes">%1$d 分钟</string>
@@ -334,7 +334,7 @@
     <string name="guide">指南</string>
     <string name="donate">捐赠</string>
     <string name="contributors">贡献者</string>
-    <string name="app_desc">只是一个音乐播放器。</string>
+    <string name="app_desc">只是一个音乐播放器.</string>
     <string name="manage">管理</string>
     <string name="no_account">没有账户</string>
     <string name="other_settings">其它设置</string>
