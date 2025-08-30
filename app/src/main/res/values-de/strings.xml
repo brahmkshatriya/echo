@@ -362,5 +362,4 @@
     <string name="releases_on_x">Veröffentlichung am %1$s</string>
     <string name="unavailable_in_your_region">In deiner Region nicht verfügbar</string>
     <string name="not_playable_x">Nicht Abspielbar: %1$s</string>
-    <string name="feed"></string>
 </resources>
