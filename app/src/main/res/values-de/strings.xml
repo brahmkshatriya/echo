@@ -249,10 +249,6 @@
     <string name="sort_title">Titel</string>
     <string name="sort_date">Datum</string>
     <string name="sort_duration">Dauer</string>
-    <string name="sort_artist">Künstler</string>
-    <string name="sort_album">Album</string>
-    <string name="sort_plays">Theaterstücke</string>
-    <string name="sort_explicit">Explizit</string>
     <string name="scroll_animations">Scroll-Animationen</string>
     <string name="scroll_animations_summary">Animationen beim Scrollen</string>
     <string name="sort_subtitle">Untertitel</string>
