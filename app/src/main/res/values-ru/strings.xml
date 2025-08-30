@@ -326,4 +326,10 @@
     <string name="n_episodes">Эпизоды %1$d</string>
     <string name="n_chapters">%1$d Главы</string>
     <string name="n_tracks">%1$d Треки</string>
+    <plurals name="number_songs">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many">%1$d Песни</item>
+        <item quantity="other">%1$d Песни</item>
+    </plurals>
 </resources>
