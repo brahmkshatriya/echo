@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">Ok</string>
+    <string name="cancel">Anuluj</string>
+    <string name="back">Wstecz</string>
 </resources>
