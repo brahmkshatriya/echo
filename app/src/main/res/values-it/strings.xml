@@ -21,7 +21,7 @@
     <plurals name="number_min">
         <item quantity="one">%1$d Minuto</item>
         <item quantity="many">%1$d Minuti</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d Minuti</item>
     </plurals>
     <string name="cache_playlist_warning">Funzione sperimentale. Solo l\'ascolto di essi è supportato.</string>
     <string name="x_permission_required">Permessi %1$s richiesti</string>
@@ -58,7 +58,7 @@
     <string name="like">Aggiungi ai preferiti</string>
     <string name="unlike">Rimuovi dai preferiti</string>
     <string name="repeat_one">Ripeti Uno</string>
-    <string name="more">Altro</string>
+    <string name="more">Di più</string>
     <string name="downloading_x">Download in corso di %1$s</string>
     <string name="cancel_all">Annulla Tutto</string>
     <string name="logout_and_login">Disconnetti e Accedi</string>
@@ -132,13 +132,13 @@
     <string name="ui">Interfaccia</string>
     <string name="theme_summary">Vuoi perdere la vista?</string>
     <string name="custom_theme_color">Colore Tema Personalizzato</string>
-    <string name="custom_theme_color_summary">Usa un colore del tema personalizzato, invece di quello di sistema</string>
+    <string name="custom_theme_color_summary">Usa un colore personalizzato, invece di quello del tema di sistema.</string>
     <string name="add_color">Aggiungi colore</string>
     <string name="custom_colors">Colori personalizzati</string>
     <string name="amoled">AMOLED</string>
     <string name="amoled_summary">Sostituisci il colore di sfondo con il nero pesto. Utile per gli schermi AMOLED per ridurre il consumo della batteria e prevenire il burn-in dello schermo</string>
     <string name="navbar_gradient">Barra di Navigazione con Trasparenza Graduale</string>
-    <string name="navbar_gradient_summary">La barra di navigazione diventa via via trasparente</string>
+    <string name="navbar_gradient_summary">La barra di navigazione diventa gradualmente trasparente</string>
     <string name="dynamic_player_summary">Il colore del player si adatta automaticamente alla copertina del brano</string>
     <string name="dynamic_player">Colore Dinamico nel Player</string>
     <string name="show_background">Mostra Sfondo</string>
@@ -150,7 +150,7 @@
     <string name="x_disabled">%1$s (Disattivato)</string>
     <string name="by_x">Di %1$s</string>
     <string name="music">Musica</string>
-    <string name="tracker">Tracker</string>
+    <string name="tracker">Tracciamento</string>
     <string name="lyrics">Testi</string>
     <string name="misc">Misto</string>
     <string name="x_extensions">Estensioni per %1$s</string>
@@ -164,16 +164,16 @@
     <string name="webview">Visualizzazione Web</string>
     <string name="logout">Disconnetti</string>
     <string name="switch_account">Cambia Account</string>
-    <string name="incognito">Incognito</string>
+    <string name="incognito">Modalità Incognito</string>
     <string name="not_logged_in">Accesso non eseguito</string>
     <string name="x_login">Accedi a %1$s</string>
-    <string name="x_is_required">$1%s è necessario</string>
+    <string name="x_is_required">%1$s è necessario</string>
     <string name="playing_from">In riproduzione da</string>
     <string name="up_next">Prossimi</string>
     <string name="info">Info</string>
     <string name="shuffle">Riproduzione Casuale</string>
     <string name="previous">Brano Precedente</string>
-    <string name="play">Play</string>
+    <string name="play">Riproduci</string>
     <string name="next">Brano Successivo</string>
     <string name="repeat">Ripeti</string>
     <string name="close">Chiudi</string>
@@ -199,7 +199,7 @@
     <string name="subtitle_selection">Selezione Sottotitoli</string>
     <string name="quality_selection">Selezione Qualità</string>
     <string name="quality_x">Qualità %1$d</string>
-    <string name="off">Off</string>
+    <string name="off">Spento</string>
     <string name="unknown_quality">Qualità Sconosciuta</string>
     <string name="so_empty">Non c\'è niente qui…</string>
     <string name="not_loading">Non in Caricamento</string>
@@ -285,19 +285,19 @@
     <string name="download_complete">Download Completato</string>
     <string name="extension">Estensione</string>
     <string name="bass_boost_desc">Valori troppo elevati possono distorcere l\'audio.</string>
-    <string name="skip_silence_summary">Salta la parte silenziosa del brano, per fornire una riproduzione senza interruzioni</string>
+    <string name="skip_silence_summary">Salta la parte silenziosa del brano, per una riproduzione senza interruzioni.</string>
     <string name="seekbar">Barra di avanzamento</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Ora</item>
         <item quantity="many">%1$d Ore</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d Ore</item>
     </plurals>
-    <string name="feed">Feed</string>
+    <string name="feed">Novità</string>
     <string name="item">Oggetto</string>
     <plurals name="number_items">
-        <item quantity="one">Oggetto</item>
-        <item quantity="many">Oggetti</item>
-        <item quantity="other">Oggetti</item>
+        <item quantity="one">%1$dOggetto</item>
+        <item quantity="many">%1$dOggetti</item>
+        <item quantity="other">%1$dOggetti</item>
     </plurals>
     <string name="x_specific_quality_summary">%1$s La specifica qualità di riproduzione sovrascrivererà la qualità di default</string>
     <string name="unmetered_stream_quality">Qualità di riproduzione rete non limitata</string>
@@ -372,7 +372,7 @@
     <string name="album_order_n">Numero ordine album: %1$d</string>
     <string name="confirmation">Conferma</string>
     <string name="delete_playlist_confirmation">Sei sicuro di eliminare %1$s?</string>
-    <string name="confirm">Conferma</string>
+    <string name="confirm">Confermare</string>
     <string name="big_cover">Cover grandi</string>
     <string name="big_cover_summary">Migliore per dispositivi con schermi larghi</string>
     <string name="no_last_played_track_found">Nessun ultimo brano trovato.</string>
