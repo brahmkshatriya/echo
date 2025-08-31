@@ -115,4 +115,9 @@
     <string name="animation">אנימציה</string>
     <string name="back_animations">אנימציות חזרה</string>
     <string name="back_animations_summary">יכול לגרום לבאג ויזואלי עקב אנדרואיד, אבל אתה יכול פשוט לפתוח את ההודעות האחרונות כדי לתקן את זה.</string>
+    <string name="animations">אנימציות</string>
+    <string name="animations_summary">מרגיש יותר מדי גמגום? לכבות את זה, אולי יעזור</string>
+    <string name="refresh">ריענון</string>
+    <string name="x_disabled">%1$s (מושבת)</string>
+    <string name="by_x">על ידי %1$s</string>
 </resources>
