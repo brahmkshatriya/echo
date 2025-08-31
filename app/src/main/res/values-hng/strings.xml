@@ -250,7 +250,7 @@
     <string name="n_minutes">%1$d Minute</string>
     <plurals name="number_min">
         <item quantity="one">%1$d Minute</item>
-        <item quantity="other">%1$d Minute</item>
+        <item quantity="other">%1$d Minutes</item>
     </plurals>
     <string name="servers">Servers</string>
     <string name="backgrounds">Backgrounds</string>
