@@ -391,4 +391,14 @@
     <string name="releases_on_x">سيتم اصداره في %1$s</string>
     <string name="unavailable_in_your_region">غير متوفر في منطقتك</string>
     <string name="not_playable_x">غير قابل للتشغيل: %1$s</string>
+    <string name="animations_summary">هل تشعر بتلعثم شديد؟ قد يساعدك إيقاف هذا</string>
+    <string name="refresh">تحديث</string>
+    <string name="x_disabled">%1$s (معطل)</string>
+    <string name="by_x">بواسطة %1$s</string>
+    <string name="music">الموسيقى</string>
+    <string name="tracker">متتبع</string>
+    <string name="lyrics">كلمات</string>
+    <string name="misc">متنوع</string>
+    <string name="x_extensions">امتدادات %1$s</string>
+    <string name="x_extension">امتداد %1$s</string>
 </resources>
