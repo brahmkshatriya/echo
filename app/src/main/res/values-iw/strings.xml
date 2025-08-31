@@ -172,4 +172,8 @@
     <string name="add_color">הוסף צבע</string>
     <string name="custom_colors">צבעים מותאמים אישית</string>
     <string name="music">מוזיקה</string>
+    <string name="logout">יציאה</string>
+    <string name="switch_account">החלפת חשבון</string>
+    <string name="incognito">גלישה בסתר</string>
+    <string name="not_logged_in">לא מחובר</string>
 </resources>
