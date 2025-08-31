@@ -176,4 +176,10 @@
     <string name="switch_account">החלפת חשבון</string>
     <string name="incognito">גלישה בסתר</string>
     <string name="not_logged_in">לא מחובר</string>
+    <string name="x_login">כניסה %1$s</string>
+    <string name="x_is_required">נדרש %1$s</string>
+    <string name="regex_invalid">%1$s אינו חוקי, אנא עקוב אחר הביטוי הרגולרי: %2$s</string>
+    <string name="playing_from">מנגן מ</string>
+    <string name="up_next">הבא בתור</string>
+    <string name="info">מידע</string>
 </resources>
