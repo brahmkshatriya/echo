@@ -104,4 +104,8 @@
     <string name="skip_silence_summary">דלג על חלק שקט בשיר, כדי לספק השמעה ללא הפסקות.</string>
     <string name="auto_start_radio">רדיו הפעלה אוטומטית</string>
     <string name="auto_start_radio_summary">הוסף אוטומטית שירים קשורים לרצועה ברשימת ההשמעה, כדי ליצור תור אינסופי</string>
+    <string name="amoled">אמולד</string>
+    <string name="amoled_summary">שחור מוחלט, שחור טהור</string>
+    <string name="navbar_gradient">סרגל ניווט שיפוע צבעים</string>
+    <string name="navbar_gradient_summary">סרגל הניווט הופך בהדרגה לשקוף</string>
 </resources>
