@@ -233,7 +233,7 @@
     <string name="animations_summary">Interface pas fluide ? Désactiver cette option pourrait aider</string>
     <string name="installation_type_summary">L\'installation de l\'application permettra aux liens suivants de s\'ouvrir dans Echo :</string>
     <string name="could_not_find_the_file">Fichier introuvable.</string>
-    <string name="custom_theme_color_summary">Utilise une couleur de thème personnalisée, au lieu de celle du système</string>
+    <string name="custom_theme_color_summary">Utilise une couleur de thème personnalisée, au lieu de celle du système.</string>
     <string name="extension_installed_successfully">Extension installée avec succès !</string>
     <string name="theme">Thème</string>
     <string name="_1hr">1 h</string>
@@ -301,7 +301,7 @@
     </plurals>
     <string name="x_specific_quality_summary">Quality spécifique de %1$s, cette option va remplacer la qualité du flux par défaut</string>
     <string name="unmetered_stream_quality">Qualité du flux sur connection non limitée</string>
-    <string name="unmetered_stream_quality_summary">La qualité du flux sur une connection non limitée. Cette option remplace la qualité du flux par défaut</string>
+    <string name="unmetered_stream_quality_summary">La qualité du flux sur une connection non limitée. Cette option remplace la qualité du flux par défaut.</string>
     <string name="select_language">Choisir une langue</string>
     <string name="check_for_updates">Vérifier les mises a jour</string>
     <string name="check_for_updates_summary">Chercher les mises a jour pour l\'application et les extensions quand vous ouvrez l\'application.</string>
