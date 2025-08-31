@@ -203,7 +203,7 @@
     <string name="more_brain_capacity_summary">הפעלת אפשרות זו, יכולה לסייע בתיקון השהיית שמע ולהגדיל את ניצול הסוללה (משבית את פריקת האודיו).</string>
     <string name="track">‮רצועה</string>
     <string name="tracks">רצועות</string>
-    <string name="sort">סדר</string>
+    <string name="sort">מיון</string>
     <string name="explicit">מפורש</string>
     <string name="x_plays">%1$s מתנגן</string>
     <string name="x_followers">%1$s עוקבים</string>
@@ -372,4 +372,12 @@
     <string name="unliked_x">ביטלת לייק מ־%1$s</string>
     <string name="hiding_x">מסתיר את %1$s</string>
     <string name="seekbar">סרגל התקדמות</string>
+    <string name="big_cover_summary">טוב למכשירים עם מסכים גדולים יותר</string>
+    <string name="unhide">בטל הסתרה</string>
+    <string name="hide">הסתר</string>
+    <string name="no_last_played_track_found">לא נמצאה רצועה שהושמעה לאחרונה.</string>
+    <string name="not_yet_released">לא שוחרר עדיין</string>
+    <string name="releases_on_x">שוחרר ב-%1$s</string>
+    <string name="unavailable_in_your_region">לא זמין באזור שלך</string>
+    <string name="not_playable_x">לא ניתן לניגון: %1$s</string>
 </resources>
