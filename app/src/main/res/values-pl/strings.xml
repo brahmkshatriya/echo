@@ -7,4 +7,16 @@
     <string name="x_was_not_granted">%1$s nie zostało wydane</string>
     <string name="audio">Audio</string>
     <string name="feed">Feed</string>
+    <string name="audio_permission_summary">Żeby uzyskać dostęp do lokalnej biblioteki muzycznej</string>
+    <string name="read_storage">Odczytaj pamięć</string>
+    <string name="write_storage">Zapisz w pamięci</string>
+    <string name="write_storage_permission_summary">Żeby tworzyć i edytować lokalne listy odtwarzania</string>
+    <string name="notifications">Powiadomienia</string>
+    <string name="notifications_permission_summary">Żeby wyświetlić powiadomienia o pobraniu i muzyce</string>
+    <string name="remove">Usuń</string>
+    <string name="more_by_x">Więcej od %1$s</string>
+    <string name="songs">Piosenki</string>
+    <string name="albums">Albumy</string>
+    <string name="x_radio">Radio %1$s</string>
+    <string name="cached_songs">Buforowane piosenki</string>
 </resources>
