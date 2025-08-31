@@ -255,7 +255,7 @@
     <string name="playlist_name">Name der Wiedergabeliste</string>
     <string name="playlist_description">Beschreibung der Wiedergabeliste</string>
     <string name="create_playlist">Playlist erstellen</string>
-    <string name="create">Schaffen</string>
+    <string name="create">Erstellten</string>
     <string name="add_song">Song hinzufügen</string>
     <string name="creating_x">Erstellen von %1$s</string>
     <string name="playlist_name_empty">Der Name der Wiedergabeliste ist leer</string>
@@ -358,4 +358,16 @@
     <string name="releases_on_x">Veröffentlichung am %1$s</string>
     <string name="unavailable_in_your_region">In deiner Region nicht verfügbar</string>
     <string name="not_playable_x">Nicht Abspielbar: %1$s</string>
+    <string name="n_songs">%1$d Songs</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d Song</item>
+        <item quantity="other">%1$d Songs</item>
+    </plurals>
+    <string name="player">Player</string>
+    <string name="album">Album</string>
+    <string name="single">Single</string>
+    <string name="ep">EP</string>
+    <string name="lp">LP</string>
+    <string name="song">Song</string>
+    <string name="podcast">Podcast</string>
 </resources>
