@@ -19,4 +19,9 @@
     <string name="albums">Albumy</string>
     <string name="x_radio">Radio %1$s</string>
     <string name="cached_songs">Buforowane piosenki</string>
+    <string name="artists">Wykonawcy</string>
+    <string name="recently_added">Ostatnio dodane</string>
+    <string name="refresh_library_on_reload">Aktualizuj bibliotekę przy ponownym ładowaniu</string>
+    <string name="refresh_library_on_reload_summary">Skanuj urządzenie za każdym razem, gdy ładowany jest feed</string>
+    <string name="duration_filter">Filtr czasu trwania</string>
 </resources>
