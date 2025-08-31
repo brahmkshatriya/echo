@@ -112,7 +112,8 @@ class Downloader(
         servers.getOrPut(trackId) {
             val extensionId = download.extensionId
             val extension = extensionLoader.music.getExtensionOrThrow(extensionId)
-            val streamable = download.track.streamables.find { it.id == download.streamableId }!!
+            val streamable = download.track.getOrThrow()
+                .streamables.find { it.id == download.streamableId }!!
             extension.getAs<TrackClient, Streamable.Media.Server> {
                 val media =
                     loadStreamableMedia(streamable, true) as Streamable.Media.Server
@@ -211,13 +212,13 @@ class Downloader(
                 info.filter { it.download.fullyDownloaded }.groupBy {
                     it.context?.id
                 }.flatMap { (id, infos) ->
-                    if (id == null) infos.map {
-                        it.download.track.toShelf()
-                            .withExtensionId(it.download.extensionId, false)
+                    if (id == null) infos.mapNotNull {
+                        it.download.track.getOrNull()?.toShelf()
+                            ?.withExtensionId(it.download.extensionId, false)
                     }
-                    else listOfNotNull(infos.first().run {
-                        unifiedExtension.db.getPlaylist(context!!.mediaItem)?.toShelf()
-                    })
+                    else listOfNotNull(infos.first().runCatching {
+                        unifiedExtension.db.getPlaylist(context?.mediaItem!!.getOrThrow())?.toShelf()
+                    }.getOrNull())
                 }
             }.collect(downloadShelf)
         }

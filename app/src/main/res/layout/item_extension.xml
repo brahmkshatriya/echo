@@ -62,7 +62,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/extensionUse"
-            style="@style/IconButton"
+            style="@style/IconButtonTonal"
             android:contentDescription="@string/extension"
             app:icon="@drawable/ic_chevron_forward" />
 

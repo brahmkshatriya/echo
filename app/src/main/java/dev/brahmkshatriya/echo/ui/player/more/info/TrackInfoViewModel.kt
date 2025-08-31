@@ -46,9 +46,7 @@ class TrackInfoViewModel(
                 val track = currentFlow.value?.mediaItem?.takeIf { it.isLoaded }?.track
                     ?: return@collectLatest
                 itemResultFlow.value = loadMedia(
-                    app,
-                    extension,
-                    MediaState.Unloaded(extension.id, track)
+                    app, extension, MediaState.Unloaded(extension.id, track)
                 )
             }
         }

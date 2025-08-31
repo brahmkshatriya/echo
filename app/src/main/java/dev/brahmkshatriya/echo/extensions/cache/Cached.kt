@@ -46,7 +46,7 @@ object Cached {
 
     suspend inline fun <reified T> FileKache.getData(id: String) = runCatching {
         val file = get(id) ?: throw NotFound(id)
-        File(file).readText().toData<T>()
+        File(file).readText().toData<T>().getOrThrow()
     }
 
     suspend inline fun <reified T> FileKache.putData(id: String, data: T) = runCatching {

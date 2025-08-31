@@ -342,7 +342,7 @@ class UnifiedExtension(
     ).fallbackToDestructiveMigration(true).build()
 
     private fun getCachedTracks() = cache?.keys?.mapNotNull { key ->
-        val (id, _) = key.toIdAndIndex() ?: return@mapNotNull null
+        val (id, _) = key.toIdAndIndex()?.getOrNull() ?: return@mapNotNull null
         context.getFromCache<Pair<String, Track>>(id.hashCode().toString(), "track")
     }?.reversed().orEmpty()
         .map { it.second.withExtensionId(it.first, this, true) }

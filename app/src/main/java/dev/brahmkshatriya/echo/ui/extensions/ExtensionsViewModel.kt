@@ -12,7 +12,6 @@ import dev.brahmkshatriya.echo.common.models.ImportType
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
-import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtensionOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.installApp
@@ -20,6 +19,7 @@ import dev.brahmkshatriya.echo.extensions.InstallationUtils.installFile
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.uninstallApp
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.uninstallFile
 import dev.brahmkshatriya.echo.extensions.db.models.ExtensionEntity
+import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInstallerBottomSheet.Companion.createLinksDialog
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionListViewModel
 import dev.brahmkshatriya.echo.utils.AppUpdater.downloadUpdate
@@ -213,8 +213,10 @@ class ExtensionsViewModel(
     ): File? {
         val currentVersion = extension.version
         val updateUrl = extension.metadata.updateUrl ?: return null
-        val url = extension.get {
+        val url = runCatching {
             getUpdateFileUrl(currentVersion, updateUrl, client).getOrThrow()
+        }.recoverCatching {
+            throw it.toAppException(extension)
         }.getOrThrow(app.throwFlow)
         if (url == null) {
             if (show) message(
@@ -223,8 +225,10 @@ class ExtensionsViewModel(
             return null
         }
         message(app.context.getString(R.string.downloading_update_for_x, extension.name))
-        val file = extension.get {
+        val file = runCatching {
             downloadUpdate(app.context, url, client).getOrThrow()
+        }.recoverCatching {
+            throw it.toAppException(extension)
         }.getOrThrow(app.throwFlow) ?: return null
         return file
     }

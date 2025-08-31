@@ -51,9 +51,6 @@
             android:layout_height="wrap_content"
             android:text="@string/create"
             android:maxLines="2"
-            android:backgroundTint="?colorTertiary"
-            android:textColor="?colorOnTertiary"
-            app:iconTint="?colorOnTertiary"
             app:icon="@drawable/ic_playlist_add"
             android:layout_margin="24dp" />
     </FrameLayout>

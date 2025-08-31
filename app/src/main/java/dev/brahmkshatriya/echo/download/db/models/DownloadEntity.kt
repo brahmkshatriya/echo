@@ -27,14 +27,14 @@ data class DownloadEntity(
     val toTagFile: String? = null,
     val finalFile: String? = null,
     val exceptionFile: String? = null,
-    val fullyDownloaded: Boolean = false
+    val fullyDownloaded: Boolean = false,
 ) {
     val track by lazy { data.toData<Track>() }
-    val indexes by lazy { indexesData?.toData<List<Int>>().orEmpty() }
-    val toMergeFiles by lazy { toMergeFilesData?.toData<List<String>>().orEmpty() }
+    val indexes by lazy { indexesData?.toData<List<Int>>()?.getOrNull().orEmpty() }
+    val toMergeFiles by lazy { toMergeFilesData?.toData<List<String>>()?.getOrNull().orEmpty() }
     val exception by lazy {
         runCatching {
-            exceptionFile?.let { File(it) }?.readText()?.toData<ExceptionUtils.Data>()
+            exceptionFile?.let { File(it) }?.readText()?.toData<ExceptionUtils.Data>()?.getOrThrow()
         }.getOrNull()
     }
     val isFinal by lazy { finalFile != null || exceptionFile != null }

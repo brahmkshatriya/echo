@@ -36,7 +36,7 @@ object CacheUtils {
         val cacheDir = cacheDir(this, folderName)
         val file = File(cacheDir, fileName)
         return if (file.exists()) runCatching {
-            file.readText().toData<T>()
+            file.readText().toData<T>().getOrThrow()
         }.getOrNull() else null
     }
 }

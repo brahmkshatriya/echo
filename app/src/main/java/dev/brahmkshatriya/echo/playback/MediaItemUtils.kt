@@ -157,7 +157,7 @@ object MediaItemUtils {
     private fun MediaState<Track>.toMetaData(
         bundle: Bundle,
         downloads: List<Downloader.Info>,
-        context: EchoMediaItem? = bundle.getSerialized("context"),
+        context: EchoMediaItem? = bundle.getSerialized<EchoMediaItem>("context")?.getOrNull(),
         loaded: Boolean = bundle.getBoolean("loaded"),
         app: App,
         serverIndex: Int? = null,
@@ -205,20 +205,20 @@ object MediaItemUtils {
     private fun Bundle.indexes() =
         "${getInt("serverIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
 
-    private val Bundle?.stateNullable get() = this?.getSerialized<MediaState<Track>>("state")
+    private val Bundle?.stateNullable get() = this?.getSerialized<MediaState<Track>>("state")?.getOrNull()
     val Bundle?.state get() = requireNotNull(stateNullable)
     val Bundle?.track get() = state.item
     val Bundle?.isLoaded get() = this?.getBoolean("loaded") ?: false
     val Bundle?.extensionId get() = state.extensionId
-    val Bundle?.context get() = this?.getSerialized<EchoMediaItem?>("context")
+    val Bundle?.context get() = this?.getSerialized<EchoMediaItem?>("context")?.getOrNull()
     val Bundle?.serverIndex get() = this?.getInt("serverIndex", -1) ?: -1
     val Bundle?.sourceIndex get() = this?.getInt("sourceIndex", -1) ?: -1
     val Bundle?.backgroundIndex get() = this?.getInt("backgroundIndex", -1) ?: -1
     val Bundle?.subtitleIndex get() = this?.getInt("subtitleIndex", -1) ?: -1
-    val Bundle?.background get() = this?.getSerialized<Streamable.Media.Background?>("background")
+    val Bundle?.background get() = this?.getSerialized<Streamable.Media.Background?>("background")?.getOrNull()
     val Bundle?.retries get() = this?.getInt("retries") ?: 0
-    val Bundle?.unloadedCover get() = this?.getSerialized<ImageHolder?>("unloadedCover")
-    val Bundle?.downloaded get() = this?.getSerialized<List<String>>("downloaded")
+    val Bundle?.unloadedCover get() = this?.getSerialized<ImageHolder?>("unloadedCover")?.getOrNull()
+    val Bundle?.downloaded get() = this?.getSerialized<List<String>>("downloaded")?.getOrNull()
 
     val MediaItem.state get() = mediaMetadata.extras.state
     val MediaItem.track get() = mediaMetadata.extras.track

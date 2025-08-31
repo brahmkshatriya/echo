@@ -16,7 +16,7 @@ class StreamableResolver(
 
     @OptIn(UnstableApi::class)
     override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
-        val (id, index) = dataSpec.uri.toString().toIdAndIndex() ?: return dataSpec
+        val (id, index) = dataSpec.uri.toString().toIdAndIndex()?.getOrNull() ?: return dataSpec
         val streamable = runCatching { current[id]!!.getOrThrow().sources[index] }
         return dataSpec.copy(uri = streamable.getOrNull()?.uri, customData = streamable)
     }

@@ -39,10 +39,10 @@ class LoginUserListViewModel(
             val curr = current.find { it.extId == ext?.id && it.type == ext.type }
             val flow = if (ext != null) userDao.observeAllUsers(ext.type, ext.id)
             else null
-            flow?.map {
-                val users = it.map { ent ->
+            flow?.map { entities ->
+                val users = entities.mapNotNull { ent ->
                     val selected = ent.id == curr?.userId
-                    ent.user to selected
+                    ent.user.getOrNull()?.let { it to selected }
                 }
                 ext to users
             } ?: emptyFlow()

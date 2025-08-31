@@ -32,7 +32,7 @@ import java.io.File
 abstract class BaseTask(
     private val context: Context,
     val downloader: Downloader,
-    open val trackId: Long
+    open val trackId: Long,
 ) {
     abstract val type: TaskType
     val progressFlow = MutableStateFlow(Progress())
@@ -64,7 +64,10 @@ abstract class BaseTask(
         val download = getDownload()
         val contextEntity = download.contextId?.let { dao.getContextEntity(it) }
         DownloadContext(
-            download.extensionId, download.track, download.sortOrder, contextEntity?.mediaItem
+            download.extensionId,
+            download.track.getOrThrow(),
+            download.sortOrder,
+            contextEntity?.mediaItem?.getOrThrow()
         )
     }
 
@@ -89,7 +92,7 @@ abstract class BaseTask(
     fun createCompleteNotification(
         context: Context,
         title: String,
-        drawable: Drawable?
+        drawable: Drawable?,
     ) {
         createNotificationChannel(
             context, DOWNLOAD_CHANNEL_ID, R.string.download_complete, 0,

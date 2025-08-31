@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.ui.main
 
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,6 +24,7 @@ import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.setupTransition
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.isRTL
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -95,18 +97,18 @@ class MainFragment : Fragment() {
                     outline.alpha = max(0f, offset - extra)
                 }
             }
-            FastScrollerHelper.applyTo(recyclerView)
+            val scroller = FastScrollerHelper.applyTo(recyclerView)
             applyInsets {
                 recyclerView.applyInsets(it, 20, 20, bottom + 4)
                 outline.updatePadding(top = it.top)
-//                val rect = recyclerView.run {
-//                    val pad = 8.dpToPx(context)
-//                    val isRtl = context.isRTL()
-//                    val left = if (!isRtl) it.start else it.end
-//                    val right = if (!isRtl) it.end else it.start
-//                    Rect(left + pad, it.top + pad, right + pad, it.bottom + pad)
-//                }
-//                scroller.setPadding(rect)
+                val rect = recyclerView.run {
+                    val pad = 8.dpToPx(context)
+                    val isRtl = context.isRTL()
+                    val left = if (!isRtl) it.start else it.end
+                    val right = if (!isRtl) it.end else it.start
+                    Rect(left + pad, it.top + pad, right + pad, it.bottom + pad)
+                }
+                scroller.setPadding(rect)
                 block(it)
             }
         }

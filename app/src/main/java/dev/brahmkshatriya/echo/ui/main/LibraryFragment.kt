@@ -9,7 +9,6 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
 import dev.brahmkshatriya.echo.common.models.Feed
-import dev.brahmkshatriya.echo.common.models.Feed.Buttons.Companion.EMPTY
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -42,7 +41,7 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
     private val feedData by lazy {
         val vm by viewModel<FeedViewModel>()
         val id = "library"
-        vm.getFeedData(id, EMPTY, cached = {
+        vm.getFeedData(id, cached = {
             val curr = current.value!!
             val feed = Cached.getFeedShelf(app, curr.id, id).getOrThrow()
             FeedData.State(curr.id, null, feed)
@@ -101,7 +100,7 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
 
         parent.parentFragmentManager.setFragmentResultListener("createPlaylist", this) { _, data ->
             val extensionId = data.getString("extensionId")
-            val playlist = data.getSerialized<Playlist>("playlist")
+            val playlist = data.getSerialized<Playlist>("playlist")?.getOrNull()
             if (extensionId != null && playlist != null) createSnack(
                 Message(
                     getString(R.string.x_created, playlist.title),

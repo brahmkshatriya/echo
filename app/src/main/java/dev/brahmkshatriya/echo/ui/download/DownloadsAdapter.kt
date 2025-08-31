@@ -61,14 +61,15 @@ class DownloadsAdapter(
         fun bind(item: Download) {
             val entity = item.downloadEntity
             binding.apply {
-                title.text = entity.track.title
-                entity.track.cover.loadInto(imageView, R.drawable.art_music)
+                val track = entity.track.getOrNull()
+                title.text = track?.title
+                track?.cover.loadInto(imageView, R.drawable.art_music)
                 item.extension?.metadata?.icon?.loadAsCircle(
                     extensionIcon, R.drawable.ic_extension
                 ) {
                     extensionIcon.setImageDrawable(it)
                 }
-                val sub = item.context?.mediaItem?.title
+                val sub = item.context?.mediaItem?.getOrNull()?.title
                 subtitle.text = sub
                 subtitle.isVisible = !sub.isNullOrEmpty()
 

@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.core.net.toUri
-import androidx.core.view.iterator
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -49,7 +48,7 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
     private val name by lazy { args.getString("name")!! }
     private val extensionId by lazy { args.getString("id")!! }
     private val extensionType by lazy { args.getString("type")!! }
-    private val extIcon by lazy { args.getSerialized<ImageHolder>("icon") }
+    private val extIcon by lazy { args.getSerialized<ImageHolder>("icon")?.getOrThrow() }
 
     private val viewModel by viewModel<ExtensionInfoViewModel> {
         parametersOf(ExtensionType.valueOf(extensionType), extensionId)
@@ -106,9 +105,7 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                 }
             }
             if (metadata.importType != ImportType.BuiltIn) {
-                binding.toolBar.menu.run {
-                    iterator().forEach { removeItem(it.itemId) }
-                }
+                binding.toolBar.menu.clear()
                 binding.toolBar.inflateMenu(R.menu.extensions_menu)
                 if (metadata.repoUrl == null) binding.toolBar.menu.removeItem(R.id.menu_repo)
             }

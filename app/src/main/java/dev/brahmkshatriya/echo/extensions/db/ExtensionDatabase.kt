@@ -28,7 +28,7 @@ abstract class ExtensionDatabase : RoomDatabase() {
     abstract fun extensionDao(): ExtensionDao
 
     suspend fun getUser(current: CurrentUser): User? {
-        return userDao.getUser(current.type, current.extId, current.userId)?.user
+        return userDao.getUser(current.type, current.extId, current.userId)?.user?.getOrNull()
     }
 
     companion object {

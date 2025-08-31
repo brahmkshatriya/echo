@@ -6,6 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.paging.cachedIn
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
+import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
@@ -26,6 +27,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
@@ -35,6 +38,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LyricsViewModel(
     private val app: App,
@@ -47,7 +51,7 @@ class LyricsViewModel(
 
     val queryFlow = MutableStateFlow("")
     val selectedTabIndexFlow = MutableStateFlow(-1)
-    val lyricsState = MutableStateFlow<State>(State.Empty)
+    val lyricsState = MutableStateFlow<State>(State.Initial)
 
     private val mediaFlow = playerState.current.map { current ->
         current?.mediaItem?.takeIf { it.isLoaded }
@@ -60,7 +64,7 @@ class LyricsViewModel(
         listOfNotNull(trackExtension) + lyrics
     }.onEach { extensions ->
         currentSelectionFlow.value = null
-        lyricsState.value = State.Loading
+        lyricsState.value = State.Initial
         queryFlow.value = ""
         val media = mediaFlow.value?.track?.id
         currentSelectionFlow.value = media?.let {
@@ -101,42 +105,56 @@ class LyricsViewModel(
         emit(result)
     }.stateIn(viewModelScope, Eagerly, null)
 
-    private val feedData = loadedFeed.combine(cachedFeed) { loaded, cache ->
-        loaded ?: cache
-    }.stateIn(viewModelScope, Eagerly, null)
+    private val feedFlow = loadedFeed.combine(cachedFeed) { loaded, cache ->
+        cache to loaded
+    }.stateIn(viewModelScope, Eagerly, null to null)
 
-    val tabsFlow = feedData.map {
-        selectedTabIndexFlow.value = 0
-        it?.getOrNull()?.tabs.orEmpty()
-    }.stateIn(viewModelScope, Eagerly, emptyList())
+    val tabsFlow = feedFlow.map { (cached, loaded) ->
+        val state = (loaded?.getOrNull() ?: cached?.getOrNull()) ?: return@map listOf()
+        state.tabs
+    }
 
-    private val pagedDataFlow =
-        feedData.combineTransformLatest(selectedTabIndexFlow) { result, index ->
+    private suspend fun getData(
+        feed: Result<Feed<Lyrics>>?, index: Int,
+    ) = withContext(Dispatchers.IO) {
+        feed?.mapCatching {
+            val paged = it.getPagedData(it.tabs.run { getOrNull(index) ?: firstOrNull() }).pagedData
+            paged
+        }
+    }
+
+    private val cachedDataFlow =
+        cachedFeed.combineTransformLatest(selectedTabIndexFlow) { feed, tab ->
             emit(null)
-            if (result == null) {
-                lyricsState.value = State.Loading
-                return@combineTransformLatest
-            }
-            emit(result.mapCatching {
-                val data =
-                    it.getPagedData(it.tabs.run { getOrNull(index) ?: firstOrNull() }).pagedData
-                if (queryFlow.value.isEmpty()) onLyricsSelected(data.loadPage(null).data.firstOrNull())
-                data
-            })
-        }.flowOn(Dispatchers.IO).stateIn(viewModelScope, Eagerly, null)
+            if (feed == null) return@combineTransformLatest
+            emit(getData(feed, tab))
+        }.stateIn(viewModelScope, Lazily, null)
 
-    val shouldShowEmpty = pagedDataFlow.map { it != null }
-        .stateIn(viewModelScope, Eagerly, false)
+    private val loadedDataFlow =
+        loadedFeed.combineTransformLatest(selectedTabIndexFlow) { feed, tab ->
+            emit(null)
+            if (feed == null) return@combineTransformLatest
+            emit(getData(feed, tab))
+        }.stateIn(viewModelScope, Lazily, null)
+
+    private val dataFlow = loadedDataFlow.combine(cachedDataFlow) { loaded, cache ->
+        cache to loaded
+    }.stateIn(viewModelScope, Lazily, null to null)
+
+    val shouldShowEmpty = dataFlow.map { (cached, loaded) ->
+        val data = loaded?.getOrNull() ?: cached?.getOrNull()
+        data != null
+    }.stateIn(viewModelScope, Lazily, false)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagingFlow = pagedDataFlow.transformLatest { result ->
-        emit(PagedSource.empty())
-        emitAll(PagedSource(result).flow)
-    }.cachedIn(viewModelScope)
+    val pagingFlow = dataFlow.transformLatest { (cached, loaded) ->
+        emitAll(PagedSource(loaded, cached).flow)
+    }.flowOn(Dispatchers.IO).cachedIn(viewModelScope)
 
     sealed interface State {
-        data object Empty : State
+        data object Initial : State
         data object Loading : State
+        data object Empty : State
         data class Loaded(val result: Result<Lyrics>) : State
     }
 
@@ -163,6 +181,22 @@ class LyricsViewModel(
             }
             this.copy(lyrics = Lyrics.Timed(new))
         } else this
+    }
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataFlow.collectLatest { (cached, loaded) ->
+                if (lyricsState.value != State.Initial) return@collectLatest
+                val cachedLyrics = cached?.getOrNull()?.loadAll()?.firstOrNull()
+                val loaded = loaded?.getOrNull()
+                if (loaded != null) {
+                    lyricsState.value = State.Loading
+                    onLyricsSelected(loaded.loadPage(null).data.firstOrNull())
+                } else if(cachedLyrics != null) {
+                    onLyricsSelected(cachedLyrics)
+                }
+            }
+        }
     }
 
     companion object {

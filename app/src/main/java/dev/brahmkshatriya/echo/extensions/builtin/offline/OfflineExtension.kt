@@ -268,7 +268,7 @@ class OfflineExtension(
     override suspend fun loadRadio(radio: Radio) = radio
 
     override suspend fun loadTracks(radio: Radio): Feed<Track> = PagedData.Single {
-        val mediaItem = radio.extras["mediaItem"]!!.toData<EchoMediaItem>()
+        val mediaItem = radio.extras["mediaItem"]!!.toData<EchoMediaItem>().getOrThrow()
         val library = getLibrary()
         when (mediaItem) {
             is Album -> {

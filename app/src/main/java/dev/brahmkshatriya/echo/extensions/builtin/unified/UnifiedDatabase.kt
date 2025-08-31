@@ -45,7 +45,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
     }
 
     suspend fun getSaved(): List<EchoMediaItem> {
-        return dao.getSaved().map { it.item }
+        return dao.getSaved().mapNotNull { it.item.getOrNull() }
     }
 
     suspend fun isSaved(item: EchoMediaItem): Boolean {
@@ -296,8 +296,8 @@ abstract class UnifiedDatabase : RoomDatabase() {
                 name,
                 true,
                 isPrivate = false,
-                cover = cover?.toData(),
-                creationDate = modified.toData<Date>(),
+                cover = cover?.toData<ImageHolder>()?.getOrNull(),
+                creationDate = modified.toData<Date>().getOrNull(),
                 description = description.takeIf { it.isNotBlank() },
                 extras = mapOf(
                     EXTENSION_ID to UNIFIED_ID,
@@ -333,7 +333,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val after: Long? = null,
     ) {
         val track by lazy {
-            data.toData<Track>().run {
+            data.toData<Track>().getOrThrow().run {
                 this.copy(
                     type = type,
                     extras = extras + mapOf(

@@ -73,9 +73,9 @@ class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_mor
     private val args by lazy { requireArguments() }
     private val contId by lazy { args.getInt("contId", -1).takeIf { it != -1 }!! }
     private val extensionId by lazy { args.getString("extensionId")!! }
-    private val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
+    private val item by lazy { args.getSerialized<EchoMediaItem>("item")!!.getOrThrow() }
     private val loaded by lazy { args.getBoolean("loaded") }
-    private val itemContext by lazy { args.getSerialized<EchoMediaItem>("context") }
+    private val itemContext by lazy { args.getSerialized<EchoMediaItem>("context")?.getOrThrow() }
     private val tabId by lazy { args.getString("tabId") }
     private val pos by lazy { args.getInt("pos") }
     private val fromPlayer by lazy { args.getBoolean("fromPlayer") }

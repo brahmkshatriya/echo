@@ -26,6 +26,7 @@ import dev.brahmkshatriya.echo.ui.extensions.login.LoginUserListViewModel
 import dev.brahmkshatriya.echo.utils.AppUpdater
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import dev.brahmkshatriya.echo.utils.Serializer
 import dev.brahmkshatriya.echo.utils.Serializer.rootCause
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +44,7 @@ object ExceptionUtils {
     private fun Context.getTitle(throwable: Throwable): String? = when (throwable) {
         is LinkageError, is ReflectiveOperationException -> getString(R.string.extension_out_of_date)
         is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
+
         is ExtensionLoaderException ->
             getString(R.string.error_loading_extension_from_x, throwable.clazz)
 
@@ -74,7 +76,7 @@ object ExceptionUtils {
         is PlayerException -> "${throwable.mediaItem?.track?.title}: ${getFinalTitle(throwable.cause)}"
 
         is DownloadException -> {
-            val title = getTitle(throwable.type, throwable.downloadEntity.track.title)
+            val title = getTitle(throwable.type, throwable.downloadEntity.track.getOrNull()?.title ?: "???")
             "${title}: ${getFinalTitle(throwable.cause)}"
         }
 
@@ -114,6 +116,8 @@ object ExceptionUtils {
             Type: ${throwable.type}
             Track: ${throwable.downloadEntity.toJson()}
         """.trimIndent()
+
+        is Serializer.DecodingException -> "JSON: ${throwable.json}"
 
         else -> null
     }
