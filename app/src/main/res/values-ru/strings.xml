@@ -348,7 +348,7 @@
     <string name="sort_date_added">Дата добавления</string>
     <string name="opening_webview_x">Открытие WebView: %1$s</string>
     <string name="no_update_available_for_x">Нет доступных обновления для %1$s</string>
-    <string name="other">Другой</string>
+    <string name="other">Другое</string>
     <string name="player">Плеер</string>
     <string name="about">О приложении</string>
     <string name="language_x">Язык: %1$s</string>
