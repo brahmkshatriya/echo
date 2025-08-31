@@ -98,7 +98,7 @@
     <string name="invalid_extension_list">Liste d\'extensions invalide</string>
     <string name="look_and_feel">Apparence et Ressenti</string>
     <string name="ui">Interface Utilisateur</string>
-    <string name="theme_summary">Voulez-vous devenir aveugle ?</string>
+    <string name="theme_summary">Voulez-vous devenir aveugle ?</string>
     <string name="add_color">Ajouter une couleur</string>
     <string name="custom_colors">Couleurs Personnalisées</string>
     <string name="amoled">Amoled</string>
@@ -204,10 +204,10 @@
     <string name="saved_to_playlists">Sauvegardée dans la playlist</string>
     <string name="removing_x">Suppression de %1$s</string>
     <string name="download_complete">Téléchargement Terminé</string>
-    <string name="app_widget_description">Echo sur votre écran d\'accueil !</string>
+    <string name="app_widget_description">Echo sur votre écran d\'accueil !</string>
     <string name="okay">OK</string>
     <string name="no_internet">Pas d\'Internet</string>
-    <string name="error_x">Erreur : %1$s</string>
+    <string name="error_x">Erreur : %1$s</string>
     <string name="cache_playlist_warning">Fonctionnalité Expérimentale. Seul l\'écoute est supportée.</string>
     <string name="refresh_library_on_reload_summary">Scan l\'appareil chaque fois que le flux est rechargé</string>
     <string name="write_storage_permission_summary">Pour créer et modifier les playlists locales</string>
@@ -221,7 +221,7 @@
     <string name="settings">Paramètres</string>
     <string name="bass_boost">Amplification des Basses</string>
     <string name="by_x">Par %1$s</string>
-    <string name="required_extensions_missing_x">Extensions requises manquantes : %1$s</string>
+    <string name="required_extensions_missing_x">Extensions requises manquantes : %1$s</string>
     <string name="equalizer_summary">Ouvrir les paramètres de l\'égaliseur de l\'appareil</string>
     <string name="custom_theme_color">Couleur de Thème Personnalisée</string>
     <string name="stream_quality_summary">Sélectionnez la qualité du flux par défaut</string>
@@ -230,15 +230,15 @@
         <item quantity="many">%1$d Heures</item>
         <item quantity="other">%1$d Heures</item>
     </plurals>
-    <string name="animations_summary">Interface pas fluide ? Désactiver cette option pourrait aider</string>
-    <string name="installation_type_summary">L\'installation de l\'application permettra aux liens suivants de s\'ouvrir dans Echo :</string>
+    <string name="animations_summary">Interface pas fluide ? Désactiver cette option pourrait aider</string>
+    <string name="installation_type_summary">L\'installation de l\'application permettra aux liens suivants de s\'ouvrir dans Echo :</string>
     <string name="could_not_find_the_file">Fichier introuvable.</string>
     <string name="custom_theme_color_summary">Utilise une couleur de thème personnalisée, au lieu de celle du système.</string>
-    <string name="extension_installed_successfully">Extension installée avec succès !</string>
+    <string name="extension_installed_successfully">Extension installée avec succès !</string>
     <string name="theme">Thème</string>
     <string name="_1hr">1 h</string>
-    <string name="open_links_instruction">Pour autoriser l\'ouverture de ces liens, vous devez :\n- Faire défiler la page vers le bas et cliquer sur \"Ouvrir par défaut\"\n- Cliquer sur \" Ajouter un lien\"</string>
-    <string name="extension_updated_successfully">%1$s mis à jour avec succès !</string>
+    <string name="open_links_instruction">Pour autoriser l\'ouverture de ces liens, vous devez :\n- Faire défiler la page vers le bas et cliquer sur \"Ouvrir par défaut\"\n- Cliquer sur \" Ajouter un lien\"</string>
+    <string name="extension_updated_successfully">%1$s mis à jour avec succès !</string>
     <string name="add_extensions">Ajouter des Extensions</string>
     <string name="audio_selection">Sélection Audio</string>
     <string name="video_selection">Sélection Vidéo</string>
@@ -308,7 +308,7 @@
     <string name="checking_for_updates">Recherche de mises a jour</string>
     <string name="back_animations">Animations de retour</string>
     <string name="back_animations_summary">Peut causer des bugs visuels dû à android, vous pouvez juste ouvrir les applications récentes pour régler ce bug.</string>
-    <string name="regex_invalid">%1$s est invalide, s\'il vous plaît suivez le regex : %2$s</string>
+    <string name="regex_invalid">%1$s est invalide, s\'il vous plaît suivez le regex : %2$s</string>
     <string name="n_hours">%1$d heures</string>
     <string name="n_minutes">%1$d minutes</string>
     <string name="hidden_x">Cachage de %1$s</string>
@@ -341,12 +341,12 @@
     </plurals>
     <string name="unsave">Annuler la sauvegarde</string>
     <string name="sort_date_added">Date d\'ajout</string>
-    <string name="opening_webview_x">Overture de la vue web : %1$s</string>
+    <string name="opening_webview_x">Overture de la vue web : %1$s</string>
     <string name="no_update_available_for_x">Pas de mises à jour disponibles pour %1$s</string>
     <string name="other">Autre</string>
     <string name="player">Lecteur</string>
     <string name="about">À propos</string>
-    <string name="language_x">Langue : %1$s</string>
+    <string name="language_x">Langue : %1$s</string>
     <string name="guide">Guide</string>
     <string name="donate">Faire un don</string>
     <string name="contributors">Contributeurs</string>
@@ -366,10 +366,10 @@
     <string name="book">Livre</string>
     <string name="song">Chanson</string>
     <string name="podcast">Podcast</string>
-    <string name="isrc_x">ISRC : %1$s</string>
-    <string name="genres_x">Genres : %1$s</string>
-    <string name="disc_number_n">Nombre du Disque : %1$d</string>
-    <string name="album_order_n">Nombre de l\'ordre de l\'album : %1$d</string>
+    <string name="isrc_x">ISRC : %1$s</string>
+    <string name="genres_x">Genres : %1$s</string>
+    <string name="disc_number_n">Nombre du Disque : %1$d</string>
+    <string name="album_order_n">Nombre de l\'ordre de l\'album : %1$d</string>
     <string name="confirmation">Confirmation</string>
     <string name="delete_playlist_confirmation">Êtes vous sûr de vouloir supprimer %1$s?</string>
     <string name="confirm">Confirmer</string>
@@ -379,5 +379,5 @@
     <string name="not_yet_released">Pas encore sorti</string>
     <string name="releases_on_x">Sorties sur %1$s</string>
     <string name="unavailable_in_your_region">Non disponible dans votre région</string>
-    <string name="not_playable_x">Non jouable : %1$s</string>
+    <string name="not_playable_x">Non jouable : %1$s</string>
 </resources>
