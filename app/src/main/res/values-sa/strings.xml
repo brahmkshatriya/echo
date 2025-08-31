@@ -58,10 +58,6 @@
     <string name="playlist_name">सङ्गीतसूच्याः नाम</string>
     <string name="playlist_description">सङ्गीतसूच्याः विवरणम्</string>
     <string name="create_playlist">प्लेलिस्ट् निर्मितय</string>
-    <plurals name="n_songs">
-        <item quantity="one">%1$d गीत</item>
-        <item quantity="other">%1$d गीतें</item>
-    </plurals>
     <string name="create">निर्माति</string>
     <string name="playlist_name_empty">सङ्गीतसूच्याः नाम रिक्तं न भवेत्</string>
     <string name="saved_to_playlists">प्लेलिस्ट् मध्ये सुरक्षितम्</string>

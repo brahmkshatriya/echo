@@ -109,22 +109,30 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
 
         val languages = mapOf(
             "as" to "Assamese",
+            "be" to "Беларуская",
             "de" to "Deutsch",
+            "es" to "Español",
             "fr" to "Français",
             "en" to "English",
             "hi" to "हिन्दी",
             "hng" to "Hinglish",
-            "hu" to "Magyar",
+            "in" to "Bahasa Indonesia",
+            "it" to "Italiano",
             "ja" to "日本語",
-            "nb-rNO" to "Norsk bokmål",
-            "nl" to "Nederlands",
+            "kk" to "Қазақша",
+            "ko" to "한국어",
             "pl" to "Polski",
             "pt" to "Português",
+            "pt-rBR" to "Português (Brasil)",
             "ru" to "Русский",
             "sa" to "संस्कृतम्",
             "sr" to "Српски",
+            "ta" to "தமிழ்",
             "tr" to "Türkçe",
+            "uk" to "Українська",
+            "vi" to "Tiếng Việt",
             "zh-rCN" to "中文 (简体)",
+            "zh-rTW" to "中文 (繁體)"
         )
     }
 }

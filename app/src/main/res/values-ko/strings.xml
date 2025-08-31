@@ -232,9 +232,6 @@
     <string name="more_brain_capacity">More Brain Capacity</string>
     <string name="sort">정렬</string>
     <string name="edit_playlist">재생목록 수정</string>
-    <plurals name="n_songs">
-        <item quantity="other">노래 %1$d곡</item>
-    </plurals>
     <string name="copying_the_error">오류 복사하기</string>
     <string name="reversed">반전</string>
     <string name="apply">적용하다</string>

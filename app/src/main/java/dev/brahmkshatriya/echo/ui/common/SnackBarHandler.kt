@@ -39,6 +39,7 @@ class SnackBarHandler(
         ): SnackBarHandler {
             val handler by inject<SnackBarHandler>()
             val padding = 8.dpToPx(this@setupSnackBar)
+            @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
             val snackBars = WeakHashMap<Int, Snackbar>()
             fun updateInsets(snackBar: Snackbar) {
                 snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> {

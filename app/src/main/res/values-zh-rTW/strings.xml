@@ -230,9 +230,6 @@
     <string name="more_brain_capacity">更多的腦容量</string>
     <string name="x_plays">%1$s 次播放</string>
     <string name="x_followers">%1$s 個粉絲</string>
-    <plurals name="n_songs">
-        <item quantity="other">%1$d 歌曲</item>
-    </plurals>
     <string name="shuffling_x">洗牌 %1$s</string>
     <string name="copying_the_error">複製錯誤</string>
     <string name="sort_and_filter">排序和篩選</string>
@@ -271,7 +268,7 @@
     <string name="removing_x">正在刪除 %1$s</string>
     <string name="apply">應用</string>
     <string name="deleting_x">正在刪除 %1$s</string>
-    <string name="so_empty">好空...…</string>
+    <string name="so_empty">好空…</string>
     <string name="loading_radio_for_x">正在為 %1$s 載入無線電</string>
     <string name="playing_x">正在玩 %1$s</string>
     <string name="scroll_animations">滾動動畫</string>

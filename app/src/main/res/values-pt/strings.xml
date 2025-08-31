@@ -251,11 +251,6 @@
         <item quantity="many">%1$d Minutos</item>
         <item quantity="other">%1$d Minutos</item>
     </plurals>
-    <plurals name="n_songs">
-        <item quantity="one">%1$d música</item>
-        <item quantity="many">%1$d músicas</item>
-        <item quantity="other">%1$d músicas</item>
-    </plurals>
     <string name="delete_download">Excluir Download</string>
     <string name="home">Casa</string>
     <string name="account_session_expired_in_x">A sessão da conta expirou em %1$s</string>

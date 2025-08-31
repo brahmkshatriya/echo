@@ -267,9 +267,6 @@
     <string name="adding_x_to_queue">正在将 %1$s 添加到队列</string>
     <string name="unliking_x">已取消喜欢 %1$s</string>
     <string name="x_extensions">%1$s 个扩展</string>
-    <plurals name="n_songs">
-        <item quantity="other">%1$d 首歌曲</item>
-    </plurals>
     <string name="sleep_timer_desc">设置定时关闭，在一定时间后停止播放</string>
     <string name="equalizer_summary">打开设备均衡器设置</string>
     <string name="sleep_on_specific_time">在特定时间关闭</string>

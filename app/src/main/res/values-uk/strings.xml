@@ -222,12 +222,6 @@
     <string name="sort">Сортувати</string>
     <string name="playlist_description">Опис плейлиста</string>
     <string name="x_created">%1$s створено</string>
-    <plurals name="n_songs">
-        <item quantity="one">%1$d пісня</item>
-        <item quantity="few">%1$d пісні</item>
-        <item quantity="many">%1$d пісень</item>
-        <item quantity="other">%1$d пісень</item>
-    </plurals>
     <string name="moving_x">Переміщення %1$s</string>
     <string name="loading_x">Завантаження %1s</string>
     <string name="apply">Застосувати</string>
