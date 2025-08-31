@@ -53,12 +53,12 @@
     <string name="search">Search</string>
     <string name="library">Library</string>
     <string name="more">Aur</string>
-    <string name="extension">Extensions</string>
+    <string name="extension">Extension</string>
     <string name="downloading_x">Downloading %1$s</string>
     <string name="cancel_all">Sab cancel karo</string>
     <string name="download_progress">Download Progress</string>
     <string name="downloads">Downloads</string>
-    <string name="downloaded_x">Downloaded: %1$d%</string>
+    <string name="downloaded_x">Downloaded: %1$s</string>
     <string name="logout_and_login">Logout aur Login</string>
     <string name="login">Login</string>
     <string name="view">Dekhe</string>
@@ -108,9 +108,9 @@
     <string name="auto_start_radio_summary">Track se related gaane playlist me automatically add karo, taaki queue infinite ho</string>
     <string name="version">Sanskaran</string>
     <string name="select_language">Bhasha chunein</string>
-    <string name="check_for_updates">Update ke liye Check kar rahe hain</string>
-    <string name="extension_installed_successfully">Extension safalta se install hua!</string>
-    <string name="extension_uninstalled_successfully">Extension safalta se install hua!</string>
+    <string name="check_for_updates">Update check kare</string>
+    <string name="extension_installed_successfully">Extension safalta se installed hua.</string>
+    <string name="extension_uninstalled_successfully">Extension safalta se uninstalled hua.</string>
     <string name="downloading_update_for_x">Update Download ho raha hai %1$s</string>
     <string name="add_extensions">Extension jodo</string>
     <string name="checking_for_updates">Update ke liye Check kar rahe hain</string>
@@ -125,7 +125,7 @@
     <string name="amoled">Amoled</string>
     <string name="amoled_summary">Pitch Black, Pure Black</string>
     <string name="navbar_gradient">Rangantar Navbar</string>
-    <string name="navbar_gradient_summary">Navbar dheere dheere transparent ho jati hai</string>
+    <string name="navbar_gradient_summary">Navbar dheere se transparent ho jati hai</string>
     <string name="dynamic_player">Dynamic Player Color</string>
     <string name="dynamic_player_summary">Track Artwork ke base par player ka color apply karo</string>
     <string name="animation">Animation</string>
@@ -149,7 +149,7 @@
     <string name="incognito">Incognito</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="x_login">%1$s Login</string>
-    <string name="x_is_required">%1$s zaroori hai.</string>
+    <string name="x_is_required">%1$s zaroori hai</string>
     <string name="playing_from">Kahan se play kar rahe hain</string>
     <string name="up_next">Ane wala</string>
     <string name="info">Jaankari</string>
@@ -200,7 +200,7 @@
     <string name="playlist">Playlist</string>
     <string name="album">Album</string>
     <string name="video">Video</string>
-    <string name="delete_playlist_confirmation">Kya aap is list ko hatana chahte ho?</string>
+    <string name="delete_playlist_confirmation">Kya aap %1$s ko hatana chahte ho?</string>
     <string name="confirm">Pushti karein</string>
     <string name="hide">Chhupayein</string>
     <string name="not_yet_released">Abhi tak Release nahi hui</string>
