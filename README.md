@@ -56,7 +56,7 @@ You can help us by translating the app into your language here
 <a href="https://hosted.weblate.org/projects/echo/#languages"><img src="https://img.shields.io/badge/Weblate-90EE90?label=Translate%20On&style=for-the-badge" alt="Latest Nightly Release"/></a>
 
 <details>
-<summary>Weblate Translation Graph</summary>
+<summary>Translation Graph</summary>
 <a href="https://hosted.weblate.org/projects/echo/#languages"><img src="https://hosted.weblate.org/widget/echo/app/multi-auto.svg" alt="Translation status" /></a>
 </details>
 
