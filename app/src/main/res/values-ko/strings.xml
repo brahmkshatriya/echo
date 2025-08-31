@@ -288,4 +288,24 @@
     <string name="removed_x_from_downloads">%1$s를 다운로드에서 제거했습니다</string>
     <string name="download_complete">다운로드 완료</string>
     <string name="app_widget_description">홈 화면에서 에코!</string>
+    <string name="feed">피드</string>
+    <string name="item">항목</string>
+    <plurals name="number_items">
+        <item quantity="other">%1$d 항목</item>
+    </plurals>
+    <string name="x_specific_quality_summary">선택한 %1$s 스트림 품질이 기본 스트림 품질 설정을 덮어씁니다</string>
+    <string name="unmetered_stream_quality">무제한 네트워크 스트림 품질</string>
+    <string name="unmetered_stream_quality_summary">무제한 네트워크에 연결되었을 때 사용할 스트림 품질입니다. 이 설정은 기본 스트림 품질을 덮어씁니다.</string>
+    <string name="select_language">언어 선택</string>
+    <string name="check_for_updates">업데이트 확인</string>
+    <string name="check_for_updates_summary">앱을 실행할 때, 앱과 확장 기능의 새 업데이트를 확인합니다.</string>
+    <string name="checking_for_updates">업데이트 확인 중</string>
+    <string name="back_animations">뒤로가기 애니메이션</string>
+    <string name="back_animations_summary">안드로이드 문제로 시각적 버그가 발생할 수 있지만, 최근 앱 화면을 열면 해결할 수 있습니다.</string>
+    <string name="regex_invalid">%1$s 값이 올바르지 않습니다. 다음 정규식을 따라야 합니다: %2$s</string>
+    <string name="n_hours">%1$d시간</string>
+    <string name="n_minutes">%1$d분</string>
+    <string name="hidden_x">숨겨진 %1$s</string>
+    <string name="unhidden_x">숨김 해제된 %1$s</string>
+    <string name="track">트랙</string>
 </resources>
