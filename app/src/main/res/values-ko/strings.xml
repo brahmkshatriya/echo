@@ -308,4 +308,9 @@
     <string name="hidden_x">숨겨진 %1$s</string>
     <string name="unhidden_x">숨김 해제된 %1$s</string>
     <string name="track">트랙</string>
+    <string name="tracks">트랙들</string>
+    <string name="n_songs">%1$d곡</string>
+    <string name="n_episodes">%1$d에피소드</string>
+    <string name="n_chapters">%1$d챕터</string>
+    <string name="n_tracks">%1$d트랙</string>
 </resources>
