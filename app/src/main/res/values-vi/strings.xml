@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="like">Thích</string>
+    <string name="unlike">Không thích</string>
+    <string name="up_next">Tiếp theo</string>
+    <string name="lyrics">Lời bài hát</string>
+    <string name="no_lyrics">Không có lời bài hát</string>
+    <string name="info">Thông tin</string>
+    <string name="audio_fx">Hiệu ứng âm thanh</string>
+    <string name="sleep_timer">Hẹn giờ tắt</string>
+    <string name="sleep_timer_desc">Đặt hẹn giờ để dừng phát nhạc sau một khoảng thời gian nhất định.</string>
+    <string name="quality_selection">Chất lượng</string>
+</resources>

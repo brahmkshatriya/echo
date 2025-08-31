@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="downloads">下載列表</string>
-    <string name="extension_requires_following_extensions">%1$s 需要 %2$s</string>
     <string name="cancel">取消</string>
     <string name="back">返回</string>
     <string name="audio">音訊</string>
@@ -19,7 +18,6 @@
     <string name="blacklist_folders_summary">要從媒體庫中排除的資料夾</string>
     <string name="blacklist_folder_keywords">黑名單資料夾關鍵字</string>
     <string name="blacklist_folder_keywords_summary">將資料夾列入黑名單的關鍵字。使用逗號作為分隔符</string>
-    <string name="playlists">播放清單</string>
     <string name="saved">已儲存</string>
     <string name="tabs">分頁</string>
     <string name="show_tabs">顯示分頁</string>
@@ -42,14 +40,12 @@
     <string name="no_internet">無網際網路連線</string>
     <string name="str_copy">複製</string>
     <string name="extensions">擴充功能</string>
-    <string name="manage_extensions">管理擴充功能</string>
     <string name="choose_a_color">選擇顏色</string>
     <string name="random">隨機</string>
     <string name="add">新增</string>
     <string name="loading">載入中…</string>
     <string name="settings">設定</string>
     <string name="value">值</string>
-    <string name="audio_summary">（發燒友們在此聚集）</string>
     <string name="playback">播放</string>
     <string name="audio_fx">音效</string>
     <string name="audio_fx_summary">將音效套用到所有歌曲</string>
@@ -75,13 +71,8 @@
     <string name="auto_start_radio_summary">自動在播放清單中新增曲目的相關歌曲，以形成無限佇列</string>
     <string name="cache_size">快取大小</string>
     <string name="cache_size_summary">以 MB 為單位，用於快取音訊與影片</string>
-    <string name="extensions_summary">管理已安裝的擴展</string>
     <string name="version">版本</string>
-    <string name="language">語言</string>
     <string name="system">系統</string>
-    <string name="language_summary">應用程式的語言，系統將預設為英語</string>
-    <string name="check_for_extension_updates">檢查擴充功能更新</string>
-    <string name="check_for_extension_updates_summary">開啟應用程式時尋找擴充功能的新更新。</string>
     <string name="install">安裝</string>
     <string name="app">應用程式</string>
     <string name="file">檔案</string>
@@ -90,8 +81,6 @@
     <string name="installation_type_warning">如果將擴展安裝為檔，則不可用。</string>
     <string name="could_not_find_the_file">找不到檔案。</string>
     <string name="extension_installer">擴充功能安裝程式</string>
-    <string name="uninstall">解除安裝</string>
-    <string name="invalid_extension">無效的擴充功能</string>
     <string name="extension_installed_successfully">擴充功能安裝成功。</string>
     <string name="extension_uninstalled_successfully">擴充功能已成功解除安裝。</string>
     <string name="allow_opening_links">允許開啟連結</string>
@@ -103,9 +92,7 @@
     <string name="extension_installed">%1$s（已安裝）</string>
     <string name="add_extensions">新增擴充程式</string>
     <string name="invalid_extension_list">無效的擴充功能列表</string>
-    <string name="checking_for_extension_updates">正在檢查擴充功能更新</string>
     <string name="look_and_feel">外觀與感覺</string>
-    <string name="look_and_feel_summary">介面和動畫設定</string>
     <string name="ui">介面</string>
     <string name="theme">主題</string>
     <string name="theme_summary">想當盲人嗎？</string>
@@ -132,12 +119,8 @@
     <string name="enabled">已啟用</string>
     <string name="disabled">已停用</string>
     <string name="no_user_found">找不到使用者</string>
-    <string name="add_account">新增帳號</string>
     <string name="add_extension">新增擴充功能</string>
     <string name="webview">WebView 視圖</string>
-    <string name="manual">手冊</string>
-    <string name="username">使用者名稱</string>
-    <string name="password">密碼</string>
     <string name="logout">登出</string>
     <string name="switch_account">切換帳號</string>
     <string name="incognito">無痕模式</string>
@@ -202,7 +185,6 @@
     <string name="download_started">下載已開始</string>
     <string name="okay">好的</string>
     <string name="video">視頻</string>
-    <string name="video_permission_summary">訪問本地視頻庫</string>
     <string name="write_storage">寫入存儲</string>
     <string name="remove">刪除</string>
     <string name="x_radio">%1$s 無線電</string>
@@ -210,16 +192,11 @@
     <string name="n_items">%1$d 個專案</string>
     <string name="playlist_liked_desc">您點讚的曲目</string>
     <string name="repeat_all">全部重複</string>
-    <string name="progress_x_percentage">進度 %1$d%%</string>
-    <string name="x_items">%1$d 個專案</string>
     <string name="error_loading_extension_from_x">從 %1$s 載入擴展時發生錯誤</string>
     <string name="extension_x_not_found">找不到延伸 %1$s</string>
     <string name="required_extensions_missing_x">缺少所需的擴展： %1$s</string>
     <string name="x_is_not_supported_in_x">%2$s 不支援 %1$s</string>
     <string name="account_session_expired_in_x">帳戶會話在 %1$s 中過期</string>
-    <string name="no_servers_found">未找到伺服器</string>
-    <string name="task_cancelled">任務已取消</string>
-    <string name="misc_summary">其他設置</string>
     <string name="x_disabled">%1$s （已關閉 ）</string>
     <string name="by_x">由 %1$s</string>
     <string name="x_extensions">%1$s 擴展</string>
@@ -236,16 +213,12 @@
     <string name="quality_x">品質 %1$d</string>
     <string name="unknown_quality">品質未知</string>
     <string name="sharing_x">正在共用 %1$s</string>
-    <string name="saving_x_to_library">正在將 %1$s 儲存到庫中</string>
-    <string name="removing_x_from_library">正在從庫中刪除 %1$s</string>
     <string name="removed_x_from_library">已從庫中刪除 %1$s</string>
     <string name="following_x">在 %1$s 之後</string>
     <string name="followed_x">關注 %1$s</string>
     <string name="unfollowing_x">取消關注 %1$s</string>
     <string name="unfollowed_x">未關注 %1$s</string>
     <string name="hiding_x">隱藏 %1$s</string>
-    <string name="hid_x">隱藏了 %1$s</string>
-    <string name="unhid_x">取消隱藏 %1$s</string>
     <string name="liking_x">點讚 %1$s</string>
     <string name="liked_x">點讚 %1$s</string>
     <string name="unliking_x">未點讚的 %1$s</string>
@@ -257,15 +230,11 @@
     <string name="more_brain_capacity">更多的腦容量</string>
     <string name="x_plays">%1$s 次播放</string>
     <string name="x_followers">%1$s 個粉絲</string>
-    <plurals name="n_songs">
-        <item quantity="other">%1$d 歌曲</item>
-    </plurals>
     <string name="shuffling_x">洗牌 %1$s</string>
     <string name="copying_the_error">複製錯誤</string>
     <string name="sort_and_filter">排序和篩選</string>
     <string name="filter">濾波器</string>
     <string name="reversed">反</string>
-    <string name="remember">記得</string>
     <string name="x_created">已建立 %1$s</string>
     <string name="deleted_x">已刪除 %1$s</string>
     <string name="loading_x">正在載入 %1s</string>
@@ -284,10 +253,7 @@
         <item quantity="other">%1$d 小時</item>
     </plurals>
     <string name="unhiding_x">取消隱藏 %1$s</string>
-    <string name="sort_album">影集</string>
-    <string name="sort_plays">播放</string>
     <string name="notifications">通知</string>
-    <string name="no_source_found">未找到來源</string>
     <string name="x_was_not_granted">未授予 %1$s</string>
     <string name="more_by_x">更多 %1$s</string>
     <string name="playlist_liked">喜歡</string>
@@ -297,16 +263,12 @@
     <string name="x_login">%1$s 登錄</string>
     <string name="adding_x_to_queue">將 %1$s 新增到佇列</string>
     <string name="downloading_update_for_x">正在下載 %1$s 的更新</string>
-    <string name="sort_artist">藝術家</string>
-    <string name="sort_explicit">明確</string>
     <string name="add_song">添加歌曲</string>
-    <string name="username_and_password">使用者名和密碼</string>
     <string name="more_brain_capacity_summary">啟用此功能可以修復音訊延遲，但會大大增加電池使用量（禁用音訊卸載）。</string>
     <string name="removing_x">正在刪除 %1$s</string>
     <string name="apply">應用</string>
     <string name="deleting_x">正在刪除 %1$s</string>
-    <string name="downloads_summary">您的所有下載</string>
-    <string name="so_empty">好空...…</string>
+    <string name="so_empty">好空…</string>
     <string name="loading_radio_for_x">正在為 %1$s 載入無線電</string>
     <string name="playing_x">正在玩 %1$s</string>
     <string name="scroll_animations">滾動動畫</string>

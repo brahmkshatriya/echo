@@ -101,7 +101,9 @@ class Downloader(
         workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.KEEP, request)
     }
 
+    @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
     private val servers = WeakHashMap<Long, Streamable.Media.Server>()
+    @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
     private val mutexes = WeakHashMap<Long, Mutex>()
 
     suspend fun getServer(
