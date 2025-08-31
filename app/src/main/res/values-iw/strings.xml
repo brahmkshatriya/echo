@@ -108,4 +108,11 @@
     <string name="amoled_summary">שחור מוחלט, שחור טהור</string>
     <string name="navbar_gradient">סרגל ניווט שיפוע צבעים</string>
     <string name="navbar_gradient_summary">סרגל הניווט הופך בהדרגה לשקוף</string>
+    <string name="dynamic_player">צבע נגן דינמי</string>
+    <string name="dynamic_player_summary">החלת צבע על הנגן בהתבסס על גרפיקת הרצועה</string>
+    <string name="show_background">הצג רקע</string>
+    <string name="show_background_summary">סרטון רקע או גרפיקה מטושטשת של הרצועה בנגן</string>
+    <string name="animation">אנימציה</string>
+    <string name="back_animations">אנימציות חזרה</string>
+    <string name="back_animations_summary">יכול לגרום לבאג ויזואלי עקב אנדרואיד, אבל אתה יכול פשוט לפתוח את ההודעות האחרונות כדי לתקן את זה.</string>
 </resources>
