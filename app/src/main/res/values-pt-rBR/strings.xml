@@ -24,7 +24,7 @@
     <string name="blacklist_folders">Pastas bloqueadas</string>
     <string name="blacklist_folders_summary">Pastas a excluir da biblioteca</string>
     <string name="blacklist_folder_keywords">Palavras-chave de pastas bloqueadas</string>
-    <string name="blacklist_folder_keywords_summary">Palavras-chave para bloquear pastas. Use vírgula como separador</string>
+    <string name="blacklist_folder_keywords_summary">Palavras-chave para deixar pastas na lista negra. Use vírgula como separador</string>
     <string name="saved">Salvo</string>
     <string name="tabs">Abas</string>
     <string name="show_tabs">Mostrar abas</string>
@@ -71,7 +71,7 @@
     <string name="equalizer">Equalizador</string>
     <string name="equalizer_summary">Abrir as configurações do equalizador do sistema</string>
     <string name="stream_quality">Qualidade de Streaming</string>
-    <string name="stream_quality_summary">Selecione a qualidade do Stream</string>
+    <string name="stream_quality_summary">Selecione a qualidade padrão do stream</string>
     <string name="behavior">Comportamento</string>
     <string name="keep_queue">Manter fila do reprodutor</string>
     <string name="stop_player">Parar reprodutor</string>
@@ -297,4 +297,5 @@
     <string name="add_song">Adicionar música</string>
     <string name="saved_to_playlists">Salvo nas playlists</string>
     <string name="delete_download">Excluir download</string>
+    <string name="item">Item</string>
 </resources>
