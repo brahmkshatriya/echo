@@ -245,7 +245,7 @@
     <string name="copying_the_error">Kopieren des Fehlers</string>
     <string name="reversed">Umgekehrt</string>
     <string name="apply">Anwenden</string>
-    <string name="save">Retten</string>
+    <string name="save">Speichern</string>
     <string name="sort_title">Titel</string>
     <string name="sort_date">Datum</string>
     <string name="sort_duration">Dauer</string>
@@ -370,4 +370,5 @@
     <string name="lp">LP</string>
     <string name="song">Song</string>
     <string name="podcast">Podcast</string>
+    <string name="feed">Feed</string>
 </resources>
