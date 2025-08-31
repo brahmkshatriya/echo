@@ -98,4 +98,10 @@
     <string name="unmetered_stream_quality_summary">איכות השידור כאשר מחובר לרשת ללא צריכת חשמל. פעולה זו תעקוף את איכות השידור המוגדרת כברירת מחדל.</string>
     <string name="behavior">התנהגות</string>
     <string name="keep_queue_summary">שחזור תור ההפעלות, כשתפתח מחדש את האפליקציה.</string>
+    <string name="stop_player">עצור נגן</string>
+    <string name="stop_player_summary">הפסק לנגן כאשר האפליקציה נמחקת מלאחרונה</string>
+    <string name="skip_silence">דלג על שתיקה</string>
+    <string name="skip_silence_summary">דלג על חלק שקט בשיר, כדי לספק השמעה ללא הפסקות.</string>
+    <string name="auto_start_radio">רדיו הפעלה אוטומטית</string>
+    <string name="auto_start_radio_summary">הוסף אוטומטית שירים קשורים לרצועה ברשימת ההשמעה, כדי ליצור תור אינסופי</string>
 </resources>
