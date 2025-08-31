@@ -150,7 +150,7 @@
     <string name="subtitle_selection">Sélection des Sous-titres</string>
     <string name="quality_selection">Sélection de la Qualité</string>
     <string name="quality_x">Qualité %1$d</string>
-    <string name="off">Désactivé</string>
+    <string name="off">Off</string>
     <string name="so_empty">Si vide…</string>
     <string name="not_loading">Ne Charge Pas</string>
     <string name="share">Partager</string>
@@ -315,14 +315,14 @@
     <string name="unhidden_x">%1$s affiché</string>
     <string name="track">Piste</string>
     <string name="tracks">Pistes</string>
-    <string name="n_songs">%1$d Pistes</string>
+    <string name="n_songs">%1$d Chansons</string>
     <string name="n_episodes">%1$d épisodes</string>
     <string name="n_chapters">%1$d Chapitres</string>
     <string name="n_tracks">%1$d Pistes</string>
     <plurals name="number_songs">
-        <item quantity="one">%1$d Piste</item>
-        <item quantity="many">%1$d Pistes</item>
-        <item quantity="other">%1$d Pistes</item>
+        <item quantity="one">%1$d Chanson</item>
+        <item quantity="many">%1$d Chansons</item>
+        <item quantity="other">%1$d Chansons</item>
     </plurals>
     <plurals name="number_episodes">
         <item quantity="one">%1$d Épisode</item>
