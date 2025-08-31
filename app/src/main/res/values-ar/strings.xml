@@ -156,4 +156,6 @@
     <string name="show_background_summary">فيديو خلفية أو رسم غير واضح للمسار في المشغل</string>
     <string name="animation">رسوم متحركة</string>
     <string name="back_animations">الرسوم المتحركة الخلفية</string>
+    <string name="back_animations_summary">قد يتسبب ذلك في حدوث خلل بصري بسبب نظام Android، ولكن يمكنك فقط فتح التطبيقات الأخيرة لإصلاحه.</string>
+    <string name="animations">الرسوم المتحركة</string>
 </resources>
