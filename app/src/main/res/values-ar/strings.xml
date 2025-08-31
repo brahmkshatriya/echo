@@ -143,4 +143,17 @@
     <string name="theme">سمة</string>
     <string name="theme_summary">هل تريد أن تكون أعمى؟</string>
     <string name="custom_theme_color">لون سمة مخصص</string>
+    <string name="custom_theme_color_summary">استخدم لونًا مخصصًا للسمة، بدلاً من سمة النظام.</string>
+    <string name="add_color">إضافة لون</string>
+    <string name="custom_colors">الألوان المخصصة</string>
+    <string name="amoled">أموليد</string>
+    <string name="amoled_summary">أسود قاتم، أسود نقي</string>
+    <string name="navbar_gradient">شريط التنقل المتدرج</string>
+    <string name="navbar_gradient_summary">شريط التنقل يصبح شفافًا تدريجيًا</string>
+    <string name="dynamic_player">لون المشغل الديناميكي</string>
+    <string name="dynamic_player_summary">تطبيق اللون على المشغل بناءً على العمل الفني للمسار</string>
+    <string name="show_background">إظهار الخلفية</string>
+    <string name="show_background_summary">فيديو خلفية أو رسم غير واضح للمسار في المشغل</string>
+    <string name="animation">رسوم متحركة</string>
+    <string name="back_animations">الرسوم المتحركة الخلفية</string>
 </resources>
