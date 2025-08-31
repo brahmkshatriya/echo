@@ -100,6 +100,12 @@
     <string name="equalizer">Equalizer</string>
     <string name="equalizer_summary">Open the device equalizer settings</string>
 
+    <string name="export_playlists">Export Playlists</string>
+    <string name="export_playlists_summary">Export playlists to external file</string>
+
+    <string name="import_playlists">Import Playlists</string>
+    <string name="import_playlists_summary">Import playlists from external file</string>
+
     <string name="stream_quality">Stream Quality</string>
     <string name="stream_quality_summary">Select the default quality of the stream</string>
     <string name="x_specific_quality_summary">%1$s specific stream quality, will override the default stream quality selection</string>
