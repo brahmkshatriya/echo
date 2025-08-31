@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="okay">אישור</string>
+    <string name="okay">בסדר</string>
     <string name="cancel">ביטול</string>
     <string name="back">חזרה</string>
     <string name="feed">פיד</string>
@@ -14,7 +14,7 @@
     <string name="notifications">התראות</string>
     <string name="notifications_permission_summary">כדי להציג התראות עבור הורדות ומוזיקה</string>
     <string name="remove">מחיקה</string>
-    <string name="more_by_x">עוד ע\"י %1$s</string>
+    <string name="more_by_x">עוד מ־%1$s</string>
     <string name="songs">שירים</string>
     <string name="albums">אלבומים</string>
     <string name="x_radio">%1$s רדיו</string>
@@ -106,7 +106,7 @@
     <string name="auto_start_radio_summary">הוסף אוטומטית שירים קשורים לרצועה ברשימת ההשמעה, כדי ליצור תור אינסופי</string>
     <string name="amoled">אמולד</string>
     <string name="amoled_summary">שחור מוחלט, שחור טהור</string>
-    <string name="navbar_gradient">סרגל ניווט שיפוע צבעים</string>
+    <string name="navbar_gradient">סרגל ניווט עם גרדיאנט</string>
     <string name="navbar_gradient_summary">סרגל הניווט הופך בהדרגה לשקוף</string>
     <string name="dynamic_player">צבע נגן דינמי</string>
     <string name="dynamic_player_summary">החלת צבע על הנגן בהתבסס על גרפיקת הרצועה</string>
@@ -307,7 +307,69 @@
     <string name="disc_number_n">מספר דיסק: %1$d</string>
     <string name="album_order_n">מספר הזמנת אלבום: %1$d</string>
     <string name="confirmation">אישור</string>
-    <string name="delete_playlist_confirmation">אתה בטוח שאתה רוצה למחוק את %1$s?</string>
+    <string name="delete_playlist_confirmation">האם אתה בטוח שברצונך למחוק את %1$s?</string>
     <string name="confirm">אשר</string>
     <string name="big_cover">כיסויים גדולים יותר</string>
+    <string name="previous">הקודם</string>
+    <string name="play">לנגן</string>
+    <string name="next">הבא</string>
+    <string name="repeat">לחזור על</string>
+    <string name="close">סגירה</string>
+    <string name="no_lyrics">ללא מילים</string>
+    <string name="sleep_timer">טיימר שינה</string>
+    <string name="end_of_track">סוף השיר</string>
+    <string name="_15min">15 דקות</string>
+    <string name="_30min">30 דקות</string>
+    <string name="_45min">45 דקות</string>
+    <string name="_1hr">1 שעה</string>
+    <string name="_2hr">2 שעות</string>
+    <string name="sleep_timer_desc">הגדר טיימר שינה כדי להפסיק את ההשמעה לאחר זמן מסוים</string>
+    <string name="sleep_on_specific_time">הפסק השמעה בשעה מסוימת</string>
+    <string name="sleep_timer_cancelled">טיימר השינה בוטל</string>
+    <string name="sleep_timer_set_for">טיימר השינה נקבע ל־%1$s</string>
+    <string name="search_x">חיפוש %1$s</string>
+    <string name="n_hours">%1$d שעות</string>
+    <plurals name="number_hour">
+        <item quantity="one">%1$d שעה</item>
+        <item quantity="two">%1$d שעות</item>
+        <item quantity="other">%1$d אחר</item>
+    </plurals>
+    <string name="n_minutes">%1$d דקות</string>
+    <plurals name="number_min">
+        <item quantity="one">%1$d דקה</item>
+        <item quantity="two">%1$d דקות</item>
+        <item quantity="other">%1$d אחר</item>
+    </plurals>
+    <string name="servers">שרתים</string>
+    <string name="sources">מקורות</string>
+    <string name="backgrounds">רקעים</string>
+    <string name="subtitles">כתוביות</string>
+    <string name="audio_selection">בחירת אודיו</string>
+    <string name="video_selection">בחירת וידאו</string>
+    <string name="subtitle_selection">בחירת כתוביות</string>
+    <string name="quality_selection">בחירת איכות</string>
+    <string name="quality_x">איכות %1$d</string>
+    <string name="off">כבוי</string>
+    <string name="unknown_quality">איכות לא ידועה</string>
+    <string name="so_empty">כל כך ריק…</string>
+    <string name="not_loading">לא טוען</string>
+    <string name="share">שיתוף</string>
+    <string name="sharing_x">משתף את %1$s</string>
+    <string name="save_to_library">שמירה לספרייה</string>
+    <string name="saved_x_to_library">שמירה של %1$s לספרייה</string>
+    <string name="remove_from_library">הסר מהספרייה</string>
+    <string name="removed_x_from_library">הוסר %1$s מהספרייה</string>
+    <string name="radio">רדיו</string>
+    <string name="download">הורדה</string>
+    <string name="follow">עקוב</string>
+    <string name="following_x">עוקב אחרי %1$s</string>
+    <string name="followed_x">התחלת לעקוב אחרי %1$s</string>
+    <string name="unfollow">הפסק לעקוב</string>
+    <string name="unfollowing_x">מפסיק לעקוב אחרי %1$s</string>
+    <string name="unfollowed_x">הפסקת מעקב אחרי %1$s</string>
+    <string name="liked_x">אהבת את %1$s</string>
+    <string name="unliking_x">ביטלת לייק על %1$s</string>
+    <string name="unliked_x">ביטלת לייק מ־%1$s</string>
+    <string name="hiding_x">מסתיר את %1$s</string>
+    <string name="seekbar">סרגל התקדמות</string>
 </resources>
