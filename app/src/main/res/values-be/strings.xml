@@ -154,7 +154,7 @@
     <string name="show_background_summary">Фонавае відэа альбо размыта вокладка трэку ў плэере</string>
     <string name="animation">Анімацыя</string>
     <string name="back_animations">Анімацыі звароту</string>
-    <string name="back_animations_summary">Можа выклікаць візуальную памылку на Android, але вы можаце проста одкрыць Нядаўнія, каб гэта выпрявіць.</string>
+    <string name="back_animations_summary">Можа выклікаць візуальную памылку на Android, але вы можаце проста адкрыць Нядаўнія, каб гэта выпрявіць.</string>
     <string name="animations">Анімацыі</string>
     <string name="animations_summary">Адчуваеце, што моцна ікаеце? Адключыце гэта, можа дапамагчы</string>
     <string name="refresh">Аднавіць</string>
@@ -245,7 +245,7 @@
     <string name="unfollowing_x">Адпісанне ад %1$s</string>
     <string name="unfollowed_x">Адпісана ад %1$s</string>
     <string name="liking_x">Даданне ва Ўлюбёныя: %1$s</string>
-    <string name="liked_x">Дадана ва Ўлюбёныя %1$s</string>
+    <string name="liked_x">Дадана ва Ўлюбёныя: %1$s</string>
     <string name="unliking_x">Выдалена з Ўлюбёных: %1$s</string>
     <string name="unliked_x">Выдалена з Ўлюбёных: %1$s</string>
     <string name="hiding_x">Хаванне %1$s</string>
@@ -342,7 +342,7 @@
     <string name="apply_player_color_to_app">Дастасаваць колер плэера да ўсяго дадатку</string>
     <string name="apply_player_color_to_app_summary">ПАПЯРЭДЖАННЕ ПРА ЗАТРЫМКІ!!!</string>
     <string name="delete_download">Выдаліць спампаванне</string>
-    <string name="removed_x_from_downloads">Выдалена %1$s з спампаванняў</string>
+    <string name="removed_x_from_downloads">%1$s выдалена з спампаванняў</string>
     <string name="download_complete">Спампаванне завершана</string>
     <string name="app_widget_description">Echo на галоўным экране!</string>
     <string name="opening_webview_x">Адкрыццё WebView: %1$s</string>
@@ -363,7 +363,7 @@
     <string name="album">Альбом</string>
     <string name="pre_release">Папярэдняя версія</string>
     <string name="single">Сінгл</string>
-    <string name="ep">Мініальбом</string>
+    <string name="ep">Міні-альбом</string>
     <string name="lp">Альбом</string>
     <string name="compilation">Кампіляцыя</string>
     <string name="show">Паказаць</string>
@@ -378,7 +378,7 @@
     <string name="confirmation">Пацверджанне</string>
     <string name="delete_playlist_confirmation">Вы ўпэўнены, што хочаце выдаліць %1$s?</string>
     <string name="confirm">Пацвердзіць</string>
-    <string name="big_cover">Вялікія вокладкі</string>
+    <string name="big_cover">Больш вялікія вокладкі</string>
     <string name="big_cover_summary">Добра падыходзіць для прылад з вялікімі экранамі</string>
     <string name="unhide">Паказаць</string>
     <string name="hide">Схаваць</string>
