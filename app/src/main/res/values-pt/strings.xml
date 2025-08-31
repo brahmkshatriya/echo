@@ -292,4 +292,20 @@
     <string name="add_song">Adicionar música</string>
     <string name="download_complete">Download Completo</string>
     <string name="app_widget_description">Eco na sua tela inicial!</string>
+    <plurals name="number_items">
+        <item quantity="one">Item</item>
+        <item quantity="many">Ítens</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="x_specific_quality_summary">Qualide de stream específica, irá substituir a qualidade de stream padrão</string>
+    <string name="unmetered_stream_quality">Qualidade de stream não medida</string>
+    <string name="select_language">Selecionar Linguagem</string>
+    <string name="check_for_updates">Verificar por atualizações</string>
+    <string name="check_for_updates_summary">Olhe por novas atualizações para o app e para as extensões, quando você abrir o app.</string>
+    <string name="checking_for_updates">Checando por atualizações</string>
+    <string name="back_animations">Animações de trás</string>
+    <string name="back_animations_summary">Pode causar um bug visual por causa do Android, mas você pode abrir os recentes só para resolver.</string>
+    <string name="n_hours">%1$d horas</string>
+    <string name="n_minutes">%1$d minutos</string>
+    <string name="hidden_x">Escondido %1$s</string>
 </resources>
