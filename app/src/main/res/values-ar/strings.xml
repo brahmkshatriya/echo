@@ -118,5 +118,14 @@
     <string name="check_for_updates">التحقق من التحديثات</string>
     <string name="check_for_updates_summary">ابحث عن التحديثات الجديدة للتطبيق والإمتدادات، عند فتح التطبيق.</string>
     <string name="install">ثبت</string>
-    <string name="app">برنامج</string>
+    <string name="app">التطبيق</string>
+    <string name="file">ملف</string>
+    <string name="installation_type">نوع التثبيت</string>
+    <string name="installation_type_summary">سيسمح تثبيت التطبيق بفتح الروابط التالية في Echo:</string>
+    <string name="installation_type_warning">غير متاح إذا قمت بتثبيت الامتداد كملف.</string>
+    <string name="could_not_find_the_file">تعذر العثور على الملف.</string>
+    <string name="extension_installer">مثبت الامتداد</string>
+    <string name="extension_installed_successfully">تم تثبيت الامتداد بنجاح.</string>
+    <string name="extension_uninstalled_successfully">تم إلغاء تثبيت الامتداد بنجاح.</string>
+    <string name="allow_opening_links">السماح بفتح الروابط</string>
 </resources>
