@@ -6,4 +6,5 @@
     <string name="x_permission_required">Wymagane %1$s pozwoleń</string>
     <string name="x_was_not_granted">%1$s nie zostało wydane</string>
     <string name="audio">Audio</string>
+    <string name="feed">Feed</string>
 </resources>
