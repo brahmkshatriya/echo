@@ -92,12 +92,12 @@
     <string name="playback_speed">Velocità di Riproduzione</string>
     <string name="change_pitch_with_speed">Modifica il tono insieme alla velocità</string>
     <string name="bass_boost">Potenziamento Bassi</string>
-    <string name="change_pitch_with_speed_desc">Ottieni quell\'effetto slow-motion</string>
+    <string name="change_pitch_with_speed_desc">Ottieni quell’effetto al rallentatore</string>
     <string name="equalizer">Equalizzatore</string>
-    <string name="equalizer_summary">Apri le impostazioni dell\'equalizzatore di sistema</string>
-    <string name="stream_quality">Qualità di Streaming</string>
+    <string name="equalizer_summary">Apri le impostazioni dell’equalizzatore del dispositivo</string>
+    <string name="stream_quality">Qualità dello Streaming</string>
     <string name="keep_queue_summary">Ripristina la coda di riproduzione quando riavvii l\'app.</string>
-    <string name="stream_quality_summary">Seleziona la qualità della stream</string>
+    <string name="stream_quality_summary">Seleziona la qualità predefinita dello streaming</string>
     <string name="behavior">Comportamento</string>
     <string name="keep_queue">Mantieni Coda di Riproduzione</string>
     <string name="stop_player">Ferma giocatore</string>
@@ -299,7 +299,7 @@
         <item quantity="many">%1$d Oggetti</item>
         <item quantity="other">%1$d Oggetti</item>
     </plurals>
-    <string name="x_specific_quality_summary">%1$s La specifica qualità di riproduzione sovrascrivererà la qualità di default</string>
+    <string name="x_specific_quality_summary">Qualità dello streaming specifica di %1$s, sovrascriverà la selezione predefinita della qualità dello streaming</string>
     <string name="unmetered_stream_quality">Qualità di riproduzione rete non limitata</string>
     <string name="unmetered_stream_quality_summary">La qualità di riproduzione quando connesso a una rete senza limiti. Questo sovrascrive la qualità di default.</string>
     <string name="select_language">Seleziona lingua</string>
