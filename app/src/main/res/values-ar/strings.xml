@@ -128,4 +128,19 @@
     <string name="extension_installed_successfully">تم تثبيت الامتداد بنجاح.</string>
     <string name="extension_uninstalled_successfully">تم إلغاء تثبيت الامتداد بنجاح.</string>
     <string name="allow_opening_links">السماح بفتح الروابط</string>
+    <string name="open_links_instruction">لفتح هذه الروابط، عليك اتباع الخطوات التالية:\n- مرر للأسفل وانقر على \"فتح افتراضيًا\"\n- انقر على \"+ إضافة رابط\"</string>
+    <string name="downloading_update_for_x">جاري تنزيل التحديث لـ %1$s</string>
+    <string name="extension_updated_successfully">تم تحديث %1$s بنجاح</string>
+    <string name="link">رابط</string>
+    <string name="link_or_code">الرابط أو كود</string>
+    <string name="list_is_empty">القائمة فارغة</string>
+    <string name="extension_installed">%1$s (تم التثبيت)</string>
+    <string name="add_extensions">إضافة امتدادات</string>
+    <string name="invalid_extension_list">قائمة امتدادات غير صالحة</string>
+    <string name="checking_for_updates">تحقق من التحديثات</string>
+    <string name="look_and_feel">المنظر والشعور</string>
+    <string name="ui">واجهة المستخدم</string>
+    <string name="theme">سمة</string>
+    <string name="theme_summary">هل تريد أن تكون أعمى؟</string>
+    <string name="custom_theme_color">لون سمة مخصص</string>
 </resources>
