@@ -120,4 +120,16 @@
     <string name="refresh">ריענון</string>
     <string name="x_disabled">%1$s (מושבת)</string>
     <string name="by_x">על ידי %1$s</string>
+    <string name="tracker">עוקב</string>
+    <string name="lyrics">מילים</string>
+    <string name="misc">שונות</string>
+    <string name="x_extensions">הרחבות %1$s</string>
+    <string name="x_extension">הרחבה %1$s</string>
+    <string name="enabled">מופעל</string>
+    <string name="disabled">כבוי</string>
+    <string name="error_updating_extension">שגיאה במהלך העדכון</string>
+    <string name="no_user_found">לא נמצא משתמש</string>
+    <string name="select_x_account">בחר חשבון %1$s</string>
+    <string name="add_extension">הוסף הרחבה</string>
+    <string name="webview">תצוגת אינטרנט</string>
 </resources>
