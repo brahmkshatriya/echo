@@ -380,4 +380,7 @@
     <string name="releases_on_x">Rilasciato il %1$s</string>
     <string name="unavailable_in_your_region">Non disponibile nella tua area geografica</string>
     <string name="not_playable_x">Non riproducibile: %1$s</string>
+    <string name="colors">Colori</string>
+    <string name="scroll_bar">Barra di scorrimento</string>
+    <string name="scroll_bar_summary">Balla di scorrimento al lato per uso più veloce (potrebbe avere dei glitch)</string>
 </resources>
