@@ -362,7 +362,7 @@
     <string name="ep">EP</string>
     <string name="lp">LP</string>
     <string name="compilation">Compilation</string>
-    <string name="show">Mostra</string>
+    <string name="show">mostra</string>
     <string name="book">Prenota</string>
     <string name="song">Brano</string>
     <string name="podcast">Podcast</string>
@@ -370,9 +370,9 @@
     <string name="genres_x">Generi: %1$s</string>
     <string name="disc_number_n">Numero disco: %1$d</string>
     <string name="album_order_n">Numero d’ordine nell’album: %1$d</string>
-    <string name="confirmation">Conferma</string>
+    <string name="confirmation">conferma</string>
     <string name="delete_playlist_confirmation">Sei sicuro di voler eliminare %1$s?</string>
-    <string name="confirm">Conferma</string>
+    <string name="confirm">Confermare</string>
     <string name="big_cover">Cover più grandi</string>
     <string name="big_cover_summary">Adatto a dispositivi con schermi ampi</string>
     <string name="no_last_played_track_found">Non è stata trovata l\'ultima traccia riprodotta.</string>
