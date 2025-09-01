@@ -163,7 +163,6 @@
     <string name="ui">Интерфейс</string>
     <string name="add_extension">Добавить расширение</string>
     <string name="error_updating_extension">Ошибка во время обновления</string>
-    <string name="webview"></string>
     <string name="nothing_to_download_in_x">Нечего скачивать в %1$s</string>
     <string name="download_started">Начало скачивания</string>
     <string name="extension_uninstalled_successfully">Расширение успешно удалено.</string>
@@ -202,7 +201,6 @@
     <string name="custom_theme_color_summary">Использование пользовательского цвета темы вместо системного.</string>
     <string name="add_color">Добавить цвет</string>
     <string name="custom_colors">Пользовательские цвета</string>
-    <string name="amoled"></string>
     <string name="navbar_gradient_summary">Навигационная панель постепенно становится прозрачной</string>
     <string name="animation">Анимация</string>
     <string name="animations">Анимации</string>
@@ -237,7 +235,6 @@
     <string name="edit_playlist">Редактировать плейлист</string>
     <string name="more_brain_capacity">Больше возможностей мозга</string>
     <string name="sort">Сортировать по</string>
-    <string name="explicit"></string>
     <string name="x_followers">%1$s подписчиков</string>
     <string name="shuffling_x">Перемешивание %1$s</string>
     <string name="copying_the_error">Копирование ошибки</string>
@@ -385,6 +382,5 @@
     <string name="show">Показать</string>
     <string name="book">Книга</string>
     <string name="song">Песня</string>
-    <string name="isrc_x"></string>
     <string name="n_songs">%1$d песен</string>
 </resources>
