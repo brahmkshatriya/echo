@@ -365,5 +365,5 @@
         <item quantity="other">%1$d 项目</item>
     </plurals>
     <string name="x_specific_quality_summary">%1$s 特殊的流媒体质量，将会覆盖系统默认选择的流媒体质量</string>
-    <string name="n_songs">%1$d首歌曲</string>
+    <string name="n_songs">%1$d 首歌曲</string>
 </resources>
