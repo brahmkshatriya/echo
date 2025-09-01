@@ -371,4 +371,6 @@
     <string name="song">Song</string>
     <string name="podcast">Podcast</string>
     <string name="feed">Feed</string>
+    <string name="isrc_x">ISRC: %1$s</string>
+    <string name="genres_x">Genres: %1$s</string>
 </resources>
