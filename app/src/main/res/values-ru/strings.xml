@@ -3,7 +3,7 @@
     <string name="notifications">Уведомления</string>
     <string name="x_permission_required">Требуется разрешение %1$s</string>
     <string name="cancel">Отмена</string>
-    <string name="audio_permission_summary">Чтобы получить доступ к вашей локальной библиотеке музыки</string>
+    <string name="audio_permission_summary">Для доступа к вашей локальной музыкальной библиотеке</string>
     <string name="back">Назад</string>
     <string name="audio">Аудио</string>
     <string name="video">Видео</string>
@@ -11,15 +11,15 @@
     <string name="songs">Песни</string>
     <string name="x_radio">%1$s Радио</string>
     <string name="cached_songs">Кэшированные песни</string>
-    <string name="recently_added">Недавно добавлено</string>
+    <string name="recently_added">Недавно добавленные</string>
     <string name="show_tabs">Показать вкладки</string>
     <string name="remove">Убрать</string>
     <string name="artists">Исполнители</string>
     <string name="okay">Ок</string>
     <string name="write_storage_permission_summary">Чтобы создавать или изменять локальные плейлисты</string>
     <string name="albums">Альбомы</string>
-    <string name="cache_playlist_warning">Экспериментальная функция. Всё, кроме прослушивания, не поддерживается.</string>
-    <string name="duration_filter">Фильтр длительности</string>
+    <string name="cache_playlist_warning">Экспериментальная функция. Все, кроме прослушивания, не поддерживается.</string>
+    <string name="duration_filter">Фильтр по длительности</string>
     <string name="duration_filter_summary">Фильтровать аудиофайлы с длительностью меньше указанной (в секундах)</string>
     <string name="tabs">Вкладки</string>
     <string name="unified_liked_playlist_summary">Ваши понравившееся треки из разных расширений</string>
@@ -45,7 +45,7 @@
     <string name="add">Добавить</string>
     <string name="loading">Загрузка…</string>
     <string name="value">Значение</string>
-    <string name="audio_fx">Аудио-эффекты</string>
+    <string name="audio_fx">Аудиоэффекты</string>
     <string name="equalizer">Эквалайзер</string>
     <string name="equalizer_summary">Открыть настройки эквалайзера устройства</string>
     <string name="behavior">Поведение</string>
@@ -63,12 +63,12 @@
     <string name="stream_quality">Качество воспроизведения</string>
     <string name="stream_quality_summary">Выбор качества воспроизведения по умолчанию</string>
     <string name="x_was_not_granted">%1$s не было предоставлено</string>
-    <string name="read_storage">Прочитать хранилище</string>
-    <string name="write_storage">Записать в хранилище</string>
+    <string name="read_storage">Чтение хранилища</string>
+    <string name="write_storage">Запись в хранилище</string>
     <string name="more_by_x">Больше от %1$s</string>
     <string name="refresh_library_on_reload">Обновлять библиотеку при перезагрузке</string>
-    <string name="blacklist_folders_summary">Папки, которые нужно исключить из библиотеки</string>
-    <string name="blacklist_folders">Чёрный список папок</string>
+    <string name="blacklist_folders_summary">Папки для исключения из библиотеки</string>
+    <string name="blacklist_folders">Черный список папок</string>
     <string name="playlist_liked">Понравившееся</string>
     <string name="home">Главная</string>
     <string name="playlist_liked_desc">Ваши понравившиеся треки</string>
@@ -135,7 +135,7 @@
     </plurals>
     <string name="subtitle_selection">Выбор субтитров</string>
     <string name="blacklist_folder_keywords">Ключевые слова папки для чёрного списка</string>
-    <string name="audio_fx_desc">Измените аудио-эффекты текущей песни.</string>
+    <string name="audio_fx_desc">Изменить аудиоэффекты для текущего трека.</string>
     <string name="_30min">30 мин.</string>
     <string name="playlist_description">Описание плейлиста</string>
     <string name="create_playlist">Создать плейлист</string>
@@ -265,7 +265,7 @@
     <string name="x_extension">%1$s Дополнение</string>
     <string name="sort_and_filter">Сортировка и фильтрация</string>
     <string name="sort_date">Дата</string>
-    <string name="auto_start_radio_summary">Автоматическое добавление связанных песен трека в плейлист, чтобы иметь бесконечную очередь</string>
+    <string name="auto_start_radio_summary">Автоматически добавлять связанные треки в плейлист, чтобы очередь была бесконечной</string>
     <string name="downloading_update_for_x">Скачивание обновления для %1$s</string>
     <string name="amoled_summary">Чёрный, Настоящий чёрный</string>
     <string name="show_background_summary">Фоновое видео или размытая обложка трека в плеере</string>
@@ -306,8 +306,8 @@
     <string name="check_for_updates">Проверять обновления</string>
     <string name="check_for_updates_summary">Поиск новых обновлений приложения и расширений при открытии приложения.</string>
     <string name="checking_for_updates">Проверка обновлений</string>
-    <string name="back_animations">Анимации возвращения</string>
-    <string name="back_animations_summary">Может вызывать визуальные неполадки.</string>
+    <string name="back_animations">Анимации при переходе назад</string>
+    <string name="back_animations_summary">Может вызвать визуальный сбой из-за особенностей Android, но его можно исправить, открыв список последних приложений.</string>
     <string name="regex_invalid">%1$s недопустим, пожалуйста, следуйте формату: %2$s</string>
     <string name="n_hours">%1$d часов</string>
     <string name="n_minutes">%1$d минут</string>
@@ -387,4 +387,7 @@
     <string name="webview">Веб-просмотр</string>
     <string name="explicit">Возрастное ограничение</string>
     <string name="isrc_x">ISRC: %1$s</string>
+    <string name="scroll_bar">Полоса прокрутки</string>
+    <string name="colors">Цвета</string>
+    <string name="scroll_bar_summary">Полоса прокрутки сбоку для быстрого доступа (может работать с ошибками)</string>
 </resources>
