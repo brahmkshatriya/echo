@@ -319,4 +319,9 @@
     <string name="n_songs">%1$d गीतानि</string>
     <string name="n_episodes">%1$d प्रकरणानि</string>
     <string name="n_chapters">%1$d अध्यायाः</string>
+    <string name="n_tracks">%1$d अनुगमनानि</string>
+    <plurals name="number_episodes">
+        <item quantity="one">%1$d प्रकरणम्</item>
+        <item quantity="other">%1$d प्रकरणानि</item>
+    </plurals>
 </resources>
