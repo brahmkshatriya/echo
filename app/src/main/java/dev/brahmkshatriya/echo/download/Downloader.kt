@@ -9,7 +9,6 @@ import dev.brahmkshatriya.echo.common.clients.DownloadClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.DownloadContext
 import dev.brahmkshatriya.echo.common.models.Progress
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.db.DownloadDatabase
@@ -28,7 +27,6 @@ import dev.brahmkshatriya.echo.utils.Serializer.toJson
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -43,10 +41,10 @@ import java.util.WeakHashMap
 
 class Downloader(
     val app: App,
-    val downloadShelf: MutableStateFlow<List<Shelf>>,
     val extensionLoader: ExtensionLoader,
     database: DownloadDatabase,
 ) {
+    val unified = extensionLoader.unified.value
 
     suspend fun downloadExtension() = extensionLoader.misc.value
         .find { it.isClient<DownloadClient>() && it.isEnabled }
@@ -208,19 +206,18 @@ class Downloader(
     init {
         scope.launch {
             downloadInfoFlow.map { info ->
-                val unifiedExtension = extensionLoader.unified.value
                 info.filter { it.download.fullyDownloaded }.groupBy {
                     it.context?.id
                 }.flatMap { (id, infos) ->
                     if (id == null) infos.mapNotNull {
-                        it.download.track.getOrNull()?.toShelf()
+                        it.download.track.getOrNull()
                             ?.withExtensionId(it.download.extensionId, false)
                     }
                     else listOfNotNull(infos.first().runCatching {
-                        unifiedExtension.db.getPlaylist(context?.mediaItem!!.getOrThrow())?.toShelf()
+                        unified.db.getPlaylist(context?.mediaItem!!.getOrThrow())
                     }.getOrNull())
                 }
-            }.collect(downloadShelf)
+            }.collect(unified.downloadFeed)
         }
     }
 

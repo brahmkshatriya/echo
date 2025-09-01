@@ -7,9 +7,9 @@ import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Feed
-import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.databinding.FragmentDownloadBinding
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
+import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.getFeed
 import dev.brahmkshatriya.echo.ui.common.ExceptionFragment
 import dev.brahmkshatriya.echo.ui.common.ExceptionUtils
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
@@ -46,10 +46,11 @@ class DownloadFragment : Fragment(R.layout.fragment_download) {
 
     private val feedViewModel by viewModel<FeedViewModel>()
     private val feedData by lazy {
+        val flow = vm.downloader.unified.downloadFeed
         feedViewModel.getFeedData(
-            "downloads", Feed.Buttons(), false, vm.downloader.downloadShelf
+            "downloads", Feed.Buttons(), false, flow
         ) {
-            val feed = vm.downloader.downloadShelf.value.toFeed()
+            val feed = requireContext().getFeed(flow.value)
             FeedData.State(UnifiedExtension.metadata.id, null, feed)
         }
     }

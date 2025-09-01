@@ -198,7 +198,7 @@ class PlayerService : MediaLibraryService() {
             val databaseProvider = StandaloneDatabaseProvider(app)
             val cacheSize = settings.getInt(CACHE_SIZE, 250)
             return SimpleCache(
-                File(app.cacheDir, "exoplayer"),
+                File(app.cacheDir, "exo-player"),
                 LeastRecentlyUsedCacheEvictor(cacheSize * 1024 * 1024L),
                 databaseProvider
             )

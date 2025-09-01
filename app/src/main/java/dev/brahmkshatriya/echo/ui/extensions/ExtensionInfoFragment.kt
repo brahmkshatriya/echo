@@ -48,7 +48,7 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
     private val name by lazy { args.getString("name")!! }
     private val extensionId by lazy { args.getString("id")!! }
     private val extensionType by lazy { args.getString("type")!! }
-    private val extIcon by lazy { args.getSerialized<ImageHolder>("icon")?.getOrThrow() }
+    private val extIcon by lazy { args.getSerialized<ImageHolder?>("icon")?.getOrThrow() }
 
     private val viewModel by viewModel<ExtensionInfoViewModel> {
         parametersOf(ExtensionType.valueOf(extensionType), extensionId)

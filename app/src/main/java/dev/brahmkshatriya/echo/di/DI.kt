@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.di
 
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.download.DownloadWorker
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.download.db.DownloadDatabase
@@ -26,7 +25,6 @@ import dev.brahmkshatriya.echo.ui.playlist.delete.DeletePlaylistViewModel
 import dev.brahmkshatriya.echo.ui.playlist.edit.EditPlaylistViewModel
 import dev.brahmkshatriya.echo.ui.playlist.save.SaveToPlaylistViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.module.dsl.singleOf
@@ -42,7 +40,6 @@ object DI {
 
     private val extensionModule = module {
         includes(baseModule)
-        single { MutableStateFlow<List<Shelf>>(listOf()) }
         singleOf(::ExtensionLoader)
     }
 

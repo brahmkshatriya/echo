@@ -50,17 +50,18 @@ import dev.brahmkshatriya.echo.common.models.TrackDetails
 import dev.brahmkshatriya.echo.common.providers.MusicExtensionsProvider
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.di.App
+import dev.brahmkshatriya.echo.extensions.cache.Cached
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
-import dev.brahmkshatriya.echo.playback.MediaItemUtils.toIdAndIndex
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.toKey
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @OptIn(UnstableApi::class)
 class UnifiedExtension(
-    private val context: Context,
-    private val downloadFeed: MutableStateFlow<List<Shelf>>,
-    private val cache: SimpleCache?,
+    private val app: App,
+    private val cache: SimpleCache,
 ) : ExtensionClient, MusicExtensionsProvider,
     HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, ArtistClient, TrackClient,
@@ -82,6 +83,27 @@ class UnifiedExtension(
             "Echo",
             isEnabled = true
         )
+
+        fun Context.getFeed(items: List<EchoMediaItem>): Feed<Shelf> {
+            if (items.isEmpty()) return listOf<Shelf>().toFeed()
+            val types = items.groupBy {
+                when (it) {
+                    is Track -> getString(R.string.track)
+                    is Album -> getString(R.string.album)
+                    is Artist -> getString(R.string.artists)
+                    is Playlist -> getString(R.string.playlist)
+                    is Radio -> getString(R.string.radio)
+                }
+            }
+            val tabs = if (types.keys.size == 1) listOf()
+            else getString(R.string.all).let { listOf(Tab(it, it)) } +
+                    types.keys.map { Tab(it, it) }
+
+            return Feed(tabs) { tab ->
+                val items = types[tab?.id]?.toList() ?: items
+                items.map { it.toShelf() }.toFeedData()
+            }
+        }
 
         suspend inline fun <reified C, T> Extension<*>.client(block: C.() -> T): T = runCatching {
             val client = instance.value().getOrThrow() as? C
@@ -256,9 +278,10 @@ class UnifiedExtension(
                 }
             }
 
-
         fun Tab.injectId(id: String) = copy(extras = extras + mapOf(EXTENSION_ID to id))
     }
+
+    private val context = app.context
 
     override suspend fun getSettingItems() = listOf(
         SettingSwitch(
@@ -341,15 +364,20 @@ class UnifiedExtension(
         context, UnifiedDatabase::class.java, "unified-db"
     ).fallbackToDestructiveMigration(true).build()
 
-    private fun getCachedTracks() = cache?.keys?.mapNotNull { key ->
-        val (id, _) = key.toIdAndIndex()?.getOrNull() ?: return@mapNotNull null
-        context.getFromCache<Pair<String, Track>>(id.hashCode().toString(), "track")
-    }?.reversed().orEmpty()
-        .map { it.second.withExtensionId(it.first, this, true) }
-        .groupBy { it.id }.map { it.value.first() }
+    private suspend fun getCached() = cache.keys.mapNotNull {
+        val key = context.getFromCache<String>(it, "player")
+        key?.toKey()?.getOrNull()
+    }.reversed().groupBy { it.trackId }.mapNotNull {
+        var (id, _, extId) = it.value.first()
+        val state = Cached.getMedia<Track>(app, extId, id).getOrNull()
+            ?: return@mapNotNull null
+        if (extId == UNIFIED_ID) extId = state.item.extras[EXTENSION_ID] ?: return@mapNotNull null
+        val client = extensions().getOrNull(extId)?.instance?.value
+        state.item.withExtensionId(extId, client, true)
+    }
 
     private var cachedTracks = listOf<Track>()
-    private fun cacheShelf() = if (cachedTracks.isNotEmpty()) Playlist(
+    private fun cachePlaylist() = if (cachedTracks.isNotEmpty()) Playlist(
         id = "cached",
         title = context.getString(R.string.cached_songs),
         isEditable = false,
@@ -357,8 +385,9 @@ class UnifiedExtension(
         description = context.getString(R.string.cache_playlist_warning),
         trackCount = cachedTracks.size.toLong(),
         extras = mapOf(EXTENSION_ID to UNIFIED_ID)
-    ).toShelf() else null
+    ) else null
 
+    val downloadFeed = MutableStateFlow(listOf<EchoMediaItem>())
     override suspend fun loadLibraryFeed() = Feed(
         listOf(Tab("Unified", context.getString(R.string.all))) + extensions().map {
             Tab(it.id, it.name)
@@ -367,19 +396,19 @@ class UnifiedExtension(
         val extension = extensions().getOrNull(tab?.id)
         extension?.getFeedData<LibraryFeedClient> { loadLibraryFeed() } ?: run {
             PagedData.Single {
-                cachedTracks = getCachedTracks()
+                cachedTracks = getCached()
                 listOfNotNull(
                     Shelf.Category(
                         "saved",
                         context.getString(R.string.saved),
-                        db.getSaved().map { it.toShelf() }.toFeed()
+                        context.getFeed(db.getSaved())
                     ),
                     Shelf.Category(
                         "downloads",
                         context.getString(R.string.downloads),
-                        downloadFeed.value.toFeed()
+                        context.getFeed(downloadFeed.value)
                     ),
-                    cacheShelf()
+                    cachePlaylist()?.toShelf()
                 ) + db.getCreatedPlaylists().map { it.toShelf() }
             }.toFeedData()
         }
@@ -475,8 +504,7 @@ class UnifiedExtension(
     override suspend fun loadPlaylist(playlist: Playlist): Playlist {
         val extId = playlist.extras.extensionId
         return if (extId == UNIFIED_ID) {
-            if (playlist.id == "cached") playlist
-            else db.loadPlaylist(playlist)
+            if (playlist.id == "cached") cachePlaylist() ?: playlist else db.loadPlaylist(playlist)
         } else extensions().get(extId).client<PlaylistClient, Playlist> {
             loadPlaylist(playlist).withExtensionId(extId, this)
         }
@@ -534,7 +562,7 @@ class UnifiedExtension(
     override suspend fun addTracksToPlaylist(
         playlist: Playlist, tracks: List<Track>, index: Int, new: List<Track>,
     ) {
-        db.addTracksToPlaylist(playlist, tracks, index, new)
+        db.addTracksToPlaylist(playlist, index, new)
     }
 
     override suspend fun removeTracksFromPlaylist(
@@ -546,7 +574,7 @@ class UnifiedExtension(
     override suspend fun moveTrackInPlaylist(
         playlist: Playlist, tracks: List<Track>, fromIndex: Int, toIndex: Int,
     ) {
-        db.moveTrack(playlist, tracks, fromIndex, toIndex)
+        db.moveTrack(playlist, fromIndex, toIndex)
     }
 
     override suspend fun searchTrackLyrics(clientId: String, track: Track): Feed<Lyrics> {

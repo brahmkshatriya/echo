@@ -187,13 +187,15 @@ class LyricsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             dataFlow.collectLatest { (cached, loaded) ->
                 if (lyricsState.value != State.Initial) return@collectLatest
-                val cachedLyrics = cached?.getOrNull()?.loadAll()?.firstOrNull()
-                val loaded = loaded?.getOrNull()
-                if (loaded != null) {
-                    lyricsState.value = State.Loading
-                    onLyricsSelected(loaded.loadPage(null).data.firstOrNull())
-                } else if(cachedLyrics != null) {
-                    onLyricsSelected(cachedLyrics)
+                runCatching {
+                    val cachedLyrics = cached?.getOrNull()?.loadAll()?.firstOrNull()
+                    val loaded = loaded?.getOrNull()
+                    if (loaded != null) {
+                        lyricsState.value = State.Loading
+                        onLyricsSelected(loaded.loadPage(null).data.firstOrNull())
+                    } else if (cachedLyrics != null) {
+                        onLyricsSelected(cachedLyrics)
+                    }
                 }
             }
         }

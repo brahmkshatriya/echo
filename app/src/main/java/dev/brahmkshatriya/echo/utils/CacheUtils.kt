@@ -8,7 +8,7 @@ import java.io.File
 object CacheUtils {
 
     fun cacheDir(context: Context, folderName: String) =
-        File(context.cacheDir, folderName).apply { mkdirs() }
+        File(context.cacheDir, "context/$folderName").apply { mkdirs() }
 
     const val CACHE_FOLDER_SIZE = 50 * 1024 * 1024 //50MB
 
