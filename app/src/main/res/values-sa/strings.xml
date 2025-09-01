@@ -328,4 +328,26 @@
         <item quantity="one">%1$d अध्यायः</item>
         <item quantity="other">%1$d अध्यायाः</item>
     </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one">%1$d अनुगमनम्</item>
+        <item quantity="other">%1$d अनुगमनानि</item>
+    </plurals>
+    <string name="unsave">असङ्ग्रहीतं</string>
+    <string name="sort_date_added">संयुक्ततारीख्</string>
+    <string name="opening_webview_x">वेब्व्यू उद्घाट्यते: %1$s</string>
+    <string name="no_update_available_for_x">%1$s कृते कोऽपि अद्यतनं उपलब्धं नास्ति</string>
+    <string name="other">अन्यः</string>
+    <string name="player">वादकः</string>
+    <string name="about">सम्बन्धि</string>
+    <string name="language_x">भाषा: %1$s</string>
+    <string name="guide">मार्गदर्शनम्</string>
+    <string name="donate">दानं</string>
+    <string name="contributors">योगदानकर्तारः</string>
+    <string name="app_desc">साधारणः संगीतवादकः एव।</string>
+    <string name="manage">व्यवस्थापयतु</string>
+    <string name="no_account">कोऽपि खाता न अस्ति</string>
+    <string name="other_settings">अन्यः विन्यासाः</string>
+    <string name="no_x_found">%1$s किमपि न लब्धम्</string>
+    <string name="playlist">संग्रहसूची</string>
+    <string name="album">संग्रहः</string>
 </resources>
