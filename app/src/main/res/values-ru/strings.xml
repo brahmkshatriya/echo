@@ -24,7 +24,7 @@
     <string name="tabs">Вкладки</string>
     <string name="unified_liked_playlist_summary">Ваши понравившееся треки из разных расширений</string>
     <string name="show_tab_summary">показывать вкладки расширений как категории</string>
-    <string name="saved">Сохранённое</string>
+    <string name="saved">Сохраненное</string>
     <string name="unknown">Неизвестно</string>
     <string name="repeat_all">Повторять всё</string>
     <string name="search">Поиск</string>
@@ -134,7 +134,7 @@
         <item quantity="other">%1$d минут</item>
     </plurals>
     <string name="subtitle_selection">Выбор субтитров</string>
-    <string name="blacklist_folder_keywords">Ключевые слова папки для чёрного списка</string>
+    <string name="blacklist_folder_keywords">Ключевые слова для черного списка папок</string>
     <string name="audio_fx_desc">Изменить аудиоэффекты для текущего трека.</string>
     <string name="_30min">30 мин.</string>
     <string name="playlist_description">Описание плейлиста</string>
@@ -181,7 +181,7 @@
     <string name="change_pitch_with_speed">Изменить высоту тона со скоростью</string>
     <string name="bass_boost">Усиление басов</string>
     <string name="refresh_library_on_reload_summary">Сканировать устройство каждый раз при загрузке ленты</string>
-    <string name="blacklist_folder_keywords_summary">Ключевые слова для чёрного списка папок, используйте запятую как разделитель</string>
+    <string name="blacklist_folder_keywords_summary">Ключевые слова для черного списка папок, используйте запятую как разделитель</string>
     <string name="change_pitch_with_speed_desc">Получите тот замедленный звук</string>
     <string name="keep_queue">Сохранять очередь плеера</string>
     <string name="stop_player">Останавливать плеер</string>
