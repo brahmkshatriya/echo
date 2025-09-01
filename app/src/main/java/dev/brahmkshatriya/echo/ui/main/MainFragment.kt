@@ -101,14 +101,13 @@ class MainFragment : Fragment() {
             applyInsets {
                 recyclerView.applyInsets(it, 20, 20, bottom + 4)
                 outline.updatePadding(top = it.top)
-                val rect = recyclerView.run {
+                scroller?.setPadding(recyclerView.run {
                     val pad = 8.dpToPx(context)
                     val isRtl = context.isRTL()
                     val left = if (!isRtl) it.start else it.end
                     val right = if (!isRtl) it.end else it.start
-                    Rect(left + pad, it.top + pad, right + pad, it.bottom + pad)
-                }
-                scroller.setPadding(rect)
+                    Rect(left + pad, it.top + pad, right + pad, it.bottom + bottom + pad)
+                })
                 block(it)
             }
         }

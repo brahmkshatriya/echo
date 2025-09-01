@@ -25,10 +25,10 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.SHOW_BACKGROUND
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.BACKGROUND_GRADIENT
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.NAVBAR_GRADIENT
 import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.DYNAMIC_PLAYER
-import dev.brahmkshatriya.echo.ui.player.PlayerFragment.Companion.PLAYER_COLOR
 import dev.brahmkshatriya.echo.utils.ContextUtils.SETTINGS_NAME
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.ANIMATIONS_KEY
 import dev.brahmkshatriya.echo.utils.ui.AnimationUtils.SCROLL_ANIMATIONS_KEY
+import dev.brahmkshatriya.echo.utils.ui.FastScrollerHelper.SCROLL_BAR
 import dev.brahmkshatriya.echo.utils.ui.prefs.ColorListPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
 
@@ -53,8 +53,8 @@ class SettingsLookFragment : BaseSettingsFragment() {
             preferenceScreen = screen
 
             PreferenceCategory(context).apply {
-                title = getString(R.string.ui)
-                key = "ui"
+                title = getString(R.string.colors)
+                key = "colors"
                 isIconSpaceReserved = false
                 layoutResource = R.layout.preference_category
                 screen.addPreference(this)
@@ -104,16 +104,6 @@ class SettingsLookFragment : BaseSettingsFragment() {
                 }
 
                 SwitchPreferenceCompat(context).apply {
-                    key = BIG_COVER
-                    title = getString(R.string.big_cover)
-                    summary = getString(R.string.big_cover_summary)
-                    layoutResource = R.layout.preference_switch
-                    isIconSpaceReserved = false
-                    setDefaultValue(false)
-                    addPreference(this)
-                }
-
-                SwitchPreferenceCompat(context).apply {
                     key = NAVBAR_GRADIENT
                     title = getString(R.string.navbar_gradient)
                     summary = getString(R.string.navbar_gradient_summary)
@@ -142,11 +132,29 @@ class SettingsLookFragment : BaseSettingsFragment() {
                     setDefaultValue(true)
                     addPreference(this)
                 }
+            }
+
+            PreferenceCategory(context).apply {
+                title = getString(R.string.ui)
+                key = "ui"
+                isIconSpaceReserved = false
+                layoutResource = R.layout.preference_category
+                screen.addPreference(this)
 
                 SwitchPreferenceCompat(context).apply {
-                    key = PLAYER_COLOR
-                    title = getString(R.string.apply_player_color_to_app)
-                    summary = getString(R.string.apply_player_color_to_app_summary)
+                    key = BIG_COVER
+                    title = getString(R.string.big_cover)
+                    summary = getString(R.string.big_cover_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = SCROLL_BAR
+                    title = getString(R.string.scroll_bar)
+                    summary = getString(R.string.scroll_bar_summary)
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(false)
@@ -206,9 +214,11 @@ class SettingsLookFragment : BaseSettingsFragment() {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
                 THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY,
-                BIG_COVER, NAVBAR_GRADIENT, BACKGROUND_GRADIENT -> {
+                BIG_COVER, NAVBAR_GRADIENT, BACKGROUND_GRADIENT,
+                    -> {
                     requireActivity().recreate()
                 }
+
                 BACK_ANIM -> {
                     val pref = preferenceScreen.findPreference<SwitchPreferenceCompat>(key)
                     val enabled = pref?.isChecked == true
