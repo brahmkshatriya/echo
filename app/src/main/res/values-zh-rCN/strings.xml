@@ -227,7 +227,7 @@
     <string name="explicit">显式</string>
     <string name="x_plays">%1$s 次播放</string>
     <string name="x_followers">%1$s 位粉丝</string>
-    <string name="shuffling_x">正在改组 %1$s</string>
+    <string name="shuffling_x">正在随机播放 %1$s</string>
     <string name="copying_the_error">正在复制错误</string>
     <string name="sort_and_filter">排序和过滤</string>
     <string name="filter">过滤器</string>
@@ -318,7 +318,7 @@
         <item quantity="other">%1$d 章节</item>
     </plurals>
     <plurals name="number_tracks">
-        <item quantity="other">%1$d 曲目</item>
+        <item quantity="other">%1$d 首曲目</item>
     </plurals>
     <string name="unsave">不保存</string>
     <string name="sort_date_added">添加日期</string>
