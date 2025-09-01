@@ -201,7 +201,7 @@
     <string name="custom_theme_color_summary">Использование пользовательского цвета темы вместо системного.</string>
     <string name="add_color">Добавить цвет</string>
     <string name="custom_colors">Пользовательские цвета</string>
-    <string name="navbar_gradient_summary">Навигационная панель постепенно становится прозрачной</string>
+    <string name="navbar_gradient_summary">Панель навигации постепенно становится прозрачной</string>
     <string name="animation">Анимация</string>
     <string name="animations">Анимации</string>
     <string name="refresh">Обновить</string>
@@ -209,7 +209,7 @@
     <string name="by_x">От %1$s</string>
     <string name="tracker">Трекер</string>
     <string name="lyrics">Текст</string>
-    <string name="x_extensions">%1$s Расширений</string>
+    <string name="x_extensions">%1$s Дополнений</string>
     <string name="select_x_account">Выберите аккаунт %1$s</string>
     <string name="up_next">Что дальше</string>
     <string name="seekbar">Панель поиска</string>
@@ -262,16 +262,16 @@
     <string name="liked_x">%1$s добавлено в Понравившиеся</string>
     <string name="keep_queue_summary">Восстановление очереди плеера при повторном открытии приложения.</string>
     <string name="save_to_playlist">Сохранить в плейлист</string>
-    <string name="x_extension">%1$s Расширения</string>
+    <string name="x_extension">%1$s Дополнения</string>
     <string name="sort_and_filter">Сортировка и фильтрация</string>
     <string name="sort_date">Дата</string>
     <string name="auto_start_radio_summary">Автоматическое добавление связанных песен трека в плейлист, чтобы иметь бесконечную очередь</string>
     <string name="downloading_update_for_x">Скачивание обновления для %1$s</string>
-    <string name="amoled_summary">Чернота, безграничная чернота</string>
+    <string name="amoled_summary">Чёрный, Настоящий чёрный</string>
     <string name="show_background_summary">Фоновое видео или размытая обложка трека в плеере</string>
     <string name="dynamic_player_summary">Применение цвета к плееру на основе обложки трека</string>
     <string name="misc">Разное</string>
-    <string name="animations_summary">Чувствуете сильное заикание? Отключите это, может помочь</string>
+    <string name="animations_summary">Отключите это, если возникают подвисания</string>
     <string name="more_brain_capacity_summary">Включение этой функции может устранить задержку звука, но увеличивает расход батареи (Отключает разгрузку аудио).</string>
     <string name="enabled">Включено</string>
     <string name="disabled">Выключено</string>
@@ -306,7 +306,7 @@
     <string name="check_for_updates">Проверять обновления</string>
     <string name="check_for_updates_summary">Поиск новых обновлений приложения и расширений при открытии приложения.</string>
     <string name="checking_for_updates">Проверка обновлений</string>
-    <string name="back_animations">Анимации возращения</string>
+    <string name="back_animations">Анимации возвращения</string>
     <string name="back_animations_summary">Может вызвать визуальный баг на Android, но вы можете просто открыть Недавние, чтобы исправить его.</string>
     <string name="regex_invalid">%1$s недопустим, пожалуйста, следуйте формату: %2$s</string>
     <string name="n_hours">%1$d часов</string>
@@ -383,4 +383,5 @@
     <string name="book">Книга</string>
     <string name="song">Песня</string>
     <string name="n_songs">%1$d песен</string>
+    <string name="amoled">AMOLED</string>
 </resources>
