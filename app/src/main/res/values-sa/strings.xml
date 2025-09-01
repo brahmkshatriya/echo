@@ -308,4 +308,15 @@
         <item quantity="other">%1$d गीतानि</item>
     </plurals>
     <string name="back_animations">पृष्ठपृष्ठगतिः</string>
+    <string name="back_animations_summary">एतत् अण्ड्रॉइड् कारणेन दृश्यदोषं जनयितुं शक्नोति, किन्तु त्वं केवलं “recents” उद्घाट्य तं सुधारयितुं शक्नोषि।</string>
+    <string name="regex_invalid">%1$s अमान्यः अस्ति, कृपया regex अनुसर: %2$s</string>
+    <string name="n_hours">%1$d घण्टाः</string>
+    <string name="n_minutes">%1$d निमेषाः</string>
+    <string name="hidden_x">गुप्तः %1$s</string>
+    <string name="unhidden_x">अगुप्तः %1$s</string>
+    <string name="track">अनुगमनम्</string>
+    <string name="tracks">अनुगमनानि</string>
+    <string name="n_songs">%1$d गीतानि</string>
+    <string name="n_episodes">%1$d प्रकरणानि</string>
+    <string name="n_chapters">%1$d अध्यायाः</string>
 </resources>
