@@ -150,7 +150,7 @@
     <string name="subtitle_selection">Sélection des Sous-titres</string>
     <string name="quality_selection">Sélection de la Qualité</string>
     <string name="quality_x">Qualité %1$d</string>
-    <string name="off">Désactivé</string>
+    <string name="off">Off</string>
     <string name="so_empty">Si vide…</string>
     <string name="not_loading">Ne Charge Pas</string>
     <string name="share">Partager</string>
@@ -234,11 +234,11 @@
     <string name="installation_type_summary">L\'installation de l\'application permettra aux liens suivants de s\'ouvrir dans Echo :</string>
     <string name="could_not_find_the_file">Fichier introuvable.</string>
     <string name="custom_theme_color_summary">Utilise une couleur de thème personnalisée, au lieu de celle du système.</string>
-    <string name="extension_installed_successfully">Extension installée avec succès !</string>
+    <string name="extension_installed_successfully">Extension installée avec succès.</string>
     <string name="theme">Thème</string>
     <string name="_1hr">1 h</string>
     <string name="open_links_instruction">Pour autoriser l\'ouverture de ces liens, vous devez :\n- Faire défiler la page vers le bas et cliquer sur \"Ouvrir par défaut\"\n- Cliquer sur \" Ajouter un lien\"</string>
-    <string name="extension_updated_successfully">%1$s mis à jour avec succès !</string>
+    <string name="extension_updated_successfully">%1$s mis à jour avec succès</string>
     <string name="add_extensions">Ajouter des Extensions</string>
     <string name="audio_selection">Sélection Audio</string>
     <string name="video_selection">Sélection Vidéo</string>
@@ -277,7 +277,7 @@
     <string name="removed_x_from_downloads">%1$s Supprimé des Téléchargements</string>
     <string name="nothing_to_download_in_x">Rien à télécharger dans %1$s</string>
     <string name="merging_x">Fusion de %1$s</string>
-    <string name="apply_player_color_to_app_summary">Peut ralentir les performances de l\'interface.</string>
+    <string name="apply_player_color_to_app_summary">ALERTE AU LAG !!!</string>
     <string name="extension_x_not_found">Extension %1$s non trouvée</string>
     <string name="audio">Audio</string>
     <string name="version">Version</string>
@@ -315,14 +315,14 @@
     <string name="unhidden_x">%1$s affiché</string>
     <string name="track">Piste</string>
     <string name="tracks">Pistes</string>
-    <string name="n_songs">%1$d Pistes</string>
+    <string name="n_songs">%1$d Chansons</string>
     <string name="n_episodes">%1$d épisodes</string>
     <string name="n_chapters">%1$d Chapitres</string>
     <string name="n_tracks">%1$d Pistes</string>
     <plurals name="number_songs">
-        <item quantity="one">%1$d Piste</item>
-        <item quantity="many">%1$d Pistes</item>
-        <item quantity="other">%1$d Pistes</item>
+        <item quantity="one">%1$d Chanson</item>
+        <item quantity="many">%1$d Chansons</item>
+        <item quantity="other">%1$d Chansons</item>
     </plurals>
     <plurals name="number_episodes">
         <item quantity="one">%1$d Épisode</item>

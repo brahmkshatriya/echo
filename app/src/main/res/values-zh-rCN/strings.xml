@@ -227,7 +227,7 @@
     <string name="explicit">显式</string>
     <string name="x_plays">%1$s 次播放</string>
     <string name="x_followers">%1$s 位粉丝</string>
-    <string name="shuffling_x">正在改组 %1$s</string>
+    <string name="shuffling_x">正在随机播放 %1$s</string>
     <string name="copying_the_error">正在复制错误</string>
     <string name="sort_and_filter">排序和过滤</string>
     <string name="filter">过滤器</string>
@@ -266,7 +266,7 @@
     <string name="keep_queue_summary">当您重新打开应用程序时，恢复播放器队列.</string>
     <string name="adding_x_to_queue">正在将 %1$s 添加到队列</string>
     <string name="unliking_x">已取消喜欢 %1$s</string>
-    <string name="x_extensions">%1$s 个扩展</string>
+    <string name="x_extensions">%1$s扩展</string>
     <string name="sleep_timer_desc">设置定时关闭，在一定时间后停止播放</string>
     <string name="equalizer_summary">打开设备均衡器设置</string>
     <string name="sleep_on_specific_time">在特定时间关闭</string>
@@ -290,8 +290,8 @@
     <string name="app_widget_description">在你的主屏幕上回响！</string>
     <string name="feed">反馈</string>
     <string name="item">项目</string>
-    <string name="unmetered_stream_quality_summary">当连接到不限制流媒体质量时，将覆盖默认的流媒体质量.</string>
-    <string name="unmetered_stream_quality">不限制流媒体质量</string>
+    <string name="unmetered_stream_quality_summary">当连接到无限制流媒体质量时，将覆盖默认的流媒体质量.</string>
+    <string name="unmetered_stream_quality">无限制流媒体质量</string>
     <string name="select_language">语言选择</string>
     <string name="check_for_updates">检查更新</string>
     <string name="check_for_updates_summary">当启动软件时，对播放器和扩展进行更新寻查.</string>
@@ -318,14 +318,14 @@
         <item quantity="other">%1$d 章节</item>
     </plurals>
     <plurals name="number_tracks">
-        <item quantity="other">%1$d 曲目</item>
+        <item quantity="other">%1$d 首曲目</item>
     </plurals>
     <string name="unsave">不保存</string>
     <string name="sort_date_added">添加日期</string>
     <string name="opening_webview_x">正在打开网页视图: %1$s</string>
     <string name="no_update_available_for_x">更新不可用 %1$s</string>
     <string name="other">其它的</string>
-    <string name="player">播发器</string>
+    <string name="player">播放器</string>
     <string name="about">关于</string>
     <string name="language_x">语言: %1$s</string>
     <string name="guide">指南</string>
@@ -365,4 +365,5 @@
         <item quantity="other">%1$d 项目</item>
     </plurals>
     <string name="x_specific_quality_summary">%1$s 特殊的流媒体质量，将会覆盖系统默认选择的流媒体质量</string>
+    <string name="n_songs">%1$d 首歌曲</string>
 </resources>

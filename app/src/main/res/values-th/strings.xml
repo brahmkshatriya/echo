@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="okay">โอเค</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="back">กลับ</string>
+    <string name="feed">หน้าหลัก</string>
+    <string name="x_permission_required">%1$sต้องได้รับอนุญาต</string>
+    <string name="x_was_not_granted">%1$sไม่ได้รับอนุญาต</string>
+    <string name="audio">เสียง</string>
+    <string name="audio_permission_summary">เพื่อเข้าถึงเพลงในภูมิภาคของคุณ</string>
+    <string name="read_storage">อ่านเก็บข้อมูล</string>
+    <string name="write_storage">การเขียนที่เก็บข้อมูล</string>
+    <string name="write_storage_permission_summary">สร้างและแก้ไขเพลย์ลิสต์</string>
+    <string name="notifications">การแจ้งเตือน</string>
+    <string name="notifications_permission_summary">แสดงการแจ้งเตือนสำหรับการดาวน์โหลดเพลง</string>
+    <string name="remove">ลบ</string>
+    <string name="more_by_x">เพิ่มเติมโดย %1$s</string>
+    <string name="songs">เพลง</string>
+    <string name="albums">อัลบั้ม</string>
+    <string name="x_radio">%1$s สถานี</string>
+    <string name="cached_songs">เพลงที่แคช</string>
+    <string name="cache_playlist_warning">คุณสมบัติทดลอง ไม่รองรับสิ่งอื่นใดนอกจากการฟังเสียง</string>
+    <string name="artists">ศิลปิน</string>
+    <string name="recently_added">เพิ่มมาล่าสุด</string>
+    <string name="refresh_library_on_reload">รีเฟรชไลบรารีเมื่อโหลดซ้ำ</string>
+    <string name="refresh_library_on_reload_summary">สแกนอุปกรณ์ทุกครั้งที่โหลดฟีด</string>
+    <string name="duration_filter">กรองตามช่วงเวลา</string>
+    <string name="duration_filter_summary">กรองไฟล์เสียงที่มีระยะเวลา (เป็นวินาที) น้อยกว่าค่า</string>
+    <string name="blacklist_folders">โฟลเดอร์แบล็คลิสต์</string>
+    <string name="blacklist_folders_summary">โฟลเดอร์ที่จะไม่รวมไว้ในไลบรารี</string>
+    <string name="blacklist_folder_keywords">คีย์สำคัญโฟลเดอร์แบล็คลิสต์</string>
+</resources>
