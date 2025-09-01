@@ -25,4 +25,22 @@
     <string name="refresh_library_on_reload_summary">Skanuj urządzenie za każdym razem, gdy ładowany jest feed</string>
     <string name="duration_filter">Filtr czasu trwania</string>
     <string name="cache_playlist_warning">Funkcja eksperymentalna. Wszystko, oprócz słuchania, nie jest obsługiwane.</string>
+    <string name="duration_filter_summary">Odfiltruj pliki audio, których czas trwania (w sekundach) jest krótszy niż znaczenie liczby</string>
+    <string name="blacklist_folders">Czarna lista folderów</string>
+    <string name="blacklist_folders_summary">Foldery do wykluczenia z biblioteki</string>
+    <string name="blacklist_folder_keywords">Słowa kluczowe folderu czarnej listy</string>
+    <string name="blacklist_folder_keywords_summary">Słowa kluczowe do umieszczenia folderów na czarnej liście, użyj przecinka jako separatora</string>
+    <string name="saved">Dodano</string>
+    <string name="tabs">Karty</string>
+    <string name="show_tabs">Pokaż karty</string>
+    <string name="show_tab_summary">pokaże zakładki rozszerzeń jako kategorię</string>
+    <string name="unified_liked_playlist_summary">Twoje ulubione utwory z różnych rozszerzeń</string>
+    <string name="n_items">%1$d Elementy</string>
+    <string name="item">Element</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d Element</item>
+        <item quantity="few">%1$d Elementy</item>
+        <item quantity="many">%1$d Elementów</item>
+        <item quantity="other">%1$d Elementów</item>
+    </plurals>
 </resources>
