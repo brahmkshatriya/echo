@@ -324,4 +324,8 @@
         <item quantity="one">%1$d प्रकरणम्</item>
         <item quantity="other">%1$d प्रकरणानि</item>
     </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one">%1$d अध्यायः</item>
+        <item quantity="other">%1$d अध्यायाः</item>
+    </plurals>
 </resources>
