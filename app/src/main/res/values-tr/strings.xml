@@ -290,4 +290,53 @@
     <string name="delete_download">İndirimi Kaldır</string>
     <string name="removed_x_from_downloads">İndirilenlerden %1$s kaldırıldı</string>
     <string name="app_widget_description">Ana ekranında yankı!</string>
+    <string name="feed">Akış</string>
+    <string name="item">Öğe</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d öğe</item>
+        <item quantity="other">%1$d öğe</item>
+    </plurals>
+    <string name="x_specific_quality_summary">%1$s için özel akış kalitesi, varsayılan akış kalitesi seçimini geçersiz kılar</string>
+    <string name="unmetered_stream_quality">Sınırsız ağ akış kalitesi</string>
+    <string name="unmetered_stream_quality_summary">Sınırsız bir ağa bağlıyken akışın kalitesi. Bu, varsayılan akış kalitesini geçersiz kılar.</string>
+    <string name="select_language">Dil Seç</string>
+    <string name="check_for_updates">Güncellemeleri Denetle</string>
+    <string name="check_for_updates_summary">Uygulamayı açtığında hem uygulama hem de uzantılar için yeni güncellemeleri kontrol et.</string>
+    <string name="checking_for_updates">Güncellemeler denetleniyor</string>
+    <string name="back_animations">Geri animasyonları</string>
+    <string name="back_animations_summary">Android kaynaklı görsel hatalara neden olabilir, ancak bunu düzeltmek için son uygulamaları açabilirsin.</string>
+    <string name="regex_invalid">%1$s geçersiz, lütfen şu düzenli ifadeyi takip et: %2$s</string>
+    <string name="n_hours">%1$d saat</string>
+    <string name="n_minutes">%1$d dakika</string>
+    <string name="hidden_x">Gizli %1$s</string>
+    <string name="unhidden_x">Görünür %1$s</string>
+    <string name="track">Parça</string>
+    <string name="tracks">Parçalar</string>
+    <string name="n_songs">%1$d şarkı</string>
+    <string name="n_episodes">%1$d bölüm</string>
+    <string name="n_chapters">%1$d bölüm</string>
+    <string name="n_tracks">%1$d parça</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d şarkı</item>
+        <item quantity="other">%1$d şarkı</item>
+    </plurals>
+    <plurals name="number_episodes">
+        <item quantity="one">%1$d bölüm</item>
+        <item quantity="other">%1$d bölüm</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one">%1$d bölüm</item>
+        <item quantity="other">%1$d bölüm</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one">%1$d parça</item>
+        <item quantity="other">%1$d parça</item>
+    </plurals>
+    <string name="unsave">Kaydı kaldır</string>
+    <string name="sort_date_added">Ekleme tarihi</string>
+    <string name="opening_webview_x">Web görünümü açılıyor: %1$s</string>
+    <string name="no_update_available_for_x">%1$s için güncelleme mevcut değil</string>
+    <string name="other">Diğer</string>
+    <string name="player">Oynatıcı</string>
+    <string name="about">Hakkında</string>
 </resources>
