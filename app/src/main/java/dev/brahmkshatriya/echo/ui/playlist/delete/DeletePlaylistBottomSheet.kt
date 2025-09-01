@@ -50,7 +50,7 @@ class DeletePlaylistBottomSheet : BottomSheetDialogFragment(R.layout.item_loadin
 
     val args by lazy { requireArguments() }
     val extensionId by lazy { args.getString("extensionId")!! }
-    val item by lazy { args.getSerialized<Playlist>("item")!! }
+    val item by lazy { args.getSerialized<Playlist>("item")!!.getOrThrow() }
     val loaded by lazy { args.getBoolean("loaded", false) }
 
     val vm by viewModel<DeletePlaylistViewModel> {

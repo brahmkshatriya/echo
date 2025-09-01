@@ -124,7 +124,7 @@ class StreamableMediaSource(
         this.mediaItem.apply {
             if (retries != mediaItem.retries) return@run false
             if (serverIndex != mediaItem.serverIndex) return@run false
-            if (sourceIndex != mediaItem.sourceIndex) return@run false
+            if (this.sourceIndex != mediaItem.sourceIndex) return@run false
             if (backgroundIndex != mediaItem.backgroundIndex) return@run false
             if (subtitleIndex != mediaItem.subtitleIndex) return@run false
         }
@@ -167,7 +167,7 @@ class StreamableMediaSource(
         private val loader = StreamableLoader(app, extensions.music, downloadFlow)
 
         val dataSourceFactory = StreamableDataSource.Factory(app.context)
-        val streamableResolver = StreamableResolver(state.servers)
+        val streamableResolver = StreamableResolver(app.context, state.servers)
 
         private val cacheDataSource = ResolvingDataSource.Factory(
             CacheDataSource.Factory().setCache(cache)

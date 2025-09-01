@@ -55,6 +55,8 @@ import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.remove
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 @OptIn(UnstableApi::class)
@@ -121,10 +123,11 @@ class OfflineExtension(
     private val refreshLibrary
         get() = settings.getBoolean("refresh_library") ?: true
 
+    private val mutex = Mutex()
     private var _library: MediaStoreUtils.LibraryStoreClass? = null
-    private suspend fun getLibrary(): MediaStoreUtils.LibraryStoreClass {
+    private suspend fun getLibrary() = mutex.withLock {
         if (_library == null) _library = MediaStoreUtils.getAllSongs(context, settings)
-        return _library!!
+        _library!!
     }
 
     private suspend fun refreshLibrary() {
@@ -268,7 +271,7 @@ class OfflineExtension(
     override suspend fun loadRadio(radio: Radio) = radio
 
     override suspend fun loadTracks(radio: Radio): Feed<Track> = PagedData.Single {
-        val mediaItem = radio.extras["mediaItem"]!!.toData<EchoMediaItem>()
+        val mediaItem = radio.extras["mediaItem"]!!.toData<EchoMediaItem>().getOrThrow()
         val library = getLibrary()
         when (mediaItem) {
             is Album -> {

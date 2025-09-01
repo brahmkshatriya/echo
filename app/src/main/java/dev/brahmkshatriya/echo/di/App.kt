@@ -27,12 +27,17 @@ data class App(
     val messageFlow = MutableSharedFlow<Message>()
     val scope = CoroutineScope(Dispatchers.IO)
 
+    private suspend fun getCache() = FileKache(
+        context.cacheDir.resolve("kache").toString(),
+        50 * 1024 * 1024
+    ) {
+        strategy = KacheStrategy.LRU
+    }
+
     val fileCache = scope.async(Dispatchers.IO, CoroutineStart.LAZY) {
-        FileKache(
-            context.cacheDir.resolve("kache").toString(),
-            100 * 1024 * 1024
-        ) {
-            strategy = KacheStrategy.LRU
+        runCatching { getCache() }.getOrElse {
+            context.cacheDir.resolve("kache").deleteRecursively()
+            getCache()
         }
     }
 

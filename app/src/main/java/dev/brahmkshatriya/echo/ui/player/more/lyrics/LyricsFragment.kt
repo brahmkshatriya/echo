@@ -13,6 +13,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
+import androidx.paging.LoadState.Error
+import androidx.paging.LoadState.NotLoading
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -187,13 +189,15 @@ class LyricsFragment : Fragment() {
         observe(viewModel.lyricsState) { state ->
             binding.noLyrics.isVisible = state == LyricsViewModel.State.Empty
             lyricsErrorAdapter.loadState = when (state) {
-                LyricsViewModel.State.Empty -> LoadState.NotLoading(true)
+                LyricsViewModel.State.Initial -> LoadState.Loading
+                LyricsViewModel.State.Empty -> NotLoading(true)
                 LyricsViewModel.State.Loading -> LoadState.Loading
                 is LyricsViewModel.State.Loaded -> state.result.fold({
-                    LoadState.NotLoading(true)
+                    NotLoading(true)
                 }, {
-                    LoadState.Error(it)
+                    Error(it)
                 })
+
             }
             val lyricsItem = (state as? LyricsViewModel.State.Loaded)?.result?.getOrNull()
             binding.lyricsItem.bind(lyricsItem)

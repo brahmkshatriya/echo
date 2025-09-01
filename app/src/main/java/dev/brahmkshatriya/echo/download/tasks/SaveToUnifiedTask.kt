@@ -25,7 +25,7 @@ class SaveToUnifiedTask(
         if (old.finalFile == null) return
 
         val download = old.copy(
-            data = old.track.withExtensionId(old.extensionId, false).toJson(),
+            data = old.track.getOrThrow().withExtensionId(old.extensionId, false).toJson(),
         )
         dao.insertDownloadEntity(download)
 
@@ -43,15 +43,15 @@ class SaveToUnifiedTask(
             if (allDownloads.all { it.finalFile != null }) {
                 removeTracksFromPlaylist(playlist, tracks, tracks.indices.toList())
                 val sorted = allDownloads.sortedBy { it.sortOrder }
-                addTracksToPlaylist(playlist, listOf(), 0, sorted.map { it.track })
+                addTracksToPlaylist(playlist, listOf(), 0, sorted.map { it.track.getOrThrow() })
             } else addTracksToPlaylist(
-                playlist, tracks, tracks.size, listOf(download.track)
+                playlist, tracks, tracks.size, listOf(download.track.getOrThrow())
             )
         }.getOrThrow()
 
         dao.insertDownloadEntity(download.copy(fullyDownloaded = true))
 
-        val item = if (context == null) download.track else {
+        val item = if (context == null) download.track.getOrThrow() else {
             if (allDownloads.all { it.finalFile != null }) context else null
         } ?: return
         createCompleteNotification(app, item.title, item.cover.loadDrawable(app))

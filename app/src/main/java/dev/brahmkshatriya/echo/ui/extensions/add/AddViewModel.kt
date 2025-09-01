@@ -50,7 +50,8 @@ class AddViewModel(
             val request = Request.Builder()
                 .addHeader("Cookie", "preview=1")
                 .url(link).build()
-            client.newCall(request).await().body.string().toData<List<ExtensionAssetResponse>>()
+            client.newCall(request).await().body.string()
+                .toData<List<ExtensionAssetResponse>>().getOrThrow()
         }
     }.getOrElse {
         throw InvalidExtensionListException(link, it)

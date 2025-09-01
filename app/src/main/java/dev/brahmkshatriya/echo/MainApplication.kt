@@ -56,7 +56,7 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
             }
             .diskCache {
                 DiskCache.Builder()
-                    .directory(cacheDir.resolve("image_cache"))
+                    .directory(cacheDir.resolve("image-cache"))
                     .maxSizeBytes(1024 * 1024 * 100) // 100MB
                     .build()
             }

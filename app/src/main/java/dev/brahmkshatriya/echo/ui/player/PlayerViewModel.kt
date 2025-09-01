@@ -43,8 +43,10 @@ import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
@@ -306,7 +308,7 @@ class PlayerViewModel(
             val server = playerState.servers[current?.mediaItem?.mediaId]?.getOrNull()
             val index = current?.mediaItem?.sourceIndex
             Triple(tracks, server, index)
-        }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, Triple(null, null, null))
 
     companion object {
         const val KEEP_QUEUE = "keep_queue"

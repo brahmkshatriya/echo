@@ -51,7 +51,7 @@ class EditPlaylistBottomSheet : BottomSheetDialogFragment(R.layout.item_loading)
 
     val args by lazy { requireArguments() }
     val extensionId by lazy { args.getString("extensionId")!! }
-    val playlist by lazy { args.getSerialized<Playlist>("playlist")!! }
+    val playlist by lazy { args.getSerialized<Playlist>("playlist")!!.getOrThrow() }
     val tabId by lazy { args.getString("tabId") }
     val removeIndex by lazy { args.getInt("removeIndex", -1).takeIf { it != -1 }!! }
 

@@ -665,7 +665,7 @@ class PlayerFragment : Fragment() {
     companion object {
         private fun Context.showBackground() = getSettings().showBackground()
         const val DYNAMIC_PLAYER = "dynamic_player"
-        const val PLAYER_COLOR = "player_color"
+        const val PLAYER_COLOR = "player_app_color"
         fun Context.isDynamic() =
             getSettings().getBoolean(DYNAMIC_PLAYER, true)
 

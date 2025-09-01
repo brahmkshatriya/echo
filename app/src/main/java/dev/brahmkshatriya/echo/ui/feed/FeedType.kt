@@ -4,6 +4,7 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -24,14 +25,21 @@ sealed interface FeedType {
     val feedId: String
     val id: String
     val type: Enum
+    val extId: String
+    val extras: Map<String, String>?
+
     val extensionId: String
+        get() = extras?.let {
+            if (it["cached"] == "true") it[EXTENSION_ID] else null
+        } ?: extId
+
     val context: EchoMediaItem?
     val tabId: String?
 
     @Serializable
     data class Header(
         override val feedId: String,
-        override val extensionId: String,
+        override val extId: String,
         override val context: EchoMediaItem?,
         override val tabId: String?,
         override val id: String,
@@ -41,24 +49,26 @@ sealed interface FeedType {
         val tracks: List<Track>? = null,
     ) : FeedType {
         override val type = Enum.Header
+        override val extras: Map<String, String>? = null
     }
 
     @Serializable
     data class Category(
         override val feedId: String,
-        override val extensionId: String,
+        override val extId: String,
         override val context: EchoMediaItem?,
         override val tabId: String?,
         val shelf: Shelf.Category,
-        override val type: Enum = Enum.Category
+        override val type: Enum = Enum.Category,
     ) : FeedType {
         override val id = shelf.id
+        override val extras: Map<String, String>? = shelf.extras
     }
 
     @Serializable
     data class Media(
         override val feedId: String,
-        override val extensionId: String,
+        override val extId: String,
         override val context: EchoMediaItem?,
         override val tabId: String?,
         val item: EchoMediaItem,
@@ -66,24 +76,26 @@ sealed interface FeedType {
     ) : FeedType {
         override val id = item.id
         override val type: Enum = Enum.Media
+        override val extras: Map<String, String>? = item.extras
     }
 
     @Serializable
     data class Video(
         override val feedId: String,
-        override val extensionId: String,
+        override val extId: String,
         override val context: EchoMediaItem?,
         override val tabId: String?,
         val item: Track,
         override val type: Enum = Enum.Video,
     ) : FeedType {
         override val id = item.id
+        override val extras: Map<String, String>? = item.extras
     }
 
     @Serializable
     data class MediaGrid(
         override val feedId: String,
-        override val extensionId: String,
+        override val extId: String,
         override val context: EchoMediaItem?,
         override val tabId: String?,
         val item: EchoMediaItem,
@@ -91,18 +103,20 @@ sealed interface FeedType {
     ) : FeedType {
         override val id = item.id
         override val type: Enum = Enum.MediaGrid
+        override val extras: Map<String, String>? = item.extras
     }
 
     @Serializable
     data class HorizontalList(
         override val feedId: String,
-        override val extensionId: String,
+        override val extId: String,
         override val context: EchoMediaItem?,
         override val tabId: String?,
         val shelf: Shelf.Lists<*>,
     ) : FeedType {
         override val id = shelf.id
         override val type = Enum.HorizontalList
+        override val extras: Map<String, String>? = shelf.extras
     }
 
     companion object {
@@ -112,7 +126,7 @@ sealed interface FeedType {
             context: EchoMediaItem?,
             tabId: String?,
             noVideos: Boolean = false,
-            start: Long = 0
+            start: Long = 0,
         ): List<FeedType> = mapIndexed { index, shelf ->
 
             when (shelf) {

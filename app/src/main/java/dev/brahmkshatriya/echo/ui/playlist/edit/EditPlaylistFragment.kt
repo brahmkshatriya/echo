@@ -42,7 +42,7 @@ class EditPlaylistFragment : Fragment() {
 
     private val args by lazy { requireArguments() }
     private val extensionId by lazy { args.getString("extensionId")!! }
-    private val playlist by lazy { args.getSerialized<Playlist>("playlist")!! }
+    private val playlist by lazy { args.getSerialized<Playlist>("playlist")!!.getOrThrow() }
     private val loaded by lazy { args.getBoolean("loaded", false) }
     private val selectedTab by lazy { args.getString("selectedTabId").orEmpty() }
 
@@ -102,7 +102,7 @@ class EditPlaylistFragment : Fragment() {
             )
         }
         parentFragmentManager.setFragmentResultListener("searchedTracks", this) { _, bundle ->
-            val tracks = bundle.getSerialized<List<Track>>("tracks")!!.toMutableList()
+            val tracks = bundle.getSerialized<List<Track>>("tracks")!!.getOrNull().orEmpty().toMutableList()
             vm.edit(
                 EditPlaylistViewModel.Action.Add(
                     vm.currentTracks.value?.size ?: 0, tracks

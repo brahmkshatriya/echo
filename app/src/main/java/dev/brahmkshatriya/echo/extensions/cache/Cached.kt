@@ -34,6 +34,7 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
 import dev.brahmkshatriya.echo.extensions.MediaState
+import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.EXTENSION_ID
 import dev.brahmkshatriya.echo.extensions.exceptions.AppException.Companion.toAppException
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
@@ -46,7 +47,7 @@ object Cached {
 
     suspend inline fun <reified T> FileKache.getData(id: String) = runCatching {
         val file = get(id) ?: throw NotFound(id)
-        File(file).readText().toData<T>()
+        File(file).readText().toData<T>().getOrThrow()
     }
 
     suspend inline fun <reified T> FileKache.putData(id: String, data: T) = runCatching {
@@ -135,7 +136,8 @@ object Cached {
         app: App, extension: Extension<*>, track: Track, streamable: Streamable,
     ) = runCatching {
         val fileCache = app.fileCache.await()
-        val id = "media-${extension.id}-${track.id}-${streamable.id}"
+        val extId = track.extras[EXTENSION_ID] ?: extension.id
+        val id = "media-${extId}-${track.id}-${streamable.id}"
         val media = extension.getAs<TrackClient, Streamable.Media> {
             loadStreamableMedia(streamable, false)
         }.getOrElse { throwable ->
@@ -258,14 +260,8 @@ object Cached {
             PagedData.Continuous { token ->
                 val id = "$id-$token"
                 val page = fileCache.getData<Page<T>>(id).getOrThrow()
-                page.copy(page.data.map { transform(it) }).also {
-                    println("Got page $id with ${it.data.size} items" )
-                }
-            }.toFeedData(buttons, bg).also {
-                println("Got feed data $id with $it" )
-            }
-        }.also {
-            println("Got $tabId from cache with ${tabs.size} tabs")
+                page.copy(page.data.map { transform(it) })
+            }.toFeedData(buttons, bg)
         }
     }
 

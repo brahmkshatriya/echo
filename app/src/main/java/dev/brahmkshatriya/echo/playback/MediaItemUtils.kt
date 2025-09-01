@@ -26,6 +26,9 @@ import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
+import kotlinx.serialization.Serializable
+import kotlin.io.encoding.Base64
+import kotlin.text.Charsets.UTF_8
 
 object MediaItemUtils {
 
@@ -47,7 +50,7 @@ object MediaItemUtils {
         app: App,
         downloads: List<Downloader.Info>,
         mediaItem: MediaItem,
-        state: MediaState.Loaded<Track>
+        state: MediaState.Loaded<Track>,
     ): MediaItem = with(mediaItem) {
         val item = buildUpon()
         val metadata = state.toMetaData(
@@ -111,15 +114,18 @@ object MediaItemUtils {
         item.build()
     }
 
-    fun String.toIdAndIndex() = if (startsWith('{')) runCatching {
-        toData<Pair<String, Int>>()
-    }.getOrNull() else null
+    @Serializable
+    data class Key(val trackId: String, val sourceIndex: Int, val extensionId: String)
+
+    fun String.toKey() = runCatching {
+        Base64.decode(this).toString(UTF_8).toData<Key>().getOrThrow()
+    }
 
     fun buildForSource(
-        mediaItem: MediaItem, index: Int, source: Streamable.Source?
+        mediaItem: MediaItem, index: Int, source: Streamable.Source?,
     ) = with(mediaItem) {
         val item = buildUpon()
-        item.setUri(Pair(mediaId, index).toJson())
+        item.setUri(Base64.encode(Key(track.id, index, extensionId).toJson().toByteArray()))
         when (val decryption = (source as? Streamable.Source.Http)?.decryption) {
             null -> {}
             is Streamable.Decryption.Widevine -> {
@@ -136,7 +142,7 @@ object MediaItemUtils {
     fun buildWithBackgroundAndSubtitle(
         mediaItem: MediaItem,
         background: Streamable.Media.Background?,
-        subtitle: Streamable.Media.Subtitle?
+        subtitle: Streamable.Media.Subtitle?,
     ) = with(mediaItem) {
         val bundle = mediaMetadata.extras!!
         bundle.putSerialized("background", background)
@@ -157,12 +163,12 @@ object MediaItemUtils {
     private fun MediaState<Track>.toMetaData(
         bundle: Bundle,
         downloads: List<Downloader.Info>,
-        context: EchoMediaItem? = bundle.getSerialized("context"),
+        context: EchoMediaItem? = bundle.getSerialized<EchoMediaItem>("context")?.getOrNull(),
         loaded: Boolean = bundle.getBoolean("loaded"),
         app: App,
         serverIndex: Int? = null,
         backgroundIndex: Int? = null,
-        subtitleIndex: Int? = null
+        subtitleIndex: Int? = null,
     ) = with(item) {
         val isLiked = (this@toMetaData as? MediaState.Loaded<*>)?.isLiked == true
         MediaMetadata.Builder()
@@ -205,20 +211,23 @@ object MediaItemUtils {
     private fun Bundle.indexes() =
         "${getInt("serverIndex")} ${getInt("sourceIndex")} ${getInt("backgroundIndex")} ${getInt("subtitleIndex")}"
 
-    private val Bundle?.stateNullable get() = this?.getSerialized<MediaState<Track>>("state")
+    private val Bundle?.stateNullable
+        get() = this?.getSerialized<MediaState<Track>>("state")?.getOrNull()
     val Bundle?.state get() = requireNotNull(stateNullable)
     val Bundle?.track get() = state.item
     val Bundle?.isLoaded get() = this?.getBoolean("loaded") ?: false
     val Bundle?.extensionId get() = state.extensionId
-    val Bundle?.context get() = this?.getSerialized<EchoMediaItem?>("context")
+    val Bundle?.context get() = this?.getSerialized<EchoMediaItem?>("context")?.getOrNull()
     val Bundle?.serverIndex get() = this?.getInt("serverIndex", -1) ?: -1
     val Bundle?.sourceIndex get() = this?.getInt("sourceIndex", -1) ?: -1
     val Bundle?.backgroundIndex get() = this?.getInt("backgroundIndex", -1) ?: -1
     val Bundle?.subtitleIndex get() = this?.getInt("subtitleIndex", -1) ?: -1
-    val Bundle?.background get() = this?.getSerialized<Streamable.Media.Background?>("background")
+    val Bundle?.background
+        get() = this?.getSerialized<Streamable.Media.Background?>("background")?.getOrNull()
     val Bundle?.retries get() = this?.getInt("retries") ?: 0
-    val Bundle?.unloadedCover get() = this?.getSerialized<ImageHolder?>("unloadedCover")
-    val Bundle?.downloaded get() = this?.getSerialized<List<String>>("downloaded")
+    val Bundle?.unloadedCover
+        get() = this?.getSerialized<ImageHolder?>("unloadedCover")?.getOrNull()
+    val Bundle?.downloaded get() = this?.getSerialized<List<String>>("downloaded")?.getOrNull()
 
     val MediaItem.state get() = mediaMetadata.extras.state
     val MediaItem.track get() = mediaMetadata.extras.track
@@ -257,7 +266,7 @@ object MediaItemUtils {
     fun SharedPreferences?.showBackground() = this?.getBoolean(SHOW_BACKGROUND, true) ?: true
 
     fun MediaItem.serverWithDownloads(
-        context: Context
+        context: Context,
     ) = track.servers + listOfNotNull(
         Streamable.server(
             "DOWNLOADED", Int.MAX_VALUE, context.getString(R.string.downloads)

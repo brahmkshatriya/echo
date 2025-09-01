@@ -29,8 +29,9 @@ class LoadingTask(
         var download = dao.getDownloadEntity(trackId)!!
         val extension = extensionsList.getExtensionOrThrow(download.extensionId)
         if (!download.loaded) {
-            val track =
-                extension.getAs<TrackClient, Track> { loadTrack(download.track, true) }.getOrThrow()
+            val track = extension.getAs<TrackClient, Track> {
+                loadTrack(download.track.getOrThrow(), true)
+            }.getOrThrow()
             track.servers.ifEmpty { throw Exception("${track.title}: No servers found") }
             download = download.copy(data = track.toJson(), loaded = true)
             dao.insertDownloadEntity(download)

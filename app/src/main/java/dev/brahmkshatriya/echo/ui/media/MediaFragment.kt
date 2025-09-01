@@ -43,7 +43,7 @@ class MediaFragment : Fragment(R.layout.fragment_media), MediaDetailsFragment.Pa
 
     val args by lazy { requireArguments() }
     val extensionId by lazy { args.getString("extensionId")!! }
-    val item by lazy { args.getSerialized<EchoMediaItem>("item")!! }
+    val item by lazy { args.getSerialized<EchoMediaItem>("item")!!.getOrThrow() }
     val loaded by lazy { args.getBoolean("loaded") }
 
     override val fromPlayer = false

@@ -187,6 +187,10 @@
     <string name="show_background">Show Background</string>
     <string name="show_background_summary">Background video or blurred artwork of track in player</string>
 
+    <string name="colors">Colors</string>
+    <string name="scroll_bar">Scroll Bar</string>
+    <string name="scroll_bar_summary">Scrollbar on the side for faster access (might be gltichy)</string>
+
     <string name="animation">Animation</string>
 
     <string name="back_animations">Back Animations</string>

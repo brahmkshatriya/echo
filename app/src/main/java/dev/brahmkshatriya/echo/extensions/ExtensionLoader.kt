@@ -1,6 +1,9 @@
 package dev.brahmkshatriya.echo.extensions
 
+import androidx.annotation.OptIn
 import androidx.core.content.edit
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.SimpleCache
 import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.LyricsExtension
 import dev.brahmkshatriya.echo.common.MiscExtension
@@ -12,7 +15,6 @@ import dev.brahmkshatriya.echo.common.helpers.Injectable
 import dev.brahmkshatriya.echo.common.helpers.WebViewClient
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Metadata
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.providers.GlobalSettingsProvider
 import dev.brahmkshatriya.echo.common.providers.LyricsExtensionsProvider
 import dev.brahmkshatriya.echo.common.providers.MessageFlowProvider
@@ -47,9 +49,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 
+@OptIn(UnstableApi::class)
 class ExtensionLoader(
     val app: App,
-    private val downloadShelf: MutableStateFlow<List<Shelf>>
+    val cache: SimpleCache,
 ) {
     val parser = ExtensionParser(app.context)
     val scope = CoroutineScope(Dispatchers.IO)
@@ -69,7 +72,7 @@ class ExtensionLoader(
         }
     }
 
-    val unified = lazy { UnifiedExtension(app.context, downloadShelf, null) }
+    val unified = lazy { UnifiedExtension(app, cache) }
     val fileIgnoreFlow = MutableSharedFlow<File?>()
     private val repository = CombinedRepository(
         scope, app.context, fileIgnoreFlow, parser,
@@ -150,7 +153,7 @@ class ExtensionLoader(
     }
 
     private fun Lazy<ExtensionClient>.injected(
-        metadata: Metadata
+        metadata: Metadata,
     ) = Injectable(::value, mutableListOf({
         if (this is MetadataProvider) setMetadata(metadata)
         if (this is MessageFlowProvider) setMessageFlow(app.messageFlow)
@@ -163,7 +166,7 @@ class ExtensionLoader(
     }))
 
     private fun <T : Extension<*>> mapped(
-        type: ExtensionType, transform: (Metadata, Injectable<ExtensionClient>) -> T
+        type: ExtensionType, transform: (Metadata, Injectable<ExtensionClient>) -> T,
     ) = injected.map { list ->
         list.mapNotNull {
             val (meta, injectable) = it.getOrNull() ?: return@mapNotNull null
@@ -238,7 +241,7 @@ class ExtensionLoader(
         private fun <T, R : Extension<*>> T.inject(
             required: List<String>,
             extensions: List<R>,
-            set: T.(List<R>) -> Unit
+            set: T.(List<R>) -> Unit,
         ) {
             if (required.isEmpty()) set(extensions)
             else {

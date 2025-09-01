@@ -82,7 +82,7 @@ object AppUpdater {
         val res = runCatching {
             client.newCall(request).await().use {
                 it.body.string().toData<GithubReleaseResponse>()
-            }
+            }.getOrThrow()
         }.getOrElse {
             throw Exception("Failed to fetch latest release", it)
         }
@@ -105,11 +105,8 @@ object AppUpdater {
         val url =
             "https://api.github.com/repos/$githubRepo/actions/workflows/nightly.yml/runs?per_page=1&conclusion=success"
         val request = Request.Builder().url(url).build()
-        client.newCall(request).await().use { res ->
-            res.body.string().toData<GithubRunsResponse>().workflowRuns.firstOrNull {
-                it.sha.take(7) != hash
-            }?.id
-        }
+        client.newCall(request).await().body.string().toData<GithubRunsResponse>().getOrThrow()
+            .workflowRuns.firstOrNull { it.sha.take(7) != hash }?.id
     }.getOrElse {
         throw Exception("Failed to fetch workflow ID", it)
     }

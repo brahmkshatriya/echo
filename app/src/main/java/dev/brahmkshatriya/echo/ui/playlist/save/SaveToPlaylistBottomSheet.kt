@@ -36,7 +36,7 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
 
     private val args by lazy { requireArguments() }
     private val extensionId by lazy { args.getString("extensionId")!! }
-    private val item: EchoMediaItem by lazy { args.getSerialized("item")!! }
+    private val item by lazy { args.getSerialized<EchoMediaItem>("item")!!.getOrThrow() }
 
     private val itemAdapter by lazy {
         MediaItemAdapter { _, _ -> }
