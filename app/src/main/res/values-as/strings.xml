@@ -124,8 +124,8 @@
     <string name="installation_type_warning">যদি আপুনি এক্সটেনশ্যন ফাইল হিচাপে ইনষ্টল কৰে তেন্তে উপলব্ধ নহয়।</string>
     <string name="could_not_find_the_file">ফাইলটো বিচাৰি পোৱা নগ’ল।</string>
     <string name="extension_installer">এক্সটেনশ্যন ইনষ্টলাৰ</string>
-    <string name="extension_installed_successfully">এক্সটেনশ্যন সফলভাৱে ইনষ্টল কৰা হ’ল।</string>
-    <string name="extension_uninstalled_successfully">এক্সটেনশ্যন সফলভাৱে আনইনষ্টল কৰা হ’ল।</string>
+    <string name="extension_installed_successfully">এক্সটেনশ্যন সফলভাৱে ইনষ্টলড কৰা হ’ল।</string>
+    <string name="extension_uninstalled_successfully">এক্সটেনশ্যন সফলভাৱে আনইনষ্টলড কৰা হ’ল।</string>
     <string name="allow_opening_links">লিংক খোলাৰ পাৰ্মিছন দিয়ক</string>
     <string name="unified_liked_playlist_summary">বিভিন্ন এক্সটেনশ্যনৰ পৰা আপোনাৰ পছন্দৰ গান</string>
     <string name="n_items">%1$d আইটেম</string>
@@ -151,7 +151,7 @@
     <string name="link_or_code">লিংক বা ক’ড</string>
     <string name="list_is_empty">লিষ্ট খালী</string>
     <string name="following_x">%1$s ফ’ল’ কৰা হৈছে</string>
-    <string name="extension_installed">%1$s (ইনষ্টল কৰা)</string>
+    <string name="extension_installed">%1$s (ইনষ্টলড)</string>
     <string name="add_extensions">এক্সটেনশ্যনসমূহ যোগ কৰক</string>
     <string name="invalid_extension_list">ইনভেলিড এক্সটেনশ্যন লিষ্ট</string>
     <string name="followed_x">%1$s ফ’ল’ কৰা হ’ল</string>
