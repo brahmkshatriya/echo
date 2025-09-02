@@ -267,7 +267,7 @@
     <string name="sort_date">Дата</string>
     <string name="auto_start_radio_summary">Автоматически добавлять связанные треки в плейлист, чтобы очередь была бесконечной</string>
     <string name="downloading_update_for_x">Скачивание обновления для %1$s</string>
-    <string name="amoled_summary">Абсолютно черный, чистый черный</string>
+    <string name="amoled_summary">Настоящий чёрный. Только для AMOLED/OLED экранов</string>
     <string name="show_background_summary">Фоновое видео или размытая обложка трека в плеере</string>
     <string name="dynamic_player_summary">Применять цвет к плееру на основе обложки трека</string>
     <string name="misc">Разное</string>
