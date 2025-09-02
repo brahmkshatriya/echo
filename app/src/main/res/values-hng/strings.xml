@@ -373,4 +373,7 @@
     <string name="releases_on_x">%1$s Par Release Hoga</string>
     <string name="unavailable_in_your_region">Aapke Region Mein Available Nahi</string>
     <string name="not_playable_x">Chal Nahi Sakta: %1$s</string>
+    <string name="scroll_bar_summary">Side mein scrollbar jaldi access ke liye (shayad glitchy ho sakta hai)</string>
+    <string name="scroll_bar">Scroll Bar</string>
+    <string name="colors">Rango</string>
 </resources>
