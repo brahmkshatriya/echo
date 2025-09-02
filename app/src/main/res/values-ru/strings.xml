@@ -93,7 +93,7 @@
     <string name="_15min">15 мин.</string>
     <string name="_1hr">1 ч.</string>
     <string name="_2hr">2 ч.</string>
-    <string name="sleep_timer_cancelled">Таймер сна отменен</string>
+    <string name="sleep_timer_cancelled">Таймер сна отменён</string>
     <string name="sleep_timer_set_for">Таймер сна установлен на %1$s</string>
     <string name="search_x">Поиск %1$s</string>
     <string name="sources">Источники</string>
@@ -115,7 +115,7 @@
     <string name="playlist_name_empty">Название плейлиста не задано</string>
     <string name="x_created">%1$s создан</string>
     <string name="deleting_x">Удаление %1$s</string>
-    <string name="deleted_x">%1$s удален</string>
+    <string name="deleted_x">%1$s удалён</string>
     <string name="saving_x">Сохранение %1$s</string>
     <string name="saved_to_x">Сохранено в %1$s</string>
     <string name="saved_to_playlists">Сохранено в плейлисты</string>
@@ -231,9 +231,9 @@
     <string name="playing_x">Воспроизведение %1$s</string>
     <string name="adding_x_to_queue">Добавление %1$s в очередь</string>
     <string name="background_gradient">Градиент фона</string>
-    <string name="all">Все</string>
+    <string name="all">Всё</string>
     <string name="edit_playlist">Редактировать плейлист</string>
-    <string name="more_brain_capacity">Больше ресурсов</string>
+    <string name="more_brain_capacity">Отключить разгрузку</string>
     <string name="sort">Сортировать по</string>
     <string name="x_followers">%1$s подписчиков</string>
     <string name="shuffling_x">Перемешивание %1$s</string>
@@ -244,7 +244,7 @@
     <string name="scroll_animations">Анимация прокрутки</string>
     <string name="sort_subtitle">Субтитры</string>
     <string name="delete">Удалить</string>
-    <string name="no_download_extension">Расширение для скачивания не найдено. Используйте код «echodown», чтобы скачать его.</string>
+    <string name="no_download_extension">Расширение для скачивания не найдено. Используйте код \\\"echodown\\\", чтобы скачать его.</string>
     <string name="tagging_x">Тегирование %1$s</string>
     <string name="apply_player_color_to_app">Применять цвет плеера ко всему приложению</string>
     <string name="apply_player_color_to_app_summary">ПРЕДУПРЕЖДЕНИЕ О ЗАДЕРЖКАХ!!!</string>
@@ -272,7 +272,7 @@
     <string name="dynamic_player_summary">Применять цвет к плееру на основе обложки трека</string>
     <string name="misc">Разное</string>
     <string name="animations_summary">Слишком много подвисаний? Отключение этой функции может помочь</string>
-    <string name="more_brain_capacity_summary">Включение этой опции может помочь исправить задержку звука, но увеличит расход батареи (отключает offloading аудио).</string>
+    <string name="more_brain_capacity_summary">Включение этой функции может устранить задержку звука, но увеличит расход батареи (отключает разгрузку аудио).</string>
     <string name="enabled">Включено</string>
     <string name="disabled">Выключено</string>
     <string name="no_user_found">Пользователь не найден</string>
@@ -280,7 +280,7 @@
     <string name="hiding_x">Скрытие %1$s</string>
     <string name="delete_playlist">Удалить плейлист</string>
     <string name="adding_x_to_next">Добавление %1$s следующим</string>
-    <string name="background_gradient_summary">Градиент фона подстраивается под обложку трека</string>
+    <string name="background_gradient_summary">Градиентный цветовой оттенок фона зависит от обложки трека</string>
     <string name="sort_duration">Длительность</string>
     <string name="x_plays">%1$s прослушиваний</string>
     <string name="save">Сохранить</string>
@@ -341,7 +341,7 @@
         <item quantity="many">%1$d треков</item>
         <item quantity="other">%1$d треков</item>
     </plurals>
-    <string name="unsave">Удалить из сохраненного</string>
+    <string name="unsave">Удалить из сохранённого</string>
     <string name="sort_date_added">Дата добавления</string>
     <string name="opening_webview_x">Открытие Веб-просмотра: %1$s</string>
     <string name="no_update_available_for_x">Нет доступных обновлений для %1$s</string>
