@@ -95,7 +95,7 @@
     <string name="ui">UI</string>
     <string name="theme">Thema</string>
     <string name="theme_summary">Möchten Sie blind sein?</string>
-    <string name="custom_theme_color_summary">Verwenden eine eigene Farbe anstelle der Systemfarbe</string>
+    <string name="custom_theme_color_summary">Verwenden Sie eine benutzerdefinierte Designfarbe anstelle des Systemdesigns.</string>
     <string name="custom_colors">Benutzerdefinierte Farben</string>
     <string name="amoled">Amoled</string>
     <string name="navbar_gradient">Navigationsleiste mit Farbverlauf</string>
@@ -151,7 +151,7 @@
     <string name="audio_permission_summary">So greifst Du auf Deine lokale Musikbibliothek zu</string>
     <string name="write_storage">Speicher beschreiben</string>
     <string name="x_is_not_supported_in_x">%1$s wird in %2$s nicht unterstützt</string>
-    <string name="skip_silence_summary">Überspringe den stillen Teils des Songs, um eine lückenlose Wiedergabe zu ermöglichen</string>
+    <string name="skip_silence_summary">Überspringe den stillen Teils des Songs, um eine lückenlose Wiedergabe zu ermöglichen.</string>
     <string name="cache_playlist_warning">Experimentelle Funktionen. Alles, außer dem Anhören, wird nicht unterstützt.</string>
     <string name="duration_filter_summary">Filter Audiodateien heraus, deren Dauer (in Sekunden) kleiner als der Wert ist</string>
     <string name="extension_installed">%1$s (Installiert)</string>
@@ -373,4 +373,7 @@
     <string name="feed">Feed</string>
     <string name="isrc_x">ISRC: %1$s</string>
     <string name="genres_x">Genres: %1$s</string>
+    <string name="colors">Farben</string>
+    <string name="scroll_bar">Bildlaufleiste</string>
+    <string name="scroll_bar_summary">Bildlaufleiste an der Seite für schnelleren Zugriff (kann fehlerhaft sein)</string>
 </resources>
