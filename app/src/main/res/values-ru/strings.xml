@@ -134,7 +134,7 @@
         <item quantity="other">%1$d минут</item>
     </plurals>
     <string name="subtitle_selection">Выбор субтитров</string>
-    <string name="blacklist_folder_keywords">Ключевые слова для черного списка папок</string>
+    <string name="blacklist_folder_keywords">Ключевые слова для чёрного списка папок</string>
     <string name="audio_fx_desc">Изменить аудиоэффекты для текущего трека.</string>
     <string name="_30min">30 мин.</string>
     <string name="playlist_description">Описание плейлиста</string>
