@@ -8,7 +8,7 @@ import androidx.core.net.toFile
 import dev.brahmkshatriya.echo.MainActivity.Companion.getMainActivity
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.getTempFile
-import dev.brahmkshatriya.echo.utils.ContextUtils.getTempApkFile
+import dev.brahmkshatriya.echo.utils.ContextUtils.getTempFile
 import java.io.File
 
 class ExtensionOpenerActivity : Activity() {
@@ -36,7 +36,7 @@ class ExtensionOpenerActivity : Activity() {
     }
 
     private fun getTempFile(file: File): File {
-        val tempFile = getTempApkFile()
+        val tempFile = getTempFile()
         file.copyTo(tempFile)
         return tempFile
     }

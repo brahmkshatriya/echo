@@ -20,6 +20,7 @@ import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SaveClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
@@ -57,6 +58,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.toKey
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import java.io.File
 
 @OptIn(UnstableApi::class)
 class UnifiedExtension(
@@ -66,7 +68,7 @@ class UnifiedExtension(
     HomeFeedClient, SearchFeedClient, LibraryFeedClient,
     PlaylistClient, AlbumClient, ArtistClient, TrackClient,
     FollowClient, RadioClient, LikeClient, SaveClient, HideClient, ShareClient,
-    PlaylistEditClient, LyricsClient, TrackerMarkClient {
+    PlaylistEditClient, PlaylistEditCoverClient, LyricsClient, TrackerMarkClient {
 
     companion object {
         const val UNIFIED_ID = "unified"
@@ -549,14 +551,31 @@ class UnifiedExtension(
         return db.createPlaylist(title, description)
     }
 
+    val coverDir = context.filesDir.resolve("unified-playlist-covers")
     override suspend fun deletePlaylist(playlist: Playlist) {
         db.deletePlaylist(playlist)
+        File(coverDir, playlist.id).let {
+            if (it.exists()) it.delete()
+        }
     }
 
     override suspend fun editPlaylistMetadata(
-        playlist: Playlist, title: String, description: String?,
+        playlist: Playlist, title: String, description: String?
     ) {
         db.editPlaylistMetadata(playlist, title, description)
+    }
+
+    override suspend fun editPlaylistCover(
+        playlist: Playlist, cover: File?
+    ) {
+//        coverDir.listFiles {
+//            it.nameWithoutExtension == playlist.id
+//        }?.firstOrNull()?.delete()
+//        val savedFile = cover?.let {
+//            val newFile = File(coverDir, playlist.id + "."+ it.extension)
+//            it.copyTo(newFile, true)
+//        }
+        db.editPlaylistCover(playlist, cover)
     }
 
     override suspend fun addTracksToPlaylist(

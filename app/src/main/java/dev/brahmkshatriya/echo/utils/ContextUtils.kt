@@ -60,8 +60,8 @@ object ContextUtils {
     fun Context.getSettings() = getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE)!!
 
     private fun Context.getTempDir() = cacheDir.resolve("apks").apply { mkdirs() }
-    fun Context.getTempApkFile(): File =
-        File.createTempFile("temp", ".apk", getTempDir())
+    fun Context.getTempFile(ext: String = "apk"): File =
+        File.createTempFile("temp", ".$ext", getTempDir())
 
     fun Context.cleanupTempApks() {
         getTempDir().deleteRecursively()

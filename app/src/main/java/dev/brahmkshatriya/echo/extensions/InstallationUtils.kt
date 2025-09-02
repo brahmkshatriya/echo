@@ -10,7 +10,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import dev.brahmkshatriya.echo.extensions.repo.ExtensionParser.Companion.PACKAGE_FLAGS
 import dev.brahmkshatriya.echo.extensions.repo.FileRepository.Companion.getExtensionsFileDir
-import dev.brahmkshatriya.echo.utils.ContextUtils.getTempApkFile
+import dev.brahmkshatriya.echo.utils.ContextUtils.getTempFile
 import dev.brahmkshatriya.echo.utils.PermsUtils.registerActivityResultLauncher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -54,9 +54,11 @@ object InstallationUtils {
         fileIgnoreFlow.emit(null)
     }
 
-    suspend fun FragmentActivity.openFileSelector(): File {
+    suspend fun FragmentActivity.openFileSelector(
+        fileType: String = "application/octet-stream"
+    ): File {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "application/octet-stream"
+            type = fileType
             addCategory(Intent.CATEGORY_OPENABLE)
         }
         val result = waitForResult(intent)
@@ -66,7 +68,7 @@ object InstallationUtils {
 
     fun Context.getTempFile(uri: Uri): File {
         val stream = contentResolver.openInputStream(uri)!!
-        val tempFile = getTempApkFile()
+        val tempFile = getTempFile("dat")
         tempFile.outputStream().use { outputStream ->
             stream.copyTo(outputStream)
         }
