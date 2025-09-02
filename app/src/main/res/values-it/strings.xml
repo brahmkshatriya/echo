@@ -153,8 +153,8 @@
     <string name="tracker">Tracciamento</string>
     <string name="lyrics">Testi</string>
     <string name="misc">Varie</string>
-    <string name="x_extensions">Estensioni per %1$s</string>
-    <string name="x_extension">Estensione per %1$s</string>
+    <string name="x_extensions">Estensioni %1$s</string>
+    <string name="x_extension">Estensione %1$s</string>
     <string name="enabled">Abilitato</string>
     <string name="disabled">Disabilitato</string>
     <string name="no_user_found">Nessun utente trovato</string>
