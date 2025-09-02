@@ -93,7 +93,7 @@
     <string name="_15min">15 мин.</string>
     <string name="_1hr">1 ч.</string>
     <string name="_2hr">2 ч.</string>
-    <string name="sleep_timer_cancelled">Таймер сна отменён</string>
+    <string name="sleep_timer_cancelled">Таймер сна отменен</string>
     <string name="sleep_timer_set_for">Таймер сна установлен на %1$s</string>
     <string name="search_x">Поиск %1$s</string>
     <string name="sources">Источники</string>
@@ -154,7 +154,7 @@
     <string name="unfollow">Отписаться</string>
     <string name="logout">Выйти из аккаунта</string>
     <string name="incognito">Инкогнито</string>
-    <string name="sleep_timer_desc">Установите таймер сна, чтобы остановить воспроизведение через определённое количество времени</string>
+    <string name="sleep_timer_desc">Установите таймер сна, чтобы остановить воспроизведение через заданное время</string>
     <string name="value_not_set">Не установлено</string>
     <string name="app">Приложение</string>
     <string name="installation_type_warning">Недоступно, если вы устанавливаете расширение в виде файла.</string>
@@ -213,10 +213,10 @@
     <string name="select_x_account">Выберите аккаунт %1$s</string>
     <string name="up_next">Очередь</string>
     <string name="seekbar">Панель поиска</string>
-    <string name="previous">Предыдущее</string>
-    <string name="next">Следующее</string>
+    <string name="previous">Предыдущий</string>
+    <string name="next">Следующий</string>
     <string name="repeat">Повторять</string>
-    <string name="sleep_on_specific_time">Остановить через указанное время</string>
+    <string name="sleep_on_specific_time">Остановить через заданное время</string>
     <string name="sharing_x">Поделиться %1$s</string>
     <string name="following_x">Подписка на %1$s</string>
     <string name="followed_x">Вы подписаны на %1$s</string>
@@ -231,7 +231,7 @@
     <string name="playing_x">Воспроизведение %1$s</string>
     <string name="adding_x_to_queue">Добавление %1$s в очередь</string>
     <string name="background_gradient">Градиент фона</string>
-    <string name="all">Всё</string>
+    <string name="all">Все</string>
     <string name="edit_playlist">Редактировать плейлист</string>
     <string name="more_brain_capacity">Отключить разгрузку</string>
     <string name="sort">Сортировать по</string>
@@ -267,11 +267,11 @@
     <string name="sort_date">Дата</string>
     <string name="auto_start_radio_summary">Автоматически добавлять связанные треки в плейлист, чтобы очередь была бесконечной</string>
     <string name="downloading_update_for_x">Скачивание обновления для %1$s</string>
-    <string name="amoled_summary">Чёрный, Настоящий чёрный</string>
+    <string name="amoled_summary">Абсолютно черный, чистый черный</string>
     <string name="show_background_summary">Фоновое видео или размытая обложка трека в плеере</string>
-    <string name="dynamic_player_summary">Применение цвета к плееру на основе обложки трека</string>
+    <string name="dynamic_player_summary">Применять цвет к плееру на основе обложки трека</string>
     <string name="misc">Разное</string>
-    <string name="animations_summary">Отключите это, если возникают подвисания</string>
+    <string name="animations_summary">Слишком много подвисаний? Отключение этой функции может помочь</string>
     <string name="more_brain_capacity_summary">Включение этой функции может устранить задержку звука, но увеличит расход батареи (Отключает разгрузку аудио).</string>
     <string name="enabled">Включено</string>
     <string name="disabled">Выключено</string>
@@ -280,7 +280,7 @@
     <string name="hiding_x">Скрытие %1$s</string>
     <string name="delete_playlist">Удалить плейлист</string>
     <string name="adding_x_to_next">Добавление %1$s следующим</string>
-    <string name="background_gradient_summary">Градиентный цветовой оттенок фона зависит от обложки трека</string>
+    <string name="background_gradient_summary">Градиент фона подстраивается под обложку трека</string>
     <string name="sort_duration">Длительность</string>
     <string name="x_plays">%1$s прослушиваний</string>
     <string name="save">Сохранить</string>
