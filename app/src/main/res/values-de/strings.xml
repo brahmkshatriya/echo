@@ -65,8 +65,8 @@
     <string name="equalizer">Equalizer</string>
     <string name="equalizer_summary">Equalizer-Einstellungen des Geräts öffnen</string>
     <string name="stream_quality">Stream-Qualität</string>
-    <string name="behavior">Benehmen</string>
-    <string name="keep_queue">Spielerwarteschlange halten</string>
+    <string name="behavior">Verhalten</string>
+    <string name="keep_queue">Warteschlange behalten</string>
     <string name="keep_queue_summary">Stellen Sie die Player-Warteschlange wieder her, wenn Sie die App erneut öffnen.</string>
     <string name="stop_player_summary">Beenden Sie den Player, wenn die App aus den zuletzt verwendeten Apps entfernt wird</string>
     <string name="skip_silence">Stille überspringen</string>
@@ -95,7 +95,7 @@
     <string name="ui">UI</string>
     <string name="theme">Thema</string>
     <string name="theme_summary">Möchten Sie blind sein?</string>
-    <string name="custom_theme_color_summary">Verwenden eine eigene Designfarbe anstelle der Systemfarbe</string>
+    <string name="custom_theme_color_summary">Verwenden eine eigene Farbe anstelle der Systemfarbe</string>
     <string name="custom_colors">Benutzerdefinierte Farben</string>
     <string name="amoled">Amoled</string>
     <string name="navbar_gradient">Navigationsleiste mit Farbverlauf</string>
@@ -108,7 +108,7 @@
     <string name="refresh">Auffrischen</string>
     <string name="by_x">Um %1$s</string>
     <string name="music">Musik</string>
-    <string name="tracker">Aufspürer</string>
+    <string name="tracker">Tracker</string>
     <string name="lyrics">Liedtext</string>
     <string name="x_extensions">%1$s Erweiterungen</string>
     <string name="enabled">Ermöglichte</string>
