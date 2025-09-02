@@ -336,7 +336,7 @@
     <string name="sort_date_added">যোগ কৰা ডেট</string>
     <string name="opening_webview_x">ৱেবভিউ খোলা হৈছে: %1$s</string>
     <string name="no_update_available_for_x">%1$sৰ বাবে কোনো আপডেট উপলব্ধ নাই</string>
-    <string name="other">আদাৰ</string>
+    <string name="other">অন্যান্য</string>
     <string name="player">প্লেয়াৰ</string>
     <string name="about">এবাউট</string>
     <string name="language_x">ভাষা: %1$s</string>
@@ -346,7 +346,7 @@
     <string name="app_desc">মাত্ৰ এটা মিউজিক প্লেয়াৰ।</string>
     <string name="manage">মেনেজ</string>
     <string name="no_account">কোনো একাউণ্ট নাই</string>
-    <string name="other_settings">আদাৰ ছেটিং</string>
+    <string name="other_settings">অন্যান্য ছেটিং</string>
     <string name="no_x_found">কোনো %1$s পোৱা নগ’ল</string>
     <string name="playlist">প্লেলিষ্ট</string>
     <string name="album">এলবাম</string>
