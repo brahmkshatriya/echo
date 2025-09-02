@@ -76,7 +76,7 @@
     <string name="account_session_expired_in_x">%%%1$s에서 계정 세션이 만료되었습니다</string>
     <string name="unknown">알 수 없음</string>
     <string name="equalizer">이퀄라이저</string>
-    <string name="custom_theme_color_summary">시스템 색상 대신 사용자 정의 테마 색상 사용</string>
+    <string name="custom_theme_color_summary">시스템 테마 색상 대신 사용자 정의 테마 색상을 사용합니다.</string>
     <string name="add_color">색상 추가</string>
     <string name="stream_quality">스트리밍 품질</string>
     <string name="audio_fx_summary">모든 곡에 적용된 효과</string>
@@ -84,7 +84,7 @@
     <string name="keep_queue_summary">앱을 다시 열면 플레이어 대기열을 복구합니다.</string>
     <string name="installation_type_summary">앱을 설치하면 Echo에서 다음 링크가 열립니다:</string>
     <string name="extension_uninstalled_successfully">확장 프로그램이 성공적으로 제거되었습니다.</string>
-    <string name="skip_silence_summary">끊김 없는 재생을 제공하기 위해 노래가 아닌 부분을 건너뜁니다</string>
+    <string name="skip_silence_summary">끊김없는 재생을 위해 노래의 조용한 부분을 건너뜁니다.</string>
     <string name="installation_type">설치 유형</string>
     <string name="auto_start_radio_summary">재생 목록에 트랙의 관련 노래를 자동으로 추가하여 무한 대기열을 만듭니다</string>
     <string name="add_extensions">확장 프로그램 추가</string>
@@ -127,8 +127,8 @@
     <string name="ui">UI</string>
     <string name="theme">테마</string>
     <string name="theme_summary">화려한 것을 원하시나요?</string>
-    <string name="amoled">Amoled</string>
-    <string name="amoled_summary">배경색을 완전한 검정으로 바꿉니다. AMOLED 사용자에게 배터리 소모를 줄이고 화면 번인을 방지합니다</string>
+    <string name="amoled">아몰레드</string>
+    <string name="amoled_summary">배경색을 완전한 검정으로 바꾸어 아몰레드 디스플레이에서 배터리 소모를 줄이고 화면 번인을 방지합니다</string>
     <string name="bass_boost">저음 부스트</string>
     <string name="system">시스템</string>
     <string name="extension_installed_successfully">확장 프로그램이 성공적으로 설치되었습니다.</string>
@@ -162,7 +162,7 @@
     <string name="unfollowed_x">%1$s 언팔로우중</string>
     <string name="animations_summary">끊김 현상이 너무 심하다고 느껴지세요? 이 기능을 끄면 도움이 될 수 있습니다</string>
     <string name="music">음악</string>
-    <string name="x_extensions">%1$s 확장</string>
+    <string name="x_extensions">%1$s 확장 기능</string>
     <string name="x_extension">%1$s 확장</string>
     <string name="next">다음</string>
     <string name="all">전체</string>
@@ -187,7 +187,7 @@
     <string name="incognito">시크릿 모드</string>
     <string name="not_logged_in">로그인하지 않음</string>
     <string name="x_login">%1$s 로그인</string>
-    <string name="x_is_required">$1%s가 필요합니다</string>
+    <string name="x_is_required">%1$s가 필요합니다</string>
     <string name="playing_from">재생 위치</string>
     <string name="up_next">대기열</string>
     <string name="info">정보</string>
@@ -220,7 +220,7 @@
     <string name="download">다운로드</string>
     <string name="follow">팔로우</string>
     <string name="hide">숨기기</string>
-    <string name="unhide">숨기기 해제</string>
+    <string name="unhide">표시하기</string>
     <string name="liked_x">%1$s 좋아요됨</string>
     <string name="unliking_x">%1$s 싫어요 중</string>
     <string name="save_to_playlist">재생목록에 저장</string>
@@ -229,7 +229,7 @@
     <string name="playing_x">%1$s 재생 중</string>
     <string name="adding_x_to_next">다음에 %1$s 추가 중</string>
     <string name="background_gradient">배경 그라데이션</string>
-    <string name="more_brain_capacity">More Brain Capacity</string>
+    <string name="more_brain_capacity">더 많은 뇌 용량</string>
     <string name="sort">정렬</string>
     <string name="edit_playlist">재생목록 수정</string>
     <string name="copying_the_error">오류 복사하기</string>
@@ -266,7 +266,7 @@
     <string name="loading_radio_for_x">%1$s에 대한 라디오 로드 중</string>
     <string name="playlist_name">재생목록 이름</string>
     <string name="nothing_to_download_in_x">%1$s에 다운로드할 항목이 없습니다</string>
-    <string name="shuffling_x">%1$s 셔플링</string>
+    <string name="shuffling_x">셔플링 %1$s</string>
     <string name="x_created">%1$s 생성되었습니다</string>
     <string name="add_to_next">다음에 추가</string>
     <string name="more_brain_capacity_summary">이 옵션을 활성화하면 오디오 지연 현상을 해결할 수 있지만, 배터리 사용량이 크게 증가합니다 (오디오 오프로딩이 비활성화됩니다).</string>
@@ -313,4 +313,60 @@
     <string name="n_episodes">%1$d에피소드</string>
     <string name="n_chapters">%1$d챕터</string>
     <string name="n_tracks">%1$d트랙</string>
+    <string name="colors">색상</string>
+    <string name="scroll_bar">스크롤 바</string>
+    <string name="scroll_bar_summary">더 빠른 접근을 위한 측면 스크롤 바(오류가 발생할 수 있음)</string>
+    <plurals name="number_episodes">
+        <item quantity="other">%1$d 에피소드</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="other">%1$d 챕터</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="other">%1$d 트랙</item>
+    </plurals>
+    <string name="unsave">저장 취소</string>
+    <plurals name="number_songs">
+        <item quantity="other">%1$d 노래</item>
+    </plurals>
+    <string name="sort_date_added">추가된 날짜</string>
+    <string name="opening_webview_x">웹뷰 열기: %1$s</string>
+    <string name="no_update_available_for_x">%1$s 에 대한 업데이트가 없음</string>
+    <string name="other">기타</string>
+    <string name="player">플레이어</string>
+    <string name="about">정보</string>
+    <string name="language_x">언어: %1$s</string>
+    <string name="guide">가이드</string>
+    <string name="donate">후원</string>
+    <string name="contributors">기여자</string>
+    <string name="app_desc">뮤직 플레이어 입니다.</string>
+    <string name="manage">관리</string>
+    <string name="no_account">계정 없음</string>
+    <string name="other_settings">기타 설정</string>
+    <string name="no_x_found">%1$s를 찿을수 없음</string>
+    <string name="playlist">플레이리스트</string>
+    <string name="album">앨범</string>
+    <string name="pre_release">사전 출시</string>
+    <string name="single">싱글</string>
+    <string name="song">노래</string>
+    <string name="podcast">팟캐스트</string>
+    <string name="genres_x">장르: %1$s</string>
+    <string name="disc_number_n">디스크 번호: %1$d</string>
+    <string name="confirmation">확인</string>
+    <string name="delete_playlist_confirmation">%1$s을 삭제하시겠습니까?</string>
+    <string name="confirm">확인</string>
+    <string name="big_cover">더 큰 커버</string>
+    <string name="big_cover_summary">화면이 큰 기기에 적합합니다</string>
+    <string name="no_last_played_track_found">마지막으로 재생한 트랙을 찾을 수 없습니다.</string>
+    <string name="not_yet_released">아직 출시되지 않음</string>
+    <string name="releases_on_x">%1$s에 출시 예정</string>
+    <string name="unavailable_in_your_region">귀하의 지역에서는 사용할 수 없습니다</string>
+    <string name="not_playable_x">재생할 수 없음: %1$s</string>
+    <string name="show">보기</string>
+    <string name="ep">미니 앨범</string>
+    <string name="lp">정규 앨범</string>
+    <string name="compilation">편집</string>
+    <string name="book">책</string>
+    <string name="isrc_x">ISRC: %1$s</string>
+    <string name="album_order_n">앨범 주문 번호: %1$d</string>
 </resources>
