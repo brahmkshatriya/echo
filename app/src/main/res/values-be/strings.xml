@@ -389,5 +389,5 @@
     <string name="not_playable_x">Немагчыма прайграць: %1$s</string>
     <string name="colors">Колеры</string>
     <string name="scroll_bar">Паласа пракруткі</string>
-    <string name="scroll_bar_summary">Палоса пракруткі ўзбоч для хуткага доступу (можа працаваць з памылкамі)</string>
+    <string name="scroll_bar_summary">Паласа пракруткі ўзбоч для хуткага доступу (можа працаваць з памылкамі)</string>
 </resources>
