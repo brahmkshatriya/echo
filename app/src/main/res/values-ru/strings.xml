@@ -20,7 +20,7 @@
     <string name="albums">Альбомы</string>
     <string name="cache_playlist_warning">Экспериментальная функция. Всё, кроме прослушивания, не поддерживается.</string>
     <string name="duration_filter">Фильтр по длительности</string>
-    <string name="duration_filter_summary">Фильтровать аудиофайлы с длительностью меньше указанной (в секундах)</string>
+    <string name="duration_filter_summary">Фильтрация аудиофайлов с длительностью меньше указанной (в секундах)</string>
     <string name="tabs">Вкладки</string>
     <string name="unified_liked_playlist_summary">Ваши понравившееся треки из разных расширений</string>
     <string name="show_tab_summary">показывать вкладки расширений как категории</string>
@@ -73,7 +73,7 @@
     <string name="home">Главная</string>
     <string name="playlist_liked_desc">Ваши понравившиеся треки</string>
     <string name="logout_and_login">Выход и вход</string>
-    <string name="view">Просмотреть</string>
+    <string name="view">Посмотреть</string>
     <string name="audio_fx_summary">Эффекты применяются ко всем песням</string>
     <string name="skip_silence">Пропускать тишину</string>
     <string name="cache_size">Размер кэша</string>
@@ -138,7 +138,7 @@
     <string name="audio_fx_desc">Изменить аудиоэффекты для текущего трека.</string>
     <string name="_30min">30 мин.</string>
     <string name="playlist_description">Описание плейлиста</string>
-    <string name="create_playlist">Создать плейлист</string>
+    <string name="create_playlist">Создайте плейлист</string>
     <string name="add_song">Добавить песню</string>
     <string name="loading_x">Загрузка %1s</string>
     <string name="moving_x">Перемещение %1$s</string>
@@ -217,7 +217,7 @@
     <string name="next">Следующий</string>
     <string name="repeat">Повторять</string>
     <string name="sleep_on_specific_time">Остановить через указанное время</string>
-    <string name="sharing_x">Поделиться %1$s</string>
+    <string name="sharing_x">Обмен %1$s</string>
     <string name="following_x">Подписка на %1$s</string>
     <string name="followed_x">Вы подписаны на %1$s</string>
     <string name="unfollowing_x">Отписка от %1$s</string>
@@ -239,7 +239,7 @@
     <string name="shuffling_x">Перемешивание %1$s</string>
     <string name="copying_the_error">Копирование ошибки</string>
     <string name="filter">Фильтр</string>
-    <string name="reversed">Обратное воспроизведение</string>
+    <string name="reversed">Обратная сортировка</string>
     <string name="apply">Применить</string>
     <string name="scroll_animations">Анимация прокрутки</string>
     <string name="sort_subtitle">Субтитры</string>
@@ -274,7 +274,7 @@
     <string name="animations_summary">Отключите это, если возникают подвисания</string>
     <string name="more_brain_capacity_summary">Включение этой функции может устранить задержку звука, но увеличит расход батареи (отключает разгрузку аудио).</string>
     <string name="enabled">Включено</string>
-    <string name="disabled">Выключено</string>
+    <string name="disabled">Отключено</string>
     <string name="no_user_found">Пользователь не найден</string>
     <string name="add_to_next">Добавить следующим</string>
     <string name="hiding_x">Скрытие %1$s</string>
@@ -299,11 +299,11 @@
         <item quantity="many">%1$d элементов</item>
         <item quantity="other">%1$d элементов</item>
     </plurals>
-    <string name="x_specific_quality_summary">%1$s конкретное качество воспроизведения, переопределит выбор качества воспроизведения по умолчанию</string>
+    <string name="x_specific_quality_summary">Конкретное качество воспроизведения %1$s, переопределит выбор качества воспроизведения по умолчанию</string>
     <string name="unmetered_stream_quality">Неограниченное качество воспроизведения</string>
     <string name="unmetered_stream_quality_summary">Качество воспроизведения при подключении к сети с неограниченным трафиком. Переопределит качество воспроизведения по умолчанию.</string>
     <string name="select_language">Выбрать язык</string>
-    <string name="check_for_updates">Проверять обновления</string>
+    <string name="check_for_updates">Проверка обновлений</string>
     <string name="check_for_updates_summary">Проверять наличие обновлений для приложения и расширений при его запуске.</string>
     <string name="checking_for_updates">Проверка обновлений</string>
     <string name="back_animations">Анимации при переходе назад</string>
