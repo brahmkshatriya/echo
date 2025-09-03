@@ -50,7 +50,7 @@
     <string name="read_storage">ষ্ট’ৰেজ পঢ়ক</string>
     <string name="write_storage">ষ্ট’ৰেজ লিখক</string>
     <string name="x_is_required">%1$sৰ প্ৰয়োজন</string>
-    <string name="write_storage_permission_summary">স্থানীয় প্লেলিষ্ট তৈয়াৰ আৰু সম্পাদনাৰ বাবে</string>
+    <string name="write_storage_permission_summary">স্থানীয় প্লেলিষ্ট সৃষ্টি আৰু সম্পাদনাৰ বাবে</string>
     <string name="notifications">নোটিফিকেশ্যন</string>
     <string name="artists">শিল্পী</string>
     <string name="recently_added">শেহতীয়াকৈ যোগ কৰা</string>
@@ -137,7 +137,7 @@
     <string name="x_login_required">%1$s লগইনৰ প্ৰয়োজন</string>
     <string name="x_is_not_supported_in_x">%1$s %2$sত সমৰ্থিত নহয়</string>
     <string name="account_session_expired_in_x">%1$sত একাউণ্টৰ ছেছনৰ ম্যাদ উকলি গ’ল</string>
-    <string name="by_x">%1$sৰ দ্বাৰা</string>
+    <string name="by_x">%1$s দ্বাৰা</string>
     <string name="select_x_account">%1$s একাউণ্ট বাছক</string>
     <string name="servers">চাৰ্ভাৰ</string>
     <string name="quality_selection">কোৱালিটি ছিলেকশ্যন</string>
@@ -257,9 +257,9 @@
     <string name="sort_duration">ডিউৰেশ্যন</string>
     <string name="sort_subtitle">ছাবটাইটেল</string>
     <string name="playlist_name">প্লেলিষ্টৰ নাম</string>
-    <string name="playlist_description">প্লেলিষ্টৰ ডিচক্ৰিপশ্যন</string>
-    <string name="create_playlist">প্লেলিষ্ট ক্ৰিয়েট কৰক</string>
-    <string name="create">ক্ৰিয়েট</string>
+    <string name="playlist_description">প্লেলিষ্টৰ বৰ্ণনা</string>
+    <string name="create_playlist">প্লেলিষ্ট সৃষ্টি কৰক</string>
+    <string name="create">সৃষ্টি</string>
     <string name="playlist_name_empty">প্লেলিষ্টৰ নাম খালী</string>
     <string name="saved_to_playlists">প্লেলিষ্টত ছেভ কৰা হ’ল</string>
     <string name="nothing_to_download_in_x">%1$sত ডাউনলোড কৰিবলৈ একো নাই</string>
@@ -275,7 +275,7 @@
     <string name="scroll_animations_summary">স্ক্ৰল কৰোঁতে এনিমেশ্যন</string>
     <string name="add_song">গান যোগ কৰক</string>
     <string name="creating_x">%1$s ক্ৰিয়েট কৰা হৈছে</string>
-    <string name="x_created">%1$s ক্ৰিয়েট কৰা হ’ল</string>
+    <string name="x_created">%1$s সৃষ্টি কৰা হ’ল</string>
     <string name="deleting_x">%1$s ডিলিট কৰা হৈছে</string>
     <string name="deleted_x">%1$s ডিলিট কৰা হ’ল</string>
     <string name="saving_x">%1$s ছেভ কৰা হৈছে</string>
