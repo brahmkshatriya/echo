@@ -302,8 +302,8 @@
     <string name="x_specific_quality_summary">%1$s конкретное качество воспроизведения, переопределит выбор качества воспроизведения по умолчанию</string>
     <string name="unmetered_stream_quality">Неограниченное качество воспроизведения</string>
     <string name="unmetered_stream_quality_summary">Качество воспроизведения при подключении к сети с неограниченным трафиком. Переопределит качество воспроизведения по умолчанию.</string>
-    <string name="select_language">Выберите язык</string>
-    <string name="check_for_updates">Проверка обновлений</string>
+    <string name="select_language">Выбрать язык</string>
+    <string name="check_for_updates">Проверить обновления</string>
     <string name="check_for_updates_summary">Проверять наличие обновлений для приложения и расширений при его запуске.</string>
     <string name="checking_for_updates">Проверка обновлений</string>
     <string name="back_animations">Анимации при возвращении назад</string>
