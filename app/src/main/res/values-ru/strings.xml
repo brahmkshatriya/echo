@@ -138,7 +138,7 @@
     <string name="audio_fx_desc">Изменить аудиоэффекты для текущего трека.</string>
     <string name="_30min">30 мин.</string>
     <string name="playlist_description">Описание плейлиста</string>
-    <string name="create_playlist">Создайте плейлист</string>
+    <string name="create_playlist">Создать плейлист</string>
     <string name="add_song">Добавить песню</string>
     <string name="loading_x">Загрузка %1s</string>
     <string name="moving_x">Перемещение %1$s</string>
@@ -154,7 +154,7 @@
     <string name="unfollow">Отписаться</string>
     <string name="logout">Выйти из аккаунта</string>
     <string name="incognito">Инкогнито</string>
-    <string name="sleep_timer_desc">Установите таймер сна, чтобы остановить воспроизведение через определённое количество времени</string>
+    <string name="sleep_timer_desc">Установите таймер сна, чтобы остановить воспроизведение через заданное время</string>
     <string name="value_not_set">Не установлено</string>
     <string name="app">Приложение</string>
     <string name="installation_type_warning">Недоступно, если вы устанавливаете расширение в виде файла.</string>
@@ -176,7 +176,7 @@
     <string name="unlike">Удалить из Понравившихся</string>
     <string name="repeat_one">Повторять один</string>
     <string name="repeat_off">Повтор выключен</string>
-    <string name="extension_out_of_date">Устаревшее</string>
+    <string name="extension_out_of_date">Старая версия</string>
     <string name="random">Случайный</string>
     <string name="change_pitch_with_speed">Изменять высоту тона вместе с скоростью</string>
     <string name="bass_boost">Усиление басов</string>
@@ -217,7 +217,7 @@
     <string name="next">Следующий</string>
     <string name="repeat">Повторять</string>
     <string name="sleep_on_specific_time">Остановить через указанное время</string>
-    <string name="sharing_x">Обмен %1$s</string>
+    <string name="sharing_x">Поделиться %1$s</string>
     <string name="following_x">Подписка на %1$s</string>
     <string name="followed_x">Вы подписаны на %1$s</string>
     <string name="unfollowing_x">Отписка от %1$s</string>
@@ -239,7 +239,7 @@
     <string name="shuffling_x">Перемешивание %1$s</string>
     <string name="copying_the_error">Копирование ошибки</string>
     <string name="filter">Фильтр</string>
-    <string name="reversed">Обратная сортировка</string>
+    <string name="reversed">Обратное воспроизведение</string>
     <string name="apply">Применить</string>
     <string name="scroll_animations">Анимации прокрутки</string>
     <string name="sort_subtitle">Субтитры</string>
@@ -265,7 +265,7 @@
     <string name="x_extension">%1$s Расширение</string>
     <string name="sort_and_filter">Сортировка и фильтрация</string>
     <string name="sort_date">Дата</string>
-    <string name="auto_start_radio_summary">Автоматическое добавление связанных песен трека в плейлист, чтобы иметь бесконечную очередь</string>
+    <string name="auto_start_radio_summary">Автоматическое добавление связанных треков в плейлист, чтобы иметь бесконечную очередь</string>
     <string name="downloading_update_for_x">Скачивание обновления для %1$s</string>
     <string name="amoled_summary">Чёрный, Настоящий чёрный</string>
     <string name="show_background_summary">Фоновое видео или размытая обложка трека в плеере</string>
@@ -299,7 +299,7 @@
         <item quantity="many">%1$d элементов</item>
         <item quantity="other">%1$d элементов</item>
     </plurals>
-    <string name="x_specific_quality_summary">Конкретное качество воспроизведения %1$s, переопределит выбор качества воспроизведения по умолчанию</string>
+    <string name="x_specific_quality_summary">%1$s конкретное качество воспроизведения, переопределит выбор качества воспроизведения по умолчанию</string>
     <string name="unmetered_stream_quality">Неограниченное качество воспроизведения</string>
     <string name="unmetered_stream_quality_summary">Качество воспроизведения при подключении к сети с неограниченным трафиком. Переопределит качество воспроизведения по умолчанию.</string>
     <string name="select_language">Выберите язык</string>
@@ -307,7 +307,7 @@
     <string name="check_for_updates_summary">Проверять наличие обновлений для приложения и расширений при его запуске.</string>
     <string name="checking_for_updates">Проверка обновлений</string>
     <string name="back_animations">Анимации при возвращении назад</string>
-    <string name="back_animations_summary">Может вызывать визуальные сбои из-за особенностей android, но вы можете просто открыть Недавние, чтобы исправить это.</string>
+    <string name="back_animations_summary">Может вызывать визуальные сбои из-за особенностей Android, но вы можете исправить его, открыв список последних приложений.</string>
     <string name="regex_invalid">%1$s недопустим, пожалуйста, следуйте формату: %2$s</string>
     <string name="n_hours">%1$d часов</string>
     <string name="n_minutes">%1$d минут</string>
@@ -383,7 +383,7 @@
     <string name="book">Книга</string>
     <string name="song">Песня</string>
     <string name="n_songs">%1$d песен</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="webview">Веб-просмотр</string>
     <string name="explicit">Возрастное ограничение</string>
     <string name="isrc_x">ISRC: %1$s</string>
