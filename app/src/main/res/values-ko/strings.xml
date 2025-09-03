@@ -134,7 +134,7 @@
     <string name="extension_installed_successfully">확장 프로그램이 성공적으로 설치되었습니다.</string>
     <string name="quality_selection">품질 선택</string>
     <string name="navbar_gradient">그라데이션 내비게이션 바</string>
-    <string name="by_x">%1$s까지</string>
+    <string name="by_x">%1$s에 의해</string>
     <string name="unknown_quality">알 수 없는 품질</string>
     <string name="quality_x">품질 %1$d</string>
     <string name="saving_x">%1$s 저장중</string>
