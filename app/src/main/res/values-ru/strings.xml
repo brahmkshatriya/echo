@@ -383,7 +383,7 @@
     <string name="book">Книга</string>
     <string name="song">Песня</string>
     <string name="n_songs">%1$d песен</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="webview">Веб-просмотр</string>
     <string name="explicit">Возрастное ограничение</string>
     <string name="isrc_x">ISRC: %1$s</string>
