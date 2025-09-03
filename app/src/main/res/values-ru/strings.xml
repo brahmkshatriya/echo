@@ -176,7 +176,7 @@
     <string name="unlike">Удалить из Понравившихся</string>
     <string name="repeat_one">Повторять один</string>
     <string name="repeat_off">Повтор выключен</string>
-    <string name="extension_out_of_date">Устаревшее</string>
+    <string name="extension_out_of_date">Старая версия</string>
     <string name="random">Случайный</string>
     <string name="change_pitch_with_speed">Изменять высоту тона вместе с скоростью</string>
     <string name="bass_boost">Усиление басов</string>
@@ -239,7 +239,7 @@
     <string name="shuffling_x">Перемешивание %1$s</string>
     <string name="copying_the_error">Копирование ошибки</string>
     <string name="filter">Фильтр</string>
-    <string name="reversed">Обратная сортировка</string>
+    <string name="reversed">Обратное воспроизведение</string>
     <string name="apply">Применить</string>
     <string name="scroll_animations">Анимации прокрутки</string>
     <string name="sort_subtitle">Субтитры</string>
@@ -265,7 +265,7 @@
     <string name="x_extension">%1$s Расширение</string>
     <string name="sort_and_filter">Сортировка и фильтрация</string>
     <string name="sort_date">Дата</string>
-    <string name="auto_start_radio_summary">Автоматическое добавление связанных песен трека в плейлист, чтобы иметь бесконечную очередь</string>
+    <string name="auto_start_radio_summary">Автоматическое добавление связанных треков в плейлист, чтобы иметь бесконечную очередь</string>
     <string name="downloading_update_for_x">Скачивание обновления для %1$s</string>
     <string name="amoled_summary">Чёрный, Настоящий чёрный</string>
     <string name="show_background_summary">Фоновое видео или размытая обложка трека в плеере</string>
@@ -303,11 +303,11 @@
     <string name="unmetered_stream_quality">Неограниченное качество воспроизведения</string>
     <string name="unmetered_stream_quality_summary">Качество воспроизведения при подключении к сети с неограниченным трафиком. Переопределит качество воспроизведения по умолчанию.</string>
     <string name="select_language">Выбрать язык</string>
-    <string name="check_for_updates">Проверка обновлений</string>
+    <string name="check_for_updates">Проверить на наличие обновлений</string>
     <string name="check_for_updates_summary">Проверять наличие обновлений для приложения и расширений при его запуске.</string>
     <string name="checking_for_updates">Проверка обновлений</string>
     <string name="back_animations">Анимации при возвращении назад</string>
-    <string name="back_animations_summary">Может вызывать визуальные сбои из-за особенностей android, но вы можете просто открыть Недавние, чтобы исправить это.</string>
+    <string name="back_animations_summary">Может вызывать визуальные сбои из-за особенностей Android, но вы можете исправить его, открыв список последних приложений.</string>
     <string name="regex_invalid">%1$s недопустим, пожалуйста, следуйте формату: %2$s</string>
     <string name="n_hours">%1$d часов</string>
     <string name="n_minutes">%1$d минут</string>
