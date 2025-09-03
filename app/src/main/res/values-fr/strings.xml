@@ -380,4 +380,7 @@
     <string name="releases_on_x">Sorties sur %1$s</string>
     <string name="unavailable_in_your_region">Non disponible dans votre région</string>
     <string name="not_playable_x">Non jouable : %1$s</string>
+    <string name="colors">Couleurs</string>
+    <string name="scroll_bar">Barre de Défilement</string>
+    <string name="scroll_bar_summary">Barre de défilement sur le côté pour un accès plus rapide (peut être bugé)</string>
 </resources>
