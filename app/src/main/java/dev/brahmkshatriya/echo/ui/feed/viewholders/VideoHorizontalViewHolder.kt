@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadInto
 class VideoHorizontalViewHolder(
     parent: ViewGroup,
     listener: FeedClickListener,
+    getAllTracks: (FeedType) -> Pair<List<Track>, Int>,
     private val binding: ItemShelfVideoHorizontalBinding = ItemShelfVideoHorizontalBinding.inflate(
         LayoutInflater.from(parent.context), parent, false
     )
@@ -33,7 +34,8 @@ class VideoHorizontalViewHolder(
                 listener.onMediaClicked(it, feed?.extensionId, track, feed?.context)
                 return@setOnClickListener
             }
-            listener.onTracksClicked(it, feed?.extensionId, feed?.context, listOfNotNull(track), 0)
+            val (tracks, pos) = getAllTracks(feed!!)
+            listener.onTracksClicked(it, feed?.extensionId, feed?.context, tracks, pos)
         }
         binding.root.setOnLongClickListener {
             listener.onMediaLongClicked(

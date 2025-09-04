@@ -5,6 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
+    android:layout_marginStart="-20dp"
+    android:layout_marginEnd="-20dp"
+    android:paddingHorizontal="20dp"
+    android:clipToPadding="false"
     android:layout_marginVertical="4dp"
     android:minHeight="48dp">
 
@@ -42,13 +46,15 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/shuffle"
-        style="@style/IconButtonTertiary"
+        style="@style/IconButtonSecondary"
         android:contentDescription="@string/shuffle"
         app:icon="@drawable/ic_shuffle" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/more"
-        style="@style/IconButtonOutlined"
+        android:layout_marginEnd="-8dp"
+        style="@style/IconButtonTransparent"
         android:contentDescription="@string/more"
-        app:icon="@drawable/ic_chevron_forward" />
+        android:scaleX="-1"
+        app:icon="@drawable/ic_back" />
 </LinearLayout>

@@ -13,8 +13,6 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.MainApplication.Companion.getCurrentLanguage
@@ -25,7 +23,6 @@ import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.databinding.DialogSettingsBinding
 import dev.brahmkshatriya.echo.extensions.db.models.UserEntity.Companion.toEntity
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
-import dev.brahmkshatriya.echo.ui.common.UiViewModel
 import dev.brahmkshatriya.echo.ui.download.DownloadFragment
 import dev.brahmkshatriya.echo.ui.download.DownloadViewModel
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionInfoFragment
@@ -43,12 +40,11 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.copyToClipboard
 import dev.brahmkshatriya.echo.utils.ContextUtils.getArch
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
-import dev.brahmkshatriya.echo.utils.ui.UiUtils.dpToPx
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureBottomBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.random.Random
 
 class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) {
-    private val uiViewModel by activityViewModel<UiViewModel>()
     private val viewModel by activityViewModel<LoginUserListViewModel>()
     private val downloadVM by activityViewModel<DownloadViewModel>()
 
@@ -244,24 +240,5 @@ class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) 
                 }
             }
         }
-    }
-
-    fun configureBottomBar(view: View) {
-        val dialog = requireDialog() as BottomSheetDialog
-        val behavior = dialog.behavior
-        val barHeight = 72.dpToPx(requireContext())
-        val system = uiViewModel.systemInsets.value.run { top + bottom }
-        val screen = requireContext().resources.displayMetrics.heightPixels - barHeight - system
-        val peek = (behavior.peekHeight - barHeight).coerceAtMost(screen)
-        val toScroll = screen - peek
-        view.y = peek.toFloat()
-        val callback = object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(p0: View, p1: Int) {}
-            override fun onSlide(p0: View, p1: Float) {
-                val offset = p1.coerceAtLeast(0f)
-                view.y = peek + toScroll * offset
-            }
-        }
-        behavior.addBottomSheetCallback(callback)
     }
 }

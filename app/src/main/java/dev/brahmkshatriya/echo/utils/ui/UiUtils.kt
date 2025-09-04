@@ -13,6 +13,9 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.brahmkshatriya.echo.ui.common.UiViewModel.Companion.BACKGROUND_GRADIENT
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import java.util.Locale
@@ -80,5 +83,30 @@ object UiUtils {
         maxLines = 1
         marqueeRepeatLimit = -1
         setHorizontallyScrolling(true)
+    }
+
+    fun BottomSheetDialogFragment.configureBottomBar(bar: View) {
+        val view = requireView()
+        val dialog = requireDialog() as BottomSheetDialog
+        val behavior = dialog.behavior
+        val barHeight = 72.dpToPx(requireContext())
+        var peek = 0
+        var toScroll = 0
+        var offset = 0f
+
+        val callback = object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(p0: View, p1: Int) {}
+            override fun onSlide(p0: View, p1: Float) {
+                offset = p1.coerceAtLeast(0f)
+                bar.y = peek + toScroll * offset
+            }
+        }
+        view.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+            val screen = v.height - barHeight
+            peek = (behavior.peekHeight - barHeight).coerceAtMost(screen)
+            toScroll = screen - peek
+            bar.y = peek + toScroll * offset
+        }
+        behavior.addBottomSheetCallback(callback)
     }
 }

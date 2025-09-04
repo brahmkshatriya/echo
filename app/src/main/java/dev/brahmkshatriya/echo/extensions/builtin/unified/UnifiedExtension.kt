@@ -99,7 +99,7 @@ class UnifiedExtension(
             }
             val tabs = if (types.keys.size == 1) listOf()
             else getString(R.string.all).let { listOf(Tab(it, it)) } +
-                    types.keys.map { Tab(it, it) }
+                    types.keys.map { Tab(it, it, true) }
 
             return Feed(tabs) { tab ->
                 val items = types[tab?.id]?.toList() ?: items

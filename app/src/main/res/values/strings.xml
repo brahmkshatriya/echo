@@ -437,4 +437,6 @@
     <string name="releases_on_x">Releases on %1$s</string>
     <string name="unavailable_in_your_region">Unavailable in your region</string>
     <string name="not_playable_x">Not playable: %1$s</string>
+
+    <string name="currently_playing">Currently Playing</string>
 </resources>

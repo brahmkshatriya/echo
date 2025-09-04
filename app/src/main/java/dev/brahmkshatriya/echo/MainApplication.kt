@@ -108,6 +108,7 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
         }
 
         val languages = mapOf(
+            "ar" to "العربية",
             "as" to "Assamese",
             "be" to "Беларуская",
             "de" to "Deutsch",
@@ -118,6 +119,7 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
             "hng" to "Hinglish",
             "in" to "Bahasa Indonesia",
             "it" to "Italiano",
+            "iw" to "עברית",
             "ja" to "日本語",
             "kk" to "Қазақша",
             "ko" to "한국어",
@@ -128,6 +130,7 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
             "sa" to "संस्कृतम्",
             "sr" to "Српски",
             "ta" to "தமிழ்",
+            "th" to "ไทย",
             "tr" to "Türkçe",
             "uk" to "Українська",
             "vi" to "Tiếng Việt",

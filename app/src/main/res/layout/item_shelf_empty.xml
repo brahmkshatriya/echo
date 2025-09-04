@@ -11,16 +11,16 @@
         android:layout_height="wrap_content">
 
         <View
-            android:layout_width="128sp"
-            android:layout_height="128sp"
+            android:layout_width="120sp"
+            android:layout_height="120sp"
             android:background="@drawable/rounded_rectangle_cover_profile"
             android:backgroundTint="?colorPrimaryInverse" />
 
         <View
             android:layout_gravity="center"
-            android:layout_width="96sp"
-            android:layout_height="96sp"
-            android:background="@drawable/rounded_rectangle_cover_profile"
+            android:layout_width="108sp"
+            android:layout_height="108sp"
+            android:background="@drawable/art_twelve_sided_cookie"
             android:backgroundTint="?colorPrimary" />
 
         <TextView
