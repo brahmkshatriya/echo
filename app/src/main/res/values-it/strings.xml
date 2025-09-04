@@ -151,7 +151,7 @@
     <string name="by_x">Di %1$s</string>
     <string name="music">Musica</string>
     <string name="tracker">Tracciamento</string>
-    <string name="lyrics">Testi</string>
+    <string name="lyrics">Testo</string>
     <string name="misc">Varie</string>
     <string name="x_extensions">Estensioni %1$s</string>
     <string name="x_extension">Estensione %1$s</string>
@@ -169,7 +169,7 @@
     <string name="x_login">Accedi a %1$s</string>
     <string name="x_is_required">%1$s è necessario</string>
     <string name="playing_from">Riproduzione da</string>
-    <string name="up_next">Prossimo</string>
+    <string name="up_next">Coda</string>
     <string name="info">Info</string>
     <string name="shuffle">Riproduzione casuale</string>
     <string name="previous">Precedente</string>
