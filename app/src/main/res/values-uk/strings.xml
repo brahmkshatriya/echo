@@ -387,4 +387,7 @@
     <string name="unavailable_in_your_region">Недоступно у вашому регіоні</string>
     <string name="not_playable_x">Неможливо відтворити: %1$s</string>
     <string name="n_songs">%1$d Пісні</string>
+    <string name="colors">Кольори</string>
+    <string name="scroll_bar">Смуга прокручування</string>
+    <string name="scroll_bar_summary">Смуга прокрутки збоку для швидшого доступу (можливо, незрозуміло)</string>
 </resources>
