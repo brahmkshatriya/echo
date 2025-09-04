@@ -131,7 +131,7 @@
     <string name="incognito">Modo anônimo</string>
     <string name="not_logged_in">Não conectado</string>
     <string name="x_login">Login %1$s</string>
-    <string name="x_is_required">$1%s é necessário</string>
+    <string name="x_is_required">%1$s é necessário</string>
     <string name="playing_from">Reproduzindo de</string>
     <string name="up_next">Próximo</string>
     <string name="info">Informação</string>
@@ -377,4 +377,10 @@
     <string name="releases_on_x">Lançamentos em %1$s</string>
     <string name="unavailable_in_your_region">Não disponível na sua região</string>
     <string name="not_playable_x">Não tocável: %1$s</string>
+    <string name="unmetered_stream_quality">Qualidade de Fluxo Ilimitada</string>
+    <string name="unmetered_stream_quality_summary">A qualidade da transmissão quando conectado a uma rede sem restrição de dados. Isso substituirá a qualidade padrão da transmissão.</string>
+    <string name="select_language">Selecionar Idioma</string>
+    <string name="check_for_updates">Verificar Atualizações</string>
+    <string name="check_for_updates_summary">Procurar novas atualizações do app e das extensões ao abrir o aplicativo.</string>
+    <string name="checking_for_updates">Verificando atualizações</string>
 </resources>
