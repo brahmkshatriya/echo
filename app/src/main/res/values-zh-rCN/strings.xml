@@ -366,4 +366,7 @@
     </plurals>
     <string name="x_specific_quality_summary">%1$s 特殊的流媒体质量，将会覆盖系统默认选择的流媒体质量</string>
     <string name="n_songs">%1$d 首歌曲</string>
+    <string name="scroll_bar">滚动栏</string>
+    <string name="scroll_bar_summary">侧面的滚动条可加快访问速度（可能会有故障）</string>
+    <string name="colors">颜色</string>
 </resources>

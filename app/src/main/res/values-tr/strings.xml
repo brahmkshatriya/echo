@@ -193,7 +193,7 @@
     <string name="ui">Kullanıcı Arayüzü</string>
     <string name="custom_theme_color_summary">Sistem renginin yerine özel bir tema rengi kullanın</string>
     <string name="custom_colors">Özel Renkler</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="dynamic_player">Dinamik Oynatıcı Rengi</string>
     <string name="dynamic_player_summary">Parça Sanatına dayalı olarak oynatıcıya renk uygula</string>
     <string name="show_background">Arka Planı Göster</string>

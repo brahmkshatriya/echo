@@ -84,7 +84,7 @@
     <string name="value_not_set">Не ўсталявана</string>
     <string name="playback">Прайграванне</string>
     <string name="audio_fx">Аўдыё-эфекты</string>
-    <string name="audio_fx_summary">Эфекты дастасаваны да ўсіх песень</string>
+    <string name="audio_fx_summary">Эфекты дастасоўваюцца да ўсіх песень</string>
     <string name="audio_fx_desc">Змяніць аўдыё-эфекты для бягучага трэку.</string>
     <string name="reset">Скінуць</string>
     <string name="playback_speed">Хуткасць прайгравання</string>
@@ -144,7 +144,7 @@
     <string name="custom_theme_color_summary">Выкарыстоўвае ўласны колер тэмы замест сістэмнага.</string>
     <string name="add_color">Дадаць колер</string>
     <string name="custom_colors">Уласныя колеры</string>
-    <string name="amoled">Чорна</string>
+    <string name="amoled">AMOLED</string>
     <string name="amoled_summary">Амаль чорны, цалкам чорны</string>
     <string name="navbar_gradient">Градыентная навігацыйная панэль</string>
     <string name="navbar_gradient_summary">Навігацыйная панэль паступова рабіцца празрыстаю</string>
@@ -313,8 +313,8 @@
     <string name="sort_date_added">Дата дадання</string>
     <string name="sort_duration">Працягласць</string>
     <string name="sort_subtitle">Субтытры</string>
-    <string name="scroll_animations">Анімацыя гартання</string>
-    <string name="scroll_animations_summary">Анімацыі пры гартанні элементаў</string>
+    <string name="scroll_animations">Анімацыі пракруткі</string>
+    <string name="scroll_animations_summary">Анімацыі пры пракрутцы элементаў</string>
     <string name="delete">Выдаліць</string>
     <string name="playlist_name">Назва плэйліста</string>
     <string name="playlist_description">Апісанне плэйліста</string>
@@ -387,4 +387,7 @@
     <string name="releases_on_x">Выходзіць %1$s</string>
     <string name="unavailable_in_your_region">Недаступна ў вашым рэгіёне</string>
     <string name="not_playable_x">Немагчыма прайграць: %1$s</string>
+    <string name="colors">Колеры</string>
+    <string name="scroll_bar">Паласа пракруткі</string>
+    <string name="scroll_bar_summary">Паласа пракруткі ўзбоч для хуткага доступу (можа працаваць з памылкамі)</string>
 </resources>

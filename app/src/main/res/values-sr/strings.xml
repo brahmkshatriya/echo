@@ -134,7 +134,7 @@
     <string name="refresh">Osveži</string>
     <string name="x_disabled">%1$s (Onemogućeno)</string>
     <string name="by_x">Od %1$s</string>
-    <string name="music">Muzika</string>
+    <string name="music">Muzičke</string>
     <string name="misc">Razno</string>
     <string name="x_extension">%1$s Ekstenzija</string>
     <string name="enabled">Omogućeno</string>
@@ -254,8 +254,8 @@
     <string name="edit_playlist">Izmeni plejlistu</string>
     <string name="more_brain_capacity">Veći kapacitet \"iteligencije\"</string>
     <string name="more_brain_capacity_summary">Isključivanje Audio Offloading funkcije ( Uključivanjem ove funkcije može se smanjiti lag audio zapisa, ali se time povećava potrošnja baterije).</string>
-    <string name="track">Pesma</string>
-    <string name="tracks">Pesme</string>
+    <string name="track">Traka</string>
+    <string name="tracks">Trake</string>
     <string name="sort">Sortiraj</string>
     <string name="explicit">Eksplicitno</string>
     <string name="x_plays">%1$s Pušta</string>
@@ -367,9 +367,9 @@
         <item quantity="few">%1$d Stavke</item>
         <item quantity="other">%1$d Stavki</item>
     </plurals>
-    <string name="feed">Feed</string>
-    <string name="bass_boost">Bass Boost</string>
-    <string name="amoled">Amoled</string>
+    <string name="feed">Fid</string>
+    <string name="bass_boost">Pojačavanje Basa</string>
+    <string name="amoled">AMOLED</string>
     <plurals name="number_tracks">
         <item quantity="one">%1$d Traka</item>
         <item quantity="few">%1$d Trake</item>
@@ -380,4 +380,7 @@
     <string name="shuffling_x">Shuffling %1$s</string>
     <string name="apply_player_color_to_app_summary">LAG UPOZORENJE!</string>
     <string name="isrc_x">ISRC: %1$s</string>
+    <string name="colors">Boje</string>
+    <string name="scroll_bar">Traka Za Pomeranje</string>
+    <string name="scroll_bar_summary">Traka za skrolovanje sa strane za brži pristup (možda sadrži greške)</string>
 </resources>

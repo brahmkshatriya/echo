@@ -43,4 +43,15 @@
         <item quantity="many">%1$d Elementów</item>
         <item quantity="other">%1$d Elementów</item>
     </plurals>
+    <string name="amoled">AMOLED</string>
+    <string name="dynamic_player">Dynamiczny kolor odtwarzacza</string>
+    <string name="show_background">Pokaż tło</string>
+    <string name="colors">Kolory</string>
+    <string name="animation">Animacja</string>
+    <string name="back_animations">Animacje powrotu</string>
+    <string name="animations">Animacje</string>
+    <string name="x_disabled">%1$s (Wyłączono)</string>
+    <string name="music">Muzyka</string>
+    <string name="lyrics">Tekst</string>
+    <string name="x_extensions">%1$s rozszerzeń</string>
 </resources>

@@ -7,7 +7,7 @@
     <string name="x_was_not_granted">%1$s wurde nicht gewährt</string>
     <string name="audio">Audio</string>
     <string name="video">Video</string>
-    <string name="read_storage">Speicher auslesen</string>
+    <string name="read_storage">Speicher lesen</string>
     <string name="write_storage_permission_summary">So erstellst und bearbeitst Du lokale Wiedergabelisten</string>
     <string name="notifications">Benachrichtigungen</string>
     <string name="artists">Künstler</string>
@@ -65,8 +65,8 @@
     <string name="equalizer">Equalizer</string>
     <string name="equalizer_summary">Equalizer-Einstellungen des Geräts öffnen</string>
     <string name="stream_quality">Stream-Qualität</string>
-    <string name="behavior">Benehmen</string>
-    <string name="keep_queue">Spielerwarteschlange halten</string>
+    <string name="behavior">Verhalten</string>
+    <string name="keep_queue">Warteschlange behalten</string>
     <string name="keep_queue_summary">Stellen Sie die Player-Warteschlange wieder her, wenn Sie die App erneut öffnen.</string>
     <string name="stop_player_summary">Beenden Sie den Player, wenn die App aus den zuletzt verwendeten Apps entfernt wird</string>
     <string name="skip_silence">Stille überspringen</string>
@@ -94,10 +94,10 @@
     <string name="look_and_feel">Aussehen und Haptik</string>
     <string name="ui">UI</string>
     <string name="theme">Thema</string>
-    <string name="theme_summary">Möchten Sie blind sein?</string>
-    <string name="custom_theme_color_summary">Verwenden eine eigene Designfarbe anstelle der Systemfarbe</string>
+    <string name="theme_summary">Möchtest du blind sein?</string>
+    <string name="custom_theme_color_summary">Verwenden Sie eine benutzerdefinierte Designfarbe anstelle des Systemdesigns.</string>
     <string name="custom_colors">Benutzerdefinierte Farben</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="navbar_gradient">Navigationsleiste mit Farbverlauf</string>
     <string name="navbar_gradient_summary">Die Navigationsleiste wird allmählich transparent</string>
     <string name="dynamic_player">Farbe des dynamischen Players</string>
@@ -108,7 +108,7 @@
     <string name="refresh">Auffrischen</string>
     <string name="by_x">Um %1$s</string>
     <string name="music">Musik</string>
-    <string name="tracker">Aufspürer</string>
+    <string name="tracker">Tracker</string>
     <string name="lyrics">Liedtext</string>
     <string name="x_extensions">%1$s Erweiterungen</string>
     <string name="enabled">Ermöglichte</string>
@@ -149,9 +149,9 @@
     <string name="amoled_summary">Pechschwarz, Pures Schwarz</string>
     <string name="stop_player">Player stoppen</string>
     <string name="audio_permission_summary">So greifst Du auf Deine lokale Musikbibliothek zu</string>
-    <string name="write_storage">Speicher beschreiben</string>
+    <string name="write_storage">In Speicher schreiben</string>
     <string name="x_is_not_supported_in_x">%1$s wird in %2$s nicht unterstützt</string>
-    <string name="skip_silence_summary">Überspringe den stillen Teils des Songs, um eine lückenlose Wiedergabe zu ermöglichen</string>
+    <string name="skip_silence_summary">Überspringe den stillen Teils des Songs, um eine lückenlose Wiedergabe zu ermöglichen.</string>
     <string name="cache_playlist_warning">Experimentelle Funktionen. Alles, außer dem Anhören, wird nicht unterstützt.</string>
     <string name="duration_filter_summary">Filter Audiodateien heraus, deren Dauer (in Sekunden) kleiner als der Wert ist</string>
     <string name="extension_installed">%1$s (Installiert)</string>
@@ -373,4 +373,7 @@
     <string name="feed">Feed</string>
     <string name="isrc_x">ISRC: %1$s</string>
     <string name="genres_x">Genres: %1$s</string>
+    <string name="colors">Farben</string>
+    <string name="scroll_bar">Bildlaufleiste</string>
+    <string name="scroll_bar_summary">Bildlaufleiste an der Seite für schnelleren Zugriff (kann fehlerhaft sein)</string>
 </resources>

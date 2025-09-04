@@ -50,7 +50,7 @@
     <string name="read_storage">ষ্ট’ৰেজ পঢ়ক</string>
     <string name="write_storage">ষ্ট’ৰেজ লিখক</string>
     <string name="x_is_required">%1$sৰ প্ৰয়োজন</string>
-    <string name="write_storage_permission_summary">স্থানীয় প্লেলিষ্ট তৈয়াৰ আৰু সম্পাদনাৰ বাবে</string>
+    <string name="write_storage_permission_summary">স্থানীয় প্লেলিষ্ট সৃষ্টি আৰু সম্পাদনাৰ বাবে</string>
     <string name="notifications">নোটিফিকেশ্যন</string>
     <string name="artists">শিল্পী</string>
     <string name="recently_added">শেহতীয়াকৈ যোগ কৰা</string>
@@ -124,8 +124,8 @@
     <string name="installation_type_warning">যদি আপুনি এক্সটেনশ্যন ফাইল হিচাপে ইনষ্টল কৰে তেন্তে উপলব্ধ নহয়।</string>
     <string name="could_not_find_the_file">ফাইলটো বিচাৰি পোৱা নগ’ল।</string>
     <string name="extension_installer">এক্সটেনশ্যন ইনষ্টলাৰ</string>
-    <string name="extension_installed_successfully">এক্সটেনশ্যন সফলভাৱে ইনষ্টল কৰা হ’ল।</string>
-    <string name="extension_uninstalled_successfully">এক্সটেনশ্যন সফলভাৱে আনইনষ্টল কৰা হ’ল।</string>
+    <string name="extension_installed_successfully">এক্সটেনশ্যন সফলভাৱে ইনষ্টলড কৰা হ’ল।</string>
+    <string name="extension_uninstalled_successfully">এক্সটেনশ্যন সফলভাৱে আনইনষ্টলড কৰা হ’ল।</string>
     <string name="allow_opening_links">লিংক খোলাৰ পাৰ্মিছন দিয়ক</string>
     <string name="unified_liked_playlist_summary">বিভিন্ন এক্সটেনশ্যনৰ পৰা আপোনাৰ পছন্দৰ গান</string>
     <string name="n_items">%1$d আইটেম</string>
@@ -137,7 +137,7 @@
     <string name="x_login_required">%1$s লগইনৰ প্ৰয়োজন</string>
     <string name="x_is_not_supported_in_x">%1$s %2$sত সমৰ্থিত নহয়</string>
     <string name="account_session_expired_in_x">%1$sত একাউণ্টৰ ছেছনৰ ম্যাদ উকলি গ’ল</string>
-    <string name="by_x">%1$sৰ দ্বাৰা</string>
+    <string name="by_x">%1$s দ্বাৰা</string>
     <string name="select_x_account">%1$s একাউণ্ট বাছক</string>
     <string name="servers">চাৰ্ভাৰ</string>
     <string name="quality_selection">কোৱালিটি ছিলেকশ্যন</string>
@@ -151,7 +151,7 @@
     <string name="link_or_code">লিংক বা ক’ড</string>
     <string name="list_is_empty">লিষ্ট খালী</string>
     <string name="following_x">%1$s ফ’ল’ কৰা হৈছে</string>
-    <string name="extension_installed">%1$s (ইনষ্টল কৰা)</string>
+    <string name="extension_installed">%1$s (ইনষ্টলড)</string>
     <string name="add_extensions">এক্সটেনশ্যনসমূহ যোগ কৰক</string>
     <string name="invalid_extension_list">ইনভেলিড এক্সটেনশ্যন লিষ্ট</string>
     <string name="followed_x">%1$s ফ’ল’ কৰা হ’ল</string>
@@ -257,9 +257,9 @@
     <string name="sort_duration">ডিউৰেশ্যন</string>
     <string name="sort_subtitle">ছাবটাইটেল</string>
     <string name="playlist_name">প্লেলিষ্টৰ নাম</string>
-    <string name="playlist_description">প্লেলিষ্টৰ ডিচক্ৰিপশ্যন</string>
-    <string name="create_playlist">প্লেলিষ্ট ক্ৰিয়েট কৰক</string>
-    <string name="create">ক্ৰিয়েট</string>
+    <string name="playlist_description">প্লেলিষ্টৰ বৰ্ণনা</string>
+    <string name="create_playlist">প্লেলিষ্ট সৃষ্টি কৰক</string>
+    <string name="create">সৃষ্টি</string>
     <string name="playlist_name_empty">প্লেলিষ্টৰ নাম খালী</string>
     <string name="saved_to_playlists">প্লেলিষ্টত ছেভ কৰা হ’ল</string>
     <string name="nothing_to_download_in_x">%1$sত ডাউনলোড কৰিবলৈ একো নাই</string>
@@ -275,7 +275,7 @@
     <string name="scroll_animations_summary">স্ক্ৰল কৰোঁতে এনিমেশ্যন</string>
     <string name="add_song">গান যোগ কৰক</string>
     <string name="creating_x">%1$s ক্ৰিয়েট কৰা হৈছে</string>
-    <string name="x_created">%1$s ক্ৰিয়েট কৰা হ’ল</string>
+    <string name="x_created">%1$s সৃষ্টি কৰা হ’ল</string>
     <string name="deleting_x">%1$s ডিলিট কৰা হৈছে</string>
     <string name="deleted_x">%1$s ডিলিট কৰা হ’ল</string>
     <string name="saving_x">%1$s ছেভ কৰা হৈছে</string>
@@ -336,7 +336,7 @@
     <string name="sort_date_added">যোগ কৰা ডেট</string>
     <string name="opening_webview_x">ৱেবভিউ খোলা হৈছে: %1$s</string>
     <string name="no_update_available_for_x">%1$sৰ বাবে কোনো আপডেট উপলব্ধ নাই</string>
-    <string name="other">আদাৰ</string>
+    <string name="other">অন্যান্য</string>
     <string name="player">প্লেয়াৰ</string>
     <string name="about">এবাউট</string>
     <string name="language_x">ভাষা: %1$s</string>
@@ -346,7 +346,7 @@
     <string name="app_desc">মাত্ৰ এটা মিউজিক প্লেয়াৰ।</string>
     <string name="manage">মেনেজ</string>
     <string name="no_account">কোনো একাউণ্ট নাই</string>
-    <string name="other_settings">আদাৰ ছেটিং</string>
+    <string name="other_settings">অন্যান্য ছেটিং</string>
     <string name="no_x_found">কোনো %1$s পোৱা নগ’ল</string>
     <string name="playlist">প্লেলিষ্ট</string>
     <string name="album">এলবাম</string>
@@ -373,4 +373,7 @@
     <string name="releases_on_x">%1$sত ৰিলিজ হ’ব</string>
     <string name="unavailable_in_your_region">আপোনাৰ ৰিজিয়নত উপলব্ধ নহয়</string>
     <string name="not_playable_x">প্লে কৰিব নোৱাৰি: %1$s</string>
+    <string name="colors">ৰংবোৰ</string>
+    <string name="scroll_bar">স্ক্ৰ’ল বাৰ</string>
+    <string name="scroll_bar_summary">দ্ৰুত প্ৰৱেশৰ বাবে কাষৰ স্ক্ৰ’লবাৰ (গ্লিচি হ’ব পাৰে)</string>
 </resources>
