@@ -1,5 +1,5 @@
 <resources>
-    <style name="Default.Theme.Echo" parent="Base.Theme.Echo">
+    <style name="Default" parent="Base.Theme.Echo">
         <item name="navBarForeground">?colorPrimaryInverse</item>
         <item name="navBarBackground">?colorPrimary</item>
     </style>
