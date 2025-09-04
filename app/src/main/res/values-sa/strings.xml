@@ -376,4 +376,5 @@
     <string name="releases_on_x">%1$s इत्यस्मिन् दिने प्रकाश्यते</string>
     <string name="unavailable_in_your_region">भवतः प्रदेशे अनुपलब्धम्</string>
     <string name="not_playable_x">न क्रीडनीयम्: %1$s</string>
+    <string name="currently_playing">सम्प्रति क्रीडति</string>
 </resources>
