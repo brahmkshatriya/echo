@@ -135,7 +135,7 @@
     <string name="custom_theme_color_summary">Usa un colore del tema personalizzato anziché il tema di sistema.</string>
     <string name="add_color">Aggiungi colore</string>
     <string name="custom_colors">Colori Personalizzati</string>
-    <string name="amoled">AMOLED</string>
+    <string name="amoled">Amoled</string>
     <string name="amoled_summary">Usa un nero profondo</string>
     <string name="navbar_gradient">Barra di Navigazione Sfumata</string>
     <string name="navbar_gradient_summary">La barra di navigazione diventa gradualmente trasparente</string>
@@ -382,5 +382,6 @@
     <string name="not_playable_x">Non riproducibile: %1$s</string>
     <string name="colors">Colori</string>
     <string name="scroll_bar">Barra di scorrimento</string>
-    <string name="scroll_bar_summary">Balla di scorrimento al lato per uso più veloce (potrebbe avere dei glitch)</string>
+    <string name="scroll_bar_summary">Barra di scorrimento laterale per un uso più rapido (potrebbe presentare artefatti visivi)</string>
+    <string name="currently_playing">In Riproduzione</string>
 </resources>
