@@ -88,7 +88,7 @@
     <string name="custom_theme_color">Власний колір теми</string>
     <string name="add_color">Додати колір</string>
     <string name="custom_colors">Власні кольори</string>
-    <string name="amoled">Чорна</string>
+    <string name="amoled">AMOLED</string>
     <string name="navbar_gradient">Градієнтна навігаційна панель</string>
     <string name="navbar_gradient_summary">Навігаційна панель поступово стає прозорою</string>
     <string name="show_background">Показувати тло</string>
@@ -390,4 +390,5 @@
     <string name="colors">Кольори</string>
     <string name="scroll_bar">Смуга прокручування</string>
     <string name="scroll_bar_summary">Смуга прокрутки збоку для швидшого доступу (можливо, незрозуміло)</string>
+    <string name="currently_playing">Зараз грає</string>
 </resources>
