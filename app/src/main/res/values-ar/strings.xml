@@ -40,7 +40,7 @@
     <plurals name="number_items">
         <item quantity="zero">لا شيء</item>
         <item quantity="one">%1$d عنصر</item>
-        <item quantity="two">عنصرين</item>
+        <item quantity="two">%1$d عنصرين</item>
         <item quantity="few">%1$d بعض العناصر</item>
         <item quantity="many">%1$d أكثر من عنصر</item>
         <item quantity="other">%1$d عناصر أخرى</item>

@@ -1,11 +1,17 @@
 package dev.brahmkshatriya.echo.ui.playlist.edit
 
+import androidx.core.net.toUri
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.brahmkshatriya.echo.common.Extension
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
+import dev.brahmkshatriya.echo.common.clients.PlaylistEditCoverClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceUriImageHolder
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
@@ -14,6 +20,8 @@ import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getAs
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.isClient
+import dev.brahmkshatriya.echo.extensions.InstallationUtils.openFileSelector
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.combineTransformLatest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,6 +36,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EditPlaylistViewModel(
@@ -37,7 +46,7 @@ class EditPlaylistViewModel(
     private val initial: Playlist,
     private val loaded: Boolean,
     private val selectedTab: String?,
-    private val removeIndex: Int
+    private val removeIndex: Int,
 ) : ViewModel() {
     val extensionFlow = extensionLoader.music.map { list -> list.find { it.id == extensionId } }
         .stateIn(viewModelScope, Eagerly, null)
@@ -99,9 +108,37 @@ class EditPlaylistViewModel(
         emit(computeActions(list, current))
     }.flowOn(Dispatchers.IO).stateIn(viewModelScope, Eagerly, null)
 
+    data class Data(
+        val title: String,
+        val desc: String?,
+        val coverEditable: Boolean,
+        val cover: ImageHolder?,
+    )
+
     val nameFlow = MutableStateFlow(initial.title)
     val descriptionFlow = MutableStateFlow(initial.description)
-    val pairFlow = nameFlow.combine(descriptionFlow) { a, b -> a to b }
+
+    sealed interface CoverState {
+        data object Initial : CoverState
+        data object Removed : CoverState
+        data class Changed(val file: File) : CoverState
+    }
+
+    val coverFlow = MutableStateFlow<CoverState>(CoverState.Initial)
+    val dataFlow = combineTransformLatest(nameFlow, descriptionFlow, coverFlow, extensionFlow) {
+        val title = it[0] as String
+        val desc = it[1] as String?
+        val cover = it[2] as CoverState
+        val extension = it[3] as Extension<*>?
+        emit(Data(title, desc, false, null))
+        val isEditable = extension?.isClient<PlaylistEditCoverClient>() == true
+        val image = when (cover) {
+            is CoverState.Changed -> cover.file.toUri().toString().toResourceUriImageHolder()
+            CoverState.Initial -> initial.cover
+            CoverState.Removed -> null
+        }
+        emit(Data(title, desc, isEditable, image))
+    }
 
     sealed interface SaveState {
         data object Initial : SaveState
@@ -111,10 +148,11 @@ class EditPlaylistViewModel(
     }
 
     private val saveFlow = MutableSharedFlow<Unit>()
-    val isSaveable = newActions.combine(pairFlow) { actions, pair ->
+    val isSaveable = newActions.combine(dataFlow) { actions, pair ->
         val playlist = playlistFlow.value?.getOrNull() ?: return@combine false
-        if (playlist.title != pair.first) return@combine true
-        if (playlist.description != pair.second) return@combine true
+        if (playlist.title != pair.title) return@combine true
+        if (playlist.description != pair.desc) return@combine true
+        if (coverFlow.value != CoverState.Initial) return@combine true
         !actions.isNullOrEmpty()
     }
 
@@ -128,8 +166,20 @@ class EditPlaylistViewModel(
                     editPlaylistMetadata(playlist, nameFlow.value, descriptionFlow.value)
                 }.getOrThrow()
             }
+            val cover = coverFlow.value
+            when (cover) {
+                CoverState.Initial -> {}
+                CoverState.Removed -> extension.getAs<PlaylistEditCoverClient, Unit> {
+                    editPlaylistCover(playlist, null)
+                }
+
+                is CoverState.Changed -> extension.getAs<PlaylistEditCoverClient, Unit> {
+                    editPlaylistCover(playlist, cover.file)
+                }
+            }
+
             val newActions = newActions.value!!
-            if (newActions.isEmpty()) return@transformLatest
+            if (newActions.isEmpty()) return@runCatching
 
             var tracks = originalList.value!!.getOrThrow()
             val selectedTab = selectedTabFlow.value
@@ -166,13 +216,17 @@ class EditPlaylistViewModel(
             extension.getIf<PlaylistEditorListenerClient, Unit> {
                 onExitPlaylistEditor(playlist, tracks)
             }.getOrThrow()
-            Unit
         })
         saved.result.getOrThrow(app.throwFlow)
         emit(saved)
     }.stateIn(viewModelScope, Eagerly, SaveState.Initial)
 
     fun save() = viewModelScope.launch { saveFlow.emit(Unit) }
+    fun changeCover(activity: FragmentActivity) = viewModelScope.launch {
+        runCatching {
+            coverFlow.value = CoverState.Changed(activity.openFileSelector(fileType = "image/*"))
+        }.getOrThrow(app.throwFlow)
+    }
 
     init {
         viewModelScope.launch {
@@ -199,7 +253,7 @@ class EditPlaylistViewModel(
         // I am KR bbg.
         // Don't forget to subscribe to my OnlyFans at https://github.com/justfoolingaround
         fun <T> computeActions(
-            old: List<T>, new: List<T>
+            old: List<T>, new: List<T>,
         ): MutableList<Action<T>> {
             val out = mutableListOf<Action<T>>()
             val before = old.toMutableList()

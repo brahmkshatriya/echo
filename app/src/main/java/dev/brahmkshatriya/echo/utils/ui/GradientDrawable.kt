@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.utils.ui
 
+import android.R.attr.colorPrimary
 import android.graphics.BitmapShader
 import android.graphics.Color
 import android.graphics.ComposeShader
@@ -13,6 +14,7 @@ import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 import com.google.android.material.color.MaterialColors
@@ -25,7 +27,7 @@ object GradientDrawable {
         view: View,
         isRail: Boolean,
         bottom: Int = 0,
-        full: Boolean = true
+        full: Boolean = true,
     ) {
         val color = MaterialColors.getColor(view, R.attr.navBackground)
         val isRTL = !view.context.isRTL()
@@ -53,11 +55,14 @@ object GradientDrawable {
     }
 
     private const val RATIO = 0.33f
-    private val maxColor = Color.argb(128,0,0,0)
+    private val maxColor = Color.argb(128, 0, 0, 0)
     fun createBlurred(view: View, toBlur: Drawable?): Drawable {
         val background = MaterialColors.getColor(view, R.attr.echoBackground)
+        val primary = MaterialColors.getColor(view, colorPrimary)
         if (toBlur == null) return background.toDrawable()
-        val noise = ResourcesCompat.getDrawable(view.resources, R.drawable.grain_noise, view.context.theme)!!.toBitmap()
+        val noise = ResourcesCompat.getDrawable(
+            view.resources, R.drawable.grain_noise, view.context.theme
+        )!!.toBitmap()
         val bitmap = toBlur.run {
             toBitmap(
                 intrinsicWidth.coerceAtLeast(1),
@@ -69,7 +74,8 @@ object GradientDrawable {
             paint.shader = null
             shaderFactory = object : ShapeDrawable.ShaderFactory() {
                 override fun resize(width: Int, height: Int): Shader {
-                    val bitmapShader = BitmapShader(bitmap, Shader.TileMode.MIRROR, Shader.TileMode.MIRROR)
+                    val bitmapShader =
+                        BitmapShader(bitmap, Shader.TileMode.MIRROR, Shader.TileMode.MIRROR)
                     val cropHeight = (height * RATIO).toInt().coerceAtLeast(1)
                     val scale = maxOf(
                         width.toFloat() / bitmap.width,
@@ -79,8 +85,20 @@ object GradientDrawable {
                         setScale(scale, scale)
                     }
                     bitmapShader.setLocalMatrix(matrix)
-                    val composed = ComposeShader(
+
+                    val primaryOverlay = LinearGradient(
+                        0f, 0f, 0f, height.toFloat(),
+                        intArrayOf(ColorUtils.setAlphaComponent(primary, 128), Color.TRANSPARENT),
+                        floatArrayOf(0f, 1f),
+                        Shader.TileMode.CLAMP
+                    )
+                    val blurredWithPrimary = ComposeShader(
                         bitmapShader,
+                        primaryOverlay,
+                        PorterDuff.Mode.SRC_OVER
+                    )
+                    val composed = ComposeShader(
+                        blurredWithPrimary,
                         LinearGradient(
                             0f,
                             0f,

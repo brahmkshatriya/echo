@@ -97,7 +97,7 @@
     <string name="theme_summary">Möchtest du blind sein?</string>
     <string name="custom_theme_color_summary">Verwenden Sie eine benutzerdefinierte Designfarbe anstelle des Systemdesigns.</string>
     <string name="custom_colors">Benutzerdefinierte Farben</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="navbar_gradient">Navigationsleiste mit Farbverlauf</string>
     <string name="navbar_gradient_summary">Die Navigationsleiste wird allmählich transparent</string>
     <string name="dynamic_player">Farbe des dynamischen Players</string>

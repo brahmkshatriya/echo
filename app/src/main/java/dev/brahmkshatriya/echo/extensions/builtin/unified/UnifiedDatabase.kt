@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extensions.builtin.unified
 
 import android.content.Context
+import androidx.core.net.toUri
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -14,6 +15,7 @@ import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Date
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceUriImageHolder
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedDatabase.PlaylistEntity.Companion.toEntity
@@ -24,6 +26,7 @@ import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Compa
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension.Companion.extensionId
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
+import java.io.File
 import java.util.Calendar
 
 @Database(
@@ -32,7 +35,7 @@ import java.util.Calendar
         UnifiedDatabase.PlaylistTrackEntity::class,
         UnifiedDatabase.SavedEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class UnifiedDatabase : RoomDatabase() {
@@ -80,7 +83,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
                 "Liked",
                 context.getString(R.string.unified_liked_playlist_summary),
                 null,
-                ""
+                "[]"
             )
             val id = dao.insertPlaylist(playlist)
             playlist.copy(id = id).playlist
@@ -99,7 +102,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
             title,
             description ?: "",
             cover?.toJson(),
-            "",
+            "[]",
             actualId
         )
         val id = dao.insertPlaylist(playlist)
@@ -113,6 +116,14 @@ abstract class UnifiedDatabase : RoomDatabase() {
 
     suspend fun editPlaylistMetadata(playlist: Playlist, title: String, description: String?) {
         val entity = playlist.toEntity().copy(name = title, description = description ?: "")
+        dao.insertPlaylist(entity)
+    }
+
+    suspend fun editPlaylistCover(playlist: Playlist, file: File?) {
+        val image: ImageHolder? = file?.toUri()?.toString()?.toResourceUriImageHolder(true)
+        val entity = playlist.toEntity().copy(
+            cover = image?.toJson()
+        )
         dao.insertPlaylist(entity)
     }
 
@@ -132,7 +143,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val entity = dao.getPlaylist(playlist.toEntity().id)
         val tracks = dao.getTracks(entity.id).associateBy { it.eid }
         if (tracks.isEmpty()) return emptyList()
-        return entity.list.map { tracks[it.toLong()]!!.track }
+        return entity.list.map { tracks[it]!!.track }
     }
 
     suspend fun addTracksToPlaylist(
@@ -144,7 +155,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
             val trackEntity = PlaylistTrackEntity(
                 0, entity.id, it.id, it.extras.extensionId, it.toJson()
             )
-            dao.insertPlaylistTrack(trackEntity).toString()
+            dao.insertPlaylistTrack(trackEntity)
         }
         val newEntity = entity.copy(
             listData = entity.list.toMutableList().apply {
@@ -163,7 +174,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val newEntity = entity.copy(
             listData = entity.list.toMutableList().apply {
                 entities.forEach {
-                    val index = indexOf(it.eid.toString())
+                    val index = indexOf(it.eid)
                     if (index != -1) removeAt(index)
                 }
             }.toJson()
@@ -263,7 +274,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
         val actualId: String = "",
     ) {
         val list by lazy {
-            listData.toData<List<String>>().getOrElse { emptyList() }
+            listData.toData<List<Long>>().getOrThrow()
         }
 
         val playlist by lazy {
@@ -271,12 +282,12 @@ abstract class UnifiedDatabase : RoomDatabase() {
                 id.toString(),
                 name,
                 true,
-                cover = cover?.toData<ImageHolder>()?.getOrNull(),
+                cover = cover?.toData<ImageHolder?>()?.getOrThrow(),
                 creationDate = modified.toData<Date>().getOrNull(),
                 description = description.takeIf { it.isNotBlank() },
                 extras = mapOf(
                     EXTENSION_ID to UNIFIED_ID,
-                    "listData" to listData.toJson(),
+                    "listData" to listData,
                     "actualId" to actualId
                 )
             )
@@ -290,7 +301,7 @@ abstract class UnifiedDatabase : RoomDatabase() {
                     title,
                     description ?: "",
                     cover?.toJson(),
-                    extras["listData"] ?: "",
+                    extras["listData"] ?: "[]",
                     extras["actualId"] ?: ""
                 )
             }

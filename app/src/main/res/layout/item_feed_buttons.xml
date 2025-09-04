@@ -3,24 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="-20dp"
-    android:layout_marginEnd="-20dp"
-    android:clipToPadding="false"
-    android:orientation="vertical"
-    android:paddingHorizontal="20dp">
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/buttonGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="-8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
         android:spacing="0dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/shuffleButton"
             style="@style/IconButtonTertiary"
-            android:layout_width="48dp"
+            android:background="@drawable/art_twelve_sided_cookie"
             android:contentDescription="@string/shuffle"
             app:icon="@drawable/ic_shuffle" />
 
@@ -58,7 +54,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sortToggleButton"
-            style="@style/IconButtonTransparent"
+            style="@style/IconButtonOutlined"
             android:contentDescription="@string/sort"
             android:scaleX="-1"
             app:icon="@drawable/ic_sort" />
@@ -68,16 +64,18 @@
         android:id="@+id/searchBarContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="-12dp"
+        android:layout_marginBottom="12dp"
         android:alpha="1"
         android:gravity="end|center_vertical"
         android:orientation="horizontal"
-        android:translationZ="-1dp"
-        android:visibility="gone">
+        android:translationZ="-1dp">
 
         <FrameLayout
             android:id="@+id/searchContainer"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="-48dp"
             android:layout_weight="1">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -87,9 +85,9 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/search"
                 android:paddingVertical="0dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                app:boxBackgroundColor="?navBackground"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                app:boxBackgroundColor="@color/amoled_fg_semi"
                 app:boxCornerRadiusBottomEnd="24dp"
                 app:boxCornerRadiusBottomStart="24dp"
                 app:boxCornerRadiusTopEnd="24dp"
@@ -111,9 +109,10 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/searchClose"
-            style="@style/IconButtonTonal"
+            style="@style/IconButtonTransparent"
             android:layout_gravity="bottom"
-            app:icon="@drawable/ic_close" />
+            android:contentDescription="@string/close"
+            app:icon="@drawable/ic_close_small" />
 
     </LinearLayout>
 
@@ -122,8 +121,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="4dp"
-        android:layout_marginBottom="4dp">
-
-    </com.google.android.material.chip.ChipGroup>
+        android:layout_marginTop="-12dp"
+        android:layout_marginBottom="12dp" />
 
 </LinearLayout>

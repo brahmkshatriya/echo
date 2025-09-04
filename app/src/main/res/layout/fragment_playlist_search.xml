@@ -33,28 +33,28 @@
             android:id="@+id/selectedSongsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-32dp"
+            android:layout_marginTop="-40dp"
             android:layout_marginBottom="8dp"
-            android:paddingHorizontal="20dp">
+            android:paddingHorizontal="24dp">
 
             <TextView
                 android:id="@+id/selectedSongs"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:paddingHorizontal="4dp"
                 android:gravity="center_vertical"
                 android:textAppearance="?attr/textAppearanceTitleLarge"
                 android:textSize="18sp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addTracks"
-                style="@style/IconButton"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                style="@style/Widget.Material3Expressive.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/add"
+                android:minHeight="58dp"
                 android:text="@string/add"
-                app:icon="@drawable/ic_add_circle"
-                app:iconPadding="8dp" />
+                app:icon="@drawable/ic_add_circle" />
 
         </LinearLayout>
 
@@ -62,8 +62,8 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingHorizontal="20dp"
             android:clipToPadding="false"
+            android:paddingHorizontal="20dp"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:spanCount="3"
             tools:listitem="@layout/item_media_selectable" />

@@ -5,6 +5,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.FollowClient
 import dev.brahmkshatriya.echo.common.clients.HideClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient.InputField
@@ -52,7 +53,7 @@ import kotlin.random.Random
 @Suppress("unused")
 class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, LoginClient.WebView,
     HomeFeedClient, FollowClient, RadioClient, WebViewClientProvider, ArtistClient,
-    LyricsSearchClient,
+    LyricsSearchClient, LibraryFeedClient,
     SaveClient, LikeClient, HideClient, TrackerMarkClient, ShareClient {
 
     companion object {
@@ -84,7 +85,6 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
         private fun createTrack(id: String, title: String, streamables: List<Streamable>) = Track(
             id,
             title,
-            type = Track.Type.Video,
             cover = "https://picsum.photos/seed/$id/300".toImageHolder(),
             isExplicit = Random.nextBoolean(),
             streamables = streamables
@@ -142,7 +142,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     override suspend fun getCurrentUser(): User? = null
 
     override suspend fun loadStreamableMedia(
-        streamable: Streamable, isDownload: Boolean
+        streamable: Streamable, isDownload: Boolean,
     ): Streamable.Media {
         if (streamable.quality == 3) throw Exception("Test exception for quality 3")
         return when (streamable.type) {
@@ -217,7 +217,7 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
                     cover = "https://www.easygifanimator.net/images/samples/video-to-gif-sample.gif"
                         .toImageHolder()
                 ).toShelf(),
-                Track("not","Not Playable", isPlayable = Track.Playable.Unreleased).toShelf(),
+                Track("not", "Not Playable", isPlayable = Track.Playable.Unreleased).toShelf(),
                 createTrack(
                     "all", "All", listOf(
                         Streamable.server(Srcs.Single.name, 0),
@@ -359,5 +359,8 @@ class TestExtension : ExtensionClient, LoginClient.CustomInput, TrackClient, Log
     }
 
     override suspend fun loadLyrics(lyrics: Lyrics) = lyrics
+    override suspend fun loadLibraryFeed() = (0..10).map {
+        createTrack("lib_$it", "Library Track $it", listOf(Streamable.server(Srcs.Single.name, 0)))
+    }.toFeed<Shelf>(Feed.Buttons(showPlayAndShuffle = true))
 
 }

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    android:theme="@style/Default"
+    android:theme="@style/Default.Theme.Echo"
     tools:background="@tools:sample/backgrounds/scenic">
 
     <FrameLayout

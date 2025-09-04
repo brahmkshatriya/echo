@@ -112,13 +112,13 @@ class EditPlaylistFragment : Fragment() {
 
         FastScrollerHelper.applyTo(binding.recyclerView)
 
-        val headerAdapter = EditPlaylistHeaderAdapter(vm)
+        val headerAdapter = EditPlaylistHeaderAdapter(this, vm)
         val tabAdapter = TabsAdapter<Tab>({ title }) { v, index, tab ->
             vm.selectedTabFlow.value = tab
         }
 
         binding.recyclerView.adapter = ConcatAdapter(headerAdapter, tabAdapter, adapter)
-        observe(vm.pairFlow) { headerAdapter.pair = it }
+        observe(vm.dataFlow) { headerAdapter.data = it }
         observe(vm.tabsFlow) { tabAdapter.data = it }
         observe(vm.selectedTabFlow) { tabAdapter.selected = vm.tabsFlow.value.indexOf(it) }
         observe(vm.currentTracks) { adapter.submitList(it) }

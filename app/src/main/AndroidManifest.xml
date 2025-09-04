@@ -36,7 +36,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Default"
+        android:theme="@style/Default.Theme.Echo"
         android:usesCleartextTraffic="true"
         tools:targetApi="33">
         <receiver

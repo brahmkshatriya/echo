@@ -102,7 +102,7 @@
     <string name="custom_theme_color">Cor do tema personalizado</string>
     <string name="add_color">Adicionar cor</string>
     <string name="custom_colors">Cores personalizadas</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="amoled_summary">Substitua a cor de fundo por preto absoluto. Útil para telas AMOLED para reduzir o consumo de bateria e prevenir o burn-in da tela</string>
     <string name="navbar_gradient">Barra de navegação em gradiente</string>
     <string name="navbar_gradient_summary">A barra de navegação se torna gradualmente transparente</string>
@@ -295,9 +295,9 @@
     <string name="item">Item</string>
     <string name="feed">Feed</string>
     <plurals name="number_items">
-        <item quantity="one">item</item>
-        <item quantity="many">itens</item>
-        <item quantity="other">itens</item>
+        <item quantity="one">%1$d item</item>
+        <item quantity="many">%1$d itens</item>
+        <item quantity="other"/>
     </plurals>
     <string name="x_specific_quality_summary">%1$s qualidade de stream específica, irá substituir a qualidade de stream padrão</string>
     <string name="colors">Cores</string>

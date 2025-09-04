@@ -184,6 +184,7 @@ class LyricsViewModel(
     }
 
     init {
+        reloadCurrent()
         viewModelScope.launch(Dispatchers.IO) {
             dataFlow.collectLatest { (cached, loaded) ->
                 if (lyricsState.value != State.Initial) return@collectLatest

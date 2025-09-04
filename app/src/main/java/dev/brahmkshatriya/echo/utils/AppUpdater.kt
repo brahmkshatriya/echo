@@ -8,7 +8,7 @@ import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.awa
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.utils.ContextUtils.appVersion
-import dev.brahmkshatriya.echo.utils.ContextUtils.getTempApkFile
+import dev.brahmkshatriya.echo.utils.ContextUtils.getTempFile
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -147,7 +147,7 @@ object AppUpdater {
     ) = runIOCatching {
         val request = Request.Builder().url(url).build()
         val res = client.newCall(request).await().body.byteStream()
-        val file = context.getTempApkFile()
+        val file = context.getTempFile()
         res.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
         file
     }

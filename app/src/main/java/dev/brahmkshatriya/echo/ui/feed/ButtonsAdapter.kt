@@ -66,6 +66,7 @@ class ButtonsAdapter(
             }
             binding.searchBarText.addTextChangedListener { text ->
                 viewModel.searchQuery = text?.toString()?.takeIf { it.isNotBlank() }
+                binding.searchClose.isEnabled = !text.isNullOrBlank()
             }
             binding.searchClose.setOnClickListener {
                 binding.searchBarText.setText("")

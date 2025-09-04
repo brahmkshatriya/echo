@@ -295,10 +295,10 @@
             android:id="@+id/accountsCont"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="3dp"
+            android:layout_margin="4dp"
             app:cardBackgroundColor="?navBackground"
             app:cardCornerRadius="24dp"
-            app:contentPadding="5dp">
+            app:contentPadding="4dp">
 
             <ImageView
                 android:id="@+id/accounts"
@@ -327,10 +327,10 @@
             android:id="@+id/extensionsCont"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="3dp"
+            android:layout_margin="4dp"
             app:cardBackgroundColor="?navBackground"
             app:cardCornerRadius="24dp"
-            app:contentPadding="5dp">
+            app:contentPadding="4dp">
 
             <ImageView
                 android:id="@+id/extensions"

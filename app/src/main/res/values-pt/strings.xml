@@ -122,7 +122,7 @@
     <string name="custom_theme_color_summary">Use uma cor de tema personalizada, em vez da cor do sistema</string>
     <string name="add_color">Adicionar cor</string>
     <string name="custom_colors">Cores personalizadas</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="amoled_summary">Substitua a cor de fundo por preto breu. Útil para telas AMOLED para diminuir o consumo de bateria e evitar o burn-in da tela</string>
     <string name="navbar_gradient">Barra de navegação gradiente</string>
     <string name="navbar_gradient_summary">Navbar torna-se gradualmente transparente</string>
@@ -293,9 +293,9 @@
     <string name="download_complete">Download Completo</string>
     <string name="app_widget_description">Eco na sua tela inicial!</string>
     <plurals name="number_items">
-        <item quantity="one">Item</item>
-        <item quantity="many">Ítens</item>
-        <item quantity="other"/>
+        <item quantity="one">%1$d Item</item>
+        <item quantity="many">%1$d Ítens</item>
+        <item quantity="other" />
     </plurals>
     <string name="x_specific_quality_summary">Qualide de stream específica, irá substituir a qualidade de stream padrão</string>
     <string name="unmetered_stream_quality">Qualidade de stream não medida</string>

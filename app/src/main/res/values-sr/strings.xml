@@ -369,7 +369,7 @@
     </plurals>
     <string name="feed">Fid</string>
     <string name="bass_boost">Pojačavanje Basa</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <plurals name="number_tracks">
         <item quantity="one">%1$d Traka</item>
         <item quantity="few">%1$d Trake</item>

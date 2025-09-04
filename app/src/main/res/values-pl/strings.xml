@@ -43,7 +43,7 @@
         <item quantity="many">%1$d Elementów</item>
         <item quantity="other">%1$d Elementów</item>
     </plurals>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="dynamic_player">Dynamiczny kolor odtwarzacza</string>
     <string name="show_background">Pokaż tło</string>
     <string name="colors">Kolory</string>

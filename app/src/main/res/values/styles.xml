@@ -201,7 +201,7 @@
         <item name="shapeAppearance">@style/PlayerMoreTopShape</item>
     </style>
 
-    <style name="PlayerTheme" parent="Default">
+    <style name="PlayerTheme" parent="Default.Theme.Echo">
         <item name="colorControlNormal">@color/amoled_fg</item>
         <item name="colorControlActivated">@color/amoled_fg</item>
         <item name="colorControlHighlight">@color/amoled_fg</item>
@@ -274,6 +274,10 @@
         <item name="materialThemeOverlay">@style/ButtonTertiaryOverlay</item>
     </style>
 
+    <style name="IconButtonSecondary" parent="IconButton">
+        <item name="materialThemeOverlay">@style/ButtonSecondaryOverlay</item>
+    </style>
+
     <style name="ButtonTertiaryOverlay">
         <item name="colorContainer">?colorTertiary</item>
         <item name="colorContainerChecked">?colorTertiary</item>
@@ -281,6 +285,15 @@
         <item name="colorOnContainer">?colorOnTertiary</item>
         <item name="colorOnContainerChecked">?colorOnTertiary</item>
         <item name="colorOnContainerUnchecked">?colorOnTertiaryContainer</item>
+    </style>
+
+    <style name="ButtonSecondaryOverlay">
+        <item name="colorContainer">?colorSecondary</item>
+        <item name="colorContainerChecked">?colorSecondary</item>
+        <item name="colorContainerUnchecked">?colorSecondaryContainer</item>
+        <item name="colorOnContainer">?colorOnSecondary</item>
+        <item name="colorOnContainerChecked">?colorOnSecondary</item>
+        <item name="colorOnContainerUnchecked">?colorOnSecondaryContainer</item>
     </style>
 
     <style name="IconButtonTonal" parent="Widget.Material3Expressive.Button.IconButton.Tonal">
@@ -310,7 +323,6 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:textSize">14sp</item>
-        <item name="iconTint">?colorOnSurface</item>
         <item name="strokeWidth">0dp</item>
         <item name="backgroundTint">@android:color/transparent</item>
     </style>
@@ -388,6 +400,4 @@
         <item name="layout_constraintTop_toTopOf">parent</item>
         <item name="layout_constraintWidth_max">@dimen/max_cover_size</item>
     </style>
-
-    <string name="currently_playing">Currently Playing</string>
 </resources>

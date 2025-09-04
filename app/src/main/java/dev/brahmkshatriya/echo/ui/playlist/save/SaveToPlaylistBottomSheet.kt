@@ -18,6 +18,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
+import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureBottomBar
 import kotlinx.coroutines.flow.combine
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -55,25 +56,23 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
         )
     }
 
-    private val bottomSaveAdapter by lazy {
-        SaveButtonAdapter {
-            viewModel.saveTracks()
-        }
-    }
-
     private var binding by autoCleared<DialogPlaylistSaveBinding>()
     private val viewModel by viewModel<SaveToPlaylistViewModel> {
         parametersOf(extensionId, item)
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View {
         binding = DialogPlaylistSaveBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        configureBottomBar(binding.saveCont)
+        binding.save.setOnClickListener {
+            viewModel.saveTracks()
+        }
         itemAdapter.submitList(listOf(MediaItemAdapter.Item(extensionId, item)))
         val combined = viewModel.playlistsFlow.combine(viewModel.saveFlow) { playlists, save ->
             playlists to save
@@ -84,7 +83,6 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
                 topBarAdapter,
                 itemAdapter,
                 adapter.withHeader { viewModel.toggleAll(it) },
-                bottomSaveAdapter
             ),
             false
         )
@@ -118,7 +116,7 @@ class SaveToPlaylistBottomSheet : BottomSheetDialogFragment() {
                     return@observe
                 }
                 adapter.submitList(state.list)
-                bottomSaveAdapter.setEnabled(state.list.any { it.second })
+                binding.save.isEnabled = state.list.any { it.second }
             }
         }
 
