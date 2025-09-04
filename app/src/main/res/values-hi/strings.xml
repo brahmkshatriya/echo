@@ -376,4 +376,5 @@
     <string name="colors">रंगों</string>
     <string name="scroll_bar">स्क्रॉल बार</string>
     <string name="scroll_bar_summary">साइड में स्क्रॉल बार तेज़ी से पहुँच के लिए (थोड़ा गड़बड़ हो सकता है)</string>
+    <string name="currently_playing">अभी चल रहा</string>
 </resources>
