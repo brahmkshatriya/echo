@@ -11,12 +11,12 @@
     <string name="repeat_one">একক ৰিপিট</string>
     <string name="logout_and_login">লগআউট আৰু লগইন</string>
     <string name="login">লগইন</string>
-    <string name="error_loading_extension_from_x">%1$sৰ পৰা এক্সটেনশ্যন লোড কৰাত ত্ৰুটি</string>
+    <string name="error_loading_extension_from_x">%1$s পৰা এক্সটেনশ্যন লোড কৰাত ত্ৰুটি</string>
     <string name="error_x">ত্ৰুটি: %1$s</string>
     <string name="value_not_set">ছেট কৰা নাই</string>
     <string name="behavior">বিহেভিয়াৰ</string>
     <string name="theme">থিম</string>
-    <string name="x_disabled">%1$s (ডিজেবল কৰা)</string>
+    <string name="x_disabled">%1$s (ডিজেবল্ড)</string>
     <string name="x_extensions">%1$s এক্সটেনশ্যনসমূহ</string>
     <string name="x_extension">%1$s এক্সটেনশ্যন</string>
     <string name="error_updating_extension">আপডেট কৰোঁতে ত্ৰুটি</string>
@@ -165,7 +165,7 @@
     <string name="liked_x">%1$s লাইক কৰা হ’ল</string>
     <string name="unliking_x">%1$s আনলাইক কৰা হৈছে</string>
     <string name="unliked_x">%1$s আনলাইক কৰা হ’ল</string>
-    <string name="loading_radio_for_x">%1$sৰ বাবে ৰেডিঅ’ লোড হৈছে</string>
+    <string name="loading_radio_for_x">%1$s বাবে ৰেডিঅ’ লোড হৈছে</string>
     <string name="playing_x">%1$s প্লে হৈছে</string>
     <string name="adding_x_to_queue">%1$s কিউত যোগ কৰা হৈছে</string>
     <string name="custom_theme_color_summary">চিষ্টেম থিমৰ পৰিবৰ্তে কাষ্টম থিমৰ ৰং ব্যৱহাৰ কৰক।</string>
@@ -220,7 +220,7 @@
     <string name="_2hr">২ ঘণ্টা</string>
     <string name="sleep_timer_desc">নিৰ্দিষ্ট সময়ৰ পিছত প্লেবেক ষ্টপ কৰিবলৈ চ্লিপ টাইমাৰ ছেট কৰক</string>
     <string name="sleep_on_specific_time">নিৰ্দিষ্ট সময়ত চ্লিপ</string>
-    <string name="sleep_timer_set_for">%1$sৰ বাবে চ্লিপ টাইমাৰ ছেট কৰা হ’ল</string>
+    <string name="sleep_timer_set_for">%1$s বাবে চ্লিপ টাইমাৰ ছেট কৰা হ’ল</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d ঘণ্টা</item>
         <item quantity="other">%1$d ঘণ্টাসমূহ</item>
@@ -283,7 +283,7 @@
     <string name="removing_x">%1$s আঁতৰোৱা হৈছে</string>
     <string name="tagging_x">%1$s টেগ কৰা হৈছে</string>
     <string name="more_brain_capacity_summary">ইয়াক এনেবল কৰিলে অডিঅ’ লেগ ফিক্স কৰাত হেল্প কৰিব পাৰে আৰু বেটাৰীৰ ইউজ বঢ়াব পাৰে (অডিঅ’ অফলোডিং ডিজেবল কৰে)।</string>
-    <string name="downloading_update_for_x">%1$sৰ বাবে আপডেট ডাউনলোড হৈ আছে</string>
+    <string name="downloading_update_for_x">%1$s বাবে আপডেট ডাউনলোড হৈ আছে</string>
     <string name="apply_player_color_to_app_summary">লেগ এলাৰ্ট!!!</string>
     <string name="apply_player_color_to_app">প্লেয়াৰৰ ৰং সমগ্ৰ এপত এপ্লাই কৰক</string>
     <string name="delete_download">ডাউনলোড ডিলিট কৰক</string>
@@ -296,7 +296,7 @@
         <item quantity="one">%1$d আইটেম</item>
         <item quantity="other">%1$d আইটেমসমূহ</item>
     </plurals>
-    <string name="x_specific_quality_summary">%1$sৰ নিৰ্দিষ্ট ষ্ট্ৰীম কোৱালিটি, ডিফল্ট ষ্ট্ৰীম কোৱালিটিৰ নিৰ্বাচনক ওৱাৰৰাইড কৰিব</string>
+    <string name="x_specific_quality_summary">%1$s নিৰ্দিষ্ট ষ্ট্ৰীম কোৱালিটি, ডিফল্ট ষ্ট্ৰীম কোৱালিটিৰ নিৰ্বাচনক ওৱাৰৰাইড কৰিব</string>
     <string name="unmetered_stream_quality">আনমিটাৰড ষ্ট্ৰীম কোৱালিটি</string>
     <string name="unmetered_stream_quality_summary">আনমিটাৰড নেটৱৰ্কৰ সৈতে সংযোগ থাকিলে ষ্ট্ৰীমৰ কোৱালিটি। ই ডিফল্ট ষ্ট্ৰীম কোৱালিটিক ওৱাৰৰাইড কৰিব।</string>
     <string name="select_language">ভাষা বাছক</string>
@@ -335,7 +335,7 @@
     <string name="unsave">আনছেভ</string>
     <string name="sort_date_added">যোগ কৰা ডেট</string>
     <string name="opening_webview_x">ৱেবভিউ খোলা হৈছে: %1$s</string>
-    <string name="no_update_available_for_x">%1$sৰ বাবে কোনো আপডেট উপলব্ধ নাই</string>
+    <string name="no_update_available_for_x">%1$s বাবে কোনো আপডেট উপলব্ধ নাই</string>
     <string name="other">অন্যান্য</string>
     <string name="player">প্লেয়াৰ</string>
     <string name="about">এবাউট</string>
