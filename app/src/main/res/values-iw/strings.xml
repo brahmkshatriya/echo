@@ -104,7 +104,7 @@
     <string name="skip_silence_summary">דלג על חלקים שקטים בשיר כדי לספק השמעה ללא הפסקות.</string>
     <string name="auto_start_radio">רדיו הפעלה אוטומטית</string>
     <string name="auto_start_radio_summary">מוסיף אוטומטית שירים קשורים לרצועה בפלייליסט כדי ליצור תור שירים אין סופי</string>
-    <string name="amoled">אמולד</string>
+    <string name="amoled">אמו-לד</string>
     <string name="amoled_summary">שחור מוחלט, שחור טהור</string>
     <string name="navbar_gradient">סרגל ניווט עם גרדיאנט</string>
     <string name="navbar_gradient_summary">סרגל הניווט הופך בהדרגה לשקוף</string>
@@ -124,7 +124,7 @@
     <string name="lyrics">מילים</string>
     <string name="misc">שונות</string>
     <string name="x_extensions">הרחבות %1$s</string>
-    <string name="x_extension">הרחבה %1$s</string>
+    <string name="x_extension">הרחבת %1$s</string>
     <string name="enabled">מופעל</string>
     <string name="disabled">מושבת</string>
     <string name="error_updating_extension">שגיאה במהלך העדכון</string>
@@ -305,7 +305,7 @@
     <string name="isrc_x">קוד הקלטה תקני בינלאומי: %1$s</string>
     <string name="genres_x">ז\'אנרים: %1$s</string>
     <string name="disc_number_n">מספר דיסק: %1$d</string>
-    <string name="album_order_n">מספר הזמנת אלבום: %1$d</string>
+    <string name="album_order_n">מספר סדר אלבום: %1$d</string>
     <string name="confirmation">אישור</string>
     <string name="delete_playlist_confirmation">האם אתה בטוח שברצונך למחוק את %1$s?</string>
     <string name="confirm">אשר</string>
@@ -369,7 +369,7 @@
     <string name="unfollowed_x">בוטל המעקב אחר %1$s</string>
     <string name="liked_x">שמת לייק ל- %1$s</string>
     <string name="unliking_x">מבטל לייק ל- %1$s</string>
-    <string name="unliked_x">ביטלת לייק מ־%1$s</string>
+    <string name="unliked_x">ביטלת לייק ל־%1$s</string>
     <string name="hiding_x">מסתיר את %1$s</string>
     <string name="seekbar">סרגל התקדמות</string>
     <string name="big_cover_summary">טוב למכשירים עם מסכים גדולים יותר</string>
@@ -383,4 +383,5 @@
     <string name="colors">צבעים</string>
     <string name="scroll_bar">סרגל גלילה</string>
     <string name="scroll_bar_summary">סרגל גלילה בצד המסך לגישה מהירה יותר (עשוי להיות גליצ\'י)</string>
+    <string name="currently_playing">מתנגן כרגע</string>
 </resources>
