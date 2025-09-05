@@ -376,4 +376,5 @@
     <string name="colors">ৰংবোৰ</string>
     <string name="scroll_bar">স্ক্ৰ’ল বাৰ</string>
     <string name="scroll_bar_summary">দ্ৰুত প্ৰৱেশৰ বাবে কাষৰ স্ক্ৰ’লবাৰ (গ্লিচি হ’ব পাৰে)</string>
+    <string name="currently_playing">বৰ্তমান বাজি থকা</string>
 </resources>
