@@ -390,4 +390,5 @@
     <string name="scroll_bar">Полоса прокрутки</string>
     <string name="colors">Цвета</string>
     <string name="scroll_bar_summary">Полоса прокрутки сбоку для более быстрого доступа (может работать с ошибками)</string>
+    <string name="currently_playing">Сейчас играет</string>
 </resources>
