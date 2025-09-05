@@ -156,7 +156,7 @@
     <string name="back_animations">Анімацыі звароту</string>
     <string name="back_animations_summary">Можа выклікаць візуальную памылку на Android, але вы можаце проста адкрыць Нядаўнія, каб гэта выпрявіць.</string>
     <string name="animations">Анімацыі</string>
-    <string name="animations_summary">Адчуваеце, што моцна ікаеце? Адключыце гэта, можа дапамагчы</string>
+    <string name="animations_summary">Адчуваеце затрымкі дадатку? Адключыце гэта, можа дапамагчы</string>
     <string name="refresh">Аднавіць</string>
     <string name="x_disabled">%1$s (Адключана)</string>
     <string name="by_x">Ад %1$s</string>
@@ -374,7 +374,7 @@
     <string name="isrc_x">ISRC: %1$s</string>
     <string name="genres_x">Жанры: %1$s</string>
     <string name="disc_number_n">Нумар дыска: %1$d</string>
-    <string name="album_order_n">Нумар заказу альбома: %1$d</string>
+    <string name="album_order_n">Парадкавы нумар альбома: %1$d</string>
     <string name="confirmation">Пацверджанне</string>
     <string name="delete_playlist_confirmation">Вы ўпэўнены, што хочаце выдаліць %1$s?</string>
     <string name="confirm">Пацвердзіць</string>
