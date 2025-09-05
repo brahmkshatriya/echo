@@ -305,7 +305,7 @@
     <string name="select_language">Seleziona Lingua</string>
     <string name="check_for_updates">Controlla Aggiornamenti</string>
     <string name="check_for_updates_summary">Cerca nuovi aggiornamenti di app ed estensioni all’apertura dell’app.</string>
-    <string name="checking_for_updates">Controllo degli aggiornamenti</string>
+    <string name="checking_for_updates">Controllo degli aggiornamenti in corso</string>
     <string name="back_animations">Animazioni “Indietro”</string>
     <string name="back_animations_summary">Può causare un errore visivo a causa di Android, ma è sufficiente aprire i Recenti per risolverlo.</string>
     <string name="regex_invalid">%1$s non è valido, segui la regex: %2$s</string>
