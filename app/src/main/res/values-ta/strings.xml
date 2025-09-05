@@ -107,12 +107,12 @@
     <string name="skip_silence_summary">இடைவெளியின் பின்னணியை வழங்க, பாடலில் அமைதியான பகுதியைத் தவிர்.</string>
     <string name="auto_start_radio">தானி தொடங்கு வானோலி</string>
     <string name="auto_start_radio_summary">எல்லையற்ற வரிசையை வைத்திருக்க, இயக்கபட்டியலில் தொடர்புடைய பாதையின் பாடல்களைத் தானாகச் சேர்</string>
-    <string name="cache_size">கேச் அளவு</string>
-    <string name="cache_size_summary">ஆடியோ மற்றும் வீடியோவை கேச் செய்ய எம்பி அளவு</string>
+    <string name="cache_size">பிடிஇடம் அளவு</string>
+    <string name="cache_size_summary">ஒலியும் ஒளியும் இடைப்பிடிக்க எம்பி அளவு</string>
     <string name="version">பதிப்பு</string>
-    <string name="select_language">மொழியைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="select_language">மொழியைத் தேர்ந்தெடு</string>
     <string name="system">மண்டலம்</string>
-    <string name="check_for_updates">புதுப்பிப்புகளை சரிபார்க்கவும்</string>
+    <string name="check_for_updates">புதுப்பிப்புகளை சரிபார்</string>
     <string name="check_for_updates_summary">நீங்கள் பயன்பாட்டைத் திறக்கும்போது, பயன்பாடு மற்றும் நீட்டிப்புகள் இரண்டின் புதிய புதுப்பிப்புகளைப் பாருங்கள்.</string>
     <string name="install">நிறுவவும்</string>
     <string name="app">பயன்பாடு</string>
