@@ -8,7 +8,7 @@
     <string name="info">Thông tin</string>
     <string name="audio_fx">Hiệu ứng âm thanh</string>
     <string name="sleep_timer">Hẹn giờ tắt</string>
-    <string name="sleep_timer_desc">Đặt hẹn giờ để dừng phát nhạc sau một khoảng thời gian nhất định.</string>
+    <string name="sleep_timer_desc">Đặt hẹn giờ để dừng phát nhạc sau một khoảng thời gian nhất định</string>
     <string name="quality_selection">Chất lượng</string>
     <string name="manage">Quản lý</string>
     <string name="add">Thêm</string>
@@ -57,7 +57,7 @@
     <string name="x_specific_quality_summary">Chất lượng %1$s sẽ ghi đè lựa chọn chất lượng mặc định</string>
     <string name="unmetered_stream_quality">Chất lượng không giới hạn</string>
     <string name="unmetered_stream_quality_summary">Khi được kết nối với mạng không giới hạn, cài đặt này sẽ thay cho cài đặt chất lượng mặc định.</string>
-    <string name="behavior">Chế độ</string>
+    <string name="behavior">Hành vi</string>
     <string name="keep_queue">Giữ danh sách phát</string>
     <string name="keep_queue_summary">Giữ danh sách phát khi mở lại ứng dụng.</string>
     <string name="stop_player">Dừng phát</string>
@@ -67,7 +67,7 @@
     <string name="auto_start_radio">Tự mở đài</string>
     <string name="auto_start_radio_summary">Tự động thêm những bài hát liên quan vào danh sách phát</string>
     <string name="cache_size">Kích thước bộ nhớ đệm</string>
-    <string name="cache_size_summary">Kích thước tính bằng MB để lưu trữ âm thanh và video</string>
+    <string name="cache_size_summary">Kích thước (MB) để lưu trữ âm thanh và video</string>
     <string name="version">Phiên bản</string>
     <string name="select_language">Chọn ngôn ngữ</string>
     <string name="system">Hệ thống</string>
@@ -82,7 +82,7 @@
     <string name="could_not_find_the_file">Không thể tìm thấy tệp.</string>
     <string name="extension_installer">Trình cài đặt phần mở rộng</string>
     <string name="extension_installed_successfully">Phần mở rộng đã được cài đặt thành công.</string>
-    <string name="show_tab_summary">sẽ hiển thị các tab của phần mở rộng như là các danh mục</string>
+    <string name="show_tab_summary">sẽ hiển thị các tab của các tiện ích như là các danh mục</string>
     <string name="unified_liked_playlist_summary">Các bản nhạc bạn thích từ các phần mở rộng khác nhau</string>
     <string name="extension">Phần mở rộng</string>
     <string name="extension_out_of_date">Lỗi thời</string>
