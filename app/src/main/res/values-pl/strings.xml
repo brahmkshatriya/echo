@@ -54,4 +54,11 @@
     <string name="music">Muzyka</string>
     <string name="lyrics">Tekst</string>
     <string name="x_extensions">%1$s rozszerzeń</string>
+    <string name="playlist_liked">Polubione</string>
+    <string name="playlist_liked_desc">Twoje polubione utwory</string>
+    <string name="unknown">Nie wiadomo</string>
+    <string name="like">Dodaj do Polubionych</string>
+    <string name="unlike">Usuń z Polubionych</string>
+    <string name="repeat_off">Powtórzenie wyłączono</string>
+    <string name="repeat_all">Powtórz wszystko</string>
 </resources>
