@@ -96,7 +96,7 @@
     <string name="equalizer_summary">Adkryć nałady ekvalajziera pryłady</string>
     <string name="stream_quality">Jakasć prajhravannia</string>
     <string name="stream_quality_summary">Abrać asnoŭnuju jakasć prajhravannia</string>
-    <string name="x_specific_quality_summary">%1$s kankretnaja jakasć prajhravannia, zamienić wybar asnoŭnaj jakasci prajhravannia</string>
+    <string name="x_specific_quality_summary">Kankretnaja jakasć prajhravannia %1$s, zamienić vybar asnoŭnaj jakasci prajhravannia</string>
     <string name="unmetered_stream_quality">Nieabmežavanaja jakasć prajhravannia</string>
     <string name="unmetered_stream_quality_summary">Jakasć prajhravannia pry dałuczenni da nielimitavanaj setki. Heta zamienić asnoŭnuju jakasć prajhravannia.</string>
     <string name="behavior">Pavodziny</string>
@@ -147,7 +147,7 @@
     <string name="amoled">AMOLED</string>
     <string name="amoled_summary">Sapraŭdny čorny</string>
     <string name="navbar_gradient">Hradyjentnaja navihacyjnaja panel</string>
-    <string name="navbar_gradient_summary">Navihacyjnaja panel pastupowa rabicca prazrystaju</string>
+    <string name="navbar_gradient_summary">Navihacyjnaja panel pastupova rabicca prazrystaju</string>
     <string name="dynamic_player">Dynamičny koler płejera</string>
     <string name="dynamic_player_summary">Dastasuje koler płejeru na padstavie vokładki treka</string>
     <string name="show_background">Pakazać fon</string>
@@ -168,7 +168,7 @@
     <string name="lyrics">Tekst</string>
     <string name="misc">Roznaje</string>
     <string name="x_extensions">%1$s pašyrenniaŭ</string>
-    <string name="x_extension">Pašyrennie %1$s</string>
+    <string name="x_extension">%1$s pašyrennie</string>
     <string name="enabled">Uklučana</string>
     <string name="disabled">Vyklučana</string>
     <string name="error_updating_extension">Pamyłka padčas abnaŭlennia</string>
@@ -242,12 +242,12 @@
     <string name="radio">Radyjo</string>
     <string name="download">Spampavać</string>
     <string name="follow">Padpisacca</string>
-    <string name="following_x">Padpisanne na %1$s</string>
+    <string name="following_x">Padpisannie na %1$s</string>
     <string name="followed_x">Padpisana na %1$s</string>
     <string name="unfollow">Adpisacca</string>
-    <string name="unfollowing_x">Adpisanne ad %1$s</string>
+    <string name="unfollowing_x">Adpisannie ad %1$s</string>
     <string name="unfollowed_x">Adpisana ad %1$s</string>
-    <string name="liking_x">Dadanne %1$s va Ŭlubionyja</string>
+    <string name="liking_x">Dadannie %1$s va Ŭlubionyja</string>
     <string name="liked_x">%1$s dadana va Ŭlubionyja</string>
     <string name="unliking_x">Vydalennie %1$s z Ŭlubionych</string>
     <string name="unliked_x">%1$s vydalena z Ŭlubionych</string>
