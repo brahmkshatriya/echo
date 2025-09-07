@@ -304,4 +304,16 @@
     <string name="back_animations_summary">Dapat menyebabkan bug visual karena Android, tetapi Anda bisa membuka istirahat untuk memperbaikinya.</string>
     <string name="regex_invalid">%1$s tidak valid, silakan ikuti regex: %2$s</string>
     <string name="n_hours">%1$d jam</string>
+    <string name="app_desc">Hanya pemutar musik.</string>
+    <string name="confirmation">Konfirmasi</string>
+    <string name="delete_playlist_confirmation">Apakah anda pasti ingin menghapus%1$s?</string>
+    <string name="confirm">Konfirmasi</string>
+    <string name="big_cover_summary">Bagus untuk perangkat dengan layar lebih besar</string>
+    <string name="not_playable_x">Tidak dapat diputar: %1$s</string>
+    <string name="releases_on_x">Akan rilis pada %1$s</string>
+    <string name="unavailable_in_your_region">Tidak tersedia di wilayah anda</string>
+    <string name="currently_playing">Sedang Diputar</string>
+    <string name="colors">Warna</string>
+    <string name="scroll_bar">Bilah Gulir</string>
+    <string name="unhidden_x">Tidak tersembunyi%1$s</string>
 </resources>
