@@ -113,4 +113,15 @@
     <string name="keep_queue_summary">Zachowaj kolejkę odtwarzacza pomiędzy uruchomieniami aplikacji.</string>
     <string name="stop_player">Zatrzymaj odtwarzanie</string>
     <string name="stop_player_summary">Zatrzymaj odtwarzanie, gdy aplikacja zostanie zamknięta</string>
+    <string name="behavior">Zachowanie</string>
+    <string name="cache_size">Rozmiar pamięci podręcznej</string>
+    <string name="version">Wersja</string>
+    <string name="select_language">Wybierz język</string>
+    <string name="system">System</string>
+    <string name="check_for_updates">Sprawdź aktualizacje</string>
+    <string name="install">Zainstaluj</string>
+    <string name="app">Aplikacja</string>
+    <string name="file">Plik</string>
+    <string name="installation_type">Typ instalacji</string>
+    <string name="extension_installer">Instalator rozszerzeń</string>
 </resources>
