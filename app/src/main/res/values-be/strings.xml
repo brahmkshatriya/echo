@@ -96,7 +96,7 @@
     <string name="equalizer_summary">Адкрыць налады эквалайзера прылады</string>
     <string name="stream_quality">Якасць прайгравання</string>
     <string name="stream_quality_summary">Абраць асноўную якасць прайгравання</string>
-    <string name="x_specific_quality_summary">%1$s канкрэтная якасць прайгравання, заменіць выбар асноўнай якасці прайгравання</string>
+    <string name="x_specific_quality_summary">Канкрэтная якасць прайгравання %1$s, заменіць выбар асноўнай якасці прайгравання</string>
     <string name="unmetered_stream_quality">Неабмежаваная якасць прайгравання</string>
     <string name="unmetered_stream_quality_summary">Якасць прайгравання пры далучэнні да нелімітаванай сеткі. Гэта заменіць асноўную якасць прайгравання.</string>
     <string name="behavior">Паводзіны</string>
@@ -165,7 +165,7 @@
     <string name="lyrics">Тэкст</string>
     <string name="misc">Рознае</string>
     <string name="x_extensions">%1$s пашырэнняў</string>
-    <string name="x_extension">Пашырэнне %1$s</string>
+    <string name="x_extension">%1$s пашырэнне</string>
     <string name="enabled">Уключана</string>
     <string name="disabled">Выключана</string>
     <string name="error_updating_extension">Памылка падчас абнаўлення</string>
