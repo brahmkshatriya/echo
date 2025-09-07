@@ -3,7 +3,7 @@
     <string name="okay">Акей</string>
     <string name="cancel">Скасаваць</string>
     <string name="back">Назад</string>
-    <string name="x_permission_required">Патрэбна %1$s дазваленняў</string>
+    <string name="x_permission_required">Патрэбна дазваленне %1$s</string>
     <string name="x_was_not_granted">%1$s не было дадзена</string>
     <string name="audio">Аўдыё</string>
     <string name="audio_permission_summary">Каб атрымаць доступ да вашай лакальнай бібліятэкі музыкі</string>
@@ -28,14 +28,14 @@
     <string name="blacklist_folders">Чорны спіс тэчак</string>
     <string name="feed">Стужка</string>
     <string name="blacklist_folders_summary">Тэчкі да вынятку з бібліятэкі</string>
-    <string name="blacklist_folder_keywords">Ключавыя словы тэчкі для чорнага спісу</string>
+    <string name="blacklist_folder_keywords">Ключавыя словы для чорнага спісу тэчак</string>
     <string name="blacklist_folder_keywords_summary">Ключавыя словы для тэчак чорнага спісу, выкарыстоўвайце коску як падзельнік</string>
     <string name="saved">Захаванае</string>
     <string name="tabs">Укладкі</string>
     <string name="show_tabs">Паказаць укладкі</string>
     <string name="show_tab_summary">Паказываць укладкі пашырэнняў як катэгоріі</string>
     <string name="unified_liked_playlist_summary">Вашы ўлюбёныя трэкі з розных пашырэнняў</string>
-    <string name="n_items">%1$d Элементаў</string>
+    <string name="n_items">%1$d элементаў</string>
     <string name="item">Элемент</string>
     <plurals name="number_items">
         <item quantity="one">%1$d элемент</item>
@@ -61,7 +61,7 @@
     <string name="download_progress">Прагрэс спампавання</string>
     <string name="downloads">Спампаванні</string>
     <string name="downloaded_x">Спампавана %1$s</string>
-    <string name="logout_and_login">Выхад і уваход</string>
+    <string name="logout_and_login">Выхад і ўваход</string>
     <string name="login">Уваход</string>
     <string name="view">Праглядзець</string>
     <string name="extension_out_of_date">Састарэла</string>
