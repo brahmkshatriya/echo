@@ -155,7 +155,7 @@
     <string name="theme_summary">想当盲人吗？</string>
     <string name="custom_theme_color">自定义主题颜色</string>
     <string name="custom_theme_color_summary">使用自定义主题颜色，而不是系统主题.</string>
-    <string name="amoled">黑色主题</string>
+    <string name="amoled">纯黑色主题</string>
     <string name="amoled_summary">漆黑，纯黑色</string>
     <string name="navbar_gradient">渐变导航栏</string>
     <string name="navbar_gradient_summary">导航栏逐渐变得透明</string>
@@ -224,7 +224,7 @@
     <string name="all">全部</string>
     <string name="edit_playlist">编辑播放列表</string>
     <string name="more_brain_capacity">提高大脑容量</string>
-    <string name="explicit">显式</string>
+    <string name="explicit">限制级</string>
     <string name="x_plays">%1$s 次播放</string>
     <string name="x_followers">%1$s 位粉丝</string>
     <string name="shuffling_x">正在随机播放 %1$s</string>
@@ -323,7 +323,7 @@
     <string name="unsave">不保存</string>
     <string name="sort_date_added">添加日期</string>
     <string name="opening_webview_x">正在打开网页视图: %1$s</string>
-    <string name="no_update_available_for_x">更新不可用 %1$s</string>
+    <string name="no_update_available_for_x">%1$s 无可用更新</string>
     <string name="other">其它的</string>
     <string name="player">播放器</string>
     <string name="about">关于</string>
@@ -339,9 +339,9 @@
     <string name="playlist">播放列表</string>
     <string name="album">专辑</string>
     <string name="pre_release">预发布</string>
-    <string name="single">单一</string>
-    <string name="ep">延伸播放</string>
-    <string name="lp">长播放专辑</string>
+    <string name="single">单曲</string>
+    <string name="ep">迷你专辑</string>
+    <string name="lp">完整专辑</string>
     <string name="compilation">汇集</string>
     <string name="show">显示</string>
     <string name="book">书</string>
@@ -369,4 +369,5 @@
     <string name="scroll_bar">滚动栏</string>
     <string name="scroll_bar_summary">侧面的滚动条可加快访问速度（可能会有故障）</string>
     <string name="colors">颜色</string>
+    <string name="currently_playing">当前播放</string>
 </resources>
