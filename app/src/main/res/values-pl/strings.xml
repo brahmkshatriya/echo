@@ -124,4 +124,15 @@
     <string name="file">Plik</string>
     <string name="installation_type">Typ instalacji</string>
     <string name="extension_installer">Instalator rozszerzeń</string>
+    <string name="skip_silence">Pomiń ciszę</string>
+    <string name="cache_size_summary">Rozmiar w MB do buforowania audio i wideo</string>
+    <string name="extension_installed_successfully">Rozszerzenie zainstalowane pomyślnie.</string>
+    <string name="extension_uninstalled_successfully">Rozszerzenie odinstalowane pomyślnie.</string>
+    <string name="downloading_update_for_x">Pobieranie aktualizacji dla %1$s</string>
+    <string name="extension_updated_successfully">%1$s zaktualizowane pomyślnie</string>
+    <string name="link">Link</string>
+    <string name="link_or_code">Link lub kod</string>
+    <string name="list_is_empty">Lista jest pusta</string>
+    <string name="extension_installed">%1$s (Zainstalowano)</string>
+    <string name="add_extensions">Dodaj rozszerzenia</string>
 </resources>
