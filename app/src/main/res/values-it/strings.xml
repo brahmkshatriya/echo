@@ -82,7 +82,7 @@
     <string name="add">Aggiungi</string>
     <string name="loading">Caricamento in corso…</string>
     <string name="settings">Impostazioni</string>
-    <string name="audio_fx">Effetti Audio</string>
+    <string name="audio_fx">Effetti audio</string>
     <string name="value">Valore</string>
     <string name="value_not_set">Non Impostato</string>
     <string name="playback">Riproduzione</string>
@@ -99,14 +99,14 @@
     <string name="keep_queue_summary">Recupera la coda di riproduzione all’apertura dell’app.</string>
     <string name="stream_quality_summary">Seleziona la qualità predefinita dello streaming</string>
     <string name="behavior">Comportamento</string>
-    <string name="keep_queue">Mantieni la Coda di Riproduzione</string>
+    <string name="keep_queue">Mantieni la coda di riproduzione</string>
     <string name="stop_player">Ferma riproduzione</string>
     <string name="stop_player_summary">Ferma la riproduzione quando l’app viene rimossa dai recenti</string>
-    <string name="skip_silence">Salta Silenzio</string>
+    <string name="skip_silence">Riproduzione senza pause</string>
     <string name="auto_start_radio">Avvio Automatico della Radio</string>
     <string name="auto_start_radio_summary">Aggiungi automaticamente brani correlati alla traccia nella playlist per avere una coda infinita</string>
-    <string name="cache_size">Dimensione della Cache</string>
-    <string name="cache_size_summary">Dimensione in MB per memorizzare nella cache audio e video</string>
+    <string name="cache_size">Dimensione della cache</string>
+    <string name="cache_size_summary">Dimensione in MB della cache audio e video</string>
     <string name="version">Versione</string>
     <string name="system">Sistema</string>
     <string name="app">App</string>
@@ -128,7 +128,7 @@
     <string name="extension_installed">%1$s (Installato)</string>
     <string name="add_extensions">Aggiungi Estensioni</string>
     <string name="invalid_extension_list">La lista delle estensioni non è valida</string>
-    <string name="look_and_feel">Aspetto e Stile</string>
+    <string name="look_and_feel">Aspetto e stile</string>
     <string name="ui">Interfaccia Utente</string>
     <string name="theme_summary">Vuoi accecarti?</string>
     <string name="custom_theme_color">Colore Tema Personalizzato</string>
@@ -236,10 +236,10 @@
     <string name="background_gradient_summary">Una sfumatura di colore nello sfondo in base al contesto</string>
     <string name="all">Tutto</string>
     <string name="edit_playlist">Modifica Playlist</string>
-    <string name="more_brain_capacity">Più Capacità di Elaborazione</string>
+    <string name="more_brain_capacity">Più capacità di elaborazione</string>
     <string name="sort">Ordina</string>
     <string name="explicit">Esplicito</string>
-    <string name="more_brain_capacity_summary">Attivare questa opzione può aiutare a risolvere i ritardi audio e aumentare il consumo della batteria (offloading audio disattivato).</string>
+    <string name="more_brain_capacity_summary">Attivare questa opzione può aiutare a risolvere i ritardi audio, a discapito del consumo della batteria (offloading audio disattivato).</string>
     <string name="x_plays">%1$s Ascolti</string>
     <string name="x_followers">%1$s Follower</string>
     <string name="shuffling_x">Riproduzione Casuale di %1$s</string>
@@ -275,7 +275,7 @@
     <string name="removing_x">Rimozione di %1$s</string>
     <string name="no_download_extension">Nessuna estensione per il download trovata, usa il codice \"echodown\" per ottenerla.</string>
     <string name="nothing_to_download_in_x">Nulla da scaricare in %1$s</string>
-    <string name="apply_player_color_to_app">Applica il colore del lettore multimediale a tutta l’applicazione</string>
+    <string name="apply_player_color_to_app">Applica il colore del lettore a tutta l’applicazione</string>
     <string name="apply_player_color_to_app_summary">PERICOLO DI LAG!!!</string>
     <string name="download_started">Download avviato</string>
     <string name="merging_x">Unione di %1$s</string>
@@ -300,8 +300,8 @@
         <item quantity="other">%1$d Oggetti</item>
     </plurals>
     <string name="x_specific_quality_summary">Qualità dello streaming specifica di %1$s, sovrascriverà la selezione predefinita della qualità dello streaming</string>
-    <string name="unmetered_stream_quality">Qualità di riproduzione su reti illimitate</string>
-    <string name="unmetered_stream_quality_summary">La qualità dello streaming quando ci si connette a una rete senza limiti. Questo sovrascriverà la qualità di streaming predefinita.</string>
+    <string name="unmetered_stream_quality">Qualità di riproduzione su reti non a consumo</string>
+    <string name="unmetered_stream_quality_summary">La qualità dello streaming quando ci si connette a una rete non a consu.l. Questo sovrascriverà la qualità di streaming predefinita.</string>
     <string name="select_language">Seleziona Lingua</string>
     <string name="check_for_updates">Controlla Aggiornamenti</string>
     <string name="check_for_updates_summary">Cerca nuovi aggiornamenti di app ed estensioni all’apertura dell’app.</string>
@@ -344,7 +344,7 @@
     <string name="opening_webview_x">Apertura Webview: %1$s</string>
     <string name="no_update_available_for_x">Nessun aggiornamento disponibile per %1$s</string>
     <string name="other">Altro</string>
-    <string name="player">Lettore multimediale</string>
+    <string name="player">Lettore</string>
     <string name="about">Informazioni</string>
     <string name="language_x">Lingua: %1$s</string>
     <string name="guide">Guida</string>
