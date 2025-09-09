@@ -14,14 +14,14 @@
             android:layout_width="120sp"
             android:layout_height="120sp"
             android:background="@drawable/rounded_rectangle_cover_profile"
-            android:backgroundTint="?colorPrimaryInverse" />
+            android:backgroundTint="?navBarForeground" />
 
         <View
             android:layout_gravity="center"
             android:layout_width="108sp"
             android:layout_height="108sp"
             android:background="@drawable/art_twelve_sided_cookie"
-            android:backgroundTint="?colorPrimary" />
+            android:backgroundTint="?navBarBackground" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,7 +31,7 @@
             android:text="@string/crying_af"
             android:textSize="36sp"
             android:textAppearance="@style/TextAppearance.Material3.DisplayMedium"
-            android:textColor="?colorOnPrimary"
+            android:textColor="?navBarForeground"
             android:typeface="monospace" />
     </FrameLayout>
 

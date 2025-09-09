@@ -87,7 +87,7 @@ open class MainActivity : AppCompatActivity() {
         }
 
         fun Context.defaultColor() =
-            ContextCompat.getColor(this, R.color.ic_launcher_background)
+            ContextCompat.getColor(this, R.color.app_color)
 
         fun Context.isAmoled() = getSettings().getBoolean(AMOLED_KEY, false)
 

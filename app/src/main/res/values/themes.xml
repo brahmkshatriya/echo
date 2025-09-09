@@ -35,7 +35,7 @@
     </style>
 
     <style name="Default" parent="Base.Theme.Echo">
-        <item name="navBarForeground">?colorPrimary</item>
+        <item name="navBarForeground">?colorSecondary</item>
         <item name="navBarBackground">?colorPrimaryInverse</item>
     </style>
 
