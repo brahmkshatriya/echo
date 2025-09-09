@@ -92,13 +92,13 @@
     <string name="bass_boost">Uzmacniennie basaŭ</string>
     <string name="bass_boost_desc">Bolš vysokaje značennie moža pryvieści da skaženniaŭ huku.</string>
     <string name="change_pitch_with_speed_desc">Atrymajcie zapavoleny huk</string>
-    <string name="equalizer">Ekvalajzier</string>
-    <string name="equalizer_summary">Adkryć nałady ekvalajziera pryłady</string>
+    <string name="equalizer">Ekvałajzier</string>
+    <string name="equalizer_summary">Adkryć nałady ekvałajziera pryłady</string>
     <string name="stream_quality">Jakasć prajhravannia</string>
     <string name="stream_quality_summary">Abrać asnoŭnuju jakasć prajhravannia</string>
     <string name="x_specific_quality_summary">Kankretnaja jakasć prajhravannia %1$s, zamienić vybar asnoŭnaj jakasci prajhravannia</string>
     <string name="unmetered_stream_quality">Nieabmežavanaja jakasć prajhravannia</string>
-    <string name="unmetered_stream_quality_summary">Jakasć prajhravannia pry dałuczenni da nielimitavanaj setki. Heta zamienić asnoŭnuju jakasć prajhravannia.</string>
+    <string name="unmetered_stream_quality_summary">Jakasć prajhravannia pry dałuczenni da nielimitavanaj sietki. Heta zamienić asnoŭnuju jakasć prajhravannia.</string>
     <string name="behavior">Pavodziny</string>
     <string name="keep_queue">Trymać čarhu płejera</string>
     <string name="keep_queue_summary">Adnavić čarhu płejera, kali vy znovu adkryjecie dadatak.</string>
@@ -167,8 +167,8 @@
     <string name="tracker">Trekier</string>
     <string name="lyrics">Tekst</string>
     <string name="misc">Roznaje</string>
-    <string name="x_extensions">%1$s pašyrenniaŭ</string>
-    <string name="x_extension">%1$s pašyrennie</string>
+    <string name="x_extensions">Pašyrenni (%1$s)</string>
+    <string name="x_extension">Pašyrennie %1$s</string>
     <string name="enabled">Uklučana</string>
     <string name="disabled">Vyklučana</string>
     <string name="error_updating_extension">Pamyłka padčas abnaŭlennia</string>
@@ -260,7 +260,7 @@
     <string name="add_to_next">Dadać da nastupnaha</string>
     <string name="add_to_queue">Dadać u čarhu</string>
     <string name="loading_radio_for_x">Zahruzka radyjo dla %1$s</string>
-    <string name="playing_x">Hrae %1$s</string>
+    <string name="playing_x">Hraje %1$s</string>
     <string name="adding_x_to_queue">Dadannie %1$s u čarhu</string>
     <string name="adding_x_to_next">Dadannie %1$s nastupnym</string>
     <string name="background_gradient">Hradyjent fona</string>
@@ -390,5 +390,5 @@
     <string name="releases_on_x">Vychodzić %1$s</string>
     <string name="unavailable_in_your_region">Niedastupna ŭ vašym rehijonie</string>
     <string name="not_playable_x">Niemahčyma prajhrać: %1$s</string>
-    <string name="currently_playing">Zaraz hrae</string>
+    <string name="currently_playing">Zaraz hraje</string>
 </resources>
