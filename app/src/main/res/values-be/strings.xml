@@ -164,8 +164,8 @@
     <string name="tracker">Трэкер</string>
     <string name="lyrics">Тэкст</string>
     <string name="misc">Рознае</string>
-    <string name="x_extensions">%1$s пашырэнняў</string>
-    <string name="x_extension">%1$s пашырэнне</string>
+    <string name="x_extensions">Пашырэнні (%1$s)</string>
+    <string name="x_extension">Пашырэнне %1$s</string>
     <string name="enabled">Уключана</string>
     <string name="disabled">Выключана</string>
     <string name="error_updating_extension">Памылка падчас абнаўлення</string>
