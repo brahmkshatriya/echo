@@ -4,7 +4,7 @@
     <string name="cancel">ביטול</string>
     <string name="back">חזרה</string>
     <string name="feed">פיד</string>
-    <string name="x_permission_required">%1$s נדרשת הרשאה</string>
+    <string name="x_permission_required">נדרשת הרשאת %1$s</string>
     <string name="x_was_not_granted">%1$s לא הוענק</string>
     <string name="audio">שמע</string>
     <string name="audio_permission_summary">כדי לקבל גישה לספריית המוזיקה המקומית שלך</string>
