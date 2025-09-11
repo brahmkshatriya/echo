@@ -1,3 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">d\'acord</string>
+    <string name="cancel">Cancel·lar</string>
+    <string name="back">Enrere</string>
+    <string name="feed">Transmissió</string>
+    <string name="x_permission_required">%1$s Es necessiten permisos</string>
+    <string name="x_was_not_granted">%1$s no s\'ha concedit</string>
+    <string name="audio">Àudio</string>
+    <string name="audio_permission_summary">Per accedir a la teva llibreria de música</string>
+    <string name="read_storage">Llegir de l\'emmagatzematge</string>
+    <string name="write_storage">Escriure a l\'emmagatzematge</string>
+    <string name="write_storage_permission_summary">Crear i editar llistes de reproducció locals</string>
+    <string name="notifications">Notificacions</string>
+    <string name="notifications_permission_summary">Mostrar notificacions de descàrregues i música</string>
+    <string name="remove">Eliminar</string>
+    <string name="more_by_x">Més de %1$s</string>
+    <string name="songs">Cançons</string>
+    <string name="albums">Àlbums</string>
+    <string name="x_radio">Ràdio de %1$s</string>
+    <string name="cached_songs">Cançons en memòria cau</string>
+    <string name="cache_playlist_warning">Funció experimental. Només es podràn escoltar, qualsevol altra acció no és suportada.</string>
+    <string name="artists">Artistes</string>
+    <string name="recently_added">Afegits recentment</string>
+    <string name="refresh_library_on_reload">Actualitza la llibreria al tornar a carregar</string>
+    <string name="refresh_library_on_reload_summary">Analitza l\'emmagatzematge cada cop que es carregui la transmissió</string>
+    <string name="duration_filter">Filtre de durada</string>
+    <string name="duration_filter_summary">Filtra els fitxers d\'àudio amb una durada inferior al valor indicat (segons)</string>
+    <string name="blacklist_folders">Carpetes excloses</string>
+    <string name="blacklist_folders_summary">Carpetes excloses de la llibreria</string>
+    <string name="blacklist_folder_keywords">Paraules clau per excloure carpetes</string>
+    <string name="blacklist_folder_keywords_summary">Paraules clau per excloure carpetes, separades per coma</string>
+    <string name="saved">Guardat</string>
+    <string name="tabs">Pestanyes</string>
+    <string name="show_tabs">Mostra les pestanyes</string>
+    <string name="show_tab_summary">Mostra les pestanyes de les extensions com a categories</string>
+    <string name="unified_liked_playlist_summary">Les teves pistes favorites de diverses extensions</string>
+    <string name="n_items">%1$d elements</string>
+    <string name="item">Element</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d Element</item>
+        <item quantity="many">%1$d Elements</item>
+        <item quantity="other">%1$d Elements</item>
+    </plurals>
+    <string name="playlist_liked">m\'agrada</string>
+    <string name="playlist_liked_desc">Les teves pistes favorites</string>
+    <string name="unknown">Desconegut</string>
+    <string name="like">M\'agrada</string>
+    <string name="unlike">Ja no m\'agrada</string>
+    <string name="repeat_one">Repetir un cop</string>
+    <string name="repeat_off">No repetir</string>
+    <string name="repeat_all">Repetir tot</string>
 </resources>
