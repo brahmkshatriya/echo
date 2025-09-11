@@ -1,3 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">Rendben</string>
+    <string name="cancel">Mégse</string>
+    <string name="back">Vissza</string>
+    <string name="feed">Kezdőlap</string>
+    <string name="x_permission_required">%1$s Engedély szükséges</string>
+    <string name="x_was_not_granted">%1$s nem lett megadva</string>
+    <string name="audio">Hang</string>
+    <string name="audio_permission_summary">Hogy hozzáférj a helyi zenetáradhoz</string>
+    <string name="read_storage">Tárhely olvasása</string>
+    <string name="write_storage">Tárhely írása</string>
+    <string name="write_storage_permission_summary">Helyi lejátszó listák létrehozása és szerkesztéséhez</string>
+    <string name="notifications">Értesítések</string>
+    <string name="notifications_permission_summary">A letöltések és zene értesítések mutatásához</string>
+    <string name="remove">Eltávolítás</string>
+    <string name="more_by_x">Meg több %1$s</string>
+    <string name="songs">Dalok</string>
+    <string name="albums">Albumok</string>
+    <string name="x_radio">%1$s Rádió</string>
+    <string name="cached_songs">Gyorstárazott Dalok</string>
+    <string name="cache_playlist_warning">Kísérleti funkció. A hallgatáson kívül más nem támogatott.</string>
+    <string name="artists">Előadók</string>
+    <string name="recently_added">Nemrég hozzá adva</string>
+    <string name="refresh_library_on_reload">Frissítse a könyvtárat újratöltéskor</string>
+    <string name="refresh_library_on_reload_summary">Az eszköz újra keresése a Kezdőlap be töltésekor</string>
+    <string name="duration_filter">Hossz szűrés</string>
 </resources>
