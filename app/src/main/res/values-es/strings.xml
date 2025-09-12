@@ -129,7 +129,7 @@
     <string name="theme">Tema</string>
     <string name="theme_summary">¿Quiere perder la visión?</string>
     <string name="custom_theme_color">Color de tema personalizado</string>
-    <string name="custom_theme_color_summary">Utilice un color de tema personalizado, en lugar del del sistema</string>
+    <string name="custom_theme_color_summary">Utilice un color de tema personalizado, en lugar del sistema</string>
     <string name="add_color">Añadir color</string>
     <string name="custom_colors">Colores personalizados</string>
     <string name="amoled">AMOLED</string>
