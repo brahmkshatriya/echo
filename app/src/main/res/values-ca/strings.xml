@@ -50,4 +50,7 @@
     <string name="repeat_one">Repetir un cop</string>
     <string name="repeat_off">No repetir</string>
     <string name="repeat_all">Repetir tot</string>
+    <string name="home">Inici</string>
+    <string name="search">Cerca</string>
+    <string name="library">Biblioteca</string>
 </resources>
