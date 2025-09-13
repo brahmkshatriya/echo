@@ -1,6 +1,8 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
-    id("java-library")
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.android.kmp.library)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlinx.serialization)
     id("com.vanniktech.maven.publish") version "0.34.0"
     id("org.jetbrains.dokka") version "2.0.0"
@@ -13,19 +15,36 @@ java {
 
 kotlin {
     jvmToolchain(17)
-}
 
-dependencies {
-    api(libs.bundles.kotlinx)
-    api(libs.okhttp)
-    api(libs.protobuf.java)
+    @Suppress("UnstableApiUsage")
+    androidLibrary {
+        namespace = "echo.common"
+        compileSdk = 36
+        minSdk = 24
+    }
+    jvm()
+    applyDefaultHierarchyTemplate()
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(libs.bundles.kotlinx)
+                api(libs.okhttp)
+                api(libs.protobuf.java)
+            }
+        }
+    }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
 }
 
 // build.gradle.kts
 
 mavenPublishing {
     publishToMavenCentral(true)
-    signAllPublications()
+    //signAllPublications()
 
     coordinates("dev.brahmkshatriya.echo", "common", "1.0")
 
@@ -59,7 +78,7 @@ mavenPublishing {
 dokka {
     moduleName.set("common")
     moduleVersion.set("1.0")
-    dokkaSourceSets.main {
+    dokkaSourceSets.commonMain {
         includes.from("README.md")
         sourceLink {
             localDirectory.set(file("src/main/java"))
