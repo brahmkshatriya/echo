@@ -23,6 +23,7 @@ kotlin {
         minSdk = 24
     }
     jvm()
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
         commonMain {
@@ -43,7 +44,7 @@ kotlin {
 
 mavenPublishing {
     publishToMavenCentral(true)
-    signAllPublications()
+    //signAllPublications()
 
     coordinates("dev.brahmkshatriya.echo", "common", "1.0")
 
