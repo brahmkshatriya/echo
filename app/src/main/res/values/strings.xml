@@ -439,4 +439,7 @@
     <string name="not_playable_x">Not playable: %1$s</string>
 
     <string name="currently_playing">Currently Playing</string>
+    <string name="circle">Circle</string>
+    <string name="horizontal">Horizontal</string>
+    <string name="vertical">Vertical</string>
 </resources>
