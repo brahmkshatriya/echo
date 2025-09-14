@@ -12,12 +12,12 @@
     <string name="all">Todo</string>
     <string name="filter">Filtrar</string>
     <string name="x_permission_required">Se requiere permiso de %1$s</string>
-    <string name="x_was_not_granted">%1$s no se concedió</string>
+    <string name="x_was_not_granted">%1$s no fué permitido por el usuario</string>
     <string name="audio">Audio</string>
-    <string name="audio_permission_summary">Para acceder a su colección local de música</string>
+    <string name="audio_permission_summary">Para acceder a sus canciones guardadas localmente</string>
     <string name="video">Vídeo</string>
-    <string name="read_storage">Leer almacenamiento</string>
-    <string name="write_storage">Escribir en almacenamiento</string>
+    <string name="read_storage">Acceder a sus archivos</string>
+    <string name="write_storage">Crear archivos en el almacenamiento interno</string>
     <string name="write_storage_permission_summary">Para crear y editar listas de reproducción locales</string>
     <string name="notifications">Notificaciones</string>
     <string name="notifications_permission_summary">Para mostrar notificaciones de descargas y música</string>
@@ -27,11 +27,11 @@
     <string name="albums">Álbumes</string>
     <string name="x_radio">Radio de %1$s</string>
     <string name="cached_songs">Canciones prealmacenadas</string>
-    <string name="cache_playlist_warning">Funcionalidad experimental. No admite ninguna acción excepto escuchar.</string>
+    <string name="cache_playlist_warning">Función experimental. No se permite ninguna acción excepto escuchar.</string>
     <string name="artists">Artistas</string>
     <string name="recently_added">Añadidos recientemente</string>
     <string name="refresh_library_on_reload">Actualizar colección al recargar</string>
-    <string name="refresh_library_on_reload_summary">Examinar dispositivo cada vez que se carga el suministro</string>
+    <string name="refresh_library_on_reload_summary">Examinar almacenamiento cada vez que se abra la app</string>
     <string name="duration_filter">Filtro de duración</string>
     <string name="duration_filter_summary">Ignorar archivos de audio cuya duración (en segundos) sea menor que el valor</string>
     <string name="blacklist_folders">Carpetas en lista negra</string>
@@ -343,4 +343,5 @@
     <string name="not_playable_x">No se puede reproducir: %1$s</string>
     <string name="unmetered_stream_quality">Calidad de transmisión sin medición</string>
     <string name="regex_invalid">%1$s es inválido; debe coincidir con la expresión regular: %2$s</string>
+    <string name="item">Elemento</string>
 </resources>
