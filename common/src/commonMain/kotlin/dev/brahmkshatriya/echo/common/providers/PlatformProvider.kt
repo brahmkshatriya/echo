@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.common.providers
 import dev.brahmkshatriya.echo.common.platform.Platform
 
 /**
- * Interface to provide global [Platform] to the extension
+ * Interface to provide [Platform] to the extension
  */
 interface PlatformProvider {
     /**
