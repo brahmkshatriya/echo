@@ -24,7 +24,7 @@ class WidgetVertical : BaseWidget() {
         } else {
             val widgetLayout = mapOf(
                 SizeF(0f, 0f) to small,
-                SizeF(200f, 200f) to large,
+                SizeF(256f, 128f) to large,
             )
             widgetLayout.forEach { (_, u) ->
                 updateView(clazz, controller, image, context, u)
