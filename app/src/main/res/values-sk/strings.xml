@@ -73,4 +73,6 @@
     <string name="app">Aplikácia</string>
     <string name="file">Súbor</string>
     <string name="installation_type">Typ Inštalácie</string>
+    <string name="okay">Potvrdiť</string>
+    <string name="feed">Pre teba</string>
 </resources>
