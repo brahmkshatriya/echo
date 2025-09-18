@@ -1,3 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">ওকে</string>
+    <string name="cancel">বাতিল</string>
+    <string name="back">ফিরে যান</string>
+    <string name="feed">ফিড</string>
+    <string name="x_permission_required">%1$s অনুমতি প্রয়োজন</string>
+    <string name="x_was_not_granted">%1$s অনুমতি দেওয়া হয়নি</string>
+    <string name="audio">অডিও</string>
+    <string name="audio_permission_summary">আপনার লোকাল মিউজিক লাইব্রেরি অ্যাক্সেস করতে</string>
+    <string name="read_storage">স্টোরেজ পড়ার অনুমতি</string>
+    <string name="write_storage">স্টোরেজে লেখার অনুমতি</string>
+    <string name="write_storage_permission_summary">লোকাল প্লেলিস্ট তৈরি এবং সম্পাদনা করতে</string>
+    <string name="notifications">নোটিফিকেশন</string>
+    <string name="notifications_permission_summary">ডাউনলোড এবং মিউজিকের জন্য নোটিফিকেশন দেখাতে</string>
+    <string name="remove">মুছে দিন</string>
+    <string name="more_by_x">%1$s দ্বারা আরও</string>
+    <string name="songs">গান</string>
+    <string name="albums">অ্যালবাম</string>
+    <string name="x_radio">%1$s রেডিও</string>
+    <string name="cached_songs">ক্যাশ করা গান</string>
+    <string name="cache_playlist_warning">প্রায়োগিক ফিচার। শুনার ছাড়া অন্য কোনো কাজ সমর্থিত নয়।</string>
+    <string name="artists">শিল্পী</string>
+    <string name="recently_added">সাম্প্রতিকভাবে যোগ করা হয়েছে</string>
+    <string name="refresh_library_on_reload">রিলোডে লাইব্রেরি রিফ্রেশ করুন</string>
+    <string name="refresh_library_on_reload_summary">ফিড লোড হলে প্রতি বার ডিভাইস স্ক্যান করুন</string>
+    <string name="duration_filter">স্থায়িত্ব ফিল্টার</string>
+    <string name="duration_filter_summary">অডিও ফাইলগুলো ফিল্টার করুন যেগুলোর স্থায়িত্ব (সেকেন্ডে) প্রদত্ত মানের চেয়ে কম</string>
+    <string name="blacklist_folders">ব্ল্যাকলিস্ট ফোল্ডার</string>
+    <string name="blacklist_folders_summary">লাইব্রেরি থেকে বাদ দেওয়ার জন্য ফোল্ডার</string>
+    <string name="blacklist_folder_keywords">ব্ল্যাকলিস্ট ফোল্ডার কীওয়ার্ড</string>
+    <string name="blacklist_folder_keywords_summary">ফোল্ডার ব্ল্যাকলিস্ট করার জন্য কীওয়ার্ড, বিভাজকের জন্য কমা ব্যবহার করুন</string>
+    <string name="saved">সংরক্ষিত</string>
+    <string name="tabs">ট্যাব</string>
+    <string name="show_tabs">ট্যাব দেখান</string>
+    <string name="show_tab_summary">এক্সটেনশনের ট্যাবগুলো ক্যাটাগরি হিসেবে দেখাবে</string>
+    <string name="unified_liked_playlist_summary">বিভিন্ন এক্সটেনশন থেকে আপনার পছন্দের ট্র্যাকগুলো</string>
+    <string name="n_items">%1$d আইটেম</string>
+    <string name="item">আইটেম</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d আইটেম</item>
+        <item quantity="other">%1$d আইটেমs</item>
+    </plurals>
+    <string name="playlist_liked">পছন্দ হয়েছে</string>
+    <string name="playlist_liked_desc">আপনার পছন্দের ট্র্যাকগুলো</string>
+    <string name="unknown">অজানা</string>
+    <string name="like">পছন্দ</string>
+    <string name="unlike">অপছন্দ</string>
 </resources>
