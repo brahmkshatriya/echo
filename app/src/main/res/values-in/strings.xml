@@ -98,7 +98,7 @@
     <string name="custom_colors">Warna Kustom</string>
     <string name="amoled">Hitam pekat</string>
     <string name="theme_summary">Ingin Gelap Gulita?</string>
-    <string name="dynamic_player_summary">Atur warna pemutar berdasarkan gambar lagu</string>
+    <string name="dynamic_player_summary">Atur warna pemutar berdasarkan sampul lagu</string>
     <string name="navbar_gradient">Gradasi Bilah Navigasi</string>
     <string name="navbar_gradient_summary">Bilah Navigasi menjadi transparan secara bertahap</string>
     <string name="animations">Animasi</string>
