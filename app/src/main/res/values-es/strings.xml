@@ -12,7 +12,7 @@
     <string name="all">Todo</string>
     <string name="filter">Filtrar</string>
     <string name="x_permission_required">Se requiere permiso de %1$s</string>
-    <string name="x_was_not_granted">%1$s no fué permitido por el usuario</string>
+    <string name="x_was_not_granted">No se concedió el permiso de %1$s</string>
     <string name="audio">Audio</string>
     <string name="audio_permission_summary">Para acceder a sus canciones guardadas localmente</string>
     <string name="video">Vídeo</string>
@@ -102,7 +102,7 @@
     <string name="stop_player">Detener reproductor</string>
     <string name="stop_player_summary">Detener la reproducción al quitar la aplicación de Recientes</string>
     <string name="skip_silence">Saltar silencio</string>
-    <string name="skip_silence_summary">Omitir la parte silenciosa de las canciones para reproducirlas sin pausas</string>
+    <string name="skip_silence_summary">Omitir la parte silenciosa de la canción para una reproducción sin pausas.</string>
     <string name="auto_start_radio">Iniciar radio automáticamente</string>
     <string name="auto_start_radio_summary">Añadir automáticamente canciones relacionadas a la lista para una cola infinita</string>
     <string name="cache_size">Tamaño de antememoria</string>
@@ -129,7 +129,7 @@
     <string name="theme">Tema</string>
     <string name="theme_summary">¿Quiere perder la visión?</string>
     <string name="custom_theme_color">Color de tema personalizado</string>
-    <string name="custom_theme_color_summary">Utilice un color de tema personalizado, en lugar del sistema</string>
+    <string name="custom_theme_color_summary">Usar un color de tema personalizado en lugar del tema del sistema.</string>
     <string name="add_color">Añadir color</string>
     <string name="custom_colors">Colores personalizados</string>
     <string name="amoled">AMOLED</string>
@@ -164,7 +164,7 @@
     <string name="incognito">Incógnito</string>
     <string name="not_logged_in">No ha accedido</string>
     <string name="x_login">Acceder a %1$s</string>
-    <string name="x_is_required">Se requiere $1%s</string>
+    <string name="x_is_required">%1$s es obligatorio</string>
     <string name="playing_from">Reproduciendo desde</string>
     <string name="up_next">A continuación</string>
     <string name="info">Información</string>
@@ -291,7 +291,7 @@
     <string name="delete_download">Eliminar descarga</string>
     <string name="removed_x_from_downloads">Eliminado %1$s de las descargas</string>
     <string name="download_complete">Descarga completada</string>
-    <string name="app_widget_description">Echo en su pantalla de inicio</string>
+    <string name="app_widget_description">¡Echo en tu pantalla de inicio!</string>
     <string name="x_specific_quality_summary">%1$s La calidad de transmisión específica anulará la selección de calidad de transmisión predeterminada</string>
     <string name="unmetered_stream_quality_summary">La calidad de la transmisión al conectarse a una red sin límite de consumo. Esto anulará la calidad de transmisión predeterminada.</string>
     <string name="select_language">Seleccionar Idioma</string>
@@ -331,11 +331,11 @@
     <string name="podcast">Podcast</string>
     <string name="genres_x">Géneros: %1$s</string>
     <string name="disc_number_n">Número de disco: %1$d</string>
-    <string name="album_order_n">Número de Orden del álbum: %1$d</string>
+    <string name="album_order_n">Número de orden del álbum: %1$d</string>
     <string name="confirmation">Confirmación</string>
     <string name="delete_playlist_confirmation">Estas seguro de qué quieres eliminar %1$s?</string>
     <string name="confirm">Confirmar</string>
-    <string name="big_cover_summary">Bueno para dispositivos con pantallas más grandes.</string>
+    <string name="big_cover_summary">Bueno para dispositivos con pantallas más grandes</string>
     <string name="no_last_played_track_found">No se encontró la última pista reproducida.</string>
     <string name="not_yet_released">Aún no publicado</string>
     <string name="releases_on_x">Lanzamiento en %1$s</string>
@@ -347,13 +347,41 @@
     <string name="colors">Colores</string>
     <string name="scroll_bar_summary">Barra de desplazamiento lateral para un acceso más rápido (puede ser inestable)</string>
     <plurals name="number_songs">
-        <item quantity="one">Canción</item>
-        <item quantity="many">Canciones</item>
-        <item quantity="other">Canciones</item>
+        <item quantity="one">%1$d Canción</item>
+        <item quantity="many">%1$d Canciones</item>
+        <item quantity="other">%1$d Canciones</item>
     </plurals>
     <plurals name="number_chapters">
-        <item quantity="one">Capítulo</item>
-        <item quantity="many">Capítulos</item>
-        <item quantity="other">Capítulos</item>
+        <item quantity="one">%1$d Capítulo</item>
+        <item quantity="many">%1$d Capítulos</item>
+        <item quantity="other">%1$d Capítulos</item>
     </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one">%1$d Pista</item>
+        <item quantity="many">%1$d Pistas</item>
+        <item quantity="other">%1$d Pistas</item>
+    </plurals>
+    <string name="player">Reproductor</string>
+    <string name="playlist">Lista de reproducción</string>
+    <string name="album">Álbum</string>
+    <string name="single">Sencillo</string>
+    <string name="show">Mostrar</string>
+    <string name="isrc_x">ISRC: %1$s</string>
+    <string name="big_cover">Portadas más grandes</string>
+    <string name="currently_playing">Reproduciendo ahora</string>
+    <string name="feed">Novedades</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d Elemento</item>
+        <item quantity="many">%1$d Elementos</item>
+        <item quantity="other">%1$d Elementos</item>
+    </plurals>
+    <string name="scroll_bar">Barra de desplazamiento</string>
+    <string name="back_animations">Animaciones de retroceso</string>
+    <plurals name="number_episodes">
+        <item quantity="one">%1$d Episodio</item>
+        <item quantity="many">%1$d Episodios</item>
+        <item quantity="other">%1$d Episodios</item>
+    </plurals>
+    <string name="ep">EP</string>
+    <string name="lp">LP</string>
 </resources>
