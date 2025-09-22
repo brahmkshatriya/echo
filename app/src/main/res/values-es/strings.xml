@@ -344,4 +344,16 @@
     <string name="unmetered_stream_quality">Calidad de transmisión sin medición</string>
     <string name="regex_invalid">%1$s es inválido; debe coincidir con la expresión regular: %2$s</string>
     <string name="item">Elemento</string>
+    <string name="colors">Colores</string>
+    <string name="scroll_bar_summary">Barra de desplazamiento lateral para un acceso más rápido (puede ser inestable)</string>
+    <plurals name="number_songs">
+        <item quantity="one">Canción</item>
+        <item quantity="many">Canciones</item>
+        <item quantity="other">Canciones</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one">Capítulo</item>
+        <item quantity="many">Capítulos</item>
+        <item quantity="other">Capítulos</item>
+    </plurals>
 </resources>
