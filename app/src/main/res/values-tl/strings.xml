@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="okay">Okay</string>
-    <string name="cancel">I-kansel</string>
-    <string name="back">Umalis</string>
+    <string name="okay">Piliin</string>
+    <string name="cancel">Kansela</string>
+    <string name="back">Bumalik</string>
     <string name="feed">Mga Feed</string>
     <string name="cached_songs">Mga Kanta na Na-cache</string>
-    <string name="audio">Mga Audio</string>
-    <string name="audio_permission_summary">Para ma-access ang iyong local music library</string>
+    <string name="audio">Mga Awitin</string>
+    <string name="audio_permission_summary">Para ma-access ang iyong lokal na tugtugin</string>
     <string name="read_storage">Basahin ang Storage</string>
     <string name="write_storage">Magsulat sa Storage</string>
     <string name="write_storage_permission_summary">Upang gumawa at mag-edit ng lokal na playlists</string>
