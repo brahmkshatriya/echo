@@ -75,7 +75,7 @@
     <string name="error_x">Pamyłka: %1$s</string>
     <string name="str_copy">Skapijavać</string>
     <string name="extensions">Pašyrenni</string>
-    <string name="choose_a_color">Abrać koler</string>
+    <string name="choose_a_color">Vybrać koler</string>
     <string name="random">Vypadkova</string>
     <string name="add">Dadać</string>
     <string name="loading">Zahruzka…</string>
@@ -95,7 +95,7 @@
     <string name="equalizer">Ekvałajzier</string>
     <string name="equalizer_summary">Adkryć nałady ekvałajziera pryłady</string>
     <string name="stream_quality">Jakasć prajhravannia</string>
-    <string name="stream_quality_summary">Abrać asnoŭnuju jakasć prajhravannia</string>
+    <string name="stream_quality_summary">Vybrać asnoŭnuju jakasć prajhravannia</string>
     <string name="x_specific_quality_summary">Kankretnaja jakasć prajhravannia %1$s, zamienić vybar asnoŭnaj jakasci prajhravannia</string>
     <string name="unmetered_stream_quality">Nieabmežavanaja jakasć prajhravannia</string>
     <string name="unmetered_stream_quality_summary">Jakasć prajhravannia pry dałuczenni da nielimitavanaj sietki. Heta zamienić asnoŭnuju jakasć prajhravannia.</string>
@@ -111,7 +111,7 @@
     <string name="cache_size">Vieličynia kešu</string>
     <string name="cache_size_summary">Vieličynia ŭ MB dla kešavannia aŭdyjo i videa</string>
     <string name="version">Viersija</string>
-    <string name="select_language">Abrać movu</string>
+    <string name="select_language">Vybrać movu</string>
     <string name="system">Sistema</string>
     <string name="check_for_updates">Pravieryć na najaŭnasć abnaŭlenniaŭ</string>
     <string name="check_for_updates_summary">Šukajcie novyja abnaŭlenni jak dadatku, tak i pašyrenniaŭ, kali vy adkryvajecie dadatak.</string>
@@ -173,7 +173,7 @@
     <string name="disabled">Vyklučana</string>
     <string name="error_updating_extension">Pamyłka padčas abnaŭlennia</string>
     <string name="no_user_found">Karystač nie znojdzieny</string>
-    <string name="select_x_account">Abiarycie akaŭnt %1$s</string>
+    <string name="select_x_account">Vybieracie akaŭnt %1$s</string>
     <string name="add_extension">Dadać pašyrennie</string>
     <string name="webview">WebView</string>
     <string name="logout">Wyjsci z akaŭntu</string>
