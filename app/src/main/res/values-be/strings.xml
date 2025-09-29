@@ -75,7 +75,7 @@
     <string name="error_x">Памылка: %1$s</string>
     <string name="str_copy">Скапіяваць</string>
     <string name="extensions">Пашырэнні</string>
-    <string name="choose_a_color">Абраць колер</string>
+    <string name="choose_a_color">Выбраць колер</string>
     <string name="random">Выпадкова</string>
     <string name="add">Дадаць</string>
     <string name="loading">Загрузка…</string>
@@ -95,7 +95,7 @@
     <string name="equalizer">Эквалайзер</string>
     <string name="equalizer_summary">Адкрыць налады эквалайзера прылады</string>
     <string name="stream_quality">Якасць прайгравання</string>
-    <string name="stream_quality_summary">Абраць асноўную якасць прайгравання</string>
+    <string name="stream_quality_summary">Выбраць асноўную якасць прайгравання</string>
     <string name="x_specific_quality_summary">Канкрэтная якасць прайгравання %1$s, заменіць выбар асноўнай якасці прайгравання</string>
     <string name="unmetered_stream_quality">Неабмежаваная якасць прайгравання</string>
     <string name="unmetered_stream_quality_summary">Якасць прайгравання пры далучэнні да нелімітаванай сеткі. Гэта заменіць асноўную якасць прайгравання.</string>
@@ -111,7 +111,7 @@
     <string name="cache_size">Велічыня кэшу</string>
     <string name="cache_size_summary">Велічыня ў МБ для кэшавання аўдыё і відэа</string>
     <string name="version">Версія</string>
-    <string name="select_language">Абраць мову</string>
+    <string name="select_language">Выбраць мову</string>
     <string name="system">Сістэма</string>
     <string name="check_for_updates">Праверыць на наяўнасць абнаўленняў</string>
     <string name="check_for_updates_summary">Шукайце новыя абнаўленні як дадатку, так і пашырэнняў, калі вы адкрываеце дадатак.</string>
@@ -170,7 +170,7 @@
     <string name="disabled">Выключана</string>
     <string name="error_updating_extension">Памылка падчас абнаўлення</string>
     <string name="no_user_found">Карыстач не знойдзены</string>
-    <string name="select_x_account">Абярыце акаўнт %1$s</string>
+    <string name="select_x_account">Выбераце акаўнт %1$s</string>
     <string name="add_extension">Дадаць пашырэнне</string>
     <string name="webview">WebView</string>
     <string name="logout">Выйсці з акаўнту</string>
