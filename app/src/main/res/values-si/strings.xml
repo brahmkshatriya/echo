@@ -1,3 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">හරි</string>
+    <string name="cancel">අත හරින්න</string>
+    <string name="back">ආපසු</string>
+    <string name="x_permission_required">%1$s අවසරය අවශ්‍යයි</string>
+    <string name="x_was_not_granted">%1$s අවසර නැත</string>
+    <string name="audio">ශ්‍රව්‍ය</string>
+    <string name="audio_permission_summary">ඔබගේ පෙදෙස් සංගීත පුස්තකාල පිවිීමට</string>
+    <string name="read_storage">ආචයනය කියවීම</string>
+    <string name="write_storage">ආචයනය ලිවීම</string>
+    <string name="write_storage_permission_summary">පෙදෙස් ධාවන ලැයිස්තු සෑදීම සහ සංස්කාරණයට</string>
+    <string name="notifications">නිවේදන</string>
+    <string name="feed">පෝෂණය</string>
+    <string name="notifications_permission_summary">බාගත හා ගීත සඳහා නිවේදන පෙන්වීමට</string>
+    <string name="remove">ඉවතලන්න</string>
+    <string name="more_by_x">තව %1$sගෙන්</string>
+    <string name="songs">සිංදු</string>
+    <string name="albums">ඇල්බම</string>
+    <string name="x_radio">%1$s රේඩියෝව</string>
+    <string name="cached_songs">වාරක සිංදු</string>
+    <string name="cache_playlist_warning">පරීක්ෂණාත්මක අංගයකි. සවන්දීම හැර වෙන සහයක් නැත.</string>
+    <string name="artists">ශිල්පීන්</string>
+    <string name="recently_added">මෑතකදී එකතු කල</string>
+    <string name="refresh_library_on_reload">නැවත පිරුමේදී නැවුම් කරන්න</string>
 </resources>
