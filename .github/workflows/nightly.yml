@@ -51,10 +51,9 @@ jobs:
       - name: Upload APK to Discord
         shell: bash
         env:
-          ROLE: ${{ secrets.DISCORD_PING_ROLE_ID }}
-          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          WEBHOOK: ${{ secrets.DISCORD_NIGHTLY_WEBHOOK }}
         run: |
-          message=$(echo "<@&${{ env.ROLE }}> **${{ env.VERSION }}**\n${{ env.COMMIT }}")
+          message=$(echo "@everyone **${{ env.VERSION }}**\n${{ env.COMMIT }}")
           curl -F "payload_json={\"content\":\"${message}\"}" \
           -F "echo_beta=@app/build/${{ env.VERSION }}.apk" \
           ${{ env.WEBHOOK }}
