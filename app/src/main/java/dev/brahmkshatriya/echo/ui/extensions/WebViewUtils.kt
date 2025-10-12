@@ -148,10 +148,11 @@ object WebViewUtils {
                     }
                 }
                 if (stopRegex.find(request.url) == null) return
-                done = true
                 timeoutJob?.cancel()
                 scope.launch(Dispatchers.IO) {
                     mutex.withLock {
+                        if (done) return@withLock
+                        done = true
                         onComplete(null)
                         val result = runCatching {
                             val headerRes = if (target is WebViewRequest.Headers)
@@ -219,22 +220,25 @@ object WebViewUtils {
         suspendCancellableCoroutine {
             bridge?.onResult = it::resume
             bridge?.onError = it::resumeWithException
-            val asyncFunction = if (js.startsWith("async function")) js
-            else if (js.startsWith("function")) "async $js"
-            else {
-                it.resumeWithException(Exception("Invalid JS function, must start with async or function"))
-                return@suspendCancellableCoroutine
-            }
-
-            val newJs = """
+            val newJs = if (js.startsWith("async function")) """
         (function() {
             try {
-                const fun = $asyncFunction;
+                const fun = $js;
                 fun().then((result) => {
                     ${if (bridge != null) "bridge.putJsResult(result);" else ""}
                 }).catch((error) => {
                     ${if (bridge != null) "bridge.putJsError(error.message || error.toString());" else ""}
                 });
+            } catch (error) {
+                ${if (bridge != null) "bridge.putJsError(error.message || error.toString());" else ""}
+            }
+        })()
+        """.trimIndent() else """
+        (function() {
+            try {
+                const fun = $js;
+                const result = fun();
+                ${if (bridge != null) "bridge.putJsResult(result);" else ""}
             } catch (error) {
                 ${if (bridge != null) "bridge.putJsError(error.message || error.toString());" else ""}
             }

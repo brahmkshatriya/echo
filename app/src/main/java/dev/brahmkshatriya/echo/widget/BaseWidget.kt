@@ -52,7 +52,6 @@ abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        println("Widget received ${intent?.action} $this")
         ControllerHelper.register(app, key) {
             updateWidgets(app.context)
         }
