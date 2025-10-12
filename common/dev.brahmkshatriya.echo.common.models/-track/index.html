@@ -51,7 +51,7 @@
         <div class="navigation-controls">
         <div class="filter-section filter-section_loading" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active=""
-                        data-filter=":common/main">jvm</button>
+                        data-filter=":common/commonMain">common</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
                         data-role="dropdown-toggle"
@@ -68,10 +68,10 @@
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":common/main"
-                                       data-filter=":common/main"/>
+                                <input type="checkbox" class="checkbox--input" id=":common/commonMain"
+                                       data-filter=":common/commonMain"/>
                                 <span class="checkbox--icon"></span>
-                                jvm
+                                common
                             </label>
                         </li>
                 </ul>
@@ -105,28 +105,28 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="classlike" id="content" pageIds="common::dev.brahmkshatriya.echo.common.models/Track///PointingToDeclaration//1278595499">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="common::dev.brahmkshatriya.echo.common.models/Track///PointingToDeclaration//-406099376">
   <div class="breadcrumbs"><a href="../../../index.html">common</a><span class="delimiter">/</span><a href="../index.html">dev.brahmkshatriya.echo.common.models</a><span class="delimiter">/</span><span class="current">Track</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Track</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Track</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>type<span class="token operator">: </span><a href="-type/index.html">Track.Type</a><span class="token operator"> = </span>Type.Song<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>cover<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>artists<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-artist/index.html">Artist</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>album<span class="token operator">: </span><a href="../-album/index.html">Album</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>duration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>playedDuration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>plays<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>releaseDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>description<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>background<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>cover<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>genres<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isrc<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>albumOrderNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>albumDiscNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>playlistAddedDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isExplicit<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>subtitle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>extras<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mapOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isPlayable<span class="token operator">: </span><a href="-playable/index.html">Track.Playable</a><span class="token operator"> = </span>Playable.Yes<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>streamables<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isRadioSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isFollowable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isSaveable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isLikeable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isHideable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isShareable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span> : <a href="../-echo-media-item/index.html">EchoMediaItem</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/brahmkshatriya/echo/tree/main/common/src/main/java/dev/brahmkshatriya/echo/common/models/Track.kt#L49">source</a>)</span></span></div><p class="paragraph">A class representing a track that can be played in Echo.</p><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-streamable/index.html"><span><span>Streamable</span></span></a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../dev.brahmkshatriya.echo.common.clients/-track-client/index.html"><span>Track</span><wbr></wbr><span><span>Client</span></span></a></div></span></div><div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Track</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>type<span class="token operator">: </span><a href="-type/index.html">Track.Type</a><span class="token operator"> = </span>Type.Song<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>cover<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>artists<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-artist/index.html">Artist</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>album<span class="token operator">: </span><a href="../-album/index.html">Album</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>duration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>playedDuration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>plays<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>releaseDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>description<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>background<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>cover<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>genres<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isrc<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>albumOrderNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>albumDiscNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>playlistAddedDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isExplicit<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>subtitle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>extras<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mapOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isPlayable<span class="token operator">: </span><a href="-playable/index.html">Track.Playable</a><span class="token operator"> = </span>Playable.Yes<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>streamables<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isRadioSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isFollowable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isSaveable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isLikeable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isHideable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isShareable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span> : <a href="../-echo-media-item/index.html">EchoMediaItem</a></div><p class="paragraph">A class representing a track that can be played in Echo.</p><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-streamable/index.html"><span><span>Streamable</span></span></a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../dev.brahmkshatriya.echo.common.clients/-track-client/index.html"><span>Track</span><wbr></wbr><span><span>Client</span></span></a></div></span></div><div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="216709601%2FConstructors%2F1278595499" anchor-label="Track" id="216709601%2FConstructors%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":common/main" data-filterable-set=":common/main">
+        <div class="table"><a data-name="216709601%2FConstructors%2F-406099376" anchor-label="Track" id="216709601%2FConstructors%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-track.html"><span><span>Track</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="216709601%2FConstructors%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="216709601%2FConstructors%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="-type/index.html">Track.Type</a><span class="token operator"> = </span>Type.Song<span class="token punctuation">, </span></span><span class="parameter ">cover<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">artists<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-artist/index.html">Artist</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">album<span class="token operator">: </span><a href="../-album/index.html">Album</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">duration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">playedDuration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">plays<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">releaseDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">description<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>cover<span class="token punctuation">, </span></span><span class="parameter ">genres<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">isrc<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">albumOrderNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">albumDiscNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">playlistAddedDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">isExplicit<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">subtitle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">extras<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mapOf()<span class="token punctuation">, </span></span><span class="parameter ">isPlayable<span class="token operator">: </span><a href="-playable/index.html">Track.Playable</a><span class="token operator"> = </span>Playable.Yes<span class="token punctuation">, </span></span><span class="parameter ">streamables<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">isRadioSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isFollowable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">isSaveable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isLikeable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isHideable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isShareable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="-type/index.html">Track.Type</a><span class="token operator"> = </span>Type.Song<span class="token punctuation">, </span></span><span class="parameter ">cover<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">artists<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-artist/index.html">Artist</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">album<span class="token operator">: </span><a href="../-album/index.html">Album</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">duration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">playedDuration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">plays<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">releaseDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">description<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>cover<span class="token punctuation">, </span></span><span class="parameter ">genres<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">isrc<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">albumOrderNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">albumDiscNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">playlistAddedDate<span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">isExplicit<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">subtitle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">extras<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mapOf()<span class="token punctuation">, </span></span><span class="parameter ">isPlayable<span class="token operator">: </span><a href="-playable/index.html">Track.Playable</a><span class="token operator"> = </span>Playable.Yes<span class="token punctuation">, </span></span><span class="parameter ">streamables<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">isRadioSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isFollowable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">isSaveable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isLikeable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isHideable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">isShareable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -135,47 +135,47 @@
       </div>
       <div data-togglable="TYPE">
         <h2 class="">Types</h2>
-        <div class="table"><a data-name="-1005042950%2FClasslikes%2F1278595499" anchor-label="Companion" id="-1005042950%2FClasslikes%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+        <div class="table"><a data-name="-1005042950%2FClasslikes%2F-406099376" anchor-label="Companion" id="-1005042950%2FClasslikes%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1005042950%2FClasslikes%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1005042950%2FClasslikes%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1724654190%2FClasslikes%2F1278595499" anchor-label="Playable" id="1724654190%2FClasslikes%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1724654190%2FClasslikes%2F-406099376" anchor-label="Playable" id="1724654190%2FClasslikes%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-playable/index.html"><span><span>Playable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1724654190%2FClasslikes%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1724654190%2FClasslikes%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-playable/index.html">Playable</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-playable/index.html">Playable</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1216671550%2FClasslikes%2F1278595499" anchor-label="Type" id="-1216671550%2FClasslikes%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1216671550%2FClasslikes%2F-406099376" anchor-label="Type" id="-1216671550%2FClasslikes%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-type/index.html"><span><span>Type</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1216671550%2FClasslikes%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1216671550%2FClasslikes%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-type/index.html">Type</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-type/index.html">Track.Type</a><span class="token operator">&gt; </span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-type/index.html">Type</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-type/index.html">Track.Type</a><span class="token operator">&gt; </span></div></div></div>
                 </div>
               </div>
             </div>
@@ -184,512 +184,512 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="">Properties</h2>
-        <div class="table"><a data-name="-970446556%2FProperties%2F1278595499" anchor-label="album" id="-970446556%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+        <div class="table"><a data-name="-970446556%2FProperties%2F-406099376" anchor-label="album" id="-970446556%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="album.html"><span><span>album</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-970446556%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-970446556%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="album.html">album</a><span class="token operator">: </span><a href="../-album/index.html">Album</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The album of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="album.html">album</a><span class="token operator">: </span><a href="../-album/index.html">Album</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The album of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-707162938%2FProperties%2F1278595499" anchor-label="albumDiscNumber" id="-707162938%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-707162938%2FProperties%2F-406099376" anchor-label="albumDiscNumber" id="-707162938%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="album-disc-number.html"><span>album</span><wbr></wbr><span>Disc</span><wbr></wbr><span><span>Number</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-707162938%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-707162938%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="album-disc-number.html">albumDiscNumber</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The disc number of the track in the album</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="album-disc-number.html">albumDiscNumber</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The disc number of the track in the album</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1268300735%2FProperties%2F1278595499" anchor-label="albumOrderNumber" id="1268300735%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1268300735%2FProperties%2F-406099376" anchor-label="albumOrderNumber" id="1268300735%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="album-order-number.html"><span>album</span><wbr></wbr><span>Order</span><wbr></wbr><span><span>Number</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1268300735%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1268300735%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="album-order-number.html">albumOrderNumber</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The order number of the track in the album</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="album-order-number.html">albumOrderNumber</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The order number of the track in the album, if <a href="album-disc-number.html">albumDiscNumber</a> is not null, this is the order number in that disc</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="3707559%2FProperties%2F1278595499" anchor-label="artists" id="3707559%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="3707559%2FProperties%2F-406099376" anchor-label="artists" id="3707559%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="artists.html"><span><span>artists</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="3707559%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="3707559%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="artists.html">artists</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-artist/index.html">Artist</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The artists of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="artists.html">artists</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-artist/index.html">Artist</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The artists of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-392442087%2FProperties%2F1278595499" anchor-label="background" id="-392442087%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-392442087%2FProperties%2F-406099376" anchor-label="background" id="-392442087%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="background.html"><span><span>background</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-392442087%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-392442087%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="background.html">background</a><span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The background image of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="background.html">background</a><span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The background image of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-2009515314%2FProperties%2F1278595499" anchor-label="backgrounds" id="-2009515314%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-2009515314%2FProperties%2F-406099376" anchor-label="backgrounds" id="-2009515314%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="backgrounds.html"><span><span>backgrounds</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2009515314%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2009515314%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="backgrounds.html">backgrounds</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamable backgrounds of the track.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="backgrounds.html">backgrounds</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamable backgrounds of the track.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-2014096164%2FProperties%2F1278595499" anchor-label="cover" id="-2014096164%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-2014096164%2FProperties%2F-406099376" anchor-label="cover" id="-2014096164%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="cover.html"><span><span>cover</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2014096164%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2014096164%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="cover.html">cover</a><span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The cover of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="cover.html">cover</a><span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The cover of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1648264265%2FProperties%2F1278595499" anchor-label="description" id="-1648264265%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1648264265%2FProperties%2F-406099376" anchor-label="description" id="-1648264265%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="description.html"><span><span>description</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1648264265%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1648264265%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="description.html">description</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The description of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="description.html">description</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The description of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="686268403%2FProperties%2F1278595499" anchor-label="duration" id="686268403%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="686268403%2FProperties%2F-406099376" anchor-label="duration" id="686268403%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="duration.html"><span><span>duration</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="686268403%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="686268403%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="duration.html">duration</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The duration of the track in milliseconds</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="duration.html">duration</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The duration of the track in milliseconds</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="491880580%2FProperties%2F1278595499" anchor-label="extras" id="491880580%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="491880580%2FProperties%2F-406099376" anchor-label="extras" id="491880580%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="extras.html"><span><span>extras</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="491880580%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="491880580%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="extras.html">extras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Any extra data you want to associate with the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="extras.html">extras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Any extra data you want to associate with the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="666319927%2FProperties%2F1278595499" anchor-label="genres" id="666319927%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="666319927%2FProperties%2F-406099376" anchor-label="genres" id="666319927%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="genres.html"><span><span>genres</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="666319927%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="666319927%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="genres.html">genres</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The genres of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="genres.html">genres</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The genres of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1632873012%2FProperties%2F1278595499" anchor-label="id" id="-1632873012%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1632873012%2FProperties%2F-406099376" anchor-label="id" id="-1632873012%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="id.html"><span><span>id</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1632873012%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1632873012%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="id.html">id</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The id of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="id.html">id</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The id of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="8458441%2FProperties%2F1278595499" anchor-label="isExplicit" id="8458441%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="8458441%2FProperties%2F-406099376" anchor-label="isExplicit" id="8458441%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-explicit.html"><span>is</span><wbr></wbr><span><span>Explicit</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="8458441%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="8458441%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-explicit.html">isExplicit</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></div><div class="brief "><p class="paragraph">Whether the track is explicit</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-explicit.html">isExplicit</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></div><div class="brief "><p class="paragraph">Whether the track is explicit</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="2145859154%2FProperties%2F1278595499" anchor-label="isFollowable" id="2145859154%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="2145859154%2FProperties%2F-406099376" anchor-label="isFollowable" id="2145859154%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-followable.html"><span>is</span><wbr></wbr><span><span>Followable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2145859154%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2145859154%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-followable.html">isFollowable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></div><div class="brief "><p class="paragraph">Whether the track can be followed. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-follow-client/index.html">FollowClient</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-followable.html">isFollowable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></div><div class="brief "><p class="paragraph">Whether the track can be followed. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-follow-client/index.html">FollowClient</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-730228127%2FProperties%2F1278595499" anchor-label="isHideable" id="-730228127%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-730228127%2FProperties%2F-406099376" anchor-label="isHideable" id="-730228127%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-hideable.html"><span>is</span><wbr></wbr><span><span>Hideable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-730228127%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-730228127%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-hideable.html">isHideable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be hidden. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-hide-client/index.html">HideClient</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-hideable.html">isHideable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be hidden. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-hide-client/index.html">HideClient</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1580598316%2FProperties%2F1278595499" anchor-label="isLikeable" id="1580598316%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1580598316%2FProperties%2F-406099376" anchor-label="isLikeable" id="1580598316%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-likeable.html"><span>is</span><wbr></wbr><span><span>Likeable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1580598316%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1580598316%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-likeable.html">isLikeable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be liked. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-like-client/index.html">LikeClient</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-likeable.html">isLikeable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be liked. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-like-client/index.html">LikeClient</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="713771439%2FProperties%2F1278595499" anchor-label="isPlayable" id="713771439%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="713771439%2FProperties%2F-406099376" anchor-label="isPlayable" id="713771439%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-playable.html"><span>is</span><wbr></wbr><span><span>Playable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="713771439%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="713771439%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-playable.html">isPlayable</a><span class="token operator">: </span><a href="-playable/index.html">Track.Playable</a></div><div class="brief "><p class="paragraph">Whether the track is playable.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-playable.html">isPlayable</a><span class="token operator">: </span><a href="-playable/index.html">Track.Playable</a></div><div class="brief "><p class="paragraph">Whether the track is playable.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="2102794323%2FProperties%2F1278595499" anchor-label="isPrivate" id="2102794323%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="2102794323%2FProperties%2F-406099376" anchor-label="isPrivate" id="2102794323%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-echo-media-item/is-private.html"><span>is</span><wbr></wbr><span><span>Private</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2102794323%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2102794323%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="../-echo-media-item/is-private.html">isPrivate</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="../-echo-media-item/is-private.html">isPrivate</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-182435606%2FProperties%2F1278595499" anchor-label="isRadioSupported" id="-182435606%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-182435606%2FProperties%2F-406099376" anchor-label="isRadioSupported" id="-182435606%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-radio-supported.html"><span>is</span><wbr></wbr><span>Radio</span><wbr></wbr><span><span>Supported</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-182435606%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-182435606%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-radio-supported.html">isRadioSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can used to create a radio. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-radio-client/index.html">RadioClient</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-radio-supported.html">isRadioSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can used to create a radio. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-radio-client/index.html">RadioClient</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="363599756%2FProperties%2F1278595499" anchor-label="isrc" id="363599756%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="363599756%2FProperties%2F-406099376" anchor-label="isrc" id="363599756%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="isrc.html"><span><span>isrc</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="363599756%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="363599756%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="isrc.html">isrc</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The IRSC code of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="isrc.html">isrc</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The IRSC code of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1939522566%2FProperties%2F1278595499" anchor-label="isSaveable" id="1939522566%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1939522566%2FProperties%2F-406099376" anchor-label="isSaveable" id="1939522566%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-saveable.html"><span>is</span><wbr></wbr><span><span>Saveable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1939522566%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1939522566%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-saveable.html">isSaveable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be saved to library. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-save-client/index.html">SaveClient</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-saveable.html">isSaveable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be saved to library. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-save-client/index.html">SaveClient</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1704370332%2FProperties%2F1278595499" anchor-label="isShareable" id="-1704370332%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1704370332%2FProperties%2F-406099376" anchor-label="isShareable" id="-1704370332%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-shareable.html"><span>is</span><wbr></wbr><span><span>Shareable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1704370332%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1704370332%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-shareable.html">isShareable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be shared. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-share-client/index.html">ShareClient</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-shareable.html">isShareable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div><div class="brief "><p class="paragraph">Whether the track can be shared. Checkout <a href="../../dev.brahmkshatriya.echo.common.clients/-share-client/index.html">ShareClient</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-691516448%2FProperties%2F1278595499" anchor-label="playedDuration" id="-691516448%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-691516448%2FProperties%2F-406099376" anchor-label="playedDuration" id="-691516448%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="played-duration.html"><span>played</span><wbr></wbr><span><span>Duration</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-691516448%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-691516448%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="played-duration.html">playedDuration</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The duration of the track that has been played, in milliseconds</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="played-duration.html">playedDuration</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The duration of the track that has been played, in milliseconds</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-476855273%2FProperties%2F1278595499" anchor-label="playlistAddedDate" id="-476855273%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-476855273%2FProperties%2F-406099376" anchor-label="playlistAddedDate" id="-476855273%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="playlist-added-date.html"><span>playlist</span><wbr></wbr><span>Added</span><wbr></wbr><span><span>Date</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-476855273%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-476855273%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="playlist-added-date.html">playlistAddedDate</a><span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The date when the track was added to a playlist</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="playlist-added-date.html">playlistAddedDate</a><span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The date when the track was added to a playlist</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-808360492%2FProperties%2F1278595499" anchor-label="plays" id="-808360492%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-808360492%2FProperties%2F-406099376" anchor-label="plays" id="-808360492%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="plays.html"><span><span>plays</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-808360492%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-808360492%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="plays.html">plays</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The number of plays of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="plays.html">plays</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The number of plays of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-806472322%2FProperties%2F1278595499" anchor-label="releaseDate" id="-806472322%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-806472322%2FProperties%2F-406099376" anchor-label="releaseDate" id="-806472322%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="release-date.html"><span>release</span><wbr></wbr><span><span>Date</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-806472322%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-806472322%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="release-date.html">releaseDate</a><span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The release date of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="release-date.html">releaseDate</a><span class="token operator">: </span><a href="../-date/index.html">Date</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The release date of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-43016285%2FProperties%2F1278595499" anchor-label="servers" id="-43016285%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-43016285%2FProperties%2F-406099376" anchor-label="servers" id="-43016285%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="servers.html"><span><span>servers</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-43016285%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-43016285%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="servers.html">servers</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamable servers of the track.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="servers.html">servers</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamable servers of the track.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="670206842%2FProperties%2F1278595499" anchor-label="streamables" id="670206842%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="670206842%2FProperties%2F-406099376" anchor-label="streamables" id="670206842%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="streamables.html"><span><span>streamables</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="670206842%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="670206842%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="streamables.html">streamables</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamables of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="streamables.html">streamables</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamables of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="482688495%2FProperties%2F1278595499" anchor-label="subtitle" id="482688495%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="482688495%2FProperties%2F-406099376" anchor-label="subtitle" id="482688495%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="subtitle.html"><span><span>subtitle</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="482688495%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="482688495%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="subtitle.html">subtitle</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The subtitle of the track, used to display information under the title</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="subtitle.html">subtitle</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The subtitle of the track, used to display information under the title</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-650271048%2FProperties%2F1278595499" anchor-label="subtitles" id="-650271048%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-650271048%2FProperties%2F-406099376" anchor-label="subtitles" id="-650271048%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="subtitles.html"><span><span>subtitles</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-650271048%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-650271048%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="subtitles.html">subtitles</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamable subtitles of the track.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="subtitles.html">subtitles</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-streamable/index.html">Streamable</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The streamable subtitles of the track.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1504104052%2FProperties%2F1278595499" anchor-label="subtitleWithE" id="-1504104052%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1504104052%2FProperties%2F-406099376" anchor-label="subtitleWithE" id="-1504104052%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="subtitle-with-e.html"><span>subtitle</span><wbr></wbr><span>With</span><wbr></wbr><span><span>E</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1504104052%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1504104052%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="subtitle-with-e.html">subtitleWithE</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="subtitle-with-e.html">subtitleWithE</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1490855470%2FProperties%2F1278595499" anchor-label="subtitleWithOutE" id="-1490855470%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1490855470%2FProperties%2F-406099376" anchor-label="subtitleWithOutE" id="-1490855470%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="subtitle-with-out-e.html"><span>subtitle</span><wbr></wbr><span>With</span><wbr></wbr><span>Out</span><wbr></wbr><span><span>E</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1490855470%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1490855470%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="subtitle-with-out-e.html">subtitleWithOutE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="subtitle-with-out-e.html">subtitleWithOutE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="857181531%2FProperties%2F1278595499" anchor-label="title" id="857181531%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="857181531%2FProperties%2F-406099376" anchor-label="title" id="857181531%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="title.html"><span><span>title</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="857181531%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="857181531%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="title.html">title</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The title of the track</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="title.html">title</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The title of the track</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="303143437%2FProperties%2F1278595499" anchor-label="type" id="303143437%2FProperties%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="303143437%2FProperties%2F-406099376" anchor-label="type" id="303143437%2FProperties%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="type.html"><span><span>type</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="303143437%2FProperties%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="303143437%2FProperties%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="type.html">type</a><span class="token operator">: </span><a href="-type/index.html">Track.Type</a></div><div class="brief "><p class="paragraph">The type of the track, can be Audio, Video, or HorizontalVideo</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="type.html">type</a><span class="token operator">: </span><a href="-type/index.html">Track.Type</a></div><div class="brief "><p class="paragraph">The type of the track, can be Audio, Video, or HorizontalVideo</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -698,47 +698,47 @@
       </div>
       <div data-togglable="FUNCTION">
         <h2 class="">Functions</h2>
-        <div class="table"><a data-name="10866652%2FFunctions%2F1278595499" anchor-label="copyMediaItem" id="10866652%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+        <div class="table"><a data-name="10866652%2FFunctions%2F-406099376" anchor-label="copyMediaItem" id="10866652%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-echo-media-item/copy-media-item.html"><span>copy</span><wbr></wbr><span>Media</span><wbr></wbr><span><span>Item</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="10866652%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="10866652%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-echo-media-item/copy-media-item.html"><span class="token function">copyMediaItem</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>this.id<span class="token punctuation">, </span></span><span class="parameter ">title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>this.title<span class="token punctuation">, </span></span><span class="parameter ">cover<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>this.cover<span class="token punctuation">, </span></span><span class="parameter ">description<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>this.description<span class="token punctuation">, </span></span><span class="parameter ">subtitle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>this.subtitle<span class="token punctuation">, </span></span><span class="parameter ">extras<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>this.extras<span class="token punctuation">, </span></span><span class="parameter ">isRadioSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>this.isRadioSupported<span class="token punctuation">, </span></span><span class="parameter ">isFollowable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>this.isFollowable<span class="token punctuation">, </span></span><span class="parameter ">isSaveable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>this.isSaveable</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-echo-media-item/index.html">EchoMediaItem</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-echo-media-item/copy-media-item.html"><span class="token function">copyMediaItem</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>this.id<span class="token punctuation">, </span></span><span class="parameter ">title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>this.title<span class="token punctuation">, </span></span><span class="parameter ">cover<span class="token operator">: </span><a href="../-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>this.cover<span class="token punctuation">, </span></span><span class="parameter ">description<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>this.description<span class="token punctuation">, </span></span><span class="parameter ">subtitle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>this.subtitle<span class="token punctuation">, </span></span><span class="parameter ">extras<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>this.extras<span class="token punctuation">, </span></span><span class="parameter ">isRadioSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>this.isRadioSupported<span class="token punctuation">, </span></span><span class="parameter ">isFollowable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>this.isFollowable<span class="token punctuation">, </span></span><span class="parameter ">isSaveable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>this.isSaveable</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-echo-media-item/index.html">EchoMediaItem</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1771510517%2FFunctions%2F1278595499" anchor-label="sameAs" id="-1771510517%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1771510517%2FFunctions%2F-406099376" anchor-label="sameAs" id="-1771510517%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-echo-media-item/same-as.html"><span>same</span><wbr></wbr><span><span>As</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1771510517%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1771510517%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-echo-media-item/same-as.html"><span class="token function">sameAs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="../-echo-media-item/index.html">EchoMediaItem</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-echo-media-item/same-as.html"><span class="token function">sameAs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="../-echo-media-item/index.html">EchoMediaItem</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-870543011%2FFunctions%2F1278595499" anchor-label="toShelf" id="-870543011%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-870543011%2FFunctions%2F-406099376" anchor-label="toShelf" id="-870543011%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-echo-media-item/to-shelf.html"><span>to</span><wbr></wbr><span><span>Shelf</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-870543011%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-870543011%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-echo-media-item/to-shelf.html"><span class="token function">toShelf</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-shelf/-item/index.html">Shelf.Item</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-echo-media-item/to-shelf.html"><span class="token function">toShelf</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-shelf/-item/index.html">Shelf.Item</a></div></div></div>
                 </div>
               </div>
             </div>

@@ -51,7 +51,7 @@
         <div class="navigation-controls">
         <div class="filter-section filter-section_loading" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active=""
-                        data-filter=":common/main">jvm</button>
+                        data-filter=":common/commonMain">common</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
                         data-role="dropdown-toggle"
@@ -68,10 +68,10 @@
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":common/main"
-                                       data-filter=":common/main"/>
+                                <input type="checkbox" class="checkbox--input" id=":common/commonMain"
+                                       data-filter=":common/commonMain"/>
                                 <span class="checkbox--icon"></span>
-                                jvm
+                                common
                             </label>
                         </li>
                 </ul>
@@ -105,28 +105,28 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="classlike" id="content" pageIds="common::dev.brahmkshatriya.echo.common.helpers/PagedData.Concat///PointingToDeclaration//1278595499">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="common::dev.brahmkshatriya.echo.common.helpers/PagedData.Concat///PointingToDeclaration//-406099376">
   <div class="breadcrumbs"><a href="../../../../index.html">common</a><span class="delimiter">/</span><a href="../../index.html">dev.brahmkshatriya.echo.common.helpers</a><span class="delimiter">/</span><a href="../index.html">PagedData</a><span class="delimiter">/</span><span class="current">Concat</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Concat</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">Concat</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sources<span class="token operator">: </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt; </span><span class="clearfix"><span class="floating-right">(<a href="https://github.com/brahmkshatriya/echo/tree/main/common/src/main/java/dev/brahmkshatriya/echo/common/helpers/PagedData.kt#L188">source</a>)</span></span></div><p class="paragraph">A class representing a concatenation of multiple data sources.</p><p class="paragraph">This class is used to concatenate multiple data sources into a single source. It takes multiple <a href="../index.html">PagedData</a> sources and loads them one after the other.</p><p class="paragraph">Example:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val data = PagedData.Concat(<br>    PagedData.Single { api.loadShelves() },<br>    PagedData.Continuous { api.loadShelvesPage(it) },<br>    // Add more sources here<br>)</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>sources</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The list of <a href="../index.html">PagedData</a> sources to concatenate</p></div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">Concat</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sources<span class="token operator">: </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt; </span></div><p class="paragraph">A class representing a concatenation of multiple data sources.</p><p class="paragraph">This class is used to concatenate multiple data sources into a single source. It takes multiple <a href="../index.html">PagedData</a> sources and loads them one after the other.</p><p class="paragraph">Example:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val data = PagedData.Concat(<br>    PagedData.Single { api.loadShelves() },<br>    PagedData.Continuous { api.loadShelvesPage(it) },<br>    // Add more sources here<br>)</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>sources</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The list of <a href="../index.html">PagedData</a> sources to concatenate</p></div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="-1278039010%2FConstructors%2F1278595499" anchor-label="Concat" id="-1278039010%2FConstructors%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":common/main" data-filterable-set=":common/main">
+        <div class="table"><a data-name="-1278039010%2FConstructors%2F-406099376" anchor-label="Concat" id="-1278039010%2FConstructors%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-concat.html"><span><span>Concat</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1278039010%2FConstructors%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1278039010%2FConstructors%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>sources<span class="token operator">: </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>sources<span class="token operator">: </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -135,137 +135,137 @@
       </div>
       <div data-togglable="FUNCTION">
         <h2 class="">Functions</h2>
-        <div class="table"><a data-name="1202162303%2FFunctions%2F1278595499" anchor-label="clear" id="1202162303%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+        <div class="table"><a data-name="1202162303%2FFunctions%2F-406099376" anchor-label="clear" id="1202162303%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="clear.html"><span><span>clear</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1202162303%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1202162303%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="clear.html"><span class="token function">clear</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">To clear all the cache of paged data</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="clear.html"><span class="token function">clear</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">To clear all the cache of paged data</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1214003982%2FFunctions%2F1278595499" anchor-label="invalidate" id="-1214003982%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1214003982%2FFunctions%2F-406099376" anchor-label="invalidate" id="-1214003982%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="invalidate.html"><span><span>invalidate</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1214003982%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1214003982%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="invalidate.html"><span class="token function">invalidate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">continuation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="invalidate.html"><span class="token function">invalidate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">continuation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="25886351%2FFunctions%2F1278595499" anchor-label="loadAll" id="25886351%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="25886351%2FFunctions%2F-406099376" anchor-label="loadAll" id="25886351%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../load-all.html"><span>load</span><wbr></wbr><span><span>All</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="25886351%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="25886351%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../load-all.html"><span class="token function">loadAll</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">To load all the data</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../load-all.html"><span class="token function">loadAll</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">To load all the data</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1878037940%2FFunctions%2F1278595499" anchor-label="loadAllInternal" id="1878037940%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1878037940%2FFunctions%2F-406099376" anchor-label="loadAllInternal" id="1878037940%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="load-all-internal.html"><span>load</span><wbr></wbr><span>All</span><wbr></wbr><span><span>Internal</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1878037940%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1878037940%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="load-all-internal.html"><span class="token function">loadAllInternal</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="load-all-internal.html"><span class="token function">loadAllInternal</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1403577044%2FFunctions%2F1278595499" anchor-label="loadListInternal" id="-1403577044%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1403577044%2FFunctions%2F-406099376" anchor-label="loadListInternal" id="-1403577044%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="load-list-internal.html"><span>load</span><wbr></wbr><span>List</span><wbr></wbr><span><span>Internal</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1403577044%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1403577044%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="load-list-internal.html"><span class="token function">loadListInternal</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">continuation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-page/index.html">Page</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="load-list-internal.html"><span class="token function">loadListInternal</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">continuation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-page/index.html">Page</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="636209210%2FFunctions%2F1278595499" anchor-label="loadPage" id="636209210%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="636209210%2FFunctions%2F-406099376" anchor-label="loadPage" id="636209210%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../load-page.html"><span>load</span><wbr></wbr><span><span>Page</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="636209210%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="636209210%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../load-page.html"><span class="token function">loadPage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">continuation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-page/index.html">Page</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../load-page.html"><span class="token function">loadPage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">continuation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-page/index.html">Page</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="453724877%2FFunctions%2F1278595499" anchor-label="map" id="453724877%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1232817998%2FFunctions%2F-406099376" anchor-label="map" id="1232817998%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="map.html"><span><span>map</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="453724877%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1232817998%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="map.html">R</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="map.html"><span class="token function">map</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><span class="token keyword">suspend </span><span class="token punctuation">(</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="map.html">R</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="map.html">R</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="map.html">R</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="map.html"><span class="token function">map</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><span class="token keyword">suspend </span><span class="token punctuation">(</span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="map.html">R</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="map.html">R</a><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1652650970%2FFunctions%2F1278595499" anchor-label="toFeed" id="-1652650970%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1652650970%2FFunctions%2F-406099376" anchor-label="toFeed" id="-1652650970%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html"><span>to</span><wbr></wbr><span><span>Feed</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1652650970%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1652650970%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html"><span class="token function">toFeed</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/index.html">Feed</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to create a <a href="../../../dev.brahmkshatriya.echo.common.models/-feed/index.html">Feed</a> from a <a href="../index.html">PagedData</a> of <a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a> items.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html"><span class="token function">toFeed</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/index.html">Feed</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to create a <a href="../../../dev.brahmkshatriya.echo.common.models/-feed/index.html">Feed</a> from a <a href="../index.html">PagedData</a> of <a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed.html">T</a> items.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1908144100%2FFunctions%2F1278595499" anchor-label="toFeedData" id="-1908144100%2FFunctions%2F1278595499" data-filterable-set=":common/main"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="-1908144100%2FFunctions%2F-406099376" anchor-label="toFeedData" id="-1908144100%2FFunctions%2F-406099376" data-filterable-set=":common/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html"><span>to</span><wbr></wbr><span>Feed</span><wbr></wbr><span><span>Data</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1908144100%2FFunctions%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1908144100%2FFunctions%2F-406099376"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html"><span class="token function">toFeedData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-data/index.html">Feed.Data</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to convert a <a href="../index.html">PagedData</a> to a <a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-data/index.html">Feed.Data</a>.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../index.html">PagedData</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html"><span class="token function">toFeedData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buttons<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-buttons/index.html">Feed.Buttons</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-image-holder/index.html">ImageHolder</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-data/index.html">Feed.Data</a><span class="token operator">&lt;</span><a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-companion/to-feed-data.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Convenience function to convert a <a href="../index.html">PagedData</a> to a <a href="../../../dev.brahmkshatriya.echo.common.models/-feed/-data/index.html">Feed.Data</a>.</p></div></div></div>
                 </div>
               </div>
             </div>

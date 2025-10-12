@@ -51,7 +51,7 @@
         <div class="navigation-controls">
         <div class="filter-section filter-section_loading" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active=""
-                        data-filter=":common/main">jvm</button>
+                        data-filter=":common/commonMain">common</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
                         data-role="dropdown-toggle"
@@ -68,10 +68,10 @@
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":common/main"
-                                       data-filter=":common/main"/>
+                                <input type="checkbox" class="checkbox--input" id=":common/commonMain"
+                                       data-filter=":common/commonMain"/>
                                 <span class="checkbox--icon"></span>
-                                jvm
+                                common
                             </label>
                         </li>
                 </ul>
@@ -105,115 +105,115 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" id="content" pageIds="common::////PointingToDeclaration//1278595499">
+<div class="main-content" id="content" pageIds="common::////PointingToDeclaration//-406099376">
   <div class="breadcrumbs"></div>
   <div class="cover ">
     <h1 class="cover"><span><span>common</span></span></h1>
-    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/main"><p class="paragraph">This package contains common classes and interfaces that are used by all the extensions of Echo.</p><h2 class="">Getting Started</h2><h3 class="">Template</h3><p class="paragraph">To create a new extension, you can use the following template repo:</p><p class="paragraph"><a href="https://github.com/brahmkshatriya/echo-extension-template">https://github.com/brahmkshatriya/echo-extension-template</a></p><h3 class="">Manual</h3><ul><li><p class="paragraph">Add the dependency in your project.</p><p class="paragraph">settings.gradle.kts</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea"> repositories {<br>    //...<br>    maven { url = uri(&quot;https://jitpack.io&quot;) }<br>}</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">build.gradle.kts</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">  implementation(&quot;com.github.brahmkshatriya:echo:-SNAPSHOT&quot;)</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li></ul><h2 class="">How does it work?</h2><p class="paragraph">Currently, the common package is JVM only. The app recognizes an App or an <code class="lang-kotlin">apk</code> file as an extension by its <code class="lang-kotlin">AndroidManifest.xml</code> file. To determine what type of extension it is, the app looks for the following feature in the manifest file:</p><ul><li><p class="paragraph">For Music Extension:</p><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;uses-feature android:name=&quot;dev.brahmkshatriya.echo.music&quot;/&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li><li><p class="paragraph">For Lyrics Extension:</p><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;uses-feature android:name=&quot;dev.brahmkshatriya.echo.lyrics&quot;/&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li><li><p class="paragraph">For Tracker Extension:</p><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;uses-feature android:name=&quot;dev.brahmkshatriya.echo.trackers&quot;/&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li></ul><p class="paragraph">There are 2 ways the app can import an extension:</p><ul><li><p class="paragraph">File: The app stores the apk file in the internal storage and loads the class from the dex file.</p></li><li><p class="paragraph">Installed Package: The app loads the class from the installed apps on the device.</p></li></ul><p class="paragraph">Installed packages have priority over file based, if both extensions have same the id.</p><p class="paragraph">The <code class="lang-kotlin">AndroidManifest.xml</code> file of the extension should contain the following metadata:</p><ul><li><p class="paragraph">class: The class path of the <code class="lang-kotlin">ExtensionClient</code>.</p></li></ul><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;meta-data<br>    android:name=&quot;class&quot;<br>    android:value=&quot;com.example.MyExtension&quot; /&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><ul><li><p class="paragraph">id: The unique id of the extension.(Avoid using special characters or spaces)</p></li></ul><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;meta-data<br>    android:name=&quot;id&quot;<br>    android:value=&quot;my_example&quot; /&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">and <a href="https://github.com/brahmkshatriya/echo-extension-template/blob/main/app/src/main/AndroidManifest.xml">others...</a></p><h3 class="">Flow of the app:</h3><ol><li><p class="paragraph">Load the extensions from the installed packages and internal storage using <a href="https://github.com/JeelPatel231/plugger">Plugger</a>.</p></li><li><p class="paragraph">Dynamically load the ./clients/ExtensionClient.kt instance using the class path from the metadata.</p></li><li><p class="paragraph">Inject the extension with ./settings/Setting.kt </p></li><li><p class="paragraph">Inject the extension with other ./providers</p></li><li><p class="paragraph">The extension is available to use in the app.</p></li></ol></div></div>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":common/commonMain"><p class="paragraph">This package contains common classes and interfaces that are used by all the extensions of Echo.</p><h2 class="">Getting Started</h2><h3 class="">Template</h3><p class="paragraph">To create a new extension, you can use the following template repo:</p><p class="paragraph"><a href="https://github.com/brahmkshatriya/echo-extension-template">https://github.com/brahmkshatriya/echo-extension-template</a></p><h3 class="">Manual</h3><ul><li><p class="paragraph">Add the dependency in your project.   build.gradle.kts</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">  implementation(&quot;dev.brahmkshatriya.echo:common:1.0.0&quot;)</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li></ul><h2 class="">How does it work?</h2><p class="paragraph">Currently, the common package is JVM only. The app recognizes an App or an <code class="lang-kotlin">apk</code> file as an extension by its <code class="lang-kotlin">AndroidManifest.xml</code> file. To determine what type of extension it is, the app looks for the following feature in the manifest file:</p><ul><li><p class="paragraph">For Music Extension:</p><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;uses-feature android:name=&quot;dev.brahmkshatriya.echo.music&quot;/&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li><li><p class="paragraph">For Lyrics Extension:</p><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;uses-feature android:name=&quot;dev.brahmkshatriya.echo.lyrics&quot;/&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li><li><p class="paragraph">For Tracker Extension:</p><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;uses-feature android:name=&quot;dev.brahmkshatriya.echo.trackers&quot;/&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li><li><p class="paragraph">For Misc Extension:</p><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;uses-feature android:name=&quot;dev.brahmkshatriya.echo.misc&quot;/&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></li></ul><p class="paragraph">There are 2 ways the app can import an extension:</p><ul><li><p class="paragraph">File: The app stores the apk file in the internal storage and loads the class from the dex file.</p></li><li><p class="paragraph">Installed Package: The app loads the class from the installed apps on the device.</p></li></ul><p class="paragraph">Installed packages have priority over file based, if both extensions have same the id.</p><p class="paragraph">The <code class="lang-kotlin">AndroidManifest.xml</code> file of the extension should contain the following metadata:</p><ul><li><p class="paragraph">class: The class path of the <code class="lang-kotlin">ExtensionClient</code>.</p></li></ul><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;meta-data<br>    android:name=&quot;class&quot;<br>    android:value=&quot;com.example.MyExtension&quot; /&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><ul><li><p class="paragraph">id: The unique id of the extension.(Avoid using special characters or spaces)</p></li></ul><div class="sample-container"><pre><code class="block lang-xml" theme="idea">&lt;meta-data<br>    android:name=&quot;id&quot;<br>    android:value=&quot;my_example&quot; /&gt;</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">and <a href="https://github.com/brahmkshatriya/echo-extension-template/blob/main/app/src/main/AndroidManifest.xml">others...</a></p><h3 class="">Flow of the app:</h3><ol><li><p class="paragraph">Load the extensions from the installed packages and internal storage.</p></li><li><p class="paragraph">Dynamically load the ./src/commonMain/kotlin/dev/brahmkshatriya/echo/common/clients/ExtensionClient.kt instance using the class path from the metadata.</p></li><li><p class="paragraph">Inject the extension with ./src/commonMain/kotlin/dev/brahmkshatriya/echo/common/settings/Setting.kt </p></li><li><p class="paragraph">Inject the extension with other ./src/commonMain/kotlin/dev/brahmkshatriya/echo/common/providers</p></li><li><p class="paragraph">The extension is available to use in the app.</p></li></ol></div></div>
   </div>
   <h2 class="">Packages</h2>
-  <div class="table"><a data-name="1595906461%2FPackages%2F1278595499" anchor-label="dev.brahmkshatriya.echo.common" id="1595906461%2FPackages%2F1278595499" data-filterable-set=":common/main"></a>
-    <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+  <div class="table"><a data-name="1595906461%2FPackages%2F-406099376" anchor-label="dev.brahmkshatriya.echo.common" id="1595906461%2FPackages%2F-406099376" data-filterable-set=":common/commonMain"></a>
+    <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="common/dev.brahmkshatriya.echo.common/index.html">dev.brahmkshatriya.echo.common</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1595906461%2FPackages%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1595906461%2FPackages%2F-406099376"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
         <div></div>
       </div>
     </div>
-<a data-name="2125101111%2FPackages%2F1278595499" anchor-label="dev.brahmkshatriya.echo.common.clients" id="2125101111%2FPackages%2F1278595499" data-filterable-set=":common/main"></a>
-    <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="2125101111%2FPackages%2F-406099376" anchor-label="dev.brahmkshatriya.echo.common.clients" id="2125101111%2FPackages%2F-406099376" data-filterable-set=":common/commonMain"></a>
+    <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="common/dev.brahmkshatriya.echo.common.clients/index.html">dev.brahmkshatriya.echo.common.clients</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2125101111%2FPackages%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2125101111%2FPackages%2F-406099376"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
         <div></div>
       </div>
     </div>
-<a data-name="725878388%2FPackages%2F1278595499" anchor-label="dev.brahmkshatriya.echo.common.helpers" id="725878388%2FPackages%2F1278595499" data-filterable-set=":common/main"></a>
-    <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="725878388%2FPackages%2F-406099376" anchor-label="dev.brahmkshatriya.echo.common.helpers" id="725878388%2FPackages%2F-406099376" data-filterable-set=":common/commonMain"></a>
+    <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="common/dev.brahmkshatriya.echo.common.helpers/index.html">dev.brahmkshatriya.echo.common.helpers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="725878388%2FPackages%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="725878388%2FPackages%2F-406099376"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
         <div></div>
       </div>
     </div>
-<a data-name="1055719903%2FPackages%2F1278595499" anchor-label="dev.brahmkshatriya.echo.common.models" id="1055719903%2FPackages%2F1278595499" data-filterable-set=":common/main"></a>
-    <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1055719903%2FPackages%2F-406099376" anchor-label="dev.brahmkshatriya.echo.common.models" id="1055719903%2FPackages%2F-406099376" data-filterable-set=":common/commonMain"></a>
+    <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="common/dev.brahmkshatriya.echo.common.models/index.html">dev.brahmkshatriya.echo.common.models</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1055719903%2FPackages%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1055719903%2FPackages%2F-406099376"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
         <div></div>
       </div>
     </div>
-<a data-name="1551736593%2FPackages%2F1278595499" anchor-label="dev.brahmkshatriya.echo.common.providers" id="1551736593%2FPackages%2F1278595499" data-filterable-set=":common/main"></a>
-    <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1551736593%2FPackages%2F-406099376" anchor-label="dev.brahmkshatriya.echo.common.providers" id="1551736593%2FPackages%2F-406099376" data-filterable-set=":common/commonMain"></a>
+    <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="common/dev.brahmkshatriya.echo.common.providers/index.html">dev.brahmkshatriya.echo.common.providers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1551736593%2FPackages%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1551736593%2FPackages%2F-406099376"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
         <div></div>
       </div>
     </div>
-<a data-name="1029617048%2FPackages%2F1278595499" anchor-label="dev.brahmkshatriya.echo.common.settings" id="1029617048%2FPackages%2F1278595499" data-filterable-set=":common/main"></a>
-    <div class="table-row" data-filterable-current=":common/main" data-filterable-set=":common/main">
+<a data-name="1029617048%2FPackages%2F-406099376" anchor-label="dev.brahmkshatriya.echo.common.settings" id="1029617048%2FPackages%2F-406099376" data-filterable-set=":common/commonMain"></a>
+    <div class="table-row" data-filterable-current=":common/commonMain" data-filterable-set=":common/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="common/dev.brahmkshatriya.echo.common.settings/index.html">dev.brahmkshatriya.echo.common.settings</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1029617048%2FPackages%2F1278595499"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1029617048%2FPackages%2F-406099376"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
