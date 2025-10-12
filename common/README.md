@@ -13,17 +13,9 @@ To create a new extension, you can use the following template repo:
 ### Manual
 
 - Add the dependency in your project.
-
-  settings.gradle.kts
-  ```kotlin
-   repositories {
-      //...
-      maven { url = uri("https://jitpack.io") }
-  }
-  ```
   build.gradle.kts
     ```kotlin
-    implementation("com.github.brahmkshatriya:echo:-SNAPSHOT")
+    implementation("dev.brahmkshatriya.echo:common:1.0.0")
     ```
 
 ## How does it work?
@@ -41,6 +33,10 @@ To determine what type of extension it is, the app looks for the following featu
 - For Tracker Extension:
   ```xml
   <uses-feature android:name="dev.brahmkshatriya.echo.trackers"/>
+  ```
+- For Misc Extension:
+  ```xml
+  <uses-feature android:name="dev.brahmkshatriya.echo.misc"/>
   ```
 
 There are 2 ways the app can import an extension:
@@ -66,8 +62,8 @@ The `AndroidManifest.xml` file of the extension should contain the following met
 and [others...](https://github.com/brahmkshatriya/echo-extension-template/blob/main/app/src/main/AndroidManifest.xml)
 
 ### Flow of the app:
-1. Load the extensions from the installed packages and internal storage using [Plugger](https://github.com/JeelPatel231/plugger).
-2. Dynamically load the [`ExtensionClient`](./clients/ExtensionClient.kt) instance using the class path from the metadata.
-3. Inject the extension with [`Settings`](./settings/Setting.kt) 
-4. Inject the extension with other [provider interfaces](./providers)
+1. Load the extensions from the installed packages and internal storage.
+2. Dynamically load the [`ExtensionClient`](./src/commonMain/kotlin/dev/brahmkshatriya/echo/common/clients/ExtensionClient.kt) instance using the class path from the metadata.
+3. Inject the extension with [`Settings`](./src/commonMain/kotlin/dev/brahmkshatriya/echo/common/settings/Setting.kt) 
+4. Inject the extension with other [provider interfaces](./src/commonMain/kotlin/dev/brahmkshatriya/echo/common/providers)
 5. The extension is available to use in the app.

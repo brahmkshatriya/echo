@@ -11,10 +11,10 @@ import java.io.File
 interface PlaylistEditCoverClient : PlaylistEditClient {
 
     /**
-     * Edits the cover of a playlist.
+     * Edit the cover of a playlist.
      *
      * @param playlist the playlist to edit the cover of.
-     * @param cover the new cover of the playlist.
+     * @param cover the new cover of the playlist, or null if user removed the cover.
      */
     suspend fun editPlaylistCover(playlist: Playlist, cover: File?)
 }

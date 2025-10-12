@@ -20,10 +20,10 @@ interface TrackerMarkClient : TrackerClient {
     suspend fun getMarkAsPlayedDuration(details: TrackDetails): Long?
 
     /**
-     * Called when the track has reached the [getMarkAsPlayedDuration].
-     * will not be called if [getMarkAsPlayedDuration] is null.
+     * Called after the track has been streamed for [getMarkAsPlayedDuration] milliseconds.
+     * This method will not be called if [getMarkAsPlayedDuration] is null.
      *
-     * @param details the details of the track that is playing.
+     * @param details the details of the track that was marked as played.
      */
     suspend fun onMarkAsPlayed(details: TrackDetails)
 }

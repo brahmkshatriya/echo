@@ -88,11 +88,12 @@ class AddViewModel(
             null
         }
         val installed = extensionLoader.all.value.map { it.id }
+        val shouldBeChecked = (list?.size ?: 0) <= 3
         addingFlow.value = AddState.AddList(list?.map {
             val isInstalled = it.id in installed
             ExtensionsAddListAdapter.Item(
                 it,
-                isChecked = !isInstalled,
+                isChecked = shouldBeChecked && !isInstalled,
                 isInstalled = isInstalled
             )
         })

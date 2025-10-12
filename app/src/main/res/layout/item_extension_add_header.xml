@@ -19,7 +19,7 @@
         android:id="@+id/selectAll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:checked="true"
+        android:checked="false"
         android:layout_marginEnd="16dp"
         android:layout_marginVertical="8dp" />
 </LinearLayout>

@@ -41,7 +41,7 @@ mavenPublishing {
     publishToMavenCentral(true)
     signAllPublications()
 
-    coordinates("dev.brahmkshatriya.echo", "common", "1.0")
+    coordinates("dev.brahmkshatriya.echo", "common", "1.0.0")
 
     pom {
         name = "Echo common library"
