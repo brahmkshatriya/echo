@@ -295,7 +295,7 @@
     <plurals name="number_items">
         <item quantity="one">%1$d Item</item>
         <item quantity="many">%1$d Ítens</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <string name="x_specific_quality_summary">Qualide de stream específica, irá substituir a qualidade de stream padrão</string>
     <string name="unmetered_stream_quality">Qualidade de stream não medida</string>
@@ -324,22 +324,22 @@
     <plurals name="number_songs">
         <item quantity="one">%1$d música</item>
         <item quantity="many">%1$d músicas</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="number_episodes">
         <item quantity="one">%1$d episódio</item>
         <item quantity="many">%1$d episódios</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="number_chapters">
         <item quantity="one">%1$d capítulo</item>
         <item quantity="many">%1$d capítulos</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <plurals name="number_tracks">
         <item quantity="one">%1$d faixa</item>
         <item quantity="many">%1$d faixas</item>
-        <item quantity="other"/>
+        <item quantity="other"></item>
     </plurals>
     <string name="unsave">Desfazer salvamento</string>
     <string name="sort_date_added">Data adicionada</string>
