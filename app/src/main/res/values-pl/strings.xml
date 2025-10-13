@@ -135,4 +135,267 @@
     <string name="list_is_empty">Lista jest pusta</string>
     <string name="extension_installed">%1$s (Zainstalowano)</string>
     <string name="add_extensions">Dodaj rozszerzenia</string>
+    <string name="playing_from" translatable="false"></string>
+    <string name="genres_x" translatable="false"></string>
+    <string name="so_empty" translatable="false"></string>
+    <string name="big_cover" translatable="false"></string>
+    <string name="playlist_name_empty" translatable="false"></string>
+    <string name="horizontal" translatable="false"></string>
+    <string name="_45min" translatable="false"></string>
+    <string name="download_started" translatable="false"></string>
+    <string name="close" translatable="false"></string>
+    <string name="deleting_x" translatable="false"></string>
+    <string name="_1hr" translatable="false"></string>
+    <string name="save" translatable="false"></string>
+    <string name="delete_playlist" translatable="false"></string>
+    <string name="big_cover_summary" translatable="false"></string>
+    <string name="track" translatable="false"></string>
+    <string name="background_gradient_summary" translatable="false"></string>
+    <string name="filter" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
+    <string name="radio" translatable="false"></string>
+    <string name="sleep_on_specific_time" translatable="false"></string>
+    <string name="select_x_account" translatable="false"></string>
+    <string name="tracker" translatable="false"></string>
+    <string name="playlist_description" translatable="false"></string>
+    <string name="could_not_find_the_file" translatable="false"></string>
+    <string name="saved_to_playlists" translatable="false"></string>
+    <string name="book" translatable="false"></string>
+    <string name="n_chapters" translatable="false"></string>
+    <string name="no_update_available_for_x" translatable="false"></string>
+    <string name="nothing_to_download_in_x" translatable="false"></string>
+    <string name="error_updating_extension" translatable="false"></string>
+    <string name="more_brain_capacity" translatable="false"></string>
+    <string name="allow_opening_links" translatable="false"></string>
+    <string name="custom_theme_color_summary" translatable="false"></string>
+    <string name="animations_summary" translatable="false"></string>
+    <string name="creating_x" translatable="false"></string>
+    <string name="podcast" translatable="false"></string>
+    <string name="delete_playlist_confirmation" translatable="false"></string>
+    <string name="create_playlist" translatable="false"></string>
+    <string name="quality_x" translatable="false"></string>
+    <string name="add_extension" translatable="false"></string>
+    <string name="ui" translatable="false"></string>
+    <string name="installation_type_warning" translatable="false"></string>
+    <string name="saving_x" translatable="false"></string>
+    <string name="not_playable_x" translatable="false"></string>
+    <string name="explicit" translatable="false"></string>
+    <string name="opening_webview_x" translatable="false"></string>
+    <string name="add_color" translatable="false"></string>
+    <string name="regex_invalid" translatable="false"></string>
+    <string name="unfollowing_x" translatable="false"></string>
+    <string name="logout_and_login" translatable="false"></string>
+    <string name="next" translatable="false"></string>
+    <string name="hidden_x" translatable="false"></string>
+    <string name="x_extension" translatable="false"></string>
+    <string name="create" translatable="false"></string>
+    <string name="auto_start_radio" translatable="false"></string>
+    <string name="misc" translatable="false"></string>
+    <string name="info" translatable="false"></string>
+    <string name="scroll_animations" translatable="false"></string>
+    <string name="unfollowed_x" translatable="false"></string>
+    <string name="all" translatable="false"></string>
+    <string name="language_x" translatable="false"></string>
+    <string name="open_links_instruction" translatable="false"></string>
+    <string name="custom_colors" translatable="false"></string>
+    <string name="sleep_timer_set_for" translatable="false"></string>
+    <string name="n_tracks" translatable="false"></string>
+    <string name="backgrounds" translatable="false"></string>
+    <string name="enabled" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="_15min" translatable="false"></string>
+    <string name="unhidden_x" translatable="false"></string>
+    <string name="_30min" translatable="false"></string>
+    <string name="checking_for_updates" translatable="false"></string>
+    <string name="download_complete" translatable="false"></string>
+    <string name="add_song" translatable="false"></string>
+    <string name="apply" translatable="false"></string>
+    <string name="unfollow" translatable="false"></string>
+    <string name="scroll_bar" translatable="false"></string>
+    <string name="invalid_extension_list" translatable="false"></string>
+    <string name="theme" translatable="false"></string>
+    <string name="skip_silence_summary" translatable="false"></string>
+    <string name="audio_selection" translatable="false"></string>
+    <string name="switch_account" translatable="false"></string>
+    <string name="save_to_playlist" translatable="false"></string>
+    <string name="other_settings" translatable="false"></string>
+    <string name="n_hours" translatable="false"></string>
+    <string name="circle" translatable="false"></string>
+    <string name="removed_x_from_library" translatable="false"></string>
+    <string name="app_widget_description" translatable="false"></string>
+    <string name="unknown_quality" translatable="false"></string>
+    <string name="apply_player_color_to_app_summary" translatable="false"></string>
+    <string name="off" translatable="false"></string>
+    <plurals name="number_episodes" translatable="false">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="x_plays" translatable="false"></string>
+    <string name="following_x" translatable="false"></string>
+    <string name="sort_duration" translatable="false"></string>
+    <string name="more_brain_capacity_summary" translatable="false"></string>
+    <string name="deleted_x" translatable="false"></string>
+    <string name="edit_playlist" translatable="false"></string>
+    <string name="repeat" translatable="false"></string>
+    <string name="sleep_timer_cancelled" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="x_is_required" translatable="false"></string>
+    <string name="saved_x_to_library" translatable="false"></string>
+    <string name="selected_n" translatable="false"></string>
+    <string name="delete" translatable="false"></string>
+    <string name="no_last_played_track_found" translatable="false"></string>
+    <string name="auto_start_radio_summary" translatable="false"></string>
+    <string name="apply_player_color_to_app" translatable="false"></string>
+    <string name="adding_x_to_next" translatable="false"></string>
+    <string name="n_minutes" translatable="false"></string>
+    <string name="reversed" translatable="false"></string>
+    <string name="navbar_gradient" translatable="false"></string>
+    <string name="unliked_x" translatable="false"></string>
+    <string name="unhiding_x" translatable="false"></string>
+    <string name="saved_to_x" translatable="false"></string>
+    <string name="other" translatable="false"></string>
+    <plurals name="number_chapters" translatable="false">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="by_x" translatable="false"></string>
+    <string name="sort_date_added" translatable="false"></string>
+    <string name="tracks" translatable="false"></string>
+    <string name="no_download_extension" translatable="false"></string>
+    <string name="album_order_n" translatable="false"></string>
+    <string name="incognito" translatable="false"></string>
+    <string name="not_loading" translatable="false"></string>
+    <string name="sleep_timer" translatable="false"></string>
+    <string name="download" translatable="false"></string>
+    <string name="add_to_queue" translatable="false"></string>
+    <string name="previous" translatable="false"></string>
+    <string name="sharing_x" translatable="false"></string>
+    <string name="x_login" translatable="false"></string>
+    <string name="compilation" translatable="false"></string>
+    <string name="contributors" translatable="false"></string>
+    <string name="_2hr" translatable="false"></string>
+    <string name="album" translatable="false"></string>
+    <string name="show_background_summary" translatable="false"></string>
+    <string name="about" translatable="false"></string>
+    <string name="unliking_x" translatable="false"></string>
+    <string name="unavailable_in_your_region" translatable="false"></string>
+    <string name="webview" translatable="false"></string>
+    <string name="seekbar" translatable="false"></string>
+    <string name="up_next" translatable="false"></string>
+    <string name="sort_subtitle" translatable="false"></string>
+    <string name="theme_summary" translatable="false"></string>
+    <string name="n_songs" translatable="false"></string>
+    <string name="no_user_found" translatable="false"></string>
+    <string name="playlist" translatable="false"></string>
+    <string name="ep" translatable="false"></string>
+    <string name="sources" translatable="false"></string>
+    <string name="subtitle_selection" translatable="false"></string>
+    <string name="delete_download" translatable="false"></string>
+    <string name="check_for_updates_summary" translatable="false"></string>
+    <string name="disc_number_n" translatable="false"></string>
+    <string name="unhide" translatable="false"></string>
+    <string name="scroll_bar_summary" translatable="false"></string>
+    <string name="removing_x" translatable="false"></string>
+    <string name="hide" translatable="false"></string>
+    <string name="custom_theme_color" translatable="false"></string>
+    <string name="single" translatable="false"></string>
+    <plurals name="number_hour" translatable="false">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="pre_release" translatable="false"></string>
+    <string name="x_created" translatable="false"></string>
+    <string name="refresh" translatable="false"></string>
+    <string name="shuffle" translatable="false"></string>
+    <string name="adding_x" translatable="false"></string>
+    <string name="not_yet_released" translatable="false"></string>
+    <string name="back_animations_summary" translatable="false"></string>
+    <string name="sort_title" translatable="false"></string>
+    <string name="background_gradient" translatable="false"></string>
+    <string name="installation_type_summary" translatable="false"></string>
+    <string name="confirm" translatable="false"></string>
+    <string name="liked_x" translatable="false"></string>
+    <string name="disabled" translatable="false"></string>
+    <plurals name="number_songs" translatable="false">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="vertical" translatable="false"></string>
+    <string name="unsave" translatable="false"></string>
+    <string name="shuffling_x" translatable="false"></string>
+    <string name="moving_x" translatable="false"></string>
+    <string name="song" translatable="false"></string>
+    <string name="loading_radio_for_x" translatable="false"></string>
+    <string name="isrc_x" translatable="false"></string>
+    <plurals name="number_min" translatable="false">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="manage" translatable="false"></string>
+    <string name="logout" translatable="false"></string>
+    <string name="guide" translatable="false"></string>
+    <string name="not_logged_in" translatable="false"></string>
+    <string name="sort" translatable="false"></string>
+    <string name="playing_x" translatable="false"></string>
+    <string name="loading_x" translatable="false"></string>
+    <string name="search_x" translatable="false"></string>
+    <string name="video" translatable="false"></string>
+    <string name="playlist_name" translatable="false"></string>
+    <string name="donate" translatable="false"></string>
+    <string name="no_lyrics" translatable="false"></string>
+    <string name="navbar_gradient_summary" translatable="false"></string>
+    <string name="merging_x" translatable="false"></string>
+    <string name="save_to_library" translatable="false"></string>
+    <string name="remove_from_library" translatable="false"></string>
+    <string name="adding_x_to_queue" translatable="false"></string>
+    <string name="lp" translatable="false"></string>
+    <string name="liking_x" translatable="false"></string>
+    <string name="hiding_x" translatable="false"></string>
+    <string name="video_selection" translatable="false"></string>
+    <string name="end_of_track" translatable="false"></string>
+    <string name="releases_on_x" translatable="false"></string>
+    <string name="sleep_timer_desc" translatable="false"></string>
+    <string name="tagging_x" translatable="false"></string>
+    <string name="look_and_feel" translatable="false"></string>
+    <string name="play" translatable="false"></string>
+    <string name="no_account" translatable="false"></string>
+    <string name="show" translatable="false"></string>
+    <string name="add_to_next" translatable="false"></string>
+    <string name="quality_selection" translatable="false"></string>
+    <string name="app_desc" translatable="false"></string>
+    <string name="player" translatable="false"></string>
+    <string name="removed_x_from_downloads" translatable="false"></string>
+    <string name="followed_x" translatable="false"></string>
+    <string name="app_name" translatable="false"></string>
+    <string name="no_x_found" translatable="false"></string>
+    <string name="confirmation" translatable="false"></string>
+    <string name="currently_playing" translatable="false"></string>
+    <string name="share" translatable="false"></string>
+    <string name="dynamic_player_summary" translatable="false"></string>
+    <string name="copying_the_error" translatable="false"></string>
+    <string name="servers" translatable="false"></string>
+    <string name="sort_date" translatable="false"></string>
+    <string name="amoled_summary" translatable="false"></string>
+    <string name="n_episodes" translatable="false"></string>
+    <string name="follow" translatable="false"></string>
+    <string name="x_followers" translatable="false"></string>
+    <string name="sort_and_filter" translatable="false"></string>
+    <string name="subtitles" translatable="false"></string>
+    <plurals name="number_tracks" translatable="false">
+        <item quantity="one"></item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="scroll_animations_summary" translatable="false"></string>
 </resources>
