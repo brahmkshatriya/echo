@@ -277,7 +277,7 @@
     <string name="removed_x_from_downloads">%1$s Supprimé des Téléchargements</string>
     <string name="nothing_to_download_in_x">Rien à télécharger dans %1$s</string>
     <string name="merging_x">Fusion de %1$s</string>
-    <string name="apply_player_color_to_app_summary">ALERTE AU LAG !!!</string>
+    <string name="apply_player_color_to_app_summary">ALERTE AU LAG !!!</string>
     <string name="extension_x_not_found">Extension %1$s non trouvée</string>
     <string name="audio">Audio</string>
     <string name="version">Version</string>
