@@ -384,4 +384,11 @@
     <string name="scroll_bar">Barre de Défilement</string>
     <string name="scroll_bar_summary">Barre de défilement sur le côté pour un accès plus rapide (peut être bugé)</string>
     <string name="currently_playing">En cours de Lecture</string>
+    <string name="horizontal" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="circle" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="vertical" translatable="false"></string>
+    <string name="app_name" translatable="false"></string>
 </resources>
