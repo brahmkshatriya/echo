@@ -391,11 +391,4 @@
     <string name="colors">Цвета</string>
     <string name="scroll_bar_summary">Полоса прокрутки сбоку для более быстрого доступа (может работать с ошибками)</string>
     <string name="currently_playing">Сейчас играет</string>
-    <string name="horizontal" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
-    <string name="circle" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="vertical" translatable="false"></string>
-    <string name="app_name" translatable="false"></string>
 </resources>

@@ -370,11 +370,4 @@
     <string name="scroll_bar_summary">侧面的滚动条可加快访问速度（可能会有故障）</string>
     <string name="colors">颜色</string>
     <string name="currently_playing">当前播放</string>
-    <string name="horizontal" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
-    <string name="circle" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="vertical" translatable="false"></string>
-    <string name="app_name" translatable="false"></string>
 </resources>

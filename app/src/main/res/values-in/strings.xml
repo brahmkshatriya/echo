@@ -361,20 +361,4 @@
     <string name="isrc_x">ISRC: %1$s</string>
     <string name="ep">EP</string>
     <string name="lp">LP</string>
-    <string name="horizontal" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
-    <string name="circle" translatable="false"></string>
-    <plurals name="number_episodes" translatable="false">
-        <item quantity="other"></item>
-    </plurals>
-    <string name="crying_af" translatable="false"></string>
-    <plurals name="number_chapters" translatable="false">
-        <item quantity="other"></item>
-    </plurals>
-    <string name="vertical" translatable="false"></string>
-    <string name="app_name" translatable="false"></string>
-    <plurals name="number_tracks" translatable="false">
-        <item quantity="other"></item>
-    </plurals>
 </resources>

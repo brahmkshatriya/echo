@@ -353,28 +353,4 @@
     <string name="isrc_x">ISRC: %1$s</string>
     <string name="lp">LP</string>
     <string name="ep">EP</string>
-    <string name="playing_from" translatable="false"></string>
-    <string name="big_cover" translatable="false"></string>
-    <string name="horizontal" translatable="false"></string>
-    <string name="background_gradient_summary" translatable="false"></string>
-    <string name="app_github_repo" translatable="false"></string>
-    <string name="more_brain_capacity" translatable="false"></string>
-    <string name="n_dot_x" translatable="false"></string>
-    <string name="scroll_bar" translatable="false"></string>
-    <string name="circle" translatable="false"></string>
-    <string name="app_widget_description" translatable="false"></string>
-    <string name="apply_player_color_to_app_summary" translatable="false"></string>
-    <string name="crying_af" translatable="false"></string>
-    <string name="change_pitch_with_speed_desc" translatable="false"></string>
-    <string name="by_x" translatable="false"></string>
-    <string name="album_order_n" translatable="false"></string>
-    <string name="compilation" translatable="false"></string>
-    <string name="scroll_bar_summary" translatable="false"></string>
-    <string name="amoled" translatable="false"></string>
-    <string name="vertical" translatable="false"></string>
-    <string name="app_desc" translatable="false"></string>
-    <string name="app_name" translatable="false"></string>
-    <string name="currently_playing" translatable="false"></string>
-    <string name="amoled_summary" translatable="false"></string>
-    <string name="colors" translatable="false"></string>
 </resources>
