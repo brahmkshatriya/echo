@@ -376,4 +376,12 @@
     <string name="colors">Farben</string>
     <string name="scroll_bar">Bildlaufleiste</string>
     <string name="scroll_bar_summary">Bildlaufleiste an der Seite für schnelleren Zugriff (kann fehlerhaft sein)</string>
+    <string name="horizontal" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="circle" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="vertical" translatable="false"></string>
+    <string name="app_name" translatable="false"></string>
+    <string name="currently_playing" translatable="false"></string>
 </resources>
