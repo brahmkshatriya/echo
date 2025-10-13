@@ -1,445 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Echo</string>
     <string name="app_github_repo" translatable="false">brahmkshatriya/echo</string>
-    <string name="okay">Okay</string>
-    <string name="cancel">Cancel</string>
-    <string name="back">Back</string>
-    <string name="feed">Feed</string>
-    <string name="x_permission_required">%1$s Permission Required</string>
-    <string name="x_was_not_granted">%1$s was not granted</string>
-    <string name="audio">Audio</string>
-    <string name="audio_permission_summary">To access your local music library</string>
-    <string name="read_storage">Read Storage</string>
-    <string name="write_storage">Write Storage</string>
-    <string name="write_storage_permission_summary">To create and edit local playlists</string>
-    <string name="notifications">Notifications</string>
-    <string name="notifications_permission_summary">To show notification for downloads and music</string>
-    <string name="remove">Remove</string>
-    <string name="more_by_x">More by %1$s</string>
-    <string name="songs">Songs</string>
-    <string name="albums">Albums</string>
-    <string name="x_radio">%1$s Radio</string>
-    <string name="cached_songs">Cached Songs</string>
-    <string name="cache_playlist_warning">Experimental Feature. Anything except listening to them is not supported.</string>
-    <string name="artists">Artists</string>
-    <string name="recently_added">Recently Added</string>
-    <string name="refresh_library_on_reload">Refresh Library on Reload</string>
-    <string name="refresh_library_on_reload_summary">Scan the device every time the feed is loaded</string>
-    <string name="duration_filter">Duration Filter</string>
-    <string name="duration_filter_summary">Filter out audio files with duration(in seconds) less than the value</string>
-    <string name="blacklist_folders">Blacklist Folders</string>
-    <string name="blacklist_folders_summary">Folders to exclude from the library</string>
-    <string name="blacklist_folder_keywords">Blacklist Folder Keywords</string>
-    <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders, use comma for separator</string>
-    <string name="saved">Saved</string>
-    <string name="tabs">Tabs</string>
-    <string name="show_tabs">Show Tabs</string>
-    <string name="show_tab_summary">will show tabs of the extensions as category</string>
-    <string name="unified_liked_playlist_summary">Your liked tracks from various extensions</string>
-    <string name="n_items">%1$d Items</string>
-    <string name="item">Item</string>
-    <plurals name="number_items">
+    <string name="okay" translatable="false">Okay</string>
+    <string name="cancel" translatable="false">Cancel</string>
+    <string name="back" translatable="false">Back</string>
+    <string name="feed" translatable="false">Feed</string>
+    <string name="x_permission_required" translatable="false">%1$s Permission Required</string>
+    <string name="x_was_not_granted" translatable="false">%1$s was not granted</string>
+    <string name="audio" translatable="false">Audio</string>
+    <string name="audio_permission_summary" translatable="false">To access your local music library</string>
+    <string name="read_storage" translatable="false">Read Storage</string>
+    <string name="write_storage" translatable="false">Write Storage</string>
+    <string name="write_storage_permission_summary" translatable="false">To create and edit local playlists</string>
+    <string name="notifications" translatable="false">Notifications</string>
+    <string name="notifications_permission_summary" translatable="false">To show notification for downloads and music</string>
+    <string name="remove" translatable="false">Remove</string>
+    <string name="more_by_x" translatable="false">More by %1$s</string>
+    <string name="songs" translatable="false">Songs</string>
+    <string name="albums" translatable="false">Albums</string>
+    <string name="x_radio" translatable="false">%1$s Radio</string>
+    <string name="cached_songs" translatable="false">Cached Songs</string>
+    <string name="cache_playlist_warning" translatable="false">Experimental Feature. Anything except listening to them is not supported.</string>
+    <string name="artists" translatable="false">Artists</string>
+    <string name="recently_added" translatable="false">Recently Added</string>
+    <string name="refresh_library_on_reload" translatable="false">Refresh Library on Reload</string>
+    <string name="refresh_library_on_reload_summary" translatable="false">Scan the device every time the feed is loaded</string>
+    <string name="duration_filter" translatable="false">Duration Filter</string>
+    <string name="duration_filter_summary" translatable="false">Filter out audio files with duration(in seconds) less than the value</string>
+    <string name="blacklist_folders" translatable="false">Blacklist Folders</string>
+    <string name="blacklist_folders_summary" translatable="false">Folders to exclude from the library</string>
+    <string name="blacklist_folder_keywords" translatable="false">Blacklist Folder Keywords</string>
+    <string name="blacklist_folder_keywords_summary" translatable="false">Keywords to blacklist folders, use comma for separator</string>
+    <string name="saved" translatable="false">Saved</string>
+    <string name="tabs" translatable="false">Tabs</string>
+    <string name="show_tabs" translatable="false">Show Tabs</string>
+    <string name="show_tab_summary" translatable="false">will show tabs of the extensions as category</string>
+    <string name="unified_liked_playlist_summary" translatable="false">Your liked tracks from various extensions</string>
+    <string name="n_items" translatable="false">%1$d Items</string>
+    <string name="item" translatable="false">Item</string>
+    <plurals name="number_items" translatable="false">
         <item quantity="one">%1$d Item</item>
         <item quantity="other">%1$d Items</item>
     </plurals>
-    <string name="playlist_liked">Liked</string>
-    <string name="playlist_liked_desc">Your liked tracks</string>
-    <string name="unknown">Unknown</string>
-    <string name="like">Like</string>
-    <string name="unlike">Unlike</string>
-    <string name="repeat_one">Repeat One</string>
-    <string name="repeat_off">Repeat Off</string>
-    <string name="repeat_all">Repeat All</string>
-    <string name="home">Home</string>
-    <string name="search">Search</string>
-    <string name="library">Library</string>
-    <string name="more">More</string>
-    <string name="extension">Extension</string>
-    <string name="downloading_x">Downloading %1$s</string>
-    <string name="cancel_all">Cancel All</string>
-    <string name="download_progress">Download Progress</string>
-    <string name="downloads">Downloads</string>
-
-    <string name="downloaded_x">Downloaded %1$s</string>
-
-    <string name="logout_and_login">Logout and Login</string>
-    <string name="login">Login</string>
-    <string name="view">View</string>
-
-    <string name="extension_out_of_date">Out of date</string>
-    <string name="no_internet">No Internet</string>
-    <string name="error_loading_extension_from_x">Error loading extension from %1$s</string>
-    <string name="extension_x_not_found">Extension %1$s not found</string>
-    <string name="required_extensions_missing_x">Required extensions missing: %1$s</string>
-    <string name="x_login_required">%1$s login required</string>
-    <string name="x_is_not_supported_in_x">%1$s is not supported in %2$s</string>
-    <string name="account_session_expired_in_x">Account session expired in %1$s</string>
-    <string name="error_x">Error: %1$s</string>
-    <string name="str_copy">Copy</string>
-    <string name="extensions">Extensions</string>
-    <string name="choose_a_color">Choose a color</string>
-    <string name="random">Random</string>
-    <string name="add">Add</string>
-    <string name="loading">Loading…</string>
-
-    <string name="settings">Settings</string>
-    <string name="value">Value</string>
-    <string name="value_not_set">Not Set</string>
-
-    <string name="playback">Playback</string>
-
-    <string name="audio_fx">Audio Effects</string>
-    <string name="audio_fx_summary">Effects applied for all songs</string>
-    <string name="audio_fx_desc">Change the audio effects for the current track.</string>
-    <string name="reset">Reset</string>
-    <string name="playback_speed">Playback Speed</string>
-    <string name="change_pitch_with_speed">Change pitch with speed</string>
-    <string name="bass_boost">Bass Boost</string>
-    <string name="bass_boost_desc">Larger value may distort the sound.</string>
-    <string name="change_pitch_with_speed_desc">Get that slow-motion sound</string>
-    <string name="equalizer">Equalizer</string>
-    <string name="equalizer_summary">Open the device equalizer settings</string>
-
-    <string name="stream_quality">Stream Quality</string>
-    <string name="stream_quality_summary">Select the default quality of the stream</string>
-    <string name="x_specific_quality_summary">%1$s specific stream quality, will override the default stream quality selection</string>
-
+    <string name="playlist_liked" translatable="false">Liked</string>
+    <string name="playlist_liked_desc" translatable="false">Your liked tracks</string>
+    <string name="unknown" translatable="false">Unknown</string>
+    <string name="like" translatable="false">Like</string>
+    <string name="unlike" translatable="false">Unlike</string>
+    <string name="repeat_one" translatable="false">Repeat One</string>
+    <string name="repeat_off" translatable="false">Repeat Off</string>
+    <string name="repeat_all" translatable="false">Repeat All</string>
+    <string name="home" translatable="false">Home</string>
+    <string name="search" translatable="false">Search</string>
+    <string name="library" translatable="false">Library</string>
+    <string name="more" translatable="false">More</string>
+    <string name="extension" translatable="false">Extension</string>
+    <string name="downloading_x" translatable="false">Downloading %1$s</string>
+    <string name="cancel_all" translatable="false">Cancel All</string>
+    <string name="download_progress" translatable="false">Download Progress</string>
+    <string name="downloads" translatable="false">Downloads</string>
+    <string name="downloaded_x" translatable="false">Downloaded %1$s</string>
+    <string name="logout_and_login" translatable="false">Logout and Login</string>
+    <string name="login" translatable="false">Login</string>
+    <string name="view" translatable="false">View</string>
+    <string name="extension_out_of_date" translatable="false">Out of date</string>
+    <string name="no_internet" translatable="false">No Internet</string>
+    <string name="error_loading_extension_from_x" translatable="false">Error loading extension from %1$s</string>
+    <string name="extension_x_not_found" translatable="false">Extension %1$s not found</string>
+    <string name="required_extensions_missing_x" translatable="false">Required extensions missing: %1$s</string>
+    <string name="x_login_required" translatable="false">%1$s login required</string>
+    <string name="x_is_not_supported_in_x" translatable="false">%1$s is not supported in %2$s</string>
+    <string name="account_session_expired_in_x" translatable="false">Account session expired in %1$s</string>
+    <string name="error_x" translatable="false">Error: %1$s</string>
+    <string name="str_copy" translatable="false">Copy</string>
+    <string name="extensions" translatable="false">Extensions</string>
+    <string name="choose_a_color" translatable="false">Choose a color</string>
+    <string name="random" translatable="false">Random</string>
+    <string name="add" translatable="false">Add</string>
+    <string name="loading" translatable="false">Loading…</string>
+    <string name="settings" translatable="false">Settings</string>
+    <string name="value" translatable="false">Value</string>
+    <string name="value_not_set" translatable="false">Not Set</string>
+    <string name="playback" translatable="false">Playback</string>
+    <string name="audio_fx" translatable="false">Audio Effects</string>
+    <string name="audio_fx_summary" translatable="false">Effects applied for all songs</string>
+    <string name="audio_fx_desc" translatable="false">Change the audio effects for the current track.</string>
+    <string name="reset" translatable="false">Reset</string>
+    <string name="playback_speed" translatable="false">Playback Speed</string>
+    <string name="change_pitch_with_speed" translatable="false">Change pitch with speed</string>
+    <string name="bass_boost" translatable="false">Bass Boost</string>
+    <string name="bass_boost_desc" translatable="false">Larger value may distort the sound.</string>
+    <string name="change_pitch_with_speed_desc" translatable="false">Get that slow-motion sound</string>
+    <string name="equalizer" translatable="false">Equalizer</string>
+    <string name="equalizer_summary" translatable="false">Open the device equalizer settings</string>
+    <string name="stream_quality" translatable="false">Stream Quality</string>
+    <string name="stream_quality_summary" translatable="false">Select the default quality of the stream</string>
+    <string name="x_specific_quality_summary" translatable="false">%1$s specific stream quality, will override the default stream quality selection</string>
     <string-array name="stream_qualities">
         <item>Highest</item>
         <item>Medium</item>
         <item>Lowest</item>
     </string-array>
-
-    <string name="unmetered_stream_quality">Unmetered Stream Quality</string>
-    <string name="unmetered_stream_quality_summary">The quality of the stream when connected to an unmetered network. This will override the default stream quality.</string>
-
-    <string name="behavior">Behavior</string>
-
-    <string name="keep_queue">Keep Player Queue</string>
-    <string name="keep_queue_summary">Recover the player queue, when you reopen the app.</string>
-
-    <string name="stop_player">Stop player</string>
-    <string name="stop_player_summary">Stop the player, when the app is removed from recents</string>
-
-    <string name="skip_silence">Skip Silence</string>
-    <string name="skip_silence_summary">Skip silent part in the song, to provide gapless playback.</string>
-
-    <string name="auto_start_radio">Auto Start Radio</string>
-    <string name="auto_start_radio_summary">Automatically add related songs of track in the playlist, to have an infinite queue</string>
-
-    <string name="cache_size">Cache Size</string>
-    <string name="cache_size_summary">Size in MB to cache audio and video</string>
-
-    <string name="version">Version</string>
-    <string name="select_language">Select Language</string>
-    <string name="system">System</string>
-    <string name="check_for_updates">Check for Updates</string>
-    <string name="check_for_updates_summary">Look for new updates of both app and extensions, when you open the app.</string>
-
-    <string name="install">Install</string>
-    <string name="app">App</string>
-    <string name="file">File</string>
-    <string name="installation_type">Installation Type</string>
-    <string name="installation_type_summary">App installation will allow the following links to open in Echo:</string>
-    <string name="installation_type_warning">Not available if you install the extension as a File.</string>
-    <string name="could_not_find_the_file">Could not find the file.</string>
-    <string name="extension_installer">Extension Installer</string>
-    <string name="extension_installed_successfully">Extension installed successfully.</string>
-    <string name="extension_uninstalled_successfully">Extension uninstalled successfully.</string>
-    <string name="allow_opening_links">Allow opening links</string>
-    <string name="open_links_instruction">To allow opening these links, you need to:\n- Scroll down and click on \"Open by Default\"\n- Click on \"+ Add Link\"</string>
-    <string name="downloading_update_for_x">Downloading update for %1$s</string>
-    <string name="extension_updated_successfully">%1$s updated successfully</string>
-    <string name="link">Link</string>
-    <string name="link_or_code">Link or Code</string>
-    <string name="list_is_empty">List is empty</string>
-    <string name="extension_installed">%1$s (Installed)</string>
-    <string name="add_extensions">Add Extensions</string>
-    <string name="invalid_extension_list">Invalid extensions list</string>
-    <string name="checking_for_updates">Checking for updates</string>
-
-    <string name="look_and_feel">Look and Feel</string>
-
-    <string name="ui">UI</string>
-
-    <string name="theme">Theme</string>
-    <string name="theme_summary">Want to be blind?</string>
+    <string name="unmetered_stream_quality" translatable="false">Unmetered Stream Quality</string>
+    <string name="unmetered_stream_quality_summary" translatable="false">The quality of the stream when connected to an unmetered network. This will override the default stream quality.</string>
+    <string name="behavior" translatable="false">Behavior</string>
+    <string name="keep_queue" translatable="false">Keep Player Queue</string>
+    <string name="keep_queue_summary" translatable="false">Recover the player queue, when you reopen the app.</string>
+    <string name="stop_player" translatable="false">Stop player</string>
+    <string name="stop_player_summary" translatable="false">Stop the player, when the app is removed from recents</string>
+    <string name="skip_silence" translatable="false">Skip Silence</string>
+    <string name="skip_silence_summary" translatable="false">Skip silent part in the song, to provide gapless playback.</string>
+    <string name="auto_start_radio" translatable="false">Auto Start Radio</string>
+    <string name="auto_start_radio_summary" translatable="false">Automatically add related songs of track in the playlist, to have an infinite queue</string>
+    <string name="cache_size" translatable="false">Cache Size</string>
+    <string name="cache_size_summary" translatable="false">Size in MB to cache audio and video</string>
+    <string name="version" translatable="false">Version</string>
+    <string name="select_language" translatable="false">Select Language</string>
+    <string name="system" translatable="false">System</string>
+    <string name="check_for_updates" translatable="false">Check for Updates</string>
+    <string name="check_for_updates_summary" translatable="false">Look for new updates of both app and extensions, when you open the app.</string>
+    <string name="install" translatable="false">Install</string>
+    <string name="app" translatable="false">App</string>
+    <string name="file" translatable="false">File</string>
+    <string name="installation_type" translatable="false">Installation Type</string>
+    <string name="installation_type_summary" translatable="false">App installation will allow the following links to open in Echo:</string>
+    <string name="installation_type_warning" translatable="false">Not available if you install the extension as a File.</string>
+    <string name="could_not_find_the_file" translatable="false">Could not find the file.</string>
+    <string name="extension_installer" translatable="false">Extension Installer</string>
+    <string name="extension_installed_successfully" translatable="false">Extension installed successfully.</string>
+    <string name="extension_uninstalled_successfully" translatable="false">Extension uninstalled successfully.</string>
+    <string name="allow_opening_links" translatable="false">Allow opening links</string>
+    <string name="open_links_instruction" translatable="false">To allow opening these links, you need to:\n- Scroll down and click on \"Open by Default\"\n- Click on \"+ Add Link\"</string>
+    <string name="downloading_update_for_x" translatable="false">Downloading update for %1$s</string>
+    <string name="extension_updated_successfully" translatable="false">%1$s updated successfully</string>
+    <string name="link" translatable="false">Link</string>
+    <string name="link_or_code" translatable="false">Link or Code</string>
+    <string name="list_is_empty" translatable="false">List is empty</string>
+    <string name="extension_installed" translatable="false">%1$s (Installed)</string>
+    <string name="add_extensions" translatable="false">Add Extensions</string>
+    <string name="invalid_extension_list" translatable="false">Invalid extensions list</string>
+    <string name="checking_for_updates" translatable="false">Checking for updates</string>
+    <string name="look_and_feel" translatable="false">Look and Feel</string>
+    <string name="ui" translatable="false">UI</string>
+    <string name="theme" translatable="false">Theme</string>
+    <string name="theme_summary" translatable="false">Want to be blind?</string>
     <string-array name="themes">
         <item>Light</item>
         <item>Dark</item>
         <item>System</item>
     </string-array>
-
-    <string name="custom_theme_color">Custom Theme Color</string>
-    <string name="custom_theme_color_summary">Use a custom theme color, instead of system theme.</string>
-    <string name="add_color">Add color</string>
-    <string name="custom_colors">Custom Colors</string>
-
-    <string name="amoled">AMOLED</string>
-    <string name="amoled_summary">Pitch Black, Pure Black</string>
-
-    <string name="navbar_gradient">Gradient Navbar</string>
-    <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>
-
-    <string name="dynamic_player">Dynamic Player Color</string>
-    <string name="dynamic_player_summary">Apply color to the player based on the Track Artwork</string>
-
-    <string name="show_background">Show Background</string>
-    <string name="show_background_summary">Background video or blurred artwork of track in player</string>
-
-    <string name="colors">Colors</string>
-    <string name="scroll_bar">Scroll Bar</string>
-    <string name="scroll_bar_summary">Scrollbar on the side for faster access (might be glitchy)</string>
-
-    <string name="animation">Animation</string>
-
-    <string name="back_animations">Back Animations</string>
-    <string name="back_animations_summary">Can cause visual bug due to android, but you can just open recents to fix it.</string>
-
-    <string name="animations">Animations</string>
-    <string name="animations_summary">Feeling too much stutter? turning this off, might help</string>
-
-    <string name="refresh">Refresh</string>
-    <string name="x_disabled">%1$s (Disabled)</string>
-    <string name="by_x">By %1$s</string>
-    <string name="music">Music</string>
-    <string name="tracker">Tracker</string>
-    <string name="lyrics">Lyrics</string>
-    <string name="misc">Misc</string>
-    <string name="x_extensions">%1$s Extensions</string>
-    <string name="x_extension">%1$s Extension</string>
-    <string name="enabled">Enabled</string>
-    <string name="disabled">Disabled</string>
-    <string name="error_updating_extension">Error while updating</string>
-
-    <string name="no_user_found">No user found</string>
-    <string name="select_x_account">Select %1$s account</string>
-    <string name="add_extension">Add Extension</string>
-    <string name="webview">Webview</string>
-    <string name="logout">Logout</string>
-    <string name="switch_account">Switch Account</string>
-    <string name="incognito">Incognito</string>
-    <string name="not_logged_in">Not logged in</string>
-    <string name="x_login">%1$s Login</string>
-    <string name="x_is_required">%1$s is required</string>
-    <string name="regex_invalid">%1$s is invalid, please follow the regex: %2$s</string>
-
-    <string name="playing_from">Playing From</string>
-    <string name="up_next">Up Next</string>
-    <string name="info">Info</string>
-    <string name="seekbar">Seekbar</string>
-    <string name="shuffle">Shuffle</string>
-    <string name="previous">Previous</string>
-    <string name="play">Play</string>
-    <string name="next">Next</string>
-    <string name="repeat">Repeat</string>
-    <string name="close">Close</string>
-    <string name="no_lyrics">No Lyrics</string>
-
-    <string name="sleep_timer">Sleep Timer</string>
-    <string name="end_of_track">End of Track</string>
-    <string name="_15min">15m</string>
-    <string name="_30min">30m</string>
-    <string name="_45min">45m</string>
-    <string name="_1hr">1h</string>
-    <string name="_2hr">2h</string>
-    <string name="sleep_timer_desc">Set a sleep timer to stop playback after a certain amount of time</string>
-    <string name="sleep_on_specific_time">Sleep on specific time</string>
-    <string name="sleep_timer_cancelled">Sleep timer cancelled</string>
-    <string name="sleep_timer_set_for">Sleep timer set for %1$s</string>
-    <string name="search_x">Search %1$s</string>
-    <string name="n_hours">%1$d hours</string>
-    <plurals name="number_hour">
+    <string name="custom_theme_color" translatable="false">Custom Theme Color</string>
+    <string name="custom_theme_color_summary" translatable="false">Use a custom theme color, instead of system theme.</string>
+    <string name="add_color" translatable="false">Add color</string>
+    <string name="custom_colors" translatable="false">Custom Colors</string>
+    <string name="amoled" translatable="false">AMOLED</string>
+    <string name="amoled_summary" translatable="false">Pitch Black, Pure Black</string>
+    <string name="navbar_gradient" translatable="false">Gradient Navbar</string>
+    <string name="navbar_gradient_summary" translatable="false">Navbar gradually becomes transparent</string>
+    <string name="dynamic_player" translatable="false">Dynamic Player Color</string>
+    <string name="dynamic_player_summary" translatable="false">Apply color to the player based on the Track Artwork</string>
+    <string name="show_background" translatable="false">Show Background</string>
+    <string name="show_background_summary" translatable="false">Background video or blurred artwork of track in player</string>
+    <string name="colors" translatable="false">Colors</string>
+    <string name="scroll_bar" translatable="false">Scroll Bar</string>
+    <string name="scroll_bar_summary" translatable="false">Scrollbar on the side for faster access (might be glitchy)</string>
+    <string name="animation" translatable="false">Animation</string>
+    <string name="back_animations" translatable="false">Back Animations</string>
+    <string name="back_animations_summary" translatable="false">Can cause visual bug due to android, but you can just open recents to fix it.</string>
+    <string name="animations" translatable="false">Animations</string>
+    <string name="animations_summary" translatable="false">Feeling too much stutter? turning this off, might help</string>
+    <string name="refresh" translatable="false">Refresh</string>
+    <string name="x_disabled" translatable="false">%1$s (Disabled)</string>
+    <string name="by_x" translatable="false">By %1$s</string>
+    <string name="music" translatable="false">Music</string>
+    <string name="tracker" translatable="false">Tracker</string>
+    <string name="lyrics" translatable="false">Lyrics</string>
+    <string name="misc" translatable="false">Misc</string>
+    <string name="x_extensions" translatable="false">%1$s Extensions</string>
+    <string name="x_extension" translatable="false">%1$s Extension</string>
+    <string name="enabled" translatable="false">Enabled</string>
+    <string name="disabled" translatable="false">Disabled</string>
+    <string name="error_updating_extension" translatable="false">Error while updating</string>
+    <string name="no_user_found" translatable="false">No user found</string>
+    <string name="select_x_account" translatable="false">Select %1$s account</string>
+    <string name="add_extension" translatable="false">Add Extension</string>
+    <string name="webview" translatable="false">Webview</string>
+    <string name="logout" translatable="false">Logout</string>
+    <string name="switch_account" translatable="false">Switch Account</string>
+    <string name="incognito" translatable="false">Incognito</string>
+    <string name="not_logged_in" translatable="false">Not logged in</string>
+    <string name="x_login" translatable="false">%1$s Login</string>
+    <string name="x_is_required" translatable="false">%1$s is required</string>
+    <string name="regex_invalid" translatable="false">%1$s is invalid, please follow the regex: %2$s</string>
+    <string name="playing_from" translatable="false">Playing From</string>
+    <string name="up_next" translatable="false">Up Next</string>
+    <string name="info" translatable="false">Info</string>
+    <string name="seekbar" translatable="false">Seekbar</string>
+    <string name="shuffle" translatable="false">Shuffle</string>
+    <string name="previous" translatable="false">Previous</string>
+    <string name="play" translatable="false">Play</string>
+    <string name="next" translatable="false">Next</string>
+    <string name="repeat" translatable="false">Repeat</string>
+    <string name="close" translatable="false">Close</string>
+    <string name="no_lyrics" translatable="false">No Lyrics</string>
+    <string name="sleep_timer" translatable="false">Sleep Timer</string>
+    <string name="end_of_track" translatable="false">End of Track</string>
+    <string name="_15min" translatable="false">15m</string>
+    <string name="_30min" translatable="false">30m</string>
+    <string name="_45min" translatable="false">45m</string>
+    <string name="_1hr" translatable="false">1h</string>
+    <string name="_2hr" translatable="false">2h</string>
+    <string name="sleep_timer_desc" translatable="false">Set a sleep timer to stop playback after a certain amount of time</string>
+    <string name="sleep_on_specific_time" translatable="false">Sleep on specific time</string>
+    <string name="sleep_timer_cancelled" translatable="false">Sleep timer cancelled</string>
+    <string name="sleep_timer_set_for" translatable="false">Sleep timer set for %1$s</string>
+    <string name="search_x" translatable="false">Search %1$s</string>
+    <string name="n_hours" translatable="false">%1$d hours</string>
+    <plurals name="number_hour" translatable="false">
         <item quantity="one">%1$d Hour</item>
         <item quantity="other">%1$d Hours</item>
     </plurals>
-    <string name="n_minutes">%1$d minutes</string>
-    <plurals name="number_min">
+    <string name="n_minutes" translatable="false">%1$d minutes</string>
+    <plurals name="number_min" translatable="false">
         <item quantity="one">%1$d Min</item>
         <item quantity="other">%1$d Mins</item>
     </plurals>
-
-    <string name="servers">Servers</string>
-    <string name="sources">Sources</string>
-    <string name="backgrounds">Backgrounds</string>
-    <string name="subtitles">Subtitles</string>
-    <string name="audio_selection">Audio Selection</string>
-    <string name="video_selection">Video Selection</string>
-    <string name="subtitle_selection">Subtitle Selection</string>
-    <string name="quality_selection">Quality Selection</string>
-    <string name="quality_x">Quality %1$d</string>
-    <string name="off">Off</string>
-    <string name="unknown_quality">Unknown Quality</string>
-
+    <string name="servers" translatable="false">Servers</string>
+    <string name="sources" translatable="false">Sources</string>
+    <string name="backgrounds" translatable="false">Backgrounds</string>
+    <string name="subtitles" translatable="false">Subtitles</string>
+    <string name="audio_selection" translatable="false">Audio Selection</string>
+    <string name="video_selection" translatable="false">Video Selection</string>
+    <string name="subtitle_selection" translatable="false">Subtitle Selection</string>
+    <string name="quality_selection" translatable="false">Quality Selection</string>
+    <string name="quality_x" translatable="false">Quality %1$d</string>
+    <string name="off" translatable="false">Off</string>
+    <string name="unknown_quality" translatable="false">Unknown Quality</string>
     <string name="crying_af" translatable="false">;-;</string>
-    <string name="so_empty">So empty…</string>
-    <string name="not_loading">Not Loading</string>
+    <string name="so_empty" translatable="false">So empty…</string>
+    <string name="not_loading" translatable="false">Not Loading</string>
     <string name="n_dot_x" translatable="false">%1$d. %2$s</string>
-
-    <string name="share">Share</string>
-    <string name="sharing_x">Sharing %1$s</string>
-
-    <string name="save_to_library">Save to library</string>
-    <string name="saved_x_to_library">Saved %1$s to library</string>
-    <string name="remove_from_library">Remove from library</string>
-    <string name="removed_x_from_library">Removed %1$s from library</string>
-
-    <string name="radio">Radio</string>
-    <string name="download">Download</string>
-
-    <string name="follow">Follow</string>
-    <string name="following_x">Following %1$s</string>
-    <string name="followed_x">Followed %1$s</string>
-    <string name="unfollow">Unfollow</string>
-    <string name="unfollowing_x">Unfollowing %1$s</string>
-    <string name="unfollowed_x">Unfollowed %1$s</string>
-
-    <string name="liking_x">Liking %1$s</string>
-    <string name="liked_x">Liked %1$s</string>
-    <string name="unliking_x">Unliked %1$s</string>
-    <string name="unliked_x">Unliked %1$s</string>
-
-    <string name="hiding_x">Hiding %1$s</string>
-    <string name="unhiding_x">Unhiding %1$s</string>
-    <string name="hidden_x">Hidden %1$s</string>
-    <string name="unhidden_x">Unhidden %1$s</string>
-
-    <string name="save_to_playlist">Save to playlist</string>
-    <string name="delete_playlist">Delete playlist</string>
-    <string name="add_to_next">Add to next</string>
-    <string name="add_to_queue">Add to queue</string>
-    <string name="loading_radio_for_x">Loading radio for %1$s</string>
-    <string name="playing_x">Playing %1$s</string>
-    <string name="adding_x_to_queue">Adding %1$s to queue</string>
-    <string name="adding_x_to_next">Adding %1$s to next</string>
-    <string name="background_gradient">Background Gradient</string>
-    <string name="background_gradient_summary">A gradient color tint in  background depending on the context</string>
-    <string name="all">All</string>
-    <string name="edit_playlist">Edit Playlist</string>
-    <string name="more_brain_capacity">More Brain Capacity</string>
-    <string name="more_brain_capacity_summary">Enabling this, can help fix audio lag and increase battery usage (Disables the audio offloading).</string>
-
-    <string name="track">Track</string>
-    <string name="tracks">Tracks</string>
-    <string name="sort">Sort</string>
-    <string name="explicit">Explicit</string>
-    <string name="x_plays">%1$s Plays</string>
-    <string name="x_followers">%1$s Followers</string>
-    <string name="n_songs">%1$d Songs</string>
-    <string name="n_episodes">%1$d Episodes</string>
-    <string name="n_chapters">%1$d Chapters</string>
-    <string name="n_tracks">%1$d Tracks</string>
-    <plurals name="number_songs">
+    <string name="share" translatable="false">Share</string>
+    <string name="sharing_x" translatable="false">Sharing %1$s</string>
+    <string name="save_to_library" translatable="false">Save to library</string>
+    <string name="saved_x_to_library" translatable="false">Saved %1$s to library</string>
+    <string name="remove_from_library" translatable="false">Remove from library</string>
+    <string name="removed_x_from_library" translatable="false">Removed %1$s from library</string>
+    <string name="radio" translatable="false">Radio</string>
+    <string name="download" translatable="false">Download</string>
+    <string name="follow" translatable="false">Follow</string>
+    <string name="following_x" translatable="false">Following %1$s</string>
+    <string name="followed_x" translatable="false">Followed %1$s</string>
+    <string name="unfollow" translatable="false">Unfollow</string>
+    <string name="unfollowing_x" translatable="false">Unfollowing %1$s</string>
+    <string name="unfollowed_x" translatable="false">Unfollowed %1$s</string>
+    <string name="liking_x" translatable="false">Liking %1$s</string>
+    <string name="liked_x" translatable="false">Liked %1$s</string>
+    <string name="unliking_x" translatable="false">Unliked %1$s</string>
+    <string name="unliked_x" translatable="false">Unliked %1$s</string>
+    <string name="hiding_x" translatable="false">Hiding %1$s</string>
+    <string name="unhiding_x" translatable="false">Unhiding %1$s</string>
+    <string name="hidden_x" translatable="false">Hidden %1$s</string>
+    <string name="unhidden_x" translatable="false">Unhidden %1$s</string>
+    <string name="save_to_playlist" translatable="false">Save to playlist</string>
+    <string name="delete_playlist" translatable="false">Delete playlist</string>
+    <string name="add_to_next" translatable="false">Add to next</string>
+    <string name="add_to_queue" translatable="false">Add to queue</string>
+    <string name="loading_radio_for_x" translatable="false">Loading radio for %1$s</string>
+    <string name="playing_x" translatable="false">Playing %1$s</string>
+    <string name="adding_x_to_queue" translatable="false">Adding %1$s to queue</string>
+    <string name="adding_x_to_next" translatable="false">Adding %1$s to next</string>
+    <string name="background_gradient" translatable="false">Background Gradient</string>
+    <string name="background_gradient_summary" translatable="false">A gradient color tint in background depending on the context</string>
+    <string name="all" translatable="false">All</string>
+    <string name="edit_playlist" translatable="false">Edit Playlist</string>
+    <string name="more_brain_capacity" translatable="false">More Brain Capacity</string>
+    <string name="more_brain_capacity_summary" translatable="false">Enabling this, can help fix audio lag and increase battery usage (Disables the audio offloading).</string>
+    <string name="track" translatable="false">Track</string>
+    <string name="tracks" translatable="false">Tracks</string>
+    <string name="sort" translatable="false">Sort</string>
+    <string name="explicit" translatable="false">Explicit</string>
+    <string name="x_plays" translatable="false">%1$s Plays</string>
+    <string name="x_followers" translatable="false">%1$s Followers</string>
+    <string name="n_songs" translatable="false">%1$d Songs</string>
+    <string name="n_episodes" translatable="false">%1$d Episodes</string>
+    <string name="n_chapters" translatable="false">%1$d Chapters</string>
+    <string name="n_tracks" translatable="false">%1$d Tracks</string>
+    <plurals name="number_songs" translatable="false">
         <item quantity="one">%1$d Song</item>
         <item quantity="other">%1$d Songs</item>
     </plurals>
-    <plurals name="number_episodes">
+    <plurals name="number_episodes" translatable="false">
         <item quantity="one">%1$d Episode</item>
         <item quantity="other">%1$d Episodes</item>
     </plurals>
-    <plurals name="number_chapters">
+    <plurals name="number_chapters" translatable="false">
         <item quantity="one">%1$d Chapter</item>
         <item quantity="other">%1$d Chapters</item>
     </plurals>
-    <plurals name="number_tracks">
+    <plurals name="number_tracks" translatable="false">
         <item quantity="one">%1$d Track</item>
         <item quantity="other">%1$d Tracks</item>
     </plurals>
-    <string name="shuffling_x">Shuffling %1$s</string>
-    <string name="copying_the_error">Copying the error</string>
-    <string name="sort_and_filter">Sort and Filter</string>
-    <string name="filter">Filter</string>
-    <string name="reversed">Reversed</string>
-    <string name="apply">Apply</string>
-    <string name="save">Save</string>
-    <string name="unsave">Unsave</string>
-    <string name="sort_title">Title</string>
-    <string name="sort_date">Date</string>
-    <string name="sort_date_added">Date Added</string>
-    <string name="sort_duration">Duration</string>
-    <string name="sort_subtitle">Subtitle</string>
-
-    <string name="scroll_animations">Scroll Animations</string>
-    <string name="scroll_animations_summary">Animations when you scroll stuff</string>
-    <string name="delete">Delete</string>
-    <string name="playlist_name">Playlist Name</string>
-    <string name="playlist_description">Playlist Description</string>
-    <string name="create_playlist">Create Playlist</string>
-    <string name="create">Create</string>
-    <string name="add_song">Add Song</string>
-    <string name="creating_x">Creating %1$s</string>
-    <string name="playlist_name_empty">Playlist name is empty</string>
-    <string name="x_created">%1$s created</string>
-    <string name="deleting_x">Deleting %1$s</string>
-    <string name="deleted_x">Deleted %1$s</string>
-    <string name="loading_x">Loading %1s</string>
-    <string name="saving_x">Saving %1$s</string>
-    <string name="saved_to_x">Saved to %1$s</string>
-    <string name="saved_to_playlists">Saved to playlists</string>
-    <string name="selected_n">Selected %1$d</string>
-    <string name="adding_x">Adding %1$s</string>
-    <string name="moving_x">Moving %1$s</string>
-    <string name="removing_x">Removing %1$s</string>
-
-    <string name="no_download_extension">No download extension found, use code \"echodown\" to get it.</string>
-    <string name="nothing_to_download_in_x">Nothing to download in %1$s</string>
-    <string name="download_started">Download Started</string>
-    <string name="merging_x">Merging %1$s</string>
-    <string name="tagging_x">Tagging %1$s</string>
-
-    <string name="apply_player_color_to_app">Apply Player Color to the Entire App</string>
-    <string name="apply_player_color_to_app_summary">LAG ALERT!!!</string>
-    <string name="delete_download">Delete Download</string>
-    <string name="removed_x_from_downloads">Removed %1$s from Downloads</string>
-    <string name="download_complete">Download Complete</string>
-
-    <string name="app_widget_description">Echo on your home screen!</string>
-    <string name="opening_webview_x">Opening Webview: %1$s</string>
-    <string name="no_update_available_for_x">No update available for %1$s</string>
-    <string name="other">Other</string>
-    <string name="player">Player</string>
-    <string name="about">About</string>
-    <string name="language_x">Language: %1$s</string>
-    <string name="guide">Guide</string>
-    <string name="donate">Donate</string>
-    <string name="contributors">Contributors</string>
-    <string name="app_desc">Just a music player.</string>
-    <string name="manage">Manage</string>
-    <string name="no_account">No Account</string>
-    <string name="other_settings">Other Settings</string>
-
-    <string name="no_x_found">No %1$s found</string>
-    <string name="playlist">Playlist</string>
-    <string name="album">Album</string>
-    <string name="pre_release">Pre Release</string>
-    <string name="single">Single</string>
-    <string name="ep">EP</string>
-    <string name="lp">LP</string>
-    <string name="compilation">Compilation</string>
-    <string name="show">Show</string>
-    <string name="book">Book</string>
-    <string name="song">Song</string>
-    <string name="podcast">Podcast</string>
-    <string name="video">Video</string>
-    <string name="isrc_x">ISRC: %1$s</string>
-    <string name="genres_x">Genres: %1$s</string>
-    <string name="disc_number_n">Disc Number: %1$d</string>
-    <string name="album_order_n">Album Order Number: %1$d</string>
-    <string name="confirmation">Confirmation</string>
-    <string name="delete_playlist_confirmation">Are you sure you want to delete %1$s?</string>
-    <string name="confirm">Confirm</string>
-    <string name="big_cover">Bigger Covers</string>
-    <string name="big_cover_summary">Good for devices with larger screens</string>
-    <string name="unhide">Unhide</string>
-    <string name="hide">Hide</string>
-    <string name="no_last_played_track_found">No last played track found.</string>
-    <string name="not_yet_released">Not yet released</string>
-    <string name="releases_on_x">Releases on %1$s</string>
-    <string name="unavailable_in_your_region">Unavailable in your region</string>
-    <string name="not_playable_x">Not playable: %1$s</string>
-
-    <string name="currently_playing">Currently Playing</string>
-    <string name="circle">Circle</string>
-    <string name="horizontal">Horizontal</string>
-    <string name="vertical">Vertical</string>
+    <string name="shuffling_x" translatable="false">Shuffling %1$s</string>
+    <string name="copying_the_error" translatable="false">Copying the error</string>
+    <string name="sort_and_filter" translatable="false">Sort and Filter</string>
+    <string name="filter" translatable="false">Filter</string>
+    <string name="reversed" translatable="false">Reversed</string>
+    <string name="apply" translatable="false">Apply</string>
+    <string name="save" translatable="false">Save</string>
+    <string name="unsave" translatable="false">Unsave</string>
+    <string name="sort_title" translatable="false">Title</string>
+    <string name="sort_date" translatable="false">Date</string>
+    <string name="sort_date_added" translatable="false">Date Added</string>
+    <string name="sort_duration" translatable="false">Duration</string>
+    <string name="sort_subtitle" translatable="false">Subtitle</string>
+    <string name="scroll_animations" translatable="false">Scroll Animations</string>
+    <string name="scroll_animations_summary" translatable="false">Animations when you scroll stuff</string>
+    <string name="delete" translatable="false">Delete</string>
+    <string name="playlist_name" translatable="false">Playlist Name</string>
+    <string name="playlist_description" translatable="false">Playlist Description</string>
+    <string name="create_playlist" translatable="false">Create Playlist</string>
+    <string name="create" translatable="false">Create</string>
+    <string name="add_song" translatable="false">Add Song</string>
+    <string name="creating_x" translatable="false">Creating %1$s</string>
+    <string name="playlist_name_empty" translatable="false">Playlist name is empty</string>
+    <string name="x_created" translatable="false">%1$s created</string>
+    <string name="deleting_x" translatable="false">Deleting %1$s</string>
+    <string name="deleted_x" translatable="false">Deleted %1$s</string>
+    <string name="loading_x" translatable="false">Loading %1s</string>
+    <string name="saving_x" translatable="false">Saving %1$s</string>
+    <string name="saved_to_x" translatable="false">Saved to %1$s</string>
+    <string name="saved_to_playlists" translatable="false">Saved to playlists</string>
+    <string name="selected_n" translatable="false">Selected %1$d</string>
+    <string name="adding_x" translatable="false">Adding %1$s</string>
+    <string name="moving_x" translatable="false">Moving %1$s</string>
+    <string name="removing_x" translatable="false">Removing %1$s</string>
+    <string name="no_download_extension" translatable="false">No download extension found, use code \"echodown\" to get it.</string>
+    <string name="nothing_to_download_in_x" translatable="false">Nothing to download in %1$s</string>
+    <string name="download_started" translatable="false">Download Started</string>
+    <string name="merging_x" translatable="false">Merging %1$s</string>
+    <string name="tagging_x" translatable="false">Tagging %1$s</string>
+    <string name="apply_player_color_to_app" translatable="false">Apply Player Color to the Entire App</string>
+    <string name="apply_player_color_to_app_summary" translatable="false">LAG ALERT!!!</string>
+    <string name="delete_download" translatable="false">Delete Download</string>
+    <string name="removed_x_from_downloads" translatable="false">Removed %1$s from Downloads</string>
+    <string name="download_complete" translatable="false">Download Complete</string>
+    <string name="app_widget_description" translatable="false">Echo on your home screen!</string>
+    <string name="opening_webview_x" translatable="false">Opening Webview: %1$s</string>
+    <string name="no_update_available_for_x" translatable="false">No update available for %1$s</string>
+    <string name="other" translatable="false">Other</string>
+    <string name="player" translatable="false">Player</string>
+    <string name="about" translatable="false">About</string>
+    <string name="language_x" translatable="false">Language: %1$s</string>
+    <string name="guide" translatable="false">Guide</string>
+    <string name="donate" translatable="false">Donate</string>
+    <string name="contributors" translatable="false">Contributors</string>
+    <string name="app_desc" translatable="false">Just a music player.</string>
+    <string name="manage" translatable="false">Manage</string>
+    <string name="no_account" translatable="false">No Account</string>
+    <string name="other_settings" translatable="false">Other Settings</string>
+    <string name="no_x_found" translatable="false">No %1$s found</string>
+    <string name="playlist" translatable="false">Playlist</string>
+    <string name="album" translatable="false">Album</string>
+    <string name="pre_release" translatable="false">Pre Release</string>
+    <string name="single" translatable="false">Single</string>
+    <string name="ep" translatable="false">EP</string>
+    <string name="lp" translatable="false">LP</string>
+    <string name="compilation" translatable="false">Compilation</string>
+    <string name="show" translatable="false">Show</string>
+    <string name="book" translatable="false">Book</string>
+    <string name="song" translatable="false">Song</string>
+    <string name="podcast" translatable="false">Podcast</string>
+    <string name="video" translatable="false">Video</string>
+    <string name="isrc_x" translatable="false">ISRC: %1$s</string>
+    <string name="genres_x" translatable="false">Genres: %1$s</string>
+    <string name="disc_number_n" translatable="false">Disc Number: %1$d</string>
+    <string name="album_order_n" translatable="false">Album Order Number: %1$d</string>
+    <string name="confirmation" translatable="false">Confirmation</string>
+    <string name="delete_playlist_confirmation" translatable="false">Are you sure you want to delete %1$s?</string>
+    <string name="confirm" translatable="false">Confirm</string>
+    <string name="big_cover" translatable="false">Bigger Covers</string>
+    <string name="big_cover_summary" translatable="false">Good for devices with larger screens</string>
+    <string name="unhide" translatable="false">Unhide</string>
+    <string name="hide" translatable="false">Hide</string>
+    <string name="no_last_played_track_found" translatable="false">No last played track found.</string>
+    <string name="not_yet_released" translatable="false">Not yet released</string>
+    <string name="releases_on_x" translatable="false">Releases on %1$s</string>
+    <string name="unavailable_in_your_region" translatable="false">Unavailable in your region</string>
+    <string name="not_playable_x" translatable="false">Not playable: %1$s</string>
+    <string name="currently_playing" translatable="false">Currently Playing</string>
+    <string name="circle" translatable="false">Circle</string>
+    <string name="horizontal" translatable="false">Horizontal</string>
+    <string name="vertical" translatable="false">Vertical</string>
 </resources>
