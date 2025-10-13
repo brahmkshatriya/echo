@@ -237,7 +237,7 @@
     <string name="extension_installed_successfully">Extension installée avec succès.</string>
     <string name="theme">Thème</string>
     <string name="_1hr">1 h</string>
-    <string name="open_links_instruction">Pour autoriser l\'ouverture de ces liens, vous devez :\n- Faire défiler la page vers le bas et cliquer sur \"Ouvrir par défaut\"\n- Cliquer sur \"+ Ajouter un lien\"</string>
+    <string name="open_links_instruction">Pour autoriser l\'ouverture de ces liens, vous devez :\n- Faire défiler la page vers le bas et cliquer sur \"Ouvrir par défaut\"\n- Cliquer sur \"+ Ajouter un lien\"</string>
     <string name="extension_updated_successfully">%1$s mis à jour avec succès</string>
     <string name="add_extensions">Ajouter des Extensions</string>
     <string name="audio_selection">Sélection Audio</string>
