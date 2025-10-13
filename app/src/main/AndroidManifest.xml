@@ -34,21 +34,47 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Default.Theme.Echo"
+        android:theme="@style/Default"
         android:usesCleartextTraffic="true"
         tools:targetApi="33">
         <receiver
-            android:name=".widget.AppWidget"
-            android:exported="false">
+            android:name=".widget.WidgetVertical"
+            android:exported="false"
+            android:label="@string/vertical">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/app_widget_info" />
+                android:resource="@xml/widget_vertical" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.WidgetCircle"
+            android:exported="false"
+            android:label="@string/circle">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_circle" />
+        </receiver>
+        <receiver
+            android:name=".widget.WidgetHorizontal"
+            android:exported="false"
+            android:label="@string/horizontal">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_horizontal" />
         </receiver>
 
         <activity

@@ -82,12 +82,12 @@ open class MainActivity : AppCompatActivity() {
                 amoled && bigCover -> R.style.AmoledBigCover
                 amoled -> R.style.Amoled
                 bigCover -> R.style.BigCover
-                else -> R.style.Default_Theme_Echo
+                else -> R.style.Default
             }
         }
 
         fun Context.defaultColor() =
-            ContextCompat.getColor(this, R.color.ic_launcher_background)
+            ContextCompat.getColor(this, R.color.app_color)
 
         fun Context.isAmoled() = getSettings().getBoolean(AMOLED_KEY, false)
 

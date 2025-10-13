@@ -111,7 +111,6 @@ sealed interface WebViewRequest<T> {
          * Make sure this js code is wrapped in a function
          */
         val javascriptToEvaluateOnPageStart: String?
-            get() = null
 
         /**
          * Called when the webview stops loading a URL with the [stopUrlRegex] and the javascript

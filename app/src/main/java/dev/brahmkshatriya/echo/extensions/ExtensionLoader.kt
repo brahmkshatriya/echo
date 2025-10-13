@@ -29,7 +29,6 @@ import dev.brahmkshatriya.echo.extensions.ExtensionUtils.get
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getOrThrow
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.inject
 import dev.brahmkshatriya.echo.extensions.builtin.offline.OfflineExtension
-import dev.brahmkshatriya.echo.extensions.builtin.test.TestExtension
 import dev.brahmkshatriya.echo.extensions.builtin.unified.UnifiedExtension
 import dev.brahmkshatriya.echo.extensions.db.ExtensionDatabase
 import dev.brahmkshatriya.echo.extensions.db.models.CurrentUser
@@ -79,7 +78,7 @@ class ExtensionLoader(
         scope, app.context, fileIgnoreFlow, parser,
         UnifiedExtension.metadata to unified,
         OfflineExtension.metadata to lazy { OfflineExtension(app.context) },
-        TestExtension.metadata to lazy { TestExtension() },
+//        TestExtension.metadata to lazy { TestExtension() },
 //        DownloadExtension.metadata to lazy { DownloadExtension(app.context) }
 //        TrackerTestExtension.metadata to Injectable { TrackerTestExtension() },
     )

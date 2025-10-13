@@ -7,9 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.os.Build
 import android.os.Bundle
-import android.util.SizeF
 import android.widget.RemoteViews
 import androidx.core.os.bundleOf
 import androidx.media3.common.Player
@@ -24,47 +22,55 @@ import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatOffCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatOneCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.resumeCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.unlikeCommand
-import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getController
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getPendingIntent
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverIndex
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverTracks
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class AppWidget : AppWidgetProvider(), KoinComponent {
+abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
+    abstract val clazz: Class<*>
+    private val key by lazy { clazz.name }
 
-    override fun onUpdate(
-        context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray,
-    ) {
-        updateWidgets(context)
-    }
-
+    private val app by inject<App>()
     override fun onEnabled(context: Context) {
-        updateWidgets(context)
+        println("Widget enabled $this")
+        ControllerHelper.register(app, key) {
+            updateWidgets(app.context)
+        }
     }
 
     override fun onDisabled(context: Context) {
-        controllerCallback?.invoke()
-        controller = null
-        controllerCallback = null
+        println("Widget disabled $this")
+        ControllerHelper.unregister(key)
+    }
+
+    override fun onUpdate(
+        context: Context?, appWidgetManager: AppWidgetManager?, appWidgetIds: IntArray?,
+    ) {
+        println("Widget update ${appWidgetIds?.toList()} $this")
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        ensureController(context ?: return)
+        ControllerHelper.register(app, key) {
+            updateWidgets(app.context)
+        }
+        val controller = ControllerHelper.controller ?: return
+        println("Controller is $controller")
         when (intent?.action) {
-            ACTION_PLAY_PAUSE -> controller?.run {
+            ACTION_PLAY_PAUSE -> controller.run {
                 prepare()
                 playWhenReady = !playWhenReady
             }
 
-            ACTION_PREVIOUS -> controller?.seekToPrevious()
-            ACTION_NEXT -> controller?.seekToNext()
-            ACTION_LIKE -> controller?.sendCustomCommand(likeCommand, Bundle.EMPTY)
-            ACTION_UNLIKE -> controller?.sendCustomCommand(unlikeCommand, Bundle.EMPTY)
-            ACTION_REPEAT -> controller?.sendCustomCommand(repeatCommand, Bundle.EMPTY)
-            ACTION_REPEAT_OFF -> controller?.sendCustomCommand(repeatOffCommand, Bundle.EMPTY)
-            ACTION_REPEAT_ONE -> controller?.sendCustomCommand(repeatOneCommand, Bundle.EMPTY)
-            ACTION_RESUME -> controller?.run {
+            ACTION_PREVIOUS -> controller.seekToPrevious()
+            ACTION_NEXT -> controller.seekToNext()
+            ACTION_LIKE -> controller.sendCustomCommand(likeCommand, Bundle.EMPTY)
+            ACTION_UNLIKE -> controller.sendCustomCommand(unlikeCommand, Bundle.EMPTY)
+            ACTION_REPEAT -> controller.sendCustomCommand(repeatCommand, Bundle.EMPTY)
+            ACTION_REPEAT_OFF -> controller.sendCustomCommand(repeatOffCommand, Bundle.EMPTY)
+            ACTION_REPEAT_ONE -> controller.sendCustomCommand(repeatOneCommand, Bundle.EMPTY)
+            ACTION_RESUME -> controller.run {
                 sendCustomCommand(resumeCommand, bundleOf("cleared" to false))
                 playWhenReady = true
             }
@@ -73,7 +79,6 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
         }
     }
 
-    private val app by inject<App>()
 
     override fun onAppWidgetOptionsChanged(
         context: Context?,
@@ -83,93 +88,53 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
     ) {
         context ?: return
         appWidgetManager ?: return
-        ensureController(context)
-        updateAppWidget(controller, context, appWidgetId, appWidgetManager)
+        ControllerHelper.register(app, key) {
+            updateWidgets(app.context)
+        }
+        val controller = ControllerHelper.controller
+        val image = ControllerHelper.image
+        val views = updatedViews(controller, image, context, appWidgetId)
+        appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
-    private fun ensureController(context: Context) {
-        if (controllerCallback != null) return
-        val listener = WidgetPlayerListener {
-            image = it
-            updateWidgets(context)
-        }
-
-        val callback = getController(app.context) {
-            controller = it
-            listener.controller = it
-            it.addListener(listener)
-            updateWidgets(context)
-        }
-
-        controllerCallback = {
-            listener.removed()
-            callback()
-        }
-    }
-
-    private fun updateWidgets(context: Context) {
-        ensureController(context)
+    fun updateWidgets(context: Context) {
+        val controller = ControllerHelper.controller
+        val image = ControllerHelper.image
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val appWidgetIds = appWidgetManager.getAppWidgetIds(
-            ComponentName(context, AppWidget::class.java)
+            ComponentName(context, clazz)
         )
         appWidgetIds.forEach { appWidgetId ->
-            updateAppWidget(controller, context, appWidgetId, appWidgetManager)
+            val views = updatedViews(controller, image, context, appWidgetId)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
+    abstract fun updatedViews(
+        controller: MediaController?, image: Bitmap?, context: Context, appWidgetId: Int,
+    ): RemoteViews
+
     companion object {
-        private var controller: MediaController? = null
-        private var image: Bitmap? = null
-        private var controllerCallback: (() -> Unit)? = null
+        const val ACTION_PLAY_PAUSE = "dev.brahmkshatriya.echo.widget.PLAY_PAUSE"
+        const val ACTION_PREVIOUS = "dev.brahmkshatriya.echo.widget.PREVIOUS"
+        const val ACTION_NEXT = "dev.brahmkshatriya.echo.widget.NEXT"
+        const val ACTION_LIKE = "dev.brahmkshatriya.echo.widget.LIKE"
+        const val ACTION_UNLIKE = "dev.brahmkshatriya.echo.widget.UNLIKE"
+        const val ACTION_REPEAT = "dev.brahmkshatriya.echo.widget.REPEAT"
+        const val ACTION_REPEAT_OFF = "dev.brahmkshatriya.echo.widget.REPEAT_OFF"
+        const val ACTION_REPEAT_ONE = "dev.brahmkshatriya.echo.widget.REPEAT_ONE"
+        const val ACTION_RESUME = "dev.brahmkshatriya.echo.widget.RESUME"
 
-        private const val ACTION_PLAY_PAUSE = "dev.brahmkshatriya.echo.widget.PLAY_PAUSE"
-        private const val ACTION_PREVIOUS = "dev.brahmkshatriya.echo.widget.PREVIOUS"
-        private const val ACTION_NEXT = "dev.brahmkshatriya.echo.widget.NEXT"
-        private const val ACTION_LIKE = "dev.brahmkshatriya.echo.widget.LIKE"
-        private const val ACTION_UNLIKE = "dev.brahmkshatriya.echo.widget.UNLIKE"
-        private const val ACTION_REPEAT = "dev.brahmkshatriya.echo.widget.REPEAT"
-        private const val ACTION_REPEAT_OFF = "dev.brahmkshatriya.echo.widget.REPEAT_OFF"
-        private const val ACTION_REPEAT_ONE = "dev.brahmkshatriya.echo.widget.REPEAT_ONE"
-        private const val ACTION_RESUME = "dev.brahmkshatriya.echo.widget.RESUME"
-
-        private fun updateAppWidget(
-            controller: MediaController?,
-            context: Context,
-            appWidgetId: Int,
-            appWidgetManager: AppWidgetManager,
-        ) {
-            val packageName = context.packageName
-            val large = RemoteViews(packageName, R.layout.app_widget_large)
-            val medium = RemoteViews(packageName, R.layout.app_widget_medium)
-            val small = RemoteViews(packageName, R.layout.app_widget_small)
-
-            val view = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                updateView(controller, context, small)
-                small
-            } else {
-                val widgetLayout = mapOf(
-                    SizeF(0f, 100f) to small,
-                    SizeF(200f, 100f) to medium,
-                    SizeF(300f, 100f) to large,
-                )
-                widgetLayout.forEach { (_, u) ->
-                    updateView(controller, context, u)
-                }
-                RemoteViews(widgetLayout)
-            }
-
-            appWidgetManager.updateAppWidget(appWidgetId, view)
-        }
-
-        private fun Context.createIntent(action: String) = PendingIntent.getBroadcast(
-            this, 0, Intent(this, AppWidget::class.java).apply {
+        fun Context.createIntent(clazz: Class<*>, action: String) = PendingIntent.getBroadcast(
+            this, 0, Intent(this, clazz).apply {
                 this.action = action
             }, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        )!!
 
-        private fun updateView(
+        fun updateView(
+            clazz: Class<*>,
             controller: MediaController?,
+            image: Bitmap?,
             context: Context,
             views: RemoteViews,
         ) {
@@ -196,6 +161,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
             val isPlaying = if (current != null) controller.playWhenReady else false
             views.setOnClickPendingIntent(
                 R.id.playPauseButton, context.createIntent(
+                    clazz,
                     if (current != null) {
                         if (isPlaying) ACTION_PLAY_PAUSE else ACTION_PLAY_PAUSE
                     } else ACTION_RESUME
@@ -209,7 +175,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
             )
 
             views.setOnClickPendingIntent(
-                R.id.nextButton, context.createIntent(ACTION_NEXT)
+                R.id.nextButton, context.createIntent(clazz, ACTION_NEXT)
             )
             views.setFloat(
                 R.id.nextButton,
@@ -217,7 +183,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
                 if (controller?.hasNextMediaItem() == true) 1f else 0.5f
             )
             views.setOnClickPendingIntent(
-                R.id.previousButton, context.createIntent(ACTION_PREVIOUS)
+                R.id.previousButton, context.createIntent(clazz, ACTION_PREVIOUS)
             )
             views.setFloat(
                 R.id.previousButton,
@@ -227,7 +193,8 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
 
             val isLiked = (item as? MediaState.Loaded)?.isLiked ?: false
             views.setOnClickPendingIntent(
-                R.id.likeButton, context.createIntent(if (isLiked) ACTION_UNLIKE else ACTION_LIKE)
+                R.id.likeButton,
+                context.createIntent(clazz, if (isLiked) ACTION_UNLIKE else ACTION_LIKE)
             )
             views.setImageViewResource(
                 R.id.likeButton,
@@ -237,6 +204,7 @@ class AppWidget : AppWidgetProvider(), KoinComponent {
             val repeatMode = controller?.repeatMode ?: 0
             views.setOnClickPendingIntent(
                 R.id.repeatButton, context.createIntent(
+                    clazz,
                     when (repeatMode) {
                         Player.REPEAT_MODE_OFF -> ACTION_REPEAT
                         Player.REPEAT_MODE_ALL -> ACTION_REPEAT_ONE

@@ -58,7 +58,7 @@ object WebViewUtils {
         progress: LinearProgressIndicator,
         target: WebViewRequest<T>,
         skipTimeout: Boolean,
-        onComplete: suspend (Result<T>?) -> Unit
+        onComplete: suspend (Result<T>?) -> Unit,
     ): OnBackPressedCallback {
         val callback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
@@ -95,10 +95,11 @@ object WebViewUtils {
         callback: OnBackPressedCallback,
         target: WebViewRequest<T>,
         skipTimeout: Boolean,
-        onComplete: suspend (Result<T>?) -> Unit
+        onComplete: suspend (Result<T>?) -> Unit,
     ) {
         val stopRegex = target.stopUrlRegex
-        val interceptRegex = if (target is WebViewRequest.Headers) target.interceptUrlRegex else null
+        val interceptRegex =
+            if (target is WebViewRequest.Headers) target.interceptUrlRegex else null
         val timeout = target.maxTimeout
         val bridge = Bridge()
         val requests = mutableListOf<NetworkRequest>()
@@ -122,8 +123,8 @@ object WebViewUtils {
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 progress.show()
-                if (target !is WebViewRequest.Evaluate) return
                 if (done) return
+                if (target !is WebViewRequest.Evaluate) return
                 target.javascriptToEvaluateOnPageStart?.let { js ->
                     scope.launch {
                         runCatching { evalJS(null, js) }.onFailure {
@@ -139,19 +140,18 @@ object WebViewUtils {
             }
 
             val mutex = Mutex()
-            fun intercept(
-                request: NetworkRequest
-            ) {
+            fun intercept(request: NetworkRequest) {
                 if (target is WebViewRequest.Headers) {
                     if (interceptRegex == null || interceptRegex.matches(request.url)) {
                         requests.add(request)
                     }
                 }
                 if (stopRegex.find(request.url) == null) return
-                done = true
                 timeoutJob?.cancel()
                 scope.launch(Dispatchers.IO) {
                     mutex.withLock {
+                        if (done) return@withLock
+                        done = true
                         onComplete(null)
                         val result = runCatching {
                             val headerRes = if (target is WebViewRequest.Headers)
@@ -177,7 +177,7 @@ object WebViewUtils {
             }
 
             override fun shouldInterceptRequest(
-                view: WebView, webViewRequest: com.acsbendi.requestinspectorwebview.WebViewRequest
+                view: WebView, webViewRequest: com.acsbendi.requestinspectorwebview.WebViewRequest,
             ): WebResourceResponse? {
                 intercept(
                     webViewRequest.run {
@@ -193,7 +193,7 @@ object WebViewUtils {
             }
 
             override fun shouldOverrideUrlLoading(
-                view: WebView?, request: WebResourceRequest?
+                view: WebView?, request: WebResourceRequest?,
             ): Boolean {
                 request?.run {
                     val headers = requestHeaders?.toMutableMap() ?: mutableMapOf()
@@ -225,21 +225,20 @@ object WebViewUtils {
                 it.resumeWithException(Exception("Invalid JS function, must start with async or function"))
                 return@suspendCancellableCoroutine
             }
-
             val newJs = """
-        (function() {
-            try {
-                const fun = $asyncFunction;
-                fun().then((result) => {
-                    ${if (bridge != null) "bridge.putJsResult(result);" else ""}
-                }).catch((error) => {
-                    ${if (bridge != null) "bridge.putJsError(error.message || error.toString());" else ""}
-                });
-            } catch (error) {
-                ${if (bridge != null) "bridge.putJsError(error.message || error.toString());" else ""}
-            }
-        })()
-        """.trimIndent()
+            (function() {
+                try {
+                    const fun = $asyncFunction;
+                    fun().then((result) => {
+                        bridge.putJsResult(result);
+                    }).catch((error) => {
+                        bridge.putJsError(error.message || error.toString());
+                    });
+                } catch (error) {
+                    bridge.putJsError(error.message || error.toString());
+                }
+            })()
+            """.trimIndent()
             evaluateJavascript(newJs, null)
 
             it.invokeOnCancellation {
@@ -249,7 +248,7 @@ object WebViewUtils {
     }
 
     suspend fun WebView.stop(
-        callback: OnBackPressedCallback
+        callback: OnBackPressedCallback,
     ) = withContext(Dispatchers.Main) {
         loadUrl("about:blank")
         callback.isEnabled = false
@@ -312,7 +311,12 @@ object WebViewUtils {
                 removeSelf()
                 return
             }
-            val callback = requireActivity().configure(binding.webview, binding.progress, wrapper.request, false) {
+            val callback = requireActivity().configure(
+                binding.webview,
+                binding.progress,
+                wrapper.request,
+                false
+            ) {
                 webViewClient.responseFlow.emit(wrapper to it)
                 if (it == null) runCatching { removeSelf() }
             }

@@ -71,7 +71,6 @@ class FeedAdapter(
         val list = snapshot().mapNotNull { it }
         val index = list.indexOfFirst { it.id == feed.id }
         if (index == -1) return listOf<Track>() to -1
-        println("list ${list.map { it.type }}")
         val from = list.take(index).indexOfLast { it.type != feed.type }
         val to = list.drop(index + 1).indexOfFirst { it.type != feed.type }
         val feeds = list.subList(from + 1, if (to == -1) list.size else index + to + 1)

@@ -28,7 +28,7 @@ import java.util.Locale
  * @property isrc The IRSC code of the track
  * @property genres The genres of the track
  * @property albumDiscNumber The disc number of the track in the album
- * @property albumOrderNumber The order number of the track in the album
+ * @property albumOrderNumber The order number of the track in the album, if [albumDiscNumber] is not null, this is the order number in that disc
  * @property playlistAddedDate The date when the track was added to a playlist
  * @property isExplicit Whether the track is explicit
  * @property subtitle The subtitle of the track, used to display information under the title

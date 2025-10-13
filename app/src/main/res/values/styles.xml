@@ -201,7 +201,7 @@
         <item name="shapeAppearance">@style/PlayerMoreTopShape</item>
     </style>
 
-    <style name="PlayerTheme" parent="Default.Theme.Echo">
+    <style name="PlayerTheme" parent="Default">
         <item name="colorControlNormal">@color/amoled_fg</item>
         <item name="colorControlActivated">@color/amoled_fg</item>
         <item name="colorControlHighlight">@color/amoled_fg</item>

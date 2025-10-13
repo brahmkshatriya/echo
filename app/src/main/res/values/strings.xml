@@ -189,7 +189,7 @@
 
     <string name="colors">Colors</string>
     <string name="scroll_bar">Scroll Bar</string>
-    <string name="scroll_bar_summary">Scrollbar on the side for faster access (might be gltichy)</string>
+    <string name="scroll_bar_summary">Scrollbar on the side for faster access (might be glitchy)</string>
 
     <string name="animation">Animation</string>
 
@@ -439,4 +439,7 @@
     <string name="not_playable_x">Not playable: %1$s</string>
 
     <string name="currently_playing">Currently Playing</string>
+    <string name="circle">Circle</string>
+    <string name="horizontal">Horizontal</string>
+    <string name="vertical">Vertical</string>
 </resources>

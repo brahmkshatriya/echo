@@ -1,0 +1,85 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_rectangle_cover_profile"
+    android:backgroundTint="#73000000"
+    android:baselineAligned="false"
+    android:theme="@style/Default">
+
+    <FrameLayout
+        android:id="@android:id/background"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="8dp"
+        android:background="@drawable/rounded_rectangle_cover_profile"
+        android:clipToOutline="true"
+        tools:ignore="UnusedAttribute">
+
+        <ImageView
+            android:id="@+id/trackCover"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:background="?navBackground"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            android:src="@drawable/art_music" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/rounded_rectangle_cover_profile"
+            android:backgroundTint="@color/material_dynamic_primary60"
+            android:clipToOutline="true"
+            tools:ignore="UnusedAttribute">
+
+            <ImageView
+                android:id="@+id/previousButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="50dp"
+                android:contentDescription="@string/previous"
+                android:padding="8dp"
+                android:src="@drawable/ic_skip_previous_40dp"
+                android:tint="@color/material_dynamic_primary90"
+                tools:ignore="UseAppTint" />
+
+            <ImageView
+                android:id="@+id/nextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/next"
+                android:padding="8dp"
+                android:src="@drawable/ic_skip_next_40dp"
+                android:tint="@color/material_dynamic_primary90"
+                tools:ignore="UseAppTint" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/playPauseButton"
+            android:layout_width="68dp"
+            android:layout_height="68dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="-3dp"
+            android:layout_marginBottom="-3dp"
+            android:background="@drawable/art_twelve_sided_cookie"
+            android:backgroundTint="@color/material_dynamic_primary40"
+            android:contentDescription="@string/play"
+            android:padding="16dp"
+            android:src="@drawable/ic_play_48dp"
+            android:tint="@color/material_dynamic_primary90"
+            tools:ignore="UseAppTint" />
+    </FrameLayout>
+</LinearLayout>

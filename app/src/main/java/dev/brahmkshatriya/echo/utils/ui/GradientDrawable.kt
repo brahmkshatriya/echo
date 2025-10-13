@@ -88,7 +88,7 @@ object GradientDrawable {
 
                     val primaryOverlay = LinearGradient(
                         0f, 0f, 0f, height.toFloat(),
-                        intArrayOf(ColorUtils.setAlphaComponent(primary, 128), Color.TRANSPARENT),
+                        intArrayOf(ColorUtils.setAlphaComponent(primary, 84), Color.TRANSPARENT),
                         floatArrayOf(0f, 1f),
                         Shader.TileMode.CLAMP
                     )

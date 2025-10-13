@@ -84,7 +84,8 @@ class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) 
             requireActivity().openFragment<DownloadFragment>()
         }
 
-        observe(downloadVM.downloadExtension) { extension ->
+        observe(downloadVM.downloadExtensions) { extensions ->
+            val extension = extensions?.firstOrNull()
             binding.downloadSettings.isEnabled = extension != null
             binding.downloadSettings.setOnClickListener {
                 dismiss()
