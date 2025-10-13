@@ -73,13 +73,13 @@
     <string name="settings">설정</string>
     <string name="value">값</string>
     <string name="value_not_set">설정되지 않음</string>
-    <string name="account_session_expired_in_x">%%%1$s에서 계정 세션이 만료되었습니다</string>
+    <string name="account_session_expired_in_x">%1$s 에서 계정 세션이 만료되었습니다</string>
     <string name="unknown">알 수 없음</string>
     <string name="equalizer">이퀄라이저</string>
     <string name="custom_theme_color_summary">시스템 테마 색상 대신 사용자 정의 테마 색상을 사용합니다.</string>
     <string name="add_color">색상 추가</string>
     <string name="stream_quality">스트리밍 품질</string>
-    <string name="audio_fx_summary">모든 곡에 적용된 효과</string>
+    <string name="audio_fx_summary">모든 곡에 적용되는 효과</string>
     <string name="extension_installer">확장 프로그램 설치 관리자</string>
     <string name="keep_queue_summary">앱을 다시 열면 플레이어 대기열을 복구합니다.</string>
     <string name="installation_type_summary">앱을 설치하면 Echo에서 다음 링크가 열립니다:</string>
@@ -111,7 +111,7 @@
     <string name="skip_silence">무음 건너뛰기</string>
     <string name="auto_start_radio">라디오 자동 시작</string>
     <string name="cache_size">캐시 크기</string>
-    <string name="cache_size_summary">오디오 및 비디오 캐시에 필요한 크기(MB)</string>
+    <string name="cache_size_summary">오디오 및 비디오 캐시 용량 (MB)</string>
     <string name="version">버전</string>
     <string name="install">설치</string>
     <string name="app">앱</string>
@@ -369,4 +369,5 @@
     <string name="book">책</string>
     <string name="isrc_x">ISRC: %1$s</string>
     <string name="album_order_n">앨범 주문 번호: %1$d</string>
+    <string name="currently_playing">현재 재생 중</string>
 </resources>

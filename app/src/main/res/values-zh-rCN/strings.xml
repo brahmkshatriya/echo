@@ -31,7 +31,7 @@
     <string name="songs">歌曲</string>
     <string name="albums">专辑</string>
     <string name="cached_songs">已缓存的歌曲</string>
-    <string name="cache_playlist_warning">实验性特性.不支持收听以外的任何功能.</string>
+    <string name="cache_playlist_warning">实验功能。除了收听之外，不支持任何其他功能。</string>
     <string name="artists">艺术家</string>
     <string name="more_by_x">%1$s 的更多内容</string>
     <string name="saved">已保存</string>
@@ -133,7 +133,7 @@
     <string name="audio_fx_desc">更改当前曲目的音频效果.</string>
     <string name="playback_speed">播放速度</string>
     <string name="change_pitch_with_speed">随着速度改变音调</string>
-    <string name="bass_boost_desc">值过大可能会使声音失真.</string>
+    <string name="bass_boost_desc">较大的值可能会使声音失真。</string>
     <string name="change_pitch_with_speed_desc">获取慢动作声音</string>
     <string name="stream_quality">流媒体质量</string>
     <string name="stream_quality_summary">选择默认的流媒体的质量</string>
@@ -155,7 +155,7 @@
     <string name="theme_summary">想当盲人吗？</string>
     <string name="custom_theme_color">自定义主题颜色</string>
     <string name="custom_theme_color_summary">使用自定义主题颜色，而不是系统主题.</string>
-    <string name="amoled">黑色主题</string>
+    <string name="amoled">纯黑色主题</string>
     <string name="amoled_summary">漆黑，纯黑色</string>
     <string name="navbar_gradient">渐变导航栏</string>
     <string name="navbar_gradient_summary">导航栏逐渐变得透明</string>
@@ -224,7 +224,7 @@
     <string name="all">全部</string>
     <string name="edit_playlist">编辑播放列表</string>
     <string name="more_brain_capacity">提高大脑容量</string>
-    <string name="explicit">显式</string>
+    <string name="explicit">限制级</string>
     <string name="x_plays">%1$s 次播放</string>
     <string name="x_followers">%1$s 位粉丝</string>
     <string name="shuffling_x">正在随机播放 %1$s</string>
@@ -278,7 +278,7 @@
     <string name="save">保存</string>
     <string name="playing_x">正在播放 %1$s</string>
     <string name="x_created">%1$s 已创建</string>
-    <string name="more_brain_capacity_summary">启用此选项可以修复音频延迟，但会大幅增加电池消耗（会禁用音频卸载功能）.</string>
+    <string name="more_brain_capacity_summary">启用此功能可以帮助解决音频延迟并增加电池使用量（禁用音频卸载）。</string>
     <string name="saved_to_x">已保存至 %1$s</string>
     <string name="merging_x">正在合并 %1$s</string>
     <string name="no_download_extension">未找到下载扩展，请使用代码“echodown”获取.</string>
@@ -290,11 +290,11 @@
     <string name="app_widget_description">在你的主屏幕上回响！</string>
     <string name="feed">反馈</string>
     <string name="item">项目</string>
-    <string name="unmetered_stream_quality_summary">当连接到无限制流媒体质量时，将覆盖默认的流媒体质量.</string>
+    <string name="unmetered_stream_quality_summary">连接到不限流量网络时的流媒体质量。这将覆盖默认的流媒体质量。</string>
     <string name="unmetered_stream_quality">无限制流媒体质量</string>
     <string name="select_language">语言选择</string>
     <string name="check_for_updates">检查更新</string>
-    <string name="check_for_updates_summary">当启动软件时，对播放器和扩展进行更新寻查.</string>
+    <string name="check_for_updates_summary">打开应用程序时，查找应用程序和扩展程序的新更新。</string>
     <string name="checking_for_updates">正在检查更新</string>
     <string name="back_animations">返回动画</string>
     <string name="back_animations_summary">由于安卓系统可能会导致视觉错误，你可以通过打开最近记录来修复它.</string>
@@ -323,7 +323,7 @@
     <string name="unsave">不保存</string>
     <string name="sort_date_added">添加日期</string>
     <string name="opening_webview_x">正在打开网页视图: %1$s</string>
-    <string name="no_update_available_for_x">更新不可用 %1$s</string>
+    <string name="no_update_available_for_x">%1$s 无可用更新</string>
     <string name="other">其它的</string>
     <string name="player">播放器</string>
     <string name="about">关于</string>
@@ -339,9 +339,9 @@
     <string name="playlist">播放列表</string>
     <string name="album">专辑</string>
     <string name="pre_release">预发布</string>
-    <string name="single">单一</string>
-    <string name="ep">延伸播放</string>
-    <string name="lp">长播放专辑</string>
+    <string name="single">单曲</string>
+    <string name="ep">迷你专辑</string>
+    <string name="lp">完整专辑</string>
     <string name="compilation">汇集</string>
     <string name="show">显示</string>
     <string name="book">书</string>
@@ -359,14 +359,15 @@
     <string name="no_last_played_track_found">没有找到最近播放歌曲。</string>
     <string name="not_yet_released">未发行</string>
     <string name="releases_on_x">发行在 %1$s</string>
-    <string name="unavailable_in_your_region">该地区不可用</string>
+    <string name="unavailable_in_your_region">您所在地区不可用</string>
     <string name="not_playable_x">不可播放: %1$s</string>
     <plurals name="number_items">
-        <item quantity="other">%1$d 项目</item>
+        <item quantity="other">%1$d 个项目</item>
     </plurals>
-    <string name="x_specific_quality_summary">%1$s 特殊的流媒体质量，将会覆盖系统默认选择的流媒体质量</string>
+    <string name="x_specific_quality_summary">%1$s 特定的流质量，将覆盖默认的流质量选择</string>
     <string name="n_songs">%1$d 首歌曲</string>
     <string name="scroll_bar">滚动栏</string>
     <string name="scroll_bar_summary">侧面的滚动条可加快访问速度（可能会有故障）</string>
     <string name="colors">颜色</string>
+    <string name="currently_playing">当前播放</string>
 </resources>

@@ -131,7 +131,7 @@
     <string name="incognito">Modo anônimo</string>
     <string name="not_logged_in">Não conectado</string>
     <string name="x_login">Login %1$s</string>
-    <string name="x_is_required">$1%s é necessário</string>
+    <string name="x_is_required">%1$s é necessário</string>
     <string name="playing_from">Reproduzindo de</string>
     <string name="up_next">Próximo</string>
     <string name="info">Informação</string>
@@ -297,7 +297,7 @@
     <plurals name="number_items">
         <item quantity="one">%1$d item</item>
         <item quantity="many">%1$d itens</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d itens</item>
     </plurals>
     <string name="x_specific_quality_summary">%1$s qualidade de stream específica, irá substituir a qualidade de stream padrão</string>
     <string name="colors">Cores</string>
@@ -377,4 +377,11 @@
     <string name="releases_on_x">Lançamentos em %1$s</string>
     <string name="unavailable_in_your_region">Não disponível na sua região</string>
     <string name="not_playable_x">Não tocável: %1$s</string>
+    <string name="unmetered_stream_quality">Qualidade de stream não medida</string>
+    <string name="unmetered_stream_quality_summary">A qualidade de stream quando está conectado em uma rede limitada. Isso irá substituir a qualidade de stream padrão.</string>
+    <string name="select_language">­Selecionar linguagem</string>
+    <string name="check_for_updates">Verificar por atualizações</string>
+    <string name="check_for_updates_summary">Olhe por novas atualização para o app e as extensões, quando você abrir o app.</string>
+    <string name="checking_for_updates">Verificando por atualizações</string>
+    <string name="currently_playing">Atualmente tocando</string>
 </resources>

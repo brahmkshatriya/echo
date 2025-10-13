@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="okay">Labi</string>
+    <string name="cancel">Atcelt</string>
+    <string name="back">Atpakaļ</string>
+    <string name="feed">Avots</string>
+    <string name="x_permission_required">Nepieciešama Atļauja %1$s</string>
+    <string name="x_was_not_granted">%1$s netika piešķirta</string>
+    <string name="audio">Audio</string>
+    <string name="audio_permission_summary">Lai piekļūtu lokālajai mūzikas bibliotēkai</string>
+    <string name="read_storage">Lasīt Krātuvi</string>
+    <string name="write_storage">Rakstīt krātuvē</string>
+    <string name="write_storage_permission_summary">Lai izveidotu un rediģētu lokālos atskaņošanas sarakstus</string>
+    <string name="notifications">Paziņojumi</string>
+    <string name="notifications_permission_summary">Lai rādītu paziņojumus par lejupielādēm un mūziku</string>
+    <string name="remove">Noņemt</string>
+    <string name="more_by_x">Vairāk no %1$s</string>
+    <string name="songs">Dziesmas</string>
+    <string name="albums">Albūmi</string>
+    <string name="x_radio">%1$s Radio</string>
+    <string name="cached_songs">Dziesmas Kešatmiņā</string>
+    <string name="cache_playlist_warning">Eksperimentāla Funkcija. Jeb kas, izņemot klausīšanos, nav atbalstīts.</string>
+    <string name="artists">Izpildītāji</string>
+    <string name="recently_added">Nesen Pievienots</string>
+    <string name="refresh_library_on_reload">Atsvaidzināt Bibliotēku pie Atkalielādes</string>
+    <string name="refresh_library_on_reload_summary">Skenēt ierīci katru reizi kad plūsma ir ielādēta</string>
+    <string name="duration_filter">Ilguma Filtrs</string>
+    <string name="duration_filter_summary">Atfiltrēt audio failus, kas garumā (sekundēs) ir īsāki par norādīto vērtību</string>
+    <string name="blacklist_folders">Mapju Melnais Saraksts</string>
+    <string name="blacklist_folders_summary">Mapes, kuras neiekļaut bibliotēkā</string>
+    <string name="blacklist_folder_keywords">Atslēgvārdi Mapju Melnajam Sarakstam</string>
+    <plurals name="number_episodes">
+        <item quantity="zero">%1$d Epizode</item>
+        <item quantity="one">%1$d Epizode</item>
+        <item quantity="other">%1$d Epizodes</item>
+    </plurals>
+    <string name="n_episodes">%1$d Epizodes</string>
+    <plurals name="number_hour">
+        <item quantity="zero">%1$d Stundas</item>
+        <item quantity="one">%1$d Stunda</item>
+        <item quantity="other">%1$d Stundas</item>
+    </plurals>
+    <string name="n_hours">%1$d stundas</string>
+    <plurals name="number_items">
+        <item quantity="zero">%1$d Elementi</item>
+        <item quantity="one">%1$d Elements</item>
+        <item quantity="other">%1$d Elementi</item>
+    </plurals>
+    <string name="n_items">%1$d Elementi</string>
+    <plurals name="number_min">
+        <item quantity="zero">%1$d Minūtes</item>
+        <item quantity="one">%1$d Minūte</item>
+        <item quantity="other">%1$d Minūtes</item>
+    </plurals>
+    <string name="n_minutes">%1$d minūtes</string>
+    <plurals name="number_songs">
+        <item quantity="zero">%1$d Dziesmas</item>
+        <item quantity="one">%1$d Dziesma</item>
+        <item quantity="other">%1$d Dziesmas</item>
+    </plurals>
+    <string name="n_songs">%1$d Dziesmas</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="okay">OK</string>
+    <string name="cancel">Batal</string>
+    <string name="back">Balik</string>
+    <string name="songs">Lagu</string>
+    <string name="albums">Album</string>
+    <string name="artists">Penyanyi</string>
+    <string name="audio">Audio</string>
+    <string name="feed">Saluran Suapan</string>
+    <string name="x_permission_required">%1$s Kebenaran Diperlukan</string>
+    <string name="x_was_not_granted">%1$s tidak diberikan</string>
+    <string name="audio_permission_summary">Untuk mengakses pustaka muzik tempatan anda</string>
+    <string name="read_storage">Baca Storan</string>
+    <string name="write_storage">Tulis Storan</string>
+    <string name="write_storage_permission_summary">Untuk membuat dan mengedit senarai main tempatan</string>
+    <string name="notifications">Pemberitahuan</string>
+    <string name="notifications_permission_summary">Untuk menunjukkan pemberitahuan untuk muat turun dan muzik</string>
+    <string name="remove">Buang</string>
+    <string name="more_by_x">Bergerak oleh %1$s</string>
+    <string name="x_radio">%1$s Radio</string>
+    <string name="cached_songs">Lagu Cache</string>
+    <string name="cache_playlist_warning">Ciri Percubaan. Apa-apa kecuali mendengar mereka tidak disokong.</string>
+    <string name="recently_added">Baru Ditambah</string>
+    <string name="refresh_library_on_reload">Muat semula Pustaka pada Muat Semula</string>
+    <string name="refresh_library_on_reload_summary">Imbas peranti setiap kali saluran suapan dimuatkan</string>
+    <string name="duration_filter">Penapis Tempoh</string>
+    <string name="duration_filter_summary">Tapis audio dengan tempoh (dalam saat) kurang daripada nilai</string>
+    <string name="blacklist_folders">Senarai Hitam Folder</string>
+    <string name="blacklist_folders_summary">Folder untuk dikecualikan daripada perpustakaan</string>
+    <string name="blacklist_folder_keywords">Kata Kunci Folder Senarai Hitam</string>
+    <string name="blacklist_folder_keywords_summary">Kata kunci untuk menyenaraihitamkan folder, gunakan koma untuk pemisah</string>
+    <string name="saved">Disimpan</string>
+    <string name="tabs">Tab</string>
+    <string name="show_tabs">Tunjukkan Tab</string>
+    <string name="show_tab_summary">akan menunjukkan tab sambungan sebagai kategori</string>
+    <string name="unified_liked_playlist_summary">Your liked tracks from various extensions</string>
+</resources>

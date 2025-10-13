@@ -401,4 +401,8 @@
     <string name="misc">متنوع</string>
     <string name="x_extensions">امتدادات %1$s</string>
     <string name="x_extension">امتداد %1$s</string>
+    <string name="colors">الألوان</string>
+    <string name="scroll_bar">شريط التمرير</string>
+    <string name="scroll_bar_summary">شريط التمرير على الجانب للوصول بشكل أسرع (قد يكون به خلل)</string>
+    <string name="currently_playing">اللعب حاليا</string>
 </resources>

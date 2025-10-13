@@ -376,4 +376,5 @@
     <string name="scroll_bar_summary">Side mein scrollbar jaldi access ke liye (shayad glitchy ho sakta hai)</string>
     <string name="scroll_bar">Scroll Bar</string>
     <string name="colors">Rango</string>
+    <string name="currently_playing">Abhi baj raha</string>
 </resources>

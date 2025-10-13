@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="okay">باشه</string>
+    <string name="cancel">لغو</string>
+    <string name="back">بازگشت</string>
+    <string name="notifications">اعلان</string>
+    <string name="remove">حذف</string>
+    <string name="more_by_x">بیشتر از %1$s</string>
+    <string name="songs">اهنگ ها</string>
+    <string name="albums">البوم ها</string>
+    <string name="x_radio">رادیو %1$s</string>
+</resources>

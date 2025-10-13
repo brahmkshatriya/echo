@@ -31,7 +31,7 @@
     <string name="more_by_x">Plus par %1$s</string>
     <string name="songs">Chansons</string>
     <string name="albums">Albums</string>
-    <string name="x_radio">Radio %1$s</string>
+    <string name="x_radio">%1$s Radio</string>
     <string name="cached_songs">Chansons Mises en Cache</string>
     <string name="artists">Artistes</string>
     <string name="recently_added">Ajouts Récents</string>
@@ -217,7 +217,7 @@
     <string name="library">Bibliothèque</string>
     <string name="playlist_liked">Aimés</string>
     <string name="extensions">Extensions</string>
-    <string name="home">Acceuil</string>
+    <string name="home">Accueil</string>
     <string name="settings">Paramètres</string>
     <string name="bass_boost">Amplification des Basses</string>
     <string name="by_x">Par %1$s</string>
@@ -383,4 +383,5 @@
     <string name="colors">Couleurs</string>
     <string name="scroll_bar">Barre de Défilement</string>
     <string name="scroll_bar_summary">Barre de défilement sur le côté pour un accès plus rapide (peut être bugé)</string>
+    <string name="currently_playing">En cours de Lecture</string>
 </resources>
