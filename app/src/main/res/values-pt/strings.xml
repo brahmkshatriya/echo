@@ -380,4 +380,15 @@
     <string name="no_last_played_track_found">Nenhum faixa ultimamente tocada encontrada.</string>
     <string name="not_yet_released">Ainda não lançado</string>
     <string name="releases_on_x">Lançamentos em %1$s</string>
+    <string name="horizontal" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="scroll_bar" translatable="false"></string>
+    <string name="circle" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="scroll_bar_summary" translatable="false"></string>
+    <string name="vertical" translatable="false"></string>
+    <string name="app_name" translatable="false"></string>
+    <string name="currently_playing" translatable="false"></string>
+    <string name="colors" translatable="false"></string>
 </resources>
