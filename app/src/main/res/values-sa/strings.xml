@@ -377,4 +377,11 @@
     <string name="unavailable_in_your_region">भवतः प्रदेशे अनुपलब्धम्</string>
     <string name="not_playable_x">न क्रीडनीयम्: %1$s</string>
     <string name="currently_playing">सम्प्रति क्रीडति</string>
+    <string name="horizontal" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="circle" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <string name="vertical" translatable="false"></string>
+    <string name="app_name" translatable="false"></string>
 </resources>
