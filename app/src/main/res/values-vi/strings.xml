@@ -348,4 +348,33 @@
     <string name="releases_on_x">Phát hành vào %1$s</string>
     <string name="unavailable_in_your_region">Không khả dụng ở khu vực của bạn</string>
     <string name="not_playable_x">Không thể phát: %1$s</string>
+    <string name="horizontal" translatable="false"></string>
+    <string name="app_github_repo" translatable="false"></string>
+    <string name="tracker" translatable="false"></string>
+    <string name="n_chapters" translatable="false"></string>
+    <string name="more_brain_capacity" translatable="false"></string>
+    <string name="animations_summary" translatable="false"></string>
+    <string name="explicit" translatable="false"></string>
+    <string name="n_tracks" translatable="false"></string>
+    <string name="n_dot_x" translatable="false"></string>
+    <string name="circle" translatable="false"></string>
+    <plurals name="number_episodes" translatable="false">
+        <item quantity="other"></item>
+    </plurals>
+    <string name="x_plays" translatable="false"></string>
+    <string name="crying_af" translatable="false"></string>
+    <plurals name="number_chapters" translatable="false">
+        <item quantity="other"></item>
+    </plurals>
+    <string name="change_pitch_with_speed_desc" translatable="false"></string>
+    <string name="not_loading" translatable="false"></string>
+    <string name="webview" translatable="false"></string>
+    <string name="ep" translatable="false"></string>
+    <string name="vertical" translatable="false"></string>
+    <string name="lp" translatable="false"></string>
+    <string name="app_name" translatable="false"></string>
+    <string name="n_episodes" translatable="false"></string>
+    <plurals name="number_tracks" translatable="false">
+        <item quantity="other"></item>
+    </plurals>
 </resources>
