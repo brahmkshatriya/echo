@@ -389,6 +389,9 @@
     <string name="n_songs">%1$d Пісні</string>
     <string name="colors">Кольори</string>
     <string name="scroll_bar">Смуга прокручування</string>
-    <string name="scroll_bar_summary">Смуга прокрутки збоку для швидшого доступу (можливо, незрозуміло)</string>
+    <string name="scroll_bar_summary">Смуга прокрутки збоку для швидшого доступу (можливо, збої)</string>
     <string name="currently_playing">Зараз грає</string>
+    <string name="circle" translatable="false">Коло</string>
+    <string name="horizontal" translatable="false">Горизонтальний</string>
+    <string name="vertical" translatable="false">Вертикальний</string>
 </resources>
