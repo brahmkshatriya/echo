@@ -52,6 +52,7 @@ media3-hls = { module = "androidx.media3:media3-exoplayer-hls", version.ref = "m
 
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
+coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 
 pikolo = { module = "com.github.madrapps:pikolo", version = "2.0.2" }
@@ -76,7 +77,7 @@ paging = ["paging-common", "paging-runtime"]
 room = ["room-runtime", "room-ktx"]
 koin = ["koin-androidx-startup", "koin-android", "koin-androidx-workmanager"]
 media3 = ["media3-exoplayer", "media3-session", "media3-ui", "media3-dash", "media3-hls"]
-coil = ["coil", "coil-gif", "coil-network-okhttp"]
+coil = ["coil", "coil-gif", "coil-svg", "coil-network-okhttp"]
 kotlinx = ["kotlinx-serialization-json", "kotlinx-coroutines-core"]
 firebase = ["firebase-analytics", "firebase-crashlytics"]
 
