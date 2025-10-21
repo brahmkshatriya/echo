@@ -21,7 +21,7 @@
     <plurals name="number_min">
         <item quantity="one">%1$d Minuto</item>
         <item quantity="many">%1$d Minuti</item>
-        <item quantity="other" />
+        <item quantity="other"/>
     </plurals>
     <string name="cache_playlist_warning">Funzione sperimentale. Solo l\'ascolto di essi è supportato.</string>
     <string name="x_permission_required">Permessi %1$s richiesti</string>
@@ -290,6 +290,6 @@
     <plurals name="number_hour">
         <item quantity="one">%1$d Ora</item>
         <item quantity="many">%1$d Ore</item>
-        <item quantity="other" />
+        <item quantity="other"/>
     </plurals>
 </resources>
