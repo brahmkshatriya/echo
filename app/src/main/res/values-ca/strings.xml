@@ -1,3 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">D\'acord</string>
+    <string name="cancel">Cancel·lar</string>
+    <string name="back">Torna</string>
+    <string name="feed">Transmissió</string>
+    <string name="x_permission_required">Es requereix permís de %1$s</string>
+    <string name="x_was_not_granted">No s\'ha concedit %1$s</string>
+    <string name="audio">Àudio</string>
+    <string name="audio_permission_summary">Per poder llegir la vostra llibreria de música</string>
+    <string name="read_storage">Llegir l\'emmagatzematge</string>
+    <string name="write_storage">Escriure a l\'emmagatzematge</string>
+    <string name="write_storage_permission_summary">Per poder crear i editar llistes de reproducció locals</string>
+    <string name="notifications">Notificacions</string>
+    <string name="notifications_permission_summary">Per poder mostrar notificacions descàrregues i música</string>
+    <string name="remove">Eliminar</string>
+    <string name="more_by_x">Més de %1$s</string>
+    <string name="songs">Cançons</string>
+    <string name="albums">Àlbums</string>
+    <string name="x_radio">Ràdio de %1$s</string>
+    <string name="cached_songs">Cançons en memòria cau</string>
+    <string name="cache_playlist_warning">Funcionalitat experimental. Només es permet escoltar-les.</string>
+    <string name="artists">Artistes</string>
+    <string name="recently_added">Afegits recentment</string>
+    <string name="refresh_library_on_reload">Actualitza la llibreria al recarregar</string>
+    <string name="refresh_library_on_reload_summary">Examina el dispositiu quan la font es carrega</string>
+    <string name="duration_filter">Filtre de durada</string>
+    <string name="duration_filter_summary">Filtra els fitxers d\'àudio amb una durada (en segons) inferior al valor especificat</string>
+    <string name="blacklist_folders">Carpetes ignorades</string>
+    <string name="blacklist_folders_summary">Carpetes a excloure de la llibreria</string>
 </resources>
