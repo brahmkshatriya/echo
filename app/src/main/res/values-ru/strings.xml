@@ -271,7 +271,7 @@
     <string name="liked_x">Понравилось %1$s</string>
     <string name="keep_queue_summary">Восстанавливать очередь воспроизведения при повторном открытии приложения.</string>
     <string name="save_to_playlist">Сохранить в плейлист</string>
-    <string name="x_extension">Расширение %1$s</string>
+    <string name="x_extension">Расширение: %1$s</string>
     <string name="sort_and_filter">Сортировка и фильтрация</string>
     <string name="sort_date">Дата</string>
     <string name="auto_start_radio_summary">Автоматически добавлять связанные песни трека в плейлист для бесконечной очереди</string>
