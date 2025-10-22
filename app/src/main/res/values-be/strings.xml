@@ -1,3 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">Ок</string>
+    <string name="cancel">Адхіліць</string>
+    <string name="back">Назад</string>
+    <string name="feed">Рэкамендацыі</string>
+    <string name="x_permission_required">Неабходна пашырэнне %1$s</string>
+    <string name="x_was_not_granted">%1$s не была выдадзена</string>
+    <string name="audio">Аўдыё</string>
+    <string name="audio_permission_summary">Каб атрымаць доступ да Вашай лакальнай музычнай бібліятэкі</string>
+    <string name="read_storage">Чытанне сховішча</string>
+    <string name="write_storage">Запіс у сховішча</string>
+    <string name="write_storage_permission_summary">Каб ствараць і рэдагаваць лакальныя плейлісты</string>
+    <string name="notifications">Апавяшчэнні</string>
+    <string name="notifications_permission_summary">Каб паказваць апавяшчэнні для спамповак і музыкі</string>
+    <string name="remove">Убраць</string>
+    <string name="more_by_x">Больш ад %1$s</string>
+    <string name="songs">Песні</string>
+    <string name="albums">Альбомы</string>
+    <string name="x_radio">%1$s Радыё</string>
+    <string name="cached_songs">Кэшаваныя песні</string>
+    <string name="cache_playlist_warning">Эксперыментальная функцыя. Даступна толькі праслухоўванне.</string>
+    <string name="artists">Выканаўцы</string>
+    <string name="recently_added">Нядаўна даданы</string>
+    <string name="refresh_library_on_reload">Абнаўляць бібліятэку пры перазагрузке</string>
+    <string name="refresh_library_on_reload_summary">Сканіраваць прыладу пры кожнай загрузке рэкамендацый</string>
+    <string name="duration_filter">Фільтр по працягласці</string>
+    <string name="duration_filter_summary">Фільтраваць аудыё-файлы з працягласцю меньш зазначанай (у секундах)</string>
+    <string name="blacklist_folders">Чорны спіс папак</string>
+    <string name="blacklist_folders_summary">Папкі, якія трэба выключыць з бібліятэкі</string>
 </resources>
