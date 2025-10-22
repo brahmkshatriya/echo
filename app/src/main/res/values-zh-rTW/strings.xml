@@ -66,7 +66,7 @@
     <string name="stop_player">停止玩家</string>
     <string name="stop_player_summary">當應用程式從最近使用的應用程式中移除時停止播放器</string>
     <string name="skip_silence">跳過無聲</string>
-    <string name="skip_silence_summary">跳過歌曲中的靜音部分，以提供無縫播放</string>
+    <string name="skip_silence_summary">跳過歌曲中的靜音部分，以提供無縫播放。</string>
     <string name="auto_start_radio">自動啟動無線電</string>
     <string name="auto_start_radio_summary">自動在播放清單中新增曲目的相關歌曲，以形成無限佇列</string>
     <string name="cache_size">快取大小</string>
@@ -97,7 +97,7 @@
     <string name="theme">主題</string>
     <string name="theme_summary">想當盲人嗎？</string>
     <string name="custom_theme_color">自訂主題顏色</string>
-    <string name="custom_theme_color_summary">使用自訂主題顏色，而不是系統顏色</string>
+    <string name="custom_theme_color_summary">使用自訂主題顏色，而不是系統顏色。</string>
     <string name="add_color">新增顏色</string>
     <string name="custom_colors">自訂顏色</string>
     <string name="amoled">純黑色主題</string>
@@ -203,7 +203,7 @@
     <string name="x_extension">%1$s 擴展</string>
     <string name="select_x_account">選擇 %1$s 帳戶</string>
     <string name="error_updating_extension">更新時出錯</string>
-    <string name="x_is_required">需要 $1%s</string>
+    <string name="x_is_required">需要 %1$s</string>
     <string name="sleep_timer_cancelled">休眠定時器已取消</string>
     <plurals name="number_min">
         <item quantity="other">%1$d 最小值</item>
@@ -280,7 +280,7 @@
     <string name="read_storage">讀取存儲</string>
     <string name="write_storage_permission_summary">創建和編輯本地播放清單</string>
     <string name="notifications_permission_summary">顯示下載和音樂通知</string>
-    <string name="repeat_off">Repeat Off</string>
+    <string name="repeat_off">重複播放關閉</string>
     <string name="x_login_required">需要登錄 %1$s</string>
     <string name="value_not_set">未設置</string>
     <string name="creating_x">正在建立 %1$s</string>
@@ -291,4 +291,81 @@
     <string name="removed_x_from_downloads">已從下載中刪除 %1$s</string>
     <string name="download_complete">下載完整</string>
     <string name="app_widget_description">在您的主螢幕上回聲！</string>
+    <string name="feed">動態</string>
+    <string name="item">項目</string>
+    <plurals name="number_items">
+        <item quantity="other">%1$d 個項目</item>
+    </plurals>
+    <string name="x_specific_quality_summary">為「%1$s」指定的串流品質，將會覆蓋預設的串流品質設定</string>
+    <string name="unmetered_stream_quality">不計流量的串流品質</string>
+    <string name="unmetered_stream_quality_summary">當連線至不計流量的網路時所使用的串流品質，此設定將會覆蓋預設的串流品質。</string>
+    <string name="select_language">選擇語言</string>
+    <string name="check_for_updates">檢查更新</string>
+    <string name="check_for_updates_summary">開啟應用程式時，檢查應用程式及擴充功能的最新版本。</string>
+    <string name="checking_for_updates">正在檢查更新</string>
+    <string name="back_animations">返回動畫</string>
+    <string name="back_animations_summary">可能因 Android 系統導致畫面異常，但可開啟「最近使用的應用程式」修復。</string>
+    <string name="regex_invalid">%1$s 無效，請依照正則表達式：%2$s</string>
+    <string name="n_hours">%1$d 小時</string>
+    <string name="n_minutes">%1$d 分鐘</string>
+    <string name="hidden_x">已隱藏：%1$s</string>
+    <string name="unhidden_x">已取消隱藏：%1$s</string>
+    <string name="track">曲目</string>
+    <string name="tracks">曲目</string>
+    <string name="n_episodes">%1$d 專輯</string>
+    <string name="n_chapters">%1$d 章</string>
+    <string name="n_tracks">%1$d 個曲目</string>
+    <string name="unsave">取消儲存</string>
+    <string name="sort_date_added">新增日期</string>
+    <string name="opening_webview_x">正在開啟內嵌網頁：%1$s</string>
+    <string name="no_update_available_for_x">「%1$s」目前已是最新版本</string>
+    <string name="other">其他</string>
+    <string name="player">播放器</string>
+    <string name="about">關於</string>
+    <string name="language_x">語言：%1$s</string>
+    <string name="guide">使用指南</string>
+    <string name="donate">贊助</string>
+    <string name="contributors">貢獻者</string>
+    <string name="app_desc">輕量且開源的音樂播放器。</string>
+    <string name="manage">管理</string>
+    <string name="no_account">沒有帳號</string>
+    <string name="other_settings">其他設定</string>
+    <string name="no_x_found">找不到：%1$s</string>
+    <string name="playlist">播放清單</string>
+    <string name="album">專輯</string>
+    <string name="pre_release">預發行</string>
+    <string name="single">單曲</string>
+    <string name="ep">EP</string>
+    <string name="lp">LP</string>
+    <string name="compilation">合輯</string>
+    <string name="show">節目</string>
+    <string name="book">書籍</string>
+    <string name="song">歌曲</string>
+    <string name="podcast">Podcast</string>
+    <string name="isrc_x">ISRC：%1$s</string>
+    <string name="genres_x">類別：%1$s</string>
+    <string name="disc_number_n">碟片編號：%1$d</string>
+    <string name="album_order_n">專輯順序：%1$d</string>
+    <string name="confirmation">確認</string>
+    <string name="delete_playlist_confirmation">確定要刪除 %1$s 嗎？</string>
+    <string name="confirm">確定</string>
+    <string name="big_cover">大封面</string>
+    <string name="big_cover_summary">適合大螢幕裝置</string>
+    <string name="no_last_played_track_found">找不到上次播放的曲目。</string>
+    <string name="not_yet_released">尚未發行</string>
+    <string name="releases_on_x">將於 %1$s 發行</string>
+    <string name="unavailable_in_your_region">你的地區無法使用</string>
+    <string name="not_playable_x">無法播放：%1$s</string>
+    <plurals name="number_songs">
+        <item quantity="other">%1$d 歌曲</item>
+    </plurals>
+    <plurals name="number_episodes">
+        <item quantity="other">%1$d 專輯</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="other">%1$d 個章節</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="other">%1$d 個曲目</item>
+    </plurals>
 </resources>
