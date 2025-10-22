@@ -256,7 +256,7 @@
         <item quantity="other">%1$d песен</item>
     </plurals>
     <string name="apply_player_color_to_app">Применить цвет проигрывателя ко всему приложению</string>
-    <string name="apply_player_color_to_app_summary">ВОЗМОЖНЫ ЗАДЕРЖКИ!!</string>
+    <string name="apply_player_color_to_app_summary">ПРЕДУПРЕЖДЕНИЕ О ЗАДЕРЖКАХ!!</string>
     <string name="look_and_feel">Внешний вид и ощущения</string>
     <string name="invalid_extension_list">Недопустимый список расширений</string>
     <string name="open_links_instruction">Чтобы разрешить открытие этих ссылок, Вам необходимо:\n- Прокрутить вниз и нажать «Открыть по умолчанию».\n- Нажать на «+ Добавить ссылку»</string>
