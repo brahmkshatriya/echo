@@ -88,7 +88,7 @@
     <string name="close">Закрыть</string>
     <string name="no_lyrics">Нет текста песни</string>
     <string name="sleep_timer">Таймер сна</string>
-    <string name="end_of_track">По окончании трека</string>
+    <string name="end_of_track">Конец трека</string>
     <string name="_45min">45 мин.</string>
     <string name="_15min">15 мин.</string>
     <string name="_1hr">1 ч.</string>
@@ -138,7 +138,7 @@
     <string name="audio_fx_desc">Изменить аудиоэффекты для текущего трека.</string>
     <string name="_30min">30 мин.</string>
     <string name="playlist_description">Описание плейлиста</string>
-    <string name="create_playlist">Создайте плейлист</string>
+    <string name="create_playlist">Создать плейлист</string>
     <string name="add_song">Добавить песню</string>
     <string name="loading_x">Загрузка %1s</string>
     <string name="moving_x">Перемещение %1$s</string>
