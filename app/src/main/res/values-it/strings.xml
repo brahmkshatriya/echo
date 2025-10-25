@@ -292,4 +292,10 @@
         <item quantity="many">%1$d Ore</item>
         <item quantity="other"/>
     </plurals>
+    <string name="item">Elemento</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d Elemento</item>
+        <item quantity="many">%1$d Elementi</item>
+        <item quantity="other">%1$d Elementi</item>
+    </plurals>
 </resources>
