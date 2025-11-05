@@ -249,10 +249,6 @@
     <string name="sort_title">Titel</string>
     <string name="sort_date">Datum</string>
     <string name="sort_duration">Dauer</string>
-    <string name="sort_artist">Künstler</string>
-    <string name="sort_album">Album</string>
-    <string name="sort_plays">Theaterstücke</string>
-    <string name="sort_explicit">Explizit</string>
     <string name="scroll_animations">Scroll-Animationen</string>
     <string name="scroll_animations_summary">Animationen beim Scrollen</string>
     <string name="sort_subtitle">Untertitel</string>
@@ -294,4 +290,46 @@
     <string name="removed_x_from_downloads">%1$s aus Downloads entfernt</string>
     <string name="download_complete">Download Komplett</string>
     <string name="app_widget_description">Echo auf Ihrem Startbildschirm!</string>
+    <string name="feed">Feed</string>
+    <string name="item">Eintrag</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d Eintrag</item>
+        <item quantity="other">%1$d Einträge</item>
+    </plurals>
+    <string name="x_specific_quality_summary">Die spezifische Stream-Qualität von %1$s überschreibt die Standardauswahl für die Stream-Qualität</string>
+    <string name="unmetered_stream_quality">Unbegrenzte Stream-Qualität</string>
+    <string name="unmetered_stream_quality_summary">Die Qualität des Streams, wenn du mit einen getaktete Netzwerk bist. Dies wird deine Standard Stream-Qualität überschreiben.</string>
+    <string name="select_language">Wähle eine Sprache</string>
+    <string name="check_for_updates">Prüfe auf Updates</string>
+    <string name="check_for_updates_summary">Prüfe auf neue Updates für die App und Erweiterungen, wenn du die App öffnest.</string>
+    <string name="checking_for_updates">Prüfe auf Updates</string>
+    <string name="back_animations">Rückkehr Animationen</string>
+    <string name="back_animations_summary">Kann aufgrund von Android zu einem visuellen Fehler führen, aber du kannst einfach die zuletzt verwendeten Apps öffnen, um das Problem zu beheben.</string>
+    <string name="regex_invalid">%1$s ist ungültig, bitte halte dich an folgendes Regex Schema: %2$s</string>
+    <string name="n_hours">%1$d Stunden</string>
+    <string name="n_minutes">%1$d Minuten</string>
+    <string name="hidden_x">%1$s ausgeblendet</string>
+    <string name="unhidden_x">%1$s eingeblendet</string>
+    <string name="track">Lied</string>
+    <string name="tracks">Lieder</string>
+    <string name="n_songs">%1$d Lied</string>
+    <string name="n_episodes">%1$d Episoden</string>
+    <string name="n_chapters">%1$d Kapitel</string>
+    <string name="n_tracks">%1$d Lieder</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d Lied</item>
+        <item quantity="other">%1$d Lieder</item>
+    </plurals>
+    <plurals name="number_episodes">
+        <item quantity="one">%1$d Episode</item>
+        <item quantity="other">%1$d Episoden</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one">%1$d Kapitel</item>
+        <item quantity="other">%1$d Kapitel</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one">%1$d Lied</item>
+        <item quantity="other">%1$d Lieder</item>
+    </plurals>
 </resources>
