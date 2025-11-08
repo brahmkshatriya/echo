@@ -292,4 +292,19 @@
     <string name="selected_n">%1$d Sélectionnées</string>
     <string name="unhiding_x">Démasquage de %1$s</string>
     <string name="apply_player_color_to_app">Appliquer la couleur du Lecteur à l\'ensemble de l\'application</string>
+    <string name="feed">Flux</string>
+    <string name="item">Élément</string>
+    <plurals name="number_items">
+        <item quantity="one">Élément</item>
+        <item quantity="many">Éléments</item>
+        <item quantity="other">Éléments</item>
+    </plurals>
+    <string name="x_specific_quality_summary">La qualité %1$s écrasera la qualité sélectionnée par défaut</string>
+    <string name="unmetered_stream_quality">Qualité sur réseau illimité</string>
+    <string name="unmetered_stream_quality_summary">Qualité lors de la connexion à un réseau sans limite de bande passante. Ce paramètre remplacera la qualité par défaut.</string>
+    <string name="select_language">Changer de langue</string>
+    <string name="check_for_updates">Vérifier les mises à jour</string>
+    <string name="check_for_updates_summary">Recherchez les mises à jour de l\'application et des extensions lorsque vous ouvrez l\'application.</string>
+    <string name="checking_for_updates">Recherche de mises à jour</string>
+    <string name="back_animations">Animation de retour</string>
 </resources>
