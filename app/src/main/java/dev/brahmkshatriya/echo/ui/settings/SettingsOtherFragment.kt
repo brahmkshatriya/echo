@@ -57,7 +57,10 @@ class SettingsOtherFragment : BaseSettingsFragment() {
                 isIconSpaceReserved = false
                 screen.addPreference(this)
                 setOnPreferenceClickListener {
-                    context.exportSettings()
+                    val contract = ActivityResultContracts.CreateDocument("application/json")
+                    requireActivity().registerActivityResultLauncher(contract) { uri ->
+                        uri?.let { context.exportSettings(it) }
+                    }.launch("echo-settings.json")
                     true
                 }
             }

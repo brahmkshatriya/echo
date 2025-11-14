@@ -37,7 +37,6 @@ import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.exportExtensionSettings
 import dev.brahmkshatriya.echo.utils.importExtensionSettings
-import dev.brahmkshatriya.echo.utils.importSettings
 import dev.brahmkshatriya.echo.utils.ui.prefs.LoadingPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialMultipleChoicePreference
@@ -178,7 +177,12 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                     isIconSpaceReserved = false
                     screen.addPreference(this)
                     setOnPreferenceClickListener {
-                        context.exportExtensionSettings(extensionType, extensionId)
+                        val contract = ActivityResultContracts.CreateDocument("application/json")
+                        requireActivity().registerActivityResultLauncher(contract) { uri ->
+                            uri?.let {
+                                context.exportExtensionSettings(extensionType, extensionId, it)
+                            }
+                        }.launch("echo-$extensionType-$extensionId-settings.json".lowercase())
                         true
                     }
                 }
