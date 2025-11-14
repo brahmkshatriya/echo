@@ -442,4 +442,9 @@
     <string name="circle">Circle</string>
     <string name="horizontal">Horizontal</string>
     <string name="vertical">Vertical</string>
+    <string name="export_settings">Export Settings</string>
+    <string name="export_settings_summary">Export settings to a file</string>
+    <string name="exported_to">Exported to %1$s</string>
+    <string name="import_settings">Import Settings</string>
+    <string name="import_settings_summary">Import settings from a file</string>
 </resources>

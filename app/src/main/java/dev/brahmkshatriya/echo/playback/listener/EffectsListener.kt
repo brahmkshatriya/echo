@@ -102,7 +102,7 @@ class EffectsListener(
     }
 
     companion object {
-        private const val GLOBAL_FX = "global_fx"
+        const val GLOBAL_FX = "global_fx"
         const val BASS_BOOST = "bass_boost"
         const val PLAYBACK_SPEED = "playback_speed"
         val speedRange = listOf(

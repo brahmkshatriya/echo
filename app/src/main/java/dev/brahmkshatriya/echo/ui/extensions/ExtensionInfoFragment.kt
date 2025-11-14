@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -31,8 +32,12 @@ import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
 import dev.brahmkshatriya.echo.ui.settings.BaseSettingsFragment
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
+import dev.brahmkshatriya.echo.utils.PermsUtils.registerActivityResultLauncher
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
+import dev.brahmkshatriya.echo.utils.exportExtensionSettings
+import dev.brahmkshatriya.echo.utils.importExtensionSettings
+import dev.brahmkshatriya.echo.utils.importSettings
 import dev.brahmkshatriya.echo.utils.ui.prefs.LoadingPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialListPreference
 import dev.brahmkshatriya.echo.utils.ui.prefs.MaterialMultipleChoicePreference
@@ -165,6 +170,37 @@ class ExtensionInfoFragment : BaseSettingsFragment() {
                 }
                 state.settings.forEach { it.addPreferenceTo(screen) }
 
+                TransitionPreference(context).apply {
+                    key = "export"
+                    title = getString(R.string.export_settings)
+                    summary = getString(R.string.export_settings_summary)
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+                    screen.addPreference(this)
+                    setOnPreferenceClickListener {
+                        context.exportExtensionSettings(extensionType, extensionId)
+                        true
+                    }
+                }
+
+                TransitionPreference(context).apply {
+                    key = "import"
+                    title = getString(R.string.import_settings)
+                    summary = getString(R.string.import_settings_summary)
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+                    screen.addPreference(this)
+                    setOnPreferenceClickListener {
+                        val contract = ActivityResultContracts.OpenDocument()
+                        requireActivity().registerActivityResultLauncher(contract) {
+                            it?.let {
+                                context.importExtensionSettings(extensionType, extensionId, it)
+                                requireActivity().recreate()
+                            }
+                        }.launch(arrayOf("application/json"))
+                        true
+                    }
+                }
             }
         }
 
