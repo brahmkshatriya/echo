@@ -28,4 +28,5 @@
     <string name="duration_filter_summary">Фільтраваць аудыё-файлы з працягласцю меньш зазначанай (у секундах)</string>
     <string name="blacklist_folders">Чорны спіс папак</string>
     <string name="blacklist_folders_summary">Папкі, якія трэба выключыць з бібліятэкі</string>
+    <string name="show">Шоў</string>
 </resources>
