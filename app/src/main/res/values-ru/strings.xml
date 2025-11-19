@@ -13,7 +13,7 @@
     <string name="cached_songs">Кэшированные песни</string>
     <string name="recently_added">Недавно добавленные</string>
     <string name="show_tabs">Показывать вкладки</string>
-    <string name="remove">Удалить</string>
+    <string name="remove">Убрать</string>
     <string name="artists">Исполнители</string>
     <string name="okay">Ок</string>
     <string name="write_storage_permission_summary">Необходимо, чтобы создавать или редактировать локальные плейлисты</string>
