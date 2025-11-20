@@ -239,7 +239,7 @@
     <string name="more_brain_capacity">Più Materia Grigia</string>
     <string name="sort">Ordina</string>
     <string name="explicit">Esplicito</string>
-    <string name="more_brain_capacity_summary">Abilitando questa opzione, è possibile correggere il ritardo audio, ma aumenta drasticamente l\'utilizzo della batteria (disabilita lo scaricamento dell\'audio).</string>
+    <string name="more_brain_capacity_summary">Abilitare questa opzione può correggere il ritardo audio, ma aumenta l\'utilizzo della batteria (disabilita la decodifica hardware dell\'audio).</string>
     <string name="x_plays">%1$s Ascolti</string>
     <string name="x_followers">%1$s Seguiti</string>
     <string name="shuffling_x">Riproduzione Casuale di %1$s</string>
@@ -298,4 +298,16 @@
         <item quantity="many">%1$d Elementi</item>
         <item quantity="other">%1$d Elementi</item>
     </plurals>
+    <string name="x_specific_quality_summary">Qualità dello streaming specifica di %1$s, sovrascriverà la selezione predefinita della qualità dello streaming</string>
+    <string name="unmetered_stream_quality">Qualità dello streaming su reti non a consumo</string>
+    <string name="unmetered_stream_quality_summary">La qualità dello streaming quando ci si connette a una rete non soggetta a limiti di traffico. Questo sovrascriverà la qualità di streaming predefinita.</string>
+    <string name="select_language">Seleziona Lingua</string>
+    <string name="check_for_updates">Controlla aggiornamenti</string>
+    <string name="check_for_updates_summary">Cerca nuovi aggiornamenti, sia per l\'app che per le estensioni, all’apertura dell’app.</string>
+    <string name="checking_for_updates">Controllo degli aggiornamenti in corso</string>
+    <string name="back_animations_summary">Può causare errori visivi a causa di Android, ma è sufficiente aprire i Recenti per risolverlo.</string>
+    <string name="feed">Feed</string>
+    <string name="back_animations">Animazioni Indietro</string>
+    <string name="track">Traccia</string>
+    <string name="tracks">Tracce</string>
 </resources>
