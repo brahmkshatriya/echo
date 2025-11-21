@@ -275,7 +275,7 @@
     <string name="more_brain_capacity_summary">Einen Aktivierung kann die Audioverzögerung auf Kosten des Akkuverbrauchs beheben. (Deaktiviert das Audio-Offloading).</string>
     <string name="unknown_quality">Unbekannte Qualität</string>
     <string name="video_selection">Video-Auswahl</string>
-    <string name="adding_x_to_next">Hinzufügen von %1$s zum nächsten</string>
+    <string name="adding_x_to_next">%1$s zur Warteschlange hinzufügen</string>
     <string name="filter">Filter</string>
     <string name="delete">Löschen</string>
     <string name="delete_download">Heruntergeladenes löschen</string>
@@ -362,4 +362,7 @@
     <string name="not_playable_x">Nicht abspielbar: %1$s</string>
     <string name="player">Spieler</string>
     <string name="genres_x">Genres: %1$s</string>
+    <string name="followed_x">%1$s gefolgt</string>
+    <string name="unfollowing_x">%1$s entfolgt</string>
+    <string name="unfollowed_x">%1$s nicht mehr gefolgt</string>
 </resources>
