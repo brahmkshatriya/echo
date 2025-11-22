@@ -1,3 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="back">رجوع</string>
+    <string name="x_permission_required">مطلوب إذن</string>
+    <string name="x_was_not_granted">لم يتم منح %1$s</string>
+    <string name="audio">الصوت</string>
+    <string name="audio_permission_summary">للوصول إلى مكتبة الموسيقى المحلية</string>
+    <string name="read_storage">قراءة التخزين</string>
+    <string name="write_storage">كتابة التخزين</string>
+    <string name="write_storage_permission_summary">لإنشاء قوائم تشغيل محلية وتحريرها</string>
+    <string name="notifications">الاشعارات</string>
+    <string name="notifications_permission_summary">لإظهار إشعارات التنزيلات والموسيقى</string>
+    <string name="remove">إزالة</string>
+    <string name="more_by_x">المزيد بواسطة %1$s</string>
+    <string name="songs">اغاني</string>
+    <string name="albums">البومات</string>
+    <string name="x_radio">راديو %1$s</string>
+    <string name="cached_songs">الأغاني المخزنة مؤقتًا</string>
+    <string name="cache_playlist_warning">ميزة تجريبية. أي شيء باستثناء الاستماع إليها غير مدعوم.</string>
+    <string name="artists">الفنان</string>
+    <string name="recently_added">اضيف مأخرا</string>
+    <string name="refresh_library_on_reload">تحديث المكتبة عند إعادة التحميل</string>
+    <string name="refresh_library_on_reload_summary">امسح الجهاز في كل مرة يتم فيها تحميل الخلاصة</string>
+    <string name="duration_filter">فلتر المدة</string>
 </resources>
