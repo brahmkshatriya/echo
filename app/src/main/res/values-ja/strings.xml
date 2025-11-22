@@ -81,4 +81,9 @@
     <string name="blacklist_folder_keywords_summary">フォルダを除外するためのキーワードをコンマ区切りで入力してください</string>
     <string name="show_tab_summary">拡張機能をカテゴリータブで表示</string>
     <string name="duration_filter">音楽ファイルの長さで絞り込む</string>
+    <string name="feed">フィード</string>
+    <string name="more_by_x">%1$sの他の作品</string>
+    <string name="refresh_library_on_reload_summary">フィードが読み込まれるたびにデバイスをスキャンします</string>
+    <string name="n_items">%1$d 個のアイテム</string>
+    <string name="item">アイテム</string>
 </resources>
