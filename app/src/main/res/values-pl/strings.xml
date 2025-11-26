@@ -264,4 +264,67 @@
     <string name="sort">Sortować</string>
     <string name="explicit">Wyraźny</string>
     <string name="x_plays">%1$s Odtworzeń</string>
+    <string name="x_followers">%1$s Obserwujących</string>
+    <string name="n_songs">%1$d Piosenek</string>
+    <string name="n_episodes">%1$d Odcinków</string>
+    <string name="n_chapters">%1$d Rozdziałów</string>
+    <string name="n_tracks">%1$d Ścieżek</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d Piosenka</item>
+        <item quantity="few">%1$d Piosenki</item>
+        <item quantity="many">%1$d Piosenek</item>
+        <item quantity="other">%1$d Piosenek</item>
+    </plurals>
+    <plurals name="number_episodes">
+        <item quantity="one">%1$d Odcinek</item>
+        <item quantity="few">%1$d Odcinki</item>
+        <item quantity="many">%1$d Odcinków</item>
+        <item quantity="other">%1$d Odcinków</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one">%1$d Rozdział</item>
+        <item quantity="few">%1$d Rozdziały</item>
+        <item quantity="many">%1$d Rozdziałów</item>
+        <item quantity="other">%1$d Rozdziałów</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one">%1$d Ścieżka</item>
+        <item quantity="few">%1$d Ścieżki</item>
+        <item quantity="many">%1$d Ścieżek</item>
+        <item quantity="other">%1$d Ścieżek</item>
+    </plurals>
+    <string name="shuffling_x">Losowe %1$s</string>
+    <string name="copying_the_error">Kopiowanie błędu</string>
+    <string name="sort_and_filter">Sortowanie i filtrowanie</string>
+    <string name="filter">Filtr</string>
+    <string name="reversed">Odwrócony</string>
+    <string name="apply">Zastosować</string>
+    <string name="save">Zapisz</string>
+    <string name="unsave">Anulować zapisanie</string>
+    <string name="sort_title">Tytuł</string>
+    <string name="sort_date">Data</string>
+    <string name="sort_date_added">Data dodana</string>
+    <string name="sort_duration">Czas trwania</string>
+    <string name="sort_subtitle">Napis</string>
+    <string name="scroll_animations">Animacje przewijania</string>
+    <string name="scroll_animations_summary">Animacje podczas przewijania elementów</string>
+    <string name="delete">Usuń</string>
+    <string name="playlist_name">Nazwa listy odtwarzania</string>
+    <string name="playlist_description">Opis listy odtwarzania</string>
+    <string name="create_playlist">Utwórz listę odtwarzania</string>
+    <string name="create">Twórz</string>
+    <string name="add_song">Dodaj piosenkę</string>
+    <string name="creating_x">Tworzenie %1$s</string>
+    <string name="playlist_name_empty">Nazwa listy odtwarzania jest pusta</string>
+    <string name="x_created">%1$s Stworzona</string>
+    <string name="deleting_x">Usuwanie %1$s</string>
+    <string name="deleted_x">Usunięto %1$s</string>
+    <string name="loading_x">Ładowanie %1s</string>
+    <string name="saving_x">Zapisywanie %1$s</string>
+    <string name="saved_to_x">Zapisano w %1$s</string>
+    <string name="saved_to_playlists">Zapisano na liście odtwarzania</string>
+    <string name="selected_n">Wybrano %1$d</string>
+    <string name="adding_x">Dodawanie %1$s</string>
+    <string name="moving_x">Przesuwanie %1$s</string>
+    <string name="removing_x">Usuwanie %1$s</string>
 </resources>
