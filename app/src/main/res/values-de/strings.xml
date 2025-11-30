@@ -365,4 +365,8 @@
     <string name="followed_x">%1$s gefolgt</string>
     <string name="unfollowing_x">%1$s entfolgt</string>
     <string name="unfollowed_x">%1$s nicht mehr gefolgt</string>
+    <string name="following_x">Folgen%1$s</string>
+    <string name="liking_x">Liken%1$s</string>
+    <string name="liked_x">Gefällt mir%1$s</string>
+    <string name="unliking_x">Gefällt mir nicht mehr%1$s</string>
 </resources>
