@@ -245,13 +245,19 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
 
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = coroutineScope {
         val hasPremium = hasPremium()
+        val isLoggedIn = api.cookie != null
+        if (!isLoggedIn) throw ClientException.LoginRequired()
         val canvas =
             if (showCanvas) async { queries.canvas(track.id).json.toStreamable() } else null
-        queries.metadata4Track(track.id).json.toTrack(
-            hasPremium, api.cookie != null, showWidevineStreams, canvas?.await()
+        val result = queries.metadata4Track(track.id).json.toTrack(
+            hasPremium, isLoggedIn, showWidevineStreams, canvas?.await()
         ).copy(
             isExplicit = track.isExplicit
         )
+        if (result.streamables.isEmpty()) {
+            throw Exception("No playable streams found for this track. This may be due to regional restrictions or the track being unavailable.")
+        }
+        result
     }
 
     private suspend fun createRadio(id: String): Radio {
