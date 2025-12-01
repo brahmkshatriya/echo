@@ -69,10 +69,13 @@ jobs:
         working-directory: spotify-extension
         run: ./gradlew :app:assembleRelease
         
-      - name: Rename to .eapk
+      - name: Sign and rename to .eapk
         run: |
           mkdir -p output
-          cp spotify-extension/app/build/outputs/apk/release/*.apk output/spotify-extension.eapk
+          # Generate debug keystore
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Debug, OU=Debug, O=Debug, L=Debug, ST=Debug, C=US"
+          # Sign the APK
+          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner sign --ks debug.keystore --ks-pass pass:android --key-pass pass:android --out output/spotify-extension.eapk spotify-extension/app/build/outputs/apk/release/*.apk
           
       - name: Upload Spotify Extension
         uses: actions/upload-artifact@v4
