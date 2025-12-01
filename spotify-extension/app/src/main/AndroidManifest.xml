@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="${type}" />
+
+    <application
+        android:icon="@mipmap/ic_launcher"
+        android:label="${app_name}">
+        <meta-data
+            android:name="class"
+            android:value="${class_path}" />
+        <meta-data
+            android:name="id"
+            android:value="${id}" />
+
+        <meta-data
+            android:name="version_code"
+            android:value="${version_code}" />
+        <meta-data
+            android:name="version"
+            android:value="${version}" />
+
+        <meta-data
+            android:name="icon_url"
+            android:value="${icon_url}" />
+        <meta-data
+            android:name="name"
+            android:value="${name}" />
+        <meta-data
+            android:name="description"
+            android:value="${description}" />
+
+        <meta-data
+            android:name="author"
+            android:value="${author}" />
+        <meta-data
+            android:name="author_url"
+            android:value="${author_url}" />
+
+        <meta-data
+            android:name="repo_url"
+            android:value="${repo_url}" />
+        <meta-data
+            android:name="update_url"
+            android:value="${update_url}" />
+    </application>
+</manifest>

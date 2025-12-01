@@ -1,0 +1,114 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - echo-app
+          - spotify-extension
+          - both
+
+jobs:
+  build-echo-app:
+    name: Build Echo App
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || inputs.release_type == 'echo-app' || inputs.release_type == 'both' }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
+      - name: Build Release APK
+        run: ./gradlew :app:assembleRelease
+        
+      - name: Upload Echo APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: echo-app
+          path: app/build/outputs/apk/release/*.apk
+
+  build-spotify-extension:
+    name: Build Spotify Extension
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || inputs.release_type == 'spotify-extension' || inputs.release_type == 'both' }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        
+      - name: Grant execute permission for gradlew
+        working-directory: spotify-extension
+        run: chmod +x gradlew
+        
+      - name: Build Extension APK
+        working-directory: spotify-extension
+        run: ./gradlew :app:assembleRelease
+        
+      - name: Rename to .eapk
+        run: |
+          mkdir -p output
+          cp spotify-extension/app/build/outputs/apk/release/*.apk output/spotify-extension.eapk
+          
+      - name: Upload Spotify Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotify-extension
+          path: output/spotify-extension.eapk
+
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-echo-app, build-spotify-extension]
+    if: ${{ always() && (needs.build-echo-app.result == 'success' || needs.build-spotify-extension.result == 'success') }}
+    permissions:
+      contents: write
+    steps:
+      - name: Download Echo App
+        if: ${{ needs.build-echo-app.result == 'success' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: echo-app
+          path: ./releases/echo
+          
+      - name: Download Spotify Extension
+        if: ${{ needs.build-spotify-extension.result == 'success' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: spotify-extension
+          path: ./releases/extension
+          
+      - name: List files
+        run: find ./releases -type f
+        
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ./releases/**/*
+          generate_release_notes: true
