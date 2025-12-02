@@ -369,7 +369,7 @@
     <string name="no_update_available_for_x">Нет доступных обновлений для %1$s</string>
     <string name="other">Другое</string>
     <string name="no_x_found">%1$s не найдено</string>
-    <string name="show">Показать</string>
+    <string name="show">Шоу</string>
     <string name="book">Книга</string>
     <string name="disc_number_n">Номер диска: %1$d</string>
     <string name="confirmation">Подтверждение</string>
