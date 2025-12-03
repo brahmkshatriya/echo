@@ -1,3 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">Bine</string>
+    <string name="cancel">Anulează</string>
+    <string name="back">Înapoi</string>
+    <string name="feed">Pagina principala</string>
+    <string name="x_permission_required">Necesită Permisiune</string>
 </resources>
