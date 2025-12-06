@@ -21,7 +21,7 @@
     <plurals name="number_min">
         <item quantity="one">%1$d Minuto</item>
         <item quantity="many">%1$d Minuti</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d minuti</item>
     </plurals>
     <string name="cache_playlist_warning">Funzione sperimentale. Solo l\'ascolto di essi è supportato.</string>
     <string name="x_permission_required">Permessi %1$s richiesti</string>
@@ -132,13 +132,13 @@
     <string name="ui">Interfaccia</string>
     <string name="theme_summary">Vuoi perdere la vista?</string>
     <string name="custom_theme_color">Colore Tema Personalizzato</string>
-    <string name="custom_theme_color_summary">Usa un colore del tema personalizzato, invece di quello di sistema</string>
+    <string name="custom_theme_color_summary">Usa un colore del tema personalizzato, invece di quello di sistema.</string>
     <string name="add_color">Aggiungi colore</string>
     <string name="custom_colors">Colori personalizzati</string>
-    <string name="amoled">AMOLED</string>
+    <string name="amoled">Amoled</string>
     <string name="amoled_summary">Sostituisci il colore di sfondo con il nero pesto. Utile per gli schermi AMOLED per ridurre il consumo della batteria e prevenire il burn-in dello schermo</string>
     <string name="navbar_gradient">Barra di Navigazione con Trasparenza Graduale</string>
-    <string name="navbar_gradient_summary">La barra di navigazione diventa via via trasparente</string>
+    <string name="navbar_gradient_summary">La barra di navigazione diventa gradualmente trasparente</string>
     <string name="dynamic_player_summary">Il colore del player si adatta automaticamente alla copertina del brano</string>
     <string name="dynamic_player">Colore Dinamico nel Player</string>
     <string name="show_background">Mostra Sfondo</string>
@@ -167,7 +167,7 @@
     <string name="incognito">Incognito</string>
     <string name="not_logged_in">Accesso non eseguito</string>
     <string name="x_login">Accedi a %1$s</string>
-    <string name="x_is_required">$1%s è necessario</string>
+    <string name="x_is_required">%1$s è necessario</string>
     <string name="playing_from">In riproduzione da</string>
     <string name="up_next">Prossimi</string>
     <string name="info">Info</string>
@@ -285,12 +285,12 @@
     <string name="download_complete">Download Completato</string>
     <string name="extension">Estensione</string>
     <string name="bass_boost_desc">Valori troppo elevati possono distorcere l\'audio.</string>
-    <string name="skip_silence_summary">Salta la parte silenziosa del brano, per fornire una riproduzione senza interruzioni</string>
+    <string name="skip_silence_summary">Salta la parte silenziosa del brano, per fornire una riproduzione senza interruzioni.</string>
     <string name="seekbar">Barra di avanzamento</string>
     <plurals name="number_hour">
         <item quantity="one">%1$d Ora</item>
         <item quantity="many">%1$d Ore</item>
-        <item quantity="other"/>
+        <item quantity="other">%1$d Ore</item>
     </plurals>
     <string name="item">Elemento</string>
     <plurals name="number_items">
@@ -310,4 +310,74 @@
     <string name="back_animations">Animazioni Indietro</string>
     <string name="track">Traccia</string>
     <string name="tracks">Tracce</string>
+    <string name="regex_invalid">%1$s è invalido, perfavore segui il regex: %2$s</string>
+    <string name="n_hours">%1$d ore</string>
+    <string name="n_minutes">%1$d minuti</string>
+    <string name="hidden_x">%1$s nascosto</string>
+    <string name="unhidden_x">Mostrato %1$s</string>
+    <string name="n_songs">%1$d Canzoni</string>
+    <string name="n_episodes">%1$d Episodi</string>
+    <string name="n_chapters">%1$d Capitoli</string>
+    <string name="n_tracks">%1$d Tracce</string>
+    <plurals name="number_songs">
+        <item quantity="one">%1$d Brano</item>
+        <item quantity="many">%1$d Brani</item>
+        <item quantity="other">%1$d Brani</item>
+    </plurals>
+    <plurals name="number_episodes">
+        <item quantity="one">%1$d Episodio</item>
+        <item quantity="many">%1$d Episodi</item>
+        <item quantity="other">%1$d Episodi</item>
+    </plurals>
+    <plurals name="number_chapters">
+        <item quantity="one">%1$d Capitolo</item>
+        <item quantity="many">%1$d Capitoli</item>
+        <item quantity="other">%1$d Capitoli</item>
+    </plurals>
+    <plurals name="number_tracks">
+        <item quantity="one">%1$d Traccia</item>
+        <item quantity="many">%1$d Tracce</item>
+        <item quantity="other">%1$d Tracce</item>
+    </plurals>
+    <string name="unsave">Cancella</string>
+    <string name="sort_date_added">Data aggiunta</string>
+    <string name="no_update_available_for_x">Nessun aggiornamento disponibile per %1$s</string>
+    <string name="other">Altro</string>
+    <string name="about">Noi</string>
+    <string name="language_x">Lingua %1$s</string>
+    <string name="guide">Guida</string>
+    <string name="donate">Dona</string>
+    <string name="contributors">Contribuenti</string>
+    <string name="app_desc">Un app mer ascoltare musica.</string>
+    <string name="manage">Gestisci</string>
+    <string name="no_account">Nessun Account</string>
+    <string name="other_settings">Altre impostazioni</string>
+    <string name="no_x_found">%1$s non trovato</string>
+    <string name="playlist">Playlist</string>
+    <string name="album">Album</string>
+    <string name="pre_release">Pre Rilascio</string>
+    <string name="single">Singolo</string>
+    <string name="ep">EP</string>
+    <string name="lp">LP</string>
+    <string name="compilation">Compilazione</string>
+    <string name="show">Mostra</string>
+    <string name="book">Libro</string>
+    <string name="song">Canzone</string>
+    <string name="podcast">Podcast</string>
+    <string name="genres_x">Generi: %1$s</string>
+    <string name="disc_number_n">Disco numero: %1$d</string>
+    <string name="album_order_n">Numero d\'ordine nell\'album: %1$d</string>
+    <string name="confirmation">Comferma</string>
+    <string name="delete_playlist_confirmation">Sei sicuro di voler eliminare %1$s?</string>
+    <string name="confirm">Conferma</string>
+    <string name="big_cover">Cover più grandi</string>
+    <string name="big_cover_summary">Adatto per dispositivi con schermi grandi</string>
+    <string name="no_last_played_track_found">Non è stata trovata l\'ultima traccia riprodotta.</string>
+    <string name="not_yet_released">Non ancora rilasciato</string>
+    <string name="releases_on_x">Rilascio il %1$s</string>
+    <string name="unavailable_in_your_region">Non disponibile nella tua regione</string>
+    <string name="not_playable_x">Impossibile riprodurre: %1$s</string>
+    <string name="opening_webview_x">Apertura Webwiew: %1$s</string>
+    <string name="player">Lettore</string>
+    <string name="isrc_x">ISRC: %1$s</string>
 </resources>
