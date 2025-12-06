@@ -57,6 +57,7 @@ import dev.brahmkshatriya.echo.extension.spotify.models.Metadata4Track.Format.MP
 import dev.brahmkshatriya.echo.extension.spotify.models.Metadata4Track.Format.OGG_VORBIS_160
 import dev.brahmkshatriya.echo.extension.spotify.models.Metadata4Track.Format.OGG_VORBIS_320
 import dev.brahmkshatriya.echo.extension.spotify.models.Metadata4Track.Format.OGG_VORBIS_96
+import dev.brahmkshatriya.echo.extension.show
 import dev.brahmkshatriya.echo.extension.spotify.models.UserProfileView
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -253,22 +254,54 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         val metadata = queries.metadata4Track(track.id)
         val metadataJson = metadata.json
         
-        // Debug: Check what files are available
-        val availableFiles = metadataJson.file?.map { "${it.format?.name}" } ?: emptyList()
-        val alternativeFiles = metadataJson.alternative?.firstOrNull()?.file?.map { "${it.format?.name}" } ?: emptyList()
+        // Debug: Check what files are available from API
+        val mainFiles = metadataJson.file ?: emptyList()
+        val altFiles = metadataJson.alternative?.firstOrNull()?.file ?: emptyList()
+        val allFiles = mainFiles.ifEmpty { altFiles }
+        
+        val availableFormats = allFiles.mapNotNull { it.format?.name }
+        val hasFileId = allFiles.any { it.fileId != null }
+        
+        // Show which formats would pass the filter
+        val passedFormats = allFiles.filter { file ->
+            val format = file.format ?: return@filter false
+            file.fileId != null && format.show(hasPremium, isLoggedIn, showWidevineStreams)
+        }.mapNotNull { it.format?.name }
         
         val result = metadataJson.toTrack(
             hasPremium, isLoggedIn, showWidevineStreams, canvas?.await()
         ).copy(
             isExplicit = track.isExplicit
         )
-        if (result.streamables.isEmpty()) {
+        
+        // Count audio streamables (exclude canvas/background)
+        val audioStreamables = result.streamables.filter { it.type == Streamable.MediaType.Server }
+        
+        if (audioStreamables.isEmpty()) {
             val debugInfo = buildString {
-                appendLine("No playable streams found.")
-                appendLine("hasPremium=$hasPremium, isLoggedIn=$isLoggedIn, showWidevineStreams=$showWidevineStreams")
-                appendLine("Available file formats: $availableFiles")
-                appendLine("Alternative file formats: $alternativeFiles")
-                appendLine("Track may be unavailable in your region or restricted.")
+                appendLine("=== AUDIO STREAM DEBUG ===")
+                appendLine("hasPremium=$hasPremium")
+                appendLine("isLoggedIn=$isLoggedIn")
+                appendLine("showWidevineStreams=$showWidevineStreams")
+                appendLine("")
+                appendLine("Files from API: ${allFiles.size}")
+                appendLine("Available formats: $availableFormats")
+                appendLine("Has fileId: $hasFileId")
+                appendLine("Formats that passed filter: $passedFormats")
+                appendLine("")
+                appendLine("Track metadata gid: ${metadataJson.gid}")
+                appendLine("Track name: ${metadataJson.name}")
+                appendLine("")
+                if (allFiles.isEmpty()) {
+                    appendLine("ERROR: Spotify API returned NO audio files!")
+                    appendLine("This could mean:")
+                    appendLine("- Track is region-restricted")
+                    appendLine("- Track requires premium")
+                    appendLine("- API authentication issue")
+                } else if (passedFormats.isEmpty()) {
+                    appendLine("ERROR: No formats passed the filter!")
+                    appendLine("All formats were filtered out by Format.show()")
+                }
             }
             throw Exception(debugInfo)
         }
