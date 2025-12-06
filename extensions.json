@@ -4,6 +4,6 @@
     "name": "Spotify (Fixed)",
     "subtitle": "OGG streaming for all logged-in users",
     "iconUrl": "https://raw.githubusercontent.com/NullNaveen/echo/main/spotify-extension/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp",
-    "downloadUrl": "https://raw.githubusercontent.com/NullNaveen/echo/main/releases/spotify-debug-v3.eapk"
+    "updateUrl": "https://api.github.com/repos/NullNaveen/echo/releases"
   }
 ]
