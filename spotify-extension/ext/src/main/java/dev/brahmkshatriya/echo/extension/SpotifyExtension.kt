@@ -249,13 +249,28 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         if (!isLoggedIn) throw ClientException.LoginRequired()
         val canvas =
             if (showCanvas) async { queries.canvas(track.id).json.toStreamable() } else null
-        val result = queries.metadata4Track(track.id).json.toTrack(
+        
+        val metadata = queries.metadata4Track(track.id)
+        val metadataJson = metadata.json
+        
+        // Debug: Check what files are available
+        val availableFiles = metadataJson.file?.map { "${it.format?.name}" } ?: emptyList()
+        val alternativeFiles = metadataJson.alternative?.firstOrNull()?.file?.map { "${it.format?.name}" } ?: emptyList()
+        
+        val result = metadataJson.toTrack(
             hasPremium, isLoggedIn, showWidevineStreams, canvas?.await()
         ).copy(
             isExplicit = track.isExplicit
         )
         if (result.streamables.isEmpty()) {
-            throw Exception("No playable streams found for this track. This may be due to regional restrictions or the track being unavailable.")
+            val debugInfo = buildString {
+                appendLine("No playable streams found.")
+                appendLine("hasPremium=$hasPremium, isLoggedIn=$isLoggedIn, showWidevineStreams=$showWidevineStreams")
+                appendLine("Available file formats: $availableFiles")
+                appendLine("Alternative file formats: $alternativeFiles")
+                appendLine("Track may be unavailable in your region or restricted.")
+            }
+            throw Exception(debugInfo)
         }
         result
     }
