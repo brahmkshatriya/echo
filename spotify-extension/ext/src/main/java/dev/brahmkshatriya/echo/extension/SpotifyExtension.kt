@@ -245,6 +245,7 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
     open val showWidevineStreams = false
 
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = coroutineScope {
+        println("=== ECHO-SPOTIFY-v7 DEBUG: loadTrack started for ${track.id} ===")
         val hasPremium = hasPremium()
         val isLoggedIn = api.cookie != null
         if (!isLoggedIn) throw ClientException.LoginRequired()
@@ -732,6 +733,7 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         throw IllegalStateException()
 
     private suspend fun oggStream(streamable: Streamable): Streamable.Media {
+        println("=== ECHO-SPOTIFY-v7 DEBUG: oggStream started ===")
         val fileId = streamable.id
         val gid = streamable.extras["gid"]
             ?: throw IllegalArgumentException("GID is required for streaming")
@@ -747,8 +749,12 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
             var lastError: Exception? = null
             for (attempt in 1..3) {
                 try {
-                    return@withLock MercuryConnection.getAudioKey(storedToken, gid, fileId)
+                    println("DEBUG: Fetching audio key (attempt $attempt)")
+                    val key = MercuryConnection.getAudioKey(storedToken, gid, fileId)
+                    println("DEBUG: Audio key fetched successfully")
+                    return@withLock key
                 } catch (e: Exception) {
+                    println("DEBUG: Failed to fetch audio key (attempt $attempt): ${e.message}")
                     lastError = e
                     if (attempt < 3) {
                         delay(1000L * attempt) // Exponential backoff
@@ -760,9 +766,11 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         
         // Get CDN URL
         val cdnUrls = queries.storageResolve(streamable.id).json.cdnUrl
+        println("DEBUG: Found ${cdnUrls.size} CDN URLs")
         var urlIndex = 0
         
         return Streamable.InputProvider { position, length ->
+            println("DEBUG: Reading stream pos=$position len=$length")
             decryptFromPosition(key, AUDIO_IV, position, length) { pos, len ->
                 val range = "bytes=$pos-${len?.toString() ?: ""}"
                 
@@ -771,16 +779,20 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
                 for (i in cdnUrls.indices) {
                     val url = cdnUrls[(urlIndex + i) % cdnUrls.size]
                     try {
+                        println("DEBUG: Connecting to CDN: $url (Range: $range)")
                         val request = Request.Builder().url(url)
                             .header("Range", range)
                             .build()
                         val resp = api.client.newCall(request).await()
                         if (resp.isSuccessful) {
+                            println("DEBUG: CDN connection successful")
                             val actualLength = resp.header("Content-Length")?.toLong() ?: -1L
                             return@decryptFromPosition resp.body.byteStream() to actualLength
                         }
+                        println("DEBUG: CDN connection failed: ${resp.code}")
                         resp.close()
                     } catch (e: Exception) {
+                        println("DEBUG: CDN connection exception: ${e.message}")
                         lastError = e
                         urlIndex = (urlIndex + 1) % cdnUrls.size
                     }
