@@ -724,7 +724,7 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         ).toMedia()
     }
 
-    val time = 5000L
+    val time = 3000L
     var lastFetched = 0L
     val mutex = Mutex()
 
@@ -733,26 +733,59 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
 
     private suspend fun oggStream(streamable: Streamable): Streamable.Media {
         val fileId = streamable.id
+        val gid = streamable.extras["gid"]
+            ?: throw IllegalArgumentException("GID is required for streaming")
 
+        // Get the audio key with retry logic
         val key = mutex.withLock {
             val lastTime = System.currentTimeMillis() - lastFetched
             if (lastTime < time) delay(time - lastTime)
-            val gid = streamable.extras["gid"]
-                ?: throw IllegalArgumentException("GID is required for streaming")
             val storedToken = api.getMercuryToken()
             lastFetched = System.currentTimeMillis()
-            MercuryConnection.getAudioKey(storedToken, gid, fileId)
+            
+            // Retry up to 3 times on failure
+            var lastError: Exception? = null
+            for (attempt in 1..3) {
+                try {
+                    return@withLock MercuryConnection.getAudioKey(storedToken, gid, fileId)
+                } catch (e: Exception) {
+                    lastError = e
+                    if (attempt < 3) {
+                        delay(1000L * attempt) // Exponential backoff
+                    }
+                }
+            }
+            throw lastError ?: Exception("Failed to get audio key after 3 attempts")
         }
-        val url = queries.storageResolve(streamable.id).json.cdnUrl.random()
+        
+        // Get CDN URL
+        val cdnUrls = queries.storageResolve(streamable.id).json.cdnUrl
+        var urlIndex = 0
+        
         return Streamable.InputProvider { position, length ->
             decryptFromPosition(key, AUDIO_IV, position, length) { pos, len ->
                 val range = "bytes=$pos-${len?.toString() ?: ""}"
-                val request = Request.Builder().url(url)
-                    .header("Range", range)
-                    .build()
-                val resp = api.client.newCall(request).await()
-                val actualLength = resp.header("Content-Length")?.toLong() ?: -1L
-                resp.body.byteStream() to actualLength
+                
+                // Try multiple CDN URLs on failure
+                var lastError: Exception? = null
+                for (i in cdnUrls.indices) {
+                    val url = cdnUrls[(urlIndex + i) % cdnUrls.size]
+                    try {
+                        val request = Request.Builder().url(url)
+                            .header("Range", range)
+                            .build()
+                        val resp = api.client.newCall(request).await()
+                        if (resp.isSuccessful) {
+                            val actualLength = resp.header("Content-Length")?.toLong() ?: -1L
+                            return@decryptFromPosition resp.body.byteStream() to actualLength
+                        }
+                        resp.close()
+                    } catch (e: Exception) {
+                        lastError = e
+                        urlIndex = (urlIndex + 1) % cdnUrls.size
+                    }
+                }
+                throw lastError ?: Exception("All CDN URLs failed")
             }
         }.toSource(fileId).toMedia()
     }
