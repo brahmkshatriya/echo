@@ -86,4 +86,26 @@
     <string name="refresh_library_on_reload_summary">フィードが読み込まれるたびにデバイスをスキャンします</string>
     <string name="n_items">%1$d 個のアイテム</string>
     <string name="item">アイテム</string>
+    <string name="playlist_liked">お気に入り</string>
+    <string name="unknown">不明</string>
+    <string name="unlike">お気に入り解除</string>
+    <string name="repeat_one">1曲リピート</string>
+    <string name="repeat_off">リピートなし</string>
+    <string name="repeat_all">全曲リピート</string>
+    <string name="library">ライブラリ</string>
+    <string name="extension">拡張機能</string>
+    <string name="download_progress">ダウンロード状況</string>
+    <string name="downloaded_x">%1$sのダウンロード完了</string>
+    <string name="view">表示</string>
+    <string name="extension_out_of_date">更新が必要</string>
+    <string name="error_loading_extension_from_x">%1$s から拡張機能を読み込めませんでした</string>
+    <string name="extension_x_not_found">拡張機能%1$sが見つかりません</string>
+    <string name="required_extensions_missing_x">必要な拡張機能が不足しています: %1$s</string>
+    <string name="x_login_required">%1$sへのログインが必要</string>
+    <string name="x_is_not_supported_in_x">%2$sでは%1$sはサポートされていません</string>
+    <string name="account_session_expired_in_x">%1$sでアカウントセッションが期限切れになりました</string>
+    <string name="value">値</string>
+    <string name="value_not_set">未設定</string>
+    <string name="playback">再生</string>
+    <string name="audio_fx">オーディオエフェクト</string>
 </resources>
