@@ -279,7 +279,7 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         
         if (audioStreamables.isEmpty()) {
             val debugInfo = buildString {
-                appendLine("=== AUDIO STREAM DEBUG ===")
+                appendLine("=== ECHO-SPOTIFY-v5 DEBUG ===")
                 appendLine("hasPremium=$hasPremium")
                 appendLine("isLoggedIn=$isLoggedIn")
                 appendLine("showWidevineStreams=$showWidevineStreams")
