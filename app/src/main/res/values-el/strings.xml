@@ -1,3 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">Οκ</string>
+    <string name="cancel">Ακυρωση</string>
+    <string name="back">Πισω</string>
+    <string name="feed">τροφή</string>
+    <string name="x_permission_required">Απαιτείται άδεια</string>
+    <string name="x_was_not_granted">δεν χορηγήθηκε</string>
+    <string name="audio">Ηχος</string>
+    <string name="audio_permission_summary">Για να αποκτήσετε πρόσβαση στην τοπική σας μουσική βιβλιοθήκη</string>
+    <string name="read_storage">Ανάγνωση χώρου αποθήκευσης</string>
+    <string name="write_storage">Εγγραφή χώρου αποθήκευσης</string>
+    <string name="write_storage_permission_summary">Για να δημιουργήσετε και να επεξεργαστείτε τοπικές λίστες αναπαραγωγής</string>
+    <string name="notifications">Ειδοποιήσεις</string>
+    <string name="notifications_permission_summary">Για να εμφανίσετε ειδοποιήσεις για λήψεις και μουσική</string>
+    <string name="remove">Αφαιρώ</string>
+    <string name="more_by_x">Περισσότερα από %1$s</string>
+    <string name="songs">Τραγούδια</string>
+    <string name="albums">Αλμπουμ</string>
+    <string name="x_radio">Ραδιόφωνο %1$s</string>
+    <string name="cached_songs">Αποθηκευμένα τραγούδια</string>
+    <string name="cache_playlist_warning">Πειραματική λειτουργία. Δεν υποστηρίζεται τίποτα εκτός από την ακρόασή τους.</string>
+    <string name="artists">Καλλιτέχνες</string>
+    <string name="recently_added">Πρόσφατα προστέθηκε</string>
+    <string name="refresh_library_on_reload">Ανανέωση βιβλιοθήκης κατά την επαναφόρτωση</string>
+    <string name="refresh_library_on_reload_summary">Σαρώστε τη συσκευή κάθε φορά που φορτώνεται η τροφοδοσία</string>
+    <string name="duration_filter">Φίλτρο διάρκειας</string>
+    <string name="duration_filter_summary">Φιλτράρισμα αρχείων ήχου με διάρκεια (σε δευτερόλεπτα) μικρότερη από την τιμή</string>
+    <string name="blacklist_folders">Φάκελοι μαύρης λίστας</string>
+    <string name="blacklist_folders_summary">Φάκελοι προς εξαίρεση από τη βιβλιοθήκη</string>
+    <string name="blacklist_folder_keywords">Λέξεις-κλειδιά φακέλου μαύρης λίστας</string>
+    <string name="blacklist_folder_keywords_summary">Λέξεις-κλειδιά για τη μαύρη λίστα φακέλων, χρησιμοποιήστε κόμμα για διαχωριστικό</string>
+    <string name="saved">Αποθηκεύτηκε</string>
+    <string name="tabs">Καρτέλες</string>
+    <string name="show_tabs">Εμφάνιση καρτελών</string>
+    <string name="show_tab_summary">θα εμφανίσει καρτέλες των επεκτάσεων ως κατηγορία</string>
 </resources>
