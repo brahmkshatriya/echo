@@ -1,3 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">ઠીક છે</string>
+    <string name="cancel">રદ કરો</string>
+    <string name="back">પાછળ</string>
+    <string name="feed">ફીડ</string>
+    <string name="x_permission_required">%1$s પરવાનગી જરૂરી છે</string>
+    <string name="x_was_not_granted">%1$s મંજૂર કરવામાં આવ્યું ન હતું</string>
+    <string name="audio">ઓડીઓ</string>
+    <string name="audio_permission_summary">તમારી સ્થાનિક સંગીત લાઇબ્રેરીને ઍક્સેસ કરવા માટે</string>
+    <string name="read_storage">સ્ટોરેજ વાંચો</string>
+    <string name="write_storage">સ્ટોરેજ લખો</string>
+    <string name="write_storage_permission_summary">સ્થાનિક પ્લેલિસ્ટ બનાવવા અને સંપાદિત કરવા માટે</string>
 </resources>
