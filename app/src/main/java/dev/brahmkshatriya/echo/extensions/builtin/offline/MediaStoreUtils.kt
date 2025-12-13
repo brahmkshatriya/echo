@@ -290,6 +290,7 @@ object MediaStoreUtils {
         val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
         val addDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
 
+
         while (cursor.moveToNext()) {
             val path = cursor.getStringOrNull(pathColumn) ?: continue
             val duration = cursor.getLongOrNull(durationColumn)
@@ -320,6 +321,7 @@ object MediaStoreUtils {
             val album = albumName?.let {
                 Album(albumId.toString(), it, null, null, albumArtist.toArtists())
             }
+
             val song = Track(
                 id = id.toString(),
                 title = title,
@@ -333,6 +335,7 @@ object MediaStoreUtils {
                     "genre" to (genre ?: context.getString(R.string.unknown)),
                     "addDate" to addDate.toString(),
                     "trackNumber" to trackNumber.toString(),
+                    "localFilePath" to path,
                     EXTENSION_ID to OfflineExtension.metadata.id
                 )
             )
