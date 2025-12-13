@@ -8,6 +8,9 @@ koinAndroid = "4.1.0"
 media3 = "1.8.0"
 coil = "3.3.0"
 
+accompanist = "0.3.4"
+jaudiotagger = "2.2.5"
+
 [libraries]
 okhttp = { module = "com.squareup.okhttp3:okhttp", version = "5.1.0" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.9.0" }
@@ -65,6 +68,8 @@ acsbendi-webview = { module = "com.github.acsbendi:Android-Request-Inspector-Web
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version = "23.0.0" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "20.0.1" }
 
+accompanist-core = { module = "com.mocharealm.accompanist:lyrics-core", version.ref = "accompanist"}
+jaudiotagger = { module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger" }
 [bundles]
 androidx = [
     "androidx-core-ktx", "androidx-appcompat", "androidx-activity", "fragment",

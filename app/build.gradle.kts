@@ -83,6 +83,9 @@ dependencies {
     implementation(libs.nestedscrollwebview)
     implementation(libs.acsbendi.webview)
 
+    implementation(libs.accompanist.core)
+    implementation(libs.jaudiotagger)
+
     if (!hasGoogleServices) return@dependencies
     implementation(libs.bundles.firebase)
 }
