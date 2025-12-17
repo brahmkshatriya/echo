@@ -1,3 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="songs">Dziesmas</string>
+    <string name="albums">Albumi</string>
+    <string name="x_radio">%1$s Radio</string>
+    <string name="cached_songs">Kešotas Dziesmas</string>
+    <string name="cache_playlist_warning">Eksperimentāla Funkcija. Jebkas, izņemot klausīšanos, nav atbalstīts.</string>
+    <string name="artists">Mākslinieki</string>
+    <string name="recently_added">Nesen Pievienots</string>
+    <string name="refresh_library_on_reload">Atsvaidzināt Bibliotēku pie Ielādes</string>
+    <string name="refresh_library_on_reload_summary">Skenēt ierīci katru reizi kad avots tiek ielādēts</string>
 </resources>
