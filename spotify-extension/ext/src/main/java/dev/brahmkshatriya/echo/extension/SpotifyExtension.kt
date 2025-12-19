@@ -259,7 +259,7 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
     open val showWidevineStreams = false
 
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = coroutineScope {
-        println("=== ECHO-SPOTIFY-v7 DEBUG: loadTrack started for ${track.id} ===")
+        println("=== ECHO-SPOTIFY-v8 DEBUG: loadTrack started for ${track.id} ===")
         val hasPremium = hasPremium()
         val isLoggedIn = api.cookie != null
         if (!isLoggedIn) throw ClientException.LoginRequired()
@@ -269,10 +269,16 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         val metadata = queries.metadata4Track(track.id)
         val metadataJson = metadata.json
         
+        // Debug: Log raw API response for debugging
+        println("DEBUG: Raw API response length: ${metadata.raw.length}")
+        
         // Debug: Check what files are available from API
         val mainFiles = metadataJson.file ?: emptyList()
         val altFiles = metadataJson.alternative?.firstOrNull()?.file ?: emptyList()
+        val allAlternatives = metadataJson.alternative ?: emptyList()
         val allFiles = mainFiles.ifEmpty { altFiles }
+        
+        println("DEBUG: Main files: ${mainFiles.size}, Alt files: ${altFiles.size}, Total alternatives: ${allAlternatives.size}")
         
         val availableFormats = allFiles.mapNotNull { it.format?.name }
         val hasFileId = allFiles.any { it.fileId != null }
@@ -294,12 +300,16 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         
         if (audioStreamables.isEmpty()) {
             val debugInfo = buildString {
-                appendLine("=== ECHO-SPOTIFY-v5 DEBUG ===")
+                appendLine("=== ECHO-SPOTIFY-v8 DEBUG ===")
                 appendLine("hasPremium=$hasPremium")
                 appendLine("isLoggedIn=$isLoggedIn")
                 appendLine("showWidevineStreams=$showWidevineStreams")
                 appendLine("")
                 appendLine("Files from API: ${allFiles.size}")
+                appendLine("Main files: ${mainFiles.size}")
+                appendLine("Alternative count: ${allAlternatives.size}")
+                appendLine("Alt files (first alt): ${altFiles.size}")
+                appendLine("")
                 appendLine("Available formats: $availableFormats")
                 appendLine("Has fileId: $hasFileId")
                 appendLine("Formats that passed filter: $passedFormats")
@@ -313,6 +323,8 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
                     appendLine("- Track is region-restricted")
                     appendLine("- Track requires premium")
                     appendLine("- API authentication issue")
+                    appendLine("")
+                    appendLine("Raw response snippet: ${metadata.raw.take(500)}")
                 } else if (passedFormats.isEmpty()) {
                     appendLine("ERROR: No formats passed the filter!")
                     appendLine("All formats were filtered out by Format.show()")

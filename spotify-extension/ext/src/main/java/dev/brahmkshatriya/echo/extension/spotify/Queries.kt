@@ -242,7 +242,8 @@ class Queries(
 
     suspend fun metadata4Track(id: String) = run {
         val gid = Base62.decode(id.substringAfter("spotify:track:"))
-        api.clientQuery<Metadata4Track>("metadata/4/track/$gid")
+        // Add market=from_token to let Spotify determine market from auth
+        api.clientQuery<Metadata4Track>("metadata/4/track/$gid?market=from_token")
     }
 
     suspend fun storageResolve(id: String) = api.clientQuery<StorageResolve>(
