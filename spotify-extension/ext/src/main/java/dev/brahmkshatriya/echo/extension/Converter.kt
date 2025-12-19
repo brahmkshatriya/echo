@@ -753,13 +753,17 @@ fun Metadata4Track.toTrack(
         val format = it.format ?: return@mapNotNull null
 
         if (!format.show(hasPremium, supportsPlayPlay, showWidevineStreams)) return@mapNotNull null
+        
+        // Use a placeholder URL that will trigger loadStreamableMedia
+        // The actual streaming is handled in loadStreamableMedia via oggStream/widevineStream
         Streamable.server(
-            id = fileId,
+            id = "https://spotify-placeholder.local/$fileId",
             quality = format.quality,
             title = format.name.replace('_', ' '),
             extras = mapOf(
                 "format" to it.format.name,
-                "gid" to gid
+                "gid" to gid,
+                "fileId" to fileId
             )
         )
     }

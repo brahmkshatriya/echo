@@ -224,13 +224,27 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
     override suspend fun loadStreamableMedia(
         streamable: Streamable, isDownload: Boolean,
     ): Streamable.Media {
+        println("=== ECHO-SPOTIFY-v7 DEBUG: loadStreamableMedia called ===")
+        println("DEBUG: streamable.id = ${streamable.id}")
+        println("DEBUG: streamable.type = ${streamable.type}")
+        println("DEBUG: streamable.extras = ${streamable.extras}")
+        
         return when (streamable.type) {
             Streamable.MediaType.Server -> {
                 api.cookie ?: throw ClientException.LoginRequired()
                 val format = Metadata4Track.Format.valueOf(streamable.extras["format"]!!)
+                println("DEBUG: format = $format")
+                
+                // Update streamable to use fileId from extras if needed
+                val actualStreamable = if (streamable.id.startsWith("https://spotify-placeholder.local/")) {
+                    streamable.copy(id = streamable.extras["fileId"]!!)
+                } else {
+                    streamable
+                }
+                
                 return when (format) {
-                    OGG_VORBIS_320, OGG_VORBIS_160, OGG_VORBIS_96 -> oggStream(streamable)
-                    MP4_256, MP4_128 -> widevineStream(streamable)
+                    OGG_VORBIS_320, OGG_VORBIS_160, OGG_VORBIS_96 -> oggStream(actualStreamable)
+                    MP4_256, MP4_128 -> widevineStream(actualStreamable)
                     else -> throw ClientException.NotSupported(format.name)
                 }
             }
