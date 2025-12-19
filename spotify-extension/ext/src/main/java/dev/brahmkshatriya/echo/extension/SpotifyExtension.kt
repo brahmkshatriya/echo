@@ -280,11 +280,22 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         
         println("DEBUG: Main files: ${mainFiles.size}, Alt files: ${altFiles.size}, Total alternatives: ${allAlternatives.size}")
         
-        val availableFormats = allFiles.mapNotNull { it.format?.name }
-        val hasFileId = allFiles.any { it.fileId != null }
+        // Fallback: If no files found, try to use the first alternative even if it has no files (sometimes structure varies)
+        // Or try to find ANY file in alternatives
+        val fallbackFiles = if (allFiles.isEmpty()) {
+            allAlternatives.flatMap { it.file ?: emptyList() }
+        } else {
+            emptyList()
+        }
+        
+        val finalFiles = if (allFiles.isEmpty()) fallbackFiles else allFiles
+        println("DEBUG: Final files count: ${finalFiles.size}")
+
+        val availableFormats = finalFiles.mapNotNull { it.format?.name }
+        val hasFileId = finalFiles.any { it.fileId != null }
         
         // Show which formats would pass the filter
-        val passedFormats = allFiles.filter { file ->
+        val passedFormats = finalFiles.filter { file ->
             val format = file.format ?: return@filter false
             file.fileId != null && format.show(hasPremium, isLoggedIn, showWidevineStreams)
         }.mapNotNull { it.format?.name }
@@ -300,15 +311,16 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         
         if (audioStreamables.isEmpty()) {
             val debugInfo = buildString {
-                appendLine("=== ECHO-SPOTIFY-v8 DEBUG ===")
+                appendLine("=== ECHO-SPOTIFY-v9 DEBUG ===")
                 appendLine("hasPremium=$hasPremium")
                 appendLine("isLoggedIn=$isLoggedIn")
                 appendLine("showWidevineStreams=$showWidevineStreams")
                 appendLine("")
-                appendLine("Files from API: ${allFiles.size}")
+                appendLine("Files from API: ${finalFiles.size}")
                 appendLine("Main files: ${mainFiles.size}")
                 appendLine("Alternative count: ${allAlternatives.size}")
                 appendLine("Alt files (first alt): ${altFiles.size}")
+                appendLine("Fallback files (all alts): ${fallbackFiles.size}")
                 appendLine("")
                 appendLine("Available formats: $availableFormats")
                 appendLine("Has fileId: $hasFileId")
@@ -317,7 +329,7 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
                 appendLine("Track metadata gid: ${metadataJson.gid}")
                 appendLine("Track name: ${metadataJson.name}")
                 appendLine("")
-                if (allFiles.isEmpty()) {
+                if (finalFiles.isEmpty()) {
                     appendLine("ERROR: Spotify API returned NO audio files!")
                     appendLine("This could mean:")
                     appendLine("- Track is region-restricted")

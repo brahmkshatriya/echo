@@ -748,7 +748,7 @@ fun Metadata4Track.toTrack(
 ): Track {
     val id = "spotify:track:${Base62.encode(gid!!)}"
     val title = name!!
-    val streamables = (file ?: alternative?.firstOrNull()?.file).orEmpty().mapNotNull {
+    val streamables = (file ?: alternative?.flatMap { it.file ?: emptyList() }).orEmpty().mapNotNull {
         val fileId = it.fileId ?: return@mapNotNull null
         val format = it.format ?: return@mapNotNull null
 
