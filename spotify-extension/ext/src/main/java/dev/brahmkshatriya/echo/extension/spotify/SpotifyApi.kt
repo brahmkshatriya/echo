@@ -41,7 +41,8 @@ class SpotifyApi(val filesDir: File) {
             val builder = chain.request().newBuilder()
             builder.addHeader(userAgent.first, userAgent.second)
             builder.addHeader("Accept", "application/json")
-            builder.addHeader("App-Platform", "WebPlayer")
+            // Use Android platform to get OGG files for free users
+            builder.addHeader("App-Platform", "Android")
             web.accessToken?.let {
                 if (request.headers["Authorization"] == null)
                     builder.addHeader("Authorization", "Bearer $it")
