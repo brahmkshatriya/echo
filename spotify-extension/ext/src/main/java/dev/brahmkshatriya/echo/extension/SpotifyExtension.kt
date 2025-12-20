@@ -45,6 +45,7 @@ import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extension.spotify.Queries
 import dev.brahmkshatriya.echo.extension.spotify.SpotifyApi
 import dev.brahmkshatriya.echo.extension.spotify.SpotifyApi.Companion.userAgent
+import dev.brahmkshatriya.echo.extension.spotify.Base62
 import dev.brahmkshatriya.echo.extension.spotify.mercury.MercuryConnection
 import dev.brahmkshatriya.echo.extension.spotify.mercury.StoredToken
 import dev.brahmkshatriya.echo.extension.spotify.models.AccountAttributes
@@ -259,7 +260,7 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
     open val showWidevineStreams = false
 
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = coroutineScope {
-        println("=== ECHO-SPOTIFY-v8 DEBUG: loadTrack started for ${track.id} ===")
+        println("=== ECHO-SPOTIFY-v14 DEBUG: loadTrack started for ${track.id} ===")
         val hasPremium = hasPremium()
         val isLoggedIn = api.cookie != null
         if (!isLoggedIn) throw ClientException.LoginRequired()
@@ -267,28 +268,42 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
             if (showCanvas) async { queries.canvas(track.id).json.toStreamable() } else null
         
         val metadata = queries.metadata4Track(track.id)
-        val metadataJson = metadata.json
+        var metadataJson = metadata.json
         
         // Debug: Log raw API response for debugging
         println("DEBUG: Raw API response length: ${metadata.raw.length}")
         
-        // Debug: Check what files are available from API
+        // Check what files are available from API
         val mainFiles = metadataJson.file ?: emptyList()
-        val altFiles = metadataJson.alternative?.firstOrNull()?.file ?: emptyList()
         val allAlternatives = metadataJson.alternative ?: emptyList()
-        val allFiles = mainFiles.ifEmpty { altFiles }
         
-        println("DEBUG: Main files: ${mainFiles.size}, Alt files: ${altFiles.size}, Total alternatives: ${allAlternatives.size}")
+        println("DEBUG: Main files: ${mainFiles.size}, Alternatives: ${allAlternatives.size}")
         
-        // Fallback: If no files found, try to use the first alternative even if it has no files (sometimes structure varies)
-        // Or try to find ANY file in alternatives
-        val fallbackFiles = if (allFiles.isEmpty()) {
-            allAlternatives.flatMap { it.file ?: emptyList() }
-        } else {
-            emptyList()
+        // If main track has no files, fetch FULL metadata for each alternative
+        // (Spotify often returns alternatives with just GID, not file arrays)
+        if (mainFiles.isEmpty() && allAlternatives.isNotEmpty()) {
+            println("DEBUG: No main files, fetching alternatives individually...")
+            for ((index, alt) in allAlternatives.withIndex()) {
+                val altGid = alt.gid ?: continue
+                println("DEBUG: Fetching alternative ${index + 1}/${allAlternatives.size} (gid: $altGid)")
+                try {
+                    val altId = "spotify:track:${Base62.encode(altGid)}"
+                    val altMetadata = queries.metadata4Track(altId).json
+                    val altFiles = altMetadata.file ?: emptyList()
+                    println("DEBUG: Alternative has ${altFiles.size} files")
+                    if (altFiles.isNotEmpty()) {
+                        println("DEBUG: Found files in alternative, using this track")
+                        metadataJson = altMetadata
+                        break
+                    }
+                } catch (e: Exception) {
+                    println("DEBUG: Failed to fetch alternative: ${e.message}")
+                }
+            }
         }
         
-        val finalFiles = if (allFiles.isEmpty()) fallbackFiles else allFiles
+        // Final file check
+        val finalFiles = metadataJson.file ?: emptyList()
         println("DEBUG: Final files count: ${finalFiles.size}")
 
         val availableFormats = finalFiles.mapNotNull { it.format?.name }
@@ -299,6 +314,9 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
             val format = file.format ?: return@filter false
             file.fileId != null && format.show(hasPremium, isLoggedIn, showWidevineStreams)
         }.mapNotNull { it.format?.name }
+        
+        println("DEBUG: Available formats: $availableFormats")
+        println("DEBUG: Passed filter: $passedFormats")
         
         val result = metadataJson.toTrack(
             hasPremium, isLoggedIn, showWidevineStreams, canvas?.await()
@@ -311,35 +329,21 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
         
         if (audioStreamables.isEmpty()) {
             val debugInfo = buildString {
-                appendLine("=== ECHO-SPOTIFY-v9 DEBUG ===")
-                appendLine("hasPremium=$hasPremium")
-                appendLine("isLoggedIn=$isLoggedIn")
-                appendLine("showWidevineStreams=$showWidevineStreams")
-                appendLine("")
-                appendLine("Files from API: ${finalFiles.size}")
-                appendLine("Main files: ${mainFiles.size}")
-                appendLine("Alternative count: ${allAlternatives.size}")
-                appendLine("Alt files (first alt): ${altFiles.size}")
-                appendLine("Fallback files (all alts): ${fallbackFiles.size}")
-                appendLine("")
-                appendLine("Available formats: $availableFormats")
-                appendLine("Has fileId: $hasFileId")
-                appendLine("Formats that passed filter: $passedFormats")
-                appendLine("")
-                appendLine("Track metadata gid: ${metadataJson.gid}")
-                appendLine("Track name: ${metadataJson.name}")
+                appendLine("=== ECHO-SPOTIFY-v14 DEBUG ===")
+                appendLine("hasPremium=$hasPremium, isLoggedIn=$isLoggedIn")
+                appendLine("Files: ${finalFiles.size}, Alternatives: ${allAlternatives.size}")
+                appendLine("Formats available: $availableFormats")
+                appendLine("Formats passed filter: $passedFormats")
+                appendLine("Track: ${metadataJson.name} (gid: ${metadataJson.gid})")
                 appendLine("")
                 if (finalFiles.isEmpty()) {
-                    appendLine("ERROR: Spotify API returned NO audio files!")
-                    appendLine("This could mean:")
-                    appendLine("- Track is region-restricted")
-                    appendLine("- Track requires premium")
-                    appendLine("- API authentication issue")
-                    appendLine("")
-                    appendLine("Raw response snippet: ${metadata.raw.take(500)}")
+                    appendLine("ERROR: No audio files found!")
+                    appendLine("Tried fetching ${allAlternatives.size} alternatives but none had files.")
+                    appendLine("This track may be region-restricted or require premium.")
                 } else if (passedFormats.isEmpty()) {
-                    appendLine("ERROR: No formats passed the filter!")
-                    appendLine("All formats were filtered out by Format.show()")
+                    appendLine("ERROR: All formats filtered out!")
+                    appendLine("Available: $availableFormats")
+                    appendLine("OGG requires login, MP4 requires premium+widevine")
                 }
             }
             throw Exception(debugInfo)
