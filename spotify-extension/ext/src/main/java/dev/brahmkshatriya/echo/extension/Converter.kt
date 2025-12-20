@@ -748,22 +748,18 @@ fun Metadata4Track.toTrack(
 ): Track {
     val id = "spotify:track:${Base62.encode(gid!!)}"
     val title = name!!
-    val streamables = (file ?: alternative?.flatMap { it.file ?: emptyList() }).orEmpty().mapNotNull {
+    val streamables = (file ?: alternative?.firstOrNull()?.file).orEmpty().mapNotNull {
         val fileId = it.fileId ?: return@mapNotNull null
         val format = it.format ?: return@mapNotNull null
 
         if (!format.show(hasPremium, supportsPlayPlay, showWidevineStreams)) return@mapNotNull null
-        
-        // Use a placeholder URL that will trigger loadStreamableMedia
-        // The actual streaming is handled in loadStreamableMedia via oggStream/widevineStream
         Streamable.server(
-            id = "https://spotify-placeholder.local/$fileId",
+            id = fileId,
             quality = format.quality,
             title = format.name.replace('_', ' '),
             extras = mapOf(
                 "format" to it.format.name,
-                "gid" to gid,
-                "fileId" to fileId
+                "gid" to gid
             )
         )
     }

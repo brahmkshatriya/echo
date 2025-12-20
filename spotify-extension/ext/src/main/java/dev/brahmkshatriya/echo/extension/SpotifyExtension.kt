@@ -225,27 +225,14 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
     override suspend fun loadStreamableMedia(
         streamable: Streamable, isDownload: Boolean,
     ): Streamable.Media {
-        println("=== ECHO-SPOTIFY-v7 DEBUG: loadStreamableMedia called ===")
-        println("DEBUG: streamable.id = ${streamable.id}")
-        println("DEBUG: streamable.type = ${streamable.type}")
-        println("DEBUG: streamable.extras = ${streamable.extras}")
-        
         return when (streamable.type) {
             Streamable.MediaType.Server -> {
                 api.cookie ?: throw ClientException.LoginRequired()
                 val format = Metadata4Track.Format.valueOf(streamable.extras["format"]!!)
-                println("DEBUG: format = $format")
-                
-                // Update streamable to use fileId from extras if needed
-                val actualStreamable = if (streamable.id.startsWith("https://spotify-placeholder.local/")) {
-                    streamable.copy(id = streamable.extras["fileId"]!!)
-                } else {
-                    streamable
-                }
                 
                 return when (format) {
-                    OGG_VORBIS_320, OGG_VORBIS_160, OGG_VORBIS_96 -> oggStream(actualStreamable)
-                    MP4_256, MP4_128 -> widevineStream(actualStreamable)
+                    OGG_VORBIS_320, OGG_VORBIS_160, OGG_VORBIS_96 -> oggStream(streamable)
+                    MP4_256, MP4_128 -> widevineStream(streamable)
                     else -> throw ClientException.NotSupported(format.name)
                 }
             }
@@ -260,93 +247,53 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
     open val showWidevineStreams = false
 
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track = coroutineScope {
-        println("=== ECHO-SPOTIFY-v14 DEBUG: loadTrack started for ${track.id} ===")
         val hasPremium = hasPremium()
-        val isLoggedIn = api.cookie != null
-        if (!isLoggedIn) throw ClientException.LoginRequired()
+        if (api.cookie == null) throw ClientException.LoginRequired()
+        
         val canvas =
             if (showCanvas) async { queries.canvas(track.id).json.toStreamable() } else null
         
-        val metadata = queries.metadata4Track(track.id)
-        var metadataJson = metadata.json
+        // Fetch track metadata
+        val metadataResult = queries.metadata4Track(track.id)
+        val metadataJson = metadataResult.json
         
-        // Debug: Log raw API response for debugging
-        println("DEBUG: Raw API response length: ${metadata.raw.length}")
-        
-        // Check what files are available from API
-        val mainFiles = metadataJson.file ?: emptyList()
-        val allAlternatives = metadataJson.alternative ?: emptyList()
-        
-        println("DEBUG: Main files: ${mainFiles.size}, Alternatives: ${allAlternatives.size}")
-        
-        // If main track has no files, fetch FULL metadata for each alternative
-        // (Spotify often returns alternatives with just GID, not file arrays)
-        if (mainFiles.isEmpty() && allAlternatives.isNotEmpty()) {
-            println("DEBUG: No main files, fetching alternatives individually...")
-            for ((index, alt) in allAlternatives.withIndex()) {
-                val altGid = alt.gid ?: continue
-                println("DEBUG: Fetching alternative ${index + 1}/${allAlternatives.size} (gid: $altGid)")
-                try {
-                    val altId = "spotify:track:${Base62.encode(altGid)}"
-                    val altMetadata = queries.metadata4Track(altId).json
-                    val altFiles = altMetadata.file ?: emptyList()
-                    println("DEBUG: Alternative has ${altFiles.size} files")
-                    if (altFiles.isNotEmpty()) {
-                        println("DEBUG: Found files in alternative, using this track")
-                        metadataJson = altMetadata
-                        break
-                    }
-                } catch (e: Exception) {
-                    println("DEBUG: Failed to fetch alternative: ${e.message}")
-                }
-            }
-        }
-        
-        // Final file check
-        val finalFiles = metadataJson.file ?: emptyList()
-        println("DEBUG: Final files count: ${finalFiles.size}")
-
-        val availableFormats = finalFiles.mapNotNull { it.format?.name }
-        val hasFileId = finalFiles.any { it.fileId != null }
-        
-        // Show which formats would pass the filter
-        val passedFormats = finalFiles.filter { file ->
-            val format = file.format ?: return@filter false
-            file.fileId != null && format.show(hasPremium, isLoggedIn, showWidevineStreams)
-        }.mapNotNull { it.format?.name }
-        
-        println("DEBUG: Available formats: $availableFormats")
-        println("DEBUG: Passed filter: $passedFormats")
-        
+        // Build the track with streamables
+        // Note: We pass hasPremium for BOTH parameters
+        // - OGG streaming requires premium subscription (OGG_320 needs hasPremium, OGG_160/96 need supportsPlayPlay)
+        // - MP4 streaming requires premium + Widevine (showWidevineStreams)
+        // - For free accounts, Spotify returns empty file arrays server-side
         val result = metadataJson.toTrack(
-            hasPremium, isLoggedIn, showWidevineStreams, canvas?.await()
+            hasPremium, hasPremium, showWidevineStreams, canvas?.await()
         ).copy(
             isExplicit = track.isExplicit
         )
         
-        // Count audio streamables (exclude canvas/background)
+        // Check if we have any playable audio streams
         val audioStreamables = result.streamables.filter { it.type == Streamable.MediaType.Server }
         
         if (audioStreamables.isEmpty()) {
-            val debugInfo = buildString {
-                appendLine("=== ECHO-SPOTIFY-v14 DEBUG ===")
-                appendLine("hasPremium=$hasPremium, isLoggedIn=$isLoggedIn")
-                appendLine("Files: ${finalFiles.size}, Alternatives: ${allAlternatives.size}")
-                appendLine("Formats available: $availableFormats")
-                appendLine("Formats passed filter: $passedFormats")
-                appendLine("Track: ${metadataJson.name} (gid: ${metadataJson.gid})")
-                appendLine("")
-                if (finalFiles.isEmpty()) {
-                    appendLine("ERROR: No audio files found!")
-                    appendLine("Tried fetching ${allAlternatives.size} alternatives but none had files.")
-                    appendLine("This track may be region-restricted or require premium.")
-                } else if (passedFormats.isEmpty()) {
-                    appendLine("ERROR: All formats filtered out!")
-                    appendLine("Available: $availableFormats")
-                    appendLine("OGG requires login, MP4 requires premium+widevine")
+            // Provide a helpful error message
+            val filesCount = (metadataJson.file ?: emptyList()).size
+            val altCount = (metadataJson.alternative ?: emptyList()).size
+            
+            val errorMessage = if (filesCount == 0) {
+                if (!hasPremium) {
+                    "Spotify Premium required\n\n" +
+                    "This extension requires a Spotify Premium subscription to stream music. " +
+                    "Spotify does not provide audio files to free accounts through this API.\n\n" +
+                    "Track: ${metadataJson.name}"
+                } else {
+                    "Track unavailable\n\n" +
+                    "This track may be region-restricted or not available for streaming.\n\n" +
+                    "Track: ${metadataJson.name}"
                 }
+            } else {
+                "No compatible audio format\n\n" +
+                "Found $filesCount audio files but none match the required format.\n" +
+                "Premium: $hasPremium, Widevine: $showWidevineStreams\n\n" +
+                "Track: ${metadataJson.name}"
             }
-            throw Exception(debugInfo)
+            throw ClientException.NotSupported(errorMessage)
         }
         result
     }
