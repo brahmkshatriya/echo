@@ -676,13 +676,21 @@ open class SpotifyExtension : ExtensionClient, LoginClient.WebView,
     override suspend fun loadFeed(artist: Artist): Feed<Shelf> {
         return when (val type = artist.id.substringAfter(":").substringBefore(":")) {
             "artist" -> {
-                val res = api.json.decode<ArtistOverview>(artist.extras["raw"]!!)
+                // If we don't have raw data, fetch it first
+                val raw = artist.extras["raw"] ?: run {
+                    queries.queryArtistOverview(artist.id).raw
+                }
+                val res = api.json.decode<ArtistOverview>(raw)
                 res.data.artistUnion.toShelves(queries, cropCovers)
             }
 
             "user" -> {
-                val res = api.json.decode<UserProfileView>(artist.extras["raw"]!!)
                 val id = artist.id.substringAfter("spotify:user:")
+                // If we don't have raw data, fetch it first  
+                val raw = artist.extras["raw"] ?: run {
+                    queries.profileWithPlaylists(id).raw
+                }
+                val res = api.json.decode<UserProfileView>(raw)
                 listOfNotNull(
                     res.toShelf(),
                     queries.profileFollowers(id).json.toShelf("${id}_followers", "Followers"),
