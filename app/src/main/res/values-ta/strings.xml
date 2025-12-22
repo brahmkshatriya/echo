@@ -6,4 +6,15 @@
     <string name="video">படக்காட்சி</string>
     <string name="cancel">இரத்துசெய்</string>
     <string name="x_was_not_granted">%1$s அனுமதி அளிக்கவில்லை</string>
+    <string name="feed">ஊட்டம்</string>
+    <string name="audio">ஒலிதம்</string>
+    <string name="audio_permission_summary">உங்கள் உள்ளக இசை நூலகத்தைத் திறக்க</string>
+    <string name="read_storage">சேமிப்பகத்தைப் படி</string>
+    <string name="notifications">அறிவிப்புகள்</string>
+    <string name="write_storage">சேமிப்பிடம் எழுது</string>
+    <string name="write_storage_permission_summary">உள்ளக இயக்கப்பட்டியல்களை உருவாக்க மற்றும் திருத்த</string>
+    <string name="notifications_permission_summary">பதிவிறக்கங்கள் மற்றும் இசைக்கான அறிவிப்பைக் காட்ட</string>
+    <string name="remove">அகற்று</string>
+    <string name="more_by_x">மேலும் இவரால் %1$s</string>
+    <string name="songs">பாடல்கள்</string>
 </resources>
