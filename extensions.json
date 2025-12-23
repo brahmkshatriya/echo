@@ -1,0 +1,9 @@
+[
+  {
+    "id": "spotify",
+    "name": "Spotify (Fixed)",
+    "subtitle": "OGG streaming for all logged-in users",
+    "iconUrl": "https://raw.githubusercontent.com/NullNaveen/echo/main/spotify-extension/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp",
+    "updateUrl": "https://api.github.com/repos/NullNaveen/echo/releases"
+  }
+]

@@ -1,0 +1,19 @@
+[versions]
+echoCommon = "1.0"
+kotlin = "2.2.10"
+agp = "8.12.1"
+gradleShadow = "9.0.2"
+
+[libraries]
+echo-common = { module = "dev.brahmkshatriya.echo:common", version.ref = "echoCommon" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+junit = { module = "junit:junit", version = "4.13.2" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+gradle-shadow = { id = "com.gradleup.shadow", version.ref = "gradleShadow" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+google-protobuf = { id = "com.google.protobuf", version = "0.9.5" }
