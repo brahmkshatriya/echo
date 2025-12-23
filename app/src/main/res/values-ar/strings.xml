@@ -13,12 +13,12 @@
     <string name="remove">إزالة</string>
     <string name="more_by_x">المزيد بواسطة %1$s</string>
     <string name="songs">اغاني</string>
-    <string name="albums">البومات</string>
+    <string name="albums">ألبومات</string>
     <string name="x_radio">راديو %1$s</string>
     <string name="cached_songs">الأغاني المخزنة مؤقتًا</string>
     <string name="cache_playlist_warning">ميزة تجريبية. أي شيء باستثناء الاستماع إليها غير مدعوم.</string>
     <string name="artists">الفنان</string>
-    <string name="recently_added">اضيف مأخرا</string>
+    <string name="recently_added">اضيف مؤخراً</string>
     <string name="refresh_library_on_reload">تحديث المكتبة عند إعادة التحميل</string>
     <string name="refresh_library_on_reload_summary">امسح الجهاز في كل مرة يتم فيها تحميل الخلاصة</string>
     <string name="duration_filter">فلتر المدة</string>
