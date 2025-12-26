@@ -51,7 +51,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import org.koin.android.ext.android.inject
 import java.io.File
+import android.media.AudioManager
+import androidx.media3.common.Player
 
+
+@OptIn(UnstableApi::class)
 class PlayerService : MediaLibraryService() {
 
     private val extensionLoader by inject<ExtensionLoader>()
@@ -146,6 +150,11 @@ class PlayerService : MediaLibraryService() {
             .setIsSpeedChangeSupportRequired(true)
             .build()
 
+    private fun isBluetoothAudioActive(): Boolean {
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        return audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
+    }
+
     @OptIn(UnstableApi::class)
     private fun createExoplayer() = run {
         val audioAttributes = AudioAttributes.Builder()
@@ -153,8 +162,13 @@ class PlayerService : MediaLibraryService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
+        val disableOffload = isBluetoothAudioActive()
+
         val audioOffloadPreferences =
-            offloadPreferences(app.settings.getBoolean(MORE_BRAIN_CAPACITY, false))
+            offloadPreferences(
+                moreBrainCapacity = app.settings.getBoolean(MORE_BRAIN_CAPACITY, false) || disableOffload
+            )
+
 
         val factory = StreamableMediaSource.Factory(
             app, scope, state, extensions, cache, downloadFlow, mediaChangeFlow
@@ -173,6 +187,12 @@ class PlayerService : MediaLibraryService() {
                     .build()
                 it.preloadConfiguration = ExoPlayer.PreloadConfiguration(C.TIME_UNSET)
                 it.skipSilenceEnabled = app.settings.getBoolean(SKIP_SILENCE, true)
+                it.addListener(object : Player.Listener {
+                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                        it.pause()
+                        it.play()
+                    }
+                })
             }
     }
 
