@@ -183,12 +183,6 @@ class PlayerService : MediaLibraryService() {
                     .build()
                 it.preloadConfiguration = ExoPlayer.PreloadConfiguration(C.TIME_UNSET)
                 it.skipSilenceEnabled = app.settings.getBoolean(SKIP_SILENCE, true)
-                it.addListener(object : Player.Listener {
-                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                        it.pause()
-                        it.play()
-                    }
-                })
             }
     }
 
