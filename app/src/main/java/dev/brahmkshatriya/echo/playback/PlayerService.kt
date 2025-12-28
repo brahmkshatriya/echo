@@ -69,7 +69,6 @@ class PlayerService : MediaLibraryService() {
     private val state by inject<PlayerState>()
     private val scope = CoroutineScope(Dispatchers.IO) + CoroutineName("PlayerService")
 
-    @OptIn(UnstableApi::class)
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
         when (key) {
             SKIP_SILENCE -> exoPlayer.skipSilenceEnabled = prefs.getBoolean(key, true)
@@ -85,7 +84,6 @@ class PlayerService : MediaLibraryService() {
     private val downloader by inject<Downloader>()
     private val downloadFlow by lazy { downloader.flow }
 
-    @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
         setListener(MediaSessionServiceListener(this, getPendingIntent(this)))
@@ -141,7 +139,6 @@ class PlayerService : MediaLibraryService() {
 
     private val mediaChangeFlow = MutableSharedFlow<Pair<MediaItem, MediaItem>>()
 
-    @OptIn(UnstableApi::class)
     private fun offloadPreferences(moreBrainCapacity: Boolean) =
         TrackSelectionParameters.AudioOffloadPreferences.Builder()
             .setAudioOffloadMode(
@@ -155,7 +152,6 @@ class PlayerService : MediaLibraryService() {
         return audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
     }
 
-    @OptIn(UnstableApi::class)
     private fun createExoplayer() = run {
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
@@ -210,7 +206,6 @@ class PlayerService : MediaLibraryService() {
 
         const val CACHE_SIZE = "cache_size"
 
-        @OptIn(UnstableApi::class)
         fun getCache(
             app: Application,
             settings: SharedPreferences,
