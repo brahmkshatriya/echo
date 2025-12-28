@@ -3,11 +3,11 @@
     <string name="tabs">Onglets</string>
     <string name="repeat_one">Répéter Une Fois</string>
     <string name="duration_filter_summary">Filtrer les fichiers audio dont la durée (en secondes) est inférieure à la valeur</string>
-    <string name="unified_liked_playlist_summary">Vos morceaux préférés de différentes extensions</string>
+    <string name="unified_liked_playlist_summary">Vos titres préférés de différentes extensions</string>
     <string name="cancel_all">Tout Annuler</string>
     <string name="downloads">Téléchargements</string>
     <string name="random">Aléatoire</string>
-    <string name="audio_fx_summary">Effets appliqués à toutes les chansons</string>
+    <string name="audio_fx_summary">Effets appliqués à tous les titres</string>
     <string name="choose_a_color">Choisissez une couleur</string>
     <string name="playback">Lecture</string>
     <string name="x_permission_required">%1$s Autorisation Requise</string>
@@ -29,10 +29,10 @@
     <string name="notifications_permission_summary">Pour afficher les notifications lors du téléchargement et de l\'écoute</string>
     <string name="remove">Retirer</string>
     <string name="more_by_x">Plus par %1$s</string>
-    <string name="songs">Chansons</string>
+    <string name="songs">Titres</string>
     <string name="albums">Albums</string>
     <string name="x_radio">Radio %1$s</string>
-    <string name="cached_songs">Chansons Mises en Cache</string>
+    <string name="cached_songs">Titres Mis en Cache</string>
     <string name="artists">Artistes</string>
     <string name="recently_added">Ajouts Récents</string>
     <string name="refresh_library_on_reload">Actualiser la Bibliothèque lors du Rechargement</string>
@@ -42,7 +42,7 @@
     <string name="saved">Enregistrées</string>
     <string name="show_tabs">Afficher les Onglets</string>
     <string name="n_items">%1$d éléments</string>
-    <string name="playlist_liked_desc">Vos morceaux préférés</string>
+    <string name="playlist_liked_desc">Vos titres préférés</string>
     <string name="unknown">Inconnu</string>
     <string name="like">Aimer</string>
     <string name="unlike">Ne Plus Aimer</string>
@@ -79,9 +79,9 @@
     <string name="stop_player">Arrêter le Lecteur</string>
     <string name="stop_player_summary">Arrêté le lecteur lorsque l\'appli est fermée</string>
     <string name="skip_silence">Passer les Silences</string>
-    <string name="skip_silence_summary">Ignore les parties silencieuses de la chanson pour une lecture sans interruption.</string>
+    <string name="skip_silence_summary">Ignorer les passages silencieux du titre pour une lecture sans interruption.</string>
     <string name="auto_start_radio">Démarrage Auto de le Radio</string>
-    <string name="auto_start_radio_summary">Ajoutez automatiquement les chansons associées à la piste dans la playlist, pour avoir une file d\'attente infinie</string>
+    <string name="auto_start_radio_summary">Ajout automatique de titres similaires à la playlist, pour une file d\'attente infinie.</string>
     <string name="cache_size">Taille du Cache</string>
     <string name="cache_size_summary">Taille en Mo pour mettre en cache l\'audio et la vidéo</string>
     <string name="install">Installer</string>
@@ -194,7 +194,7 @@
     <string name="playlist_name">Nom de la Playlist</string>
     <string name="playlist_description">Description de la Playlist</string>
     <string name="create_playlist">Créer une Playlist</string>
-    <string name="add_song">Ajouter une Chanson</string>
+    <string name="add_song">Ajouter un Titre</string>
     <string name="creating_x">Création de %1$s</string>
     <string name="playlist_name_empty">Le nom de la playlist est vide</string>
     <string name="x_created">%1$s créée</string>
@@ -326,7 +326,7 @@
     <string name="album">Album</string>
     <string name="compilation">Compilation</string>
     <string name="book">Livre</string>
-    <string name="song">Chanson</string>
+    <string name="song">Titre</string>
     <string name="podcast">Podcast</string>
     <string name="confirmation">Confirmation</string>
     <string name="delete_playlist_confirmation">Êtes vous sur de vouloir supprimer %1$s?</string>
@@ -338,14 +338,14 @@
     <string name="regex_invalid">%1$s n\'est pas valide, veuillez suivre le regex : %2$s</string>
     <string name="hidden_x">Masqué %1$s</string>
     <string name="unhidden_x">Non masqué %1$s</string>
-    <string name="n_songs">%1$d Chansons</string>
+    <string name="n_songs">%1$d Titres</string>
     <string name="n_episodes">%1$d Épisodes</string>
     <string name="n_chapters">%1$d Chapitres</string>
     <string name="n_tracks">%1$d Pistes</string>
     <plurals name="number_songs">
-        <item quantity="one">%1$d Chanson</item>
-        <item quantity="many">%1$d Chansons</item>
-        <item quantity="other">%1$d Chansons</item>
+        <item quantity="one">%1$d Titre</item>
+        <item quantity="many">%1$d Titres</item>
+        <item quantity="other">%1$d Titres</item>
     </plurals>
     <plurals name="number_episodes">
         <item quantity="one">%1$d Épisode</item>
