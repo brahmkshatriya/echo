@@ -11,4 +11,9 @@
     <string name="read_storage">સ્ટોરેજ વાંચો</string>
     <string name="write_storage">સ્ટોરેજ લખો</string>
     <string name="write_storage_permission_summary">સ્થાનિક પ્લેલિસ્ટ બનાવવા અને સંપાદિત કરવા માટે</string>
+    <string name="songs">ગીતો</string>
+    <string name="albums">આલ્બમોં</string>
+    <string name="blacklist_folders">ફોલ્ડર્સ ને બ્લેકલિસ્ટ કરો</string>
+    <string name="show_tabs">ટેબ્સ બતાવો</string>
+    <string name="tabs"></string>
 </resources>
