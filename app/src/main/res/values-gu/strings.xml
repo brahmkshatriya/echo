@@ -15,4 +15,6 @@
     <string name="albums">આલ્બમોં</string>
     <string name="blacklist_folders">ફોલ્ડર્સ ને બ્લેકલિસ્ટ કરો</string>
     <string name="show_tabs">ટેબ્સ બતાવો</string>
+    <string name="tabs">ટેબ્સ</string>
+    <string name="artists">કલાકારો</string>
 </resources>
