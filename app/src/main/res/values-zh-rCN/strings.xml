@@ -281,7 +281,7 @@
     <string name="save">保存</string>
     <string name="playing_x">正在播放 %1$s</string>
     <string name="x_created">%1$s 已创建</string>
-    <string name="more_brain_capacity_summary">启用此选项可以修复音频延迟，但会大幅增加电池消耗（会禁用音频卸载功能）。</string>
+    <string name="more_brain_capacity_summary">启用此选项可以修复音频延迟，但会大幅增加电池消耗（会禁用音频分流功能）。</string>
     <string name="saved_to_x">已保存至 %1$s</string>
     <string name="merging_x">正在合并 %1$s</string>
     <string name="no_download_extension">未找到下载扩展，请使用代码“echodown”获取。</string>
