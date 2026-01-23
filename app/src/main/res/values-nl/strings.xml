@@ -1,4 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="audio">Audio</string>
+    <string name="okay">Oké</string>
+    <string name="cancel">Annuleer</string>
+    <string name="back">Terug</string>
+    <string name="feed">Fees</string>
+    <string name="x_permission_required">%1$s Toestemming Vereist</string>
+    <string name="x_was_not_granted">%1$s was niet toegestaan</string>
+    <string name="audio_permission_summary">Om toegang te krijgen tot je lokale muziek bibliotheek</string>
+    <string name="read_storage">Opslag Lezen</string>
+    <string name="write_storage">Opslag Schrijven</string>
+    <string name="write_storage_permission_summary">Om lokale playlists te maken en te veranderen</string>
+    <string name="notifications">Meldingen</string>
+    <string name="notifications_permission_summary">Om meldingen te tonen voor downloads en muziek</string>
+    <string name="remove">Verwijder</string>
+    <string name="more_by_x">Meer van %1$s</string>
+    <string name="songs">Nummers</string>
+    <string name="albums">Albums</string>
+    <string name="x_radio">%1$s Radio</string>
+    <string name="cached_songs">Opgeslagen nummers</string>
+    <string name="artists">Artiesten</string>
+    <string name="recently_added">Recent toegevoegd</string>
+    <string name="saved">Opgeslagen</string>
+    <string name="tabs">Tabbladen</string>
+    <string name="show_tabs">Toon Tabbladen</string>
+    <string name="show_tab_summary">toont tabbladen van de extensies als categorie</string>
+    <string name="unified_liked_playlist_summary">Je gelikete nummers van verschillende extensies</string>
+    <string name="n_items">%1$d Items</string>
+    <string name="item">Item</string>
+    <plurals name="number_items">
+        <item quantity="one">%1$d Item</item>
+        <item quantity="other">%1$d Items</item>
+    </plurals>
+    <string name="playlist_liked">Geliked</string>
+    <string name="playlist_liked_desc">Je gelikete nummers</string>
+    <string name="unknown">Onbekend</string>
+    <string name="like">Like</string>
+    <string name="repeat_one">Herhaal één keer</string>
+    <string name="repeat_off">Herhalen Uit</string>
+    <string name="repeat_all">Herhaal Alle</string>
+    <string name="search">Zoeken</string>
+    <string name="library">Bibliotheek</string>
+    <string name="more">Meer</string>
+    <string name="extension">Extensie</string>
+    <string name="download_progress">Download voortgang</string>
 </resources>
