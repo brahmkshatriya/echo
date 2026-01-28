@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:color="@color/button_player_ripple"
-    android:radius="30dp"
-    tools:ignore="PrivateResource" />

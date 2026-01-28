@@ -1,6 +1,0 @@
-<resources>
-    <style name="Default" parent="Base.Theme.Echo">
-        <item name="navBarForeground">?colorOnPrimary</item>
-        <item name="navBarBackground">?colorControlActivated</item>
-    </style>
-</resources>
