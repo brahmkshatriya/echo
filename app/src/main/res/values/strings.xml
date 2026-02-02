@@ -68,6 +68,7 @@
 
     <string name="extension_out_of_date">Out of date</string>
     <string name="no_internet">No Internet</string>
+    <string name="no_streaming_sources">No streaming sources available. Check your network connection or try logging in again.</string>
     <string name="error_loading_extension_from_x">Error loading extension from %1$s</string>
     <string name="extension_x_not_found">Extension %1$s not found</string>
     <string name="required_extensions_missing_x">Required extensions missing: %1$s</string>

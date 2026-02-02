@@ -22,6 +22,7 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.serverIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.state
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.subtitleIndex
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
+import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.ui.media.MediaHeaderAdapter.Companion.playableString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -83,7 +84,11 @@ class StreamableLoader(
             runCatching {
                 val isPlayable = mediaItem.track.playableString(app.context)
                 if (isPlayable != null) throw Exception(isPlayable)
-                val streamable = servers.getOrNull(index) ?: throw Exception("Server not found")
+                val streamable = when {
+                    index in servers.indices -> servers[index]
+                    servers.isNotEmpty() -> servers[0]
+                    else -> throw Exception(app.getString(R.string.no_streaming_sources))
+                }
                 loadStreamableMedia(
                     app, it, mediaItem.track, streamable
                 ).getOrThrow() as Streamable.Media.Server
