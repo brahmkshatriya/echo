@@ -41,7 +41,7 @@
     <string name="equalizer">Ekolayzer</string>
     <string name="skip_silence">Sessizliği Atla</string>
     <string name="auto_start_radio">Radyo Otomatik Başlat</string>
-    <string name="skip_silence_summary">Şarkıdaki sessiz bölümü atla, kesintisiz çalma sağla</string>
+    <string name="skip_silence_summary">Şarkıdaki sessiz bölümü atla, kesintisiz çalma sağla.</string>
     <string name="stop_player_summary">Uygulama son kullanımdan kaldırıldığında çalar durdurulsun</string>
     <string name="auto_start_radio_summary">Çalma listesindeki parçanın ilgili şarkılarını otomatik olarak ekleyin, böylece sonsuz bir kuyruk elde edin</string>
     <string name="version">Sürüm</string>
@@ -191,9 +191,9 @@
     <string name="theme_summary">Kör olmak ister misin?</string>
     <string name="custom_theme_color">Özel Tema Rengi</string>
     <string name="ui">Kullanıcı Arayüzü</string>
-    <string name="custom_theme_color_summary">Sistem renginin yerine özel bir tema rengi kullanın</string>
+    <string name="custom_theme_color_summary">Sistem renginin yerine özel bir tema rengi kullanın.</string>
     <string name="custom_colors">Özel Renkler</string>
-    <string name="amoled">Amoled</string>
+    <string name="amoled">AMOLED</string>
     <string name="dynamic_player">Dinamik Oynatıcı Rengi</string>
     <string name="dynamic_player_summary">Parça Sanatına dayalı olarak oynatıcıya renk uygula</string>
     <string name="show_background">Arka Planı Göster</string>
@@ -217,7 +217,7 @@
     <string name="incognito">Gizli Mod</string>
     <string name="not_logged_in">Giriş yapılmadı</string>
     <string name="x_login">%1$s Giriş</string>
-    <string name="x_is_required">$1%s gereklidir</string>
+    <string name="x_is_required">%1$s gereklidir</string>
     <string name="info">Bilgi</string>
     <string name="seekbar">Seekbar</string>
     <string name="shuffle">Karıştır</string>
@@ -278,29 +278,29 @@
     <string name="deleted_x">%1$s silindi</string>
     <string name="loading_x">Yükleniyor %1s</string>
     <string name="saving_x">%1$s Kaydediliyor</string>
-    <string name="adding_x">[E7X] Ekleme</string>
+    <string name="adding_x">%1$s Ekleniyor</string>
     <string name="moving_x">Taşınıyor %1$s</string>
     <string name="removing_x">%1$s Kaldırılıyor</string>
     <string name="no_download_extension">İndirilecek uzantı bulunamadı, \"echodown\" kodunu kullanarak edinin.</string>
     <string name="nothing_to_download_in_x">%1$s içinde indirilecek bir şey yok</string>
     <string name="merging_x">Birleştiriliyor %1$s</string>
     <string name="tagging_x">Etiketleme %1$s</string>
-    <string name="apply_player_color_to_app">Tüm Uygulamaya Oynatıcı Rengini Uygula</string>
+    <string name="apply_player_color_to_app">Bütün Uygulamaya Oynatıcı Rengini Uygula</string>
     <string name="download_complete">İndirme Tamamlandı</string>
     <plurals name="n_songs">
         <item quantity="one">%1$d şarkı</item>
         <item quantity="other">%1$d şarkılar</item>
     </plurals>
-    <string name="delete_download">İndirimi Kaldır</string>
+    <string name="delete_download">İndirilen Dosyayı Kaldır</string>
     <string name="removed_x_from_downloads">İndirilenlerden %1$s kaldırıldı</string>
-    <string name="app_widget_description">Ana ekranında yankı!</string>
+    <string name="app_widget_description">Ana Ekranında Echo Lightly!</string>
     <string name="feed">Akış</string>
     <string name="item">Öğe</string>
     <plurals name="number_items">
         <item quantity="one">%1$d öğe</item>
-        <item quantity="other">%1$d öğe</item>
+        <item quantity="other">%1$d öğeler</item>
     </plurals>
-    <string name="x_specific_quality_summary">%1$s için özel akış kalitesi, varsayılan akış kalitesi seçimini geçersiz kılar.</string>
+    <string name="x_specific_quality_summary">%1$s için özel akış kalitesi, varsayılan akış kalitesi seçimini geçersiz kılar</string>
     <string name="unmetered_stream_quality">Limitsiz yayın kalitesi</string>
     <string name="unmetered_stream_quality_summary">Limitsiz bir ağa bağlıyken kullanılan yayın kalitesi. Bu, varsayılan yayın kalitesini geçersiz kılar.</string>
     <string name="select_language">Dil Seçimi</string>
@@ -373,7 +373,7 @@
     <string name="not_yet_released">Henüz çıkmadı</string>
     <string name="releases_on_x">%1$s\'de çıkıyor</string>
     <string name="unavailable_in_your_region">Bölgenizde erişilemiyor</string>
-    <string name="not_playable_x">Oynatılamıyor: %1$s</string>
+    <string name="not_playable_x">Bu Dosya Oynatılamaz: %1$s</string>
     <string name="ep">EP</string>
     <string name="lp">LP</string>
 </resources>
