@@ -1,3 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="okay">ठीक छ</string>
+    <string name="cancel">रद्द गर्नुहोस्</string>
+    <string name="back">पछाडि</string>
+    <string name="feed">फीड</string>
+    <string name="x_permission_required">%1$s अनुमति आवश्यक छ</string>
+    <string name="x_was_not_granted">%1$s दिइएन</string>
+    <string name="audio">अडियो</string>
+    <string name="audio_permission_summary">तपाईंको स्थानिय सङ्गीत लाइब्रेरी पहुँच गर्न</string>
+    <string name="read_storage">स्टोरेज पढ्नुहोस्</string>
 </resources>
