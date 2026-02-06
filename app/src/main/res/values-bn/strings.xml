@@ -3,10 +3,13 @@
     <string name="okay">ঠিক</string>
     <string name="cancel">বাদ</string>
     <string name="back">পিছনে</string>
-    <string name="x_permission_required">পারমিশন লাগবে</string>
-    <string name="x_was_not_granted">গ্রহণ করা হয়নি</string>
+    <string name="x_permission_required">%1$s অনুমতি লাগবে</string>
+    <string name="x_was_not_granted">%1$s কে দেওয়া হয়নি</string>
     <string name="audio">শব্দ</string>
-    <string name="audio_permission_summary">আপনার নিজের গান একসেস করতে</string>
+    <string name="audio_permission_summary">আপনার স্থানীও গানের গ্রন্থাগার অধিগত করতে</string>
     <string name="read_storage">স্টোরেজ পড়তে</string>
     <string name="write_storage">স্টোরেজ লেখা</string>
+    <string name="write_storage_permission_summary">স্থানীও প্লেলিস্ট কে তৈরি এবং সংশোধন করতে</string>
+    <string name="notifications">বিজ্ঞপ্তি</string>
+    <string name="feed">ফিড</string>
 </resources>
