@@ -187,17 +187,17 @@ fun Home() {
                         }
                     }, fontSize = 20.sp, modifier = Modifier.padding(top = 8.dp))
                 },
-//                navigationIcon = {
-//                    val backStack = LocalMainBackStack.current
-//                    val visible = if (backStack != null) backStack.size > 1 else false
-//                    AnimatedVisibility(visible) {
-//                        IconButton({
-//                            backStack?.removeLastOrNull()
-//                        }, shapes = IconButtonDefaults.shapes()) {
-//                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back")
-//                        }
-//                    }
-//                },
+                navigationIcon = {
+                    val backStack = LocalMainBackStack.current
+                    val visible = if (backStack != null) backStack.size > 1 else false
+                    AnimatedVisibility(visible) {
+                        IconButton({
+                            backStack?.removeLastOrNull()
+                        }, shapes = IconButtonDefaults.shapes()) {
+                            Icon(painterResource(Res.drawable.ic_back), "Back")
+                        }
+                    }
+                },
                 actions = {
                     Box(
                         contentAlignment = Alignment.BottomEnd,
@@ -232,7 +232,7 @@ fun Home() {
     ) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(bottom = 8.dp)) {
             val listState = rememberLazyListState()
-            val scrollbarState = listState.scrollbarState(itemsAvailable = 45)
+            val scrollbarState = listState.scrollbarState(itemsAvailable = 55)
 
             val backStack = LocalMainBackStack.current
             val cardColors = CardDefaults.cardColors(
@@ -250,13 +250,13 @@ fun Home() {
             ) {
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxSize().clip(
+                    modifier = Modifier.fillMaxSize().clip(remember {
                         PaddingRoundedCornerShape(
                             horizontalPadding = 8.dp,
                             topPadding = 56.dp,
-                            cornerRadius = 16.dp
+                            cornerRadius = 22.dp
                         )
-                    )
+                    })
                 ) {
                     (0..4).forEach { i ->
                         item("Header $i", i) {

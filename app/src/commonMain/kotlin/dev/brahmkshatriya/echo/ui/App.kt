@@ -11,11 +11,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Text
@@ -37,12 +41,12 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.brahmkshatriya.echo.platform.getPlatform
 import dev.brahmkshatriya.echo.ui.components.BetterNavDisplay
-import dev.brahmkshatriya.echo.ui.components.ExpandingButton
 import dev.brahmkshatriya.echo.ui.components.LocalMainBackStack
+import dev.brahmkshatriya.echo.ui.components.expandingButton
 import dev.brahmkshatriya.echo.ui.main.ExtensionSelectorFABMenu
 import dev.brahmkshatriya.echo.ui.main.MainRoute
 import dev.brahmkshatriya.echo.ui.main.MainSideNavigation
-import dev.brahmkshatriya.echo.ui.player.LocalPlayerUi
+import dev.brahmkshatriya.echo.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerBottomSheet
 import dev.brahmkshatriya.echo.ui.theme.EchoTheme
 import dev.brahmkshatriya.echo.ui.theme.LocalSurfaceColor
@@ -79,10 +83,9 @@ fun App() = EchoTheme {
     val backStack = rememberNavBackStack(
         config, Main(MainRoute.Home)
     )
-
-    PlayerBottomSheet(bottomPadding.value) {
-        sheetProgress = LocalPlayerUi.current?.sheetProgressState?.value ?: 0f
-        peekHeight = LocalPlayerUi.current?.peekHeight ?: 0.dp
+    PlayerBottomSheet(startPadding.value, bottomPadding.value) {
+        sheetProgress = LocalPlayerSheet.current?.sheetProgressState?.value ?: 0f
+        peekHeight = LocalPlayerSheet.current?.peekHeight?.value ?: 0.dp
         val isSheetHidden = sheetProgress < -0.8f
         val sheetPadding = if (isSheetHidden) 0.dp else peekHeight
         LookaheadScope {
@@ -96,7 +99,7 @@ fun App() = EchoTheme {
                 .animateBounds(this)
             BetterNavDisplay(
                 backStack,
-                LocalPlayerUi.current?.isExpanded?.not() ?: true,
+                LocalPlayerSheet.current?.isExpanded?.value?.not() ?: true,
                 modifier
             ) {
                 entry<Main> {
@@ -127,6 +130,21 @@ fun App() = EchoTheme {
 }
 
 @Composable
+fun ExpandingButton(
+    onClick: () -> Unit,
+    content: @Composable RowScope.() -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Button(
+        onClick = onClick,
+        interactionSource = interactionSource,
+        shapes = ButtonDefaults.shapes(),
+        modifier = Modifier.expandingButton(interactionSource),
+        content = content
+    )
+}
+
+@Composable
 fun Test(string: String) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -141,7 +159,7 @@ fun Test(string: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val scope = rememberCoroutineScope()
-        val playerUi = LocalPlayerUi.current
+        val playerUi = LocalPlayerSheet.current
         var showContent by rememberSaveable { mutableStateOf(false) }
         val backStack = LocalMainBackStack.current
         ExpandingButton(onClick = {

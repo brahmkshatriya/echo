@@ -162,7 +162,7 @@ fun MainSideNavigation(
                     .alpha(1 - transitionValue * 1.15f)
                     .graphicsLayer {
                         translationX = -size.width * transitionValue
-                        translationY = -(size.height - sheetPadding.toPx()) * transitionValue
+                        translationY = -(size.height - sheetPadding.toPx()) * positiveProgress
                     },
                 containerColor = Color.Unspecified,
                 contentColor = LocalContentColor.current

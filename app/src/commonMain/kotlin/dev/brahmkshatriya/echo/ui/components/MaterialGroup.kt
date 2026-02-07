@@ -75,7 +75,7 @@ class MaterialGroupScope internal constructor(
 
 
 fun LazyListScope.materialGroup(
-    roundedCornerRadius: Dp = 16.dp,
+    roundedCornerRadius: Dp = 22.dp,
     verticalPadding: Dp = 8.dp,
     content: MaterialGroupScope.() -> Unit,
 ) {

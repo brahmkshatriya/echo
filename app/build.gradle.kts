@@ -44,7 +44,7 @@ kotlin {
         }
         jvmMain.dependencies {
             api(compose.desktop.currentOs)
-            api(libs.ktor.client.okhttp)
+//            api(libs.ktor.client.okhttp)
             api(libs.kotlinx.coroutinesSwing)
             api(libs.brahmkshatriya.betterwindow)
         }

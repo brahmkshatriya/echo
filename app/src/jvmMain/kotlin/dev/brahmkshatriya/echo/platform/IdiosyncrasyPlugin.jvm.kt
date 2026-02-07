@@ -30,18 +30,17 @@ actual class IdiosyncrasyPlugin : ImagePlugin.PainterPlugin {
 }
 
 class ScaledBitmapPainter(
-    val image: ImageBitmap,
-    val filterQuality: FilterQuality = FilterQuality.High
+    val bitmap: ImageBitmap
 ) : Painter() {
     override val intrinsicSize: Size
-        get() = Size(image.width.toFloat(), image.height.toFloat())
+        get() = Size(bitmap.width.toFloat(), bitmap.height.toFloat())
 
     override fun DrawScope.onDraw() {
         val size = IntSize(
             size.width.fastRoundToInt(),
             size.height.fastRoundToInt(),
         )
-        val bitmap = Image.makeFromBitmap(image.asSkiaBitmap())
+        val bitmap = Image.makeFromBitmap(bitmap.asSkiaBitmap())
             .scale(size.width, size.height)
         drawImage(
             bitmap,
@@ -50,7 +49,7 @@ class ScaledBitmapPainter(
             dstSize = size,
             alpha = 1.0f,
             colorFilter = null,
-            filterQuality = filterQuality,
+            filterQuality = FilterQuality.None,
         )
     }
 
