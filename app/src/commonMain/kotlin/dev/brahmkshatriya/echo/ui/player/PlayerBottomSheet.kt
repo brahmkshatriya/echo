@@ -1,8 +1,6 @@
 package dev.brahmkshatriya.echo.ui.player
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,8 +9,9 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetScaffoldState
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHostState
@@ -28,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
@@ -41,7 +39,6 @@ import dev.brahmkshatriya.echo.ui.components.ProgressState
 import dev.brahmkshatriya.echo.ui.components.paddingMask
 import dev.brahmkshatriya.echo.ui.components.rememberBetterScaffoldState
 import dev.brahmkshatriya.echo.ui.components.rememberProgressState
-import dev.brahmkshatriya.echo.ui.components.simpleTween
 import kotlinx.coroutines.launch
 
 val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
@@ -52,6 +49,7 @@ data class PlayerSheet(
     val scaffoldState: BottomSheetScaffoldState,
     val sheetProgressState: ProgressState,
     val sheetOffsetState: ProgressState,
+    val backProgressState: ProgressState,
     val peekHeight: State<Dp>,
     val midPoint: IntState,
     val isExpanded: State<Boolean>,
@@ -95,7 +93,7 @@ fun PlayerBottomSheet(
     bottomPadding: Dp,
     content: @Composable () -> Unit,
 ) {
-    val peekHeightState = remember { mutableStateOf(64.dp) }
+    val peekHeightState = remember { mutableStateOf(72.dp) }
     val sheetOffsetState = rememberProgressState()
     val sheetProgressState = rememberProgressState()
     val backProgressState = rememberProgressState()
@@ -110,8 +108,8 @@ fun PlayerBottomSheet(
     val actualBottomPadding = safePadding.calculateBottomPadding() + bottomPadding
 
     val layoutDirection = LocalLayoutDirection.current
-    val startPadding = 12.dp + startPadding + safePadding.calculateStartPadding(layoutDirection)
-    val endPadding = 12.dp + safePadding.calculateEndPadding(layoutDirection)
+    val startPadding = startPadding + safePadding.calculateStartPadding(layoutDirection)
+    val endPadding = safePadding.calculateEndPadding(layoutDirection)
 
     CompositionLocalProvider(
         LocalPlayerSheet provides remember {
@@ -119,6 +117,7 @@ fun PlayerBottomSheet(
                 scaffoldState,
                 sheetProgressState,
                 sheetOffsetState,
+                backProgressState,
                 peekHeightState,
                 midPointState,
                 isExpandedState
@@ -138,7 +137,19 @@ fun PlayerBottomSheet(
             sheetContent = {
                 Box(modifier.fillMaxSize().graphicsLayer {
                     alpha = 1 + sheetProgress.coerceIn(-1f, 0f)
-                }) { PlayerItem() }
+                }) {
+                    val artWorks = listOf(
+                        "https://i1.sndcdn.com/artworks-f5P5EvBt5Qu57jLk-UNArNA-t1080x1080.jpg",
+                        "https://i1.sndcdn.com/artworks-mJmURREt59PyaXxx-nhowNw-t1080x1080.png",
+                        "https://i1.sndcdn.com/artworks-GzqTFOMbFiXRz5LL-G1R9uA-t1080x1080.jpg",
+                        "https://i1.sndcdn.com/artworks-UbVxfud5u7hzFUPc-pxSyCg-t1080x1080.png",
+                        "https://i1.sndcdn.com/artworks-7C8GJbswfVyxJ0z6-r5FPkQ-t1080x1080.png"
+                    )
+                    val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
+                    HorizontalPager(pagerState) {
+                        Box { PlayerItem(artWorks[it], it) }
+                    }
+                }
             },
             bottomPadding = actualBottomPadding,
             sheetProgressState = sheetProgressState,
@@ -155,34 +166,6 @@ fun PlayerBottomSheet(
             content = { midPoint, isExpanded ->
                 midPointState.intValue = midPoint
                 isExpandedState.value = isExpanded
-                val top = 8.dp
-                val peekHeight by peekHeightState
-                val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-
-                val animatedStart by animateDpAsState(startPadding, simpleTween())
-                val animatedEnd by animateDpAsState(endPadding, simpleTween())
-                val shape = remember(
-                    peekHeight, backProgress, positiveProgress, animatedStart, animatedEnd
-                ) {
-                    ClippedShape(
-                        peekHeight + top - 8.dp,
-                        positiveProgress,
-                        backProgress,
-                        animatedStart,
-                        animatedEnd
-                    )
-                }
-                Box(
-                    modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            alpha = 1 + sheetProgress.coerceIn(-1f, 0f)
-                            translationY =
-                                sheetOffsetState.value - top.toPx() * (1 - positiveProgress)
-                        }
-                        .clip(shape)
-                        .background(colorScheme.primary)
-                )
                 Box(Modifier.paddingMask().then(modifier).applyPlayerTranslation()) {
                     content()
                 }

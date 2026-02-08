@@ -13,6 +13,7 @@ compose-components-resources = { module = "org.jetbrains.compose.components:comp
 landscapist-animation = { module = "com.github.skydoves:landscapist-animation", version.ref = "landscapist" }
 landscapist-image = { module = "com.github.skydoves:landscapist-image", version.ref = "landscapist" }
 landscapist-placeholder = { module = "com.github.skydoves:landscapist-placeholder", version.ref = "landscapist" }
+landscapist-palette = { module = "com.github.skydoves:landscapist-palette", version.ref = "landscapist" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
@@ -38,7 +39,7 @@ brahmkshatriya-betterwindow = { module = "dev.brahmkshatriya:betterwindow", vers
 
 [bundles]
 compose = ["compose-runtime", "compose-foundation", "compose-components-resources", "ui", "ui-tooling", "compose-material3", "ui-tooling-preview"]
-landscapist = ["landscapist-image", "landscapist-animation", "landscapist-placeholder"]
+landscapist = ["landscapist-image", "landscapist-animation", "landscapist-placeholder", "landscapist-palette"]
 parsing = ["kotlinx-serialization-json"]
 lifecycle = ["androidx-lifecycle-viewmodelCompose", "androidx-lifecycle-runtimeCompose"]
 

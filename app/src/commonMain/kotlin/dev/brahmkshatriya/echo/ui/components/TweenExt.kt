@@ -4,7 +4,7 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 
-const val TIME_MS = 400
+const val TIME_MS = 300
 
 fun <T> simpleTween() = tween<T>(TIME_MS, easing = FastOutSlowInEasing)
 fun <T> springTween() = tween<T>(TIME_MS, easing = springCubicBezierEasing)

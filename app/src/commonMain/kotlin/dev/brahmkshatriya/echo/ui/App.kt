@@ -87,7 +87,7 @@ fun App() = EchoTheme {
         sheetProgress = LocalPlayerSheet.current?.sheetProgressState?.value ?: 0f
         peekHeight = LocalPlayerSheet.current?.peekHeight?.value ?: 0.dp
         val isSheetHidden = sheetProgress < -0.8f
-        val sheetPadding = if (isSheetHidden) 0.dp else peekHeight
+        val sheetPadding = if (isSheetHidden) 0.dp else peekHeight - 8.dp
         LookaheadScope {
             val modifier = Modifier
                 .fillMaxSize()
