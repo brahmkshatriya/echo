@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -70,7 +71,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun PlayerItem(image: String, i: Int) {
+fun PlayerItem(image: String, i: Int) = Box(Modifier.fillMaxSize()) {
     val paletteState = rememberPaletteState()
     val scheme = paletteState.value?.let {
         rememberDynamicMaterialThemeState(
@@ -123,15 +124,21 @@ fun SongPlayerItem(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.graphicsLayer {
-            val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-            val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-            alpha = 1 - positiveProgress
-            translationY = -positiveProgress * size.height
-        }.padding(playerPadding).padding(horizontal = 12.dp).animateBounds()
-            .clip(RoundedCornerShape(16.dp)).clickable {
-                scope.launch { sheetState?.expand() }
-            }.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier
+            .animateBounds()
+            .wrapContentHeight()
+            .graphicsLayer {
+                val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+                val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+                alpha = 1 - positiveProgress
+                translationY = -positiveProgress * size.height
+            }
+            .padding(playerPadding)
+            .padding(horizontal = 12.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { scope.launch { sheetState?.expand() } }
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Spacer(Modifier.padding(start = 4.dp).size(48.dp))
         Column(Modifier.weight(1f)) {

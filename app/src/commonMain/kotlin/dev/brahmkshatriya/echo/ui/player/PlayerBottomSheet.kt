@@ -14,24 +14,23 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.ui.components.BetterSheetScaffold
 import dev.brahmkshatriya.echo.ui.components.paddingMask
+import kotlinx.coroutines.launch
 
 val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
@@ -40,22 +39,19 @@ val LocalInitialPlayerSheetValue = staticCompositionLocalOf { SheetValue.Partial
 @Composable
 fun Modifier.applyPlayerTranslation() = run {
     val playerSheet = LocalPlayerSheet.current ?: return@run this
-    val density = LocalDensity.current
     val animatable = remember { Animatable(0f) }
-    LaunchedEffect(playerSheet, animatable) {
-        snapshotFlow {
-            val midPoint = playerSheet.midPointState.intValue
-            val pixelProgress = playerSheet.offsetState.floatValue
-            pixelProgress - midPoint
-        }.collect { y ->
-            val threshHold = density.run { playerSheet.peekHeight.toPx() / 2 }
+    val scope = rememberCoroutineScope()
+    graphicsLayer {
+        val midPoint = playerSheet.midPointState.intValue
+        val pixelProgress = playerSheet.offsetState.floatValue
+        val threshHold = playerSheet.peekHeight.toPx() / 3
+        scope.launch {
+            val y = pixelProgress - midPoint
             if (y < threshHold) {
                 if (y < 0f) animatable.snapTo(y)
                 else animatable.animateTo(y)
             } else animatable.animateTo(0f)
         }
-    }
-    graphicsLayer {
         translationY = animatable.value
     }
 }
@@ -64,7 +60,7 @@ fun Modifier.applyPlayerTranslation() = run {
 fun PlayerBottomSheet(
     betterSheet: BetterSheet,
     startPadding: Dp = 0.dp,
-    bottomPadding: Dp= 0.dp,
+    bottomPadding: Dp = 0.dp,
     content: @Composable () -> Unit,
 ) {
 
@@ -94,16 +90,22 @@ fun PlayerBottomSheet(
                     val sheetProgress by betterSheet.progressState
                     alpha = 1 + sheetProgress.coerceIn(-1f, 0f)
                 }) {
-                    val artWorks = listOf(
-                        "https://i1.sndcdn.com/artworks-f5P5EvBt5Qu57jLk-UNArNA-t1080x1080.jpg",
-                        "https://i1.sndcdn.com/artworks-mJmURREt59PyaXxx-nhowNw-t1080x1080.png",
-                        "https://i1.sndcdn.com/artworks-GzqTFOMbFiXRz5LL-G1R9uA-t1080x1080.jpg",
-                        "https://i1.sndcdn.com/artworks-UbVxfud5u7hzFUPc-pxSyCg-t1080x1080.png",
-                        "https://i1.sndcdn.com/artworks-7C8GJbswfVyxJ0z6-r5FPkQ-t1080x1080.png"
-                    )
+                    val artWorks = remember {
+                        listOf(
+                            "https://i1.sndcdn.com/artworks-f5P5EvBt5Qu57jLk-UNArNA-t1080x1080.jpg",
+                            "https://i1.sndcdn.com/artworks-mJmURREt59PyaXxx-nhowNw-t1080x1080.png",
+                            "https://i1.sndcdn.com/artworks-GzqTFOMbFiXRz5LL-G1R9uA-t1080x1080.jpg",
+                            "https://i1.sndcdn.com/artworks-UbVxfud5u7hzFUPc-pxSyCg-t1080x1080.png",
+                            "https://i1.sndcdn.com/artworks-7C8GJbswfVyxJ0z6-r5FPkQ-t1080x1080.png"
+                        )
+                    }
                     val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
-                    HorizontalPager(pagerState, beyondViewportPageCount = 1) {
-                        Box { PlayerItem(artWorks[it], it) }
+                    HorizontalPager(
+                        pagerState,
+                        Modifier.fillMaxSize(),
+                        beyondViewportPageCount = 1
+                    ) {
+                        PlayerItem(artWorks[it], it)
                     }
                 }
             },

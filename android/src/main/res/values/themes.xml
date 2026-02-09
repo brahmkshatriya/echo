@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.Echo" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">
+            @color/bg
+        </item>
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">
+            @drawable/art_splash_anim
+        </item>
+        <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">900</item>
+        <item name="android:windowSplashScreenBehavior" tools:targetApi="TIRAMISU">
+            icon_preferred
+        </item>
+        <item name="android:windowSplashScreenBrandingImage" tools:targetApi="s">
+            @drawable/art_brand
+        </item>
+    </style>
+</resources>

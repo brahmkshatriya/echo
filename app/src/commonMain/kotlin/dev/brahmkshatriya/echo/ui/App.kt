@@ -24,12 +24,14 @@ import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
@@ -85,9 +87,11 @@ fun App() = EchoTheme {
         config, Main(MainRoute.Home)
     )
     PlayerBottomSheet(betterSheet, startPadding.value, bottomPadding.value) {
-        val isSheetHidden = betterSheet.progressState.floatValue < -0.8f
-        val sheetPadding = remember(isSheetHidden, betterSheet.peekHeight) {
-            if (isSheetHidden) 0.dp else betterSheet.peekHeight - 8.dp
+        val sheetPaddingState = remember { mutableStateOf(0.dp) }
+        LaunchedEffect(betterSheet) {
+            snapshotFlow { betterSheet.progressState.floatValue < -0.8f }.collect {
+                sheetPaddingState.value = if (it) 0.dp else betterSheet.peekHeight - 8.dp
+            }
         }
         LookaheadScope {
             val modifier = Modifier
@@ -96,7 +100,7 @@ fun App() = EchoTheme {
                     start = startPadding.value,
                     bottom = bottomPadding.value
                 )
-                .padding(bottom = sheetPadding)
+                .padding(bottom = sheetPaddingState.value)
                 .animateBounds(this)
             val isExpanded = LocalPlayerSheet.current?.isExpandedState?.value ?: false
             BetterNavDisplay(
