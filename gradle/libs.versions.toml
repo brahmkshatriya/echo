@@ -26,6 +26,7 @@ compose-material3 = { module = "org.jetbrains.compose.material3:material3", vers
 materialKolor = { module = "com.materialkolor:material-kolor", version = "5.0.0-alpha06" }
 hypnoticcanvas = { module = "com.mikepenz.hypnoticcanvas:hypnoticcanvas", version = "0.4.1" }
 
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.10.0" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -40,8 +41,9 @@ brahmkshatriya-betterwindow = { module = "dev.brahmkshatriya:betterwindow", vers
 [bundles]
 compose = ["compose-runtime", "compose-foundation", "compose-components-resources", "ui", "ui-tooling", "compose-material3", "ui-tooling-preview"]
 landscapist = ["landscapist-image", "landscapist-animation", "landscapist-placeholder", "landscapist-palette"]
-parsing = ["kotlinx-serialization-json"]
+parsing = ["kotlin-reflect", "kotlinx-serialization-json"]
 lifecycle = ["androidx-lifecycle-viewmodelCompose", "androidx-lifecycle-runtimeCompose"]
+
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

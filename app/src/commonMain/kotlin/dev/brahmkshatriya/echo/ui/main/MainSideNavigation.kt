@@ -48,8 +48,9 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +59,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -86,33 +86,41 @@ fun MainSideNavigation(
     isVisible: Boolean,
     wasVisible: Boolean,
     sheetPadding: Dp,
-    sheetProgress: Float,
+    sheetProgress: MutableFloatState,
     selected: MainRoute?,
     bottomPaddingState: MutableState<Dp>,
     startPaddingState: MutableState<Dp>,
     onSelected: (MainRoute) -> Unit,
 ) {
+    val isVisibleState = remember { mutableStateOf(isVisible) }
+    val wasVisibleState = remember { mutableStateOf(wasVisible) }
+    SideEffect {
+        isVisibleState.value = isVisible
+        wasVisibleState.value = wasVisible
+    }
     BoxWithConstraints(modifier = Modifier.fillMaxSize().paddingMask()) {
-        startPaddingState.value = if (isVisible && maxWidth > 560.dp) 72.dp else 0.dp
-        bottomPaddingState.value = if (isVisible && maxWidth < 560.dp) 64.dp else 0.dp
+        startPaddingState.value = if (isVisibleState.value && maxWidth > 560.dp) 72.dp else 0.dp
+        bottomPaddingState.value = if (isVisibleState.value && maxWidth < 560.dp) 64.dp else 0.dp
 
         val animated = remember { Animatable(0f) }
         val state = LocalNavigationEventDispatcherOwner.current?.navigationEventDispatcher
-            ?.transitionState?.collectAsState()?.value
+            ?.transitionState
         LaunchedEffect(state, wasVisible) {
-            when (state) {
-                is NavigationEventTransitionState.InProgress -> if (wasVisible)
-                    animated.snapTo(1 - state.latestEvent.progress)
+            state?.collect {
+                when (it) {
+                    is NavigationEventTransitionState.InProgress -> if (wasVisible)
+                        animated.snapTo(1 - it.latestEvent.progress)
 
-                else ->
-                    animated.animateTo(if (isVisible) 0f else 1f, simpleTween())
+                    else -> animated.animateTo(if (isVisible) 0f else 1f, simpleTween())
+                }
             }
         }
-        val positiveProgress = sheetProgress.coerceAtLeast(0f)
-        val transitionValue = maxOf(positiveProgress, animated.value)
+
         val systemBars = WindowInsets.systemBars.asPaddingValues()
+
+
         AnimatedVisibility(
-            maxWidth < 560.dp,
+            remember(maxWidth) { maxWidth < 560.dp },
             Modifier.align(Alignment.BottomCenter),
             enter = fadeIn(simpleTween()) + slideInVertically(simpleTween()) { it },
             exit = fadeOut(simpleTween()) + slideOutVertically(simpleTween()) { it }
@@ -121,8 +129,10 @@ fun MainSideNavigation(
                 Modifier
                     .height(64.dp + systemBars.calculateBottomPadding())
                     .padding(horizontal = 8.dp)
-                    .alpha(1 - transitionValue * 1.15f)
                     .graphicsLayer {
+                        val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                        val transitionValue = maxOf(positiveProgress, animated.value)
+                        alpha = 1 - transitionValue * 1.15f
                         translationY = size.height * transitionValue
                     },
                 containerColor = Color.Unspecified,
@@ -146,6 +156,8 @@ fun MainSideNavigation(
                             indicatorColor = colorScheme.primaryFixedDim
                         ),
                         modifier = Modifier.graphicsLayer {
+                            val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                            val transitionValue = maxOf(positiveProgress, animated.value)
                             translationY = transitionValue * size.height * i / 2
                         }
                     )
@@ -159,8 +171,10 @@ fun MainSideNavigation(
         ) {
             NavigationRail(
                 Modifier.padding(top = 8.dp)
-                    .alpha(1 - transitionValue * 1.15f)
                     .graphicsLayer {
+                        val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                        val transitionValue = maxOf(positiveProgress, animated.value)
+                        alpha = 1 - transitionValue * 1.15f
                         translationX = -size.width * transitionValue
                         translationY = -(size.height - sheetPadding.toPx()) * positiveProgress
                     },
@@ -185,6 +199,8 @@ fun MainSideNavigation(
                             indicatorColor = colorScheme.primaryFixedDim
                         ),
                         modifier = Modifier.graphicsLayer {
+                            val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                            val transitionValue = maxOf(positiveProgress, animated.value)
                             translationX = transitionValue * -size.width * i / 2
                         }
                     )

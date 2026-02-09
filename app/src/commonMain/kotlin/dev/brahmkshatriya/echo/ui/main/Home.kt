@@ -232,7 +232,7 @@ fun Home() {
     ) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(bottom = 8.dp)) {
             val listState = rememberLazyListState()
-            val scrollbarState = listState.scrollbarState(itemsAvailable = 55)
+            val scrollbarState = listState.scrollbarState(itemsAvailable = 60)
 
             val backStack = LocalMainBackStack.current
             val cardColors = CardDefaults.cardColors(

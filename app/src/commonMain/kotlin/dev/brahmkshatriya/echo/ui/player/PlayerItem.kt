@@ -38,7 +38,6 @@ import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -96,35 +95,37 @@ fun SongPlayerItem(
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimary
 ) {
-    val playerUi = LocalPlayerSheet.current
+    val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
-    val sheetState = playerUi?.sheetState
-    val sheetProgress = playerUi?.sheetProgressState?.value ?: 0f
-    val backProgress = playerUi?.backProgressState?.value ?: 0f
+    val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
-    val peekHeight = playerUi?.peekHeight?.value ?: 72.dp
-    val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+    val peekHeight = playerSheet?.peekHeight ?: 72.dp
 
     val layoutDirection = LocalLayoutDirection.current
     val startPadding = playerPadding.calculateStartPadding(layoutDirection)
     val endPadding = playerPadding.calculateEndPadding(layoutDirection)
-    val animatedStart by animateDpAsState(startPadding + 12.dp, simpleTween())
-    val animatedEnd by animateDpAsState(endPadding + 12.dp, simpleTween())
-    val clippedShape = remember(
-        peekHeight, backProgress, positiveProgress, animatedStart, animatedEnd
-    ) {
-        ClippedShape(
+    val animatedStart = animateDpAsState(startPadding + 12.dp, simpleTween())
+    val animatedEnd = animateDpAsState(endPadding + 12.dp, simpleTween())
+
+    Box(Modifier.fillMaxSize().graphicsLayer {
+        val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+        val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+        val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
+        clip = true
+        shape = ClippedShape(
             peekHeight - 8.dp,
             positiveProgress,
             backProgress,
-            animatedStart,
-            animatedEnd
+            animatedStart.value,
+            animatedEnd.value
         )
-    }
-    Box(Modifier.fillMaxSize().clip(clippedShape).background(colorScheme.primary))
+    }.background(colorScheme.primary))
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.graphicsLayer {
+            val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+            val positiveProgress = sheetProgress.coerceIn(0f, 1f)
             alpha = 1 - positiveProgress
             translationY = -positiveProgress * size.height
         }.padding(playerPadding).padding(horizontal = 12.dp).animateBounds()
@@ -147,14 +148,10 @@ fun SongPlayerItem(
         }
     }
     val safePadding = WindowInsets.safeDrawing.asPaddingValues()
-    val targetSize = 48.dp
     val animatedTargetX = animateDpAsState(
         playerPadding.calculateStartPadding(layoutDirection) + 20.dp,
         simpleTween()
     )
-    val targetX by animatedTargetX
-    val targetY = 8.dp
-    val offset = 1 - sheetProgress.coerceIn(0f, 1f)
     val widthState = remember { mutableIntStateOf(0) }
     Column(Modifier.onSizeChanged {
         widthState.intValue = it.width
@@ -167,6 +164,9 @@ fun SongPlayerItem(
                 }
                 .padding(top = safePadding.calculateTopPadding())
                 .graphicsLayer {
+                    val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+                    val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+                    val offset = 1 - sheetProgress.coerceIn(0f, 1f)
                     alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
                     translationY = offset * size.height
                 }
@@ -193,18 +193,27 @@ fun SongPlayerItem(
                 )
             }
         }
-        val horizontalPadding = 16.dp
-        val verticalPadding = 8.dp
+        val horizontalPadding = remember { 16.dp }
+        val verticalPadding = remember { 8.dp }
+        val maxSize = remember { 320.dp }
         BetterImage(
             { image },
             "Song $i",
             Modifier
                 .padding(vertical = verticalPadding, horizontal = horizontalPadding)
-                .widthIn(max = 320.dp)
-                .heightIn(max = 320.dp)
+                .widthIn(max = maxSize)
+                .heightIn(max = maxSize)
                 .aspectRatio(1f)
                 .fillMaxSize()
                 .graphicsLayer {
+                    val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+                    val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+                    val offset = 1 - sheetProgress.coerceIn(0f, 1f)
+
+                    val targetX = animatedTargetX.value
+                    val targetY = 8.dp
+                    val targetSize = 48.dp
+
                     val targetScale = targetSize.toPx() / size.height
                     scaleX = 1 + (targetScale - 1) * offset
                     scaleY = scaleX
@@ -217,7 +226,8 @@ fun SongPlayerItem(
                     clip = true
                     shape = RoundedCornerShape((8 / scaleX).dp)
                 }
-                .background(colorScheme.primaryFixed), PalettePlugin { paletteState.value = it }
+                .background(colorScheme.primaryFixed),
+            PalettePlugin { paletteState.value = it }
         )
     }
 }

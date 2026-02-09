@@ -25,7 +25,6 @@ import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -43,9 +42,11 @@ import dev.brahmkshatriya.echo.platform.getPlatform
 import dev.brahmkshatriya.echo.ui.components.BetterNavDisplay
 import dev.brahmkshatriya.echo.ui.components.LocalMainBackStack
 import dev.brahmkshatriya.echo.ui.components.expandingButton
+import dev.brahmkshatriya.echo.ui.components.rememberBetterSheet
 import dev.brahmkshatriya.echo.ui.main.ExtensionSelectorFABMenu
 import dev.brahmkshatriya.echo.ui.main.MainRoute
 import dev.brahmkshatriya.echo.ui.main.MainSideNavigation
+import dev.brahmkshatriya.echo.ui.player.LocalInitialPlayerSheetValue
 import dev.brahmkshatriya.echo.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.ui.player.PlayerBottomSheet
 import dev.brahmkshatriya.echo.ui.theme.EchoTheme
@@ -76,18 +77,18 @@ private val config = SavedStateConfiguration {
 @Preview
 @Composable
 fun App() = EchoTheme {
-    var sheetProgress by remember { mutableFloatStateOf(0f) }
-    var peekHeight by remember { mutableStateOf(0.dp) }
+    val initialSheetValue = LocalInitialPlayerSheetValue.current
+    val betterSheet = rememberBetterSheet(72.dp, initialSheetValue)
     val startPadding = remember { mutableStateOf(0.dp) }
     val bottomPadding = remember { mutableStateOf(0.dp) }
     val backStack = rememberNavBackStack(
         config, Main(MainRoute.Home)
     )
-    PlayerBottomSheet(startPadding.value, bottomPadding.value) {
-        sheetProgress = LocalPlayerSheet.current?.sheetProgressState?.value ?: 0f
-        peekHeight = LocalPlayerSheet.current?.peekHeight?.value ?: 0.dp
-        val isSheetHidden = sheetProgress < -0.8f
-        val sheetPadding = if (isSheetHidden) 0.dp else peekHeight - 8.dp
+    PlayerBottomSheet(betterSheet, startPadding.value, bottomPadding.value) {
+        val isSheetHidden = betterSheet.progressState.floatValue < -0.8f
+        val sheetPadding = remember(isSheetHidden, betterSheet.peekHeight) {
+            if (isSheetHidden) 0.dp else betterSheet.peekHeight - 8.dp
+        }
         LookaheadScope {
             val modifier = Modifier
                 .fillMaxSize()
@@ -97,9 +98,10 @@ fun App() = EchoTheme {
                 )
                 .padding(bottom = sheetPadding)
                 .animateBounds(this)
+            val isExpanded = LocalPlayerSheet.current?.isExpandedState?.value ?: false
             BetterNavDisplay(
                 backStack,
-                LocalPlayerSheet.current?.isExpanded?.value?.not() ?: true,
+                !isExpanded,
                 modifier
             ) {
                 entry<Main> {
@@ -119,8 +121,8 @@ fun App() = EchoTheme {
     MainSideNavigation(
         backStack.size == 1,
         backStack.size == 2,
-        peekHeight,
-        sheetProgress,
+        betterSheet.peekHeight,
+        betterSheet.progressState,
         (backStack.last() as? Main)?.route,
         bottomPadding,
         startPadding
