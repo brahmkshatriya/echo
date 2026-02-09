@@ -15,7 +15,6 @@ android {
         versionCode = gitCount
         versionName = "${property("VERSION")}-$gitHash"
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -28,6 +27,7 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("debug")
+            packaging.resources.excludes.add("META-INF/*")
         }
     }
 }
