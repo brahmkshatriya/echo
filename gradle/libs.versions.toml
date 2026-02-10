@@ -4,7 +4,7 @@ agp = "9.0.0"
 compose = "1.11.0-alpha02"
 ktor = "3.4.0"
 androidxLifecycle = "2.10.0-alpha08"
-landscapist = "2.9.4"
+landscapist = "2.9.3"
 
 [libraries]
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
