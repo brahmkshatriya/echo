@@ -1,15 +1,14 @@
 package dev.brahmkshatriya.echo.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandIn
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,14 +16,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.IconButtonDefaults.filledIconButtonColors
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -38,15 +37,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.SpanStyle
@@ -68,89 +63,49 @@ import dev.brahmkshatriya.echo.ui.components.scrollbarState
 import dev.brahmkshatriya.echo.ui.theme.LocalSurfaceColor
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.ic_back
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun Header(i: String) {
     val list = remember(i) { listOf("Header $i", "Apple", "Banana", "Cinnamon") }
     val selected = remember { mutableIntStateOf(0) }
-    val lazyListState = rememberLazyListState()
 
-    val canScrollBackward by remember {
-        derivedStateOf { lazyListState.canScrollBackward }
-    }
-    val canScrollForward by remember {
-        derivedStateOf { lazyListState.canScrollForward }
-    }
-    val coroutineScope = rememberCoroutineScope()
-
-    Box {
-        LazyRow(
-            state = lazyListState,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(12.dp, 4.dp),
-        ) {
-            items(list.size) { i ->
+    ButtonGroup(
+        {
+            ButtonGroupDefaults.OverflowIndicator(it)
+        },
+        expandedRatio = 0.08f,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.padding(12.dp, 4.dp),
+    ) {
+        list.forEachIndexed { i, item ->
+            customItem({
+                val interactionSource = remember { MutableInteractionSource() }
                 ToggleButton(
+                    modifier = Modifier.animateWidth(interactionSource),
+                    interactionSource = interactionSource,
                     checked = i == selected.intValue,
                     onCheckedChange = {
                         if (it) selected.intValue = i
                     },
+                    contentPadding = PaddingValues(vertical = 8.dp),
                     colors = ToggleButtonDefaults.tonalToggleButtonColors(),
                 ) {
-                    Text(list[i])
+                    Row {
+                        Spacer(Modifier.width(16.dp))
+                        Text(item, softWrap = false)
+                        Spacer(Modifier.width(16.dp))
+                    }
                 }
-            }
-        }
-
-        AnimatedVisibility(
-            canScrollBackward,
-            Modifier.align(Alignment.CenterStart).padding(horizontal = 8.dp),
-            enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
-            exit = fadeOut() + shrinkOut(shrinkTowards = Alignment.Center)
-        ) {
-            FilledIconButton(
-                onClick = {
-                    coroutineScope.launch {
-                        lazyListState.animateScrollToItem(
-                            (lazyListState.firstVisibleItemIndex - 1).coerceAtLeast(0)
-                        )
-                    }
-                },
-                colors = filledIconButtonColors(colorScheme.secondary),
-                shapes = IconButtonDefaults.shapes()
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_back),
-                    contentDescription = "Scroll left"
+            }, {
+                DropdownMenuItem(
+                    text = { Text(item) },
+                    onClick = {
+                        selected.intValue = i
+                        it.dismiss()
+                    },
                 )
-            }
-        }
-
-        AnimatedVisibility(
-            canScrollForward,
-            Modifier.align(Alignment.CenterEnd).padding(horizontal = 8.dp),
-            enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
-            exit = fadeOut() + shrinkOut(shrinkTowards = Alignment.Center)
-        ) {
-            FilledIconButton(
-                onClick = {
-                    coroutineScope.launch {
-                        lazyListState.animateScrollToItem(
-                            (lazyListState.firstVisibleItemIndex + 1).coerceAtMost(list.size - 1)
-                        )
-                    }
-                },
-                colors = filledIconButtonColors(colorScheme.secondary),
-                shapes = IconButtonDefaults.shapes()
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_back),
-                    modifier = Modifier.scale(-1f),
-                    contentDescription = "Scroll right"
-                )
-            }
+            })
         }
     }
 }

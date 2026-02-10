@@ -62,8 +62,7 @@ compose.desktop {
                 configurationFiles.from(
                     collectDependencyProguard.map {
                         it.outputs.files.asFileTree.matching { include("**/*.pro") }
-                    },
-                    project.file("proguard.pro")
+                    }
                 )
             }
         }

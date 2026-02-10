@@ -5,6 +5,7 @@ package dev.brahmkshatriya.echo.ui.player
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,14 +18,18 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -67,23 +72,22 @@ import dev.brahmkshatriya.echo.ui.theme.animateBounds
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.ic_close
 import echo.app.generated.resources.ic_keyboard_arrow_down
+import echo.app.generated.resources.ic_play_arrow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun PlayerItem(image: String, i: Int) = Box(Modifier.fillMaxSize()) {
     val paletteState = rememberPaletteState()
-    val scheme = paletteState.value?.let {
-        rememberDynamicMaterialThemeState(
-            isDark = isSystemInDarkTheme(),
-            style = PaletteStyle.Rainbow,
-            specVersion = ColorSpec.SpecVersion.SPEC_2021,
-            primary = (it.vibrantSwatch ?: it.dominantSwatch ?: it.lightVibrantSwatch)?.color
-                ?: Primary,
-            secondary = (it.mutedSwatch ?: it.lightMutedSwatch)?.color,
-            tertiary = (it.darkVibrantSwatch ?: it.mutedSwatch)?.color,
-        ).colorScheme
-    } ?: colorScheme
+    val color = paletteState.value?.let {
+        (it.vibrantSwatch ?: it.dominantSwatch ?: it.lightVibrantSwatch)?.color
+    } ?: Primary
+    val scheme = rememberDynamicMaterialThemeState(
+        isDark = isSystemInDarkTheme(),
+        style = PaletteStyle.Rainbow,
+        specVersion = ColorSpec.SpecVersion.SPEC_2021,
+        seedColor = color,
+    ).colorScheme
     MaterialExpressiveTheme(animateColorScheme(scheme)) {
         SongPlayerItem(paletteState, image, i)
     }
@@ -94,7 +98,7 @@ fun PlayerItem(image: String, i: Int) = Box(Modifier.fillMaxSize()) {
 fun SongPlayerItem(
     paletteState: MutableState<Palette?>, image: String, i: Int
 ) = CompositionLocalProvider(
-    LocalContentColor provides colorScheme.onPrimary
+    LocalContentColor provides colorScheme.onPrimaryContainer
 ) {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
@@ -120,7 +124,7 @@ fun SongPlayerItem(
             animatedStart.value,
             animatedEnd.value
         )
-    }.background(colorScheme.primary))
+    }.background(colorScheme.primaryContainer))
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -143,16 +147,39 @@ fun SongPlayerItem(
         Spacer(Modifier.padding(start = 4.dp).size(48.dp))
         Column(Modifier.weight(1f)) {
             val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
-            Text("Song $i", fontWeight = FontWeight(600), style = mergedStyle)
-            Text("Artist $i", style = mergedStyle)
+            Text("Song $i", fontWeight = FontWeight.Bold, style = mergedStyle)
+            Text("Artist $i",fontWeight = FontWeight.Normal, style = mergedStyle)
         }
-        IconButton(
-            onClick = { scope.launch { sheetState?.hide() } }, shapes = IconButtonDefaults.shapes()
-        ) {
-            Icon(
-                painterResource(Res.drawable.ic_close), contentDescription = "Close Player"
-            )
+        ButtonGroup({}, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            customItem({
+                val interactionSource = remember { MutableInteractionSource() }
+                FilledIconButton(
+                    onClick = { },
+                    interactionSource = interactionSource,
+                    modifier = Modifier.size(48.dp).animateWidth(interactionSource),
+                    shapes = IconButtonDefaults.shapes()
+                ) {
+                    Icon(
+                        painterResource(Res.drawable.ic_play_arrow), contentDescription = "Play"
+                    )
+                }
+            }, {})
+            customItem({
+                val interactionSource = remember { MutableInteractionSource() }
+                IconButton(
+                    onClick = { scope.launch { sheetState?.hide() } },
+                    interactionSource = interactionSource,
+                    modifier = Modifier.width(40.dp).height(48.dp).animateWidth(interactionSource),
+                    colors = IconButtonDefaults.iconButtonColors(colorScheme.primary.copy(0.25f)),
+                    shapes = IconButtonDefaults.shapes()
+                ) {
+                    Icon(
+                        painterResource(Res.drawable.ic_close), contentDescription = "Close Player"
+                    )
+                }
+            }, {})
         }
+
     }
     val safePadding = WindowInsets.safeDrawing.asPaddingValues()
     val animatedTargetX = animateDpAsState(
@@ -165,7 +192,7 @@ fun SongPlayerItem(
     }) {
         val topBarHeight = remember { mutableIntStateOf(0) }
         Row(
-            Modifier.padding(horizontal = 8.dp)
+            Modifier.padding(end = 8.dp)
                 .onSizeChanged {
                     topBarHeight.intValue = it.height
                 }
@@ -188,9 +215,17 @@ fun SongPlayerItem(
                     contentDescription = "Minimize Player"
                 )
             }
-            Spacer(Modifier.weight(1f))
+            Column(
+                Modifier.padding(start = 8.dp, top = 8.dp).weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
+                Text("Playing From", fontWeight = FontWeight.Normal,style = mergedStyle)
+                Text("Album $i", fontWeight = FontWeight.Bold, style = mergedStyle)
+            }
             IconButton(
                 onClick = { },
+                modifier = Modifier.padding(top = 8.dp),
                 shapes = IconButtonDefaults.shapes()
             ) {
                 BetterImage(
@@ -202,7 +237,7 @@ fun SongPlayerItem(
         }
         val horizontalPadding = remember { 16.dp }
         val verticalPadding = remember { 8.dp }
-        val maxSize = remember { 320.dp }
+        val maxSize = remember { 360.dp }
         BetterImage(
             { image },
             "Song $i",

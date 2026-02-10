@@ -46,7 +46,7 @@ fun EchoTheme(
     val customTheme = LocalCustomTheme.current
     val dynamicThemeState = rememberDynamicMaterialThemeState(
         isDark = isDarkTheme,
-        style = PaletteStyle.Rainbow,
+        style = PaletteStyle.FruitSalad,
         specVersion = ColorSpec.SpecVersion.SPEC_2021,
         primary = Primary,
         secondary = Secondary,
