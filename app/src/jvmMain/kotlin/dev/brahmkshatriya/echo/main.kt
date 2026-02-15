@@ -30,7 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 fun main() = application {
     val windowState = rememberWindowState(
         position = WindowPosition.Aligned(Alignment.Center),
-        size = DpSize(400.dp, 600.dp)
+        size = DpSize(960.dp, 640.dp)
     )
     BetterWindow(
         ::exitApplication,

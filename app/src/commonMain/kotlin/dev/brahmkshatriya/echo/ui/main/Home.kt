@@ -72,7 +72,10 @@ fun Header(i: String) {
 
     ButtonGroup(
         {
-            ButtonGroupDefaults.OverflowIndicator(it)
+            ButtonGroupDefaults.OverflowIndicator(
+                it,
+                colors = IconButtonDefaults.filledIconButtonColors(colorScheme.secondaryContainer)
+            )
         },
         expandedRatio = 0.08f,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
