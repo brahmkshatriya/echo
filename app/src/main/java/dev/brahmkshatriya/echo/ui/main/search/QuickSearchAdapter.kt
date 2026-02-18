@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.utils.ui.scrolling.ScrollAnimListAdapter
 class QuickSearchAdapter(
     val listener: Listener,
 ) : ScrollAnimListAdapter<QuickSearchAdapter.Item, QuickSearchViewHolder>(DiffCallback) {
+    
     data class Item(
         val extensionId: String,
         val actual: QuickSearchItem,

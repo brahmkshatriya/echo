@@ -23,24 +23,58 @@ class SearchViewModel(
 ) : ViewModel() {
     val queryFlow = MutableStateFlow("")
     private val music = extensionLoader.music
+    private val _currentExtension = extensionLoader.current
+    val currentExtension get() = _currentExtension.value
     val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
-    fun quickSearch(extensionId: String, query: String) {
+
+    fun quickSearch(extensionId: String?, query: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val extension = music.getExtension(extensionId)
-            val list = extension?.getIf<QuickSearchClient, List<QuickSearchItem>>(app.throwFlow) {
-                quickSearch(query)
-            } ?: defaultQuickSearch(extension, app.context, query)
+            val targetExtId = extensionId ?: currentExtension?.id
+            val list = if (query.isBlank()) {
+                if (targetExtId != null) {
+                    val extension = music.getExtension(targetExtId)
+                    defaultQuickSearch(extension, app.context, "")
+                } else {
+                    getAllHistory()
+                }
+            } else {
+                val extId = targetExtId ?: return@launch
+                val extension = music.getExtension(extId)
+                extension?.getIf<QuickSearchClient, List<QuickSearchItem>>(app.throwFlow) {
+                    quickSearch(query)
+                } ?: defaultQuickSearch(extension, app.context, query)
+            }
             quickFeed.value = list
         }
     }
 
-    fun deleteSearch(extensionId: String, item: QuickSearchItem, query: String) {
-        viewModelScope.launch {
-            val extension = music.getExtension(extensionId)
-            extension?.getIf<QuickSearchClient, Unit>(app.throwFlow) {
-                deleteQuickSearch(item)
-            } ?: defaultDeleteSearch(extension, app.context, item)
-            quickSearch(extensionId, query)
+    private fun getAllHistory(): List<QuickSearchItem> {
+        val context = app.context
+        val extensions = music.value.filter { it.isEnabled }
+        
+        return extensions.flatMap { extension ->
+            getHistory(extension.prefs(context)).map { query ->
+                QuickSearchItem.Query(query, true, mapOf("extensionId" to extension.id))
+            }
+        }.distinctBy { it.title }.take(10)
+    }
+
+    fun deleteSearch(extensionId: String?, item: QuickSearchItem, query: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Determine which extension's history to delete from
+            val targetExtId = when {
+                !extensionId.isNullOrBlank() -> extensionId
+                item is QuickSearchItem.Query -> item.extras["extensionId"]
+                else -> null
+            } ?: currentExtension?.id ?: return@launch
+            
+            val extension = music.getExtension(targetExtId)
+            defaultDeleteSearch(extension, app.context, item)
+            
+            // Refresh the quick search results
+            val currentQuery = queryFlow.value
+            val currentExtId = extensionId ?: currentExtension?.id
+            quickSearch(currentExtId, currentQuery)
         }
     }
 

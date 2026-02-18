@@ -40,7 +40,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     private val argId by lazy { arguments?.getString("extensionId") }
     private val searchViewModel by viewModel<SearchViewModel>()
 
-    private var extensionId = ""
+    private var extensionId: String? = null
 
     private val feedData by lazy {
         val vm by viewModel<FeedViewModel>()
@@ -127,7 +127,8 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         }
         binding.quickSearchView.editText.setText(searchViewModel.queryFlow.value)
         binding.quickSearchView.editText.doOnTextChanged { text, _, _, _ ->
-            searchViewModel.quickSearch(extensionId, text.toString())
+            val currentExtId = extensionId ?: searchViewModel.currentExtension?.id
+            searchViewModel.quickSearch(currentExtId, text.toString())
         }
         binding.quickSearchView.editText.setOnEditorActionListener { textView, _, _ ->
             val query = textView.text.toString()
@@ -186,8 +187,9 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
         binding.quickSearchRecyclerView.adapter = quickSearchAdapter
         observe(searchViewModel.quickFeed) { list ->
+            val extId = extensionId ?: searchViewModel.currentExtension?.id
             quickSearchAdapter.submitList(list.map {
-                QuickSearchAdapter.Item(extensionId, it)
+                QuickSearchAdapter.Item(extId ?: "", it)
             })
         }
     }
