@@ -292,4 +292,6 @@
     <string name="removed_x_from_downloads">Eliminado %1$s de las descargas</string>
     <string name="download_complete">Descarga completada</string>
     <string name="app_widget_description">Echo en su pantalla de inicio</string>
+    <string name="feed">Alimentar</string>
+    <string name="item">Artículo</string>
 </resources>
