@@ -36,6 +36,16 @@ val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
 val LocalInitialPlayerSheetValue = staticCompositionLocalOf { SheetValue.PartiallyExpanded }
 
+val LocalPlayerItems = staticCompositionLocalOf {
+    listOf(
+        "https://i1.sndcdn.com/artworks-f5P5EvBt5Qu57jLk-UNArNA-t1080x1080.jpg",
+        "https://i1.sndcdn.com/artworks-mJmURREt59PyaXxx-nhowNw-t1080x1080.png",
+        "https://i1.sndcdn.com/artworks-GzqTFOMbFiXRz5LL-G1R9uA-t1080x1080.jpg",
+        "https://i1.sndcdn.com/artworks-UbVxfud5u7hzFUPc-pxSyCg-t1080x1080.png",
+        "https://i1.sndcdn.com/artworks-7C8GJbswfVyxJ0z6-r5FPkQ-t1080x1080.png"
+    )
+}
+
 @Composable
 fun Modifier.applyPlayerTranslation() = run {
     val playerSheet = LocalPlayerSheet.current ?: return@run this
@@ -90,22 +100,14 @@ fun PlayerBottomSheet(
                     val sheetProgress by betterSheet.progressState
                     alpha = 1 + sheetProgress.coerceIn(-1f, 0f)
                 }) {
-                    val artWorks = remember {
-                        listOf(
-                            "https://i1.sndcdn.com/artworks-f5P5EvBt5Qu57jLk-UNArNA-t1080x1080.jpg",
-                            "https://i1.sndcdn.com/artworks-mJmURREt59PyaXxx-nhowNw-t1080x1080.png",
-                            "https://i1.sndcdn.com/artworks-GzqTFOMbFiXRz5LL-G1R9uA-t1080x1080.jpg",
-                            "https://i1.sndcdn.com/artworks-UbVxfud5u7hzFUPc-pxSyCg-t1080x1080.png",
-                            "https://i1.sndcdn.com/artworks-7C8GJbswfVyxJ0z6-r5FPkQ-t1080x1080.png"
-                        )
-                    }
+                    val artWorks = LocalPlayerItems.current
                     val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
                     HorizontalPager(
                         pagerState,
                         Modifier.fillMaxSize(),
                         beyondViewportPageCount = 1
                     ) {
-                        PlayerItem(artWorks[it], it)
+                        PlayerItem(it)
                     }
                 }
             },

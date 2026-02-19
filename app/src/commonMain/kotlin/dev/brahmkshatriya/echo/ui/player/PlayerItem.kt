@@ -10,7 +10,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -110,7 +109,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun PlayerItem(image: String, i: Int) = Box(Modifier.fillMaxSize()) {
+fun PlayerItem(i: Int) = Box(Modifier.fillMaxSize()) {
     val paletteState = rememberPaletteState()
     val color = paletteState.value?.let {
         (it.vibrantSwatch ?: it.dominantSwatch ?: it.lightVibrantSwatch)?.color
@@ -122,140 +121,162 @@ fun PlayerItem(image: String, i: Int) = Box(Modifier.fillMaxSize()) {
         seedColor = color,
     ).colorScheme
     MaterialExpressiveTheme(animateColorScheme(scheme)) {
-        SongPlayerItem(image, i) { paletteState.value = it }
+        SongPlayerItem(i) { paletteState.value = it }
     }
 }
 
 @Composable
 fun SongPlayerItem(
-    image: String, i: Int,
+    i: Int,
     paletteState: (Palette) -> Unit,
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimaryContainer
 ) {
+    BackgroundBox()
+    CollapsedPlayer(i)
+    val widthState = remember { mutableIntStateOf(0) }
+    Column(Modifier.onSizeChanged { widthState.intValue = it.width }) {
+        val topBarHeight = remember { mutableIntStateOf(0) }
+        TopBar(i) { topBarHeight.intValue = it }
+        CoverArt(i, paletteState, { topBarHeight.intValue }, { widthState.intValue })
+    }
+}
+
+@Composable
+fun BackgroundBox() {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
-    val sheetState = playerSheet?.sheetState
-    val scope = rememberCoroutineScope()
     val peekHeight = playerSheet?.peekHeight ?: 72.dp
-
     val layoutDirection = LocalLayoutDirection.current
     val startPadding = playerPadding.calculateStartPadding(layoutDirection)
     val endPadding = playerPadding.calculateEndPadding(layoutDirection)
     val animatedStart = animateDpAsState(startPadding + 12.dp, simpleTween())
     val animatedEnd = animateDpAsState(endPadding + 12.dp, simpleTween())
 
-    Box(Modifier.fillMaxSize().graphicsLayer {
-        val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-        val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-        val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
-        clip = true
-        shape = ClippedShape(
-            peekHeight - 8.dp,
-            positiveProgress,
-            backProgress,
-            animatedStart.value,
-            animatedEnd.value
-        )
-    }.background(colorScheme.primaryContainer))
+    Box(
+        Modifier.fillMaxSize().graphicsLayer {
+            val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+            val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+            val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
+            clip = true
+            shape = ClippedShape(
+                peekHeight - 8.dp,
+                positiveProgress,
+                backProgress,
+                animatedStart.value,
+                animatedEnd.value
+            )
+        }.background(colorScheme.primaryContainer)
+    )
+}
 
-    CollapsedPlayer(i)
+@Composable
+fun CoverArt(
+    i: Int,
+    paletteState: (Palette) -> Unit,
+    topBarHeight: () -> Int,
+    widthState: () -> Int
+) {
+    val playerSheet = LocalPlayerSheet.current
+    val playerPadding = LocalPlayerPadding.current
 
-    val safePadding = WindowInsets.safeDrawing.asPaddingValues()
+    val layoutDirection = LocalLayoutDirection.current
+    val artWorks = LocalPlayerItems.current
+    val image = artWorks[i]
+    val horizontalPadding = remember { 16.dp }
+    val verticalPadding = remember { 8.dp }
+    val maxSize = remember { 360.dp }
+
     val animatedTargetX = animateDpAsState(
         playerPadding.calculateStartPadding(layoutDirection) + 20.dp,
         simpleTween()
     )
-    val widthState = remember { mutableIntStateOf(0) }
-    Column(Modifier.onSizeChanged {
-        widthState.intValue = it.width
-    }) {
-        val topBarHeight = remember { mutableIntStateOf(0) }
-        Row(
-            Modifier.padding(end = 8.dp)
-                .onSizeChanged {
-                    topBarHeight.intValue = it.height
-                }
-                .padding(top = safePadding.calculateTopPadding())
-                .graphicsLayer {
-                    val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-                    val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-                    val offset = 1 - sheetProgress.coerceIn(0f, 1f)
-                    alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
-                    translationY = offset * size.height
-                }
-        ) {
-            IconButton(
-                onClick = {
-                    scope.launch { sheetState?.show() }
-                }, shapes = IconButtonDefaults.shapes()
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_keyboard_arrow_down),
-                    contentDescription = "Minimize Player"
-                )
-            }
-            Column(
-                Modifier.padding(start = 8.dp, top = 8.dp).weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
-                Text("Playing From", fontWeight = FontWeight.Normal, style = mergedStyle)
-                Text("Album $i", fontWeight = FontWeight.Bold, style = mergedStyle)
-            }
-            IconButton(
-                onClick = { },
-                modifier = Modifier.padding(top = 8.dp),
-                shapes = IconButtonDefaults.shapes()
-            ) {
-                BetterImage(
-                    model = { "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN" },
-                    "Spotify",
-                    modifier = Modifier.padding(4.dp).clip(Circle.toShape())
-                )
-            }
-        }
-        val horizontalPadding = remember { 16.dp }
-        val verticalPadding = remember { 8.dp }
-        val maxSize = remember { 360.dp }
-        BetterImage(
-            { image },
-            "Song $i",
-            Modifier
-                .padding(vertical = verticalPadding, horizontal = horizontalPadding)
-                .widthIn(max = maxSize)
-                .heightIn(max = maxSize)
-                .aspectRatio(1f)
-                .fillMaxSize()
-                .graphicsLayer {
-                    val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-                    val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-                    val offset = 1 - sheetProgress.coerceIn(0f, 1f)
+    BetterImage(
+        { image },
+        "Song $i",
+        Modifier
+            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
+            .widthIn(max = maxSize)
+            .heightIn(max = maxSize)
+            .aspectRatio(1f)
+            .fillMaxSize()
+            .graphicsLayer {
+                val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+                val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+                val offset = 1 - sheetProgress.coerceIn(0f, 1f)
 
-                    val targetX = animatedTargetX.value
-                    val targetY = 8.dp
-                    val targetSize = 48.dp
+                val targetX = animatedTargetX.value
+                val targetY = 8.dp
+                val targetSize = 48.dp
 
-                    val targetScale = targetSize.toPx() / size.height
-                    scaleX = 1 + (targetScale - 1) * offset
-                    scaleY = scaleX
-                    transformOrigin = TransformOrigin(0f, 0f)
-                    val center = (widthState.intValue - size.width) / 2f
-                    translationX =
-                        -horizontalPadding.toPx() + targetX.toPx() * offset + center * positiveProgress
-                    val height = topBarHeight.intValue
-                    translationY = (-verticalPadding.toPx() - height + targetY.toPx()) * offset
-                    clip = true
-                    shape = RoundedCornerShape((8 / scaleX).dp)
-                }
-                .background(colorScheme.primaryFixed),
-            PalettePlugin { paletteState(it) }
-        )
-    }
+                val targetScale = targetSize.toPx() / size.height
+                scaleX = 1 + (targetScale - 1) * offset
+                scaleY = scaleX
+                transformOrigin = TransformOrigin(0f, 0f)
+                val center = (widthState() - size.width) / 2f
+                translationX =
+                    -horizontalPadding.toPx() + targetX.toPx() * offset + center * positiveProgress
+
+                translationY = (-verticalPadding.toPx() - topBarHeight() + targetY.toPx()) * offset
+                clip = true
+                shape = RoundedCornerShape((8 / scaleX).dp)
+            }
+            .background(colorScheme.primaryFixed),
+        PalettePlugin { paletteState(it) }
+    )
 }
 
-@Suppress("unused")
-fun Modifier.animateWidth(source: InteractionSource) = this
+@Composable
+fun TopBar(index: Int, onHeightChanged: (Int) -> Unit) {
+    val playerSheet = LocalPlayerSheet.current
+    val safePadding = WindowInsets.safeDrawing.asPaddingValues()
+    val sheetState = playerSheet?.sheetState
+    val scope = rememberCoroutineScope()
+    Row(
+        Modifier.padding(end = 8.dp)
+            .onSizeChanged {
+                onHeightChanged(it.height)
+            }
+            .padding(top = safePadding.calculateTopPadding())
+            .graphicsLayer {
+                val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+                val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+                val offset = 1 - sheetProgress.coerceIn(0f, 1f)
+                alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
+                translationY = offset * size.height
+            }
+    ) {
+        IconButton(
+            onClick = {
+                scope.launch { sheetState?.show() }
+            }, shapes = IconButtonDefaults.shapes()
+        ) {
+            Icon(
+                painterResource(Res.drawable.ic_keyboard_arrow_down),
+                contentDescription = "Minimize Player"
+            )
+        }
+        Column(
+            Modifier.padding(start = 8.dp, top = 8.dp).weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
+            Text("Playing From", fontWeight = FontWeight.Normal, style = mergedStyle)
+            Text("Album $index", fontWeight = FontWeight.Bold, style = mergedStyle)
+        }
+        IconButton(
+            onClick = { },
+            modifier = Modifier.padding(top = 8.dp),
+            shapes = IconButtonDefaults.shapes()
+        ) {
+            BetterImage(
+                model = { "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN" },
+                "Spotify",
+                modifier = Modifier.padding(4.dp).clip(Circle.toShape())
+            )
+        }
+    }
+}
 
 @Composable
 fun CollapsedPlayer(i: Int) {
@@ -266,9 +287,6 @@ fun CollapsedPlayer(i: Int) {
 
     val maxWidth = remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
-    // ButtonGroup crashes when size changes too rapidly
-//    ButtonGroup(
-//        {},
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -292,7 +310,6 @@ fun CollapsedPlayer(i: Int) {
         fun item(min: Dp, max: Dp = maxWidth.value, block: @Composable () -> Unit) {
             if (maxWidth.value < min) return
             if (maxWidth.value > max) return
-//            customItem(block, { })
             block()
         }
 
@@ -317,7 +334,7 @@ fun CollapsedPlayer(i: Int) {
             FilledTonalIconToggleButton(
                 checked = favourite,
                 onCheckedChange = { favourite = it },
-                modifier = Modifier.size(44.dp).animateWidth(interactionSource),
+                modifier = Modifier.size(44.dp),
                 shapes = IconButtonDefaults.toggleableShapes(
                     checkedShape = RoundedCornerShape(100)
                 ),
@@ -348,7 +365,7 @@ fun CollapsedPlayer(i: Int) {
             FilledIconButton(
                 onClick = { },
                 interactionSource = interactionSource,
-                modifier = Modifier.size(48.dp).animateWidth(interactionSource),
+                modifier = Modifier.size(48.dp),
                 shapes = IconButtonDefaults.shapes()
             ) {
                 Icon(
@@ -362,7 +379,7 @@ fun CollapsedPlayer(i: Int) {
             IconButton(
                 onClick = { scope.launch { sheetState?.hide() } },
                 interactionSource = interactionSource,
-                modifier = Modifier.size(40.dp).animateWidth(interactionSource),
+                modifier = Modifier.size(40.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     colorScheme.onSecondaryContainer,
                     colorScheme.secondaryContainer
@@ -427,7 +444,7 @@ fun CollapsedPlayer(i: Int) {
             IconButton(
                 onClick = { scope.launch { sheetState?.hide() } },
                 interactionSource = interactionSource,
-                modifier = Modifier.size(40.dp).animateWidth(interactionSource),
+                modifier = Modifier.size(40.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     colorScheme.onSecondaryContainer,
                     colorScheme.secondaryContainer
@@ -445,7 +462,7 @@ fun CollapsedPlayer(i: Int) {
             IconButton(
                 onClick = { scope.launch { sheetState?.hide() } },
                 interactionSource = interactionSource,
-                modifier = Modifier.size(40.dp).animateWidth(interactionSource),
+                modifier = Modifier.size(40.dp),
                 shapes = IconButtonDefaults.shapes()
             ) {
                 Icon(
@@ -576,7 +593,6 @@ fun VolumeAdjuster() {
                 val newVolume = position.floatValue - (delta * 0.05f)
                 position.floatValue = newVolume.coerceIn(0f, 1f)
             }
-            .animateWidth(interactionSource)
             .background(colorScheme.primary.copy(0.25f))
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
