@@ -16,30 +16,67 @@ class AudioFocusListener(
 ) : Player.Listener {
     private val handler = Handler(context.mainLooper)
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    private lateinit var focusRequest: AudioFocusRequest
+    private var resumeOnFocusGain = false
+    private var waitingForFocus = false
 
-    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener {
-        if (it == AudioManager.AUDIOFOCUS_GAIN) {
-            player.apply {
-                setAudioAttributes(audioAttributes, true)
-                seekTo(currentPosition)
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                player.volume = 1f
+                if (resumeOnFocusGain || waitingForFocus) {
+                    resumeOnFocusGain = false
+                    waitingForFocus = false
+                    player.play()
+                }
             }
-            abandonRequest()
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                resumeOnFocusGain = false
+                waitingForFocus = false
+                player.pause()
+                abandonRequest()
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                resumeOnFocusGain = player.playWhenReady
+                waitingForFocus = true
+                player.pause()
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                player.volume = 0.2f
+            }
         }
     }
 
 
     private fun requestFocus() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioManager.requestAudioFocus(focusRequest)
-        else audioManager.requestAudioFocus(
-            audioFocusChangeListener,
-            AudioManager.STREAM_MUSIC,
-            AudioManager.AUDIOFOCUS_GAIN
-        )
+        } else {
+            audioManager.requestAudioFocus(
+                audioFocusChangeListener,
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN
+            )
+        }
+        
+        when (result) {
+            AudioManager.AUDIOFOCUS_REQUEST_GRANTED -> {
+                player.volume = 1f
+                waitingForFocus = false
+            }
+            AudioManager.AUDIOFOCUS_REQUEST_DELAYED -> {
+                waitingForFocus = true
+                resumeOnFocusGain = true
+                player.pause()
+            }
+            else -> {
+                waitingForFocus = false
+                player.pause()
+            }
+        }
     }
 
     private fun abandonRequest() {
+        waitingForFocus = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             audioManager.abandonAudioFocusRequest(focusRequest)
         else audioManager.abandonAudioFocus(audioFocusChangeListener)
@@ -59,20 +96,20 @@ class AudioFocusListener(
                 build()
             }
         }
+    }
 
-        //TODO fix this to support player to play in calls
-        // if the audio suppression was not there from the start
-        // https://github.com/androidx/media/issues/1716
-        onPlaybackSuppressionReasonChanged(player.playbackSuppressionReason)
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        if (playWhenReady) {
+            requestFocus()
+        } else {
+            if (!waitingForFocus) {
+                abandonRequest()
+            }
+        }
     }
 
     override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: @PlaybackSuppressionReason Int) {
         if (playbackSuppressionReason == Player.PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS) {
-            player.apply {
-                setAudioAttributes(audioAttributes, false)
-                player.playWhenReady = false
-                seekTo(currentPosition)
-            }
             requestFocus()
         }
     }

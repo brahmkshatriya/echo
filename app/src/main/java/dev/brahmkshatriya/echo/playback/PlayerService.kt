@@ -164,7 +164,7 @@ class PlayerService : MediaLibraryService() {
             .setRenderersFactory(RenderersFactory(this))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
-            .setAudioAttributes(audioAttributes, true)
+            .setAudioAttributes(audioAttributes, false)
             .build()
             .also {
                 it.trackSelectionParameters = it.trackSelectionParameters

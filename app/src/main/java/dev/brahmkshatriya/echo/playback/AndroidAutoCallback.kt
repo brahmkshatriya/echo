@@ -35,6 +35,7 @@ import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.pagedDataOfFirst
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
@@ -400,8 +401,14 @@ abstract class AndroidAutoCallback(
         ): List<MediaItem> {
             val id = "${id.hashCode()}"
             feedMap[id] = this
-            //TODO
-            return listOf()
+            val shelf = shelvesMap.getOrPut(id) {
+                this.pagedDataOfFirst()
+            }
+            val (list, next) = shelf.loadPage(continuations[id to page])
+            continuations[id to page + 1] = next
+            return listOfNotNull(
+                *list.map { it.toMediaItem(context, extId) }.toTypedArray()
+            )
         }
 
         private suspend inline fun <reified T> Extension<*>.getFeed(
@@ -411,7 +418,8 @@ abstract class AndroidAutoCallback(
             pageNumber: Int,
             getFeed: T.() -> Feed<Shelf>
         ) = getList<T> {
-            TODO()
+            val feed = getFeed()
+            feed.toMediaItems(parentId, context, id, pageNumber)
         }
 
         private val tracksMap = WeakHashMap<String, Pair<EchoMediaItem, PagedData<Track>>>()
