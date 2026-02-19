@@ -10,6 +10,8 @@ dependencies {
     implementation(project(":app"))
 }
 
+apply(from = "proguards.gradle.kts")
+
 compose.desktop {
     application {
         mainClass = "dev.brahmkshatriya.echo.MainKt"
@@ -19,7 +21,11 @@ compose.desktop {
             packageName = property("GROUP").toString()
             packageVersion = "${property("VERSION")}"
             buildTypes.release.proguard {
-                configurationFiles.from("proguard.pro")
+                configurationFiles.from(
+                    tasks.named("proguards").map {
+                        it.outputs.files.asFileTree.matching { include("**/*.pro") }
+                    }
+                )
             }
         }
     }

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package dev.brahmkshatriya.echo.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
@@ -9,6 +7,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -16,6 +15,7 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -25,18 +25,22 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
@@ -69,9 +73,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -89,7 +91,14 @@ import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.skydoves.landscapist.palette.PalettePlugin
 import com.skydoves.landscapist.palette.rememberPaletteState
+import dev.brahmkshatriya.echo.platform.onPointerScrollY
+import dev.brahmkshatriya.echo.ui.Media
 import dev.brahmkshatriya.echo.ui.components.BetterImage
+import dev.brahmkshatriya.echo.ui.components.FastScrollbar
+import dev.brahmkshatriya.echo.ui.components.LocalMainBackStack
+import dev.brahmkshatriya.echo.ui.components.materialGroup
+import dev.brahmkshatriya.echo.ui.components.rememberBasicScrollbarThumbMover
+import dev.brahmkshatriya.echo.ui.components.scrollbarState
 import dev.brahmkshatriya.echo.ui.components.simpleTween
 import dev.brahmkshatriya.echo.ui.theme.Primary
 import echo.app.generated.resources.Res
@@ -109,7 +118,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun PlayerItem(i: Int) = Box(Modifier.fillMaxSize()) {
+fun PlayerItem(i: Int) {
     val paletteState = rememberPaletteState()
     val color = paletteState.value?.let {
         (it.vibrantSwatch ?: it.dominantSwatch ?: it.lightVibrantSwatch)?.color
@@ -119,31 +128,124 @@ fun PlayerItem(i: Int) = Box(Modifier.fillMaxSize()) {
         style = PaletteStyle.Rainbow,
         specVersion = ColorSpec.SpecVersion.SPEC_2021,
         seedColor = color,
+        neutral = color,
+        neutralVariant = color,
     ).colorScheme
     MaterialExpressiveTheme(animateColorScheme(scheme)) {
-        SongPlayerItem(i) { paletteState.value = it }
+        Box(Modifier.playerBackground(true)) {
+            SongPlayerItem(i) { paletteState.value = it }
+        }
     }
 }
 
+val maxSongCoverSize = 360.dp
+val songCoverHorizontalPadding = 16.dp
+val songCoverVerticalPadding = 8.dp
+
+
 @Composable
-fun SongPlayerItem(
+fun BoxScope.SongPlayerItem(
     i: Int,
     paletteState: (Palette) -> Unit,
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimaryContainer
 ) {
-    BackgroundBox()
     CollapsedPlayer(i)
     val widthState = remember { mutableIntStateOf(0) }
-    Column(Modifier.onSizeChanged { widthState.intValue = it.width }) {
-        val topBarHeight = remember { mutableIntStateOf(0) }
-        TopBar(i) { topBarHeight.intValue = it }
-        CoverArt(i, paletteState, { topBarHeight.intValue }, { widthState.intValue })
+    val heightState = remember { mutableIntStateOf(0) }
+    val topBarHeight = remember { mutableIntStateOf(0) }
+
+    val playerSheet = LocalPlayerSheet.current
+    val scope = rememberCoroutineScope()
+    val backStack = LocalMainBackStack.current
+    val cardColors = CardDefaults.cardColors(
+        containerColor = colorScheme.surface,
+        contentColor = colorScheme.onSurface
+    )
+    val listState = rememberLazyListState()
+    LazyColumn(
+        Modifier.onSizeChanged {
+            widthState.intValue = it.width
+            heightState.intValue = it.height
+        }.graphicsLayer {
+            val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+            val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+            val offset = 1 - sheetProgress.coerceIn(0f, 1f)
+            alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
+            translationY = offset * size.height
+        },
+        state = listState
+    ) {
+        item { TopBar(i) { topBarHeight.intValue = it } }
+        item {
+            Box(
+                Modifier
+                    .padding(
+                        horizontal = songCoverHorizontalPadding,
+                        vertical = songCoverVerticalPadding
+                    )
+                    .widthIn(max = maxSongCoverSize)
+                    .heightIn(max = maxSongCoverSize)
+                    .aspectRatio(1f)
+                    .fillMaxSize()
+            )
+        }
+
+        materialGroup {
+            (0..10).forEach {
+                card(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    key = "$i$it",
+                    contentType = i,
+                    colors = cardColors
+                ) {
+                    Box(
+                        Modifier.fillMaxWidth()
+                            .clickable {
+                                scope.launch {
+                                    playerSheet?.sheetState?.partialExpand()
+                                    backStack?.add(Media(it.toString()))
+                                }
+                            }.padding(16.dp, 24.dp)
+                    ) { Text("Item $it") }
+                }
+            }
+        }
     }
+
+    CoverArt(
+        i,
+        paletteState,
+        { topBarHeight.intValue },
+        { widthState.intValue },
+        {
+            when (listState.firstVisibleItemIndex) {
+                0 -> listState.firstVisibleItemScrollOffset
+                1 -> listState.firstVisibleItemScrollOffset + topBarHeight.intValue
+                else -> heightState.intValue
+            }
+        }
+    )
+    val scrollbarState = listState.scrollbarState(12)
+    FastScrollbar(
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(12.dp)
+            .padding(end = 4.dp, top = 4.dp, bottom = 4.dp)
+            .safeDrawingPadding()
+            .graphicsLayer {
+                alpha = playerSheet?.progressState?.floatValue ?: 1f
+            }
+            .align(Alignment.TopEnd),
+        state = scrollbarState,
+        scrollInProgress = listState.isScrollInProgress,
+        orientation = Orientation.Vertical,
+        onThumbMoved = listState.rememberBasicScrollbarThumbMover()
+    )
 }
 
 @Composable
-fun BackgroundBox() {
+fun Modifier.playerBackground(colored: Boolean = false): Modifier {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
     val peekHeight = playerSheet?.peekHeight ?: 72.dp
@@ -153,21 +255,21 @@ fun BackgroundBox() {
     val animatedStart = animateDpAsState(startPadding + 12.dp, simpleTween())
     val animatedEnd = animateDpAsState(endPadding + 12.dp, simpleTween())
 
-    Box(
-        Modifier.fillMaxSize().graphicsLayer {
-            val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-            val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-            val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
-            clip = true
-            shape = ClippedShape(
-                peekHeight - 8.dp,
-                positiveProgress,
-                backProgress,
-                animatedStart.value,
-                animatedEnd.value
-            )
-        }.background(colorScheme.primaryContainer)
-    )
+    return fillMaxSize().graphicsLayer {
+        val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+        val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+        val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
+        clip = true
+        shape = ClippedShape(
+            peekHeight - 8.dp,
+            positiveProgress,
+            backProgress,
+            animatedStart.value,
+            animatedEnd.value
+        )
+    }.run {
+        if (colored) background(colorScheme.primaryContainer) else this
+    }
 }
 
 @Composable
@@ -175,7 +277,8 @@ fun CoverArt(
     i: Int,
     paletteState: (Palette) -> Unit,
     topBarHeight: () -> Int,
-    widthState: () -> Int
+    widthState: () -> Int,
+    scrollOffset: () -> Int
 ) {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
@@ -183,9 +286,6 @@ fun CoverArt(
     val layoutDirection = LocalLayoutDirection.current
     val artWorks = LocalPlayerItems.current
     val image = artWorks[i]
-    val horizontalPadding = remember { 16.dp }
-    val verticalPadding = remember { 8.dp }
-    val maxSize = remember { 360.dp }
 
     val animatedTargetX = animateDpAsState(
         playerPadding.calculateStartPadding(layoutDirection) + 20.dp,
@@ -195,18 +295,21 @@ fun CoverArt(
         { image },
         "Song $i",
         Modifier
-            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
-            .widthIn(max = maxSize)
-            .heightIn(max = maxSize)
+            .padding(
+                horizontal = songCoverHorizontalPadding,
+                vertical = songCoverVerticalPadding
+            )
+            .widthIn(max = maxSongCoverSize)
+            .heightIn(max = maxSongCoverSize)
             .aspectRatio(1f)
             .fillMaxSize()
             .graphicsLayer {
                 val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
                 val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-                val offset = 1 - sheetProgress.coerceIn(0f, 1f)
+                val offset = 1 - positiveProgress
 
-                val targetX = animatedTargetX.value
-                val targetY = 8.dp
+                val targetX = animatedTargetX.value.toPx()
+                val targetY = 8.dp.toPx()
                 val targetSize = 48.dp
 
                 val targetScale = targetSize.toPx() / size.height
@@ -215,9 +318,11 @@ fun CoverArt(
                 transformOrigin = TransformOrigin(0f, 0f)
                 val center = (widthState() - size.width) / 2f
                 translationX =
-                    -horizontalPadding.toPx() + targetX.toPx() * offset + center * positiveProgress
+                    -songCoverHorizontalPadding.toPx() + targetX * offset + center * positiveProgress
 
-                translationY = (-verticalPadding.toPx() - topBarHeight() + targetY.toPx()) * offset
+                translationY = (-songCoverVerticalPadding.toPx() + targetY) * offset +
+                        (topBarHeight() -scrollOffset()) * positiveProgress
+
                 clip = true
                 shape = RoundedCornerShape((8 / scaleX).dp)
             }
@@ -238,13 +343,6 @@ fun TopBar(index: Int, onHeightChanged: (Int) -> Unit) {
                 onHeightChanged(it.height)
             }
             .padding(top = safePadding.calculateTopPadding())
-            .graphicsLayer {
-                val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-                val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-                val offset = 1 - sheetProgress.coerceIn(0f, 1f)
-                alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
-                translationY = offset * size.height
-            }
     ) {
         IconButton(
             onClick = {
@@ -588,9 +686,8 @@ fun VolumeAdjuster() {
             .clickable(interactionSource = interactionSource) {
 
             }
-            .onPointerEvent(PointerEventType.Scroll) { event ->
-                val delta = event.changes.first().scrollDelta.y
-                val newVolume = position.floatValue - (delta * 0.05f)
+            .onPointerScrollY { delta ->
+                val newVolume = position.floatValue - delta * 0.05f
                 position.floatValue = newVolume.coerceIn(0f, 1f)
             }
             .background(colorScheme.primary.copy(0.25f))
