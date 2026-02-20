@@ -101,6 +101,6 @@ fun ShaderBG(colorScheme: ColorScheme) {
     )
     Box(
         modifier = Modifier.fillMaxSize()
-            .background(colorScheme.surfaceContainerLowest.copy(0.8f))
+            .background(colorScheme.surfaceContainerLowest.copy(0.5f))
     )
 }

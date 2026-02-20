@@ -48,6 +48,8 @@ kotlin {
 //            api(libs.ktor.client.okhttp)
             api(libs.kotlinx.coroutinesSwing)
             api(libs.brahmkshatriya.betterwindow)
+            api(libs.composeNativeTray)
+            api(libs.javamediatransportcontrols)
         }
         androidMain.dependencies {
             api(libs.ktor.client.okhttp)

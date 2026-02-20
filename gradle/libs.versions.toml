@@ -36,7 +36,8 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version = "1.10.2" }
 brahmkshatriya-betterwindow = { module = "dev.brahmkshatriya:betterwindow", version = "1.1.0" }
-
+composeNativeTray = { module = "io.github.kdroidfilter:composenativetray", version = "1.1.0" }
+javamediatransportcontrols = { module = "io.github.selemba1000:JavaMediaTransportControls", version = "0.0.3" }
 
 [bundles]
 compose = ["compose-runtime", "compose-foundation", "compose-components-resources", "ui", "ui-tooling", "compose-material3", "ui-tooling-preview"]

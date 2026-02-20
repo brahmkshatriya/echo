@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -29,14 +31,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -106,6 +106,8 @@ import echo.app.generated.resources.ic_close
 import echo.app.generated.resources.ic_favorite
 import echo.app.generated.resources.ic_favorite_filled
 import echo.app.generated.resources.ic_keyboard_arrow_down
+import echo.app.generated.resources.ic_lyrics
+import echo.app.generated.resources.ic_lyrics_filled
 import echo.app.generated.resources.ic_play_arrow
 import echo.app.generated.resources.ic_repeat
 import echo.app.generated.resources.ic_shuffle
@@ -139,9 +141,15 @@ fun PlayerItem(i: Int) {
 }
 
 val maxSongCoverSize = 360.dp
+val maxSongCoverHeight = 400.dp
 val songCoverHorizontalPadding = 16.dp
 val songCoverVerticalPadding = 8.dp
 
+fun Modifier.coverSize() = padding(songCoverHorizontalPadding, songCoverVerticalPadding)
+    .widthIn(max = maxSongCoverSize)
+    .height(maxSongCoverHeight)
+    .aspectRatio(1f)
+    .fillMaxSize()
 
 @Composable
 fun BoxScope.SongPlayerItem(
@@ -174,23 +182,14 @@ fun BoxScope.SongPlayerItem(
             alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
             translationY = offset * size.height
         },
+        contentPadding = PaddingValues(
+            bottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+        ),
         state = listState
     ) {
         item { TopBar(i) { topBarHeight.intValue = it } }
-        item {
-            Box(
-                Modifier
-                    .padding(
-                        horizontal = songCoverHorizontalPadding,
-                        vertical = songCoverVerticalPadding
-                    )
-                    .widthIn(max = maxSongCoverSize)
-                    .heightIn(max = maxSongCoverSize)
-                    .aspectRatio(1f)
-                    .fillMaxSize()
-            )
-        }
-
+        item { Box(Modifier.coverSize()) }
+        item { SongController(i) }
         materialGroup {
             (0..10).forEach {
                 card(
@@ -245,6 +244,130 @@ fun BoxScope.SongPlayerItem(
 }
 
 @Composable
+fun SongController(i: Int) = Box {
+    val maxRange = 6_000f
+    val animatedValue = remember { Animatable(0f) }
+    var showRemainingTime by remember { mutableStateOf(false) }
+    val currentTimeLabel by remember { derivedStateOf { formatTime(animatedValue.value) } }
+    val endLabel by remember(showRemainingTime) {
+        derivedStateOf {
+            if (showRemainingTime) {
+                "-${formatTime(maxRange - animatedValue.value)}"
+            } else {
+                formatTime(maxRange)
+            }
+        }
+    }
+    val heightState = remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+    val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
+
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        PlayerSlider(
+            Modifier.weight(1f).padding(top = heightState.value),
+            Modifier.height(72.dp).padding(vertical = 20.dp),
+            maxRange
+        ) { animatedValue }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            Modifier.padding(horizontal = 16.dp).onSizeChanged {
+                heightState.value = density.run { it.height.toDp() } - 8.dp
+            },
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Song $i")
+                Text("Artist $i", color = colorScheme.primary)
+            }
+            LyricsToggle()
+            LikeToggle()
+        }
+        Spacer(Modifier.height(32.dp))
+        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+            Text(
+                text = currentTimeLabel,
+                style = mergedStyle,
+                modifier = Modifier.padding(8.dp),
+            )
+            Spacer(Modifier.weight(1f))
+            val endInteraction = remember { MutableInteractionSource() }
+            Text(
+                text = endLabel,
+                style = mergedStyle,
+                modifier = Modifier.clickable(interactionSource = endInteraction) {
+                    showRemainingTime = !showRemainingTime
+                }.padding(8.dp)
+            )
+        }
+    }
+    Text(
+        text = "FLAC",
+        style = mergedStyle,
+        modifier = Modifier.padding(8.dp).align(Alignment.BottomCenter),
+    )
+}
+
+@Composable
+fun LyricsToggle() {
+    var lyrics by remember { mutableStateOf(true) }
+    val interactionSource = remember { MutableInteractionSource() }
+    FilledTonalIconToggleButton(
+        checked = lyrics,
+        onCheckedChange = { lyrics = it },
+        modifier = Modifier.size(44.dp),
+        shapes = IconButtonDefaults.toggleableShapes(
+            checkedShape = RoundedCornerShape(100)
+        ),
+        interactionSource = interactionSource,
+        colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
+            colorScheme.primary.copy(0.25f),
+            colorScheme.onPrimaryContainer,
+            checkedContentColor = colorScheme.onPrimary,
+            checkedContainerColor = colorScheme.primary
+        ),
+    ) {
+        Icon(
+            painterResource(
+                if (lyrics) Res.drawable.ic_lyrics_filled
+                else Res.drawable.ic_lyrics
+            ),
+            contentDescription = if (lyrics) "Lyrics On" else "Lyrics Off"
+        )
+    }
+}
+
+
+@Composable
+fun LikeToggle() {
+    var favourite by remember { mutableStateOf(true) }
+    val interactionSource = remember { MutableInteractionSource() }
+    FilledTonalIconToggleButton(
+        checked = favourite,
+        onCheckedChange = { favourite = it },
+        modifier = Modifier.size(44.dp),
+        shapes = IconButtonDefaults.toggleableShapes(
+            checkedShape = RoundedCornerShape(100)
+        ),
+        interactionSource = interactionSource,
+        colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
+            colorScheme.primary.copy(0.25f),
+            colorScheme.onPrimaryContainer,
+            checkedContentColor = colorScheme.tertiaryContainer,
+            checkedContainerColor = colorScheme.onTertiaryContainer
+        ),
+    ) {
+        Icon(
+            painterResource(
+                if (favourite) Res.drawable.ic_favorite_filled
+                else Res.drawable.ic_favorite
+            ),
+            contentDescription = if (favourite) "Favourite" else "Unfavourite"
+        )
+    }
+}
+
+@Composable
 fun Modifier.playerBackground(colored: Boolean = false): Modifier {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
@@ -295,23 +418,15 @@ fun CoverArt(
         { image },
         "Song $i",
         Modifier
-            .padding(
-                horizontal = songCoverHorizontalPadding,
-                vertical = songCoverVerticalPadding
-            )
-            .widthIn(max = maxSongCoverSize)
-            .heightIn(max = maxSongCoverSize)
-            .aspectRatio(1f)
-            .fillMaxSize()
+            .coverSize()
             .graphicsLayer {
                 val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
                 val positiveProgress = sheetProgress.coerceIn(0f, 1f)
                 val offset = 1 - positiveProgress
 
                 val targetX = animatedTargetX.value.toPx()
-                val targetY = 8.dp.toPx()
+                val targetY = 8.dp.toPx() + (size.height - maxSongCoverHeight.toPx()) / 2f
                 val targetSize = 48.dp
-
                 val targetScale = targetSize.toPx() / size.height
                 scaleX = 1 + (targetScale - 1) * offset
                 scaleY = scaleX
@@ -321,7 +436,7 @@ fun CoverArt(
                     -songCoverHorizontalPadding.toPx() + targetX * offset + center * positiveProgress
 
                 translationY = (-songCoverVerticalPadding.toPx() + targetY) * offset +
-                        (topBarHeight() -scrollOffset()) * positiveProgress
+                        (topBarHeight() - scrollOffset()) * positiveProgress
 
                 clip = true
                 shape = RoundedCornerShape((8 / scaleX).dp)
@@ -389,7 +504,6 @@ fun CollapsedPlayer(i: Int) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
             .graphicsLayer {
                 val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
                 val positiveProgress = sheetProgress.coerceIn(0f, 1f)
@@ -571,16 +685,62 @@ fun CollapsedPlayer(i: Int) {
     }
 }
 
+fun formatTime(ms: Float): String {
+    val totalSeconds = (ms / 1000).toInt().coerceAtLeast(0)
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%d:%02d".format(minutes, seconds)
+}
+
 @Composable
 fun RowScope.Timeline() {
     val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
 
     val maxRange = 6_000f
-    val rangeMS = remember { 0f..maxRange }
-
     val animatedValue = remember { Animatable(0f) }
     var showRemainingTime by remember { mutableStateOf(false) }
+    val currentTimeLabel by remember { derivedStateOf { formatTime(animatedValue.value) } }
 
+    val endLabel by remember(showRemainingTime) {
+        derivedStateOf {
+            if (showRemainingTime) {
+                "-${formatTime(maxRange - animatedValue.value)}"
+            } else {
+                formatTime(maxRange)
+            }
+        }
+    }
+    Text(
+        text = currentTimeLabel,
+        style = mergedStyle,
+        modifier = Modifier.widthIn(min = 40.dp),
+        textAlign = TextAlign.Center
+    )
+
+    PlayerSlider(Modifier.weight(1f), maxRange = maxRange) { animatedValue }
+
+    val endInteraction = remember { MutableInteractionSource() }
+    Text(
+        text = endLabel,
+        style = mergedStyle,
+        modifier = Modifier
+            .widthIn(min = 40.dp)
+            .clickable(interactionSource = endInteraction) {
+                showRemainingTime = !showRemainingTime
+            },
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun PlayerSlider(
+    modifier: Modifier = Modifier,
+    thumbModifier: Modifier = Modifier,
+    maxRange: Float,
+    animatedValue: () -> Animatable<Float, AnimationVector1D>
+) {
+    val rangeMS = remember { 0f..maxRange }
+    val animatedValue = animatedValue()
     val interactionSource = remember { MutableInteractionSource() }
     val isDragged by interactionSource.collectIsDraggedAsState()
     LaunchedEffect(isDragged, animatedValue.targetValue) {
@@ -594,37 +754,7 @@ fun RowScope.Timeline() {
             }
         }
     }
-
-    fun formatTime(ms: Float): String {
-        val totalSeconds = (ms / 1000).toInt().coerceAtLeast(0)
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "%d:%02d".format(minutes, seconds)
-    }
-
-    val currentTimeLabel by remember {
-        derivedStateOf { formatTime(animatedValue.value) }
-    }
-
-    val endLabel by remember(showRemainingTime) {
-        derivedStateOf {
-            if (showRemainingTime) {
-                "-${formatTime(maxRange - animatedValue.value)}"
-            } else {
-                formatTime(maxRange)
-            }
-        }
-    }
-
-    Text(
-        text = currentTimeLabel,
-        style = mergedStyle,
-        modifier = Modifier.widthIn(min = 40.dp),
-        textAlign = TextAlign.Center
-    )
-
     val scope = rememberCoroutineScope()
-
     Slider(
         valueRange = rangeMS,
         value = animatedValue.value,
@@ -633,11 +763,12 @@ fun RowScope.Timeline() {
                 animatedValue.snapTo(newValue)
             }
         },
-        modifier = Modifier.weight(1f).pointerHoverIcon(PointerIcon.Hand),
+        modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         interactionSource = interactionSource,
         thumb = {
             SliderDefaults.Thumb(
                 interactionSource = interactionSource,
+                modifier = thumbModifier,
                 thumbSize = DpSize(4.dp, 32.dp)
             )
         },
@@ -655,18 +786,6 @@ fun RowScope.Timeline() {
                 trackThickness = 4.dp,
             )
         }
-    )
-
-    val endInteraction = remember { MutableInteractionSource() }
-    Text(
-        text = endLabel,
-        style = mergedStyle,
-        modifier = Modifier
-            .widthIn(min = 40.dp)
-            .clickable(interactionSource = endInteraction) {
-                showRemainingTime = !showRemainingTime
-            },
-        textAlign = TextAlign.Center
     )
 }
 

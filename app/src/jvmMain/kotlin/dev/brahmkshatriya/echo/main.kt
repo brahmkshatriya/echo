@@ -4,6 +4,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
@@ -11,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.kdroid.composetray.tray.api.Tray
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
 import com.materialkolor.dynamiccolor.ColorSpec
@@ -27,19 +30,22 @@ import echo.app.generated.resources.compose_multiplatform
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+
 fun main() = application {
+
+    val windowShowing = remember { mutableStateOf(true) }
     val windowState = rememberWindowState(
         position = WindowPosition.Aligned(Alignment.Center),
         size = DpSize(960.dp, 640.dp)
     )
-    BetterWindow(
-        ::exitApplication,
+    if (windowShowing.value) BetterWindow(
+        { windowShowing.value = false },
         windowState = windowState,
         title = stringResource(Res.string.app_name),
         icon = painterResource(Res.drawable.compose_multiplatform),
     ) {
         val accent by LocalPlatformWindow.current.accentColor.collectAsState()
-        val dynamicTheme = if(accent != Color.Unspecified) {
+        val dynamicTheme = if (accent != Color.Unspecified) {
             dynamicColorScheme(
                 primary = accent,
                 isDark = isSystemInDarkTheme(),
@@ -54,5 +60,17 @@ fun main() = application {
             overrideTitleBarAppearance(isSystemInDarkTheme())
             App()
         }
+    }
+
+    Tray(
+        icon = painterResource(Res.drawable.compose_multiplatform),
+        tooltip = "Echo",
+        primaryAction = {
+            windowShowing.value = true
+        }
+    ) {
+        Item("Echo", onClick = { windowShowing.value = true })
+        Divider()
+        Item("Exit", onClick = { exitApplication() })
     }
 }
