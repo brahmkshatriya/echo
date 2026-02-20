@@ -1,6 +1,11 @@
 package dev.brahmkshatriya.echo.extensions.builtin.offline
 
 import android.content.Context
+import android.util.Log
+import com.mocharealm.accompanist.lyrics.core.model.SyncedLyrics
+import com.mocharealm.accompanist.lyrics.core.model.karaoke.KaraokeLine
+import com.mocharealm.accompanist.lyrics.core.model.synced.SyncedLine
+import com.mocharealm.accompanist.lyrics.core.model.synced.UncheckedSyncedLine
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -11,6 +16,7 @@ import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceUriImageHolder
+import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Track
@@ -91,4 +97,55 @@ fun MediaStoreUtils.Genre.toShelf(): Shelf {
         songList.take(9),
         more = PagedData.Single<Shelf> { songList.map { it.toShelf() } }.toFeed()
     )
+}
+
+fun SyncedLyrics.toEchoLyrics(id: String, title: String): Lyrics {
+    Log.i("[SyncedLyrics.toEchoLyrics]", "Converting lyrics for id=$id")
+    var isKaraoke = false
+    val transformedLyrics = this.lines.map {
+        return@map when (it) {
+            is SyncedLine -> {
+//                Log.i("[SyncedLyrics.toEchoLyrics]", "Converting SyncedLine to Lyrics.Item { start = ${it.start}, end = ${it.end}, content = ${it.content} }")
+                listOf(Lyrics.Item(
+                    it.content,
+                    fixTime(it.start),
+                    fixTime(it.end)))
+            }
+            is UncheckedSyncedLine -> {
+//                Log.i("[SyncedLyrics.toEchoLyrics]", "Converting UncheckedSyncedLine to Lyrics.Item { start = ${it.start}, end = ${it.end}, content = ${it.content} }")
+
+                listOf(Lyrics.Item(it.content, fixTime(it.start), fixTime(it.end)))
+            }
+            is KaraokeLine -> {
+//                Log.i("[SyncedLyrics.toEchoLyrics]", "Converting KaraokeLine to List<Lyrics.Item>")
+
+                isKaraoke = true
+                it.syllables.map { syl ->
+                    Lyrics.Item(syl.content, syl.start.toLong(), syl.end.toLong())
+                }
+            }
+            else -> {
+                Log.e("[SyncedLyrics.toEchoLyrics]", "Lyric line kind not handled: ${it::class.qualifiedName}")
+                emptyList()
+            }
+        }
+    }
+    val lyric = if (isKaraoke) {
+        Lyrics.WordByWord(
+            transformedLyrics
+        )
+    } else {
+        Lyrics.Timed(
+            transformedLyrics.flatten()
+        )
+    }
+    Log.i("[SyncedLyrics.toEchoLyrics]", "When converting, isKaraoke=$isKaraoke, lyric::class=${lyric::class.simpleName}")
+
+    return Lyrics(
+        id, title,
+        lyrics = lyric
+    )
+}
+private fun fixTime(time: Int): Long {
+    return if (time < 1000) (time.toLong() * 1000) else time.toLong()
 }

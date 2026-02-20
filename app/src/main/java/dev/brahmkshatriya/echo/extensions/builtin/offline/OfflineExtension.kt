@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.extensions.builtin.offline
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import dev.brahmkshatriya.echo.BuildConfig
@@ -12,6 +13,7 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.LikeClient
+import dev.brahmkshatriya.echo.common.clients.LyricsClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditorListenerClient
 import dev.brahmkshatriya.echo.common.clients.RadioClient
@@ -30,6 +32,7 @@ import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeedData
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toResourceImageHolder
 import dev.brahmkshatriya.echo.common.models.ImportType
+import dev.brahmkshatriya.echo.common.models.Lyrics
 import dev.brahmkshatriya.echo.common.models.Metadata
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Radio
@@ -55,6 +58,7 @@ import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.remove
 import dev.brahmkshatriya.echo.extensions.builtin.offline.MediaStoreUtils.searchBy
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
+import com.mocharealm.accompanist.lyrics.core.parser.AutoParser
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -64,7 +68,7 @@ class OfflineExtension(
     private val context: Context,
 ) : ExtensionClient, HomeFeedClient, TrackClient, AlbumClient, ArtistClient, PlaylistClient,
     RadioClient, LibraryFeedClient, LikeClient, PlaylistEditorListenerClient,
-    SearchFeedClient, SettingsChangeListenerClient {
+    SearchFeedClient, SettingsChangeListenerClient, LyricsClient {
 
     companion object {
         val metadata = Metadata(
@@ -474,4 +478,25 @@ class OfflineExtension(
     override suspend fun onExitPlaylistEditor(playlist: Playlist, tracks: List<Track>) {
         refreshLibrary()
     }
+
+    override suspend fun searchTrackLyrics(
+        clientId: String,
+        track: Track
+    ): Feed<Lyrics> {
+        Log.i("[e/b/offline/searchTrackLyrics]", "Getting lyrics for track { id = ${track.id}, title = ${track.title} }")
+        if (!track.extras.containsKey("localFilePath")) {
+            Log.i("[e/b/offline/searchTrackLyrics]", "Track { id = ${track.id} } does not have a localFilePath")
+            return emptyList<Lyrics>().toFeed()
+        }
+        val path = track.extras["localFilePath"]!!
+        Log.i("[e/b/offline/searchTrackLyrics]", "Track { id = ${track.id} }.extras.localFilePath = $path")
+
+        val parser = AutoParser.Builder().build()
+        val lyricsText = getLyricsFromAudioPath(path) ?: return emptyList<Lyrics>().toFeed()
+        val lyricsParsed = parser.parse(lyricsText)
+
+        return listOf(lyricsParsed.toEchoLyrics("${track.id}#lyrics", track.title)).toFeed()
+    }
+
+    override suspend fun loadLyrics(lyrics: Lyrics): Lyrics = lyrics
 }
