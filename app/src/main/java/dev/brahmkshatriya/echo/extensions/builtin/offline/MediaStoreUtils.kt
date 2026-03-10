@@ -35,6 +35,10 @@ object MediaStoreUtils {
 
     private const val TAG = "MediaStoreUtils"
 
+    // settings key used by OfflineExtension; contains comma-separated names that should not
+    // be treated as separate artists even if they contain commas or ampersands.
+    private const val ARTIST_EXCLUSIONS = "artist_exclusions"
+
     interface Item {
         val id: Long?
         val title: String?
@@ -273,6 +277,7 @@ object MediaStoreUtils {
         songs: MutableList<Track>,
         foundPlaylistContent: Boolean,
         idMap: MutableMap<Long, Track>?,
+        settings: Settings,
         block: (Track) -> Unit,
     ) = use { cursor ->
         // Get columns from mediaStore.
@@ -290,6 +295,13 @@ object MediaStoreUtils {
         val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
         val addDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
 
+        // prepare exclusions for this cursor scan (pipe-separated)
+        val artistExclusions = settings.getString(ARTIST_EXCLUSIONS)
+            ?.split('|')
+            ?.mapNotNull { it.trim().takeIf { s -> s.isNotBlank() } }
+            ?.toSet()
+            ?: emptySet()
+
         while (cursor.moveToNext()) {
             val path = cursor.getStringOrNull(pathColumn) ?: continue
             val duration = cursor.getLongOrNull(durationColumn)
@@ -300,11 +312,18 @@ object MediaStoreUtils {
             // We need to add blacklisted songs to idMap as they can be referenced by playlist
             if (skip && !foundPlaylistContent) continue
             val id = cursor.getLongOrNull(idColumn)!!
-            val title = cursor.getStringOrNull(titleColumn)!!
-            val artist = cursor.getStringOrNull(artistColumn)
-                .let { v -> if (v == "<unknown>") null else v }
-            val albumName = cursor.getStringOrNull(albumColumn)
-            val albumArtist = cursor.getStringOrNull(albumArtistColumn)
+            // read metadata strings and normalise any mojibake from Windows-1252 encoded
+        // smart punctuation.  Android sometimes returns garbage like "â€™" when the
+        // original tag was U+2019 but decoded incorrectly; fix the common cases here.
+        // the title must be non-null for Track, so default to empty if missing.
+        val title = cursor.getStringOrNull(titleColumn)
+            .fixWin1252()
+            ?: ""
+        val artist = cursor.getStringOrNull(artistColumn)
+            .fixWin1252()
+            .let { v -> if (v == "<unknown>") null else v }
+        val albumName = cursor.getStringOrNull(albumColumn).fixWin1252()
+        val albumArtist = cursor.getStringOrNull(albumArtistColumn).fixWin1252()
             val trackNumber = cursor.getIntOrNull(trackNumberColumn)
             val year = cursor.getIntOrNull(yearColumn).let { v -> if (v == 0) null else v }
             val albumId = cursor.getLongOrNull(albumIdColumn)
@@ -316,9 +335,9 @@ object MediaStoreUtils {
                 context.contentResolver.runCatching { openInputStream(uri)!!.close() }.isSuccess
             }
 
-            val artists = artist.toArtists()
+            val artists = artist.toArtists(artistExclusions)
             val album = albumName?.let {
-                Album(albumId.toString(), it, null, null, albumArtist.toArtists())
+                Album(albumId.toString(), it, null, null, albumArtist.toArtists(artistExclusions))
             }
             val song = Track(
                 id = id.toString(),
@@ -437,6 +456,12 @@ object MediaStoreUtils {
         val folderFilter = settings.getStringSet("blacklist_folders") ?: setOf()
         val blacklistKeywords = settings.getString("blacklist_keywords")?.split(',')
             ?.mapNotNull { it.trim().takeIf { s -> s.isNotBlank() } }.orEmpty()
+        // parse the user-defined exclusion list; stored as pipe-separated values in settings.
+        val artistExclusions = settings.getString(ARTIST_EXCLUSIONS)
+            ?.split('|')
+            ?.mapNotNull { it.trim().takeIf { s -> s.isNotBlank() } }
+            ?.toSet()
+            ?: emptySet()
         // Initialize list and maps.
         val coverCache = if (haveImgPerm) hashMapOf<Long, Pair<File, FileNode>>() else null
         val folders = hashSetOf<String>()
@@ -470,6 +495,7 @@ object MediaStoreUtils {
             songs,
             foundPlaylistContent,
             idMap,
+            settings,              // pass settings so helper can access exclusions
         ) { song ->
             song.artists.map {
                 val id = it.id.toLongOrNull()
@@ -683,13 +709,35 @@ object MediaStoreUtils {
         return d[m][n]
     }
 
-    private fun String?.splitArtists() = this?.split(",", "&", " and ")
-        ?.mapNotNull { it.trim().takeIf { s -> s.isNotBlank() } }
-        ?: listOf(null)
+    private fun String?.splitArtists(exclusions: Set<String> = emptySet()) =
+        if (this != null && exclusions.contains(this.trim()))
+            listOf(this.trim())
+        else this?.split(",", "&", " and ")
+            ?.mapNotNull { it.trim().takeIf { s -> s.isNotBlank() } }
+            ?: listOf(null)
 
-    private fun String?.toArtists() = takeIf { this != "null" }.splitArtists().map {
-        Artist(it?.id().toString(), it ?: "Unknown")
+    /**
+     * Workaround for tags that contain Windows-1252 smart punctuation which was
+     * mis‑decoded by the media provider.  Converts common mojibake sequences back
+     * to their intended characters.
+     */
+    private fun String?.fixWin1252(): String? = this?.let { s ->
+        s.replace("â€™", "’")
+            .replace("â€“", "–")
+            .replace("â€”", "—")
+            .replace("â€œ", "“")
+            .replace("â€�", "”")
+            .replace("â€˜", "‘")
+            .replace("â€¦", "…")
+            // any additional mappings can be added here
     }
+
+    private fun String?.toArtists(exclusions: Set<String> = emptySet()) =
+        takeIf { this != "null" }
+            .splitArtists(exclusions)
+            .map {
+                Artist(it?.id().toString(), it ?: "Unknown")
+            }
 
     fun String.id() = this.lowercase().hashCode().toLong()
 }
