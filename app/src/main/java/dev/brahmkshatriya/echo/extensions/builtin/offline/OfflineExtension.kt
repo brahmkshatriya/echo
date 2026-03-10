@@ -114,6 +114,14 @@ class OfflineExtension(
                 context.getString(R.string.blacklist_folder_keywords),
                 "blacklist_keywords",
                 context.getString(R.string.blacklist_folder_keywords_summary)
+            ),
+            // user can supply a pipe‑separated list of artist names that should not be
+            // split even if they contain commas or ampersands (or pipes).  Example:
+            // "Paola & Chiara | Earth, Wind & Fire".
+            SettingTextInput(
+                context.getString(R.string.artist_exclusions),
+                "artist_exclusions",
+                context.getString(R.string.artist_exclusions_summary)
             )
         )
     }

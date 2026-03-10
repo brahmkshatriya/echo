@@ -31,6 +31,8 @@
     <string name="blacklist_folders_summary">Folders to exclude from the library</string>
     <string name="blacklist_folder_keywords">Blacklist Folder Keywords</string>
     <string name="blacklist_folder_keywords_summary">Keywords to blacklist folders, use comma for separator</string>
+    <string name="artist_exclusions">Artist exclusions</string>
+    <string name="artist_exclusions_summary">Pipe-separated list of artist names that should not be split (use “|”)</string>
     <string name="saved">Saved</string>
     <string name="tabs">Tabs</string>
     <string name="show_tabs">Show Tabs</string>
