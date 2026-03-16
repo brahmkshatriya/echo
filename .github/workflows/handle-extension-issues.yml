@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Debug Issue Body
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          echo "Issue body: ${{ github.event.issue.body }}"
+          echo "Issue body: $ISSUE_BODY"
       - name: Check for Extension Checkbox
         uses: actions/github-script@v6
         with:
