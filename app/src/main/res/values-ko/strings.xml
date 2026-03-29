@@ -11,7 +11,7 @@
     <string name="write_storage">저장소 사용하기</string>
     <string name="x_was_not_granted">%1$s 가 부여되지 않았습니다</string>
     <string name="notifications_permission_summary">다운로드 및 음악에 대한 알림을 표시</string>
-    <string name="recently_added">최근 추가됨</string>
+    <string name="recently_added">최근에 추가됨</string>
     <string name="artists">아티스트</string>
     <string name="notifications">알림</string>
     <string name="write_storage_permission_summary">로컬 재생목록을 만들고 수정하기</string>
@@ -23,7 +23,7 @@
     <string name="cached_songs">캐싱된 노래</string>
     <string name="cache_playlist_warning">실험적 기능. 듣기 이외의 모든 기능은 지원되지 않습니다.</string>
     <string name="blacklist_folders_summary">라이브러리에서 제외할 폴더</string>
-    <string name="refresh_library_on_reload">새로고침 시 보관함 다시 불러오기</string>
+    <string name="refresh_library_on_reload">보관함을 다시 불러오려면 새로고침</string>
     <string name="blacklist_folders">블랙리스트 폴더</string>
     <string name="blacklist_folder_keywords">블랙리스트 폴더 키워드</string>
     <string name="show_tab_summary">확장 기능의 탭을 카테고리로 표시합니다</string>
@@ -37,13 +37,13 @@
     <string name="unified_liked_playlist_summary">다양한 확장 프로그램에서 좋아하는 트랙</string>
     <string name="n_items">%1$d 항목</string>
     <string name="playlist_liked_desc">내가 좋아하는 트랙</string>
-    <string name="no_internet">인터넷 없음</string>
+    <string name="no_internet">인터넷 연결 없음</string>
     <string name="library">보관함</string>
     <string name="extension_x_not_found">확장 프로그램 %1$s을 찾을 수 없습니다</string>
     <string name="x_is_not_supported_in_x">%1$s는 %2$s에서 지원되지 않습니다</string>
     <string name="cancel_all">전체 취소</string>
     <string name="repeat_off">반복 끄기</string>
-    <string name="playlist_liked">좋아요</string>
+    <string name="playlist_liked">좋아요 표시한 음악</string>
     <string name="like">좋아요</string>
     <string name="unlike">싫어요</string>
     <string name="repeat_one">한 번 반복</string>
@@ -73,7 +73,7 @@
     <string name="settings">설정</string>
     <string name="value">값</string>
     <string name="value_not_set">설정되지 않음</string>
-    <string name="account_session_expired_in_x">%%%1$s에서 계정 세션이 만료되었습니다</string>
+    <string name="account_session_expired_in_x">%1$s에서 계정 세션이 만료되었습니다</string>
     <string name="unknown">알 수 없음</string>
     <string name="equalizer">이퀄라이저</string>
     <string name="custom_theme_color_summary">시스템 색상 대신, 사용자 정의 테마 색상을 사용합니다.</string>
@@ -101,7 +101,7 @@
     <string name="playback_speed">재생 속도</string>
     <string name="change_pitch_with_speed">속도에 따른 피치 변경</string>
     <string name="bass_boost_desc">값이 클수록 소리가 왜곡될 수 있습니다.</string>
-    <string name="change_pitch_with_speed_desc">\"그 유행하는\" 슬로우-모션 소리 적용</string>
+    <string name="change_pitch_with_speed_desc">소리에 슬로우-모션 적용</string>
     <string name="equalizer_summary">시스템 이퀄라이저 설정 열기</string>
     <string name="stream_quality_summary">스트리밍 품질 선택</string>
     <string name="behavior">동작</string>
@@ -127,7 +127,7 @@
     <string name="ui">UI</string>
     <string name="theme">테마</string>
     <string name="theme_summary">화려한 것을 원하시나요?</string>
-    <string name="amoled">OLED</string>
+    <string name="amoled">Amoled</string>
     <string name="amoled_summary">배경색을 완전한 검정으로 바꿉니다. OLED 사용자에게 배터리 소모를 줄이고 화면 번인을 방지합니다</string>
     <string name="bass_boost">저음 부스트</string>
     <string name="system">시스템</string>
