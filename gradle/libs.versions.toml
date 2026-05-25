@@ -25,7 +25,7 @@ landscapist-placeholder = { module = "com.github.skydoves:landscapist-placeholde
 landscapist-palette = { module = "com.github.skydoves:landscapist-palette", version.ref = "landscapist" }
 
 materialKolor = { module = "com.materialkolor:material-kolor", version = "5.0.0-alpha07" }
-hypnoticcanvas = { module = "com.mikepenz.hypnoticcanvas:hypnoticcanvas", version = "0.4.1" }
+hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.1" }
 wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "2.2.0" }
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }

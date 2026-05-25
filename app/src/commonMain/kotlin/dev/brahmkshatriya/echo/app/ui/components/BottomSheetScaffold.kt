@@ -13,9 +13,12 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
-import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitVerticalPointerSlopOrCancellation
 import androidx.compose.foundation.gestures.snapTo
+import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -63,10 +66,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
@@ -84,7 +88,6 @@ import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.expand
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -94,6 +97,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrNull
 import dev.brahmkshatriya.echo.app.platform.onPointerScrollY
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -114,53 +118,6 @@ internal constructor(
     internal val confirmValueChange: (SheetValue) -> Boolean,
     internal val isBottomSheetPartiallyExpandedDeterministicEnabled: Boolean,
 ) {
-    constructor(
-        enabledValues: Set<SheetValue>,
-        positionalThreshold: () -> Float,
-        velocityThreshold: () -> Float,
-        initialValue: SheetValue = SheetValue.Hidden,
-        confirmValueChange: (SheetValue) -> Boolean = { true },
-    ) : this(
-        enabledValues = enabledValues,
-        positionalThreshold = positionalThreshold,
-        velocityThreshold = velocityThreshold,
-        initialValue = initialValue,
-        confirmValueChange = confirmValueChange,
-        isBottomSheetPartiallyExpandedDeterministicEnabled = true,
-    )
-
-    @Deprecated(
-        message = "Use the primary constructor that takes a set of enabled values.",
-        replaceWith =
-            ReplaceWith(
-                "SheetState(enabledValues = buildSet { " +
-                        "add(SheetValue.Expanded); " +
-                        "if (!skipPartiallyExpanded) add(SheetValue.PartiallyExpanded); " +
-                        "if (!skipHiddenState) add(SheetValue.Hidden) " +
-                        "}, positionalThreshold, velocityThreshold, initialValue, confirmValueChange)",
-                "androidx.compose.material3.standalone.SheetValue",
-            ),
-    )
-    constructor(
-        skipPartiallyExpanded: Boolean,
-        positionalThreshold: () -> Float,
-        velocityThreshold: () -> Float,
-        initialValue: SheetValue = SheetValue.Hidden,
-        confirmValueChange: (SheetValue) -> Boolean = { true },
-        skipHiddenState: Boolean = false,
-    ) : this(
-        enabledValues =
-            buildSet {
-                add(SheetValue.Expanded)
-                if (!skipPartiallyExpanded) add(SheetValue.PartiallyExpanded)
-                if (!skipHiddenState) add(SheetValue.Hidden)
-            },
-        positionalThreshold = positionalThreshold,
-        velocityThreshold = velocityThreshold,
-        initialValue = initialValue,
-        confirmValueChange = confirmValueChange,
-        isBottomSheetPartiallyExpandedDeterministicEnabled = false,
-    )
 
     internal val skipPartiallyExpanded: Boolean
         get() = !enabledValues.contains(SheetValue.PartiallyExpanded)
@@ -259,7 +216,7 @@ internal constructor(
     internal var anchoredDraggableMotionSpec: AnimationSpec<Float> = BottomSheetAnimationSpec
 
     internal var anchoredDraggableState: AnchoredDraggableState<SheetValue> =
-        AnchoredDraggableState(initialValue = initialValue, confirmValueChange = confirmValueChange)
+        AnchoredDraggableState(initialValue = initialValue)
 
     internal fun newOffsetForDelta(delta: Float) =
         ((if (offset.isNaN()) 0f else offset) + delta).coerceIn(
@@ -315,64 +272,6 @@ internal constructor(
                 },
             )
 
-        @Deprecated(
-            message = "Use the Saver that takes a set of enabled values.",
-            replaceWith =
-                ReplaceWith(
-                    "Saver(enabledValues = buildSet { " +
-                            "add(SheetValue.Expanded); " +
-                            "if (!skipPartiallyExpanded) add(SheetValue.PartiallyExpanded); " +
-                            "if (!skipHiddenState) add(SheetValue.Hidden) " +
-                            "}, positionalThreshold, velocityThreshold, confirmValueChange)",
-                    "androidx.compose.material3.standalone.SheetValue",
-                ),
-        )
-        fun Saver(
-            skipPartiallyExpanded: Boolean,
-            positionalThreshold: () -> Float,
-            velocityThreshold: () -> Float,
-            confirmValueChange: (SheetValue) -> Boolean,
-            skipHiddenState: Boolean,
-        ) =
-            Saver(
-                enabledValues =
-                    buildSet {
-                        add(SheetValue.Expanded)
-                        if (!skipPartiallyExpanded) add(SheetValue.PartiallyExpanded)
-                        if (!skipHiddenState) add(SheetValue.Hidden)
-                    },
-                positionalThreshold = positionalThreshold,
-                velocityThreshold = velocityThreshold,
-                confirmValueChange = confirmValueChange,
-                isBottomSheetPartiallyExpandedDeterministicEnabled = false,
-            )
-
-        @Deprecated(
-            level = DeprecationLevel.HIDDEN,
-            message = "Maintained for binary compatibility."
-        )
-        fun Saver(
-            skipPartiallyExpanded: Boolean,
-            confirmValueChange: (SheetValue) -> Boolean,
-            density: Density,
-            skipHiddenState: Boolean,
-        ) =
-            Saver(
-                enabledValues =
-                    buildSet {
-                        add(SheetValue.Expanded)
-                        if (!skipPartiallyExpanded) add(SheetValue.PartiallyExpanded)
-                        if (!skipHiddenState) add(SheetValue.Hidden)
-                    },
-                confirmValueChange = confirmValueChange,
-                positionalThreshold = {
-                    with(density) { BottomSheetDefaults.PositionalThreshold.toPx() }
-                },
-                velocityThreshold = {
-                    with(density) { BottomSheetDefaults.VelocityThreshold.toPx() }
-                },
-                isBottomSheetPartiallyExpandedDeterministicEnabled = false,
-            )
     }
 }
 
@@ -660,20 +559,13 @@ private fun StandardBottomSheet(
                         }
                     return@draggableAnchors newAnchors to newTarget
                 }
-                    .onPointerScrollY {
-                        isMouseWheelScroll = true
-                    }
-                    .disableMouseDrag(
-                        enabled = sheetSwipeEnabled,
-                        onTouchPointerInput = {
-                            isMouseWheelScroll = false
-                        },
-                    )
-                .anchoredDraggable(
-                    state = state.anchoredDraggableState,
-                    orientation = orientation,
+                .onPointerScrollY { isMouseWheelScroll = true }
+                .touchAnchoredDraggable(
+                    state = state,
                     enabled = sheetSwipeEnabled,
                     flingBehavior = anchoredDraggableFlingBehavior,
+                    onTouchPointerInput = { isMouseWheelScroll = false },
+                    scope = scope,
                 )
                 .verticalScaleUp(state),
         shape = shape,
@@ -815,22 +707,51 @@ internal fun <T> Modifier.draggableAnchors(
     anchors: (size: IntSize, constraints: Constraints) -> Pair<DraggableAnchors<T>, T>,
 ) = this then DraggableAnchorsElement(state, anchors, orientation)
 
-private fun Modifier.disableMouseDrag(
+private fun Modifier.touchAnchoredDraggable(
+    state: SheetState,
     enabled: Boolean,
+    flingBehavior: FlingBehavior,
     onTouchPointerInput: () -> Unit,
+    scope: CoroutineScope,
 ): Modifier {
     if (!enabled) return this
 
-    return pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
-                event.changes.forEach { change ->
-                    if (change.pressed && change.type != PointerType.Mouse) {
-                        onTouchPointerInput()
-                    }
-                    if (change.pressed && change.type == PointerType.Mouse && change.positionChangeIgnoreConsumed() != Offset.Zero) {
+    return pointerInput(state, flingBehavior) {
+        val velocityTracker = VelocityTracker()
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false)
+            if (down.type != PointerType.Touch) {
+                return@awaitEachGesture
+            }
+
+            onTouchPointerInput()
+            velocityTracker.resetTracking()
+            velocityTracker.addPointerInputChange(down)
+
+            var overSlop = 0f
+            val drag =
+                awaitVerticalPointerSlopOrCancellation(down.id, PointerType.Touch) { change, slop ->
+                    change.consume()
+                    overSlop = slop
+                }
+
+            if (drag != null) {
+                state.anchoredDraggableState.dispatchRawDelta(overSlop)
+                velocityTracker.addPointerInputChange(drag)
+
+                if (
+                    verticalDrag(drag.id) { change ->
+                        velocityTracker.addPointerInputChange(change)
+                        state.anchoredDraggableState.dispatchRawDelta(change.positionChange().y)
                         change.consume()
+                    }
+                ) {
+                    scope.launch {
+                        state.anchoredDrag(flingBehavior, velocityTracker.calculateVelocity().y)
+                    }
+                } else {
+                    scope.launch {
+                        state.snapTo(state.targetValue)
                     }
                 }
             }

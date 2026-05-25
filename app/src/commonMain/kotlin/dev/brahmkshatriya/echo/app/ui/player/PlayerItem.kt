@@ -941,7 +941,7 @@ fun VolumeAdjuster() {
         AnimatedVisibility(isHovered.value) {
             Slider(
                 value = position.floatValue,
-                modifier = Modifier.width(128.dp).padding(horizontal = 8.dp),
+                modifier = Modifier.width(96.dp).padding(horizontal = 8.dp),
                 interactionSource = sliderInteraction,
                 onValueChange = { position.floatValue = it },
                 thumb = {

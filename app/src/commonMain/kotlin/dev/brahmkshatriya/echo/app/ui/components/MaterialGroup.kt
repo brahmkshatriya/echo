@@ -76,7 +76,7 @@ class MaterialGroupScope internal constructor(
 
 fun LazyListScope.materialGroup(
     roundedCornerRadius: Dp = 22.dp,
-    verticalPadding: Dp = 8.dp,
+    verticalPadding: Dp = 0.dp,
     content: MaterialGroupScope.() -> Unit,
 ) {
     val scope = MaterialGroupScope(

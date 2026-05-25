@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -79,7 +80,7 @@ fun Header(i: String) {
         },
         expandedRatio = 0.08f,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(12.dp, 4.dp),
+        modifier = Modifier.padding(10.dp, 4.dp),
     ) {
         list.forEachIndexed { i, item ->
             customItem({
@@ -133,17 +134,21 @@ fun Home() {
                     subtitleContentColor = LocalContentColor.current
                 ),
                 title = {
-                    Text(buildAnnotatedString {
-                        append("Good Afternoon, ")
-                        withStyle(
-                            style = SpanStyle(
-                                fontWeight = FontWeight.Medium,
-                                color = colorScheme.primary
-                            )
-                        ) {
-                            append("Shivam")
-                        }
-                    }, fontSize = 20.sp, modifier = Modifier.padding(top = 8.dp))
+                    Text(
+                        buildAnnotatedString {
+                            append("Good Afternoon, ")
+                            withStyle(
+                                style = SpanStyle(
+                                    fontWeight = FontWeight.Medium,
+                                    color = colorScheme.primary
+                                )
+                            ) {
+                                append("Shivam")
+                            }
+                        },
+                        fontSize = 20.sp,
+                        modifier = Modifier.offset(x = (-6).dp).padding(top = 8.dp)
+                    )
                 },
                 navigationIcon = {
                     val backStack = LocalMainBackStack.current

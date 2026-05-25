@@ -20,6 +20,8 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
@@ -27,6 +29,8 @@ import com.materialkolor.rememberDynamicMaterialThemeState
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import dev.brahmkshatriya.echo.app.ui.components.WavyGrainyShader
 
+val LocalDensityMultiplier = compositionLocalOf { 1f }
+val LocalFontScaleMultiplier = compositionLocalOf { 1f }
 val LocalCustomTheme = compositionLocalOf<ColorScheme?> { null }
 val LocalCustomTypography = compositionLocalOf<Typography?> { null }
 val LocalSurfaceColor = compositionLocalOf { Color.LightGray }
@@ -41,6 +45,13 @@ fun Modifier.animateBounds() = run {
 @Composable
 fun EchoTheme(
     content: @Composable () -> Unit,
+) = CompositionLocalProvider(
+    LocalDensity provides LocalDensity.current.run {
+        Density(
+            density = density * LocalDensityMultiplier.current,
+            fontScale = fontScale * LocalFontScaleMultiplier.current
+        )
+    }
 ) {
     val isDarkTheme = isSystemInDarkTheme()
     val customTheme = LocalCustomTheme.current
@@ -69,7 +80,6 @@ fun EchoTheme(
             SharedTransitionLayout {
                 CompositionLocalProvider(
                     LocalSurfaceColor provides bg,
-                    LocalTransitionScope provides this
                 ) {
                     content()
                 }

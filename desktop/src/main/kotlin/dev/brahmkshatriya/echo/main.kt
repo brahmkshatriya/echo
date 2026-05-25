@@ -23,6 +23,7 @@ import dev.brahmkshatriya.betterwindow.platform.overrideTitleBarAppearance
 import dev.brahmkshatriya.echo.app.ui.App
 import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTheme
 import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTypography
+import dev.brahmkshatriya.echo.app.ui.theme.LocalDensityMultiplier
 import dev.brahmkshatriya.echo.theme.googleSansTypography
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.app_name
@@ -32,36 +33,7 @@ import org.jetbrains.compose.resources.stringResource
 
 
 fun main() = application {
-
     val windowShowing = remember { mutableStateOf(true) }
-    val windowState = rememberWindowState(
-        position = WindowPosition.Aligned(Alignment.Center),
-        size = DpSize(960.dp, 640.dp)
-    )
-    if (windowShowing.value) BetterWindow(
-        { windowShowing.value = false },
-        windowState = windowState,
-        title = stringResource(Res.string.app_name),
-        icon = painterResource(Res.drawable.compose_multiplatform),
-    ) {
-        val accent by LocalPlatformWindow.current.accentColor.collectAsState()
-        val dynamicTheme = if (accent != Color.Unspecified) {
-            dynamicColorScheme(
-                primary = accent,
-                isDark = isSystemInDarkTheme(),
-                style = PaletteStyle.Rainbow,
-                specVersion = ColorSpec.SpecVersion.SPEC_2021
-            )
-        } else null
-        CompositionLocalProvider(
-            LocalCustomTheme provides dynamicTheme,
-            LocalCustomTypography provides googleSansTypography()
-        ) {
-            overrideTitleBarAppearance(isSystemInDarkTheme())
-            App()
-        }
-    }
-
     Tray(
         icon = painterResource(Res.drawable.compose_multiplatform),
         tooltip = "Echo",
@@ -72,5 +44,37 @@ fun main() = application {
         Item("Echo", onClick = { windowShowing.value = true })
         Divider()
         Item("Exit", onClick = { exitApplication() })
+    }
+
+    if (windowShowing.value) {
+        val densityMultiplier = 1.75f
+        val windowState = rememberWindowState(
+            position = WindowPosition.Aligned(Alignment.Center),
+            size = DpSize((960 * densityMultiplier).dp, (640 * densityMultiplier).dp)
+        )
+        BetterWindow(
+            { windowShowing.value = false },
+            windowState = windowState,
+            title = stringResource(Res.string.app_name),
+            icon = painterResource(Res.drawable.compose_multiplatform),
+        ) {
+            val accent by LocalPlatformWindow.current.accentColor.collectAsState()
+            val dynamicTheme = if (accent != Color.Unspecified) {
+                dynamicColorScheme(
+                    primary = accent,
+                    isDark = isSystemInDarkTheme(),
+                    style = PaletteStyle.Rainbow,
+                    specVersion = ColorSpec.SpecVersion.SPEC_2021
+                )
+            } else null
+            CompositionLocalProvider(
+                LocalCustomTheme provides dynamicTheme,
+                LocalDensityMultiplier provides densityMultiplier,
+                LocalCustomTypography provides googleSansTypography()
+            ) {
+                overrideTitleBarAppearance(isSystemInDarkTheme())
+                App()
+            }
+        }
     }
 }
