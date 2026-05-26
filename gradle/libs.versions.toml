@@ -6,6 +6,9 @@ ktor = "3.5.0"
 androidxLifecycle = "2.10.0"
 landscapist = "2.9.8"
 
+#noinspection UnusedVersionCatalogEntry
+compileSdk = "37"
+
 [libraries]
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }

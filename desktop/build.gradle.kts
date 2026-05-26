@@ -11,7 +11,7 @@ group = property("GROUP").toString()
 version = property("VERSION").toString()
 
 dependencies {
-    implementation(project(":app"))
+    implementation(projects.app)
 }
 
 apply(from = "proguards.gradle.kts")

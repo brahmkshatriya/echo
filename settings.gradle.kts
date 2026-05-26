@@ -23,3 +23,5 @@ rootProject.name = "Echo"
 include(":app")
 include(":android")
 include(":desktop")
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

@@ -13,12 +13,12 @@ val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
 
 android {
     namespace = "dev.brahmkshatriya.echo"
-    compileSdk = 37
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = group.toString()
         minSdk = 24
-        targetSdk = 37
+        targetSdk = compileSdk
         versionCode = gitCount
         versionName = "${version}-$gitHash"
     }
@@ -46,7 +46,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":app"))
+    implementation(projects.app)
 }
 
 fun execute(vararg command: String): String = providers.exec {
