@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.app.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -56,15 +57,33 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.CircleCutoutShape
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
-import dev.brahmkshatriya.echo.app.ui.components.PaddingRoundedCornerShape
-import dev.brahmkshatriya.echo.app.ui.components.StickyHeaderList
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
-import dev.brahmkshatriya.echo.app.ui.components.rememberBasicScrollbarThumbMover
+import dev.brahmkshatriya.echo.app.ui.components.rememberScrollbarThumbMover
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarState
 import dev.brahmkshatriya.echo.app.ui.theme.LocalSurfaceColor
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.ic_back
 import org.jetbrains.compose.resources.painterResource
+
+private const val HomeHeaderContentType = "home-header"
+private const val HomeGroupCount = 5
+private const val HomeItemsPerGroup = 11
+private const val HomeListItemsPerGroup = HomeItemsPerGroup + 1
+private const val HomeScrollableItems = HomeGroupCount * HomeItemsPerGroup
+
+private fun homeScrollbarItemIndex(rawIndex: Int): Int {
+    val group = rawIndex / HomeListItemsPerGroup
+    val indexInGroup = rawIndex % HomeListItemsPerGroup
+    return group * HomeItemsPerGroup + indexInGroup - 1
+}
+
+private fun homeLazyListItemIndex(scrollbarIndex: Int): Int {
+    val index = scrollbarIndex.coerceIn(0, HomeScrollableItems - 1)
+    val group = index / HomeItemsPerGroup
+    val indexInGroup = index % HomeItemsPerGroup
+    if (indexInGroup == 0) return group * HomeListItemsPerGroup
+    return group * HomeListItemsPerGroup + indexInGroup + 1
+}
 
 @Composable
 fun Header(i: String) {
@@ -114,6 +133,7 @@ fun Header(i: String) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Home() {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -195,51 +215,40 @@ fun Home() {
     ) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(bottom = 8.dp)) {
             val listState = rememberLazyListState()
-            val scrollbarState = listState.scrollbarState(itemsAvailable = 60)
+            val scrollbarState = listState.scrollbarState(
+                itemsAvailable = HomeScrollableItems,
+                itemIndex = { homeScrollbarItemIndex(it.index) },
+                isScrollbarItem = { it.contentType != HomeHeaderContentType },
+                itemSize = { it.size }
+            )
 
             val backStack = LocalMainBackStack.current
             val cardColors = CardDefaults.cardColors(
                 containerColor = LocalSurfaceColor.current,
             )
-            StickyHeaderList(
+            LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                isStickyHeaderItem = {
-                    it.key !is Int
-                },
-                stickyHeader = stickyHeader@{ _, _, contentType ->
-                    Header(contentType.toString())
-                }
+                modifier = Modifier.fillMaxSize()
+                    .padding(innerPadding)
             ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize().clip(remember {
-                        PaddingRoundedCornerShape(
-                            horizontalPadding = 8.dp,
-                            topPadding = 56.dp,
-                            cornerRadius = 22.dp
-                        )
-                    })
-                ) {
-                    (0..4).forEach { i ->
-                        item("Header $i", i) {
-                            Header(i.toString())
-                        }
-                        materialGroup {
-                            (0..10).forEach {
-                                card(
-                                    modifier = Modifier.padding(horizontal = 8.dp),
-                                    key = "$i$it",
-                                    contentType = i,
-                                    colors = cardColors
-                                ) {
-                                    Box(
-                                        Modifier.fillMaxWidth()
-                                            .clickable {
-                                                backStack?.add(Media(it.toString()))
-                                            }.padding(16.dp, 24.dp)
-                                    ) { Text("Item $it") }
-                                }
+                (0..4).forEach { i ->
+                    stickyHeader("Header $i", HomeHeaderContentType) {
+                        Header(i.toString())
+                    }
+                    materialGroup(lazyListState = listState) {
+                        (0..10).forEach {
+                            card(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                key = "$i$it",
+                                contentType = i,
+                                colors = cardColors
+                            ) {
+                                Box(
+                                    Modifier.fillMaxWidth()
+                                        .clickable {
+                                            backStack?.add(Media(it.toString()))
+                                        }.padding(16.dp, 24.dp)
+                                ) { Text("Item $it") }
                             }
                         }
                     }
@@ -255,7 +264,16 @@ fun Home() {
                 state = scrollbarState,
                 scrollInProgress = listState.isScrollInProgress,
                 orientation = Orientation.Vertical,
-                onThumbMoved = listState.rememberBasicScrollbarThumbMover()
+                onThumbMoved = rememberScrollbarThumbMover(
+                    itemsAvailable = HomeScrollableItems,
+                    itemSize = {
+                        listState.layoutInfo.visibleItemsInfo
+                            .firstOrNull { it.contentType != HomeHeaderContentType }
+                            ?.size ?: 0
+                    },
+                ) { index, scrollOffset ->
+                    listState.scrollToItem(homeLazyListItemIndex(index), scrollOffset)
+                }
             )
         }
     }

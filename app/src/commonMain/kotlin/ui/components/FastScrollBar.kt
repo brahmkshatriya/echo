@@ -275,7 +275,7 @@ internal inline fun <LazyState : ScrollableState, LazyStateItem> interpolatedInd
     if (firstItemSize == 0) return Float.NaN
 
     val itemOffset = lazyState.offset(item).toFloat()
-    val offsetPercentage = abs(itemOffset) / firstItemSize
+    val offsetPercentage = if (itemOffset > 0f) 0f else abs(itemOffset) / firstItemSize
 
     val nextItem = lazyState.nextItemOnMainAxis(item) ?: return firstItemIndex + offsetPercentage
 
@@ -349,21 +349,69 @@ fun ScrollState.rememberScrollbarThumbMover(): (Float) -> Unit {
  * @param scroll a function to be invoked when an index has been identified to scroll to.
  */
 @Composable
-inline fun rememberScrollbarThumbMover(
+fun rememberScrollbarThumbMover(
     itemsAvailable: Int,
-    crossinline scroll: suspend (index: Int) -> Unit,
+    scroll: suspend (index: Int) -> Unit,
 ): (Float) -> Unit {
     var percentage by remember { mutableFloatStateOf(Float.NaN) }
     val itemCount by rememberUpdatedState(itemsAvailable)
 
     LaunchedEffect(percentage) {
         if (percentage.isNaN()) return@LaunchedEffect
-        val indexToFind = (itemCount * percentage).roundToInt()
+        val indexToFind = scrollbarTargetIndex(itemCount, percentage)
         scroll(indexToFind)
     }
     return remember {
         { newPercentage -> percentage = newPercentage }
     }
+}
+
+@Composable
+fun rememberScrollbarThumbMover(
+    itemsAvailable: Int,
+    itemSize: () -> Int,
+    scroll: suspend (index: Int, scrollOffset: Int) -> Unit,
+): (Float) -> Unit {
+    var percentage by remember { mutableFloatStateOf(Float.NaN) }
+    val itemCount by rememberUpdatedState(itemsAvailable)
+    val currentItemSize by rememberUpdatedState(itemSize)
+    val currentScroll by rememberUpdatedState(scroll)
+
+    LaunchedEffect(percentage) {
+        if (percentage.isNaN()) return@LaunchedEffect
+        val itemPosition = scrollbarTargetPosition(itemCount, percentage)
+        val itemSizePx = currentItemSize().coerceAtLeast(0)
+        val scrollOffset = (itemPosition.offsetFraction * itemSizePx).roundToInt()
+        currentScroll(itemPosition.index, scrollOffset)
+    }
+    return remember {
+        { newPercentage -> percentage = newPercentage }
+    }
+}
+
+private data class ScrollbarTargetPosition(
+    val index: Int,
+    val offsetFraction: Float,
+)
+
+private fun scrollbarTargetIndex(
+    itemsAvailable: Int,
+    percentage: Float,
+): Int = scrollbarTargetPosition(itemsAvailable, percentage).index
+
+private fun scrollbarTargetPosition(
+    itemsAvailable: Int,
+    percentage: Float,
+): ScrollbarTargetPosition {
+    if (itemsAvailable <= 0) return ScrollbarTargetPosition(index = 0, offsetFraction = 0f)
+
+    val maxPosition = (itemsAvailable - 1).toFloat()
+    val targetPosition = (itemsAvailable * percentage).coerceIn(0f, maxPosition)
+    val index = targetPosition.toInt()
+    return ScrollbarTargetPosition(
+        index = index,
+        offsetFraction = targetPosition - index,
+    )
 }
 
 inline fun <T> List<T>.sumOf(selector: (T) -> Float): Float =
@@ -403,6 +451,9 @@ fun LazyListState.rememberBasicScrollbarThumbMover(): (Float) -> Unit {
     }
     return rememberScrollbarThumbMover(
         itemsAvailable = totalItemsCount,
+        itemSize = {
+            layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 0
+        },
         scroll = ::scrollToItem,
     )
 }
@@ -421,17 +472,37 @@ fun LazyListState.rememberBasicScrollbarThumbMover(): (Float) -> Unit {
 fun LazyListState.scrollbarState(
     itemsAvailable: Int,
     itemIndex: (LazyListItemInfo) -> Int = LazyListItemInfo::index,
+    isScrollbarItem: (LazyListItemInfo) -> Boolean = { true },
+    itemSize: ((LazyListItemInfo) -> Int)? = null,
 ): ScrollbarState {
     val state = remember { ScrollbarState() }
+    val currentItemIndex by rememberUpdatedState(itemIndex)
+    val currentIsScrollbarItem by rememberUpdatedState(isScrollbarItem)
+    val currentItemSize by rememberUpdatedState(itemSize)
     LaunchedEffect(this, itemsAvailable) {
         snapshotFlow {
             if (itemsAvailable == 0) return@snapshotFlow null
 
-            val visibleItemsInfo = layoutInfo.visibleItemsInfo
+            val visibleItemsInfo = layoutInfo.visibleItemsInfo.filter(currentIsScrollbarItem)
             if (visibleItemsInfo.isEmpty()) return@snapshotFlow null
+            val estimatedItemSize = currentItemSize?.let { sizeOf ->
+                visibleItemsInfo.firstNotNullOfOrNull { itemInfo ->
+                    sizeOf(itemInfo).takeIf { it > 0 }
+                }
+            }
 
             val firstIndex = min(
-                a = interpolatedFirstItemIndex(itemIndex),
+                a = interpolatedIndexOfVisibleItemAt(
+                    lazyState = this@scrollbarState,
+                    visibleItems = visibleItemsInfo,
+                    index = 0,
+                    itemSize = { it.size },
+                    offset = { it.offset },
+                    nextItemOnMainAxis = { item ->
+                        visibleItemsInfo.getOrNull(visibleItemsInfo.indexOf(item) + 1)
+                    },
+                    itemIndex = currentItemIndex,
+                ),
                 b = itemsAvailable.toFloat(),
             )
             if (firstIndex.isNaN()) return@snapshotFlow null
@@ -444,13 +515,16 @@ fun LazyListState.scrollbarState(
                     viewportEndOffset = layoutInfo.viewportEndOffset,
                 )
             }
+            val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
 
             val thumbTravelPercent = min(
                 a = firstIndex / itemsAvailable,
                 b = 1f,
             )
             val thumbSizePercent = min(
-                a = itemsVisible / itemsAvailable,
+                a = if (estimatedItemSize != null)
+                    viewportSize.toFloat() / (estimatedItemSize * itemsAvailable)
+                else itemsVisible / itemsAvailable,
                 b = 1f,
             )
             scrollbarStateValue(
