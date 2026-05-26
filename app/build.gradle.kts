@@ -10,6 +10,9 @@
     alias(libs.plugins.stabilityAnalyzer)
 }
 
+group = property("GROUP").toString() + ".app"
+version = property("VERSION").toString()
+
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
@@ -25,7 +28,7 @@ kotlin {
     jvmToolchain(21)
     jvm()
     android {
-        namespace = "dev.brahmkshatriya.echo.platform"
+        namespace = group.toString()
         compileSdk = 37
         androidResources.enable = true
     }

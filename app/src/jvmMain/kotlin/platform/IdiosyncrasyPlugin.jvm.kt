@@ -21,12 +21,8 @@ import org.jetbrains.skia.MipmapMode
 
 actual class IdiosyncrasyPlugin : ImagePlugin.PainterPlugin {
     @Composable
-    override fun compose(
-        imageBitmap: ImageBitmap,
-        painter: Painter
-    ): Painter {
-        return remember(imageBitmap) { ScaledBitmapPainter(imageBitmap) }
-    }
+    override fun compose(imageBitmap: ImageBitmap, painter: Painter): Painter =
+        remember(imageBitmap) { ScaledBitmapPainter(imageBitmap) }
 }
 
 class ScaledBitmapPainter(

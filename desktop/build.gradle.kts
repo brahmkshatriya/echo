@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
+group = property("GROUP").toString()
+version = property("VERSION").toString()
+
 dependencies {
     implementation(project(":app"))
 }

@@ -5,6 +5,9 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
+group = property("GROUP").toString()
+version = property("VERSION").toString()
+
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
 
@@ -13,11 +16,11 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = property("GROUP").toString()
+        applicationId = group.toString()
         minSdk = 24
         targetSdk = 37
         versionCode = gitCount
-        versionName = "${property("VERSION")}-$gitHash"
+        versionName = "${version}-$gitHash"
     }
 
     compileOptions {

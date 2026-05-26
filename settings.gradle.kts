@@ -1,33 +1,15 @@
-@file:Suppress("UnstableApiUsage")
-
-rootProject.name = "Echo"
-include(":app")
-include(":android")
-include(":desktop")
-
 pluginManagement {
     repositories {
-        google {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
 dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
     repositories {
-        google {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
+        google()
         mavenCentral()
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     }
@@ -36,3 +18,8 @@ dependencyResolutionManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+
+rootProject.name = "Echo"
+include(":app")
+include(":android")
+include(":desktop")
