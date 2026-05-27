@@ -6,6 +6,7 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -96,6 +97,7 @@ import com.skydoves.landscapist.palette.rememberPaletteState
 import dev.brahmkshatriya.echo.app.platform.onPointerScrollY
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
+import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
@@ -151,6 +153,7 @@ const val maxSongCoverHeight = 400
 const val songCoverHorizontalPadding = 16
 const val songCoverVerticalPadding = 8
 const val collapsedHorizontalPadding = 8
+private const val PlayerCoverArtContentType = "player-cover-art"
 
 fun Modifier.coverSize() = padding(songCoverHorizontalPadding.dp, songCoverVerticalPadding.dp)
     .widthIn(max = maxSongCoverSize.dp)
@@ -158,6 +161,7 @@ fun Modifier.coverSize() = padding(songCoverHorizontalPadding.dp, songCoverVerti
     .aspectRatio(1f)
     .fillMaxSize()
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BoxScope.SongPlayerItem(
     i: Int,
@@ -165,7 +169,6 @@ fun BoxScope.SongPlayerItem(
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimaryContainer
 ) {
-    CollapsedPlayer(i)
     val widthState = remember { mutableIntStateOf(0) }
     val heightState = remember { mutableIntStateOf(0) }
     val topBarHeight = remember { mutableIntStateOf(0) }
@@ -179,31 +182,61 @@ fun BoxScope.SongPlayerItem(
     )
     val listState = rememberLazyListState()
     val bottomPadding = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+    val coverArtKey = remember(i) { "player-cover-art-$i" }
+    val ignoredStickyHeaderKeys = remember(coverArtKey) { setOf(coverArtKey) }
     LazyColumn(
         Modifier.onSizeChanged {
             widthState.intValue = it.width
             heightState.intValue = it.height
-        }.graphicsLayer {
-            val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-            val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-            val offset = 1 - sheetProgress.coerceIn(0f, 1f)
-            alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
-            translationY = offset * size.height
         },
         state = listState
     ) {
-        item { TopBar(i) { topBarHeight.intValue = it } }
-        item { Box(Modifier.coverSize()) }
-        item { ExpandedTimeline(i) }
-        item { Controller() }
-        item { BottomBar() }
+        item {
+            TopBar(
+                i,
+                Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }
+            ) { topBarHeight.intValue = it }
+        }
+        stickyHeader(coverArtKey, PlayerCoverArtContentType) {
+            CoverArt(
+                i,
+                paletteState,
+                { topBarHeight.intValue },
+                { widthState.intValue },
+                {
+                    when (listState.firstVisibleItemIndex) {
+                        0 -> listState.firstVisibleItemScrollOffset
+                        1 -> listState.firstVisibleItemScrollOffset + topBarHeight.intValue
+                        else -> heightState.intValue
+                    }
+                }
+            )
+        }
+        item {
+            Box(Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }) {
+                ExpandedTimeline(i)
+            }
+        }
+        item {
+            Box(Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }) {
+                Controller()
+            }
+        }
+        item {
+            Box(Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }) {
+                BottomBar()
+            }
+        }
         materialGroup(
             lazyListState = listState,
-            clipPadding = PaddingValues(top = 8.dp, bottom = 8.dp + bottomPadding)
+            clipPadding = PaddingValues(top = 8.dp, bottom = 8.dp + bottomPadding),
+            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
         ) {
             (0..10).forEach {
                 card(
-                    modifier = Modifier.padding(horizontal = 8.dp),
+                    modifier = Modifier
+                        .expandedListItemTransform(playerSheet) { heightState.intValue }
+                        .padding(horizontal = 8.dp),
                     key = "$i$it",
                     contentType = i,
                     colors = cardColors
@@ -222,19 +255,7 @@ fun BoxScope.SongPlayerItem(
         }
     }
 
-    CoverArt(
-        i,
-        paletteState,
-        { topBarHeight.intValue },
-        { widthState.intValue },
-        {
-            when (listState.firstVisibleItemIndex) {
-                0 -> listState.firstVisibleItemScrollOffset
-                1 -> listState.firstVisibleItemScrollOffset + topBarHeight.intValue
-                else -> heightState.intValue
-            }
-        }
-    )
+    CollapsedPlayer(i)
     val scrollbarState = listState.scrollbarState(12)
     FastScrollbar(
         modifier = Modifier
@@ -251,6 +272,19 @@ fun BoxScope.SongPlayerItem(
         orientation = Orientation.Vertical,
         onThumbMoved = listState.rememberBasicScrollbarThumbMover()
     )
+}
+
+fun Modifier.expandedListItemTransform(
+    playerSheet: BetterSheet?,
+    playerHeight: () -> Int
+): Modifier {
+    return graphicsLayer {
+        val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+        val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+        val offset = 1 - positiveProgress
+        alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
+        translationY = offset * playerHeight()
+    }
 }
 
 @Composable
@@ -568,8 +602,10 @@ fun CoverArt(
                 translationX =
                     -songCoverHorizontalPadding.dp.toPx() + targetX * offset + center * positiveProgress
 
-                translationY = (-songCoverVerticalPadding.dp.toPx() + targetY) * offset +
-                        (topBarHeight() - scrollOffset()) * positiveProgress
+                val expandedY = (topBarHeight() - scrollOffset()).toFloat()
+                val stickyY = expandedY.coerceAtLeast(0f)
+                val collapsedY = -songCoverVerticalPadding.dp.toPx() + targetY
+                translationY = collapsedY * offset + expandedY * positiveProgress - stickyY
 
                 clip = true
                 shape = RoundedCornerShape((8 / scaleX).dp)
@@ -580,13 +616,17 @@ fun CoverArt(
 }
 
 @Composable
-fun TopBar(index: Int, onHeightChanged: (Int) -> Unit) {
+fun TopBar(
+    index: Int,
+    modifier: Modifier = Modifier,
+    onHeightChanged: (Int) -> Unit
+) {
     val playerSheet = LocalPlayerSheet.current
     val safePadding = WindowInsets.safeDrawing.asPaddingValues()
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
     Row(
-        Modifier.padding(end = 8.dp)
+        modifier.padding(end = 8.dp)
             .onSizeChanged {
                 onHeightChanged(it.height)
             }

@@ -39,13 +39,15 @@ fun LazyListScope.materialGroup(
     lazyListState: LazyListState,
     roundedCornerRadius: Dp = 22.dp,
     clipPadding: PaddingValues = PaddingValues(0.dp),
+    ignoredStickyHeaderKeys: Set<Any> = emptySet(),
     content: MaterialGroupScope.() -> Unit,
 ) {
     val scope = MaterialGroupScope(
         radius = roundedCornerRadius,
         clipPadding = clipPadding,
         lazyListState = lazyListState,
-        lazyListScope = this
+        lazyListScope = this,
+        ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
     )
 
     scope.content()
@@ -57,6 +59,7 @@ class MaterialGroupScope(
     private val clipPadding: PaddingValues,
     private val lazyListState: LazyListState,
     private val lazyListScope: LazyListScope,
+    private val ignoredStickyHeaderKeys: Set<Any>,
 ) {
     private val items = mutableListOf<CardParams>()
 
@@ -103,7 +106,8 @@ class MaterialGroupScope(
                             radius = radius,
                             itemKeys = itemKeys,
                             firstKey = firstKey,
-                            lastKey = lastKey
+                            lastKey = lastKey,
+                            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
                         ),
                     colors = params.colors ?: CardDefaults.cardColors(),
                     elevation = params.elevation ?: CardDefaults.cardElevation(),
@@ -130,7 +134,8 @@ private fun materialGroupClipInfo(
     clipPadding: MaterialGroupClipPadding,
     itemKeys: Set<Any>,
     firstKey: Any,
-    lastKey: Any
+    lastKey: Any,
+    ignoredStickyHeaderKeys: Set<Any>
 ): Pair<Int?, Int?> {
     val layoutInfo = lazyListState.layoutInfo
     val visibleItems = layoutInfo.visibleItemsInfo
@@ -138,7 +143,9 @@ private fun materialGroupClipInfo(
         ?: return null to null
 
     val stickyHeaderItem = visibleItems.asSequence().filter { item ->
-        item.index < currentItem.index && item.key !in itemKeys
+        item.index < currentItem.index &&
+                item.key !in itemKeys &&
+                item.key !in ignoredStickyHeaderKeys
     }.maxByOrNull { item -> item.index }
     val viewportStart = layoutInfo.viewportStartOffset
     val viewportEnd = layoutInfo.viewportEndOffset
@@ -163,7 +170,8 @@ private fun Modifier.clipToRoundedViewport(
     radius: Dp,
     itemKeys: Set<Any>,
     firstKey: Any,
-    lastKey: Any
+    lastKey: Any,
+    ignoredStickyHeaderKeys: Set<Any>
 ): Modifier {
     val (topBoundary, bottomBoundary) = materialGroupClipInfo(
         lazyListState = lazyListState,
@@ -171,7 +179,8 @@ private fun Modifier.clipToRoundedViewport(
         clipPadding = clipPadding,
         itemKeys = itemKeys,
         firstKey = firstKey,
-        lastKey = lastKey
+        lastKey = lastKey,
+        ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
     )
     return drawWithContent {
         val hasNoBoundaries = topBoundary == null && bottomBoundary == null
