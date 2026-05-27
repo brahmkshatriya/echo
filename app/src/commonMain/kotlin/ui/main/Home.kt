@@ -81,8 +81,8 @@ private fun homeLazyListItemIndex(scrollbarIndex: Int): Int {
     val index = scrollbarIndex.coerceIn(0, HomeScrollableItems - 1)
     val group = index / HomeItemsPerGroup
     val indexInGroup = index % HomeItemsPerGroup
-    if (indexInGroup == 0) return group * HomeListItemsPerGroup
-    return group * HomeListItemsPerGroup + indexInGroup + 1
+    return if (indexInGroup == 0) group * HomeListItemsPerGroup
+    else group * HomeListItemsPerGroup + indexInGroup + 1
 }
 
 @Composable
@@ -229,13 +229,13 @@ fun Home() {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(innerPadding),
             ) {
                 (0..4).forEach { i ->
                     stickyHeader("Header $i", HomeHeaderContentType) {
                         Header(i.toString())
                     }
-                    materialGroup(lazyListState = listState) {
+                    materialGroup(listState) {
                         (0..10).forEach {
                             card(
                                 modifier = Modifier.padding(horizontal = 8.dp),

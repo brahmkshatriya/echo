@@ -178,6 +178,7 @@ fun BoxScope.SongPlayerItem(
         contentColor = colorScheme.onSurface
     )
     val listState = rememberLazyListState()
+    val bottomPadding = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
     LazyColumn(
         Modifier.onSizeChanged {
             widthState.intValue = it.width
@@ -189,9 +190,6 @@ fun BoxScope.SongPlayerItem(
             alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
             translationY = offset * size.height
         },
-        contentPadding = PaddingValues(
-            bottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
-        ),
         state = listState
     ) {
         item { TopBar(i) { topBarHeight.intValue = it } }
@@ -199,7 +197,10 @@ fun BoxScope.SongPlayerItem(
         item { ExpandedTimeline(i) }
         item { Controller() }
         item { BottomBar() }
-        materialGroup {
+        materialGroup(
+            lazyListState = listState,
+            clipPadding = PaddingValues(top = 8.dp, bottom = 8.dp + bottomPadding)
+        ) {
             (0..10).forEach {
                 card(
                     modifier = Modifier.padding(horizontal = 8.dp),

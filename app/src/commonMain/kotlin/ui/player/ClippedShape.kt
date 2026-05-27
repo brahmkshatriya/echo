@@ -41,7 +41,10 @@ class ClippedShape(
 
         val rectWidth = max(0f, size.width - leftPadding - rightPadding)
 
-        val cornerRadius = density.run { radius.toPx() * max(offset, backProgress) }
+        val cornerRadius = density.run {
+            val radiusPx = radius.toPx()
+            max(radiusPx * offset, radiusPx * 2 * backProgress)
+        }
 
         return Outline.Rounded(
             RoundRect(
