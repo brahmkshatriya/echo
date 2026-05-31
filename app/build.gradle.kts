@@ -44,7 +44,6 @@ kotlin {
             api(libs.materialKolor)
             api(libs.bundles.landscapist)
             api(libs.hypnoticcanvas)
-            api(libs.wavy.slider)
         }
         jvmMain.dependencies {
             api(compose.desktop.currentOs)

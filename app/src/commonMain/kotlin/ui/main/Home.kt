@@ -27,8 +27,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.shapes
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
@@ -90,45 +93,64 @@ fun Header(i: String) {
     val list = remember(i) { listOf("Header $i", "Apple", "Banana", "Cinnamon") }
     val selected = remember { mutableIntStateOf(0) }
 
-    ButtonGroup(
-        {
-            ButtonGroupDefaults.OverflowIndicator(
-                it,
-                colors = IconButtonDefaults.filledIconButtonColors(colorScheme.secondaryContainer)
-            )
-        },
-        expandedRatio = 0.08f,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(10.dp, 4.dp),
+    val extraSmall = shapes.extraSmall
+    MaterialExpressiveTheme(
+        shapes = shapes.copy(extraSmall = shapes.large),
     ) {
-        list.forEachIndexed { i, item ->
-            customItem({
-                val interactionSource = remember { MutableInteractionSource() }
-                ToggleButton(
-                    modifier = Modifier.animateWidth(interactionSource),
-                    interactionSource = interactionSource,
-                    checked = i == selected.intValue,
-                    onCheckedChange = {
-                        if (it) selected.intValue = i
-                    },
-                    contentPadding = PaddingValues(vertical = 8.dp),
-                    colors = ToggleButtonDefaults.tonalToggleButtonColors(),
-                ) {
-                    Row {
-                        Spacer(Modifier.width(16.dp))
-                        Text(item, softWrap = false)
-                        Spacer(Modifier.width(16.dp))
-                    }
-                }
-            }, {
-                DropdownMenuItem(
-                    text = { Text(item) },
-                    onClick = {
-                        selected.intValue = i
-                        it.dismiss()
-                    },
+        ButtonGroup(
+            {
+                ButtonGroupDefaults.OverflowIndicator(
+                    it,
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = colorScheme.secondary.copy(alpha = 0.25f),
+                        contentColor = colorScheme.secondary,
+                    )
                 )
-            })
+            },
+            expandedRatio = 0.08f,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.padding(10.dp, 4.dp),
+        ) {
+            list.forEachIndexed { i, item ->
+                customItem({
+                    val interactionSource = remember { MutableInteractionSource() }
+                    ToggleButton(
+                        modifier = Modifier.animateWidth(interactionSource),
+                        interactionSource = interactionSource,
+                        checked = i == selected.intValue,
+                        onCheckedChange = {
+                            if (it) selected.intValue = i
+                        },
+                        contentPadding = PaddingValues(vertical = 8.dp),
+                        colors = ToggleButtonDefaults.tonalToggleButtonColors(
+                            containerColor = colorScheme.secondary.copy(alpha = 0.25f),
+                            contentColor = colorScheme.secondary,
+                            checkedContainerColor = colorScheme.secondary,
+                            checkedContentColor = colorScheme.onSecondary,
+                        ),
+                    ) {
+                        Row {
+                            Spacer(Modifier.width(16.dp))
+                            Text(item, softWrap = false)
+                            Spacer(Modifier.width(16.dp))
+                        }
+                    }
+                }, {
+                    MaterialExpressiveTheme(
+                        shapes = shapes.copy(extraSmall = extraSmall),
+                    ) {
+                        DropdownMenuItem(
+                            selected = i == selected.intValue,
+                            onClick = {
+                                selected.intValue = i
+                                it.dismiss()
+                            },
+                            text = { Text(item) },
+                            shapes = MenuDefaults.itemShape(i, list.size),
+                        )
+                    }
+                })
+            }
         }
     }
 }

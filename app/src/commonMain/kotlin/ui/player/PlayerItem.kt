@@ -1,10 +1,12 @@
 package dev.brahmkshatriya.echo.app.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -17,7 +19,7 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,6 +41,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
@@ -47,6 +50,7 @@ import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialExpressiveTheme
@@ -55,11 +59,14 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
+import androidx.compose.material3.onPointerScrollY
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -68,12 +75,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -94,16 +104,17 @@ import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.skydoves.landscapist.palette.PalettePlugin
 import com.skydoves.landscapist.palette.rememberPaletteState
-import dev.brahmkshatriya.echo.app.platform.onPointerScrollY
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
+import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
-import dev.brahmkshatriya.echo.app.ui.components.rememberBasicScrollbarThumbMover
-import dev.brahmkshatriya.echo.app.ui.components.scrollbarState
+import dev.brahmkshatriya.echo.app.ui.components.paddingMask
+import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
 import dev.brahmkshatriya.echo.app.ui.components.simpleTween
+import dev.brahmkshatriya.echo.app.ui.main.Header
 import dev.brahmkshatriya.echo.app.ui.theme.Primary
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.ic_close
@@ -122,10 +133,9 @@ import echo.app.generated.resources.ic_skip_next_32
 import echo.app.generated.resources.ic_skip_previous
 import echo.app.generated.resources.ic_skip_previous_32
 import echo.app.generated.resources.ic_volume_up
-import ir.mahozad.multiplatform.wavyslider.WaveDirection
-import ir.mahozad.multiplatform.wavyslider.material3.Track
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.roundToInt
 
 @Composable
 fun PlayerItem(i: Int) {
@@ -149,129 +159,377 @@ fun PlayerItem(i: Int) {
 }
 
 const val maxSongCoverSize = 360
-const val maxSongCoverHeight = 400
 const val songCoverHorizontalPadding = 16
-const val songCoverVerticalPadding = 8
+const val songCoverVerticalPadding = 16
 const val collapsedHorizontalPadding = 8
-private const val PlayerCoverArtContentType = "player-cover-art"
+private val coverArtViewportReserve = 296.dp
+private const val PlayerBottomBarContentType = "player-bottom-bar"
+private const val PlayerQueueItemContentType = "player-queue-item"
+private const val PlayerQueueItemsPerGroup = 11
+private const val PlayerScrollbarThumbSizePercent = 0.16f
 
-fun Modifier.coverSize() = padding(songCoverHorizontalPadding.dp, songCoverVerticalPadding.dp)
-    .widthIn(max = maxSongCoverSize.dp)
-    .height(maxSongCoverHeight.dp)
+@Stable
+private class PlayerScrollbarItemSizes {
+    private val sizes = mutableMapOf<Int, Int>()
+
+    fun update(index: Int, size: Int) {
+        if (size > 0) sizes[index] = size
+    }
+
+    fun itemSize(index: Int, fallbackSize: Int): Int = sizes[index] ?: fallbackSize
+
+    fun fallbackSize(viewportSize: Int): Int = sizes.values
+        .filter { it > 0 }
+        .takeIf { it.isNotEmpty() }
+        ?.average()
+        ?.roundToInt()
+        ?: viewportSize.coerceAtLeast(1)
+}
+
+private fun estimatedPlayerContentHeight(
+    itemSizes: PlayerScrollbarItemSizes,
+    totalItems: Int,
+    fallbackSize: Int,
+): Int = (0 until totalItems).sumOf { index ->
+    itemSizes.itemSize(index, fallbackSize)
+}
+
+private fun estimatedPlayerScrollOffset(
+    itemSizes: PlayerScrollbarItemSizes,
+    firstVisibleIndex: Int,
+    firstVisibleItemScrollOffset: Int,
+    fallbackSize: Int,
+): Int {
+    val beforeFirstItem = (0 until firstVisibleIndex).sumOf { index ->
+        itemSizes.itemSize(index, fallbackSize)
+    }
+    val firstItemSize = itemSizes.itemSize(firstVisibleIndex, fallbackSize)
+    return beforeFirstItem + firstVisibleItemScrollOffset.coerceIn(0, firstItemSize)
+}
+
+@Composable
+private fun rememberPlayerScrollbarState(
+    listState: LazyListState,
+    itemSizes: PlayerScrollbarItemSizes,
+): ScrollbarState {
+    val state = remember { ScrollbarState() }
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            PlayerScrollbarSnapshot(
+                firstVisibleIndex = listState.firstVisibleItemIndex,
+                firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
+                canScrollBackward = listState.canScrollBackward,
+                totalItems = layoutInfo.totalItemsCount,
+                viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
+                visibleItemSizes = layoutInfo.visibleItemsInfo.map { it.index to it.size },
+            )
+        }.collect { snapshot ->
+            if (snapshot.totalItems <= 0) return@collect
+            snapshot.visibleItemSizes.forEach { (index, size) ->
+                itemSizes.update(index, size)
+            }
+
+            val viewportSize = snapshot.viewportSize.coerceAtLeast(1)
+            val fallbackSize = itemSizes.fallbackSize(viewportSize)
+            val totalHeight = estimatedPlayerContentHeight(
+                itemSizes = itemSizes,
+                totalItems = snapshot.totalItems,
+                fallbackSize = fallbackSize,
+            )
+            val maxScrollOffset = (totalHeight - viewportSize).coerceAtLeast(1)
+            val scrollOffset = estimatedPlayerScrollOffset(
+                itemSizes = itemSizes,
+                firstVisibleIndex = snapshot.firstVisibleIndex,
+                firstVisibleItemScrollOffset = snapshot.firstVisibleItemScrollOffset,
+                fallbackSize = fallbackSize,
+            )
+            val maxThumbTravel = 1f - PlayerScrollbarThumbSizePercent
+            val thumbMovedPercent = when {
+                !snapshot.canScrollBackward -> 0f
+                else -> (scrollOffset.toFloat() / maxScrollOffset * maxThumbTravel)
+                    .coerceIn(0f, maxThumbTravel)
+            }
+            state.onScroll(scrollbarStateValue(
+                thumbSizePercent = PlayerScrollbarThumbSizePercent,
+                thumbMovedPercent = thumbMovedPercent,
+            ))
+        }
+    }
+    return state
+}
+
+private data class PlayerScrollbarSnapshot(
+    val firstVisibleIndex: Int,
+    val firstVisibleItemScrollOffset: Int,
+    val canScrollBackward: Boolean,
+    val totalItems: Int,
+    val viewportSize: Int,
+    val visibleItemSizes: List<Pair<Int, Int>>,
+)
+
+@Composable
+private fun rememberPlayerScrollbarThumbMover(
+    listState: LazyListState,
+    itemSizes: PlayerScrollbarItemSizes,
+): (Float) -> Unit {
+    var thumbMovedPercent by remember { mutableFloatStateOf(Float.NaN) }
+    LaunchedEffect(thumbMovedPercent) {
+        if (thumbMovedPercent.isNaN()) return@LaunchedEffect
+        val layoutInfo = listState.layoutInfo
+        val totalItems = layoutInfo.totalItemsCount
+        if (totalItems <= 0) return@LaunchedEffect
+
+        val viewportSize = (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset)
+            .coerceAtLeast(1)
+        val fallbackSize = itemSizes.fallbackSize(viewportSize)
+        val totalHeight = estimatedPlayerContentHeight(
+            itemSizes = itemSizes,
+            totalItems = totalItems,
+            fallbackSize = fallbackSize,
+        )
+        val maxScrollOffset = (totalHeight - viewportSize).coerceAtLeast(0)
+        val maxThumbTravel = 1f - PlayerScrollbarThumbSizePercent
+        val targetScrollOffset = (maxScrollOffset *
+                (thumbMovedPercent / maxThumbTravel).coerceIn(0f, 1f))
+            .roundToInt()
+
+        var remainingOffset = targetScrollOffset
+        var targetIndex = 0
+        while (targetIndex < totalItems - 1) {
+            val itemSize = itemSizes.itemSize(targetIndex, fallbackSize)
+            if (remainingOffset < itemSize) break
+            remainingOffset -= itemSize
+            targetIndex++
+        }
+        listState.scrollToItem(targetIndex, remainingOffset)
+    }
+    return remember {
+        { newPercentage -> thumbMovedPercent = newPercentage }
+    }
+}
+
+fun Modifier.coverSize(
+    maxCoverSize: Dp,
+    verticalPadding: Dp = songCoverVerticalPadding.dp,
+) = padding(songCoverHorizontalPadding.dp, verticalPadding)
+    .widthIn(max = maxCoverSize)
+    .height(maxCoverSize)
     .aspectRatio(1f)
     .fillMaxSize()
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BoxScope.SongPlayerItem(
+fun SongPlayerItem(
     i: Int,
     paletteState: (Palette) -> Unit,
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimaryContainer
 ) {
-    val widthState = remember { mutableIntStateOf(0) }
-    val heightState = remember { mutableIntStateOf(0) }
-    val topBarHeight = remember { mutableIntStateOf(0) }
+    BoxWithConstraints {
+        val density = LocalDensity.current
+        val heightState = remember { mutableIntStateOf(0) }
+        val topBarHeight = remember { mutableIntStateOf(0) }
 
-    val playerSheet = LocalPlayerSheet.current
-    val scope = rememberCoroutineScope()
-    val backStack = LocalMainBackStack.current
-    val cardColors = CardDefaults.cardColors(
-        containerColor = colorScheme.surface,
-        contentColor = colorScheme.onSurface
-    )
-    val listState = rememberLazyListState()
-    val bottomPadding = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
-    val coverArtKey = remember(i) { "player-cover-art-$i" }
-    val ignoredStickyHeaderKeys = remember(coverArtKey) { setOf(coverArtKey) }
-    LazyColumn(
-        Modifier.onSizeChanged {
-            widthState.intValue = it.width
-            heightState.intValue = it.height
-        },
-        state = listState
-    ) {
-        item {
-            TopBar(
-                i,
-                Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }
-            ) { topBarHeight.intValue = it }
+        val playerSheet = LocalPlayerSheet.current
+        val scope = rememberCoroutineScope()
+        val backStack = LocalMainBackStack.current
+        val cardColors = CardDefaults.cardColors(
+            containerColor = colorScheme.surface,
+            contentColor = colorScheme.onSurface
+        )
+        val listState = rememberLazyListState()
+        val layoutDirection = LocalLayoutDirection.current
+        val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
+        val topPadding = safeDrawing.calculateTopPadding()
+        val bottomPadding = safeDrawing.calculateBottomPadding()
+        val timelineHeight = remember { mutableIntStateOf(0) }
+        val controllerHeight = remember { mutableIntStateOf(0) }
+        val bottomBarHeight = remember { mutableIntStateOf(0) }
+
+        val bottomBarKey = remember(i) { "player-bottom-bar-$i" }
+        val isBottomBarSticky by remember(bottomBarKey) {
+            derivedStateOf {
+                val layoutInfo = listState.layoutInfo
+                val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == bottomBarKey }
+                item != null && item.offset <= 0 && listState.firstVisibleItemIndex >= item.index
+            }
         }
-        stickyHeader(coverArtKey, PlayerCoverArtContentType) {
-            CoverArt(
-                i,
-                paletteState,
-                { topBarHeight.intValue },
-                { widthState.intValue },
-                {
-                    when (listState.firstVisibleItemIndex) {
-                        0 -> listState.firstVisibleItemScrollOffset
-                        1 -> listState.firstVisibleItemScrollOffset + topBarHeight.intValue
-                        else -> heightState.intValue
-                    }
-                }
+        val transformModifier =
+            Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }
+        val coverSlotHeight = remember(
+            maxHeight,
+            heightState.intValue,
+            topBarHeight.intValue,
+            timelineHeight.intValue,
+            controllerHeight.intValue,
+            bottomBarHeight.intValue,
+            topPadding,
+            bottomPadding
+        ) {
+            val measuredHeight = with(density) { heightState.intValue.toDp() }
+            val viewportHeight = if (measuredHeight > 0.dp) measuredHeight else maxHeight
+            val topBarReserve = with(density) { topBarHeight.intValue.toDp() }
+            val measuredBottomReserve = with(density) {
+                (timelineHeight.intValue + controllerHeight.intValue + bottomBarHeight.intValue).toDp()
+            }
+            val bottomReserve = if (measuredBottomReserve > 0.dp) {
+                measuredBottomReserve
+            } else {
+                coverArtViewportReserve
+            }
+            (viewportHeight - topPadding - bottomPadding - topBarReserve - bottomReserve)
+                .coerceAtLeast(0.dp)
+        }
+        val coverMaxSize = remember(maxWidth, coverSlotHeight) {
+            val viewportWidth = maxWidth - (songCoverHorizontalPadding * 2).dp
+            minOf(
+                maxSongCoverSize.dp,
+                viewportWidth.coerceAtLeast(0.dp),
+                (coverSlotHeight - (songCoverVerticalPadding * 2).dp).coerceAtLeast(0.dp),
             )
         }
-        item {
-            Box(Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }) {
-                ExpandedTimeline(i)
-            }
+        val coverVerticalPadding = remember(coverSlotHeight, coverMaxSize) {
+            val basePadding = songCoverVerticalPadding.dp
+            ((coverSlotHeight - coverMaxSize) / 2).coerceAtLeast(basePadding)
         }
-        item {
-            Box(Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }) {
-                Controller()
-            }
-        }
-        item {
-            Box(Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }) {
-                BottomBar()
-            }
-        }
-        materialGroup(
-            lazyListState = listState,
-            clipPadding = PaddingValues(top = 8.dp, bottom = 8.dp + bottomPadding),
-            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
+        LazyColumn(
+            Modifier
+                .onSizeChanged {
+                    heightState.intValue = it.height
+                }
+                .paddingMask(safeDrawing) {
+                    playerSheet?.progressState?.floatValue ?: 0f
+                },
+            state = listState,
+            contentPadding = PaddingValues(
+                top = topPadding,
+                start = safeDrawing.calculateStartPadding(layoutDirection),
+                end = safeDrawing.calculateEndPadding(layoutDirection),
+            )
         ) {
-            (0..10).forEach {
-                card(
-                    modifier = Modifier
-                        .expandedListItemTransform(playerSheet) { heightState.intValue }
-                        .padding(horizontal = 8.dp),
-                    key = "$i$it",
-                    contentType = i,
-                    colors = cardColors
-                ) {
-                    Box(
-                        Modifier.fillMaxWidth()
-                            .clickable {
-                                scope.launch {
-                                    playerSheet?.sheetState?.partialExpand()
-                                    backStack?.add(Media(it.toString()))
-                                }
-                            }.padding(16.dp, 24.dp)
-                    ) { Text("Item $it") }
+            item {
+                TopBar(i, transformModifier) { topBarHeight.intValue = it }
+            }
+            item {
+                CoverArt(
+                    i,
+                    paletteState,
+                    coverMaxSize,
+                    coverVerticalPadding,
+                    topPadding,
+                    maxWidth
+                )
+            }
+            item {
+                Box(transformModifier.onSizeChanged { timelineHeight.intValue = it.height }) {
+                    ExpandedTimeline(i)
+                }
+            }
+            item {
+                Box(transformModifier.onSizeChanged { controllerHeight.intValue = it.height }) {
+                    Controller()
+                }
+            }
+            stickyHeader(bottomBarKey, PlayerBottomBarContentType, isSlidable = false) {
+                Box(transformModifier.onSizeChanged { bottomBarHeight.intValue = it.height }) {
+                    BottomBar(i, isBottomBarSticky)
+                }
+            }
+
+            val firstHeaderKey = "Header $i"
+            stickyHeader(key = firstHeaderKey, contentType = "player-header") {
+                Box(transformModifier.clipHeaderTop(listState, firstHeaderKey)) {
+                    Header(i.toString())
+                }
+            }
+            materialGroup(
+                lazyListState = listState,
+                clipPadding = PaddingValues(bottom = 8.dp + bottomPadding),
+            ) {
+                (0 until PlayerQueueItemsPerGroup).forEach {
+                    card(
+                        modifier = transformModifier.padding(horizontal = 8.dp),
+                        key = "$i$it",
+                        contentType = PlayerQueueItemContentType,
+                        colors = cardColors
+                    ) {
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    scope.launch {
+                                        playerSheet?.sheetState?.partialExpand()
+                                        backStack?.add(Media(it.toString()))
+                                    }
+                                }.padding(16.dp, 24.dp)
+                        ) { Text("Item $it") }
+                    }
+                }
+            }
+
+            val secondHeaderKey = "Header $i-2"
+            stickyHeader(key = secondHeaderKey, contentType = "player-header-2") {
+                Box(transformModifier.clipHeaderTop(listState, secondHeaderKey)) {
+                    Header("$i 2")
+                }
+            }
+            materialGroup(
+                lazyListState = listState,
+                clipPadding = PaddingValues(bottom = 8.dp + bottomPadding),
+            ) {
+                (0 until PlayerQueueItemsPerGroup).forEach {
+                    card(
+                        modifier = transformModifier.padding(horizontal = 8.dp),
+                        key = "$i$it 2",
+                        contentType = PlayerQueueItemContentType,
+                        colors = cardColors
+                    ) {
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    scope.launch {
+                                        playerSheet?.sheetState?.partialExpand()
+                                        backStack?.add(Media(it.toString()))
+                                    }
+                                }.padding(16.dp, 24.dp)
+                        ) { Text("Item $it") }
+                    }
                 }
             }
         }
-    }
 
-    CollapsedPlayer(i)
-    val scrollbarState = listState.scrollbarState(12)
-    FastScrollbar(
-        modifier = Modifier
-            .fillMaxHeight()
-            .width(12.dp)
-            .padding(end = 4.dp, top = 4.dp, bottom = 4.dp)
-            .safeDrawingPadding()
-            .graphicsLayer {
-                alpha = playerSheet?.progressState?.floatValue ?: 1f
-            }
-            .align(Alignment.TopEnd),
-        state = scrollbarState,
-        scrollInProgress = listState.isScrollInProgress,
-        orientation = Orientation.Vertical,
-        onThumbMoved = listState.rememberBasicScrollbarThumbMover()
-    )
+        CollapsedPlayer(i)
+        val scrollbarItemSizes = remember { PlayerScrollbarItemSizes() }
+        val scrollbarState = rememberPlayerScrollbarState(listState, scrollbarItemSizes)
+        FastScrollbar(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(12.dp)
+                .padding(end = 4.dp, top = 4.dp, bottom = 4.dp)
+                .safeDrawingPadding()
+                .graphicsLayer {
+                    alpha = playerSheet?.progressState?.floatValue ?: 1f
+                }
+                .align(Alignment.TopEnd),
+            state = scrollbarState,
+            scrollInProgress = listState.isScrollInProgress,
+            orientation = Orientation.Vertical,
+            onThumbMoved = rememberPlayerScrollbarThumbMover(listState, scrollbarItemSizes)
+        )
+    }
+}
+
+private fun Modifier.clipHeaderTop(
+    lazyListState: LazyListState,
+    key: Any,
+) = drawWithContent {
+    val layoutInfo = lazyListState.layoutInfo
+    val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == key }
+    val clipTop = item?.let { layoutInfo.beforeContentPadding - it.offset } ?: 0
+    if (clipTop <= 0) drawContent()
+    else clipRect(top = clipTop.toFloat().coerceAtMost(size.height)) {
+        this@drawWithContent.drawContent()
+    }
 }
 
 fun Modifier.expandedListItemTransform(
@@ -332,7 +590,7 @@ fun Controller() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth().padding(8.dp)
+        modifier = Modifier.fillMaxWidth().padding(8.dp).padding(bottom = 8.dp)
     ) {
         IconButton(
             onClick = { },
@@ -565,9 +823,10 @@ fun Modifier.playerBackground(colored: Boolean = false): Modifier {
 fun CoverArt(
     i: Int,
     paletteState: (Palette) -> Unit,
-    topBarHeight: () -> Int,
-    widthState: () -> Int,
-    scrollOffset: () -> Int
+    maxCoverSize: Dp,
+    verticalPadding: Dp,
+    topPadding: Dp,
+    viewportWidth: Dp,
 ) {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
@@ -584,28 +843,25 @@ fun CoverArt(
         { image },
         "Song $i",
         Modifier
-            .coverSize()
+            .coverSize(maxCoverSize, verticalPadding)
             .graphicsLayer {
                 val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
                 val positiveProgress = sheetProgress.coerceIn(0f, 1f)
                 val offset = 1 - positiveProgress
 
                 val targetX = animatedTargetX.value.toPx()
-                val extraHeight = size.height - maxSongCoverHeight.dp.toPx()
-                val targetY = 16.dp.toPx() + extraHeight / 2f
+                val targetY = -(playerSheet?.peekHeight?.toPx() ?: 0f) / 2
                 val targetSize = 48.dp
                 val targetScale = targetSize.toPx() / size.height
                 scaleX = 1 + (targetScale - 1) * offset
                 scaleY = scaleX
                 transformOrigin = TransformOrigin(0f, 0f)
-                val center = (widthState() - size.width) / 2f
+                val center = (viewportWidth.toPx() - size.width) / 2f
                 translationX =
                     -songCoverHorizontalPadding.dp.toPx() + targetX * offset + center * positiveProgress
 
-                val expandedY = (topBarHeight() - scrollOffset()).toFloat()
-                val stickyY = expandedY.coerceAtLeast(0f)
-                val collapsedY = -songCoverVerticalPadding.dp.toPx() + targetY
-                translationY = collapsedY * offset + expandedY * positiveProgress - stickyY
+                val collapsedY = targetY - verticalPadding.toPx() - topPadding.toPx()
+                translationY = collapsedY * offset
 
                 clip = true
                 shape = RoundedCornerShape((8 / scaleX).dp)
@@ -622,16 +878,9 @@ fun TopBar(
     onHeightChanged: (Int) -> Unit
 ) {
     val playerSheet = LocalPlayerSheet.current
-    val safePadding = WindowInsets.safeDrawing.asPaddingValues()
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
-    Row(
-        modifier.padding(end = 8.dp)
-            .onSizeChanged {
-                onHeightChanged(it.height)
-            }
-            .padding(top = safePadding.calculateTopPadding())
-    ) {
+    Row(modifier.padding(end = 8.dp).onSizeChanged { onHeightChanged(it.height) }) {
         IconButton(
             onClick = {
                 scope.launch { sheetState?.show() }
@@ -676,11 +925,41 @@ val lyrics = listOf(
     listOf("Sets", "me", "free")
 )
 
+@Composable
+fun BottomBar(
+    index: Int = 0,
+    isSticky: Boolean = false,
+) {
+    val stickyProgress by animateFloatAsState(
+        if (isSticky) 1f else 0f,
+        simpleTween()
+    )
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(colorScheme.primaryContainer.copy(alpha = stickyProgress))
+            .padding(8.dp)
+    ) {
+        Crossfade(
+            targetState = isSticky,
+            animationSpec = simpleTween()
+        ) { sticky ->
+            if (sticky) StickyMiniPlayer(index)
+            else LyricsBottomBar()
+        }
+    }
+}
+
 @Preview
 @Composable
-fun BottomBar() {
+private fun BottomBarPreview() {
+    BottomBar()
+}
+
+@Composable
+private fun LyricsBottomBar() {
     Row(
-        Modifier.padding(8.dp),
+        Modifier.fillMaxWidth().height(48.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -703,16 +982,55 @@ fun BottomBar() {
 }
 
 @Composable
+private fun StickyMiniPlayer(
+    index: Int,
+) {
+    val artWorks = LocalPlayerItems.current
+    val image = artWorks[index]
+    val playerSheet = LocalPlayerSheet.current
+    val sheetState = playerSheet?.sheetState
+    val scope = rememberCoroutineScope()
+
+    CollapsedPlayerContent(
+        index,
+        modifier = Modifier.fillMaxWidth(),
+        leadingContent = {
+            BetterImage(
+                { image },
+                "Song $index",
+                Modifier
+                    .padding(start = 4.dp)
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(colorScheme.primaryFixed)
+            )
+        },
+        trailingContent = {
+            val interactionSource = remember { MutableInteractionSource() }
+            IconButton(
+                onClick = { scope.launch { sheetState?.show() } },
+                interactionSource = interactionSource,
+                modifier = Modifier.size(40.dp),
+                shapes = IconButtonDefaults.shapes()
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_keyboard_arrow_down),
+                    contentDescription = "Collapse Player"
+                )
+            }
+        },
+    )
+}
+
+@Composable
 fun CollapsedPlayer(i: Int) {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
 
-    val maxWidth = remember { mutableStateOf(0.dp) }
-    val density = LocalDensity.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    CollapsedPlayerContent(
+        i,
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
@@ -726,7 +1044,42 @@ fun CollapsedPlayer(i: Int) {
             .padding(horizontal = collapsedHorizontalPadding.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable { scope.launch { sheetState?.expand() } }
-            .padding(8.dp)
+            .padding(8.dp),
+        leadingContent = {
+            Spacer(Modifier.padding(start = 4.dp).size(48.dp))
+        },
+        trailingContent = {
+            val interactionSource = remember { MutableInteractionSource() }
+            IconButton(
+                onClick = { scope.launch { sheetState?.hide() } },
+                interactionSource = interactionSource,
+                modifier = Modifier.size(40.dp),
+                shapes = IconButtonDefaults.shapes()
+            ) {
+                Icon(
+                    painterResource(Res.drawable.ic_close), contentDescription = "Close Player"
+                )
+            }
+        },
+    )
+}
+
+@Composable
+private fun CollapsedPlayerContent(
+    i: Int,
+    modifier: Modifier = Modifier,
+    leadingContent: @Composable () -> Unit,
+    trailingContent: @Composable () -> Unit,
+) {
+    val maxWidth = remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+    val playerSheet = LocalPlayerSheet.current
+    val sheetState = playerSheet?.sheetState
+    val scope = rememberCoroutineScope()
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
             .onSizeChanged { maxWidth.value = density.run { it.width.toDp() } },
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -738,7 +1091,7 @@ fun CollapsedPlayer(i: Int) {
         }
 
         item(120.dp) {
-            Spacer(Modifier.padding(start = 4.dp).size(48.dp))
+            leadingContent()
         }
 
         item(256.dp) {
@@ -836,17 +1189,7 @@ fun CollapsedPlayer(i: Int) {
         }
 
         item(0.dp) {
-            val interactionSource = remember { MutableInteractionSource() }
-            IconButton(
-                onClick = { scope.launch { sheetState?.hide() } },
-                interactionSource = interactionSource,
-                modifier = Modifier.size(40.dp),
-                shapes = IconButtonDefaults.shapes()
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_close), contentDescription = "Close Player"
-                )
-            }
+            trailingContent()
         }
     }
 }
@@ -939,19 +1282,19 @@ fun PlayerSlider(
             )
         },
         track = {
-            SliderDefaults.Track(
-                it,
-                colors = SliderDefaults.colors(
-                    activeTrackColor = colorScheme.primary,
-                    inactiveTrackColor = colorScheme.primary.copy(0.25f)
-                ),
-                waveLength = 24.dp,
-                waveHeight = 0.dp,
-                waveVelocity = 8.dp to WaveDirection.TAIL,
-                waveThickness = 4.dp,
-                trackThickness = 4.dp,
-            )
+            PlayerSliderTrack { it }
         }
+    )
+}
+
+@Composable
+private fun PlayerSliderTrack(sliderState: () -> SliderState) {
+    LinearWavyProgressIndicator(
+        progress = { sliderState().coercedValueAsFraction },
+        modifier = Modifier.fillMaxWidth().height(16.dp),
+        color = colorScheme.primary,
+        trackColor = colorScheme.primary.copy(0.25f),
+        amplitude = { 0.66f },
     )
 }
 

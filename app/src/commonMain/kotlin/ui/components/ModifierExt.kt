@@ -28,6 +28,7 @@ private fun PaddingValues.inPx(density: Density, size: PaddingValues.() -> Dp) =
 @Composable
 fun Modifier.paddingMask(
     padding: PaddingValues = WindowInsets.forDisplayPadding,
+    progress: () -> Float = { 1f }
 ): Modifier = run {
     val density = LocalDensity.current
     graphicsLayer(alpha = 0.99f).drawWithContent {
@@ -38,7 +39,7 @@ fun Modifier.paddingMask(
         val left = padding.inPx(density) { calculateLeftPadding(LayoutDirection.Ltr) }
         val right = padding.inPx(density) { calculateRightPadding(LayoutDirection.Ltr) }
 
-        val maskColor = Color.Black.copy(alpha = 0.5f)
+        val maskColor = Color.Black.copy(alpha = 1f - 0.5f * progress().coerceIn(0f, 1f))
 
         fun mask(size: Size, offset: Offset) {
             if (size.width > 0f && size.height > 0f) {

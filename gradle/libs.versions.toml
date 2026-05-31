@@ -10,10 +10,10 @@ landscapist = "2.9.8"
 compileSdk = "37"
 
 [libraries]
+compose-foundation = { module = "dev.brahmkshatriya.compose.foundation:foundation", version.ref = "compose" }
+compose-material3 = { module = "dev.brahmkshatriya.compose.material3:material3", version.ref = "compose" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
@@ -29,7 +29,6 @@ landscapist-palette = { module = "com.github.skydoves:landscapist-palette", vers
 
 materialKolor = { module = "com.materialkolor:material-kolor", version = "5.0.0-alpha07" }
 hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.1" }
-wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "2.2.0" }
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
 
@@ -58,7 +57,7 @@ composeHotReload = { id = "org.jetbrains.compose.hot-reload", version = "1.1.1" 
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
-stabilityAnalyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.7.5" }
+stabilityAnalyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.8.0" }
 
 androidKMPLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
