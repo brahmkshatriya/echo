@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
+import dev.brahmkshatriya.echo.app.ui.components.depthPagerTransition
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import kotlinx.coroutines.launch
 
@@ -101,13 +102,16 @@ fun PlayerBottomSheet(
                     alpha = 1 + sheetProgress.coerceIn(-1f, 0f)
                 }) {
                     val artWorks = LocalPlayerItems.current
+                    val sheetProgress = betterSheet.progressState.floatValue.coerceIn(0f, 1f)
                     val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
                     HorizontalPager(
                         pagerState,
                         Modifier.fillMaxSize(),
                         beyondViewportPageCount = 1
-                    ) {
-                        PlayerItem(it)
+                    ) { page ->
+                        Box(Modifier.fillMaxSize().depthPagerTransition(pagerState, page, sheetProgress)) {
+                            PlayerItem(page)
+                        }
                     }
                 }
             },
