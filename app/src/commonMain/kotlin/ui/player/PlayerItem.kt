@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -74,6 +73,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -138,7 +138,10 @@ import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 
 @Composable
-fun PlayerItem(i: Int) {
+fun PlayerItem(
+    i: Int,
+    onScrolledToTopChanged: (Boolean) -> Unit = {},
+) {
     val paletteState = rememberPaletteState()
     val color = paletteState.value?.let {
         (it.vibrantSwatch ?: it.dominantSwatch ?: it.lightVibrantSwatch)?.color
@@ -153,7 +156,10 @@ fun PlayerItem(i: Int) {
     ).colorScheme
     MaterialExpressiveTheme(animateColorScheme(scheme)) {
         Box(Modifier.playerBackground(true)) {
-            SongPlayerItem(i) { paletteState.value = it }
+            SongPlayerItem(
+                i = i,
+                onScrolledToTopChanged = onScrolledToTopChanged,
+            ) { paletteState.value = it }
         }
     }
 }
@@ -250,10 +256,12 @@ private fun rememberPlayerScrollbarState(
                 else -> (scrollOffset.toFloat() / maxScrollOffset * maxThumbTravel)
                     .coerceIn(0f, maxThumbTravel)
             }
-            state.onScroll(scrollbarStateValue(
-                thumbSizePercent = PlayerScrollbarThumbSizePercent,
-                thumbMovedPercent = thumbMovedPercent,
-            ))
+            state.onScroll(
+                scrollbarStateValue(
+                    thumbSizePercent = PlayerScrollbarThumbSizePercent,
+                    thumbMovedPercent = thumbMovedPercent,
+                )
+            )
         }
     }
     return state
@@ -322,6 +330,7 @@ fun Modifier.coverSize(
 @Composable
 fun SongPlayerItem(
     i: Int,
+    onScrolledToTopChanged: (Boolean) -> Unit = {},
     paletteState: (Palette) -> Unit,
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimaryContainer
@@ -346,6 +355,19 @@ fun SongPlayerItem(
         val timelineHeight = remember { mutableIntStateOf(0) }
         val controllerHeight = remember { mutableIntStateOf(0) }
         val bottomBarHeight = remember { mutableIntStateOf(0) }
+        val currentOnScrolledToTopChanged by rememberUpdatedState(onScrolledToTopChanged)
+
+        LaunchedEffect(listState) {
+            snapshotFlow { !listState.canScrollBackward }
+                .collect { currentOnScrolledToTopChanged(it) }
+        }
+        playerSheet?.let { sheet ->
+            LaunchedEffect(sheet, listState) {
+                snapshotFlow { sheet.progressState.floatValue }.collect { progress ->
+                    if (progress < 0.75f) listState.scrollToItem(0)
+                }
+            }
+        }
 
         val bottomBarKey = remember(i) { "player-bottom-bar-$i" }
         val isBottomBarSticky by remember(bottomBarKey) {
@@ -506,7 +528,7 @@ fun SongPlayerItem(
                 .fillMaxHeight()
                 .width(12.dp)
                 .padding(end = 4.dp, top = 4.dp, bottom = 4.dp)
-                .safeDrawingPadding()
+                .padding(safeDrawing)
                 .graphicsLayer {
                     alpha = playerSheet?.progressState?.floatValue ?: 1f
                 }
