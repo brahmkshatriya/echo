@@ -1,13 +1,22 @@
 package dev.brahmkshatriya.echo
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
@@ -30,7 +39,12 @@ import echo.app.generated.resources.app_name
 import echo.app.generated.resources.compose_multiplatform
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import java.awt.event.InputEvent
 
+private const val InitialDensityMultiplier = 1f
+private const val DensityScrollStep = 0.05f
+private const val MinDensityMultiplier = 0.5f
+private const val MaxDensityMultiplier = 2f
 
 fun main() = application {
     val windowShowing = remember { mutableStateOf(true) }
@@ -47,10 +61,13 @@ fun main() = application {
     }
 
     if (windowShowing.value) {
-        val densityMultiplier = 1.75f
+        var densityMultiplier by remember { mutableFloatStateOf(InitialDensityMultiplier) }
         val windowState = rememberWindowState(
             position = WindowPosition.Aligned(Alignment.Center),
-            size = DpSize((960 * densityMultiplier).dp, (640 * densityMultiplier).dp)
+            size = DpSize(
+                (960 * InitialDensityMultiplier).dp,
+                (640 * InitialDensityMultiplier).dp
+            )
         )
         BetterWindow(
             { windowShowing.value = false },
@@ -73,8 +90,32 @@ fun main() = application {
                 LocalCustomTypography provides googleSansTypography()
             ) {
                 overrideTitleBarAppearance(isSystemInDarkTheme())
-                App()
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .onCtrlScrollDensityChange {
+                            densityMultiplier = (densityMultiplier - it * DensityScrollStep)
+                                .coerceIn(MinDensityMultiplier, MaxDensityMultiplier)
+                        }
+                ) {
+                    App()
+                }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+private fun Modifier.onCtrlScrollDensityChange(onScroll: (Float) -> Unit): Modifier {
+    return onPointerEvent(PointerEventType.Scroll, PointerEventPass.Initial) { event ->
+        val nativeEvent = event.nativeEvent as? InputEvent ?: return@onPointerEvent
+        val ctrlPressed = nativeEvent.modifiersEx and InputEvent.CTRL_DOWN_MASK != 0
+        if (!ctrlPressed) return@onPointerEvent
+
+        val scrollDelta = event.changes.firstOrNull()?.scrollDelta?.y ?: return@onPointerEvent
+        if (scrollDelta == 0f) return@onPointerEvent
+
+        event.changes.forEach { it.consume() }
+        onScroll(scrollDelta)
     }
 }
