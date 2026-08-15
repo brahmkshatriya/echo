@@ -15,7 +15,6 @@ version = property("VERSION").toString()
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
         freeCompilerArgs.add("-Xexpect-actual-classes")
         freeCompilerArgs.addAll(
             listOf(

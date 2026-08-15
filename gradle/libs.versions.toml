@@ -1,11 +1,11 @@
 [versions]
-kotlin = "2.4.0"
-agp = "9.2.1"
+kotlin = "2.4.10"
+agp = "9.3.1"
 compose = "1.12.0-rc01"
-composeNative = "1.12.10-alpha05"
+composeNative = "1.12.10-alpha07"
 skikoNative = "0.151.4"
-ktor = "3.5.0"
-androidxLifecycle = "2.10.0"
+ktor = "3.5.2"
+androidxLifecycle = "2.11.0"
 landscapist = "2.11.0"
 
 #noinspection UnusedVersionCatalogEntry
@@ -52,14 +52,12 @@ lifecycle = ["androidx-lifecycle-viewmodelCompose", "androidx-lifecycle-runtimeC
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
-composeHotReload = { id = "org.jetbrains.compose.hot-reload", version = "1.1.1" }
+composeHotReload = { id = "org.jetbrains.compose.hot-reload", version = "1.2.0" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
-composeNative = { id = "dev.brahmkshatriya.compose", version.ref = "composeNative" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
-stabilityAnalyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.8.0" }
 
 androidKMPLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlinJVM = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+
+composeNative = { id = "dev.brahmkshatriya.compose", version.ref = "composeNative" }

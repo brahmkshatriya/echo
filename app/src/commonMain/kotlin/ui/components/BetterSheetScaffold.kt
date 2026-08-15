@@ -17,11 +17,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SheetValue.Expanded
+import androidx.compose.material3.SheetValue.Hidden
+import androidx.compose.material3.SheetValue.PartiallyExpanded
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
@@ -55,12 +58,12 @@ object BottomSheet : NavigationEventInfo()
 @Composable
 fun rememberBetterSheet(
     peekHeight: Dp = BottomSheetDefaults.SheetPeekHeight,
-    initialSheetValue: SheetValue = SheetValue.PartiallyExpanded
+    initialSheetValue: SheetValue = PartiallyExpanded
 ): BetterSheet {
     val scaffoldState = rememberBottomSheetScaffoldState(
-        rememberStandardBottomSheetState(
+        rememberBottomSheetState(
             initialValue = initialSheetValue,
-            skipHiddenState = false
+            enabledValues = setOf(Hidden, PartiallyExpanded, Expanded)
         )
     )
     return remember { BetterSheet(scaffoldState, peekHeight) }
