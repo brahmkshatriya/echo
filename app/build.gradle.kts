@@ -1,13 +1,13 @@
-﻿plugins {
+plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinxSerialization)
 
     alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeNative)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
 
     alias(libs.plugins.androidKMPLibrary)
-    alias(libs.plugins.stabilityAnalyzer)
 }
 
 group = property("GROUP").toString() + ".app"
@@ -26,7 +26,8 @@ kotlin {
     }
 
     jvmToolchain(21)
-    jvm()
+    linuxX64()
+    mingwX64()
     android {
         namespace = group.toString()
         compileSdk = 37
@@ -45,13 +46,8 @@ kotlin {
             api(libs.bundles.landscapist)
             api(libs.hypnoticcanvas)
         }
-        jvmMain.dependencies {
-            api(compose.desktop.currentOs)
-//            api(libs.ktor.client.okhttp)
-            api(libs.kotlinx.coroutinesSwing)
-            api(libs.brahmkshatriya.betterwindow)
-            api(libs.composeNativeTray)
-            api(libs.javamediatransportcontrols)
+        desktopNativeMain.dependencies {
+            implementation(libs.skiko.native)
         }
         androidMain.dependencies {
             api(libs.ktor.client.okhttp)

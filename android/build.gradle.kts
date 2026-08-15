@@ -41,6 +41,8 @@ android {
 
 dependencies {
     implementation(projects.app)
+    implementation(libs.ui.tooling.preview)
+    debugImplementation(libs.ui.tooling)
 }
 
 fun execute(vararg command: String): String = providers.exec {

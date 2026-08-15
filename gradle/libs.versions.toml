@@ -1,17 +1,19 @@
 [versions]
-kotlin = "2.3.21"
+kotlin = "2.4.0"
 agp = "9.2.1"
-compose = "1.12.0-alpha01"
+compose = "1.12.0-rc01"
+composeNative = "1.12.10-alpha05"
+skikoNative = "0.151.4"
 ktor = "3.5.0"
 androidxLifecycle = "2.10.0"
-landscapist = "2.9.8"
+landscapist = "2.11.0"
 
 #noinspection UnusedVersionCatalogEntry
 compileSdk = "37"
 
 [libraries]
-compose-foundation = { module = "dev.brahmkshatriya.compose.foundation:foundation", version.ref = "compose" }
-compose-material3 = { module = "dev.brahmkshatriya.compose.material3:material3", version.ref = "compose" }
+compose-foundation = { module = "dev.brahmkshatriya.compose.foundation:foundation", version.ref = "composeNative" }
+compose-material3 = { module = "dev.brahmkshatriya.compose.material3:material3", version.ref = "composeNative" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
@@ -22,28 +24,25 @@ androidx-navigation = { module = "org.jetbrains.androidx.navigation3:navigation3
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 
-landscapist-animation = { module = "com.github.skydoves:landscapist-animation", version.ref = "landscapist" }
-landscapist-image = { module = "com.github.skydoves:landscapist-image", version.ref = "landscapist" }
-landscapist-placeholder = { module = "com.github.skydoves:landscapist-placeholder", version.ref = "landscapist" }
-landscapist-palette = { module = "com.github.skydoves:landscapist-palette", version.ref = "landscapist" }
+landscapist-animation = { module = "dev.brahmkshatriya.landscapist:landscapist-animation", version.ref = "landscapist" }
+landscapist-image = { module = "dev.brahmkshatriya.landscapist:landscapist-image", version.ref = "landscapist" }
+landscapist-placeholder = { module = "dev.brahmkshatriya.landscapist:landscapist-placeholder", version.ref = "landscapist" }
+landscapist-palette = { module = "dev.brahmkshatriya.landscapist:landscapist-palette", version.ref = "landscapist" }
 
-materialKolor = { module = "com.materialkolor:material-kolor", version = "5.0.0-alpha07" }
-hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.1" }
-
+materialKolor = { module = "dev.brahmkshatriya.material-kolor:material-kolor", version = "5.0.0" }
+hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.2" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
+compose-native-desktop = { module = "dev.brahmkshatriya.compose.desktop:desktop-native", version.ref = "composeNative" }
+skiko-native = { module = "dev.brahmkshatriya.skiko:skiko", version.ref = "skikoNative" }
 
-kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version = "1.11.0" }
-brahmkshatriya-betterwindow = { module = "dev.brahmkshatriya:betterwindow", version = "1.1.0" }
-composeNativeTray = { module = "io.github.kdroidfilter:composenativetray", version = "1.3.0" }
-javamediatransportcontrols = { module = "io.github.selemba1000:JavaMediaTransportControls", version = "0.0.3" }
 
 [bundles]
-compose = ["compose-runtime", "compose-foundation", "compose-components-resources", "ui", "ui-tooling", "compose-material3", "ui-tooling-preview"]
+compose = ["compose-runtime", "compose-foundation", "compose-components-resources", "ui", "compose-material3"]
 landscapist = ["landscapist-image", "landscapist-animation", "landscapist-placeholder", "landscapist-palette"]
 parsing = ["kotlinx-serialization-json"]
 lifecycle = ["androidx-lifecycle-viewmodelCompose", "androidx-lifecycle-runtimeCompose"]
@@ -55,6 +54,7 @@ kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version = "1.1.1" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+composeNative = { id = "dev.brahmkshatriya.compose", version.ref = "composeNative" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 stabilityAnalyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.8.0" }

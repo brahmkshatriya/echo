@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -336,6 +337,7 @@ fun ScrollState.rememberScrollbarThumbMover(): (Float) -> Unit {
 
     LaunchedEffect(percentage) {
         if (percentage.isNaN()) return@LaunchedEffect
+        withFrameNanos { }
         scrollTo((maxValue * percentage).roundToInt())
     }
     return remember {
@@ -358,6 +360,7 @@ fun rememberScrollbarThumbMover(
 
     LaunchedEffect(percentage) {
         if (percentage.isNaN()) return@LaunchedEffect
+        withFrameNanos { }
         val indexToFind = scrollbarTargetIndex(itemCount, percentage)
         scroll(indexToFind)
     }
@@ -379,6 +382,7 @@ fun rememberScrollbarThumbMover(
 
     LaunchedEffect(percentage) {
         if (percentage.isNaN()) return@LaunchedEffect
+        withFrameNanos { }
         val itemPosition = scrollbarTargetPosition(itemCount, percentage)
         val itemSizePx = currentItemSize().coerceAtLeast(0)
         val scrollOffset = (itemPosition.offsetFraction * itemSizePx).roundToInt()
@@ -608,8 +612,8 @@ private fun ScrollbarTrack.thumbPosition(
  * Class definition for the core properties of a scroll bar
  */
 @Immutable
-@JvmInline
-value class ScrollbarStateValue internal constructor(
+@ConsistentCopyVisibility
+data class ScrollbarStateValue internal constructor(
     internal val packedValue: Long,
 )
 
@@ -617,8 +621,7 @@ value class ScrollbarStateValue internal constructor(
  * Class definition for the core properties of a scroll bar track
  */
 @Immutable
-@JvmInline
-private value class ScrollbarTrack(
+private data class ScrollbarTrack(
     val packedValue: Long,
 ) {
     constructor(

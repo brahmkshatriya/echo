@@ -35,7 +35,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -76,7 +75,6 @@ private val config = SavedStateConfiguration {
     }
 }
 
-@Preview
 @Composable
 fun App() = EchoTheme {
     val initialSheetValue = LocalInitialPlayerSheetValue.current

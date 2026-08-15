@@ -60,7 +60,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
-import androidx.compose.material3.onPointerScrollY
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -76,6 +75,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -92,7 +92,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -104,6 +103,7 @@ import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.skydoves.landscapist.palette.PalettePlugin
 import com.skydoves.landscapist.palette.rememberPaletteState
+import androidx.compose.material3.onPointerScrollY
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
@@ -364,7 +364,10 @@ fun SongPlayerItem(
         playerSheet?.let { sheet ->
             LaunchedEffect(sheet, listState) {
                 snapshotFlow { sheet.progressState.floatValue }.collect { progress ->
-                    if (progress < 0.75f) listState.scrollToItem(0)
+                    if (progress < 0.75f && listState.canScrollBackward) {
+                        withFrameNanos { }
+                        listState.scrollToItem(0)
+                    }
                 }
             }
         }
@@ -972,7 +975,6 @@ fun BottomBar(
     }
 }
 
-@Preview
 @Composable
 private fun BottomBarPreview() {
     BottomBar()
@@ -1220,7 +1222,7 @@ fun formatTime(ms: Float): String {
     val totalSeconds = (ms / 1000).toInt().coerceAtLeast(0)
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
-    return "%d:%02d".format(minutes, seconds)
+    return "$minutes:${seconds.toString().padStart(2, '0')}"
 }
 
 @Composable

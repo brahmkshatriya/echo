@@ -9,7 +9,6 @@ import com.skydoves.landscapist.components.rememberImageComponent
 import com.skydoves.landscapist.crossfade.CrossfadePlugin
 import com.skydoves.landscapist.image.LandscapistImage
 import com.skydoves.landscapist.plugins.ImagePlugin
-import dev.brahmkshatriya.echo.app.platform.IdiosyncrasyPlugin
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.compose_multiplatform
 import org.jetbrains.compose.resources.painterResource
@@ -25,7 +24,6 @@ fun BetterImage(
         model,
         modifier,
         component = rememberImageComponent {
-            +IdiosyncrasyPlugin()
 //            +ShimmerPlugin(Shimmer.Flash(
 //                baseColor = Color.Transparent,
 //                highlightColor = LocalContentColor.current.copy(0.5f),

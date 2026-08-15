@@ -3,8 +3,8 @@ package dev.brahmkshatriya.echo.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
-import echo.app.generated.resources.GoogleSansFlex
-import echo.app.generated.resources.Res
+import echo.desktop.generated.resources.GoogleSansFlex
+import echo.desktop.generated.resources.Res
 import org.jetbrains.compose.resources.Font
 
 @Composable
