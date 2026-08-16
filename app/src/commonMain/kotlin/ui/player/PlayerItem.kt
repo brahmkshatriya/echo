@@ -60,6 +60,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
+import androidx.compose.material3.onPointerScrollY
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -82,6 +83,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
@@ -103,7 +105,6 @@ import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicMaterialThemeState
 import com.skydoves.landscapist.palette.PalettePlugin
 import com.skydoves.landscapist.palette.rememberPaletteState
-import androidx.compose.material3.onPointerScrollY
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
@@ -310,7 +311,9 @@ private fun rememberPlayerScrollbarThumbMover(
             remainingOffset -= itemSize
             targetIndex++
         }
-        listState.scrollToItem(targetIndex, remainingOffset)
+        // A scrollbar can update while LazyLayout/lookahead is still applying composition.
+        // Schedule the new anchor for the next remeasure instead of forcing one immediately.
+        listState.requestScrollToItem(targetIndex, remainingOffset)
     }
     return remember {
         { newPercentage -> thumbMovedPercent = newPercentage }
@@ -529,10 +532,11 @@ fun SongPlayerItem(
         FastScrollbar(
             modifier = Modifier
                 .fillMaxHeight()
-                .width(12.dp)
-                .padding(end = 4.dp, top = 4.dp, bottom = 4.dp)
+                .width(8.dp)
+                .padding(top = 4.dp, bottom = 4.dp)
                 .padding(safeDrawing)
                 .graphicsLayer {
+                    compositingStrategy = CompositingStrategy.ModulateAlpha
                     alpha = playerSheet?.progressState?.floatValue ?: 1f
                 }
                 .align(Alignment.TopEnd),
@@ -976,11 +980,6 @@ fun BottomBar(
 }
 
 @Composable
-private fun BottomBarPreview() {
-    BottomBar()
-}
-
-@Composable
 private fun LyricsBottomBar() {
     Row(
         Modifier.fillMaxWidth().height(48.dp),
@@ -1058,6 +1057,7 @@ fun CollapsedPlayer(i: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
+                compositingStrategy = CompositingStrategy.ModulateAlpha
                 val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
                 val positiveProgress = sheetProgress.coerceIn(0f, 1f)
                 alpha = 1 - positiveProgress

@@ -1,12 +1,11 @@
-@file:Suppress("AssignedValueIsNeverRead", "COMPOSE_APPLIER_CALL_MISMATCH")
-// TOTALLY TAKEN FROM https://github.com/tunjid/composables/
-
+// TAKEN FROM https://github.com/tunjid/composables/
 package dev.brahmkshatriya.echo.app.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
-import androidx.compose.foundation.ScrollState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.Orientation.Horizontal
@@ -27,9 +26,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListItemInfo
-import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -39,14 +38,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -63,6 +60,7 @@ import androidx.compose.ui.util.unpackFloat1
 import androidx.compose.ui.util.unpackFloat2
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.withTimeout
@@ -70,6 +68,8 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * A [Scrollbar] that allows for fast scrolling of content.
@@ -115,134 +115,68 @@ private fun FastScrollbarThumb(
     interactionSource: InteractionSource,
     orientation: Orientation,
 ) {
-    Box(
-        modifier = Modifier
-            .run {
-                when (orientation) {
-                    Vertical -> width(8.dp).fillMaxHeight()
-                    Horizontal -> height(8.dp).fillMaxWidth()
-                }
-            }
-            .background(
-                color = scrollbarThumbColor(
-                    scrollInProgress = scrollInProgress,
-                    interactionSource = interactionSource,
-                ),
-                shape = RoundedCornerShape(8.dp),
-            ),
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val dragged by interactionSource.collectIsDraggedAsState()
+    val active = pressed || hovered || dragged
+    val thumbPadding by animateDpAsState(
+        targetValue = if (active) 0.dp else 1.dp,
+        animationSpec = tween(durationMillis = 60),
+        label = "Scrollbar thumb padding",
     )
+    val modifier = Modifier.run {
+        when (orientation) {
+            Vertical -> width(8.dp).fillMaxHeight()
+            Horizontal -> height(8.dp).fillMaxWidth()
+        }.padding(thumbPadding)
+    }.background(
+        color = scrollbarThumbColor(
+            scrollInProgress = scrollInProgress,
+            active = active,
+        ),
+        shape = RoundedCornerShape(4.dp),
+    )
+    Box(modifier)
 }
 
 /**
  * The color of the scrollbar thumb as a function of its interaction state.
  * @param scrollInProgress if the scrolling container is currently scrolling
- * @param interactionSource source of interactions in the scrolling container
  */
 @Composable
 private fun scrollbarThumbColor(
     scrollInProgress: Boolean,
-    interactionSource: InteractionSource,
+    active: Boolean,
 ): Color {
-    var state by remember { mutableStateOf(ThumbState.Active) }
-    val pressed by interactionSource.collectIsPressedAsState()
-    val hovered by interactionSource.collectIsHoveredAsState()
-    val dragged by interactionSource.collectIsDraggedAsState()
-    val active = pressed || hovered || dragged
+    var dormant by remember { mutableStateOf(false) }
+    LaunchedEffect(active, scrollInProgress) {
+        dormant = false
+        if (!active && !scrollInProgress) {
+            delay(2.seconds)
+            dormant = true
+        }
+    }
 
-    val color by animateColorAsState(
-        targetValue = when (state) {
-            ThumbState.Active -> MaterialTheme.colorScheme.primary
-            ThumbState.Inactive -> MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.33f)
-            ThumbState.Dormant -> Color.Transparent
-        },
+    val targetColor = when {
+        active -> MaterialTheme.colorScheme.primary
+        dormant -> Color.Transparent
+        else -> MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.33f)
+    }
+    return animateColorAsState(
+        targetValue = targetColor,
         animationSpec = SpringSpec(
             stiffness = Spring.StiffnessLow,
         ),
         label = "Scrollbar thumb color",
-    )
-    LaunchedEffect(active, scrollInProgress) {
-        when {
-            active -> state = ThumbState.Active
-            scrollInProgress -> state = ThumbState.Inactive
-            else -> {
-                state = ThumbState.Inactive
-                delay(2_000)
-                state = ThumbState.Dormant
-            }
-        }
-    }
-
-    return color
+    ).value
 }
-
-private enum class ThumbState {
-    Active, Inactive, Dormant
-}
-/**
- * Linearly interpolates the index for the item at [index] in [LazyListLayoutInfo.visibleItemsInfo]
- * to smoothly match the scroll rate of this [LazyListState].
- *
- * This method should not be read in composition as it changes frequently with scroll state.
- * Instead it should be read in an in effect block inside of a [snapshotFlow].
- *
- * @param index the index for which its interpolated index in [LazyListLayoutInfo.visibleItemsInfo]
- * should be returned.
- *
- * @param itemIndex a look up for the index for the item in [LazyListLayoutInfo.visibleItemsInfo].
- * It defaults to [LazyListItemInfo.index].
- *
- * @return a [Float] in the range [firstItemPosition..nextItemPosition)
- * in [LazyListLayoutInfo.visibleItemsInfo] or [Float.NaN] if:
- * - [LazyListLayoutInfo.visibleItemsInfo] is empty.
- * - [LazyListLayoutInfo.visibleItemsInfo] does not have an item at [index].
- * */
-fun LazyListState.interpolatedIndexOfVisibleItemAt(
-    index: Int,
-    itemIndex: (LazyListItemInfo) -> Int = LazyListItemInfo::index,
-): Float {
-    val visibleItemsInfo = layoutInfo.visibleItemsInfo
-    return interpolatedIndexOfVisibleItemAt(
-        lazyState = this,
-        visibleItems = visibleItemsInfo,
-        index = index,
-        itemSize = { it.size },
-        offset = { it.offset },
-        nextItemOnMainAxis = { visibleItemsInfo.getOrNull(index + 1) },
-        itemIndex = itemIndex,
-    )
-}
-
-/**
- * Linearly interpolates the index for the first item in [LazyListLayoutInfo.visibleItemsInfo]
- * to smoothly match the scroll rate of this [LazyListState].
- *
- * This method should not be read in composition as it changes frequently with scroll state.
- * Instead it should be read in an in effect block inside of a [snapshotFlow].
- *
- * @param itemIndex a look up for the index for the item in [LazyListLayoutInfo.visibleItemsInfo].
- * It defaults to [LazyListItemInfo.index].
- *
- * @see [LazyListState.interpolatedIndexOfVisibleItemAt]
- *
- * @return a [Float] in the range [firstItemPosition..nextItemPosition)
- * in [LazyListLayoutInfo.visibleItemsInfo] or [Float.NaN] if:
- * - [LazyListLayoutInfo.visibleItemsInfo] is empty.
- * - [LazyListLayoutInfo.visibleItemsInfo] does not have an item at the first visible index.
- * */
-fun LazyListState.interpolatedFirstItemIndex(
-    itemIndex: (LazyListItemInfo) -> Int = LazyListItemInfo::index,
-): Float = interpolatedIndexOfVisibleItemAt(
-    index = 0,
-    itemIndex = itemIndex,
-)
-
 
 /**
  * Linearly interpolates the index for the item at [index] in [visibleItems] to smoothly match the
  * scroll rate of the backing [ScrollableState].
  *
  * This method should not be read in composition as it changes frequently with scroll state.
- * Instead it should be read in an in effect block inside of a [snapshotFlow].
+ * Instead, it should be read in an in effect block inside a [snapshotFlow].
  *
  * @param visibleItems a list of items currently visible in the layout.
  * @param itemSize a lookup function for the size of an item in the layout.
@@ -252,7 +186,7 @@ fun LazyListState.interpolatedFirstItemIndex(
  * @param itemIndex a lookup function for index of an item in the layout relative to
  * the total amount of items available.
  *
- * @return a [Float] in the range [firstItemPosition..nextItemPosition) or [Float.NaN] if:
+ * @return a [Float] in the range `[firstItemPosition..nextItemPosition)` or [Float.NaN] if:
  * - [visibleItems] returns an empty [List].
  * - [visibleItems] does not have an item at [index].
  * */
@@ -284,6 +218,7 @@ internal inline fun <LazyState : ScrollableState, LazyStateItem> interpolatedInd
 
     return firstItemIndex + ((nextItemIndex - firstItemIndex) * offsetPercentage)
 }
+
 /**
  * Returns the percentage of an item that is currently visible in the view port.
  * @param itemSize the size of the item
@@ -327,48 +262,6 @@ internal fun Orientation.valueOf(intSize: IntSize) = when (this) {
     Vertical -> intSize.height
 }
 
-/**
- * Remembers a function to react to [Scrollbar] thumb position displacements for a
- * [ScrollState]
- */
-@Composable
-fun ScrollState.rememberScrollbarThumbMover(): (Float) -> Unit {
-    var percentage by remember { mutableFloatStateOf(Float.NaN) }
-
-    LaunchedEffect(percentage) {
-        if (percentage.isNaN()) return@LaunchedEffect
-        withFrameNanos { }
-        scrollTo((maxValue * percentage).roundToInt())
-    }
-    return remember {
-        { newPercentage -> percentage = newPercentage }
-    }
-}
-
-/**
- * Generic function to react to scrollbar thumb movements for a [ScrollbarState].
- * @param itemsAvailable the total amount of items available to scroll in the layout.
- * @param scroll a function to be invoked when an index has been identified to scroll to.
- */
-@Composable
-fun rememberScrollbarThumbMover(
-    itemsAvailable: Int,
-    scroll: suspend (index: Int) -> Unit,
-): (Float) -> Unit {
-    var percentage by remember { mutableFloatStateOf(Float.NaN) }
-    val itemCount by rememberUpdatedState(itemsAvailable)
-
-    LaunchedEffect(percentage) {
-        if (percentage.isNaN()) return@LaunchedEffect
-        withFrameNanos { }
-        val indexToFind = scrollbarTargetIndex(itemCount, percentage)
-        scroll(indexToFind)
-    }
-    return remember {
-        { newPercentage -> percentage = newPercentage }
-    }
-}
-
 @Composable
 fun rememberScrollbarThumbMover(
     itemsAvailable: Int,
@@ -382,7 +275,6 @@ fun rememberScrollbarThumbMover(
 
     LaunchedEffect(percentage) {
         if (percentage.isNaN()) return@LaunchedEffect
-        withFrameNanos { }
         val itemPosition = scrollbarTargetPosition(itemCount, percentage)
         val itemSizePx = currentItemSize().coerceAtLeast(0)
         val scrollOffset = (itemPosition.offsetFraction * itemSizePx).roundToInt()
@@ -397,11 +289,6 @@ private data class ScrollbarTargetPosition(
     val index: Int,
     val offsetFraction: Float,
 )
-
-private fun scrollbarTargetIndex(
-    itemsAvailable: Int,
-    percentage: Float,
-): Int = scrollbarTargetPosition(itemsAvailable, percentage).index
 
 private fun scrollbarTargetPosition(
     itemsAvailable: Int,
@@ -420,47 +307,6 @@ private fun scrollbarTargetPosition(
 
 inline fun <T> List<T>.sumOf(selector: (T) -> Float): Float =
     fold(initial = 0f) { accumulator, listItem -> accumulator + selector(listItem) }
-
-/**
- * Remembers a [ScrollbarState] driven by the changes in a [ScrollbarState].
- */
-@Composable
-fun ScrollState.scrollbarState(): ScrollbarState {
-    val state = remember { ScrollbarState() }
-    LaunchedEffect(this) {
-        snapshotFlow {
-            scrollbarStateValue(
-                thumbSizePercent = viewportSize.toFloat() / maxValue,
-                thumbMovedPercent = value.toFloat() / maxValue,
-            )
-        }
-            .collect { state.onScroll(it) }
-    }
-    return state
-}
-
-/**
- * Remembers a function to react to [Scrollbar] thumb position displacements for a [LazyListState]
- * based on the total items in the list, and [LazyListState.scrollToItem] for responding to
- * scrollbar thumb displacements.
- *
- * For more customization, including animated scrolling @see [rememberScrollbarThumbMover].
- */
-@Composable
-fun LazyListState.rememberBasicScrollbarThumbMover(): (Float) -> Unit {
-    var totalItemsCount by remember { mutableIntStateOf(0) }
-    LaunchedEffect(this) {
-        snapshotFlow { layoutInfo.totalItemsCount }
-            .collect { totalItemsCount = it }
-    }
-    return rememberScrollbarThumbMover(
-        itemsAvailable = totalItemsCount,
-        itemSize = {
-            layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 0
-        },
-        scroll = ::scrollToItem,
-    )
-}
 
 /**
  * Calculates a [ScrollbarState] driven by the changes in a [LazyListState].
@@ -545,9 +391,6 @@ fun LazyListState.scrollbarState(
     }
     return state
 }
-
-
-
 
 
 /**
@@ -655,7 +498,7 @@ fun scrollbarStateValue(
  * @param minThumbSize the minimum size of the scrollbar thumb
  * @param interactionSource allows for observing the state of the scroll bar
  * @param thumb a composable for drawing the scrollbar thumb
- * @param onThumbMoved an function for reacting to scroll bar displacements caused by direct
+ * @param onThumbMoved a function for reacting to scroll bar displacements caused by direct
  * interactions on the scrollbar thumb by the user, for example implementing a fast scroll
  */
 @Composable
@@ -671,7 +514,7 @@ fun Scrollbar(
     // Using Offset.Unspecified and Float.NaN instead of null
     // to prevent unnecessary boxing of primitives
     var pressedOffset by remember { mutableStateOf(Offset.Unspecified) }
-    var draggedOffset by remember { mutableStateOf(Offset.Unspecified) }
+    var dragInProgress by remember { mutableStateOf(false) }
 
     // Used to immediately show drag feedback in the UI while the scrolling implementation
     // catches up
@@ -702,7 +545,7 @@ fun Scrollbar(
                     onPress = { offset ->
                         try {
                             // Wait for a long press before scrolling
-                            withTimeout(viewConfiguration.longPressTimeoutMillis) {
+                            withTimeout(viewConfiguration.longPressTimeoutMillis.milliseconds) {
                                 tryAwaitRelease()
                             }
                         } catch (_: TimeoutCancellationException) {
@@ -724,49 +567,71 @@ fun Scrollbar(
                     },
                 )
             }
-            // Process scrollbar drags
             .pointerInput(Unit) {
                 var dragInteraction: DragInteraction.Start? = null
-                val onDragStart: (Offset) -> Unit = { offset ->
+                var dragStartTravelPercent = Float.NaN
+                var accumulatedDragPx = 0f
+
+                val onDragStart: (Offset) -> Unit = {
                     val start = DragInteraction.Start()
                     dragInteraction = start
                     interactionSource?.tryEmit(start)
-                    draggedOffset = offset
+                    dragStartTravelPercent = when {
+                        interactionThumbTravelPercent.isNaN() -> state.thumbMovedPercent
+                        else -> interactionThumbTravelPercent
+                    }
+                    dragInProgress = true
+                    interactionThumbTravelPercent = dragStartTravelPercent
+                    pressedOffset = Offset.Unspecified
+                    accumulatedDragPx = 0f
                 }
-                val onDragEnd: () -> Unit = {
-                    dragInteraction?.let { interactionSource?.tryEmit(DragInteraction.Stop(it)) }
-                    draggedOffset = Offset.Unspecified
-                }
-                val onDragCancel: () -> Unit = {
-                    dragInteraction?.let { interactionSource?.tryEmit(DragInteraction.Cancel(it)) }
-                    draggedOffset = Offset.Unspecified
+                val finishDrag: (Boolean) -> Unit = { cancelled ->
+                    dragInteraction?.let { start ->
+                        interactionSource?.tryEmit(
+                            if (cancelled) DragInteraction.Cancel(start) else DragInteraction.Stop(
+                                start
+                            )
+                        )
+                    }
+                    dragInteraction = null
+                    dragStartTravelPercent = Float.NaN
+                    accumulatedDragPx = 0f
+                    dragInProgress = false
+                    interactionThumbTravelPercent = Float.NaN
                 }
                 val onDrag: (change: PointerInputChange, dragAmount: Float) -> Unit =
                     onDrag@{ _, delta ->
-                        if (draggedOffset == Offset.Unspecified) return@onDrag
-                        draggedOffset = when (orientation) {
-                            Vertical -> draggedOffset.copy(
-                                y = draggedOffset.y + delta,
-                            )
+                        if (dragStartTravelPercent.isNaN()) return@onDrag
+                        accumulatedDragPx += delta
 
-                            Horizontal -> draggedOffset.copy(
-                                x = draggedOffset.x + delta,
-                            )
+                        val thumbSizePx = max(
+                            a = state.thumbSizePercent * track.size,
+                            b = minThumbSize.toPx(),
+                        )
+                        val maxThumbTravelPx = (track.size - thumbSizePx).coerceAtLeast(0f)
+                        val deltaTravelPercent = when {
+                            maxThumbTravelPx <= 0f -> 0f
+                            else -> accumulatedDragPx / maxThumbTravelPx *
+                                    state.thumbTrackSizePercent
                         }
+                        val currentTravel = (dragStartTravelPercent + deltaTravelPercent)
+                            .coerceIn(0f, state.thumbTrackSizePercent)
+                        interactionThumbTravelPercent = currentTravel
+                        onThumbMoved?.invoke(currentTravel)
                     }
 
                 when (orientation) {
                     Horizontal -> detectHorizontalDragGestures(
                         onDragStart = onDragStart,
-                        onDragEnd = onDragEnd,
-                        onDragCancel = onDragCancel,
+                        onDragEnd = { finishDrag(false) },
+                        onDragCancel = { finishDrag(true) },
                         onHorizontalDrag = onDrag,
                     )
 
                     Vertical -> detectVerticalDragGestures(
                         onDragStart = onDragStart,
-                        onDragEnd = onDragEnd,
-                        onDragCancel = onDragCancel,
+                        onDragEnd = { finishDrag(false) },
+                        onDragCancel = { finishDrag(true) },
                         onVerticalDrag = onDrag,
                     )
                 }
@@ -832,14 +697,11 @@ fun Scrollbar(
     }
 
     if (onThumbMoved == null) return
-
-    // Process presses
     LaunchedEffect(Unit) {
-        snapshotFlow { pressedOffset }.collect { pressedOffset ->
-            // Press ended, reset interactionThumbTravelPercent
+        snapshotFlow { pressedOffset }.collectLatest { pressedOffset ->
             if (pressedOffset == Offset.Unspecified) {
-                interactionThumbTravelPercent = Float.NaN
-                return@collect
+                if (!dragInProgress) interactionThumbTravelPercent = Float.NaN
+                return@collectLatest
             }
 
             var currentThumbMovedPercent = state.thumbMovedPercent
@@ -863,23 +725,8 @@ fun Scrollbar(
                 }
                 onThumbMoved(currentThumbMovedPercent)
                 interactionThumbTravelPercent = currentThumbMovedPercent
-                delay(SCROLLBAR_PRESS_DELAY_MS)
+                delay(SCROLLBAR_PRESS_DELAY_MS.milliseconds)
             }
-        }
-    }
-
-    // Process drags
-    LaunchedEffect(Unit) {
-        snapshotFlow { draggedOffset }.collect { draggedOffset ->
-            if (draggedOffset == Offset.Unspecified) {
-                interactionThumbTravelPercent = Float.NaN
-                return@collect
-            }
-            val currentTravel = track.thumbPosition(
-                dimension = orientation.valueOf(draggedOffset),
-            )
-            onThumbMoved(currentTravel)
-            interactionThumbTravelPercent = currentTravel
         }
     }
 }

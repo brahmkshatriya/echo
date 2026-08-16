@@ -279,8 +279,6 @@ fun Home() {
             FastScrollbar(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(12.dp)
-                    .padding(end = 4.dp)
                     .padding(innerPadding)
                     .align(Alignment.TopEnd),
                 state = scrollbarState,
@@ -294,7 +292,7 @@ fun Home() {
                             ?.size ?: 0
                     },
                 ) { index, scrollOffset ->
-                    listState.scrollToItem(homeLazyListItemIndex(index), scrollOffset)
+                    listState.requestScrollToItem(homeLazyListItemIndex(index), scrollOffset)
                 }
             )
         }

@@ -14,9 +14,10 @@ fun Modifier.blurFadePagerTransition(
     page: Int,
     blurProgress: () -> Float = { 1f },
 ) = run {
-    val offset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-    val progress = offset.absoluteValue.coerceIn(0f, 1f)
-    zIndex(1f - progress).graphicsLayer {
+    val pageZIndex = if (pagerState.currentPage == page) 1f else 0f
+    zIndex(pageZIndex).graphicsLayer {
+        val offset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+        val progress = offset.absoluteValue.coerceIn(0f, 1f)
         translationX = offset * size.width
         alpha = 1f - progress
         val transformedBlurProgress = progress * blurProgress().coerceIn(0f, 1f)

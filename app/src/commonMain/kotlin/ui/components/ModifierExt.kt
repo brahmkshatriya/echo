@@ -8,53 +8,72 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 
 val WindowInsets.Companion.forDisplayPadding: PaddingValues
     @Composable get() = systemBars.union(displayCutout).asPaddingValues()
-
-private fun PaddingValues.inPx(density: Density, size: PaddingValues.() -> Dp) =
-    density.run { size().toPx() }
 
 @Composable
 fun Modifier.paddingMask(
     padding: PaddingValues = WindowInsets.forDisplayPadding,
     progress: () -> Float = { 1f }
-): Modifier = run {
-    val density = LocalDensity.current
-    graphicsLayer(alpha = 0.99f).drawWithContent {
+): Modifier = graphicsLayer {
+    compositingStrategy = CompositingStrategy.Offscreen
+}.drawWithCache {
+    val top = padding.calculateTopPadding().toPx().coerceIn(0f, size.height)
+    val bottom = padding.calculateBottomPadding().toPx().coerceIn(0f, size.height)
+    val left = padding.calculateLeftPadding(layoutDirection).toPx().coerceIn(0f, size.width)
+    val right = padding.calculateRightPadding(layoutDirection).toPx().coerceIn(0f, size.width)
+
+    val topSize = Size(size.width, top)
+    val bottomSize = Size(size.width, bottom)
+    val leftSize = Size(left, size.height)
+    val rightSize = Size(right, size.height)
+    val bottomOffset = Offset(0f, size.height - bottom)
+    val rightOffset = Offset(size.width - right, 0f)
+
+    onDrawWithContent {
         drawContent()
 
-        val top = padding.inPx(density) { calculateTopPadding() }
-        val bottom = padding.inPx(density) { calculateBottomPadding() }
-        val left = padding.inPx(density) { calculateLeftPadding(LayoutDirection.Ltr) }
-        val right = padding.inPx(density) { calculateRightPadding(LayoutDirection.Ltr) }
+        val maskProgress = progress().coerceIn(0f, 1f)
+        if (maskProgress <= 0f) return@onDrawWithContent
+        val maskColor = Color.Black.copy(alpha = 1f - 0.5f * maskProgress)
 
-        val maskColor = Color.Black.copy(alpha = 1f - 0.5f * progress().coerceIn(0f, 1f))
-
-        fun mask(size: Size, offset: Offset) {
-            if (size.width > 0f && size.height > 0f) {
-                drawRect(
-                    color = maskColor,
-                    size = size,
-                    topLeft = offset,
-                    blendMode = BlendMode.DstIn
-                )
-            }
+        if (top > 0f) {
+            drawRect(
+                color = maskColor,
+                size = topSize,
+                blendMode = BlendMode.DstIn,
+            )
         }
-
-        mask(Size(size.width, top), Offset.Zero)
-        mask(Size(size.width, bottom), Offset(0f, size.height - bottom))
-        mask(Size(left, size.height), Offset.Zero)
-        mask(Size(right, size.height), Offset(size.width - right, 0f))
+        if (bottom > 0f) {
+            drawRect(
+                color = maskColor,
+                topLeft = bottomOffset,
+                size = bottomSize,
+                blendMode = BlendMode.DstIn,
+            )
+        }
+        if (left > 0f) {
+            drawRect(
+                color = maskColor,
+                size = leftSize,
+                blendMode = BlendMode.DstIn,
+            )
+        }
+        if (right > 0f) {
+            drawRect(
+                color = maskColor,
+                topLeft = rightOffset,
+                size = rightSize,
+                blendMode = BlendMode.DstIn,
+            )
+        }
     }
 }

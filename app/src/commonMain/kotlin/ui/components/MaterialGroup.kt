@@ -12,7 +12,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Path
@@ -172,63 +172,72 @@ private fun Modifier.clipToRoundedViewport(
     firstKey: Any,
     lastKey: Any,
     ignoredStickyHeaderKeys: Set<Any>
-): Modifier {
-    val (topBoundary, bottomBoundary) = materialGroupClipInfo(
-        lazyListState = lazyListState,
-        params = params,
-        clipPadding = clipPadding,
-        itemKeys = itemKeys,
-        firstKey = firstKey,
-        lastKey = lastKey,
-        ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
-    )
-    return drawWithContent {
+): Modifier = drawWithCache {
+    val path = Path()
+    onDrawWithContent {
+        val (topBoundary, bottomBoundary) = materialGroupClipInfo(
+            lazyListState = lazyListState,
+            params = params,
+            clipPadding = clipPadding,
+            itemKeys = itemKeys,
+            firstKey = firstKey,
+            lastKey = lastKey,
+            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
+        )
         val hasNoBoundaries = topBoundary == null && bottomBoundary == null
-        if (hasNoBoundaries) return@drawWithContent drawContent()
+        if (hasNoBoundaries) return@onDrawWithContent drawContent()
 
         val radiusPx = radius.toPx()
         val top = topBoundary?.toFloat() ?: (-radiusPx)
         val bottom = bottomBoundary?.toFloat() ?: (size.height + radiusPx)
-        if (top >= bottom) return@drawWithContent
+        if (top >= bottom) return@onDrawWithContent
 
         val doesNotAffectItem = top <= -radiusPx && bottom >= size.height + radiusPx
-        if (doesNotAffectItem) return@drawWithContent drawContent()
+        if (doesNotAffectItem) return@onDrawWithContent drawContent()
         val roundedViewportHeight = bottom - top
         val visibleTop = top.coerceIn(0f, size.height)
         val visibleBottom = bottom.coerceIn(0f, size.height)
-        val visibleHeight = visibleBottom - visibleTop
-        if (visibleHeight <= 0f) return@drawWithContent
+        if (visibleBottom - visibleTop <= 0f) return@onDrawWithContent
 
-        val radius = if (roundedViewportHeight > radiusPx) radiusPx
+        val cornerRadius = if (roundedViewportHeight > radiusPx) radiusPx
         else minOf(radiusPx, roundedViewportHeight / 2f, size.width / 2f)
 
-        clipPath(Path().apply {
-            addRoundRect(
-                RoundRect(
-                    left = clipPadding.left.toFloat(),
-                    top = top,
-                    right = size.width - clipPadding.right,
-                    bottom = bottom,
-                    topLeftCornerRadius = CornerRadius(radius),
-                    topRightCornerRadius = CornerRadius(radius),
-                    bottomLeftCornerRadius = CornerRadius(radius),
-                    bottomRightCornerRadius = CornerRadius(radius),
-                )
+        path.reset()
+        path.addRoundRect(
+            RoundRect(
+                left = clipPadding.left.toFloat(),
+                top = top,
+                right = size.width - clipPadding.right,
+                bottom = bottom,
+                topLeftCornerRadius = CornerRadius(cornerRadius),
+                topRightCornerRadius = CornerRadius(cornerRadius),
+                bottomLeftCornerRadius = CornerRadius(cornerRadius),
+                bottomRightCornerRadius = CornerRadius(cornerRadius),
             )
-        }) {
-            this@drawWithContent.drawContent()
+        )
+        clipPath(path) {
+            this@onDrawWithContent.drawContent()
         }
-    }.pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
-                val isOutOfBounds = event.changes.any {
-                    val isAbove = topBoundary?.let { top -> it.position.y < top } == true
-                    val isBelow = bottomBoundary?.let { bottom -> it.position.y > bottom } == true
-                    isAbove || isBelow
-                }
-                if (isOutOfBounds) event.changes.forEach { it.consume() }
+    }
+}.pointerInput(Unit) {
+    awaitPointerEventScope {
+        while (true) {
+            val event = awaitPointerEvent(PointerEventPass.Initial)
+            val (topBoundary, bottomBoundary) = materialGroupClipInfo(
+                lazyListState = lazyListState,
+                params = params,
+                clipPadding = clipPadding,
+                itemKeys = itemKeys,
+                firstKey = firstKey,
+                lastKey = lastKey,
+                ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
+            )
+            val isOutOfBounds = event.changes.any {
+                val isAbove = topBoundary?.let { top -> it.position.y < top } == true
+                val isBelow = bottomBoundary?.let { bottom -> it.position.y > bottom } == true
+                isAbove || isBelow
             }
+            if (isOutOfBounds) event.changes.forEach { it.consume() }
         }
     }
 }

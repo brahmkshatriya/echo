@@ -11,8 +11,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalPlatformAccentColor
@@ -37,7 +37,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 private const val InitialDensityMultiplier = 1f
-private const val DensityScrollStep = 0.05f
+private const val DensityScrollStep = 0.005f
 private const val MinDensityMultiplier = 0.5f
 private const val MaxDensityMultiplier = 2f
 

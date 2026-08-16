@@ -63,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -92,15 +93,17 @@ fun MainSideNavigation(
     startPaddingState: MutableState<Dp>,
     onSelected: (MainRoute) -> Unit,
 ) {
-    val isVisibleState = remember { mutableStateOf(isVisible) }
-    val wasVisibleState = remember { mutableStateOf(wasVisible) }
-    SideEffect {
-        isVisibleState.value = isVisible
-        wasVisibleState.value = wasVisible
-    }
     BoxWithConstraints(modifier = Modifier.fillMaxSize().paddingMask()) {
-        startPaddingState.value = if (isVisibleState.value && maxWidth > 560.dp) 72.dp else 0.dp
-        bottomPaddingState.value = if (isVisibleState.value && maxWidth < 560.dp) 64.dp else 0.dp
+        val targetStartPadding = if (isVisible && maxWidth > 560.dp) 72.dp else 0.dp
+        val targetBottomPadding = if (isVisible && maxWidth < 560.dp) 64.dp else 0.dp
+        SideEffect {
+            if (startPaddingState.value != targetStartPadding) {
+                startPaddingState.value = targetStartPadding
+            }
+            if (bottomPaddingState.value != targetBottomPadding) {
+                bottomPaddingState.value = targetBottomPadding
+            }
+        }
 
         val animated = remember { Animatable(0f) }
         val state = LocalNavigationEventDispatcherOwner.current?.navigationEventDispatcher
@@ -130,6 +133,7 @@ fun MainSideNavigation(
                     .height(64.dp + systemBars.calculateBottomPadding())
                     .padding(horizontal = 8.dp)
                     .graphicsLayer {
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
                         val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
                         val transitionValue = maxOf(positiveProgress, animated.value)
                         alpha = 1 - transitionValue * 1.15f
@@ -172,6 +176,7 @@ fun MainSideNavigation(
             NavigationRail(
                 Modifier.padding(top = 8.dp)
                     .graphicsLayer {
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
                         val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
                         val transitionValue = maxOf(positiveProgress, animated.value)
                         alpha = 1 - transitionValue * 1.15f
