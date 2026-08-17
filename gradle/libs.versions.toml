@@ -2,7 +2,7 @@
 kotlin = "2.4.10"
 agp = "9.3.1"
 compose = "1.12.0-rc01"
-composeNative = "1.12.10-alpha07"
+composeNative = "1.12.10-alpha08"
 skikoNative = "0.151.4"
 ktor = "3.5.2"
 androidxLifecycle = "2.11.0"

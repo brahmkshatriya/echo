@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isCtrlPressed
@@ -18,6 +19,7 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalPlatformAccentColor
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.TitleBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
@@ -43,6 +45,7 @@ private const val MaxDensityMultiplier = 2f
 
 fun main() = application {
     var densityMultiplier by remember { mutableFloatStateOf(InitialDensityMultiplier) }
+    val isDarkTheme = isSystemInDarkTheme()
     val windowState = rememberWindowState(
         position = WindowPosition.Aligned(Alignment.Center),
         size = DpSize(
@@ -55,12 +58,13 @@ fun main() = application {
         state = windowState,
         title = stringResource(Res.string.app_name),
         icon = painterResource(Res.drawable.compose_multiplatform),
+        titleBar = TitleBar.Auto(foreground = if (isDarkTheme) Color.White else Color.Black),
     ) {
         val accentColor = LocalPlatformAccentColor.current
         val dynamicTheme = accentColor?.let {
             dynamicColorScheme(
                 primary = it,
-                isDark = isSystemInDarkTheme(),
+                isDark = isDarkTheme,
                 style = PaletteStyle.Rainbow,
                 specVersion = ColorSpec.SpecVersion.SPEC_2021,
             )
