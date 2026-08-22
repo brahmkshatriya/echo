@@ -16,6 +16,7 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.session.MediaController
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.LikeClient
+import dev.brahmkshatriya.echo.common.models.Chapter
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Message
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -308,6 +309,11 @@ class PlayerViewModel(
             val index = current?.mediaItem?.sourceIndex
             Triple(tracks, server, index)
         }.stateIn(viewModelScope, SharingStarted.Lazily, Triple(null, null, null))
+
+    val chapters get() = playerState.chapters
+    fun skipChapter(chapter: Chapter) {
+        chapter.endTime?.let { seekTo(it) }
+    }
 
     companion object {
         const val KEEP_QUEUE = "keep_queue"
