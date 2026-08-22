@@ -45,6 +45,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDE
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.models.Chapter
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.databinding.FragmentPlayerBinding
@@ -372,16 +373,53 @@ class PlayerFragment : Fragment() {
             binding.playerCollapsedContainer.collapsedPlayingIndicator.alpha = if (it) 1f else 0f
         }
 
+        var lastSkippedChapter: Chapter? = null
+        var defaultSubtitleText: String? = null
+
+        fun getActiveChapter(curr: Long, chapters: List<Chapter>): Chapter? {
+            return chapters.firstOrNull { chapter ->
+                val end = chapter.endTime ?: return@firstOrNull false
+                curr in chapter.startTime..end
+            }
+        }
+
+        fun updateSubtitle(activeChapter: Chapter?) {
+            binding?.playerControls?.run {
+                if (activeChapter != null && activeChapter.skipType == Chapter.SkipType.ASK) {
+                    trackSubtitle.text = "⏭ Skip ${activeChapter.name}"
+                    trackSubtitle.setOnClickListener {
+                        activeChapter.endTime?.let { viewModel.seekTo(it) }
+                    }
+                } else {
+                    trackSubtitle.text = defaultSubtitleText
+                    trackSubtitle.setOnClickListener {
+                        QualitySelectionBottomSheet().show(parentFragmentManager, null)
+                    }
+                }
+            }
+        }
+
         observe(viewModel.progress) { (curr, buff) ->
             binding.playerCollapsedContainer.run {
                 collapsedBuffer.progress = buff.toInt()
                 collapsedSeekbar.progress = curr.toInt()
             }
             binding.playerControls.run {
+                val chapters = viewModel.chapters.value
+                val activeChapter = getActiveChapter(curr, chapters)
+
                 if (!seekBar.isPressed) {
                     bufferBar.progress = buff.toInt()
                     seekBar.value = max(0f, min(curr.toFloat(), seekBar.valueTo))
-                    trackCurrentTime.text = curr.toTimeString()
+                    trackCurrentTime.text = if (activeChapter != null) "${activeChapter.name} • ${curr.toTimeString()}" else curr.toTimeString()
+                }
+
+                if (activeChapter != null && activeChapter.skipType == Chapter.SkipType.SKIP && activeChapter != lastSkippedChapter) {
+                    lastSkippedChapter = activeChapter
+                    activeChapter.endTime?.let { viewModel.seekTo(it + 50) }
+                } else {
+                    if (activeChapter == null) lastSkippedChapter = null
+                    updateSubtitle(activeChapter)
                 }
             }
         }
@@ -434,7 +472,11 @@ class PlayerFragment : Fragment() {
         binding.playerControls.run {
             seekBar.apply {
                 addOnChangeListener { _, value, fromUser ->
-                    if (fromUser) trackCurrentTime.text = value.toLong().toTimeString()
+                    if (fromUser) {
+                        val pos = value.toLong()
+                        val activeChapter = getActiveChapter(pos, viewModel.chapters.value)
+                        trackCurrentTime.text = if (activeChapter != null) "${activeChapter.name} • ${pos.toTimeString()}" else pos.toTimeString()
+                    }
                 }
                 addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
                     override fun onStartTrackingTouch(slider: Slider) = Unit
@@ -478,8 +520,11 @@ class PlayerFragment : Fragment() {
                 QualitySelectionBottomSheet().show(parentFragmentManager, null)
             }
             observe(viewModel.serverAndTracks) { (tracks, server, index) ->
-                trackSubtitle.text = tracks?.getDetails(requireContext(), server, index)
+                defaultSubtitleText = tracks?.getDetails(requireContext(), server, index)
                     ?.joinToString(" ⦿ ")?.takeIf { it.isNotBlank() }
+                val curr = viewModel.progress.value.first
+                val activeChapter = getActiveChapter(curr, viewModel.chapters.value)
+                updateSubtitle(activeChapter)
             }
         }
     }
