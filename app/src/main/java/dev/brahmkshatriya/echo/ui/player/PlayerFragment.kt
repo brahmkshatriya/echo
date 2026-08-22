@@ -374,7 +374,6 @@ class PlayerFragment : Fragment() {
         }
 
         var lastSkippedChapter: Chapter? = null
-        var defaultSubtitleText: String? = null
 
         fun getActiveChapter(curr: Long, chapters: List<Chapter>): Chapter? {
             return chapters.firstOrNull { chapter ->
@@ -391,7 +390,9 @@ class PlayerFragment : Fragment() {
                         activeChapter.endTime?.let { viewModel.seekTo(it) }
                     }
                 } else {
-                    trackSubtitle.text = defaultSubtitleText
+                    val (tracks, server, index) = viewModel.serverAndTracks.value
+                    trackSubtitle.text = tracks?.getDetails(requireContext(), server, index)
+                        ?.joinToString(" ⦿ ")?.takeIf { it.isNotBlank() }
                     trackSubtitle.setOnClickListener {
                         QualitySelectionBottomSheet().show(parentFragmentManager, null)
                     }
@@ -520,11 +521,8 @@ class PlayerFragment : Fragment() {
                 QualitySelectionBottomSheet().show(parentFragmentManager, null)
             }
             observe(viewModel.serverAndTracks) { (tracks, server, index) ->
-                defaultSubtitleText = tracks?.getDetails(requireContext(), server, index)
+                trackSubtitle.text = tracks?.getDetails(requireContext(), server, index)
                     ?.joinToString(" ⦿ ")?.takeIf { it.isNotBlank() }
-                val curr = viewModel.progress.value.first
-                val activeChapter = getActiveChapter(curr, viewModel.chapters.value)
-                updateSubtitle(activeChapter)
             }
         }
     }
