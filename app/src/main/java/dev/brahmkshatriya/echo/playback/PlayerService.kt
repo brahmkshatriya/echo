@@ -26,13 +26,19 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import dev.brahmkshatriya.echo.MainActivity.Companion.getMainActivity
 import dev.brahmkshatriya.echo.R
+import dev.brahmkshatriya.echo.common.clients.TrackChapterClient
+import dev.brahmkshatriya.echo.common.models.Chapter
 import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.download.Downloader
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.extensionPrefId
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getExtension
+import dev.brahmkshatriya.echo.extensions.ExtensionUtils.getIf
 import dev.brahmkshatriya.echo.extensions.ExtensionUtils.prefs
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.listener.AudioFocusListener
 import dev.brahmkshatriya.echo.playback.listener.EffectsListener
 import dev.brahmkshatriya.echo.playback.listener.MediaSessionServiceListener
@@ -47,8 +53,12 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.File
 
@@ -120,6 +130,30 @@ class PlayerService : MediaLibraryService() {
             .build()
         notificationProvider.setSmallIcon(R.drawable.ic_mono)
         setMediaNotificationProvider(notificationProvider)
+
+        scope.launch {
+            state.current.map { it?.takeIf { it.isLoaded }?.mediaItem }
+                .distinctUntilChanged()
+                .collectLatest { item ->
+                    if (item == null) {
+                        state.chapters.value = emptyList()
+                        return@collectLatest
+                    }
+                    val track = item.track
+                    val extId = item.extensionId
+                    val chapters = withContext(Dispatchers.IO) {
+                        try {
+                            val extension = extensions.music.getExtension(extId)
+                            extension?.getIf<TrackChapterClient, List<Chapter>> {
+                                getChapters(track)
+                            }?.getOrNull() ?: emptyList()
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
+                    }
+                    state.chapters.value = chapters
+                }
+        }
 
         mediaSession = session
     }
