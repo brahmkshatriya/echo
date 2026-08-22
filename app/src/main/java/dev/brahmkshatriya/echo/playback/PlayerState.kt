@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.playback
 
 import androidx.media3.common.MediaItem
 import dev.brahmkshatriya.echo.common.helpers.Page
+import dev.brahmkshatriya.echo.common.models.Chapter
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
@@ -14,7 +15,8 @@ import java.util.WeakHashMap
 data class PlayerState(
     val current: MutableStateFlow<Current?> = MutableStateFlow(null),
     val radio: MutableStateFlow<Radio> = MutableStateFlow(Radio.Empty),
-    val session: MutableStateFlow<Int> = MutableStateFlow(0)
+    val session: MutableStateFlow<Int> = MutableStateFlow(0),
+    val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(emptyList()),
 ) {
 
     val servers: WeakHashMap<String, Result<Streamable.Media.Server>> = WeakHashMap()
