@@ -11,7 +11,7 @@ coil = "3.3.0"
 [libraries]
 okhttp = { module = "com.squareup.okhttp3:okhttp", version = "5.1.0" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.9.0" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.11.0" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
 androidx-core-google-shortcuts = { module = "androidx.core:core-google-shortcuts", version = "1.1.0" }
