@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -71,6 +72,9 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+private val ScrollbarHitTargetThickness = 20.dp
+private val ScrollbarVisualThickness = 8.dp
+
 /**
  * A [Scrollbar] that allows for fast scrolling of content.
  * Its thumb disappears when the scrolling container is dormant.
@@ -90,8 +94,12 @@ fun FastScrollbar(
     onThumbMoved: (Float) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val hitTargetModifier = when (orientation) {
+        Vertical -> Modifier.width(ScrollbarHitTargetThickness)
+        Horizontal -> Modifier.height(ScrollbarHitTargetThickness)
+    }
     Scrollbar(
-        modifier = modifier,
+        modifier = hitTargetModifier.then(modifier),
         orientation = orientation,
         interactionSource = interactionSource,
         state = state,
@@ -124,10 +132,16 @@ private fun FastScrollbarThumb(
         animationSpec = tween(durationMillis = 60),
         label = "Scrollbar thumb padding",
     )
-    val modifier = Modifier.run {
+    val hitTargetModifier = Modifier.run {
         when (orientation) {
-            Vertical -> width(8.dp).fillMaxHeight()
-            Horizontal -> height(8.dp).fillMaxWidth()
+            Vertical -> width(ScrollbarHitTargetThickness).fillMaxHeight()
+            Horizontal -> height(ScrollbarHitTargetThickness).fillMaxWidth()
+        }
+    }
+    val visualModifier = Modifier.run {
+        when (orientation) {
+            Vertical -> width(ScrollbarVisualThickness).fillMaxHeight()
+            Horizontal -> height(ScrollbarVisualThickness).fillMaxWidth()
         }.padding(thumbPadding)
     }.background(
         color = scrollbarThumbColor(
@@ -136,8 +150,18 @@ private fun FastScrollbarThumb(
         ),
         shape = RoundedCornerShape(4.dp),
     )
-    Box(modifier)
+    Box(hitTargetModifier) {
+        Box(
+            modifier = visualModifier.align(orientation.visualThumbAlignment),
+        )
+    }
 }
+
+private val Orientation.visualThumbAlignment: Alignment
+    get() = when (this) {
+        Vertical -> Alignment.CenterEnd
+        Horizontal -> Alignment.BottomCenter
+    }
 
 /**
  * The color of the scrollbar thumb as a function of its interaction state.

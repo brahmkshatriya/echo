@@ -10,16 +10,20 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -40,6 +44,29 @@ import kotlinx.coroutines.flow.collectLatest
 val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
 val LocalInitialPlayerSheetValue = staticCompositionLocalOf { SheetValue.PartiallyExpanded }
+
+@Stable
+class PlayerControlsState {
+    var isPlaying by mutableStateOf(false)
+    var repeatEnabled by mutableStateOf(false)
+    var shuffleEnabled by mutableStateOf(false)
+}
+
+val LocalPlayerPagerState = staticCompositionLocalOf<PagerState?> { null }
+val LocalPlayerControls = staticCompositionLocalOf<PlayerControlsState?> { null }
+
+@Composable
+fun ProvidePlayerControls(
+    pagerState: PagerState,
+    content: @Composable () -> Unit,
+) {
+    val controls = remember { PlayerControlsState() }
+    CompositionLocalProvider(
+        LocalPlayerPagerState provides pagerState,
+        LocalPlayerControls provides controls,
+        content = content,
+    )
+}
 
 val LocalPlayerItems = staticCompositionLocalOf {
     listOf(
@@ -115,16 +142,18 @@ fun PlayerBottomSheet(
                             pageScrolledToTop[pagerState.currentPage] != false
                         }
                     }
-                    HorizontalPager(
-                        pagerState,
-                        Modifier.fillMaxSize(),
-                        userScrollEnabled = pagerUserScrollEnabled,
-                    ) { page ->
-                        Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
-                            betterSheet.progressState.floatValue.coerceIn(0f, 1f)
-                        }) {
-                            PlayerItem(page) { scrolledToTop ->
-                                pageScrolledToTop[page] = scrolledToTop
+                    ProvidePlayerControls(pagerState) {
+                        HorizontalPager(
+                            pagerState,
+                            Modifier.fillMaxSize(),
+                            userScrollEnabled = pagerUserScrollEnabled,
+                        ) { page ->
+                            Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
+                                betterSheet.progressState.floatValue.coerceIn(0f, 1f)
+                            }) {
+                                PlayerItem(page) { scrolledToTop ->
+                                    pageScrolledToTop[page] = scrolledToTop
+                                }
                             }
                         }
                     }

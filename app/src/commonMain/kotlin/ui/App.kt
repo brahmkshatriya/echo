@@ -55,25 +55,22 @@ import dev.brahmkshatriya.echo.app.ui.theme.LocalSurfaceColor
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.compose_multiplatform
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.jetbrains.compose.resources.painterResource
 
-@Serializable
-data class Main(val route: MainRoute) : NavKey
 
-@Serializable
-data class Media(val id: String) : NavKey
+@Serializable sealed interface AppNavKey: NavKey
+@Serializable data class Main(val route: MainRoute) : AppNavKey
+@Serializable data class Media(val id: String) : AppNavKey
 
-private val config = SavedStateConfiguration {
-    serializersModule = SerializersModule {
-        polymorphic(NavKey::class) {
-            subclass(Main::class, Main.serializer())
-            subclass(Media::class, Media.serializer())
-        }
-    }
+@OptIn(ExperimentalSerializationApi::class)
+private val module = SerializersModule {
+    polymorphic(NavKey::class) { subclassesOfSealed<AppNavKey>() }
 }
+private val config = SavedStateConfiguration { serializersModule = module }
 
 @Composable
 fun App() = EchoTheme {

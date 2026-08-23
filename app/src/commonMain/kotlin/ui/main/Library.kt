@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerItems
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.PlayerItem
+import dev.brahmkshatriya.echo.app.ui.player.ProvidePlayerControls
 
 @Composable
 fun Library() {
@@ -26,15 +27,17 @@ fun Library() {
             pageScrolledToTop[pagerState.currentPage] != false
         }
     }
-    HorizontalPager(
-        state = pagerState,
-        userScrollEnabled = pagerUserScrollEnabled,
-    ) { page ->
-        Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
-            sheet?.progressState?.floatValue?.coerceIn(0f, 1f) ?: 1f
-        }) {
-            PlayerItem(page) { scrolledToTop ->
-                pageScrolledToTop[page] = scrolledToTop
+    ProvidePlayerControls(pagerState) {
+        HorizontalPager(
+            state = pagerState,
+            userScrollEnabled = pagerUserScrollEnabled,
+        ) { page ->
+            Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
+                sheet?.progressState?.floatValue?.coerceIn(0f, 1f) ?: 1f
+            }) {
+                PlayerItem(page) { scrolledToTop ->
+                    pageScrolledToTop[page] = scrolledToTop
+                }
             }
         }
     }
