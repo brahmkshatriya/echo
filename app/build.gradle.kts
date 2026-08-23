@@ -25,8 +25,7 @@ kotlin {
     }
 
     jvmToolchain(21)
-    linuxX64()
-    mingwX64()
+    desktopNative()
     android {
         namespace = group.toString()
         compileSdk = 37

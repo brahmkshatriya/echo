@@ -6,14 +6,14 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.Orientation.Horizontal
 import androidx.compose.foundation.gestures.Orientation.Vertical
 import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.InteractionSource
@@ -502,6 +502,7 @@ fun scrollbarStateValue(
  * interactions on the scrollbar thumb by the user, for example implementing a fast scroll
  */
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun Scrollbar(
     modifier: Modifier = Modifier,
     orientation: Orientation,
@@ -570,21 +571,8 @@ fun Scrollbar(
             .pointerInput(Unit) {
                 var dragInteraction: DragInteraction.Start? = null
                 var dragStartTravelPercent = Float.NaN
-                var accumulatedDragPx = 0f
+                var dragStartPointerPositionPx = Float.NaN
 
-                val onDragStart: (Offset) -> Unit = {
-                    val start = DragInteraction.Start()
-                    dragInteraction = start
-                    interactionSource?.tryEmit(start)
-                    dragStartTravelPercent = when {
-                        interactionThumbTravelPercent.isNaN() -> state.thumbMovedPercent
-                        else -> interactionThumbTravelPercent
-                    }
-                    dragInProgress = true
-                    interactionThumbTravelPercent = dragStartTravelPercent
-                    pressedOffset = Offset.Unspecified
-                    accumulatedDragPx = 0f
-                }
                 val finishDrag: (Boolean) -> Unit = { cancelled ->
                     dragInteraction?.let { start ->
                         interactionSource?.tryEmit(
@@ -595,15 +583,49 @@ fun Scrollbar(
                     }
                     dragInteraction = null
                     dragStartTravelPercent = Float.NaN
-                    accumulatedDragPx = 0f
+                    dragStartPointerPositionPx = Float.NaN
                     dragInProgress = false
                     interactionThumbTravelPercent = Float.NaN
                 }
-                val onDrag: (change: PointerInputChange, dragAmount: Float) -> Unit =
-                    onDrag@{ _, delta ->
-                        if (dragStartTravelPercent.isNaN()) return@onDrag
-                        accumulatedDragPx += delta
+                val onDragStart: (Offset) -> Unit = onDragStart@{ downPosition ->
+                    val thumbSizePx = max(
+                        a = state.thumbSizePercent * track.size,
+                        b = minThumbSize.toPx(),
+                    )
+                    val trackSizePx = when (state.thumbTrackSizePercent) {
+                        0f -> track.size
+                        else -> (track.size - thumbSizePx) / state.thumbTrackSizePercent
+                    }
+                    val thumbTravelPercent = when {
+                        interactionThumbTravelPercent.isNaN() -> state.thumbMovedPercent
+                        else -> interactionThumbTravelPercent
+                    }.coerceIn(0f, state.thumbTrackSizePercent)
+                    val thumbStartPx = trackSizePx * thumbTravelPercent
+                    val downPositionPx = orientation.valueOf(downPosition)
+                    if (downPositionPx !in thumbStartPx..thumbStartPx + thumbSizePx) {
+                        return@onDragStart
+                    }
 
+                    val start = DragInteraction.Start()
+                    dragInteraction = start
+                    interactionSource?.tryEmit(start)
+                    dragStartTravelPercent = when {
+                        interactionThumbTravelPercent.isNaN() -> state.thumbMovedPercent
+                        else -> interactionThumbTravelPercent
+                    }
+                    dragInProgress = true
+                    interactionThumbTravelPercent = dragStartTravelPercent
+                    pressedOffset = Offset.Unspecified
+                    dragStartPointerPositionPx = downPositionPx
+                }
+                val onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit =
+                    onDrag@{ change, _ ->
+                        if (dragStartTravelPercent.isNaN() || dragStartPointerPositionPx.isNaN()) {
+                            return@onDrag
+                        }
+
+                        val pointerDisplacementPx = orientation.valueOf(change.position) -
+                                dragStartPointerPositionPx
                         val thumbSizePx = max(
                             a = state.thumbSizePercent * track.size,
                             b = minThumbSize.toPx(),
@@ -611,7 +633,7 @@ fun Scrollbar(
                         val maxThumbTravelPx = (track.size - thumbSizePx).coerceAtLeast(0f)
                         val deltaTravelPercent = when {
                             maxThumbTravelPx <= 0f -> 0f
-                            else -> accumulatedDragPx / maxThumbTravelPx *
+                            else -> pointerDisplacementPx / maxThumbTravelPx *
                                     state.thumbTrackSizePercent
                         }
                         val currentTravel = (dragStartTravelPercent + deltaTravelPercent)
@@ -620,21 +642,13 @@ fun Scrollbar(
                         onThumbMoved?.invoke(currentTravel)
                     }
 
-                when (orientation) {
-                    Horizontal -> detectHorizontalDragGestures(
-                        onDragStart = onDragStart,
-                        onDragEnd = { finishDrag(false) },
-                        onDragCancel = { finishDrag(true) },
-                        onHorizontalDrag = onDrag,
-                    )
-
-                    Vertical -> detectVerticalDragGestures(
-                        onDragStart = onDragStart,
-                        onDragEnd = { finishDrag(false) },
-                        onDragCancel = { finishDrag(true) },
-                        onVerticalDrag = onDrag,
-                    )
-                }
+                detectDragGestures(
+                    orientationLock = orientation,
+                    onDragStart = { down, _, _ -> onDragStart(down.position) },
+                    onDragEnd = { finishDrag(false) },
+                    onDragCancel = { finishDrag(true) },
+                    onDrag = onDrag,
+                )
             },
     ) {
         // scrollbar thumb container

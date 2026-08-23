@@ -9,15 +9,10 @@ group = property("GROUP").toString()
 version = property("VERSION").toString()
 
 kotlin {
-    linuxX64 {
+    desktopNative {
         binaries.executable {
             entryPoint = "dev.brahmkshatriya.echo.main"
             linkerOpts("-L/usr/lib")
-        }
-    }
-    mingwX64 {
-        binaries.executable {
-            entryPoint = "dev.brahmkshatriya.echo.main"
         }
     }
 
