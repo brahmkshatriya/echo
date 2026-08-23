@@ -77,7 +77,7 @@
     <string name="stop_player">Parar reprodutor</string>
     <string name="stop_player_summary">Parar o reprodutor quando o app for removido dos recentes</string>
     <string name="skip_silence">Ignorar silêncio</string>
-    <string name="skip_silence_summary">Pular a parte silenciosa da música para oferecer reprodução sem interrupções</string>
+    <string name="skip_silence_summary">Pular a parte silenciosa da música, para oferecer reprodução sem interrupções.</string>
     <string name="auto_start_radio">Iniciar rádio automaticamente</string>
     <string name="cache_size">Tamanho do cache</string>
     <string name="version">Versão</string>
@@ -236,7 +236,7 @@
     <string name="extension_uninstalled_successfully">Extensão desinstalada com sucesso.</string>
     <string name="invalid_extension_list">Lista de extensões inválidas</string>
     <string name="look_and_feel">Aparência e Comportamento</string>
-    <string name="custom_theme_color_summary">Use uma cor de tema personalizada, em vez da cor do sistema</string>
+    <string name="custom_theme_color_summary">Use uma cor de tema personalizada, em vez da cor do sistema.</string>
     <string name="sleep_on_specific_time">Dormir em um horário específico</string>
     <string name="animations">Animações</string>
     <string name="sleep_timer_set_for">Temporizador de sono definido para %1$s</string>
@@ -367,7 +367,7 @@
     <string name="playlist">lista de reprodução</string>
     <string name="album">Álbum</string>
     <string name="pre_release">Pré lançamento</string>
-    <string name="single">Single</string>
+    <string name="single">Individual</string>
     <string name="ep">EP</string>
     <string name="lp">LP</string>
     <string name="compilation">Compilação</string>
