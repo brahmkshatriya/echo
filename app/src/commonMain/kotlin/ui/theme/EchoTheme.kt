@@ -1,8 +1,5 @@
 package dev.brahmkshatriya.echo.app.ui.theme
 
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.animateBounds
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -33,14 +30,7 @@ val LocalDensityMultiplier = compositionLocalOf { 1f }
 val LocalFontScaleMultiplier = compositionLocalOf { 1f }
 val LocalCustomTheme = compositionLocalOf<ColorScheme?> { null }
 val LocalCustomTypography = compositionLocalOf<Typography?> { null }
-val LocalSurfaceColor = compositionLocalOf { Color.LightGray }
-val LocalTransitionScope = compositionLocalOf<SharedTransitionScope?> { null }
-
-@Composable
-fun Modifier.animateBounds() = run {
-    val scope = LocalTransitionScope.current
-    if (scope == null) this else animateBounds(scope)
-}
+val LocalSurfaceColor = compositionLocalOf { Color.Unspecified }
 
 @Composable
 fun EchoTheme(
@@ -75,15 +65,9 @@ fun EchoTheme(
     ) {
         Surface(color = colorScheme.surfaceContainer) {
 //            ShaderBG(colorScheme)
-            val bg = colorScheme.surface
 //            val bg = Color.Black.copy(0.33f)
-            SharedTransitionLayout {
-                CompositionLocalProvider(
-                    LocalSurfaceColor provides bg,
-                ) {
-                    content()
-                }
-            }
+            val bg = colorScheme.surface
+            CompositionLocalProvider(LocalSurfaceColor provides bg) { content() }
         }
     }
 }

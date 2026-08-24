@@ -137,7 +137,6 @@ import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
-import dev.brahmkshatriya.echo.app.ui.components.simpleTween
 import dev.brahmkshatriya.echo.app.ui.main.Header
 import dev.brahmkshatriya.echo.app.ui.theme.Primary
 import echo.app.generated.resources.Res
@@ -1022,10 +1021,10 @@ fun Modifier.playerBackground(colored: Boolean = false): Modifier {
     val startPadding = playerPadding.calculateStartPadding(layoutDirection)
     val endPadding = playerPadding.calculateEndPadding(layoutDirection)
     val animatedStart = animateDpAsState(
-        startPadding + collapsedHorizontalPadding.dp, simpleTween()
+        startPadding + collapsedHorizontalPadding.dp, tween()
     )
     val animatedEnd = animateDpAsState(
-        endPadding + collapsedHorizontalPadding.dp, simpleTween()
+        endPadding + collapsedHorizontalPadding.dp, tween()
     )
 
     return fillMaxSize().graphicsLayer {
@@ -1064,7 +1063,7 @@ fun CoverArt(
 
     val animatedTargetX = animateDpAsState(
         playerPadding.calculateStartPadding(layoutDirection) + (collapsedHorizontalPadding + 8).dp,
-        simpleTween()
+        tween()
     )
     BetterImage(
         { image },
@@ -1330,7 +1329,7 @@ fun BottomBar(
 ) {
     val stickyProgress by animateFloatAsState(
         if (isSticky) 1f else 0f,
-        simpleTween()
+        tween()
     )
     Box(
         Modifier
@@ -1340,7 +1339,7 @@ fun BottomBar(
     ) {
         Crossfade(
             targetState = isSticky,
-            animationSpec = simpleTween()
+            animationSpec = tween()
         ) { sticky ->
             if (sticky) StickyMiniPlayer(index)
             else LyricsBottomBar(lyricsVisible, onLyricsClick)

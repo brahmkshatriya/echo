@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.app.ui.player
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -14,7 +13,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
@@ -24,7 +22,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,7 +36,6 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
 import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
-import kotlinx.coroutines.flow.collectLatest
 
 val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
@@ -81,22 +77,10 @@ val LocalPlayerItems = staticCompositionLocalOf {
 @Composable
 fun Modifier.applyPlayerTranslation() = run {
     val playerSheet = LocalPlayerSheet.current ?: return@run this
-    val animatable = remember { Animatable(0f) }
-    val thresholdPx = with(LocalDensity.current) { playerSheet.peekHeight.toPx() / 3f }
-    LaunchedEffect(playerSheet, thresholdPx) {
-        snapshotFlow {
-            playerSheet.offsetState.floatValue - playerSheet.midPointState.intValue
-        }.collectLatest { y ->
-            when {
-                y < 0f -> animatable.snapTo(y)
-                y < thresholdPx -> animatable.animateTo(y)
-                else -> animatable.animateTo(0f)
-            }
-        }
-    }
-
+    val thresholdPx = with(LocalDensity.current) { playerSheet.peekHeight.toPx() / 2f }
     graphicsLayer {
-        translationY = animatable.value
+        val y = playerSheet.offsetState.floatValue - playerSheet.midPointState.intValue
+        translationY = if (y <= thresholdPx) y else (2f * thresholdPx - y).coerceAtLeast(0f)
     }
 }
 

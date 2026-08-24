@@ -8,9 +8,7 @@ import echo.desktop.generated.resources.Res
 import org.jetbrains.compose.resources.Font
 
 @Composable
-fun googleSansFontFamily() = FontFamily(
-    Font(Res.font.GoogleSansFlex)
-)
+fun googleSansFontFamily() = FontFamily(Font(Res.font.GoogleSansFlex))
 
 @Composable
 fun googleSansTypography() = MaterialTheme.typography.run {

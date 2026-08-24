@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.app.ui.components
 
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,7 +26,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 
 val LocalMainBackStack = compositionLocalOf<NavBackStack<NavKey>?> { null }
-
+const val TIME_MS = 300
 const val SCALE = 0.98f
 const val TWEEN_RATIO = 0.35f
 val tweenIn = tween<Float>(TIME_MS) {
@@ -36,6 +37,7 @@ val tweenOut = tween<Float>(TIME_MS) {
     if (it < TWEEN_RATIO) it / TWEEN_RATIO else 1f
 }
 
+val springCubicBezierEasing = CubicBezierEasing(0.6f, 0f, 0.6f, 1.8f)
 val transitionSpec = run {
     val enter = fadeIn(tweenIn) + scaleIn(tween(TIME_MS) {
         springCubicBezierEasing.transform(tweenIn.easing.transform(it))

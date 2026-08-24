@@ -1,7 +1,8 @@
 package dev.brahmkshatriya.echo.app.ui
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateBounds
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,8 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isUnspecified
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
@@ -76,57 +78,62 @@ private val config = SavedStateConfiguration { serializersModule = module }
 fun App() = EchoTheme {
     val initialSheetValue = LocalInitialPlayerSheetValue.current
     val betterSheet = rememberBetterSheet(80.dp, initialSheetValue)
-    val startPadding = remember { mutableStateOf(0.dp) }
-    val bottomPadding = remember { mutableStateOf(0.dp) }
-    val backStack = rememberNavBackStack(
-        config, Main(MainRoute.Home)
+    val backStack = rememberNavBackStack(config, Main(MainRoute.Home))
+    val isNavigationVisible = backStack.size == 1
+    val windowWidth = LocalWindowInfo.current.containerDpSize.width
+    val showNavigationBar = windowWidth.isUnspecified || windowWidth < 560.dp
+    val targetStartPadding = if (isNavigationVisible && !showNavigationBar) 72.dp else 0.dp
+    val targetBottomPadding = if (isNavigationVisible && showNavigationBar) 64.dp else 0.dp
+    val animatedStartPadding by animateDpAsState(
+        targetStartPadding,
+        tween(),
+        label = "Content start padding",
     )
-    PlayerBottomSheet(betterSheet, startPadding.value, bottomPadding.value) {
-        val sheetPaddingState = remember { mutableStateOf(0.dp) }
-        LaunchedEffect(betterSheet) {
-            snapshotFlow { betterSheet.progressState.floatValue < -0.8f }.collect {
-                sheetPaddingState.value = if (it) 0.dp else betterSheet.peekHeight - 8.dp
-            }
+    val animatedBottomPadding by animateDpAsState(
+        targetBottomPadding,
+        tween(),
+        label = "Content bottom padding",
+    )
+    val sheetPaddingState = remember { mutableStateOf(0.dp) }
+    LaunchedEffect(betterSheet) {
+        snapshotFlow { betterSheet.progressState.floatValue < -0.8f }.collect {
+            sheetPaddingState.value = if (it) 0.dp
+            else (betterSheet.peekHeight - 8.dp).coerceAtLeast(0.dp)
         }
-        LookaheadScope {
-            val modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = startPadding.value,
-                    bottom = bottomPadding.value
-                )
-                .padding(bottom = sheetPaddingState.value)
-                .animateBounds(this)
-            val isExpanded = LocalPlayerSheet.current?.isExpandedState?.value ?: false
-            BetterNavDisplay(
-                backStack,
-                !isExpanded,
-                modifier
-            ) {
-                entry<Main> {
-                    it.route.content()
-                }
+    }
+    val animatedSheetPadding by animateDpAsState(
+        sheetPaddingState.value,
+        tween(),
+        label = "Content sheet padding",
+    )
 
-                entry<Media> {
-                    Test(it.toString())
-                }
-            }
-            AnimatedVisibility(backStack.size == 1, modifier, fadeIn(), fadeOut()) {
-                ExtensionSelectorFABMenu()
-            }
+    PlayerBottomSheet(betterSheet, targetStartPadding, targetBottomPadding) {
+        val modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                start = animatedStartPadding.coerceAtLeast(0.dp),
+                bottom = (animatedBottomPadding + animatedSheetPadding)
+                    .coerceAtLeast(0.dp),
+            )
+        val isExpanded = LocalPlayerSheet.current?.isExpandedState?.value ?: false
+        BetterNavDisplay(backStack, !isExpanded, modifier) {
+            entry<Main> { it.route.content() }
+            entry<Media> { Test(it.toString()) }
+        }
+        AnimatedVisibility(isNavigationVisible, modifier, fadeIn(), fadeOut()) {
+            ExtensionSelectorFABMenu()
         }
     }
 
     MainSideNavigation(
-        backStack.size == 1,
-        backStack.size == 2,
-        betterSheet.peekHeight,
-        betterSheet.progressState,
-        (backStack.last() as? Main)?.route,
-        bottomPadding,
-        startPadding
+        isVisible = isNavigationVisible,
+        wasVisible = backStack.size == 2,
+        showNavigationBar = showNavigationBar,
+        sheetPadding = betterSheet.peekHeight,
+        sheetProgress = betterSheet.progressState,
+        selected = (backStack.last() as? Main)?.route,
     ) {
-        if (backStack.size == 1) backStack[0] = Main(it)
+        if (isNavigationVisible) backStack[0] = Main(it)
     }
 }
 

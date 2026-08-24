@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.app.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -9,7 +10,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -49,8 +49,6 @@ import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,7 +73,6 @@ import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
-import dev.brahmkshatriya.echo.app.ui.components.simpleTween
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.ic_close
 import echo.app.generated.resources.ic_extension
@@ -86,25 +83,13 @@ import org.jetbrains.compose.resources.painterResource
 fun MainSideNavigation(
     isVisible: Boolean,
     wasVisible: Boolean,
+    showNavigationBar: Boolean,
     sheetPadding: Dp,
     sheetProgress: MutableFloatState,
     selected: MainRoute?,
-    bottomPaddingState: MutableState<Dp>,
-    startPaddingState: MutableState<Dp>,
     onSelected: (MainRoute) -> Unit,
 ) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize().paddingMask()) {
-        val targetStartPadding = if (isVisible && maxWidth > 560.dp) 72.dp else 0.dp
-        val targetBottomPadding = if (isVisible && maxWidth < 560.dp) 64.dp else 0.dp
-        SideEffect {
-            if (startPaddingState.value != targetStartPadding) {
-                startPaddingState.value = targetStartPadding
-            }
-            if (bottomPaddingState.value != targetBottomPadding) {
-                bottomPaddingState.value = targetBottomPadding
-            }
-        }
-
+    Box(modifier = Modifier.fillMaxSize().paddingMask()) {
         val animated = remember { Animatable(0f) }
         val state = LocalNavigationEventDispatcherOwner.current?.navigationEventDispatcher
             ?.transitionState
@@ -114,7 +99,7 @@ fun MainSideNavigation(
                     is NavigationEventTransitionState.InProgress -> if (wasVisible)
                         animated.snapTo(1 - it.latestEvent.progress)
 
-                    else -> animated.animateTo(if (isVisible) 0f else 1f, simpleTween())
+                    else -> animated.animateTo(if (isVisible) 0f else 1f, tween())
                 }
             }
         }
@@ -123,10 +108,10 @@ fun MainSideNavigation(
 
 
         AnimatedVisibility(
-            remember(maxWidth) { maxWidth < 560.dp },
+            showNavigationBar,
             Modifier.align(Alignment.BottomCenter),
-            enter = fadeIn(simpleTween()) + slideInVertically(simpleTween()) { it },
-            exit = fadeOut(simpleTween()) + slideOutVertically(simpleTween()) { it }
+            enter = fadeIn(tween()) + slideInVertically(tween()) { it },
+            exit = fadeOut(tween()) + slideOutVertically(tween()) { it }
         ) {
             NavigationBar(
                 Modifier
@@ -169,9 +154,9 @@ fun MainSideNavigation(
             }
         }
         AnimatedVisibility(
-            maxWidth > 560.dp,
-            enter = fadeIn(simpleTween()) + slideInHorizontally(simpleTween()) { -it },
-            exit = fadeOut(simpleTween()) + slideOutHorizontally(simpleTween()) { -it }
+            !showNavigationBar,
+            enter = fadeIn(tween()) + slideInHorizontally(tween()) { -it },
+            exit = fadeOut(tween()) + slideOutHorizontally(tween()) { -it }
         ) {
             NavigationRail(
                 Modifier.padding(top = 8.dp)

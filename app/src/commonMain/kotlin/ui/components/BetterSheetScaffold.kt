@@ -4,6 +4,7 @@ package dev.brahmkshatriya.echo.app.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -102,7 +103,7 @@ fun BetterSheetScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val sheetState = betterSheet.sheetState
-    val animatedBottomPadding by animateDpAsState(bottomPadding, simpleTween())
+    val animatedBottomPadding by animateDpAsState(bottomPadding, tween())
     val newPeekHeight = betterSheet.peekHeight + animatedBottomPadding
 
     val isExpanded by betterSheet.isExpandedState
@@ -162,11 +163,18 @@ fun BetterSheetScaffold(
         )
     })) { (measurables), constraints ->
         val layoutHeight = constraints.maxHeight
+        val placeables = measurables.fastMap { it.measure(constraints) }
 
         val midPoint = layoutHeight - newPeekHeight.roundToPx()
         betterSheet.midPointState.intValue = midPoint
 
-        val offset = runCatching { sheetState.requireOffset() }.getOrNull() ?: 0f
+        val offset = runCatching { sheetState.requireOffset() }.getOrElse {
+            when (sheetState.currentValue) {
+                Expanded -> 0f
+                PartiallyExpanded -> midPoint.toFloat()
+                Hidden -> layoutHeight.toFloat()
+            }
+        }
         betterSheet.offsetState.floatValue = offset
 
         val progress = if (offset < midPoint) 1f - offset / midPoint
@@ -175,7 +183,6 @@ fun BetterSheetScaffold(
         betterSheet.progressState.floatValue = progress
         betterSheet.isExpandedState.value = progress > 0.1f
 
-        val placeables = measurables.fastMap { it.measure(constraints) }
         layout(constraints.maxWidth, constraints.maxHeight) {
             placeables.fastMap { it.placeRelative(0, 0) }
         }
