@@ -20,7 +20,6 @@ kotlin {
         desktopNativeMain.dependencies {
             implementation(projects.app)
             implementation(libs.compose.native.desktop)
-            implementation(libs.skiko.native)
         }
     }
 }

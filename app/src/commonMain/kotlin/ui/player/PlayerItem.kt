@@ -26,6 +26,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -1258,6 +1259,17 @@ private fun FullTimedLyricsLine(
         animationSpec = tween(360, easing = FastOutSlowInEasing)
     )
     val lyricColor = colorScheme.onPrimaryContainer
+    val interactionSource = remember(line) { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val interactionAlpha by animateFloatAsState(
+        targetValue = when {
+            isPressed -> 0.12f
+            isHovered -> 0.08f
+            else -> 0f
+        },
+        animationSpec = tween(120)
+    )
     val lyricText = remember(line, positionMs, isActive, lyricColor) {
         buildAnnotatedString {
             line.tokens.forEach { token ->
@@ -1285,10 +1297,15 @@ private fun FullTimedLyricsLine(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .background(lyricColor.copy(alpha = interactionAlpha))
             .graphicsLayer {
                 alpha = lineAlpha
             }
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
             .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {

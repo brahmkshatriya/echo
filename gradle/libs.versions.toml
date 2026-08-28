@@ -1,12 +1,11 @@
 [versions]
 kotlin = "2.4.10"
-agp = "9.3.1"
+agp = "9.3.2"
 compose = "1.12.0-rc01"
-composeNative = "1.12.10-alpha10"
-skikoNative = "0.151.4"
+composeNative = "1.12.10-alpha12"
 ktor = "3.5.2"
 androidxLifecycle = "2.11.0"
-landscapist = "2.11.0-alpha01"
+landscapist = "2.11.1-alpha01"
 
 #noinspection UnusedVersionCatalogEntry
 compileSdk = "37"
@@ -29,8 +28,8 @@ landscapist-image = { module = "dev.brahmkshatriya.landscapist:landscapist-image
 landscapist-placeholder = { module = "dev.brahmkshatriya.landscapist:landscapist-placeholder", version.ref = "landscapist" }
 landscapist-palette = { module = "dev.brahmkshatriya.landscapist:landscapist-palette", version.ref = "landscapist" }
 
-materialKolor = { module = "dev.brahmkshatriya.material-kolor:material-kolor", version = "5.0.0" }
-hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.2" }
+materialKolor = { module = "dev.brahmkshatriya.material-kolor:material-kolor", version = "5.0.1" }
+hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.3" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -38,7 +37,6 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
 compose-native-desktop = { module = "dev.brahmkshatriya.compose.desktop:desktop-native", version.ref = "composeNative" }
-skiko-native = { module = "dev.brahmkshatriya.skiko:skiko", version.ref = "skikoNative" }
 
 
 [bundles]

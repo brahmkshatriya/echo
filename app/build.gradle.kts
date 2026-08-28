@@ -44,9 +44,7 @@ kotlin {
             api(libs.bundles.landscapist)
             api(libs.hypnoticcanvas)
         }
-        desktopNativeMain.dependencies {
-            implementation(libs.skiko.native)
-        }
+
         androidMain.dependencies {
             api(libs.ktor.client.okhttp)
             api(libs.androidx.activity.compose)
