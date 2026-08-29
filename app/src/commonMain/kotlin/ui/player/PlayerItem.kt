@@ -62,7 +62,6 @@ import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialExpressiveTheme
@@ -71,7 +70,6 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.material3.onPointerScrollY
 import androidx.compose.material3.toShape
@@ -135,6 +133,7 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
 import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
+import dev.brahmkshatriya.echo.app.ui.components.SquigglySeekBar
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
@@ -432,7 +431,12 @@ fun SongPlayerItem(
                 contentColor = colorScheme.onSurface
             )
             val listState = rememberLazyListState()
-            var showLyrics by remember(i) { mutableStateOf(false) }
+            var fallbackShowLyrics by remember { mutableStateOf(false) }
+            val sharedLyricsVisible = LocalPlayerLyricsVisible.current
+            val showLyrics = sharedLyricsVisible?.value ?: fallbackShowLyrics
+            val isPlayerScrolledToTop by remember {
+                derivedStateOf { !listState.canScrollBackward }
+            }
             val layoutDirection = LocalLayoutDirection.current
             val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
             val topPadding = safeDrawing.calculateTopPadding()
@@ -541,6 +545,7 @@ fun SongPlayerItem(
                         if (lyricsVisible) {
                             LyricsPanel(
                                 lyrics = niceLyrics,
+                                userScrollEnabled = isPlayerScrolledToTop,
                                 modifier = Modifier.fillMaxSize()
                             )
                         } else {
@@ -578,7 +583,11 @@ fun SongPlayerItem(
                             lyricsVisible = showLyrics,
                             onLyricsClick = {
                                 listState.requestScrollToItem(0)
-                                showLyrics = !showLyrics
+                                if (sharedLyricsVisible != null) {
+                                    sharedLyricsVisible.value = !sharedLyricsVisible.value
+                                } else {
+                                    fallbackShowLyrics = !fallbackShowLyrics
+                                }
                             }
                         )
                     }
@@ -872,9 +881,11 @@ fun ExpandedTimeline(
 
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         PlayerSlider(
-            Modifier.weight(1f).padding(top = heightState.value),
-            Modifier.height(72.dp).padding(vertical = 20.dp),
-            timelineState
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = heightState.value)
+                .height(72.dp),
+            timelineState = timelineState,
         )
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1143,6 +1154,7 @@ fun TopBar(
 @Composable
 private fun LyricsPanel(
     lyrics: Lyrics.Word,
+    userScrollEnabled: Boolean,
     modifier: Modifier = Modifier
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
@@ -1154,6 +1166,7 @@ private fun LyricsPanel(
                 .toFloat()
                 .coerceIn(0f, timelineState.durationMs)
         },
+        userScrollEnabled = userScrollEnabled,
         modifier = modifier.padding(horizontal = 12.dp)
     )
 }
@@ -1163,6 +1176,7 @@ private fun FullTimedLyrics(
     lyrics: Lyrics.Word,
     positionMs: Long,
     onSeek: (Long) -> Unit,
+    userScrollEnabled: Boolean,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -1200,6 +1214,7 @@ private fun FullTimedLyrics(
 
     LazyColumn(
         state = listState,
+        userScrollEnabled = userScrollEnabled,
         modifier = modifier
             .fillMaxSize()
             .onSizeChanged { lyricsViewportHeight = it.height }
@@ -1284,7 +1299,7 @@ private fun FullTimedLyricsLine(
                 withStyle(
                     SpanStyle(
                         color = lyricColor.copy(alpha = tokenAlpha),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Normal
                     )
                 ) {
                     append(token.text)
@@ -1320,7 +1335,7 @@ private fun FullTimedLyricsLine(
                 text = vocals.joinToString("") { it.text + it.trailingSpace },
                 modifier = Modifier.fillMaxWidth(),
                 style = typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.End,
                 color = lyricColor.copy(alpha = 0.72f)
             )
@@ -1330,6 +1345,7 @@ private fun FullTimedLyricsLine(
                 text = translation.text,
                 modifier = Modifier.fillMaxWidth(),
                 style = typography.bodyLarge,
+                fontWeight = FontWeight.Normal,
                 color = lyricColor.copy(alpha = 0.78f)
             )
         }
@@ -1817,7 +1833,12 @@ fun RowScope.Timeline() {
         textAlign = TextAlign.Center
     )
 
-    PlayerSlider(Modifier.weight(1f), timelineState = timelineState)
+    PlayerSlider(
+        modifier = Modifier
+            .weight(1f)
+            .height(32.dp),
+        timelineState = timelineState,
+    )
 
     val endInteraction = remember { MutableInteractionSource() }
     Text(
@@ -1835,16 +1856,22 @@ fun RowScope.Timeline() {
 @Composable
 private fun PlayerSlider(
     modifier: Modifier = Modifier,
-    thumbModifier: Modifier = Modifier,
-    timelineState: PlayerTimelineState
+    timelineState: PlayerTimelineState,
 ) {
     val rangeMS = remember(timelineState.durationMs) { 0f..timelineState.durationMs }
+    val segmentGaps = remember(timelineState.durationMs) {
+        listOf(0.22f, 0.48f, 0.72f, 0.88f).map { fraction ->
+            timelineState.durationMs * fraction
+        }
+    }
+    val controls = LocalPlayerControls.current
     val interactionSource = remember { MutableInteractionSource() }
     val isDragged by interactionSource.collectIsDraggedAsState()
     LaunchedEffect(isDragged) {
         timelineState.isSeeking = isDragged
     }
-    Slider(
+
+    SquigglySeekBar(
         valueRange = rangeMS,
         value = timelineState.positionMs,
         onValueChange = { newValue ->
@@ -1856,27 +1883,21 @@ private fun PlayerSlider(
         },
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         interactionSource = interactionSource,
-        thumb = {
-            SliderDefaults.Thumb(
-                interactionSource = interactionSource,
-                modifier = thumbModifier,
-                thumbSize = DpSize(4.dp, 32.dp)
-            )
-        },
-        track = {
-            PlayerSliderTrack { it }
-        }
-    )
-}
-
-@Composable
-private fun PlayerSliderTrack(sliderState: () -> SliderState) {
-    LinearWavyProgressIndicator(
-        progress = { sliderState().coercedValueAsFraction },
-        modifier = Modifier.fillMaxWidth().height(16.dp),
-        color = colorScheme.primary,
-        trackColor = colorScheme.primary.copy(0.25f),
-        amplitude = { 0.66f }
+        segmentGaps = segmentGaps,
+        segmentGapWidth = 3.dp,
+        squiggleAmplitude = if (controls?.isPlaying != false) 0.66f else 0f,
+        squiggleWavelength = 40.dp,
+        waveSpeed = 40.dp,
+        trackHeight = 16.dp,
+        trackStrokeWidth = 4.dp,
+        draggedTrackStrokeWidth = 12.dp,
+        trackCornerSize = Dp.Unspecified,
+        trackInsideCornerSize = 2.dp,
+        stopIndicatorSize = 3.dp,
+        thumbSize = DpSize(4.dp, 32.dp),
+        thumbTrackGap = 3.dp,
+        activeColor = colorScheme.primary,
+        inactiveColor = colorScheme.primary.copy(alpha = 0.25f),
     )
 }
 

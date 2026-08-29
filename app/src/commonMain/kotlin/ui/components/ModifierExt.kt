@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
@@ -43,18 +44,38 @@ fun Modifier.paddingMask(
 
         val maskProgress = progress().coerceIn(0f, 1f)
         if (maskProgress <= 0f) return@onDrawWithContent
-        val maskColor = Color.Black.copy(alpha = 1f - 0.5f * maskProgress)
+
+        val edgeAlpha = 1f - maskProgress
+        val edgeColor = Color.Black.copy(alpha = edgeAlpha)
+        val opaqueColor = Color.Black
+        val fadeStartFraction = 0.25f
 
         if (top > 0f) {
             drawRect(
-                color = maskColor,
+                brush = Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0f to edgeColor,
+                        fadeStartFraction to edgeColor,
+                        1f to opaqueColor,
+                    ),
+                    startY = 0f,
+                    endY = top,
+                ),
                 size = topSize,
                 blendMode = BlendMode.DstIn,
             )
         }
         if (bottom > 0f) {
             drawRect(
-                color = maskColor,
+                brush = Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0f to opaqueColor,
+                        (1f - fadeStartFraction) to edgeColor,
+                        1f to edgeColor,
+                    ),
+                    startY = size.height - bottom,
+                    endY = size.height,
+                ),
                 topLeft = bottomOffset,
                 size = bottomSize,
                 blendMode = BlendMode.DstIn,
@@ -62,14 +83,30 @@ fun Modifier.paddingMask(
         }
         if (left > 0f) {
             drawRect(
-                color = maskColor,
+                brush = Brush.horizontalGradient(
+                    colorStops = arrayOf(
+                        0f to edgeColor,
+                        fadeStartFraction to edgeColor,
+                        1f to opaqueColor,
+                    ),
+                    startX = 0f,
+                    endX = left,
+                ),
                 size = leftSize,
                 blendMode = BlendMode.DstIn,
             )
         }
         if (right > 0f) {
             drawRect(
-                color = maskColor,
+                brush = Brush.horizontalGradient(
+                    colorStops = arrayOf(
+                        0f to opaqueColor,
+                        (1f - fadeStartFraction) to edgeColor,
+                        1f to edgeColor,
+                    ),
+                    startX = size.width - right,
+                    endX = size.width,
+                ),
                 topLeft = rightOffset,
                 size = rightSize,
                 blendMode = BlendMode.DstIn,

@@ -50,6 +50,7 @@ class PlayerControlsState {
 
 val LocalPlayerPagerState = staticCompositionLocalOf<PagerState?> { null }
 val LocalPlayerControls = staticCompositionLocalOf<PlayerControlsState?> { null }
+val LocalPlayerLyricsVisible = staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
 
 @Composable
 fun ProvidePlayerControls(
@@ -57,9 +58,11 @@ fun ProvidePlayerControls(
     content: @Composable () -> Unit,
 ) {
     val controls = remember { PlayerControlsState() }
+    val lyricsVisible = remember { mutableStateOf(false) }
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
         LocalPlayerControls provides controls,
+        LocalPlayerLyricsVisible provides lyricsVisible,
         content = content,
     )
 }

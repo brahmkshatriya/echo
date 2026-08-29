@@ -123,8 +123,9 @@ private fun FastScrollbarThumb(
     interactionSource: InteractionSource,
     orientation: Orientation,
 ) {
+    val hoverInteractionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
-    val hovered by interactionSource.collectIsHoveredAsState()
+    val hovered by hoverInteractionSource.collectIsHoveredAsState()
     val dragged by interactionSource.collectIsDraggedAsState()
     val active = pressed || hovered || dragged
     val thumbPadding by animateDpAsState(
@@ -138,21 +139,21 @@ private fun FastScrollbarThumb(
             Horizontal -> height(ScrollbarHitTargetThickness).fillMaxWidth()
         }
     }
-    val visualModifier = Modifier.run {
-        when (orientation) {
-            Vertical -> width(ScrollbarVisualThickness).fillMaxHeight()
-            Horizontal -> height(ScrollbarVisualThickness).fillMaxWidth()
-        }.padding(thumbPadding)
-    }.background(
-        color = scrollbarThumbColor(
-            scrollInProgress = scrollInProgress,
-            active = active,
-        ),
-        shape = RoundedCornerShape(4.dp),
-    )
     Box(hitTargetModifier) {
         Box(
-            modifier = visualModifier.align(orientation.visualThumbAlignment),
+            modifier = Modifier.run {
+                when (orientation) {
+                    Vertical -> width(ScrollbarVisualThickness).fillMaxHeight()
+                    Horizontal -> height(ScrollbarVisualThickness).fillMaxWidth()
+                }.padding(thumbPadding).hoverable(hoverInteractionSource)
+            }.background(
+                color = scrollbarThumbColor(
+                    scrollInProgress = scrollInProgress,
+                    active = active,
+                    dragged = dragged,
+                ),
+                shape = RoundedCornerShape(4.dp),
+            ).align(orientation.visualThumbAlignment),
         )
     }
 }
@@ -171,6 +172,7 @@ private val Orientation.visualThumbAlignment: Alignment
 private fun scrollbarThumbColor(
     scrollInProgress: Boolean,
     active: Boolean,
+    dragged: Boolean,
 ): Color {
     var dormant by remember { mutableStateOf(false) }
     LaunchedEffect(active, scrollInProgress) {
@@ -182,7 +184,7 @@ private fun scrollbarThumbColor(
     }
 
     val targetColor = when {
-        active -> MaterialTheme.colorScheme.primary
+        dragged -> MaterialTheme.colorScheme.primary
         dormant -> Color.Transparent
         else -> MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.33f)
     }
@@ -551,10 +553,9 @@ fun Scrollbar(
     Box(
         modifier = modifier
             .run {
-                val withHover = interactionSource?.let(::hoverable) ?: this
                 when (orientation) {
-                    Vertical -> withHover.fillMaxHeight()
-                    Horizontal -> withHover.fillMaxWidth()
+                    Vertical -> fillMaxHeight()
+                    Horizontal -> fillMaxWidth()
                 }
             }
             .onPlaced { coordinates ->
