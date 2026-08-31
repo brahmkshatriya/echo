@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Typography
@@ -56,8 +55,7 @@ fun EchoTheme(
         customTheme ?: it
     }
     val colorScheme = animateColorScheme(dynamicThemeState.colorScheme)
-
-    val typography = LocalCustomTypography.current ?: MaterialTheme.typography
+    val typography = LocalCustomTypography.current ?: googleSansTypography()
     MaterialExpressiveTheme(
         colorScheme = colorScheme,
         motionScheme = MotionScheme.expressive(),

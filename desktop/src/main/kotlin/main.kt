@@ -29,9 +29,7 @@ import com.materialkolor.dynamicColorScheme
 import com.materialkolor.dynamiccolor.ColorSpec
 import dev.brahmkshatriya.echo.app.ui.App
 import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTheme
-import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTypography
 import dev.brahmkshatriya.echo.app.ui.theme.LocalDensityMultiplier
-import dev.brahmkshatriya.echo.theme.googleSansTypography
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.app_name
 import echo.app.generated.resources.compose_multiplatform
@@ -71,8 +69,7 @@ fun main() = application {
         }
         CompositionLocalProvider(
             LocalCustomTheme provides dynamicTheme,
-            LocalDensityMultiplier provides densityMultiplier,
-            LocalCustomTypography provides googleSansTypography()
+            LocalDensityMultiplier provides densityMultiplier
         ) {
             Box(
                 Modifier

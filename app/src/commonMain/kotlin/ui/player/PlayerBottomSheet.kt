@@ -14,6 +14,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
@@ -22,6 +23,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +38,12 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
 import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
+import com.skydoves.landscapist.core.ImageRequest
+import com.skydoves.landscapist.core.scheduler.DecodePriority
+import com.skydoves.landscapist.image.getLandscapist
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
@@ -59,6 +67,7 @@ fun ProvidePlayerControls(
 ) {
     val controls = remember { PlayerControlsState() }
     val lyricsVisible = remember { mutableStateOf(false) }
+    PreloadAdjacentPlayerArtwork(pagerState)
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
         LocalPlayerControls provides controls,
@@ -75,6 +84,36 @@ val LocalPlayerItems = staticCompositionLocalOf {
         "https://i1.sndcdn.com/artworks-UbVxfud5u7hzFUPc-pxSyCg-t1080x1080.png",
         "https://i1.sndcdn.com/artworks-7C8GJbswfVyxJ0z6-r5FPkQ-t1080x1080.png"
     )
+}
+
+@Composable
+private fun PreloadAdjacentPlayerArtwork(pagerState: PagerState) {
+    val artworks = LocalPlayerItems.current
+    val landscapist = getLandscapist()
+    val requestSize = with(LocalDensity.current) {
+        maxSongCoverSize.dp.roundToPx().coerceAtLeast(1)
+    }
+
+    LaunchedEffect(pagerState, artworks, landscapist, requestSize) {
+        snapshotFlow { pagerState.currentPage }.collectLatest { currentPage ->
+            val adjacentPages = listOf(currentPage - 1, currentPage + 1)
+                .filter { it in artworks.indices }
+
+            coroutineScope {
+                adjacentPages.forEach { page ->
+                    launch {
+                        landscapist.load(
+                            ImageRequest.builder()
+                                .model(artworks[page])
+                                .size(requestSize, requestSize)
+                                .priority(DecodePriority.LOW)
+                                .build()
+                        ).collect { }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

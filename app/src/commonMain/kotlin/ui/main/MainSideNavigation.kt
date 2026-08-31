@@ -67,7 +67,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
@@ -84,7 +83,6 @@ fun MainSideNavigation(
     isVisible: Boolean,
     wasVisible: Boolean,
     showNavigationBar: Boolean,
-    sheetPadding: Dp,
     sheetProgress: MutableFloatState,
     selected: MainRoute?,
     onSelected: (MainRoute) -> Unit,
@@ -166,7 +164,6 @@ fun MainSideNavigation(
                         val transitionValue = maxOf(positiveProgress, animated.value)
                         alpha = 1 - transitionValue * 1.15f
                         translationX = -size.width * transitionValue
-                        translationY = -(size.height - sheetPadding.toPx()) * positiveProgress
                     },
                 containerColor = Color.Unspecified,
                 contentColor = LocalContentColor.current

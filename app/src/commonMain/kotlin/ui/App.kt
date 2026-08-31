@@ -129,7 +129,6 @@ fun App() = EchoTheme {
         isVisible = isNavigationVisible,
         wasVisible = backStack.size == 2,
         showNavigationBar = showNavigationBar,
-        sheetPadding = betterSheet.peekHeight,
         sheetProgress = betterSheet.progressState,
         selected = (backStack.last() as? Main)?.route,
     ) {

@@ -19,6 +19,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -34,7 +35,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -56,7 +56,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
@@ -68,8 +71,6 @@ import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.onPointerScrollY
 import androidx.compose.material3.toShape
@@ -95,25 +96,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -125,13 +130,18 @@ import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicMaterialThemeState
+import com.skydoves.landscapist.components.rememberImageComponent
+import com.skydoves.landscapist.image.LandscapistImage
+import com.skydoves.landscapist.image.convertToImageBitmap
 import com.skydoves.landscapist.palette.PalettePlugin
-import com.skydoves.landscapist.palette.rememberPaletteState
+import dev.brahmkshatriya.echo.app.platform.VariableText
+import dev.brahmkshatriya.echo.app.platform.hasTouchInput
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
+import dev.brahmkshatriya.echo.app.ui.components.ResponsiveRow
 import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
 import dev.brahmkshatriya.echo.app.ui.components.SquigglySeekBar
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
@@ -139,6 +149,7 @@ import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
 import dev.brahmkshatriya.echo.app.ui.main.Header
 import dev.brahmkshatriya.echo.app.ui.theme.Primary
+import dev.brahmkshatriya.echo.app.ui.theme.googleSansFontFamily
 import echo.app.generated.resources.Res
 import echo.app.generated.resources.ic_close
 import echo.app.generated.resources.ic_favorite
@@ -158,6 +169,8 @@ import echo.app.generated.resources.ic_skip_next_32
 import echo.app.generated.resources.ic_skip_previous
 import echo.app.generated.resources.ic_skip_previous_32
 import echo.app.generated.resources.ic_volume_up
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -166,14 +179,48 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun PlayerItem(
     i: Int,
     onScrolledToTopChanged: (Boolean) -> Unit = {},
 ) {
-    val paletteState = rememberPaletteState()
-    val color = paletteState.value?.let {
+    val artworkModel = LocalPlayerItems.current.getOrNull(i)
+    var artwork by remember(artworkModel) { mutableStateOf<ImageBitmap?>(null) }
+    var palette by remember(artworkModel) { mutableStateOf<Palette?>(null) }
+    val artworkRequestSize = with(LocalDensity.current) {
+        maxSongCoverSize.dp.roundToPx().coerceAtLeast(1)
+    }
+
+    if (artworkModel != null && !LocalInspectionMode.current) {
+        LandscapistImage(
+            imageModel = { artworkModel },
+            modifier = Modifier.size(0.dp),
+            requestBuilder = { size(artworkRequestSize, artworkRequestSize) },
+            component = rememberImageComponent {
+                add(
+                    PalettePlugin(
+                        imageModel = artworkModel,
+                        paletteLoadedListener = { palette = it },
+                    )
+                )
+            },
+            success = { state, _ ->
+                val loadedArtwork = remember(state.data) {
+                    state.data?.let { convertToImageBitmap(it) }
+                }
+                LaunchedEffect(loadedArtwork) {
+                    if (loadedArtwork != null) artwork = loadedArtwork
+                }
+            },
+            failure = { state ->
+                println("PLAYER ARTWORK FAILED: ${state.reason?.stackTraceToString()}")
+            },
+        )
+    }
+
+    val color = palette?.let {
         (it.vibrantSwatch ?: it.dominantSwatch ?: it.lightVibrantSwatch)?.color
     } ?: Primary
     val scheme = rememberDynamicMaterialThemeState(
@@ -184,12 +231,14 @@ fun PlayerItem(
         neutral = color,
         neutralVariant = color,
     ).colorScheme
-    MaterialExpressiveTheme(animateColorScheme(scheme)) {
-        Box(Modifier.playerBackground(true)) {
-            SongPlayerItem(
-                i = i,
-                onScrolledToTopChanged = onScrolledToTopChanged,
-            ) { paletteState.value = it }
+    CompositionLocalProvider(LocalPlayerArtwork provides artwork) {
+        MaterialExpressiveTheme(animateColorScheme(scheme)) {
+            Box(Modifier.playerBackground(true)) {
+                SongPlayerItem(
+                    i = i,
+                    onScrolledToTopChanged = onScrolledToTopChanged,
+                )
+            }
         }
     }
 }
@@ -205,8 +254,8 @@ private const val PlayerQueueItemsPerGroup = 11
 private const val PlayerScrollbarThumbSizePercent = 0.16f
 private const val LyricsWaitingGapMs = 1_000L
 private const val LyricsTransitionDurationMs = 240
-private const val LyricsWordFadeLeadMs = 300L
 private const val LyricsModeTransitionDurationMs = 320
+private const val PlayerArtworkCrossfadeDurationMs = 250
 
 @Stable
 private class PlayerTimelineState(val durationMs: Float) {
@@ -215,6 +264,31 @@ private class PlayerTimelineState(val durationMs: Float) {
 }
 
 private val LocalPlayerTimelineState = staticCompositionLocalOf<PlayerTimelineState?> { null }
+private val LocalPlayerArtwork = staticCompositionLocalOf<ImageBitmap?> { null }
+
+@Composable
+private fun PlayerArtwork(
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
+) {
+    Crossfade(
+        targetState = LocalPlayerArtwork.current,
+        modifier = modifier,
+        animationSpec = tween(PlayerArtworkCrossfadeDurationMs),
+    ) { bitmap ->
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = contentScale,
+            )
+        } else {
+            Box(Modifier.fillMaxSize())
+        }
+    }
+}
 
 private suspend fun PagerState.playPrevious() {
     if (pageCount <= 0) return
@@ -386,7 +460,6 @@ fun Modifier.coverSize(
 fun SongPlayerItem(
     i: Int,
     onScrolledToTopChanged: (Boolean) -> Unit = {},
-    paletteState: (Palette) -> Unit,
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimaryContainer
 ) {
@@ -546,7 +619,7 @@ fun SongPlayerItem(
                             LyricsPanel(
                                 lyrics = niceLyrics,
                                 userScrollEnabled = isPlayerScrolledToTop,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = transformModifier.fillMaxSize()
                             )
                         } else {
                             Box(
@@ -555,7 +628,6 @@ fun SongPlayerItem(
                             ) {
                                 CoverArt(
                                     i,
-                                    paletteState,
                                     coverMaxSize,
                                     coverVerticalPadding,
                                     topPadding,
@@ -567,7 +639,17 @@ fun SongPlayerItem(
                 }
                 item {
                     Box(transformModifier.onSizeChanged { timelineHeight.intValue = it.height }) {
-                        ExpandedTimeline(i, lyricsVisible = showLyrics)
+                        ExpandedTimeline(
+                            i = i,
+                            lyricsVisible = showLyrics,
+                            onArtworkClick = {
+                                if (sharedLyricsVisible != null) {
+                                    sharedLyricsVisible.value = false
+                                } else {
+                                    fallbackShowLyrics = false
+                                }
+                            },
+                        )
                     }
                 }
                 item {
@@ -661,7 +743,7 @@ fun SongPlayerItem(
             val scrollbarItemSizes = remember { PlayerScrollbarItemSizes() }
             val scrollbarState = rememberPlayerScrollbarState(listState, scrollbarItemSizes)
             FastScrollbar(
-                modifier = Modifier
+                modifier = transformModifier
                     .fillMaxHeight()
                     .width(8.dp)
                     .padding(top = 4.dp, bottom = 4.dp)
@@ -701,8 +783,8 @@ fun Modifier.expandedListItemTransform(
         val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
         val positiveProgress = sheetProgress.coerceIn(0f, 1f)
         val offset = 1 - positiveProgress
-        alpha = if (positiveProgress > 0.75f) (positiveProgress - 0.75f) * 4 else 0f
-        translationY = offset * playerHeight()
+        alpha = if (positiveProgress > 0.5f) (positiveProgress - 0.5f) * 2 else 0f
+        translationY = offset * playerHeight() * 0.33f
     }
 }
 
@@ -826,20 +908,6 @@ private fun ShuffleButton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PlayerButtons() = Row(
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(4.dp),
-    modifier = Modifier.clip(RoundedCornerShape(100))
-        .background(colorScheme.primary.copy(0.25f))
-        .padding(horizontal = 4.dp)
-) {
-    PreviousButton(Modifier.size(40.dp))
-    PlayPauseButton(Modifier.size(48.dp))
-    NextButton(Modifier.size(40.dp))
-}
-
-
-@Composable
 fun Controller() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -857,10 +925,10 @@ fun Controller() {
 @Composable
 fun ExpandedTimeline(
     i: Int,
-    lyricsVisible: Boolean = false
+    lyricsVisible: Boolean = false,
+    onArtworkClick: () -> Unit = {},
 ) = Box {
     val timelineState = LocalPlayerTimelineState.current ?: return@Box
-    val image = LocalPlayerItems.current[i]
     val maxRange = timelineState.durationMs
     var showRemainingTime by remember { mutableStateOf(false) }
     val currentTimeLabel by remember {
@@ -896,14 +964,14 @@ fun ExpandedTimeline(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AnimatedVisibility(lyricsVisible) {
-                BetterImage(
-                    model = { image },
+                PlayerArtwork(
                     contentDescription = "Song $i artwork",
                     modifier = Modifier
                         .padding(start = 16.dp, end = 8.dp)
                         .size(48.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(colorScheme.primaryFixed)
+                        .clickable(onClick = onArtworkClick),
                 )
             }
             AnimatedVisibility(!lyricsVisible) {
@@ -1060,7 +1128,6 @@ fun Modifier.playerBackground(colored: Boolean = false): Modifier {
 @Composable
 fun CoverArt(
     i: Int,
-    paletteState: (Palette) -> Unit,
     maxCoverSize: Dp,
     verticalPadding: Dp,
     topPadding: Dp,
@@ -1070,17 +1137,13 @@ fun CoverArt(
     val playerPadding = LocalPlayerPadding.current
 
     val layoutDirection = LocalLayoutDirection.current
-    val artWorks = LocalPlayerItems.current
-    val image = artWorks[i]
-
     val animatedTargetX = animateDpAsState(
         playerPadding.calculateStartPadding(layoutDirection) + (collapsedHorizontalPadding + 8).dp,
         tween()
     )
-    BetterImage(
-        { image },
-        "Song $i",
-        Modifier
+    PlayerArtwork(
+        contentDescription = "Song $i",
+        modifier = Modifier
             .coverSize(maxCoverSize, verticalPadding)
             .graphicsLayer {
                 val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
@@ -1090,9 +1153,14 @@ fun CoverArt(
                 val targetX = animatedTargetX.value.toPx()
                 val targetY = -(playerSheet?.peekHeight?.toPx() ?: 0f) / 2
                 val targetSize = 48.dp
-                val targetScale = targetSize.toPx() / size.height
-                scaleX = 1 + (targetScale - 1) * offset
-                scaleY = scaleX
+                val targetScale = if (size.height > 0f) {
+                    targetSize.toPx() / size.height
+                } else {
+                    1f
+                }
+                val coverScale = 1 + (targetScale - 1) * offset
+                scaleX = coverScale
+                scaleY = coverScale
                 transformOrigin = TransformOrigin(0f, 0f)
                 val center = (viewportWidth.toPx() - size.width) / 2f
                 translationX =
@@ -1102,10 +1170,9 @@ fun CoverArt(
                 translationY = collapsedY * offset
 
                 clip = true
-                shape = RoundedCornerShape((8 / scaleX).dp)
+                shape = RoundedCornerShape((8 / coverScale).dp)
             }
             .background(colorScheme.primaryFixed),
-        PalettePlugin { paletteState(it) }
     )
 }
 
@@ -1158,9 +1225,12 @@ private fun LyricsPanel(
     modifier: Modifier = Modifier
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
+    val isPlaying = LocalPlayerControls.current?.isPlaying != false
     FullTimedLyrics(
         lyrics = lyrics,
         positionMs = timelineState.positionMs.toLong(),
+        isPlaying = isPlaying,
+        isSeeking = timelineState.isSeeking,
         onSeek = { positionMs ->
             timelineState.positionMs = positionMs
                 .toFloat()
@@ -1171,15 +1241,22 @@ private fun LyricsPanel(
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FullTimedLyrics(
     lyrics: Lyrics.Word,
     positionMs: Long,
+    isPlaying: Boolean,
+    isSeeking: Boolean,
     onSeek: (Long) -> Unit,
     userScrollEnabled: Boolean,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val currentIsPlaying by rememberUpdatedState(isPlaying)
+    val syncResumeJob = remember { mutableListOf<Job?>(null) }
+    var autoScrollSuppressed by remember(lyrics.lines) { mutableStateOf(false) }
     var hasInitialLyricsPosition by remember(lyrics.lines) { mutableStateOf(false) }
     var lyricsViewportHeight by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
@@ -1189,9 +1266,71 @@ private fun FullTimedLyrics(
     val currentLineIndex = remember(lyrics.lines, positionMs) {
         lyrics.lines.indexOfLast { it.startMs <= positionMs }.coerceAtLeast(0)
     }
+    val latestCompletedLineIndex = remember(lyrics.lines, positionMs) {
+        lyrics.lines.indexOfLast { positionMs > it.endMs }
+    }
+    val currentPeakPosition = remember(lyrics.lines, currentLineIndex, positionMs) {
+        val currentLine = lyrics.lines.getOrNull(currentLineIndex)
+        if (currentLine != null && positionMs in currentLine.startMs..currentLine.endMs) {
+            currentLine.peakPositionAt(positionMs)
+        } else {
+            0f
+        }
+    }
+    val syncArrowPointsUp by remember(listState, currentLineIndex) {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val currentItem = layoutInfo.visibleItemsInfo
+                .firstOrNull { it.index == currentLineIndex }
+            if (currentItem != null) {
+                val viewportCenter =
+                    (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+                currentItem.offset + currentItem.size / 2 < viewportCenter
+            } else {
+                currentLineIndex < listState.firstVisibleItemIndex
+            }
+        }
+    }
+    val manualScrollConnection = remember(userScrollEnabled, scope) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                if (
+                    userScrollEnabled &&
+                    source == NestedScrollSource.UserInput &&
+                    available.y != 0f
+                ) {
+                    autoScrollSuppressed = true
+                    syncResumeJob[0]?.cancel()
+                    syncResumeJob[0] = scope.launch {
+                        delay(3_000.milliseconds)
+                        if (!currentIsPlaying) {
+                            snapshotFlow { currentIsPlaying }.first { it }
+                        }
+                        autoScrollSuppressed = false
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
 
-    LaunchedEffect(currentLineIndex, lyrics.lines, lyricsViewportHeight) {
-        if (lyrics.lines.isEmpty() || lyricsViewportHeight == 0) return@LaunchedEffect
+    LaunchedEffect(
+        currentLineIndex,
+        lyrics.lines,
+        lyricsViewportHeight,
+        autoScrollSuppressed,
+        isPlaying,
+        isSeeking,
+    ) {
+        if (
+            (autoScrollSuppressed && !isSeeking) ||
+            (!isPlaying && !isSeeking) ||
+            lyrics.lines.isEmpty() ||
+            lyricsViewportHeight == 0
+        ) return@LaunchedEffect
 
         val targetWasVisible = listState.layoutInfo.visibleItemsInfo
             .any { it.index == currentLineIndex }
@@ -1212,27 +1351,95 @@ private fun FullTimedLyrics(
         hasInitialLyricsPosition = true
     }
 
-    LazyColumn(
-        state = listState,
-        userScrollEnabled = userScrollEnabled,
+    Box(
         modifier = modifier
             .fillMaxSize()
             .onSizeChanged { lyricsViewportHeight = it.height }
-            .lyricsEdgeFade(),
-        contentPadding = PaddingValues(vertical = verticalContentPadding),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        itemsIndexed(
-            items = lyrics.lines,
-            key = { index, line -> "${line.startMs}-$index" }
-        ) { lineIndex, line ->
-            FullTimedLyricsLine(
-                line = line,
-                positionMs = positionMs,
-                isActive = lineIndex == currentLineIndex &&
-                        positionMs in line.startMs..line.endMs,
-                onClick = { onSeek(line.startMs) }
-            )
+        LazyColumn(
+            state = listState,
+            userScrollEnabled = userScrollEnabled,
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(manualScrollConnection)
+                .lyricsEdgeFade(),
+            contentPadding = PaddingValues(vertical = verticalContentPadding),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            itemsIndexed(
+                items = lyrics.lines,
+                key = { index, line -> "${line.startMs}-$index" }
+            ) { lineIndex, line ->
+                FullTimedLyricsLine(
+                    line = line,
+                    positionMs = positionMs,
+                    isActive = lineIndex == currentLineIndex &&
+                            positionMs in line.startMs..line.endMs,
+                    isPast = positionMs > line.endMs,
+                    retainsEndTrail = lineIndex == latestCompletedLineIndex,
+                    endTrailOffset = if (
+                        lineIndex == latestCompletedLineIndex && currentLineIndex > lineIndex
+                    ) currentPeakPosition else 0f,
+                    onClick = { onSeek(line.startMs) }
+                )
+            }
+        }
+
+        val syncArrowRotation by animateFloatAsState(
+            targetValue = if (syncArrowPointsUp) 180f else 0f,
+            animationSpec = tween(220, easing = FastOutSlowInEasing),
+        )
+
+        AnimatedVisibility(
+            visible = autoScrollSuppressed,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 24.dp),
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+        ) {
+            Button(
+                onClick = {
+                    syncResumeJob[0]?.cancel()
+                    syncResumeJob[0] = null
+                    autoScrollSuppressed = false
+                    if (!isPlaying) {
+                        scope.launch {
+                            val targetWasVisible = listState.layoutInfo.visibleItemsInfo
+                                .any { it.index == currentLineIndex }
+                            if (!targetWasVisible) {
+                                listState.requestScrollToItem(currentLineIndex)
+                            }
+                            val targetItem = snapshotFlow {
+                                listState.layoutInfo.visibleItemsInfo
+                                    .firstOrNull { it.index == currentLineIndex }
+                            }.first { it != null } ?: return@launch
+                            withFrameNanos { }
+                            listState.animateScrollToItem(
+                                currentLineIndex,
+                                targetItem.size / 2,
+                            )
+                            hasInitialLyricsPosition = true
+                        }
+                    }
+                },
+                contentPadding = PaddingValues(start = 16.dp, top = 10.dp, end = 8.dp, bottom = 10.dp),
+                shapes = ButtonDefaults.shapes(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorScheme.onSecondaryContainer,
+                    contentColor = colorScheme.secondaryContainer,
+                ),
+            ) {
+                Text("Sync")
+                Spacer(Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(Res.drawable.ic_keyboard_arrow_down),
+                    contentDescription = if (syncArrowPointsUp) "Sync up" else "Sync down",
+                    modifier = Modifier.graphicsLayer {
+                        rotationZ = syncArrowRotation
+                    },
+                )
+            }
         }
     }
 }
@@ -1267,10 +1474,13 @@ private fun FullTimedLyricsLine(
     line: WordsLyric,
     positionMs: Long,
     isActive: Boolean,
+    isPast: Boolean,
+    retainsEndTrail: Boolean,
+    endTrailOffset: Float,
     onClick: () -> Unit
 ) {
     val lineAlpha by animateFloatAsState(
-        targetValue = if (isActive) 1f else 0.32f,
+        targetValue = if (isActive || isPast) 1f else 0.32f,
         animationSpec = tween(360, easing = FastOutSlowInEasing)
     )
     val lyricColor = colorScheme.onPrimaryContainer
@@ -1285,26 +1495,11 @@ private fun FullTimedLyricsLine(
         },
         animationSpec = tween(120)
     )
-    val lyricText = remember(line, positionMs, isActive, lyricColor) {
-        buildAnnotatedString {
+    val lineText = remember(line) {
+        buildString {
             line.tokens.forEach { token ->
-                val tokenAlpha = if (isActive) {
-                    val fadeProgress = ((positionMs -
-                            (token.startMs - LyricsWordFadeLeadMs)).toFloat() /
-                            LyricsWordFadeLeadMs).coerceIn(0f, 1f)
-                    0.42f + 0.58f * FastOutSlowInEasing.transform(fadeProgress)
-                } else {
-                    1f
-                }
-                withStyle(
-                    SpanStyle(
-                        color = lyricColor.copy(alpha = tokenAlpha),
-                        fontWeight = FontWeight.Normal
-                    )
-                ) {
-                    append(token.text)
-                    append(token.trailingSpace)
-                }
+                append(token.text)
+                append(token.trailingSpace)
             }
         }
     }
@@ -1312,11 +1507,12 @@ private fun FullTimedLyricsLine(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(lyricColor.copy(alpha = interactionAlpha))
-            .graphicsLayer {
+            .background(
+                lyricColor.copy(alpha = interactionAlpha),
+                RoundedCornerShape(8.dp)
+            ).graphicsLayer {
                 alpha = lineAlpha
-            }
-            .clickable(
+            }.clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
@@ -1324,12 +1520,85 @@ private fun FullTimedLyricsLine(
             .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(
-            text = lyricText,
-            modifier = Modifier.fillMaxWidth(),
-            style = typography.titleLarge,
-            lineHeight = typography.headlineSmall.lineHeight
-        )
+        if ((isActive || isPast) && lineText.isNotEmpty()) {
+            val peakPosition: Float? = remember(
+                line,
+                positionMs,
+                isActive,
+                retainsEndTrail,
+                endTrailOffset,
+                lineText,
+            ) {
+                when {
+                    retainsEndTrail -> lineText.lastIndex.toFloat() + endTrailOffset
+                    isActive -> line.peakPositionAt(positionMs)
+                    else -> null
+                }
+            }
+
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                val density = LocalDensity.current
+                val maxWidthPx = with(density) { maxWidth.roundToPx() }
+                val referenceFontFamily = googleSansFontFamily()
+                val textMeasurer = rememberTextMeasurer()
+                val referenceStyle = typography.titleLarge.copy(
+                    fontFamily = referenceFontFamily,
+                    fontWeight = FontWeight.Normal,
+                    lineHeight = typography.headlineSmall.lineHeight,
+                )
+                val referenceLayout = remember(
+                    lineText,
+                    maxWidthPx,
+                    referenceStyle,
+                    textMeasurer,
+                ) {
+                    textMeasurer.measure(
+                        text = lineText,
+                        style = referenceStyle,
+                        softWrap = true,
+                        maxLines = Int.MAX_VALUE,
+                        constraints = Constraints(maxWidth = maxWidthPx),
+                    )
+                }
+                val glyphXPositions = remember(lineText, referenceLayout) {
+                    FloatArray(lineText.length) { index ->
+                        referenceLayout.getHorizontalPosition(
+                            index,
+                            usePrimaryDirection = true,
+                        )
+                    }
+                }
+                val glyphBaselines = remember(lineText, referenceLayout) {
+                    FloatArray(lineText.length) { index ->
+                        referenceLayout.getLineBaseline(
+                            referenceLayout.getLineForOffset(index)
+                        )
+                    }
+                }
+                val textHeight = with(density) { referenceLayout.size.height.toDp() }
+
+                VariableText(
+                    text = lineText,
+                    peakPosition = peakPosition,
+                    glyphXPositions = glyphXPositions,
+                    glyphBaselines = glyphBaselines,
+                    color = lyricColor,
+                    fontSize = typography.titleLarge.fontSize,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(textHeight),
+                )
+            }
+        } else {
+            Text(
+                text = lineText,
+                modifier = Modifier.fillMaxWidth(),
+                style = typography.titleLarge,
+                lineHeight = typography.headlineSmall.lineHeight,
+                fontWeight = FontWeight.Normal,
+            )
+        }
+
         line.backgroundVocals.takeIf { it.isNotEmpty() }?.let { vocals ->
             Text(
                 text = vocals.joinToString("") { it.text + it.trailingSpace },
@@ -1521,78 +1790,114 @@ private fun TimedLyricsLine(
     positionMs: Long
 ) {
     if (line.tokens.isEmpty()) return
-    val activeTokenIndex = remember(line, positionMs) {
-        line.tokens.indexOfLast { it.startMs <= positionMs }
-    }
-    val highlightedColor = colorScheme.onPrimaryContainer
-    val upcomingAlpha = 0.55f
-    val text = remember(line, activeTokenIndex, positionMs, highlightedColor) {
-        buildAnnotatedString {
-            line.tokens.forEachIndexed { index, token ->
-                val fadeProgress = ((positionMs -
-                        (token.startMs - LyricsWordFadeLeadMs)).toFloat() /
-                        LyricsWordFadeLeadMs).coerceIn(0f, 1f)
-                val easedFadeProgress = FastOutSlowInEasing.transform(fadeProgress)
-                val tokenAlpha = upcomingAlpha + (1f - upcomingAlpha) * easedFadeProgress
-                withStyle(
-                    SpanStyle(
-                        color = highlightedColor.copy(alpha = tokenAlpha),
-                        fontWeight = if (index <= activeTokenIndex) FontWeight.Bold
-                        else FontWeight.Normal
-                    )
-                ) {
-                    append(token.text)
-                    append(token.trailingSpace)
-                }
+
+    val lineText = remember(line) {
+        buildString {
+            line.tokens.forEach { token ->
+                append(token.text)
+                append(token.trailingSpace)
             }
         }
     }
+    if (lineText.isEmpty()) return
+
     val tokenOffsets = remember(line) {
         var offset = 0
         line.tokens.map { token ->
             offset.also { offset += token.text.length + token.trailingSpace.length }
         }
     }
-    var textLayout by remember(line) { mutableStateOf<TextLayoutResult?>(null) }
-    val layout = textLayout
+    val activeTokenIndex = remember(line, positionMs) {
+        line.tokens.indexOfLast { it.startMs <= positionMs }
+    }
+    val peakPosition = remember(line, positionMs) {
+        line.peakPositionAt(positionMs)
+    }
+
+    val highlightedColor = colorScheme.onPrimaryContainer
+    val referenceFontFamily = googleSansFontFamily()
+    val textMeasurer = rememberTextMeasurer()
+    val marqueeLayout = textMeasurer.measure(
+        text = lineText,
+        style = typography.titleMedium.copy(
+            fontFamily = referenceFontFamily,
+            fontWeight = FontWeight.Normal,
+        ),
+        maxLines = 1,
+        softWrap = false,
+        constraints = Constraints(maxWidth = Constraints.Infinity),
+    )
+    val glyphXPositions = remember(lineText, marqueeLayout) {
+        FloatArray(lineText.length) { index ->
+            marqueeLayout.getHorizontalPosition(index, usePrimaryDirection = true)
+        }
+    }
+    val glyphBaselines = remember(lineText, marqueeLayout) {
+        val baseline = marqueeLayout.getLineBaseline(0)
+        FloatArray(lineText.length) { baseline }
+    }
     val focusTokenIndex = activeTokenIndex.coerceAtLeast(0)
         .coerceAtMost(line.tokens.lastIndex)
-    val targetFocusX = if (layout == null || tokenOffsets.isEmpty()) 0f
-    else layout.tokenCenter(line, tokenOffsets, focusTokenIndex)
+    val targetFocusX = marqueeLayout.tokenCenter(line, tokenOffsets, focusTokenIndex)
     val focusX by animateFloatAsState(
         targetValue = targetFocusX,
         animationSpec = tween()
     )
 
-    Layout(
-        modifier = Modifier.fillMaxSize(),
-        content = {
-            Text(
-                text = text,
-                style = typography.titleMedium,
-                maxLines = 1,
-                softWrap = false,
-                onTextLayout = { textLayout = it }
-            )
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val viewportWidth = if (constraints.hasBoundedWidth) {
+            constraints.maxWidth.toFloat()
+        } else {
+            marqueeLayout.size.width.toFloat()
         }
-    ) { measurables, constraints ->
-        val textPlaceable = measurables.single().measure(
-            Constraints(
-                maxWidth = Constraints.Infinity,
-                maxHeight = constraints.maxHeight
-            )
+        val viewportHeight = if (constraints.hasBoundedHeight) {
+            constraints.maxHeight.toFloat()
+        } else {
+            marqueeLayout.size.height.toFloat()
+        }
+        val offsetX = if (marqueeLayout.size.width <= viewportWidth) {
+            (viewportWidth - marqueeLayout.size.width) / 2f
+        } else {
+            viewportWidth / 2f - focusX
+        }
+        val offsetY = (viewportHeight - marqueeLayout.size.height) / 2f
+
+        VariableText(
+            text = lineText,
+            peakPosition = peakPosition,
+            glyphXPositions = glyphXPositions,
+            glyphBaselines = glyphBaselines,
+            offsetX = offsetX,
+            offsetY = offsetY,
+            color = highlightedColor,
+            fontSize = typography.titleMedium.fontSize,
+            modifier = Modifier.fillMaxSize(),
         )
-        val fitsWithoutScrolling = textPlaceable.width <= constraints.maxWidth
-        val textX = if (fitsWithoutScrolling)
-            (constraints.maxWidth - textPlaceable.width) / 2
-        else (constraints.maxWidth / 2f - focusX).roundToInt()
-        layout(constraints.maxWidth, constraints.maxHeight) {
-            textPlaceable.placeRelative(
-                x = textX,
-                y = (constraints.maxHeight - textPlaceable.height) / 2
-            )
-        }
     }
+}
+
+private fun WordsLyric.peakPositionAt(positionMs: Long): Float {
+    if (tokens.isEmpty()) return 0f
+
+    val lineLength = tokens.sumOf { it.text.length + it.trailingSpace.length }
+    val lastPosition = (lineLength - 1).coerceAtLeast(0).toFloat()
+    val activeTokenIndex = tokens.indexOfLast { it.startMs <= positionMs }
+    val token = tokens.getOrNull(activeTokenIndex) ?: return 0f
+
+    var tokenOffset = 0
+    for (index in 0 until activeTokenIndex) {
+        tokenOffset += tokens[index].text.length + tokens[index].trailingSpace.length
+    }
+    val tokenProgress = if (token.endMs > token.startMs) {
+        ((positionMs - token.startMs).toFloat() /
+                (token.endMs - token.startMs).toFloat()).coerceIn(0f, 1f)
+    } else {
+        1f
+    }
+    val tokenCharacterCount =
+        (token.text.length + token.trailingSpace.length).coerceAtLeast(1)
+    val tokenPeakRange = (tokenCharacterCount - 1).coerceAtLeast(0).toFloat()
+    return (tokenOffset + tokenPeakRange * tokenProgress).coerceIn(0f, lastPosition)
 }
 
 private fun TextLayoutResult.tokenCenter(
@@ -1611,8 +1916,6 @@ private fun TextLayoutResult.tokenCenter(
 private fun StickyMiniPlayer(
     index: Int,
 ) {
-    val artWorks = LocalPlayerItems.current
-    val image = artWorks[index]
     val playerSheet = LocalPlayerSheet.current
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
@@ -1621,14 +1924,13 @@ private fun StickyMiniPlayer(
         index,
         modifier = Modifier.fillMaxWidth(),
         leadingContent = {
-            BetterImage(
-                { image },
-                "Song $index",
-                Modifier
+            PlayerArtwork(
+                contentDescription = "Song $index",
+                modifier = Modifier
                     .padding(start = 4.dp)
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(colorScheme.primaryFixed)
+                    .background(colorScheme.primaryFixed),
             )
         },
         trailingContent = {
@@ -1657,8 +1959,6 @@ fun CollapsedPlayer(
     val playerPadding = LocalPlayerPadding.current
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
-    val image = LocalPlayerItems.current[i]
-
     CollapsedPlayerContent(
         i,
         modifier = Modifier
@@ -1683,8 +1983,7 @@ fun CollapsedPlayer(
                     enter = fadeIn(tween(LyricsModeTransitionDurationMs)),
                     exit = fadeOut(tween(LyricsModeTransitionDurationMs)),
                 ) {
-                    BetterImage(
-                        model = { image },
+                    PlayerArtwork(
                         contentDescription = "Song $i artwork",
                         modifier = Modifier
                             .fillMaxSize()
@@ -1695,16 +1994,18 @@ fun CollapsedPlayer(
             }
         },
         trailingContent = {
-            val interactionSource = remember { MutableInteractionSource() }
-            IconButton(
-                onClick = { scope.launch { sheetState?.hide() } },
-                interactionSource = interactionSource,
-                modifier = Modifier.size(40.dp),
-                shapes = IconButtonDefaults.shapes()
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_close), contentDescription = "Close Player"
-                )
+            if (!hasTouchInput.value) {
+                val interactionSource = remember { MutableInteractionSource() }
+                IconButton(
+                    onClick = { scope.launch { sheetState?.hide() } },
+                    interactionSource = interactionSource,
+                    modifier = Modifier.size(40.dp),
+                    shapes = IconButtonDefaults.shapes()
+                ) {
+                    Icon(
+                        painterResource(Res.drawable.ic_close), contentDescription = "Close Player"
+                    )
+                }
             }
         },
     )
@@ -1717,27 +2018,15 @@ private fun CollapsedPlayerContent(
     leadingContent: @Composable () -> Unit,
     trailingContent: @Composable () -> Unit,
 ) {
-    val maxWidth = remember { mutableStateOf(0.dp) }
-    val density = LocalDensity.current
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .onSizeChanged { maxWidth.value = density.run { it.width.toDp() } },
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ResponsiveRow(
+        modifier = modifier,
+        spacing = 8.dp,
     ) {
-        @Composable
-        fun item(min: Dp, max: Dp = maxWidth.value, block: @Composable () -> Unit) {
-            if (maxWidth.value < min) return
-            if (maxWidth.value > max) return
-            block()
-        }
-
-        item(120.dp) {
+        item(priority = 90, key = "artwork") {
             leadingContent()
         }
 
-        item(256.dp) {
+        item(priority = 80, key = "metadata") {
             Column(Modifier.width(128.dp)) {
                 val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
                 Text("Song $i", fontWeight = FontWeight.Bold, style = mergedStyle)
@@ -1745,16 +2034,19 @@ private fun CollapsedPlayerContent(
             }
         }
 
-        val timelineShow = 780.dp
-        item(0.dp, timelineShow - 1.dp) { Spacer(Modifier.weight(1f)) }
+        spacer(
+            whenItemHidden = "timeline-volume",
+            key = "metadata-favourite-spacer",
+            weight = 1f,
+        )
 
-        item(360.dp) {
+        item(priority = 60, key = "favourite") {
             var favourite by remember { mutableStateOf(true) }
             val interactionSource = remember { MutableInteractionSource() }
             FilledTonalIconToggleButton(
                 checked = favourite,
                 onCheckedChange = { favourite = it },
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(40.dp),
                 shapes = IconButtonDefaults.toggleableShapes(
                     checkedShape = RoundedCornerShape(100)
                 ),
@@ -1776,24 +2068,31 @@ private fun CollapsedPlayerContent(
             }
         }
 
-        item(timelineShow) { Timeline() }
-        item(600.dp) { VolumeAdjuster() }
-
-        val playButtonShow = 480.dp
-        item(310.dp, playButtonShow - 1.dp) {
-            PlayPauseButton(Modifier.size(48.dp))
+        item(priority = 10, key = "timeline-volume", weight = 1f) {
+            TimelineWithVolume(Modifier.fillMaxWidth())
         }
 
-        item(670.dp) {
+        item(priority = 49, key = "previous") {
+            PreviousButton(Modifier.size(40.dp))
+        }
+
+        item(priority = 90, key = "play-pause") {
+            PlayPauseButton(Modifier.size(40.dp))
+        }
+
+        item(priority = 50, key = "next") {
+            NextButton(Modifier.size(40.dp))
+        }
+
+        item(priority = 30, key = "repeat") {
             RepeatButton(Modifier.size(40.dp))
         }
 
-        item(playButtonShow) { PlayerButtons() }
-        item(710.dp) {
+        item(priority = 20, key = "shuffle") {
             ShuffleButton(Modifier.size(40.dp))
         }
 
-        item(0.dp) {
+        item(priority = 100, key = "trailing") {
             trailingContent()
         }
     }
@@ -1807,7 +2106,19 @@ fun formatTime(ms: Float): String {
 }
 
 @Composable
-fun RowScope.Timeline() {
+fun TimelineWithVolume(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.widthIn(256.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Timeline(Modifier.weight(1f))
+        VolumeAdjuster()
+    }
+}
+
+@Composable
+fun Timeline(modifier: Modifier = Modifier) {
     val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
 
     val timelineState = LocalPlayerTimelineState.current ?: return
@@ -1826,31 +2137,36 @@ fun RowScope.Timeline() {
             }
         }
     }
-    Text(
-        text = currentTimeLabel,
-        style = mergedStyle,
-        modifier = Modifier.widthIn(min = 40.dp),
-        textAlign = TextAlign.Center
-    )
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = currentTimeLabel,
+            style = mergedStyle,
+            modifier = Modifier.widthIn(min = 40.dp),
+            textAlign = TextAlign.Center
+        )
 
-    PlayerSlider(
-        modifier = Modifier
-            .weight(1f)
-            .height(32.dp),
-        timelineState = timelineState,
-    )
+        PlayerSlider(
+            modifier = Modifier
+                .weight(1f)
+                .height(32.dp),
+            timelineState = timelineState,
+        )
 
-    val endInteraction = remember { MutableInteractionSource() }
-    Text(
-        text = endLabel,
-        style = mergedStyle,
-        modifier = Modifier
-            .widthIn(min = 40.dp)
-            .clickable(interactionSource = endInteraction) {
-                showRemainingTime = !showRemainingTime
-            },
-        textAlign = TextAlign.Center
-    )
+        val endInteraction = remember { MutableInteractionSource() }
+        Text(
+            text = endLabel,
+            style = mergedStyle,
+            modifier = Modifier
+                .widthIn(min = 40.dp)
+                .clickable(interactionSource = endInteraction) {
+                    showRemainingTime = !showRemainingTime
+                },
+            textAlign = TextAlign.Center
+        )
+    }
 }
 
 @Composable
@@ -1926,31 +2242,26 @@ fun VolumeAdjuster() {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimatedVisibility(isHovered.value) {
-            Slider(
+            SquigglySeekBar(
                 value = position.floatValue,
-                modifier = Modifier.width(96.dp).padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .width(96.dp)
+                    .padding(horizontal = 8.dp)
+                    .pointerHoverIcon(PointerIcon.Hand),
                 interactionSource = sliderInteraction,
                 onValueChange = { position.floatValue = it },
-                thumb = {
-                    SliderDefaults.Thumb(
-                        sliderInteraction,
-                        thumbSize = DpSize(4.dp, 28.dp)
-                    )
-                },
-                track = {
-                    SliderDefaults.Track(
-                        it,
-                        Modifier.height(4.dp),
-                        colors = SliderDefaults.colors(
-                            activeTrackColor = colorScheme.primary,
-                            inactiveTrackColor = colorScheme.primary.copy(0.25f)
-                        )
-                    )
-                }
+                squiggleAmplitude = 0f,
+                trackStrokeWidth = 4.dp,
+                draggedTrackStrokeWidth = 8.dp,
+                thumbSize = DpSize(4.dp, 28.dp),
+                activeColor = colorScheme.primary,
+                inactiveColor = colorScheme.primary.copy(0.25f),
             )
         }
         Icon(
-            painterResource(Res.drawable.ic_volume_up), contentDescription = "Close Player"
+            painterResource(Res.drawable.ic_volume_up),
+            contentDescription = "Volume",
+            modifier = Modifier.size(24.dp),
         )
     }
 }

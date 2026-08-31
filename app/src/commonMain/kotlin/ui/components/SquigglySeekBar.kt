@@ -16,8 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -28,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -104,8 +108,8 @@ fun SquigglySeekBar(
         label = "Squiggly seek bar amplitude",
     )
 
-    LaunchedEffect(squiggleWavelength, waveSpeed) {
-        if (squiggleWavelength <= 0.dp || waveSpeed <= 0.dp) {
+    LaunchedEffect(squiggleAmplitude, squiggleWavelength, waveSpeed) {
+        if (squiggleAmplitude <= 0f || squiggleWavelength <= 0.dp || waveSpeed <= 0.dp) {
             waveOffset.snapTo(0f)
             return@LaunchedEffect
         }
@@ -125,6 +129,35 @@ fun SquigglySeekBar(
 
     val clampedValue = value.coerceIn(valueRange.start, valueRange.endInclusive)
     val progress = valueFraction(clampedValue, valueRange)
+    var canvasWidthPx by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
+    val stopIndicatorVisible = with(density) {
+        if (canvasWidthPx <= 0) {
+            true
+        } else {
+            val halfThumbTravelInset = thumbSize.width.toPx() / 2f
+            val trackEnd = max(halfThumbTravelInset, canvasWidthPx - halfThumbTravelInset)
+            val trackLength = trackEnd - halfThumbTravelInset
+            val strokeWidth = animatedTrackStrokeWidth.toPx().coerceAtLeast(0f)
+            val maxCornerRadius = strokeWidth / 2f
+            val outerCornerRadius = if (trackCornerSize == Dp.Unspecified) {
+                maxCornerRadius
+            } else {
+                trackCornerSize.toPx().coerceIn(0f, maxCornerRadius)
+            }
+            val stopIndicatorRadius = stopIndicatorSize.toPx().coerceAtLeast(0f) / 2f
+            val stopIndicatorCenter =
+                (trackEnd - outerCornerRadius).coerceAtLeast(halfThumbTravelInset)
+            val thumbCenter = halfThumbTravelInset + trackLength * progress
+            thumbCenter + animatedThumbWidth.toPx().coerceAtLeast(0f) / 2f + thumbTrackGap.toPx() <
+                stopIndicatorCenter - stopIndicatorRadius
+        }
+    }
+    val animatedStopIndicatorVisibility by animateFloatAsState(
+        targetValue = if (stopIndicatorVisible) 1f else 0f,
+        animationSpec = tween(durationMillis = 120),
+        label = "Squiggly seek bar stop indicator visibility",
+    )
 
     fun valueAt(x: Float, width: Float, thumbWidth: Float): Float {
         val trackStart = thumbWidth / 2f
@@ -182,6 +215,7 @@ fun SquigglySeekBar(
 
     Canvas(
         modifier = modifier
+            .onSizeChanged { canvasWidthPx = it.width }
             .defaultMinSize(minHeight = thumbSize.height)
             .semantics {
                 progressBarRangeInfo = ProgressBarRangeInfo(
@@ -222,6 +256,7 @@ fun SquigglySeekBar(
             stopIndicatorColor = stopIndicatorColor,
             thumbColor = thumbColor,
             layoutDirection = layoutDirection,
+            stopIndicatorVisibility = animatedStopIndicatorVisibility,
         )
     }
 }
@@ -247,6 +282,7 @@ private fun DrawScope.drawSeekBar(
     stopIndicatorColor: Color,
     thumbColor: Color,
     layoutDirection: LayoutDirection,
+    stopIndicatorVisibility: Float,
 ) {
     if (size.width <= 0f || size.height <= 0f) return
 
@@ -264,6 +300,9 @@ private fun DrawScope.drawSeekBar(
         trackCornerSize.toPx().coerceIn(0f, maxCornerRadius)
     }
     val insideCornerRadius = trackInsideCornerSize.toPx().coerceIn(0f, maxCornerRadius)
+    val thumbCenterLogicalX = halfThumbTravelInset + trackLength * physicalProgress
+    val thumbHalfWidth = thumbWidthPx.coerceAtLeast(0f) / 2f
+    val resolvedThumbTrackGap = thumbTrackGapPx.coerceAtLeast(0f)
 
     if (trackLength > 0f && strokeWidth > 0f) {
         val ranges = visibleTrackRanges(
@@ -273,9 +312,6 @@ private fun DrawScope.drawSeekBar(
             gapWidthPx = gapWidth,
         )
 
-        val thumbCenterLogicalX = halfThumbTravelInset + trackLength * physicalProgress
-        val thumbHalfWidth = thumbWidthPx.coerceAtLeast(0f) / 2f
-        val resolvedThumbTrackGap = thumbTrackGapPx.coerceAtLeast(0f)
         val activeEnd = (
             thumbCenterLogicalX - thumbHalfWidth - resolvedThumbTrackGap
         ).coerceIn(halfThumbTravelInset, trackEnd)
@@ -331,13 +367,16 @@ private fun DrawScope.drawSeekBar(
     }
 
     val stopIndicatorRadius = stopIndicatorSizePx.coerceAtLeast(0f) / 2f
-    if (stopIndicatorRadius > 0f) {
+    val stopIndicatorCenterLogicalX =
+        (trackEnd - outerCornerRadius).coerceAtLeast(halfThumbTravelInset)
+    val stopIndicatorScale = stopIndicatorVisibility.coerceIn(0f, 1f)
+    if (stopIndicatorRadius > 0f && stopIndicatorScale > 0f) {
         drawCircle(
-            color = stopIndicatorColor,
-            radius = stopIndicatorRadius,
+            color = stopIndicatorColor.copy(alpha = stopIndicatorColor.alpha * stopIndicatorScale),
+            radius = stopIndicatorRadius * stopIndicatorScale,
             center = Offset(
                 x = logicalToPhysicalX(
-                    (trackEnd - outerCornerRadius).coerceAtLeast(halfThumbTravelInset),
+                    stopIndicatorCenterLogicalX,
                     halfThumbTravelInset,
                     trackEnd,
                     layoutDirection,
@@ -347,7 +386,6 @@ private fun DrawScope.drawSeekBar(
         )
     }
 
-    val thumbCenterLogicalX = halfThumbTravelInset + trackLength * physicalProgress
     val thumbCenterX = logicalToPhysicalX(
         thumbCenterLogicalX,
         halfThumbTravelInset,
