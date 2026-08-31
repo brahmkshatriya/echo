@@ -31,11 +31,15 @@ import kotlin.math.roundToInt
 
 private var variableLyricsBaseTypeface by mutableStateOf<Typeface?>(null)
 private var variableLyricsTypefaceLoading by mutableStateOf(false)
+private val variableLyricsTypefaces = mutableMapOf<Int, Typeface>()
+
+private fun variableLyricsFontKey(weight: Int, roundness: Int): Int =
+    (weight shl 8) or roundness
 
 @Composable
 internal actual fun VariableText(
     text: String,
-    peakPosition: Float?,
+    peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
     glyphBaselines: FloatArray,
     offsetX: Float,
@@ -75,23 +79,37 @@ internal actual fun VariableText(
         if (glyphTexts.isEmpty()) return@Canvas
 
         val lastPosition = glyphTexts.lastIndex.toFloat()
+        val peakPosition = peakPosition()
         cache.paint.color = color.toArgb()
+        if (peakPosition == null) {
+            val font = cache.staticFont.font
+            cache.paint.setAlphaf(1f)
+            glyphTexts.forEachIndexed { index, glyph ->
+                drawContext.canvas.skiaCanvas.drawString(
+                    glyph,
+                    offsetX + glyphXPositions.getOrElse(index) { 0f },
+                    offsetY + glyphBaselines.getOrElse(index) { 0f },
+                    font,
+                    cache.paint,
+                )
+            }
+            return@Canvas
+        }
+
         glyphTexts.forEachIndexed { index, glyph ->
+            val position = index.toFloat()
             val font = cache.fontFor(
-                position = index.toFloat(),
+                position = position,
                 peakPosition = peakPosition,
                 lastPosition = lastPosition,
             )
-            val alpha = if (peakPosition == null) {
-                1f
-            } else {
+            cache.paint.setAlphaf(
                 lyricsAlphaAt(
-                    position = index.toFloat(),
+                    position = position,
                     peakPosition = peakPosition,
                     quantizedWeight = font.weight,
                 )
-            }
-            cache.paint.setAlphaf(alpha)
+            )
             drawContext.canvas.skiaCanvas.drawString(
                 glyph,
                 offsetX + glyphXPositions.getOrElse(index) { 0f },
@@ -103,30 +121,24 @@ internal actual fun VariableText(
     }
 }
 
-private data class VariableLyricsSkiaFontKey(
-    val weight: Int,
-    val roundness: Int,
-)
-
 private class VariableLyricsSkiaFontCache(
     private val baseTypeface: Typeface,
     private val fontSize: Float,
 ) {
-    private val fonts = mutableMapOf<VariableLyricsSkiaFontKey, VariableLyricsSkiaFont>()
+    private val fonts = mutableMapOf<Int, VariableLyricsSkiaFont>()
     val paint = Paint().apply { isAntiAlias = true }
+    val staticFont by lazy(LazyThreadSafetyMode.NONE) {
+        fontFor(
+            weight = LyricsMinWeight.toInt(),
+            roundness = LyricsMaxRoundness.toInt(),
+        )
+    }
 
     fun fontFor(
         position: Float,
-        peakPosition: Float?,
+        peakPosition: Float,
         lastPosition: Float,
     ): VariableLyricsSkiaFont {
-        if (peakPosition == null) {
-            return fontFor(
-                weight = LyricsMinWeight.toInt(),
-                roundness = LyricsMaxRoundness.toInt(),
-            )
-        }
-
         val weight = quantizeLyricsWeight(
             lyricsWeightAt(position, peakPosition, lastPosition)
         )
@@ -137,9 +149,18 @@ private class VariableLyricsSkiaFontCache(
     }
 
     private fun fontFor(weight: Int, roundness: Int): VariableLyricsSkiaFont {
-        val key = VariableLyricsSkiaFontKey(weight, roundness)
+        val key = variableLyricsFontKey(weight, roundness)
         return fonts.getOrPut(key) {
-            VariableLyricsSkiaFont(baseTypeface, key, fontSize)
+            VariableLyricsSkiaFont(
+                typeface = variableLyricsTypeface(
+                    baseTypeface = baseTypeface,
+                    key = key,
+                    weight = weight,
+                    roundness = roundness,
+                ),
+                weight = weight,
+                fontSize = fontSize,
+            )
         }
     }
 
@@ -150,18 +171,25 @@ private class VariableLyricsSkiaFontCache(
     }
 }
 
-private class VariableLyricsSkiaFont(
+private fun variableLyricsTypeface(
     baseTypeface: Typeface,
-    key: VariableLyricsSkiaFontKey,
-    fontSize: Float,
-) {
-    val weight = key.weight
-    private val typeface = baseTypeface.makeClone(
+    key: Int,
+    weight: Int,
+    roundness: Int,
+): Typeface = variableLyricsTypefaces.getOrPut(key) {
+    baseTypeface.makeClone(
         arrayOf(
-            FontVariation("wght", key.weight.toFloat()),
-            FontVariation("ROND", key.roundness.toFloat()),
+            FontVariation("wght", weight.toFloat()),
+            FontVariation("ROND", roundness.toFloat()),
         )
     )
+}
+
+private class VariableLyricsSkiaFont(
+    typeface: Typeface,
+    val weight: Int,
+    fontSize: Float,
+) {
     val font = Font(typeface, fontSize).apply {
         isAutoHintingForced = false
         isSubpixel = true
@@ -173,6 +201,5 @@ private class VariableLyricsSkiaFont(
 
     fun close() {
         font.close()
-        typeface.close()
     }
 }

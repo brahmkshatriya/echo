@@ -62,7 +62,7 @@ internal fun lyricsRoundnessAt(
 @Composable
 internal expect fun VariableText(
     text: String,
-    peakPosition: Float?,
+    peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
     glyphBaselines: FloatArray,
     offsetX: Float = 0f,

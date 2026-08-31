@@ -81,7 +81,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -111,7 +110,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -181,19 +180,59 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
+private data class PlayerArtworkCacheEntry(
+    val artwork: ImageBitmap? = null,
+    val palette: Palette? = null,
+)
+
+private object PlayerArtworkMemoryCache {
+    private const val MaxEntries = 12
+    private val entries = LinkedHashMap<String, PlayerArtworkCacheEntry>()
+
+    fun get(model: String): PlayerArtworkCacheEntry? {
+        val entry = entries.remove(model) ?: return null
+        entries[model] = entry
+        return entry
+    }
+
+    fun putArtwork(model: String, artwork: ImageBitmap) {
+        put(model, (entries[model] ?: PlayerArtworkCacheEntry()).copy(artwork = artwork))
+    }
+
+    fun putPalette(model: String, palette: Palette) {
+        put(model, (entries[model] ?: PlayerArtworkCacheEntry()).copy(palette = palette))
+    }
+
+    private fun put(model: String, entry: PlayerArtworkCacheEntry) {
+        entries.remove(model)
+        entries[model] = entry
+        while (entries.size > MaxEntries) {
+            val oldestKey = entries.keys.firstOrNull() ?: break
+            entries.remove(oldestKey)
+        }
+    }
+}
+
 @Composable
 fun PlayerItem(
     i: Int,
     onScrolledToTopChanged: (Boolean) -> Unit = {},
 ) {
     val artworkModel = LocalPlayerItems.current.getOrNull(i)
-    var artwork by remember(artworkModel) { mutableStateOf<ImageBitmap?>(null) }
-    var palette by remember(artworkModel) { mutableStateOf<Palette?>(null) }
+    val cachedArtwork = remember(artworkModel) {
+        artworkModel?.let(PlayerArtworkMemoryCache::get)
+    }
+    var artwork by remember(artworkModel) { mutableStateOf(cachedArtwork?.artwork) }
+    var palette by remember(artworkModel) { mutableStateOf(cachedArtwork?.palette) }
     val artworkRequestSize = with(LocalDensity.current) {
         maxSongCoverSize.dp.roundToPx().coerceAtLeast(1)
     }
 
-    if (artworkModel != null && !LocalInspectionMode.current) {
+    if (
+        artworkModel != null &&
+        (artwork == null || palette == null) &&
+        !LocalInspectionMode.current
+    ) {
         LandscapistImage(
             imageModel = { artworkModel },
             modifier = Modifier.size(0.dp),
@@ -202,7 +241,10 @@ fun PlayerItem(
                 add(
                     PalettePlugin(
                         imageModel = artworkModel,
-                        paletteLoadedListener = { palette = it },
+                        paletteLoadedListener = { loadedPalette ->
+                            palette = loadedPalette
+                            PlayerArtworkMemoryCache.putPalette(artworkModel, loadedPalette)
+                        },
                     )
                 )
             },
@@ -210,8 +252,11 @@ fun PlayerItem(
                 val loadedArtwork = remember(state.data) {
                     state.data?.let { convertToImageBitmap(it) }
                 }
-                LaunchedEffect(loadedArtwork) {
-                    if (loadedArtwork != null) artwork = loadedArtwork
+                LaunchedEffect(artworkModel, loadedArtwork) {
+                    if (loadedArtwork != null) {
+                        artwork = loadedArtwork
+                        PlayerArtworkMemoryCache.putArtwork(artworkModel, loadedArtwork)
+                    }
                 }
             },
             failure = { state ->
@@ -247,7 +292,7 @@ const val maxSongCoverSize = 360
 const val songCoverHorizontalPadding = 16
 const val songCoverVerticalPadding = 16
 const val collapsedHorizontalPadding = 8
-private val coverArtViewportReserve = 296.dp
+private val playerBottomBarHeight = 64.dp
 private const val PlayerBottomBarContentType = "player-bottom-bar"
 private const val PlayerQueueItemContentType = "player-queue-item"
 private const val PlayerQueueItemsPerGroup = 11
@@ -256,6 +301,84 @@ private const val LyricsWaitingGapMs = 1_000L
 private const val LyricsTransitionDurationMs = 240
 private const val LyricsModeTransitionDurationMs = 320
 private const val PlayerArtworkCrossfadeDurationMs = 250
+
+private fun upperBound(values: LongArray, value: Long): Int {
+    var low = 0
+    var high = values.size
+    while (low < high) {
+        val mid = (low + high) ushr 1
+        if (values[mid] <= value) low = mid + 1 else high = mid
+    }
+    return low
+}
+
+private fun lowerBound(values: LongArray, value: Long): Int {
+    var low = 0
+    var high = values.size
+    while (low < high) {
+        val mid = (low + high) ushr 1
+        if (values[mid] < value) low = mid + 1 else high = mid
+    }
+    return low
+}
+
+private class WordLineTiming(val line: WordsLyric) {
+    val text = buildString {
+        line.tokens.forEach { token ->
+            append(token.text)
+            append(token.trailingSpace)
+        }
+    }
+    val tokenOffsets = IntArray(line.tokens.size)
+    private val tokenStarts = LongArray(line.tokens.size)
+    private val tokenLengths = IntArray(line.tokens.size)
+    private val lastPosition = (text.length - 1).coerceAtLeast(0).toFloat()
+
+    init {
+        var offset = 0
+        line.tokens.forEachIndexed { index, token ->
+            tokenOffsets[index] = offset
+            tokenStarts[index] = token.startMs
+            tokenLengths[index] = (token.text.length + token.trailingSpace.length).coerceAtLeast(1)
+            offset += token.text.length + token.trailingSpace.length
+        }
+    }
+
+    fun tokenIndexAt(positionMs: Long): Int = upperBound(tokenStarts, positionMs) - 1
+
+    fun peakPositionAt(positionMs: Long): Float {
+        if (line.tokens.isEmpty()) return 0f
+        val tokenIndex = tokenIndexAt(positionMs)
+        val token = line.tokens.getOrNull(tokenIndex) ?: return 0f
+        val tokenProgress = if (token.endMs > token.startMs) {
+            ((positionMs - token.startMs).toFloat() /
+                    (token.endMs - token.startMs).toFloat()).coerceIn(0f, 1f)
+        } else {
+            1f
+        }
+        val tokenPeakRange = (tokenLengths[tokenIndex] - 1).coerceAtLeast(0).toFloat()
+        return (tokenOffsets[tokenIndex] + tokenPeakRange * tokenProgress)
+            .coerceIn(0f, lastPosition)
+    }
+}
+
+private class LyricsTimingIndex(lines: List<WordsLyric>) {
+    val lines = lines.map(::WordLineTiming)
+    private val lineStarts = LongArray(lines.size) { lines[it].startMs }
+    private val lineEnds = LongArray(lines.size) { lines[it].endMs }
+
+    fun lineIndexAtOrBefore(positionMs: Long): Int = upperBound(lineStarts, positionMs) - 1
+
+    fun currentLineIndex(positionMs: Long): Int = lineIndexAtOrBefore(positionMs).coerceAtLeast(0)
+
+    fun activeLineIndex(positionMs: Long): Int {
+        val index = lineIndexAtOrBefore(positionMs)
+        val line = lines.getOrNull(index)?.line ?: return -1
+        return if (positionMs in line.startMs..line.endMs) index else -1
+    }
+
+    fun latestCompletedLineIndex(positionMs: Long): Int = lowerBound(lineEnds, positionMs) - 1
+}
 
 @Stable
 private class PlayerTimelineState(val durationMs: Float) {
@@ -305,41 +428,74 @@ private suspend fun PagerState.playNext(shuffle: Boolean) {
 
 @Stable
 private class PlayerScrollbarItemSizes {
-    private val sizes = mutableMapOf<Int, Int>()
+    private var sizes = IntArray(16)
+    private var knownCount = 0
+    private var knownTotal = 0L
+
+    private fun ensureCapacity(index: Int) {
+        if (index < sizes.size) return
+        var newSize = sizes.size
+        while (newSize <= index) newSize *= 2
+        sizes = sizes.copyOf(newSize)
+    }
 
     fun update(index: Int, size: Int) {
-        if (size > 0) sizes[index] = size
+        if (index < 0 || size <= 0) return
+        ensureCapacity(index)
+        val previous = sizes[index]
+        if (previous == size) return
+        if (previous == 0) knownCount++ else knownTotal -= previous.toLong()
+        sizes[index] = size
+        knownTotal += size.toLong()
     }
 
-    fun itemSize(index: Int, fallbackSize: Int): Int = sizes[index] ?: fallbackSize
+    fun itemSize(index: Int, fallbackSize: Int): Int =
+        sizes.getOrNull(index)?.takeIf { it > 0 } ?: fallbackSize
 
-    fun fallbackSize(viewportSize: Int): Int = sizes.values
-        .filter { it > 0 }
-        .takeIf { it.isNotEmpty() }
-        ?.average()
-        ?.roundToInt()
-        ?: viewportSize.coerceAtLeast(1)
-}
-
-private fun estimatedPlayerContentHeight(
-    itemSizes: PlayerScrollbarItemSizes,
-    totalItems: Int,
-    fallbackSize: Int,
-): Int = (0 until totalItems).sumOf { index ->
-    itemSizes.itemSize(index, fallbackSize)
-}
-
-private fun estimatedPlayerScrollOffset(
-    itemSizes: PlayerScrollbarItemSizes,
-    firstVisibleIndex: Int,
-    firstVisibleItemScrollOffset: Int,
-    fallbackSize: Int,
-): Int {
-    val beforeFirstItem = (0 until firstVisibleIndex).sumOf { index ->
-        itemSizes.itemSize(index, fallbackSize)
+    fun fallbackSize(viewportSize: Int): Int = if (knownCount > 0) {
+        (knownTotal.toDouble() / knownCount).roundToInt().coerceAtLeast(1)
+    } else {
+        viewportSize.coerceAtLeast(1)
     }
-    val firstItemSize = itemSizes.itemSize(firstVisibleIndex, fallbackSize)
-    return beforeFirstItem + firstVisibleItemScrollOffset.coerceIn(0, firstItemSize)
+
+    fun estimatedContentHeight(totalItems: Int, fallbackSize: Int): Int {
+        var total = 0L
+        for (index in 0 until totalItems) {
+            total += itemSize(index, fallbackSize).toLong()
+        }
+        return total.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    }
+
+    fun estimatedScrollOffset(
+        firstVisibleIndex: Int,
+        firstVisibleItemScrollOffset: Int,
+        fallbackSize: Int,
+    ): Int {
+        var beforeFirstItem = 0L
+        for (index in 0 until firstVisibleIndex) {
+            beforeFirstItem += itemSize(index, fallbackSize).toLong()
+        }
+        val firstItemSize = itemSize(firstVisibleIndex, fallbackSize)
+        val offset = firstVisibleItemScrollOffset.coerceIn(0, firstItemSize)
+        return (beforeFirstItem + offset).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    }
+
+    fun itemAtOffset(
+        targetScrollOffset: Int,
+        totalItems: Int,
+        fallbackSize: Int,
+    ): Long {
+        var remainingOffset = targetScrollOffset
+        var targetIndex = 0
+        while (targetIndex < totalItems - 1) {
+            val itemSize = itemSize(targetIndex, fallbackSize)
+            if (remainingOffset < itemSize) break
+            remainingOffset -= itemSize
+            targetIndex++
+        }
+        return (targetIndex.toLong() shl 32) or
+                (remainingOffset.toLong() and 0xffffffffL)
+    }
 }
 
 @Composable
@@ -351,30 +507,33 @@ private fun rememberPlayerScrollbarState(
     LaunchedEffect(listState) {
         snapshotFlow {
             val layoutInfo = listState.layoutInfo
+            var visibleItemsSignature = 1
+            layoutInfo.visibleItemsInfo.forEach { item ->
+                visibleItemsSignature = 31 * visibleItemsSignature + item.index
+                visibleItemsSignature = 31 * visibleItemsSignature + item.size
+            }
             PlayerScrollbarSnapshot(
                 firstVisibleIndex = listState.firstVisibleItemIndex,
                 firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
                 canScrollBackward = listState.canScrollBackward,
                 totalItems = layoutInfo.totalItemsCount,
                 viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
-                visibleItemSizes = layoutInfo.visibleItemsInfo.map { it.index to it.size },
+                visibleItemsSignature = visibleItemsSignature,
             )
         }.collect { snapshot ->
             if (snapshot.totalItems <= 0) return@collect
-            snapshot.visibleItemSizes.forEach { (index, size) ->
-                itemSizes.update(index, size)
+            listState.layoutInfo.visibleItemsInfo.forEach { item ->
+                itemSizes.update(item.index, item.size)
             }
 
             val viewportSize = snapshot.viewportSize.coerceAtLeast(1)
             val fallbackSize = itemSizes.fallbackSize(viewportSize)
-            val totalHeight = estimatedPlayerContentHeight(
-                itemSizes = itemSizes,
+            val totalHeight = itemSizes.estimatedContentHeight(
                 totalItems = snapshot.totalItems,
                 fallbackSize = fallbackSize,
             )
             val maxScrollOffset = (totalHeight - viewportSize).coerceAtLeast(1)
-            val scrollOffset = estimatedPlayerScrollOffset(
-                itemSizes = itemSizes,
+            val scrollOffset = itemSizes.estimatedScrollOffset(
                 firstVisibleIndex = snapshot.firstVisibleIndex,
                 firstVisibleItemScrollOffset = snapshot.firstVisibleItemScrollOffset,
                 fallbackSize = fallbackSize,
@@ -402,7 +561,7 @@ private data class PlayerScrollbarSnapshot(
     val canScrollBackward: Boolean,
     val totalItems: Int,
     val viewportSize: Int,
-    val visibleItemSizes: List<Pair<Int, Int>>,
+    val visibleItemsSignature: Int,
 )
 
 @Composable
@@ -420,31 +579,26 @@ private fun rememberPlayerScrollbarThumbMover(
         val viewportSize = (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset)
             .coerceAtLeast(1)
         val fallbackSize = itemSizes.fallbackSize(viewportSize)
-        val totalHeight = estimatedPlayerContentHeight(
-            itemSizes = itemSizes,
-            totalItems = totalItems,
-            fallbackSize = fallbackSize,
-        )
+        val totalHeight = itemSizes.estimatedContentHeight(totalItems, fallbackSize)
         val maxScrollOffset = (totalHeight - viewportSize).coerceAtLeast(0)
         val maxThumbTravel = 1f - PlayerScrollbarThumbSizePercent
         val targetScrollOffset = (maxScrollOffset *
                 (thumbMovedPercent / maxThumbTravel).coerceIn(0f, 1f))
             .roundToInt()
-
-        var remainingOffset = targetScrollOffset
-        var targetIndex = 0
-        while (targetIndex < totalItems - 1) {
-            val itemSize = itemSizes.itemSize(targetIndex, fallbackSize)
-            if (remainingOffset < itemSize) break
-            remainingOffset -= itemSize
-            targetIndex++
-        }
+        val target = itemSizes.itemAtOffset(
+            targetScrollOffset = targetScrollOffset,
+            totalItems = totalItems,
+            fallbackSize = fallbackSize,
+        )
+        val targetIndex = (target ushr 32).toInt()
+        val remainingOffset = target.toInt()
         listState.requestScrollToItem(targetIndex, remainingOffset)
     }
     return remember {
         { newPercentage -> thumbMovedPercent = newPercentage }
     }
 }
+
 
 fun Modifier.coverSize(
     maxCoverSize: Dp,
@@ -468,22 +622,29 @@ fun SongPlayerItem(
     }
     val controls = LocalPlayerControls.current
     val pagerState = LocalPlayerPagerState.current
-    LaunchedEffect(timelineState, controls, pagerState) {
+    val isCurrentItem = pagerState == null || pagerState.currentPage == i
+    val isPlaying = controls?.isPlaying != false
+    val isSeeking = timelineState.isSeeking
+    LaunchedEffect(timelineState, isCurrentItem, isPlaying, isSeeking, controls, pagerState) {
+        if (
+            !isCurrentItem ||
+            !isPlaying ||
+            isSeeking ||
+            timelineState.positionMs >= timelineState.durationMs
+        ) return@LaunchedEffect
+
         var previousFrameNanos = withFrameNanos { it }
         while (isActive) {
             val frameNanos = withFrameNanos { it }
-            val isCurrentItem = pagerState == null || pagerState.currentPage == i
-            val shouldAdvance = isCurrentItem && controls?.isPlaying != false &&
-                    !timelineState.isSeeking &&
-                    timelineState.positionMs < timelineState.durationMs
-            if (shouldAdvance) {
-                val elapsedMs = (frameNanos - previousFrameNanos) / 1_000_000f
-                timelineState.positionMs =
-                    (timelineState.positionMs + elapsedMs).coerceAtMost(timelineState.durationMs)
-                if (timelineState.positionMs >= timelineState.durationMs) {
-                    timelineState.positionMs = 0f
-                    if (controls?.repeatEnabled != true) {
-                        pagerState?.playNext(controls?.shuffleEnabled == true)
+            val elapsedMs = (frameNanos - previousFrameNanos) / 1_000_000f
+            timelineState.positionMs =
+                (timelineState.positionMs + elapsedMs).coerceAtMost(timelineState.durationMs)
+            if (timelineState.positionMs >= timelineState.durationMs) {
+                timelineState.positionMs = 0f
+                if (controls?.repeatEnabled != true) {
+                    if (pagerState != null) {
+                        pagerState.playNext(controls?.shuffleEnabled == true)
+                        return@LaunchedEffect
                     }
                 }
             }
@@ -492,10 +653,6 @@ fun SongPlayerItem(
     }
     CompositionLocalProvider(LocalPlayerTimelineState provides timelineState) {
         BoxWithConstraints {
-            val density = LocalDensity.current
-            val heightState = remember { mutableIntStateOf(0) }
-            val topBarHeight = remember { mutableIntStateOf(0) }
-
             val playerSheet = LocalPlayerSheet.current
             val scope = rememberCoroutineScope()
             val backStack = LocalMainBackStack.current
@@ -514,9 +671,6 @@ fun SongPlayerItem(
             val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
             val topPadding = safeDrawing.calculateTopPadding()
             val bottomPadding = safeDrawing.calculateBottomPadding()
-            val timelineHeight = remember { mutableIntStateOf(0) }
-            val controllerHeight = remember { mutableIntStateOf(0) }
-            val bottomBarHeight = remember { mutableIntStateOf(0) }
             val currentOnScrolledToTopChanged by rememberUpdatedState(onScrolledToTopChanged)
 
             LaunchedEffect(listState) {
@@ -542,53 +696,17 @@ fun SongPlayerItem(
                     item != null && item.offset <= 0 && listState.firstVisibleItemIndex >= item.index
                 }
             }
-            val transformModifier =
-                Modifier.expandedListItemTransform(playerSheet) { heightState.intValue }
-            val coverSlotHeight = remember(
-                maxHeight,
-                heightState.intValue,
-                topBarHeight.intValue,
-                timelineHeight.intValue,
-                controllerHeight.intValue,
-                bottomBarHeight.intValue,
-                topPadding,
-                bottomPadding
-            ) {
-                val measuredHeight = with(density) { heightState.intValue.toDp() }
-                val viewportHeight = if (measuredHeight > 0.dp) measuredHeight else maxHeight
-                val topBarReserve = with(density) { topBarHeight.intValue.toDp() }
-                val measuredBottomReserve = with(density) {
-                    (timelineHeight.intValue + controllerHeight.intValue + bottomBarHeight.intValue).toDp()
-                }
-                val bottomReserve = if (measuredBottomReserve > 0.dp) {
-                    measuredBottomReserve
-                } else {
-                    coverArtViewportReserve
-                }
-                (viewportHeight - topPadding - bottomPadding - topBarReserve - bottomReserve)
-                    .coerceAtLeast(0.dp)
+            val playerViewportHeightPx = constraints.maxHeight
+            val transformModifier = Modifier.expandedListItemTransform(playerSheet) {
+                playerViewportHeightPx
             }
+            val heroHeight = (maxHeight - topPadding - bottomPadding - playerBottomBarHeight)
+                .coerceAtLeast(0.dp)
             val coverViewportWidth = maxWidth
-            val coverMaxSize = remember(coverViewportWidth, coverSlotHeight) {
-                val viewportWidth = coverViewportWidth - (songCoverHorizontalPadding * 2).dp
-                minOf(
-                    maxSongCoverSize.dp,
-                    viewportWidth.coerceAtLeast(0.dp),
-                    (coverSlotHeight - (songCoverVerticalPadding * 2).dp).coerceAtLeast(0.dp),
-                )
-            }
-            val coverVerticalPadding = remember(coverSlotHeight, coverMaxSize) {
-                val basePadding = songCoverVerticalPadding.dp
-                ((coverSlotHeight - coverMaxSize) / 2).coerceAtLeast(basePadding)
-            }
             LazyColumn(
-                Modifier
-                    .onSizeChanged {
-                        heightState.intValue = it.height
-                    }
-                    .paddingMask(safeDrawing) {
-                        playerSheet?.progressState?.floatValue ?: 0f
-                    },
+                Modifier.paddingMask(safeDrawing) {
+                    playerSheet?.progressState?.floatValue ?: 0f
+                },
                 state = listState,
                 contentPadding = PaddingValues(
                     top = topPadding,
@@ -596,69 +714,29 @@ fun SongPlayerItem(
                     end = safeDrawing.calculateEndPadding(layoutDirection),
                 )
             ) {
-                item {
-                    TopBar(i, transformModifier) { topBarHeight.intValue = it }
-                }
-                item {
-                    AnimatedContent(
-                        targetState = showLyrics,
-                        modifier = Modifier.fillMaxWidth().height(coverSlotHeight),
-                        contentAlignment = Alignment.Center,
-                        transitionSpec = {
-                            val animation = tween<Float>(
-                                LyricsModeTransitionDurationMs,
-                                easing = FastOutSlowInEasing
-                            )
-                            val enter = fadeIn(animation) + scaleIn(animation, 0.96f)
-                            val exit = fadeOut(tween(LyricsModeTransitionDurationMs / 2)) +
-                                    scaleOut(animation, 1.04f)
-                            enter togetherWith exit
-                        }
-                    ) { lyricsVisible ->
-                        if (lyricsVisible) {
-                            LyricsPanel(
-                                lyrics = niceLyrics,
-                                userScrollEnabled = isPlayerScrolledToTop,
-                                modifier = transformModifier.fillMaxSize()
-                            )
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.TopStart
-                            ) {
-                                CoverArt(
-                                    i,
-                                    coverMaxSize,
-                                    coverVerticalPadding,
-                                    topPadding,
-                                    coverViewportWidth
-                                )
+                item(key = "player-hero-$i") {
+                    PlayerHero(
+                        i = i,
+                        lyrics = niceLyrics,
+                        showLyrics = showLyrics,
+                        userScrollEnabled = isPlayerScrolledToTop,
+                        topPadding = topPadding,
+                        viewportWidth = coverViewportWidth,
+                        transformModifier = transformModifier,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(heroHeight),
+                        onArtworkClick = {
+                            if (sharedLyricsVisible != null) {
+                                sharedLyricsVisible.value = false
+                            } else {
+                                fallbackShowLyrics = false
                             }
-                        }
-                    }
-                }
-                item {
-                    Box(transformModifier.onSizeChanged { timelineHeight.intValue = it.height }) {
-                        ExpandedTimeline(
-                            i = i,
-                            lyricsVisible = showLyrics,
-                            onArtworkClick = {
-                                if (sharedLyricsVisible != null) {
-                                    sharedLyricsVisible.value = false
-                                } else {
-                                    fallbackShowLyrics = false
-                                }
-                            },
-                        )
-                    }
-                }
-                item {
-                    Box(transformModifier.onSizeChanged { controllerHeight.intValue = it.height }) {
-                        Controller()
-                    }
+                        },
+                    )
                 }
                 stickyHeader(bottomBarKey, PlayerBottomBarContentType, isSlidable = false) {
-                    Box(transformModifier.onSizeChanged { bottomBarHeight.intValue = it.height }) {
+                    Box(transformModifier.height(playerBottomBarHeight)) {
                         BottomBar(
                             index = i,
                             isSticky = isBottomBarSticky,
@@ -736,10 +814,7 @@ fun SongPlayerItem(
                 }
             }
 
-            CollapsedPlayer(
-                i = i,
-                showCover = showLyrics,
-            )
+            CollapsedPlayer(i = i, showCover = showLyrics)
             val scrollbarItemSizes = remember { PlayerScrollbarItemSizes() }
             val scrollbarState = rememberPlayerScrollbarState(listState, scrollbarItemSizes)
             FastScrollbar(
@@ -927,8 +1002,8 @@ fun ExpandedTimeline(
     i: Int,
     lyricsVisible: Boolean = false,
     onArtworkClick: () -> Unit = {},
-) = Box {
-    val timelineState = LocalPlayerTimelineState.current ?: return@Box
+) {
+    val timelineState = LocalPlayerTimelineState.current ?: return
     val maxRange = timelineState.durationMs
     var showRemainingTime by remember { mutableStateOf(false) }
     val currentTimeLabel by remember {
@@ -943,80 +1018,110 @@ fun ExpandedTimeline(
             }
         }
     }
-    val heightState = remember { mutableStateOf(0.dp) }
-    val density = LocalDensity.current
     val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
 
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-        PlayerSlider(
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = heightState.value)
-                .height(72.dp),
-            timelineState = timelineState,
-        )
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(
-            Modifier.onSizeChanged {
-                heightState.value = density.run { it.height.toDp() } - 12.dp
-            },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AnimatedVisibility(lyricsVisible) {
-                PlayerArtwork(
-                    contentDescription = "Song $i artwork",
+    SubcomposeLayout(Modifier.fillMaxWidth()) { constraints ->
+        val looseConstraints = constraints.copy(minHeight = 0)
+        val metadata = subcompose("metadata") {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AnimatedVisibility(lyricsVisible) {
+                    PlayerArtwork(
+                        contentDescription = "Song $i artwork",
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 8.dp)
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(colorScheme.primaryFixed)
+                            .clickable(onClick = onArtworkClick),
+                    )
+                }
+                AnimatedVisibility(!lyricsVisible) {
+                    Spacer(Modifier.width(16.dp))
+                }
+                Column(Modifier.weight(1f)) {
+                    Text("Song $i")
+                    Text("Artist $i", color = colorScheme.primary)
+                }
+                Spacer(Modifier.width(8.dp))
+                LikeToggle()
+                Spacer(Modifier.width(8.dp))
+                MoreButton()
+                Spacer(Modifier.width(8.dp))
+            }
+        }.single().measure(looseConstraints)
+
+        val times = subcompose("times") {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+                Text(
+                    text = currentTimeLabel,
+                    style = mergedStyle,
+                    modifier = Modifier.padding(8.dp),
+                )
+                Spacer(Modifier.weight(1f))
+                val endInteraction = remember { MutableInteractionSource() }
+                Text(
+                    text = endLabel,
+                    style = mergedStyle,
                     modifier = Modifier
-                        .padding(start = 16.dp, end = 8.dp)
-                        .size(48.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorScheme.primaryFixed)
-                        .clickable(onClick = onArtworkClick),
+                        .clickable(interactionSource = endInteraction) {
+                            showRemainingTime = !showRemainingTime
+                        }
+                        .padding(8.dp),
                 )
             }
-            AnimatedVisibility(!lyricsVisible) {
-                Spacer(Modifier.width(16.dp))
-            }
-            Column(Modifier.weight(1f)) {
-                Text("Song $i")
-                Text("Artist $i", color = colorScheme.primary)
-            }
-            Spacer(Modifier.width(8.dp))
-            LikeToggle()
-            Spacer(Modifier.width(8.dp))
-            MoreButton()
-            Spacer(Modifier.width(8.dp))
-        }
-        Spacer(Modifier.height(24.dp))
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-            Text(
-                text = currentTimeLabel,
-                style = mergedStyle,
-                modifier = Modifier.padding(8.dp)
+        }.single().measure(looseConstraints)
+
+        val sliderHorizontalPadding = 16.dp.roundToPx()
+        val sliderWidth = (constraints.maxWidth - sliderHorizontalPadding * 2).coerceAtLeast(0)
+        val slider = subcompose("slider") {
+            PlayerSlider(
+                modifier = Modifier.fillMaxWidth().height(72.dp),
+                timelineState = timelineState,
             )
-            Spacer(Modifier.weight(1f))
-            val endInteraction = remember { MutableInteractionSource() }
+        }.single().measure(
+            Constraints(
+                minWidth = sliderWidth,
+                maxWidth = sliderWidth,
+                minHeight = 0,
+                maxHeight = looseConstraints.maxHeight,
+            )
+        )
+
+        val formatBadge = subcompose("format") {
             Text(
-                text = endLabel,
+                text = "FLAC",
                 style = mergedStyle,
-                modifier = Modifier.clip(RoundedCornerShape(8.dp))
-                    .clickable(interactionSource = endInteraction) {
-                        showRemainingTime = !showRemainingTime
-                    }.padding(8.dp)
+                modifier = Modifier
+                    .padding(bottom = 4.dp)
+                    .clip(RoundedCornerShape(100))
+                    .background(colorScheme.primary.copy(0.1f))
+                    .clickable {}
+                    .padding(12.dp, 4.dp),
+            )
+        }.single().measure(looseConstraints.copy(minWidth = 0))
+
+        val metadataToTimesSpacing = 40.dp.roundToPx()
+        val sliderTop = (metadata.height - 12.dp.roundToPx()).coerceAtLeast(0)
+        val contentHeight = maxOf(
+            metadata.height + metadataToTimesSpacing + times.height,
+            sliderTop + slider.height,
+            formatBadge.height,
+        ).coerceIn(constraints.minHeight, constraints.maxHeight)
+
+        layout(constraints.maxWidth, contentHeight) {
+            slider.placeRelative(sliderHorizontalPadding, sliderTop)
+            metadata.placeRelative(0, 0)
+            times.placeRelative(0, metadata.height + metadataToTimesSpacing)
+            formatBadge.placeRelative(
+                x = (constraints.maxWidth - formatBadge.width) / 2,
+                y = contentHeight - formatBadge.height,
             )
         }
     }
-    Text(
-        text = "FLAC",
-        style = mergedStyle,
-        modifier = Modifier
-            .padding(bottom = 4.dp)
-            .clip(RoundedCornerShape(100))
-            .background(colorScheme.primary.copy(0.1f))
-            .clickable {}
-            .padding(12.dp, 4.dp)
-            .align(Alignment.BottomCenter)
-    )
 }
 
 @Composable
@@ -1125,6 +1230,111 @@ fun Modifier.playerBackground(colored: Boolean = false): Modifier {
     }
 }
 
+private enum class PlayerHeroSlot {
+    TopBar,
+    CoverOrLyrics,
+    Timeline,
+    Controller,
+}
+
+@Composable
+private fun PlayerHero(
+    i: Int,
+    lyrics: Lyrics.Word,
+    showLyrics: Boolean,
+    userScrollEnabled: Boolean,
+    topPadding: Dp,
+    viewportWidth: Dp,
+    transformModifier: Modifier,
+    onArtworkClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SubcomposeLayout(modifier) { constraints ->
+        val childConstraints = constraints.copy(minHeight = 0)
+        val topBar = subcompose(PlayerHeroSlot.TopBar) {
+            TopBar(i, transformModifier)
+        }.single().measure(childConstraints)
+        val timeline = subcompose(PlayerHeroSlot.Timeline) {
+            Box(transformModifier) {
+                ExpandedTimeline(
+                    i = i,
+                    lyricsVisible = showLyrics,
+                    onArtworkClick = onArtworkClick,
+                )
+            }
+        }.single().measure(childConstraints)
+        val controller = subcompose(PlayerHeroSlot.Controller) {
+            Box(transformModifier) { Controller() }
+        }.single().measure(childConstraints)
+
+        val coverHeight = (
+            constraints.maxHeight - topBar.height - timeline.height - controller.height
+        ).coerceAtLeast(0)
+        val coverHeightDp = coverHeight.toDp()
+        val coverMaxSize = minOf(
+            maxSongCoverSize.dp,
+            (viewportWidth - (songCoverHorizontalPadding * 2).dp).coerceAtLeast(0.dp),
+            (coverHeightDp - (songCoverVerticalPadding * 2).dp).coerceAtLeast(0.dp),
+        )
+        val coverVerticalPadding = ((coverHeightDp - coverMaxSize) / 2)
+            .coerceAtLeast(songCoverVerticalPadding.dp)
+        val cover = subcompose(PlayerHeroSlot.CoverOrLyrics) {
+            AnimatedContent(
+                targetState = showLyrics,
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+                transitionSpec = {
+                    val animation = tween<Float>(
+                        LyricsModeTransitionDurationMs,
+                        easing = FastOutSlowInEasing,
+                    )
+                    val enter = fadeIn(animation) + scaleIn(animation, 0.96f)
+                    val exit = fadeOut(tween(LyricsModeTransitionDurationMs / 2)) +
+                            scaleOut(animation, 1.04f)
+                    enter togetherWith exit
+                },
+            ) { lyricsVisible ->
+                if (lyricsVisible) {
+                    LyricsPanel(
+                        lyrics = lyrics,
+                        userScrollEnabled = userScrollEnabled,
+                        modifier = transformModifier.fillMaxSize(),
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.TopStart,
+                    ) {
+                        CoverArt(
+                            i = i,
+                            maxCoverSize = coverMaxSize,
+                            verticalPadding = coverVerticalPadding,
+                            topPadding = topPadding,
+                            viewportWidth = viewportWidth,
+                        )
+                    }
+                }
+            }
+        }.single().measure(
+            childConstraints.copy(
+                minHeight = coverHeight,
+                maxHeight = coverHeight,
+            )
+        )
+
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            var y = 0
+            topBar.placeRelative(0, y)
+            y += topBar.height
+            cover.placeRelative(0, y)
+            y += cover.height
+            timeline.placeRelative(0, y)
+            y += timeline.height
+            controller.placeRelative(0, y)
+        }
+    }
+}
+
 @Composable
 fun CoverArt(
     i: Int,
@@ -1180,12 +1390,11 @@ fun CoverArt(
 fun TopBar(
     index: Int,
     modifier: Modifier = Modifier,
-    onHeightChanged: (Int) -> Unit
 ) {
     val playerSheet = LocalPlayerSheet.current
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
-    Row(modifier.padding(end = 8.dp).onSizeChanged { onHeightChanged(it.height) }) {
+    Row(modifier.padding(end = 8.dp)) {
         IconButton(
             onClick = {
                 scope.launch { sheetState?.show() }
@@ -1228,16 +1437,10 @@ private fun LyricsPanel(
     val isPlaying = LocalPlayerControls.current?.isPlaying != false
     FullTimedLyrics(
         lyrics = lyrics,
-        positionMs = timelineState.positionMs.toLong(),
+        timelineState = timelineState,
         isPlaying = isPlaying,
-        isSeeking = timelineState.isSeeking,
-        onSeek = { positionMs ->
-            timelineState.positionMs = positionMs
-                .toFloat()
-                .coerceIn(0f, timelineState.durationMs)
-        },
         userScrollEnabled = userScrollEnabled,
-        modifier = modifier.padding(horizontal = 12.dp)
+        modifier = modifier.padding(horizontal = 12.dp),
     )
 }
 
@@ -1245,12 +1448,10 @@ private fun LyricsPanel(
 @Composable
 private fun FullTimedLyrics(
     lyrics: Lyrics.Word,
-    positionMs: Long,
+    timelineState: PlayerTimelineState,
     isPlaying: Boolean,
-    isSeeking: Boolean,
-    onSeek: (Long) -> Unit,
     userScrollEnabled: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -1258,25 +1459,17 @@ private fun FullTimedLyrics(
     val syncResumeJob = remember { mutableListOf<Job?>(null) }
     var autoScrollSuppressed by remember(lyrics.lines) { mutableStateOf(false) }
     var hasInitialLyricsPosition by remember(lyrics.lines) { mutableStateOf(false) }
-    var lyricsViewportHeight by remember { mutableIntStateOf(0) }
-    val density = LocalDensity.current
-    val verticalContentPadding = if (lyricsViewportHeight > 0)
-        with(density) { (lyricsViewportHeight / 2f).toDp() }
-    else 64.dp
-    val currentLineIndex = remember(lyrics.lines, positionMs) {
-        lyrics.lines.indexOfLast { it.startMs <= positionMs }.coerceAtLeast(0)
+    val timingIndex = remember(lyrics.lines) { LyricsTimingIndex(lyrics.lines) }
+    val currentLineIndex by remember(timingIndex, timelineState) {
+        derivedStateOf { timingIndex.currentLineIndex(timelineState.positionMs.toLong()) }
     }
-    val latestCompletedLineIndex = remember(lyrics.lines, positionMs) {
-        lyrics.lines.indexOfLast { positionMs > it.endMs }
+    val activeLineIndex by remember(timingIndex, timelineState) {
+        derivedStateOf { timingIndex.activeLineIndex(timelineState.positionMs.toLong()) }
     }
-    val currentPeakPosition = remember(lyrics.lines, currentLineIndex, positionMs) {
-        val currentLine = lyrics.lines.getOrNull(currentLineIndex)
-        if (currentLine != null && positionMs in currentLine.startMs..currentLine.endMs) {
-            currentLine.peakPositionAt(positionMs)
-        } else {
-            0f
-        }
+    val latestCompletedLineIndex by remember(timingIndex, timelineState) {
+        derivedStateOf { timingIndex.latestCompletedLineIndex(timelineState.positionMs.toLong()) }
     }
+    val isSeeking = timelineState.isSeeking
     val syncArrowPointsUp by remember(listState, currentLineIndex) {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
@@ -1317,45 +1510,44 @@ private fun FullTimedLyrics(
         }
     }
 
-    LaunchedEffect(
-        currentLineIndex,
-        lyrics.lines,
-        lyricsViewportHeight,
-        autoScrollSuppressed,
-        isPlaying,
-        isSeeking,
-    ) {
-        if (
-            (autoScrollSuppressed && !isSeeking) ||
-            (!isPlaying && !isSeeking) ||
-            lyrics.lines.isEmpty() ||
-            lyricsViewportHeight == 0
-        ) return@LaunchedEffect
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val lyricsViewportHeight = if (constraints.hasBoundedHeight) constraints.maxHeight else 0
+        val verticalContentPadding = if (constraints.hasBoundedHeight) maxHeight / 2 else 64.dp
 
-        val targetWasVisible = listState.layoutInfo.visibleItemsInfo
-            .any { it.index == currentLineIndex }
-        if (!targetWasVisible) {
-            listState.requestScrollToItem(currentLineIndex)
+        LaunchedEffect(
+            currentLineIndex,
+            lyrics.lines,
+            lyricsViewportHeight,
+            autoScrollSuppressed,
+            isPlaying,
+            isSeeking,
+        ) {
+            if (
+                (autoScrollSuppressed && !isSeeking) ||
+                (!isPlaying && !isSeeking) ||
+                lyrics.lines.isEmpty() ||
+                lyricsViewportHeight == 0
+            ) return@LaunchedEffect
+
+            val targetWasVisible = listState.layoutInfo.visibleItemsInfo
+                .any { it.index == currentLineIndex }
+            if (!targetWasVisible) {
+                listState.requestScrollToItem(currentLineIndex)
+            }
+
+            val targetItem = snapshotFlow {
+                listState.layoutInfo.visibleItemsInfo
+                    .firstOrNull { it.index == currentLineIndex }
+            }.first { it != null } ?: return@LaunchedEffect
+
+            withFrameNanos { }
+            val centerOffset = targetItem.size / 2
+            val shouldAnimate = hasInitialLyricsPosition && targetWasVisible
+            if (shouldAnimate) listState.animateScrollToItem(currentLineIndex, centerOffset)
+            else listState.requestScrollToItem(currentLineIndex, centerOffset)
+            hasInitialLyricsPosition = true
         }
 
-        val targetItem = snapshotFlow {
-            listState.layoutInfo.visibleItemsInfo
-                .firstOrNull { it.index == currentLineIndex }
-        }.first { it != null } ?: return@LaunchedEffect
-
-        withFrameNanos { }
-        val centerOffset = targetItem.size / 2
-        val shouldAnimate = hasInitialLyricsPosition && targetWasVisible
-        if (shouldAnimate) listState.animateScrollToItem(currentLineIndex, centerOffset)
-        else listState.requestScrollToItem(currentLineIndex, centerOffset)
-        hasInitialLyricsPosition = true
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .onSizeChanged { lyricsViewportHeight = it.height }
-    ) {
         LazyColumn(
             state = listState,
             userScrollEnabled = userScrollEnabled,
@@ -1367,20 +1559,22 @@ private fun FullTimedLyrics(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             itemsIndexed(
-                items = lyrics.lines,
-                key = { index, line -> "${line.startMs}-$index" }
-            ) { lineIndex, line ->
+                items = timingIndex.lines,
+                key = { index, timing -> "${timing.line.startMs}-$index" }
+            ) { lineIndex, lineTiming ->
                 FullTimedLyricsLine(
-                    line = line,
-                    positionMs = positionMs,
-                    isActive = lineIndex == currentLineIndex &&
-                            positionMs in line.startMs..line.endMs,
-                    isPast = positionMs > line.endMs,
+                    lineTiming = lineTiming,
+                    timelineState = timelineState,
+                    isActive = lineIndex == activeLineIndex,
+                    isPast = lineIndex <= latestCompletedLineIndex,
                     retainsEndTrail = lineIndex == latestCompletedLineIndex,
-                    endTrailOffset = if (
-                        lineIndex == latestCompletedLineIndex && currentLineIndex > lineIndex
-                    ) currentPeakPosition else 0f,
-                    onClick = { onSeek(line.startMs) }
+                    trailTiming = timingIndex.lines.getOrNull(currentLineIndex)
+                        ?.takeIf { currentLineIndex > lineIndex },
+                    onClick = {
+                        timelineState.positionMs = lineTiming.line.startMs
+                            .toFloat()
+                            .coerceIn(0f, timelineState.durationMs)
+                    },
                 )
             }
         }
@@ -1471,14 +1665,15 @@ private fun Modifier.lyricsEdgeFade(fadeHeight: Dp = 64.dp): Modifier =
 
 @Composable
 private fun FullTimedLyricsLine(
-    line: WordsLyric,
-    positionMs: Long,
+    lineTiming: WordLineTiming,
+    timelineState: PlayerTimelineState,
     isActive: Boolean,
     isPast: Boolean,
     retainsEndTrail: Boolean,
-    endTrailOffset: Float,
-    onClick: () -> Unit
+    trailTiming: WordLineTiming?,
+    onClick: () -> Unit,
 ) {
+    val line = lineTiming.line
     val lineAlpha by animateFloatAsState(
         targetValue = if (isActive || isPast) 1f else 0.32f,
         animationSpec = tween(360, easing = FastOutSlowInEasing)
@@ -1495,14 +1690,7 @@ private fun FullTimedLyricsLine(
         },
         animationSpec = tween(120)
     )
-    val lineText = remember(line) {
-        buildString {
-            line.tokens.forEach { token ->
-                append(token.text)
-                append(token.trailingSpace)
-            }
-        }
-    }
+    val lineText = lineTiming.text
 
     Column(
         modifier = Modifier
@@ -1521,18 +1709,37 @@ private fun FullTimedLyricsLine(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         if ((isActive || isPast) && lineText.isNotEmpty()) {
-            val peakPosition: Float? = remember(
-                line,
-                positionMs,
+            val peakPosition = remember(
+                lineTiming,
+                timelineState,
                 isActive,
                 retainsEndTrail,
-                endTrailOffset,
+                trailTiming,
                 lineText,
             ) {
                 when {
-                    retainsEndTrail -> lineText.lastIndex.toFloat() + endTrailOffset
-                    isActive -> line.peakPositionAt(positionMs)
-                    else -> null
+                    retainsEndTrail && trailTiming != null -> {
+                        {
+                            val positionMs = timelineState.positionMs.toLong()
+                            val trailOffset = trailTiming.line
+                                .takeIf { positionMs in it.startMs..it.endMs }
+                                ?.let { trailTiming.peakPositionAt(positionMs) }
+                                ?: 0f
+                            lineText.lastIndex.toFloat() + trailOffset
+                        }
+                    }
+
+                    retainsEndTrail -> {
+                        { lineText.lastIndex.toFloat() }
+                    }
+
+                    isActive -> {
+                        { lineTiming.peakPositionAt(timelineState.positionMs.toLong()) }
+                    }
+
+                    else -> {
+                        { null }
+                    }
                 }
             }
 
@@ -1683,7 +1890,7 @@ private fun LyricsBottomBar(
                     )
                 } else TimedLyricsTicker(
                     lyrics = niceLyrics,
-                    positionMs = timelineState.positionMs.toLong()
+                    timelineState = timelineState,
                 )
             }
         }
@@ -1701,17 +1908,17 @@ private data class LyricsTickerContent(
 )
 
 private fun lyricsTickerContent(
-    lines: List<WordsLyric>,
-    positionMs: Long
+    timingIndex: LyricsTimingIndex,
+    positionMs: Long,
 ): LyricsTickerContent {
-    val previousIndex = lines.indexOfLast { it.startMs <= positionMs }
-    val previousLine = lines.getOrNull(previousIndex)
+    val previousIndex = timingIndex.lineIndexAtOrBefore(positionMs)
+    val previousLine = timingIndex.lines.getOrNull(previousIndex)?.line
     if (previousLine != null && positionMs <= previousLine.endMs) {
         return LyricsTickerContent(lineIndex = previousIndex, order = previousIndex * 2)
     }
 
     val nextIndex = previousIndex + 1
-    val nextLine = lines.getOrNull(nextIndex)
+    val nextLine = timingIndex.lines.getOrNull(nextIndex)?.line
     val gapMs = if (previousLine == null) nextLine?.startMs ?: Long.MAX_VALUE
     else (nextLine?.startMs ?: Long.MAX_VALUE) - previousLine.endMs
     return if (nextLine != null && gapMs < LyricsWaitingGapMs)
@@ -1723,10 +1930,13 @@ private fun lyricsTickerContent(
 @Composable
 private fun TimedLyricsTicker(
     lyrics: Lyrics.Word,
-    positionMs: Long
+    timelineState: PlayerTimelineState,
 ) {
-    val content = remember(lyrics.lines, positionMs) {
-        lyricsTickerContent(lyrics.lines, positionMs)
+    val timingIndex = remember(lyrics.lines) { LyricsTimingIndex(lyrics.lines) }
+    val content by remember(timingIndex, timelineState) {
+        derivedStateOf {
+            lyricsTickerContent(timingIndex, timelineState.positionMs.toLong())
+        }
     }
     AnimatedContent(
         targetState = content,
@@ -1745,9 +1955,9 @@ private fun TimedLyricsTicker(
             enter togetherWith exit
         }
     ) { target ->
-        val line = target.lineIndex?.let(lyrics.lines::getOrNull)
-        if (line == null) LyricsWaitingDots()
-        else TimedLyricsLine(line, positionMs)
+        val lineTiming = target.lineIndex?.let(timingIndex.lines::getOrNull)
+        if (lineTiming == null) LyricsWaitingDots()
+        else TimedLyricsLine(lineTiming, timelineState)
     }
 }
 
@@ -1786,47 +1996,41 @@ private fun LyricsWaitingDots() {
 
 @Composable
 private fun TimedLyricsLine(
-    line: WordsLyric,
-    positionMs: Long
+    lineTiming: WordLineTiming,
+    timelineState: PlayerTimelineState,
 ) {
+    val line = lineTiming.line
     if (line.tokens.isEmpty()) return
 
-    val lineText = remember(line) {
-        buildString {
-            line.tokens.forEach { token ->
-                append(token.text)
-                append(token.trailingSpace)
-            }
-        }
-    }
+    val lineText = lineTiming.text
     if (lineText.isEmpty()) return
 
-    val tokenOffsets = remember(line) {
-        var offset = 0
-        line.tokens.map { token ->
-            offset.also { offset += token.text.length + token.trailingSpace.length }
-        }
+    val activeTokenIndex by remember(lineTiming, timelineState) {
+        derivedStateOf { lineTiming.tokenIndexAt(timelineState.positionMs.toLong()) }
     }
-    val activeTokenIndex = remember(line, positionMs) {
-        line.tokens.indexOfLast { it.startMs <= positionMs }
-    }
-    val peakPosition = remember(line, positionMs) {
-        line.peakPositionAt(positionMs)
+    val peakPosition = remember(lineTiming, timelineState) {
+        { lineTiming.peakPositionAt(timelineState.positionMs.toLong()) }
     }
 
     val highlightedColor = colorScheme.onPrimaryContainer
     val referenceFontFamily = googleSansFontFamily()
     val textMeasurer = rememberTextMeasurer()
-    val marqueeLayout = textMeasurer.measure(
-        text = lineText,
-        style = typography.titleMedium.copy(
+    val titleMediumStyle = typography.titleMedium
+    val referenceStyle = remember(referenceFontFamily, titleMediumStyle) {
+        titleMediumStyle.copy(
             fontFamily = referenceFontFamily,
             fontWeight = FontWeight.Normal,
-        ),
-        maxLines = 1,
-        softWrap = false,
-        constraints = Constraints(maxWidth = Constraints.Infinity),
-    )
+        )
+    }
+    val marqueeLayout = remember(lineText, referenceStyle, textMeasurer) {
+        textMeasurer.measure(
+            text = lineText,
+            style = referenceStyle,
+            maxLines = 1,
+            softWrap = false,
+            constraints = Constraints(maxWidth = Constraints.Infinity),
+        )
+    }
     val glyphXPositions = remember(lineText, marqueeLayout) {
         FloatArray(lineText.length) { index ->
             marqueeLayout.getHorizontalPosition(index, usePrimaryDirection = true)
@@ -1838,7 +2042,7 @@ private fun TimedLyricsLine(
     }
     val focusTokenIndex = activeTokenIndex.coerceAtLeast(0)
         .coerceAtMost(line.tokens.lastIndex)
-    val targetFocusX = marqueeLayout.tokenCenter(line, tokenOffsets, focusTokenIndex)
+    val targetFocusX = marqueeLayout.tokenCenter(lineTiming, focusTokenIndex)
     val focusX by animateFloatAsState(
         targetValue = targetFocusX,
         animationSpec = tween()
@@ -1876,37 +2080,12 @@ private fun TimedLyricsLine(
     }
 }
 
-private fun WordsLyric.peakPositionAt(positionMs: Long): Float {
-    if (tokens.isEmpty()) return 0f
-
-    val lineLength = tokens.sumOf { it.text.length + it.trailingSpace.length }
-    val lastPosition = (lineLength - 1).coerceAtLeast(0).toFloat()
-    val activeTokenIndex = tokens.indexOfLast { it.startMs <= positionMs }
-    val token = tokens.getOrNull(activeTokenIndex) ?: return 0f
-
-    var tokenOffset = 0
-    for (index in 0 until activeTokenIndex) {
-        tokenOffset += tokens[index].text.length + tokens[index].trailingSpace.length
-    }
-    val tokenProgress = if (token.endMs > token.startMs) {
-        ((positionMs - token.startMs).toFloat() /
-                (token.endMs - token.startMs).toFloat()).coerceIn(0f, 1f)
-    } else {
-        1f
-    }
-    val tokenCharacterCount =
-        (token.text.length + token.trailingSpace.length).coerceAtLeast(1)
-    val tokenPeakRange = (tokenCharacterCount - 1).coerceAtLeast(0).toFloat()
-    return (tokenOffset + tokenPeakRange * tokenProgress).coerceIn(0f, lastPosition)
-}
-
 private fun TextLayoutResult.tokenCenter(
-    line: WordsLyric,
-    tokenOffsets: List<Int>,
-    tokenIndex: Int
+    lineTiming: WordLineTiming,
+    tokenIndex: Int,
 ): Float {
-    val token = line.tokens[tokenIndex]
-    val startOffset = tokenOffsets[tokenIndex].coerceAtMost(layoutInput.text.lastIndex)
+    val token = lineTiming.line.tokens[tokenIndex]
+    val startOffset = lineTiming.tokenOffsets[tokenIndex].coerceAtMost(layoutInput.text.lastIndex)
     val endOffset = (startOffset + token.text.length - 1)
         .coerceIn(startOffset, layoutInput.text.lastIndex)
     return (getBoundingBox(startOffset).left + getBoundingBox(endOffset).right) / 2f
@@ -2189,7 +2368,7 @@ private fun PlayerSlider(
 
     SquigglySeekBar(
         valueRange = rangeMS,
-        value = timelineState.positionMs,
+        value = { timelineState.positionMs },
         onValueChange = { newValue ->
             timelineState.isSeeking = true
             timelineState.positionMs = newValue
@@ -2243,7 +2422,7 @@ fun VolumeAdjuster() {
     ) {
         AnimatedVisibility(isHovered.value) {
             SquigglySeekBar(
-                value = position.floatValue,
+                value = { position.floatValue },
                 modifier = Modifier
                     .width(96.dp)
                     .padding(horizontal = 8.dp)

@@ -24,13 +24,15 @@ private const val GoogleSansFlexAssetPath =
 
 private var variableLyricsAndroidBaseTypeface: Typeface? = null
 private var variableLyricsAndroidBaseFont: AndroidFont? = null
-private val variableLyricsAndroidTypefaces =
-    mutableMapOf<VariableLyricsAndroidTypefaceKey, Typeface>()
+private val variableLyricsAndroidTypefaces = mutableMapOf<Int, Typeface>()
+
+private fun variableLyricsFontKey(weight: Int, roundness: Int): Int =
+    (weight shl 8) or roundness
 
 @Composable
 internal actual fun VariableText(
     text: String,
-    peakPosition: Float?,
+    peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
     glyphBaselines: FloatArray,
     offsetX: Float,
@@ -53,24 +55,36 @@ internal actual fun VariableText(
         if (glyphTexts.isEmpty()) return@Canvas
 
         val lastPosition = glyphTexts.lastIndex.toFloat()
+        val peakPosition = peakPosition()
         cache.drawPaint.color = color.toArgb()
         cache.drawPaint.textSize = fontSizePx
+        if (peakPosition == null) {
+            cache.drawPaint.typeface = cache.staticFont.typeface
+            cache.drawPaint.alpha = 255
+            glyphTexts.forEachIndexed { index, glyph ->
+                drawContext.canvas.nativeCanvas.drawText(
+                    glyph,
+                    offsetX + glyphXPositions.getOrElse(index) { 0f },
+                    offsetY + glyphBaselines.getOrElse(index) { 0f },
+                    cache.drawPaint,
+                )
+            }
+            return@Canvas
+        }
+
         glyphTexts.forEachIndexed { index, glyph ->
+            val position = index.toFloat()
             val font = cache.fontFor(
-                position = index.toFloat(),
+                position = position,
                 peakPosition = peakPosition,
                 lastPosition = lastPosition,
             )
             cache.drawPaint.typeface = font.typeface
-            val alpha = if (peakPosition == null) {
-                1f
-            } else {
-                lyricsAlphaAt(
-                    position = index.toFloat(),
-                    peakPosition = peakPosition,
-                    quantizedWeight = font.weight,
-                )
-            }
+            val alpha = lyricsAlphaAt(
+                position = position,
+                peakPosition = peakPosition,
+                quantizedWeight = font.weight,
+            )
             cache.drawPaint.alpha = (alpha * 255f).roundToInt().coerceIn(0, 255)
             drawContext.canvas.nativeCanvas.drawText(
                 glyph,
@@ -82,16 +96,17 @@ internal actual fun VariableText(
     }
 }
 
-private data class VariableLyricsAndroidTypefaceKey(
-    val weight: Int,
-    val roundness: Int,
-)
-
 private class VariableLyricsAndroidFontCache(
     private val assets: android.content.res.AssetManager,
     fontSize: Float,
 ) {
-    private val fonts = mutableMapOf<VariableLyricsAndroidTypefaceKey, VariableLyricsAndroidFont>()
+    private val fonts = mutableMapOf<Int, VariableLyricsAndroidFont>()
+    val staticFont by lazy(LazyThreadSafetyMode.NONE) {
+        fontFor(
+            weight = LyricsMinWeight.toInt(),
+            roundness = LyricsMaxRoundness.toInt(),
+        )
+    }
     val drawPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = fontSize
         isSubpixelText = true
@@ -103,16 +118,9 @@ private class VariableLyricsAndroidFontCache(
 
     fun fontFor(
         position: Float,
-        peakPosition: Float?,
+        peakPosition: Float,
         lastPosition: Float,
     ): VariableLyricsAndroidFont {
-        if (peakPosition == null) {
-            return fontFor(
-                weight = LyricsMinWeight.toInt(),
-                roundness = LyricsMaxRoundness.toInt(),
-            )
-        }
-
         val weight = quantizeLyricsWeight(
             lyricsWeightAt(position, peakPosition, lastPosition)
         )
@@ -123,11 +131,16 @@ private class VariableLyricsAndroidFontCache(
     }
 
     private fun fontFor(weight: Int, roundness: Int): VariableLyricsAndroidFont {
-        val key = VariableLyricsAndroidTypefaceKey(weight, roundness)
+        val key = variableLyricsFontKey(weight, roundness)
         return fonts.getOrPut(key) {
             VariableLyricsAndroidFont(
                 weight = weight,
-                typeface = variableLyricsAndroidTypeface(assets, key),
+                typeface = variableLyricsAndroidTypeface(
+                    assets = assets,
+                    key = key,
+                    weight = weight,
+                    roundness = roundness,
+                ),
             )
         }
     }
@@ -140,7 +153,9 @@ private data class VariableLyricsAndroidFont(
 
 private fun variableLyricsAndroidTypeface(
     assets: android.content.res.AssetManager,
-    key: VariableLyricsAndroidTypefaceKey,
+    key: Int,
+    weight: Int,
+    roundness: Int,
 ): Typeface {
     return variableLyricsAndroidTypefaces.getOrPut(key) {
         when {
@@ -150,11 +165,11 @@ private fun variableLyricsAndroidTypeface(
                     GoogleSansFlexAssetPath,
                 ).build().also { variableLyricsAndroidBaseFont = it }
                 val variableFont = AndroidFont.Builder(baseFont)
-                    .setWeight(key.weight)
+                    .setWeight(weight)
                     .setFontVariationSettings(
                         arrayOf(
-                            FontVariationAxis("wght", key.weight.toFloat()),
-                            FontVariationAxis("ROND", key.roundness.toFloat()),
+                            FontVariationAxis("wght", weight.toFloat()),
+                            FontVariationAxis("ROND", roundness.toFloat()),
                         )
                     )
                     .build()
@@ -166,7 +181,7 @@ private fun variableLyricsAndroidTypeface(
                 val baseTypeface = variableLyricsAndroidBaseTypeface
                     ?: Typeface.createFromAsset(assets, GoogleSansFlexAssetPath)
                         .also { variableLyricsAndroidBaseTypeface = it }
-                Typeface.create(baseTypeface, key.weight, false)
+                Typeface.create(baseTypeface, weight, false)
             }
 
             else -> {
