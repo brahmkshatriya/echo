@@ -8,7 +8,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 internal const val LyricsMinWeight = 400f
-internal const val LyricsMaxWeight = 800f
+internal const val LyricsMaxWeight = 700f
 internal const val LyricsWeightRange = LyricsMaxWeight - LyricsMinWeight
 internal const val LyricsWeightStep = 16
 internal const val LyricsMinAlpha = 0.66f

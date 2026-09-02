@@ -49,6 +49,10 @@ kotlin {
             api(libs.ktor.client.okhttp)
             api(libs.androidx.activity.compose)
         }
+
+        desktopNativeMain.dependencies {
+            api(libs.compose.native.desktop)
+        }
     }
 }
 

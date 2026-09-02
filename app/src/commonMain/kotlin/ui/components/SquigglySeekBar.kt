@@ -105,10 +105,12 @@ fun SquigglySeekBar(
     )
 
     LaunchedEffect(squiggleAmplitude, squiggleWavelength, waveSpeed) {
-        if (squiggleAmplitude <= 0f || squiggleWavelength <= 0.dp || waveSpeed <= 0.dp) {
+        if (squiggleWavelength <= 0.dp || waveSpeed <= 0.dp) {
             waveOffset.snapTo(0f)
             return@LaunchedEffect
         }
+
+        if (squiggleAmplitude <= 0f) return@LaunchedEffect
 
         val durationMillis = ((squiggleWavelength / waveSpeed) * 1_000f)
             .roundToInt()

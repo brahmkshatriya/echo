@@ -15,9 +15,16 @@ sealed interface Lyrics {
 }
 
 @Immutable
+enum class LyricsPosition {
+    Start,
+    End,
+}
+
+@Immutable
 sealed interface TimedLyricsLine {
     val startMs: Long
     val endMs: Long
+    val position: LyricsPosition
 }
 
 @Immutable
@@ -26,6 +33,7 @@ data class LineLyric(
     override val endMs: Long,
     val text: String,
     val translations: List<Translation> = emptyList(),
+    override val position: LyricsPosition = LyricsPosition.Start,
 ) : TimedLyricsLine
 
 @Immutable
@@ -34,7 +42,8 @@ data class WordsLyric(
     override val endMs: Long,
     val tokens: List<TimedToken>,
     val translations: List<Translation> = emptyList(),
-    val backgroundVocals: List<TimedToken> = emptyList()
+    val backgroundVocals: List<TimedToken> = emptyList(),
+    override val position: LyricsPosition = LyricsPosition.Start,
 ) : TimedLyricsLine
 
 @Immutable
@@ -72,7 +81,8 @@ val lineLyricsExample = Lyrics.Line(
             text = "Long gaps still show the animated waiting dots",
             translations = listOf(
                 Translation(language = "zh-CN", text = "较长间隔仍会显示等待动画")
-            )
+            ),
+            position = LyricsPosition.End,
         ),
         LineLyric(
             startMs = 14_000L,
@@ -80,7 +90,8 @@ val lineLyricsExample = Lyrics.Line(
             text = "No word timing is needed for this lyrics type",
             translations = listOf(
                 Translation(language = "zh-CN", text = "这种歌词类型不需要逐词时间轴")
-            )
+            ),
+            position = LyricsPosition.End,
         ),
         LineLyric(
             startMs = 18_000L,
@@ -122,7 +133,8 @@ val selfLoveLyrics = Lyrics.Word(
             ),
             translations = listOf(
                 Translation("example", "Translation example")
-            )
+            ),
+            position = LyricsPosition.End,
         )
     )
 )

@@ -3,16 +3,16 @@ package dev.brahmkshatriya.echo.app.ui.player
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
@@ -298,9 +298,22 @@ private const val PlayerQueueItemContentType = "player-queue-item"
 private const val PlayerQueueItemsPerGroup = 11
 private const val PlayerScrollbarThumbSizePercent = 0.16f
 private const val LyricsWaitingGapMs = 1_000L
+private const val LyricsWaitingDotsHoldMs = 3_000L
 private const val LyricsTransitionDurationMs = 240
 private const val LyricsModeTransitionDurationMs = 320
 private const val PlayerArtworkCrossfadeDurationMs = 250
+
+private val LyricsPosition.textAlign: TextAlign
+    get() = when (this) {
+        LyricsPosition.Start -> TextAlign.Start
+        LyricsPosition.End -> TextAlign.End
+    }
+
+private val LyricsPosition.contentAlignment: Alignment
+    get() = when (this) {
+        LyricsPosition.Start -> Alignment.CenterStart
+        LyricsPosition.End -> Alignment.CenterEnd
+    }
 
 private fun upperBound(values: LongArray, value: Long): Int {
     var low = 0
@@ -322,8 +335,13 @@ private fun lowerBound(values: LongArray, value: Long): Int {
     return low
 }
 
-private class WordLineTiming(val line: WordsLyric) {
-    val text = buildString {
+private sealed interface FullLyricsLineTiming {
+    val line: TimedLyricsLine
+    val text: String
+}
+
+private class WordLineTiming(override val line: WordsLyric) : FullLyricsLineTiming {
+    override val text = buildString {
         line.tokens.forEach { token ->
             append(token.text)
             append(token.trailingSpace)
@@ -362,10 +380,19 @@ private class WordLineTiming(val line: WordsLyric) {
     }
 }
 
-private class LyricsTimingIndex(lines: List<WordsLyric>) {
-    val lines = lines.map(::WordLineTiming)
-    private val lineStarts = LongArray(lines.size) { lines[it].startMs }
-    private val lineEnds = LongArray(lines.size) { lines[it].endMs }
+private class LineTiming(override val line: LineLyric) : FullLyricsLineTiming {
+    override val text: String = line.text
+}
+
+private class LyricsTimingIndex private constructor(val lines: List<FullLyricsLineTiming>) {
+    private val lineStarts = LongArray(lines.size) { lines[it].line.startMs }
+    private val lineEnds = LongArray(lines.size) { lines[it].line.endMs }
+
+    companion object {
+        fun word(lines: List<WordsLyric>) = LyricsTimingIndex(lines.map(::WordLineTiming))
+
+        fun line(lines: List<LineLyric>) = LyricsTimingIndex(lines.map(::LineTiming))
+    }
 
     fun lineIndexAtOrBefore(positionMs: Long): Int = upperBound(lineStarts, positionMs) - 1
 
@@ -375,6 +402,38 @@ private class LyricsTimingIndex(lines: List<WordsLyric>) {
         val index = lineIndexAtOrBefore(positionMs)
         val line = lines.getOrNull(index)?.line ?: return -1
         return if (positionMs in line.startMs..line.endMs) index else -1
+    }
+
+    fun hasWaitingGapAfter(lineIndex: Int): Boolean {
+        val nextLine = lines.getOrNull(lineIndex + 1)?.line ?: return false
+        val previousEndMs = lines.getOrNull(lineIndex)?.line?.endMs ?: 0L
+        return nextLine.startMs - previousEndMs >= LyricsWaitingGapMs
+    }
+
+    fun activeWaitingGapAfterIndex(positionMs: Long): Int? {
+        val previousIndex = lineIndexAtOrBefore(positionMs)
+        val previousLine = lines.getOrNull(previousIndex)?.line
+        if (previousLine != null && positionMs <= previousLine.endMs) return null
+
+        val nextLine = lines.getOrNull(previousIndex + 1)?.line ?: return null
+        return previousIndex.takeIf {
+            hasWaitingGapAfter(previousIndex) && positionMs < nextLine.startMs
+        }
+    }
+
+    fun visibleWaitingGapAfterIndex(positionMs: Long): Int? {
+        activeWaitingGapAfterIndex(positionMs)?.let { return it }
+
+        var nextLineIndex = lineIndexAtOrBefore(positionMs)
+        while (nextLineIndex >= 0) {
+            val nextLine = lines[nextLineIndex].line
+            if (positionMs - nextLine.startMs >= LyricsWaitingDotsHoldMs) return null
+
+            val gapIndex = nextLineIndex - 1
+            if (hasWaitingGapAfter(gapIndex)) return gapIndex
+            nextLineIndex--
+        }
+        return null
     }
 
     fun latestCompletedLineIndex(positionMs: Long): Int = lowerBound(lineEnds, positionMs) - 1
@@ -1240,7 +1299,7 @@ private enum class PlayerHeroSlot {
 @Composable
 private fun PlayerHero(
     i: Int,
-    lyrics: Lyrics.Word,
+    lyrics: Lyrics,
     showLyrics: Boolean,
     userScrollEnabled: Boolean,
     topPadding: Dp,
@@ -1429,25 +1488,47 @@ fun TopBar(
 
 @Composable
 private fun LyricsPanel(
-    lyrics: Lyrics.Word,
+    lyrics: Lyrics,
     userScrollEnabled: Boolean,
     modifier: Modifier = Modifier
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
     val isPlaying = LocalPlayerControls.current?.isPlaying != false
-    FullTimedLyrics(
-        lyrics = lyrics,
-        timelineState = timelineState,
-        isPlaying = isPlaying,
-        userScrollEnabled = userScrollEnabled,
-        modifier = modifier.padding(horizontal = 12.dp),
-    )
+    val contentModifier = modifier.padding(horizontal = 12.dp)
+    when (lyrics) {
+        is Lyrics.Simple -> Box(
+            modifier = contentModifier.fillMaxSize(),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            Text(
+                text = lyrics.text,
+                style = typography.headlineMedium,
+                color = colorScheme.onPrimaryContainer,
+            )
+        }
+
+        is Lyrics.Line -> FullTimedLyrics(
+            timingIndex = remember(lyrics.lines) { LyricsTimingIndex.line(lyrics.lines) },
+            timelineState = timelineState,
+            isPlaying = isPlaying,
+            userScrollEnabled = userScrollEnabled,
+            modifier = contentModifier,
+        )
+
+        is Lyrics.Word -> FullTimedLyrics(
+            timingIndex = remember(lyrics.lines) { LyricsTimingIndex.word(lyrics.lines) },
+            timelineState = timelineState,
+            isPlaying = isPlaying,
+            userScrollEnabled = userScrollEnabled,
+            modifier = contentModifier,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FullTimedLyrics(
-    lyrics: Lyrics.Word,
+    timingIndex: LyricsTimingIndex,
     timelineState: PlayerTimelineState,
     isPlaying: Boolean,
     userScrollEnabled: Boolean,
@@ -1457,9 +1538,8 @@ private fun FullTimedLyrics(
     val scope = rememberCoroutineScope()
     val currentIsPlaying by rememberUpdatedState(isPlaying)
     val syncResumeJob = remember { mutableListOf<Job?>(null) }
-    var autoScrollSuppressed by remember(lyrics.lines) { mutableStateOf(false) }
-    var hasInitialLyricsPosition by remember(lyrics.lines) { mutableStateOf(false) }
-    val timingIndex = remember(lyrics.lines) { LyricsTimingIndex(lyrics.lines) }
+    var autoScrollSuppressed by remember(timingIndex) { mutableStateOf(false) }
+    var hasInitialLyricsPosition by remember(timingIndex) { mutableStateOf(false) }
     val currentLineIndex by remember(timingIndex, timelineState) {
         derivedStateOf { timingIndex.currentLineIndex(timelineState.positionMs.toLong()) }
     }
@@ -1468,6 +1548,16 @@ private fun FullTimedLyrics(
     }
     val latestCompletedLineIndex by remember(timingIndex, timelineState) {
         derivedStateOf { timingIndex.latestCompletedLineIndex(timelineState.positionMs.toLong()) }
+    }
+    val activeWaitingGapAfterIndex by remember(timingIndex, timelineState) {
+        derivedStateOf {
+            timingIndex.activeWaitingGapAfterIndex(timelineState.positionMs.toLong())
+        }
+    }
+    val visibleWaitingGapAfterIndex by remember(timingIndex, timelineState) {
+        derivedStateOf {
+            timingIndex.visibleWaitingGapAfterIndex(timelineState.positionMs.toLong())
+        }
     }
     val isSeeking = timelineState.isSeeking
     val syncArrowPointsUp by remember(listState, currentLineIndex) {
@@ -1513,10 +1603,12 @@ private fun FullTimedLyrics(
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val lyricsViewportHeight = if (constraints.hasBoundedHeight) constraints.maxHeight else 0
         val verticalContentPadding = if (constraints.hasBoundedHeight) maxHeight / 2 else 64.dp
+        val waitingDotsHalfHeightPx = with(LocalDensity.current) { 22.dp.roundToPx() }
 
         LaunchedEffect(
             currentLineIndex,
-            lyrics.lines,
+            activeWaitingGapAfterIndex,
+            timingIndex.lines,
             lyricsViewportHeight,
             autoScrollSuppressed,
             isPlaying,
@@ -1525,7 +1617,7 @@ private fun FullTimedLyrics(
             if (
                 (autoScrollSuppressed && !isSeeking) ||
                 (!isPlaying && !isSeeking) ||
-                lyrics.lines.isEmpty() ||
+                timingIndex.lines.isEmpty() ||
                 lyricsViewportHeight == 0
             ) return@LaunchedEffect
 
@@ -1541,41 +1633,90 @@ private fun FullTimedLyrics(
             }.first { it != null } ?: return@LaunchedEffect
 
             withFrameNanos { }
-            val centerOffset = targetItem.size / 2
+            val centerOffset = when (activeWaitingGapAfterIndex) {
+                -1 -> waitingDotsHalfHeightPx
+                currentLineIndex -> targetItem.size + waitingDotsHalfHeightPx
+                else -> targetItem.size / 2
+            }
             val shouldAnimate = hasInitialLyricsPosition && targetWasVisible
             if (shouldAnimate) listState.animateScrollToItem(currentLineIndex, centerOffset)
             else listState.requestScrollToItem(currentLineIndex, centerOffset)
             hasInitialLyricsPosition = true
         }
 
-        LazyColumn(
-            state = listState,
-            userScrollEnabled = userScrollEnabled,
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(manualScrollConnection)
-                .lyricsEdgeFade(),
-            contentPadding = PaddingValues(vertical = verticalContentPadding),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            itemsIndexed(
-                items = timingIndex.lines,
-                key = { index, timing -> "${timing.line.startMs}-$index" }
-            ) { lineIndex, lineTiming ->
-                FullTimedLyricsLine(
-                    lineTiming = lineTiming,
-                    timelineState = timelineState,
-                    isActive = lineIndex == activeLineIndex,
-                    isPast = lineIndex <= latestCompletedLineIndex,
-                    retainsEndTrail = lineIndex == latestCompletedLineIndex,
-                    trailTiming = timingIndex.lines.getOrNull(currentLineIndex)
-                        ?.takeIf { currentLineIndex > lineIndex },
-                    onClick = {
-                        timelineState.positionMs = lineTiming.line.startMs
-                            .toFloat()
-                            .coerceIn(0f, timelineState.durationMs)
-                    },
+        if (timingIndex.lines.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                LyricsWaitingDots(
+                    animated = false,
+                    modifier = Modifier.size(width = 32.dp, height = 32.dp),
                 )
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                userScrollEnabled = userScrollEnabled,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(manualScrollConnection)
+                    .lyricsEdgeFade(),
+                contentPadding = PaddingValues(vertical = verticalContentPadding),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                itemsIndexed(
+                    items = timingIndex.lines,
+                    key = { index, timing -> "${timing.line.startMs}-$index" }
+                ) { lineIndex, lineTiming ->
+                    val startsNewPositionGroup = lineIndex > 0 &&
+                            timingIndex.lines[lineIndex - 1].line.position != lineTiming.line.position
+                    Column(
+                        modifier = Modifier.padding(
+                            top = if (startsNewPositionGroup) 14.dp else 0.dp
+                        )
+                    ) {
+                        AnimatedFullLyricsWaitingDots(
+                            visible = lineIndex == 0 && visibleWaitingGapAfterIndex == -1,
+                            animated = isPlaying && activeWaitingGapAfterIndex == -1,
+                            position = lineTiming.line.position,
+                        )
+                        val onLineClick = {
+                            timelineState.positionMs = lineTiming.line.startMs
+                                .toFloat()
+                                .coerceIn(0f, timelineState.durationMs)
+                        }
+                        when (lineTiming) {
+                            is WordLineTiming -> FullTimedLyricsLine(
+                                lineTiming = lineTiming,
+                                timelineState = timelineState,
+                                isActive = lineIndex == activeLineIndex,
+                                isPast = lineIndex <= latestCompletedLineIndex,
+                                waitingGapEndMs = timingIndex.lines.getOrNull(lineIndex + 1)
+                                    ?.line?.startMs
+                                    ?.takeIf { timingIndex.hasWaitingGapAfter(lineIndex) },
+                                retainsEndTrail = lineIndex == latestCompletedLineIndex &&
+                                        activeWaitingGapAfterIndex != lineIndex,
+                                trailTiming = (timingIndex.lines.getOrNull(currentLineIndex)
+                                    as? WordLineTiming)
+                                    ?.takeIf { currentLineIndex > lineIndex },
+                                onClick = onLineClick,
+                            )
+
+                            is LineTiming -> FullLineLyricsLine(
+                                lineTiming = lineTiming,
+                                isActive = lineIndex == activeLineIndex,
+                                isPast = lineIndex <= latestCompletedLineIndex,
+                                onClick = onLineClick,
+                            )
+                        }
+                        AnimatedFullLyricsWaitingDots(
+                            visible = visibleWaitingGapAfterIndex == lineIndex,
+                            animated = isPlaying && activeWaitingGapAfterIndex == lineIndex,
+                            position = lineTiming.line.position,
+                        )
+                    }
+                }
             }
         }
 
@@ -1638,6 +1779,41 @@ private fun FullTimedLyrics(
     }
 }
 
+@Composable
+private fun AnimatedFullLyricsWaitingDots(
+    visible: Boolean,
+    animated: Boolean,
+    position: LyricsPosition,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = expandVertically(
+            animationSpec = tween(LyricsTransitionDurationMs, easing = FastOutSlowInEasing),
+        ) + fadeIn(tween(LyricsTransitionDurationMs)),
+        exit = shrinkVertically(
+            animationSpec = tween(LyricsTransitionDurationMs, easing = FastOutSlowInEasing),
+        ) + fadeOut(tween(LyricsTransitionDurationMs)),
+    ) {
+        FullLyricsWaitingDots(animated = animated, position = position)
+    }
+}
+
+@Composable
+private fun FullLyricsWaitingDots(
+    animated: Boolean,
+    position: LyricsPosition,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp)
+            .padding(horizontal = 8.dp),
+        contentAlignment = position.contentAlignment,
+    ) {
+        LyricsWaitingDots(animated, Modifier.size(width = 32.dp, height = 32.dp))
+    }
+}
+
 private fun Modifier.lyricsEdgeFade(fadeHeight: Dp = 64.dp): Modifier =
     graphicsLayer {
         compositingStrategy = CompositingStrategy.Offscreen
@@ -1669,6 +1845,7 @@ private fun FullTimedLyricsLine(
     timelineState: PlayerTimelineState,
     isActive: Boolean,
     isPast: Boolean,
+    waitingGapEndMs: Long?,
     retainsEndTrail: Boolean,
     trailTiming: WordLineTiming?,
     onClick: () -> Unit,
@@ -1691,6 +1868,7 @@ private fun FullTimedLyricsLine(
         animationSpec = tween(120)
     )
     val lineText = lineTiming.text
+    val textAlign = line.position.textAlign
 
     Column(
         modifier = Modifier
@@ -1713,11 +1891,24 @@ private fun FullTimedLyricsLine(
                 lineTiming,
                 timelineState,
                 isActive,
+                isPast,
+                waitingGapEndMs,
                 retainsEndTrail,
                 trailTiming,
                 lineText,
             ) {
                 when {
+                    isPast && waitingGapEndMs != null -> {
+                        {
+                            val positionMs = timelineState.positionMs.toLong()
+                            val gapDurationMs = (waitingGapEndMs - line.endMs).coerceAtLeast(1L)
+                            val gapProgress = (
+                                (positionMs - line.endMs).toFloat() / gapDurationMs.toFloat()
+                            ).coerceIn(0f, 1f)
+                            lineText.lastIndex.toFloat() + lineText.length * gapProgress
+                        }
+                    }
+
                     retainsEndTrail && trailTiming != null -> {
                         {
                             val positionMs = timelineState.positionMs.toLong()
@@ -1748,10 +1939,11 @@ private fun FullTimedLyricsLine(
                 val maxWidthPx = with(density) { maxWidth.roundToPx() }
                 val referenceFontFamily = googleSansFontFamily()
                 val textMeasurer = rememberTextMeasurer()
-                val referenceStyle = typography.titleLarge.copy(
+                val referenceStyle = typography.headlineMedium.copy(
                     fontFamily = referenceFontFamily,
                     fontWeight = FontWeight.Normal,
-                    lineHeight = typography.headlineSmall.lineHeight,
+                    lineHeight = typography.headlineLarge.lineHeight,
+                    textAlign = textAlign,
                 )
                 val referenceLayout = remember(
                     lineText,
@@ -1764,7 +1956,10 @@ private fun FullTimedLyricsLine(
                         style = referenceStyle,
                         softWrap = true,
                         maxLines = Int.MAX_VALUE,
-                        constraints = Constraints(maxWidth = maxWidthPx),
+                        constraints = Constraints(
+                            minWidth = maxWidthPx,
+                            maxWidth = maxWidthPx,
+                        ),
                     )
                 }
                 val glyphXPositions = remember(lineText, referenceLayout) {
@@ -1790,7 +1985,7 @@ private fun FullTimedLyricsLine(
                     glyphXPositions = glyphXPositions,
                     glyphBaselines = glyphBaselines,
                     color = lyricColor,
-                    fontSize = typography.titleLarge.fontSize,
+                    fontSize = typography.headlineMedium.fontSize,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(textHeight),
@@ -1800,9 +1995,10 @@ private fun FullTimedLyricsLine(
             Text(
                 text = lineText,
                 modifier = Modifier.fillMaxWidth(),
-                style = typography.titleLarge,
-                lineHeight = typography.headlineSmall.lineHeight,
+                style = typography.headlineMedium,
+                lineHeight = typography.headlineLarge.lineHeight,
                 fontWeight = FontWeight.Normal,
+                textAlign = textAlign,
             )
         }
 
@@ -1812,7 +2008,7 @@ private fun FullTimedLyricsLine(
                 modifier = Modifier.fillMaxWidth(),
                 style = typography.bodyMedium,
                 fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.End,
+                textAlign = textAlign,
                 color = lyricColor.copy(alpha = 0.72f)
             )
         }
@@ -1822,7 +2018,71 @@ private fun FullTimedLyricsLine(
                 modifier = Modifier.fillMaxWidth(),
                 style = typography.bodyLarge,
                 fontWeight = FontWeight.Normal,
+                textAlign = textAlign,
                 color = lyricColor.copy(alpha = 0.78f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun FullLineLyricsLine(
+    lineTiming: LineTiming,
+    isActive: Boolean,
+    isPast: Boolean,
+    onClick: () -> Unit,
+) {
+    val line = lineTiming.line
+    val textAlign = line.position.textAlign
+    val lineAlpha by animateFloatAsState(
+        targetValue = if (isActive || isPast) 1f else 0.32f,
+        animationSpec = tween(360, easing = FastOutSlowInEasing),
+    )
+    val lyricColor = colorScheme.onPrimaryContainer
+    val interactionSource = remember(line) { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val interactionAlpha by animateFloatAsState(
+        targetValue = when {
+            isPressed -> 0.12f
+            isHovered -> 0.08f
+            else -> 0f
+        },
+        animationSpec = tween(120),
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                lyricColor.copy(alpha = interactionAlpha),
+                RoundedCornerShape(8.dp),
+            )
+            .graphicsLayer { alpha = lineAlpha }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = lineTiming.text,
+            modifier = Modifier.fillMaxWidth(),
+            style = typography.headlineMedium,
+            lineHeight = typography.headlineLarge.lineHeight,
+            fontWeight = FontWeight.Normal,
+            textAlign = textAlign,
+        )
+        line.translations.forEach { translation ->
+            Text(
+                text = translation.text,
+                modifier = Modifier.fillMaxWidth(),
+                style = typography.bodyLarge,
+                fontWeight = FontWeight.Normal,
+                textAlign = textAlign,
+                color = lyricColor.copy(alpha = 0.78f),
             )
         }
     }
@@ -1932,10 +2192,17 @@ private fun TimedLyricsTicker(
     lyrics: Lyrics.Word,
     timelineState: PlayerTimelineState,
 ) {
-    val timingIndex = remember(lyrics.lines) { LyricsTimingIndex(lyrics.lines) }
+    val timingIndex = remember(lyrics.lines) { LyricsTimingIndex.word(lyrics.lines) }
+    val isPlaying = LocalPlayerControls.current?.isPlaying != false
     val content by remember(timingIndex, timelineState) {
         derivedStateOf {
             lyricsTickerContent(timingIndex, timelineState.positionMs.toLong())
+        }
+    }
+    val waitingPosition by remember(timingIndex, timelineState) {
+        derivedStateOf {
+            val previousIndex = timingIndex.lineIndexAtOrBefore(timelineState.positionMs.toLong())
+            timingIndex.lines.getOrNull(previousIndex)?.line?.position ?: LyricsPosition.Start
         }
     }
     AnimatedContent(
@@ -1955,39 +2222,67 @@ private fun TimedLyricsTicker(
             enter togetherWith exit
         }
     ) { target ->
-        val lineTiming = target.lineIndex?.let(timingIndex.lines::getOrNull)
-        if (lineTiming == null) LyricsWaitingDots()
+        val lineTiming = target.lineIndex
+            ?.let(timingIndex.lines::getOrNull) as? WordLineTiming
+        if (lineTiming == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = waitingPosition.contentAlignment,
+            ) {
+                LyricsWaitingDots(
+                    animated = isPlaying,
+                    modifier = Modifier.size(width = 32.dp, height = 32.dp),
+                )
+            }
+        }
         else TimedLyricsLine(lineTiming, timelineState)
     }
 }
 
 @Composable
-private fun LyricsWaitingDots() {
-    val transition = rememberInfiniteTransition()
-    val phase by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = (PI * 2).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900, easing = LinearEasing)
-        )
+private fun LyricsWaitingDots(
+    animated: Boolean,
+    modifier: Modifier = Modifier.fillMaxSize(),
+) {
+    val phase = remember { Animatable(0f) }
+    val motionStrength by animateFloatAsState(
+        targetValue = if (animated) 1f else 0f,
+        animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing),
+        label = "Lyrics waiting dots motion strength",
     )
+    LaunchedEffect(Unit) {
+        while (true) {
+            val start = phase.value % 1f
+            phase.snapTo(start)
+            phase.animateTo(
+                targetValue = start + 1f,
+                animationSpec = tween(durationMillis = 900, easing = LinearEasing),
+            )
+        }
+    }
     Row(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(3) { index ->
-            val pulse = (cos(phase - index * 2f * PI.toFloat() / 3f) + 1f) / 2f
+            val pulse = (
+                cos(phase.value * 2f * PI.toFloat() - index * 2f * PI.toFloat() / 3f) + 1f
+            ) / 2f
+            val animatedScale = 0.55f + pulse * 0.45f
+            val animatedAlpha = 0.55f + pulse * 0.4f
+            val scale = 0.78f + (animatedScale - 0.78f) * motionStrength
+            val alpha = 0.75f + (animatedAlpha - 0.75f) * motionStrength
             Box(
                 Modifier
                     .size(8.dp)
                     .graphicsLayer {
-                        scaleX = 0.55f + pulse * 0.45f
+                        scaleX = scale
                         scaleY = scaleX
                     }
                     .clip(Circle.toShape())
                     .background(
-                        colorScheme.onPrimaryContainer.copy(alpha = 0.55f + pulse * 0.4f)
+                        colorScheme.onPrimaryContainer.copy(alpha = alpha)
                     )
             )
         }

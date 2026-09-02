@@ -104,6 +104,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 23984L,
             endMs = 27736L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Small", startMs = 23984L, endMs = 24301L, trailingSpace = " "),
                     TimedToken(text = "town", startMs = 24301L, endMs = 24680L, trailingSpace = " "),
@@ -121,6 +122,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 27947L,
             endMs = 31846L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Drink", startMs = 27947L, endMs = 28287L, trailingSpace = " "),
                     TimedToken(text = "too", startMs = 28287L, endMs = 28661L, trailingSpace = " "),
@@ -139,6 +141,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 31970L,
             endMs = 35799L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "I'm", startMs = 31970L, endMs = 32313L, trailingSpace = " "),
                     TimedToken(text = "too", startMs = 32313L, endMs = 32711L, trailingSpace = " "),
@@ -157,6 +160,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 35999L,
             endMs = 39827L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "You", startMs = 35999L, endMs = 36152L, trailingSpace = " "),
                     TimedToken(text = "don't", startMs = 36152L, endMs = 36301L, trailingSpace = " "),
@@ -177,6 +181,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 39949L,
             endMs = 43744L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Self-love,", startMs = 39949L, endMs = 40978L, trailingSpace = " "),
                     TimedToken(text = "he", startMs = 40978L, endMs = 41147L, trailingSpace = " "),
@@ -194,6 +199,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 44003L,
             endMs = 47726L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Cuff", startMs = 44003L, endMs = 44464L, trailingSpace = " "),
                     TimedToken(text = "me,", startMs = 44464L, endMs = 44941L, trailingSpace = " "),
@@ -214,6 +220,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 47915L,
             endMs = 51647L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Self-love,", startMs = 47915L, endMs = 48963L, trailingSpace = " "),
                     TimedToken(text = "he", startMs = 48963L, endMs = 49095L, trailingSpace = " "),
@@ -231,6 +238,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 51895L,
             endMs = 55603L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Cuff", startMs = 51895L, endMs = 52413L, trailingSpace = " "),
                     TimedToken(text = "me,", startMs = 52413L, endMs = 52908L, trailingSpace = " "),
@@ -331,6 +339,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 71943L,
             endMs = 75920L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Big", startMs = 71943L, endMs = 72263L, trailingSpace = " "),
                     TimedToken(text = "dreams,", startMs = 72263L, endMs = 72678L, trailingSpace = " "),
@@ -353,6 +362,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 76004L,
             endMs = 79893L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Hate", startMs = 76004L, endMs = 76119L, trailingSpace = " "),
                     TimedToken(text = "to", startMs = 76119L, endMs = 76289L, trailingSpace = " "),
@@ -376,6 +386,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 79932L,
             endMs = 83775L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "My", startMs = 79932L, endMs = 80295L, trailingSpace = " "),
                     TimedToken(text = "friends", startMs = 80295L, endMs = 80722L, trailingSpace = " "),
@@ -393,6 +404,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 83935L,
             endMs = 87787L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Love", startMs = 83935L, endMs = 84146L, trailingSpace = " "),
                     TimedToken(text = "hangin'", startMs = 84146L, endMs = 84618L, trailingSpace = " "),
@@ -412,6 +424,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 87984L,
             endMs = 91663L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Self-love,", startMs = 87984L, endMs = 88992L, trailingSpace = " "),
                     TimedToken(text = "he", startMs = 88992L, endMs = 89157L, trailingSpace = " "),
@@ -429,6 +442,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 91934L,
             endMs = 95752L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Cuff", startMs = 91934L, endMs = 92399L, trailingSpace = " "),
                     TimedToken(text = "me,", startMs = 92399L, endMs = 92931L, trailingSpace = " "),
@@ -449,6 +463,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 95985L,
             endMs = 99834L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Self-love,", startMs = 95985L, endMs = 96985L, trailingSpace = " "),
                     TimedToken(text = "he", startMs = 96985L, endMs = 97124L, trailingSpace = " "),
@@ -466,6 +481,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 100009L,
             endMs = 103695L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Cuff", startMs = 100009L, endMs = 100446L, trailingSpace = " "),
                     TimedToken(text = "me,", startMs = 100446L, endMs = 100908L, trailingSpace = " "),
@@ -566,6 +582,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 135959L,
             endMs = 139671L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Self-love,", startMs = 135959L, endMs = 136974L, trailingSpace = " "),
                     TimedToken(text = "he", startMs = 136974L, endMs = 137176L, trailingSpace = " "),
@@ -583,6 +600,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 139936L,
             endMs = 143704L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Cuff", startMs = 139936L, endMs = 140433L, trailingSpace = " "),
                     TimedToken(text = "me,", startMs = 140433L, endMs = 140894L, trailingSpace = " "),
@@ -603,6 +621,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 143966L,
             endMs = 147697L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Self-love,", startMs = 143966L, endMs = 144966L, trailingSpace = " "),
                     TimedToken(text = "he", startMs = 144966L, endMs = 145164L, trailingSpace = " "),
@@ -620,6 +639,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 147989L,
             endMs = 151672L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "Cuff", startMs = 147989L, endMs = 148466L, trailingSpace = " "),
                     TimedToken(text = "me,", startMs = 148466L, endMs = 148933L, trailingSpace = " "),
@@ -720,6 +740,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 171103L,
             endMs = 174137L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "\"In", startMs = 171103L, endMs = 171287L, trailingSpace = " "),
                     TimedToken(text = "every", startMs = 171287L, endMs = 171474L, trailingSpace = " "),
@@ -738,6 +759,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 178150L,
             endMs = 183017L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "And", startMs = 178150L, endMs = 178411L, trailingSpace = " "),
                     TimedToken(text = "in", startMs = 178411L, endMs = 178629L, trailingSpace = " "),
@@ -756,6 +778,7 @@ val niceLyrics = Lyrics.Word(
         WordsLyric(
             startMs = 185954L,
             endMs = 189172L,
+            position = LyricsPosition.End,
             tokens = listOf(
                     TimedToken(text = "\"Well,", startMs = 185954L, endMs = 186426L, trailingSpace = " "),
                     TimedToken(text = "it's", startMs = 187640L, endMs = 187812L, trailingSpace = " "),
