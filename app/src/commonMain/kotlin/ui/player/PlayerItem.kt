@@ -12,9 +12,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -56,9 +56,13 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
@@ -70,8 +74,12 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.onPointerScrollY
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -95,15 +103,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -111,18 +131,30 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.kmpalette.color
 import com.kmpalette.palette.graphics.Palette
 import com.materialkolor.PaletteStyle
@@ -141,8 +173,9 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
 import dev.brahmkshatriya.echo.app.ui.components.ResponsiveRow
+import dev.brahmkshatriya.echo.app.ui.components.ScaledTopAppBar
 import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
-import dev.brahmkshatriya.echo.app.ui.components.SquigglySeekBar
+import dev.brahmkshatriya.echo.app.ui.components.SquigglySlider
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
@@ -150,26 +183,34 @@ import dev.brahmkshatriya.echo.app.ui.main.Header
 import dev.brahmkshatriya.echo.app.ui.theme.Primary
 import dev.brahmkshatriya.echo.app.ui.theme.googleSansFontFamily
 import echo.app.generated.resources.Res
+import echo.app.generated.resources.ic_back
+import echo.app.generated.resources.ic_check_circle
 import echo.app.generated.resources.ic_close
+import echo.app.generated.resources.ic_close_small
 import echo.app.generated.resources.ic_favorite
 import echo.app.generated.resources.ic_favorite_filled
 import echo.app.generated.resources.ic_keyboard_arrow_down
-import echo.app.generated.resources.ic_mic_music_3
+import echo.app.generated.resources.ic_keyboard_arrow_up
+import echo.app.generated.resources.ic_lyrics_mic
+import echo.app.generated.resources.ic_lyrics_mic_off
 import echo.app.generated.resources.ic_more_vert
 import echo.app.generated.resources.ic_pause
 import echo.app.generated.resources.ic_pause_32
 import echo.app.generated.resources.ic_play_arrow
 import echo.app.generated.resources.ic_play_arrow_32
-import echo.app.generated.resources.ic_queue_music
+import echo.app.generated.resources.ic_playlist_remove
 import echo.app.generated.resources.ic_repeat
+import echo.app.generated.resources.ic_search_outline
 import echo.app.generated.resources.ic_shuffle
 import echo.app.generated.resources.ic_skip_next
 import echo.app.generated.resources.ic_skip_next_32
 import echo.app.generated.resources.ic_skip_previous
 import echo.app.generated.resources.ic_skip_previous_32
+import echo.app.generated.resources.ic_volume_off
 import echo.app.generated.resources.ic_volume_up
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -186,7 +227,7 @@ private data class PlayerArtworkCacheEntry(
 )
 
 private object PlayerArtworkMemoryCache {
-    private const val MaxEntries = 12
+    private const val MAX_ENTRIES = 12
     private val entries = LinkedHashMap<String, PlayerArtworkCacheEntry>()
 
     fun get(model: String): PlayerArtworkCacheEntry? {
@@ -206,7 +247,7 @@ private object PlayerArtworkMemoryCache {
     private fun put(model: String, entry: PlayerArtworkCacheEntry) {
         entries.remove(model)
         entries[model] = entry
-        while (entries.size > MaxEntries) {
+        while (entries.size > MAX_ENTRIES) {
             val oldestKey = entries.keys.firstOrNull() ?: break
             entries.remove(oldestKey)
         }
@@ -217,6 +258,7 @@ private object PlayerArtworkMemoryCache {
 fun PlayerItem(
     i: Int,
     onScrolledToTopChanged: (Boolean) -> Unit = {},
+    onLyricsSelectorOpenChanged: (Boolean) -> Unit = {},
 ) {
     val artworkModel = LocalPlayerItems.current.getOrNull(i)
     val cachedArtwork = remember(artworkModel) {
@@ -282,6 +324,7 @@ fun PlayerItem(
                 SongPlayerItem(
                     i = i,
                     onScrolledToTopChanged = onScrolledToTopChanged,
+                    onLyricsSelectorOpenChanged = onLyricsSelectorOpenChanged,
                 )
             }
         }
@@ -293,6 +336,9 @@ const val songCoverHorizontalPadding = 16
 const val songCoverVerticalPadding = 16
 const val collapsedHorizontalPadding = 8
 private val playerBottomBarHeight = 64.dp
+private val playerBottomBarInset = 8.dp
+private val playerBottomBarControlSize = 48.dp
+private val playerBottomBarItemSpacing = 4.dp
 private const val PlayerBottomBarContentType = "player-bottom-bar"
 private const val PlayerQueueItemContentType = "player-queue-item"
 private const val PlayerQueueItemsPerGroup = 11
@@ -302,6 +348,140 @@ private const val LyricsWaitingDotsHoldMs = 3_000L
 private const val LyricsTransitionDurationMs = 240
 private const val LyricsModeTransitionDurationMs = 320
 private const val PlayerArtworkCrossfadeDurationMs = 250
+
+private class LyricsSelectorRevealShape(
+    private val sourceBounds: Rect?,
+    private val progress: Float,
+) : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density,
+    ): Outline {
+        val source = sourceBounds ?: Rect(0f, 0f, size.width, size.height)
+        val resolvedProgress = progress.coerceIn(0f, 1f)
+
+        fun interpolate(start: Float, end: Float): Float =
+            start + (end - start) * resolvedProgress
+
+        val left = interpolate(source.left, 0f)
+        val top = interpolate(source.top, 0f)
+        val right = interpolate(source.right, size.width)
+        val bottom = interpolate(source.bottom, size.height)
+        val radius = with(density) {
+            playerBottomBarControlSize.toPx() / 2f * (1f - resolvedProgress)
+        }
+
+        return Outline.Rounded(
+            RoundRect(
+                left = left,
+                top = top,
+                right = right,
+                bottom = bottom,
+                topLeftCornerRadius = CornerRadius(radius),
+                topRightCornerRadius = CornerRadius(radius),
+                bottomLeftCornerRadius = CornerRadius(radius),
+                bottomRightCornerRadius = CornerRadius(radius),
+            )
+        )
+    }
+}
+
+private fun Modifier.lyricsSelectorTransition(
+    sourceBounds: Rect?,
+    progress: Float,
+    containerColor: Color,
+): Modifier {
+    val resolvedProgress = progress.coerceIn(0f, 1f)
+    return clip(
+        LyricsSelectorRevealShape(sourceBounds, resolvedProgress)
+    ).background(containerColor)
+}
+
+private data class LyricsSelectionItem(
+    val title: String,
+    val subtitle: String,
+    val extension: String,
+    val lyrics: Lyrics,
+)
+
+private val demoLyricsSelections = listOf(
+    LyricsSelectionItem(
+        title = "Synced lyrics with an intentionally very long title for collapsed app bar testing",
+        subtitle = "Spotify • Word synced lyrics",
+        extension = "Spotify",
+        lyrics = niceLyrics,
+    ),
+    LyricsSelectionItem(
+        title = "Synced lyrics",
+        subtitle = "LRC Lib • Line synced lyrics",
+        extension = "LRC Lib",
+        lyrics = lineLyricsExample,
+    ),
+    LyricsSelectionItem(
+        title = "Rich synced lyrics",
+        subtitle = "MusixMatch • Word synced with translations",
+        extension = "MusixMatch",
+        lyrics = selfLoveLyrics,
+    ),
+    LyricsSelectionItem(
+        title = "Plain lyrics",
+        subtitle = "Genius • Unsynced lyrics",
+        extension = "Genius",
+        lyrics = plainLyricsExample,
+    ),
+    LyricsSelectionItem(
+        title = "Synced lyrics",
+        subtitle = "YouTube Music • Word synced lyrics",
+        extension = "YouTube Music",
+        lyrics = niceLyrics,
+    ),
+    LyricsSelectionItem(
+        title = "Alternative synced lyrics",
+        subtitle = "YouTube • Line synced lyrics",
+        extension = "YouTube",
+        lyrics = lineLyricsExample,
+    ),
+    LyricsSelectionItem(
+        title = "Translated lyrics",
+        subtitle = "Apple Music • Word synced with translations",
+        extension = "Apple Music",
+        lyrics = selfLoveLyrics,
+    ),
+    LyricsSelectionItem(
+        title = "Community synced lyrics",
+        subtitle = "NetEase • Line synced lyrics",
+        extension = "NetEase",
+        lyrics = lineLyricsExample,
+    ),
+    LyricsSelectionItem(
+        title = "Fast synced lyrics",
+        subtitle = "QQ Music • Word synced lyrics",
+        extension = "QQ Music",
+        lyrics = rapGodLyrics,
+    ),
+    LyricsSelectionItem(
+        title = "Alternative rich lyrics",
+        subtitle = "MusixMatch • Word synced lyrics",
+        extension = "MusixMatch",
+        lyrics = niceLyrics,
+    ),
+    LyricsSelectionItem(
+        title = "Alternative plain lyrics",
+        subtitle = "Genius • Unsynced lyrics",
+        extension = "Genius",
+        lyrics = plainLyricsExample,
+    ),
+    LyricsSelectionItem(
+        title = "Community lyrics",
+        subtitle = "LRC Lib • Unsynced lyrics",
+        extension = "LRC Lib",
+        lyrics = plainLyricsExample,
+    ),
+)
+
+private object LyricsSelectorPlayerInfo : NavigationEventInfo()
+private object LyricsSelectorPageInfo : NavigationEventInfo()
 
 private val LyricsPosition.textAlign: TextAlign
     get() = when (this) {
@@ -673,6 +853,7 @@ fun Modifier.coverSize(
 fun SongPlayerItem(
     i: Int,
     onScrolledToTopChanged: (Boolean) -> Unit = {},
+    onLyricsSelectorOpenChanged: (Boolean) -> Unit = {},
 ) = CompositionLocalProvider(
     LocalContentColor provides colorScheme.onPrimaryContainer
 ) {
@@ -710,8 +891,11 @@ fun SongPlayerItem(
             previousFrameNanos = frameNanos
         }
     }
+    var playerBoundsInRoot by remember { mutableStateOf<Rect?>(null) }
     CompositionLocalProvider(LocalPlayerTimelineState provides timelineState) {
-        BoxWithConstraints {
+        BoxWithConstraints(
+            Modifier.onGloballyPositioned { playerBoundsInRoot = it.boundsInRoot() }
+        ) {
             val playerSheet = LocalPlayerSheet.current
             val scope = rememberCoroutineScope()
             val backStack = LocalMainBackStack.current
@@ -723,6 +907,72 @@ fun SongPlayerItem(
             var fallbackShowLyrics by remember { mutableStateOf(false) }
             val sharedLyricsVisible = LocalPlayerLyricsVisible.current
             val showLyrics = sharedLyricsVisible?.value ?: fallbackShowLyrics
+            var selectedLyricsIndex by remember(i) { mutableStateOf<Int?>(0) }
+            val selectedLyrics = selectedLyricsIndex?.let { index ->
+                demoLyricsSelections.getOrNull(index)
+            }
+            var showLyricsSelector by remember(i) { mutableStateOf(false) }
+            var lyricsPillBoundsInRoot by remember(i) { mutableStateOf<Rect?>(null) }
+            var selectorRevealSourceBounds by remember(i) { mutableStateOf<Rect?>(null) }
+            val selectorRevealProgress = remember(i) { Animatable(0f) }
+            var selectorMounted by remember(i) { mutableStateOf(false) }
+            val selectorRevealAnimationSpec = motionScheme.defaultSpatialSpec<Float>()
+
+            val selectorNavigationEventState = rememberNavigationEventState(
+                currentInfo = if (showLyricsSelector) {
+                    LyricsSelectorPageInfo
+                } else {
+                    LyricsSelectorPlayerInfo
+                },
+                backInfo = if (showLyricsSelector) {
+                    listOf(LyricsSelectorPlayerInfo)
+                } else {
+                    emptyList()
+                },
+            )
+            if (LocalNavigationEventDispatcherOwner.current != null) {
+                NavigationBackHandler(
+                    state = selectorNavigationEventState,
+                    isBackEnabled = showLyricsSelector,
+                    onBackCompleted = { showLyricsSelector = false },
+                    onBackCancelled = {},
+                )
+            }
+            LaunchedEffect(showLyricsSelector, selectorNavigationEventState) {
+                if (!showLyricsSelector) {
+                    if (selectorMounted) {
+                        selectorRevealProgress.animateTo(
+                            targetValue = 0f,
+                            animationSpec = selectorRevealAnimationSpec,
+                        )
+                        selectorMounted = false
+                    }
+                } else {
+                    selectorMounted = true
+                    snapshotFlow {
+                        when (val state = selectorNavigationEventState.transitionState) {
+                            NavigationEventTransitionState.Idle -> false to 1f
+                            is NavigationEventTransitionState.InProgress ->
+                                true to (1f - state.latestEvent.progress).coerceIn(0f, 1f)
+                        }
+                    }.collectLatest { (isBackGesture, progress) ->
+                        if (isBackGesture) {
+                            selectorRevealProgress.snapTo(progress)
+                        } else {
+                            selectorRevealProgress.animateTo(
+                                targetValue = progress,
+                                animationSpec = selectorRevealAnimationSpec,
+                            )
+                        }
+                    }
+                }
+            }
+            LaunchedEffect(selectorMounted) {
+                onLyricsSelectorOpenChanged(selectorMounted)
+            }
+            LaunchedEffect(showLyrics) {
+                if (!showLyrics) showLyricsSelector = false
+            }
             val isPlayerScrolledToTop by remember {
                 derivedStateOf { !listState.canScrollBackward }
             }
@@ -776,7 +1026,7 @@ fun SongPlayerItem(
                 item(key = "player-hero-$i") {
                     PlayerHero(
                         i = i,
-                        lyrics = niceLyrics,
+                        lyrics = selectedLyrics?.lyrics,
                         showLyrics = showLyrics,
                         userScrollEnabled = isPlayerScrolledToTop,
                         topPadding = topPadding,
@@ -800,6 +1050,23 @@ fun SongPlayerItem(
                             index = i,
                             isSticky = isBottomBarSticky,
                             lyricsVisible = showLyrics,
+                            selectedLyrics = selectedLyrics,
+                            lyricsSelectorActive = selectorMounted,
+                            onLyricsPillBoundsChanged = { lyricsPillBoundsInRoot = it },
+                            onLyricsSelectorClick = {
+                                selectorRevealSourceBounds =
+                                    lyricsPillBoundsInRoot?.let { pillBounds ->
+                                        playerBoundsInRoot?.let { playerBounds ->
+                                            Rect(
+                                                left = pillBounds.left - playerBounds.left,
+                                                top = pillBounds.top - playerBounds.top,
+                                                right = pillBounds.right - playerBounds.left,
+                                                bottom = pillBounds.bottom - playerBounds.top,
+                                            )
+                                        }
+                                    }
+                                showLyricsSelector = true
+                            },
                             onLyricsClick = {
                                 listState.requestScrollToItem(0)
                                 if (sharedLyricsVisible != null) {
@@ -892,6 +1159,64 @@ fun SongPlayerItem(
                 orientation = Orientation.Vertical,
                 onThumbMoved = rememberPlayerScrollbarThumbMover(listState, scrollbarItemSizes)
             )
+            if (selectorMounted) {
+                val progress = selectorRevealProgress.value.coerceIn(0f, 1f)
+                val sourceBounds = selectorRevealSourceBounds
+                val density = LocalDensity.current
+                val pillContentAlpha = (1f - progress * 2f).coerceIn(0f, 1f)
+                val pageContentAlpha = ((progress - 0.5f) * 2f).coerceIn(0f, 1f)
+                val containerColor = lerp(
+                    colorScheme.primary.copy(alpha = 0.1f),
+                    colorScheme.surfaceContainer,
+                    progress,
+                )
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .lyricsSelectorTransition(
+                            sourceBounds = sourceBounds,
+                            progress = progress,
+                            containerColor = containerColor,
+                        )
+                ) {
+                    sourceBounds?.let { bounds ->
+                        LyricsSelectionPillContent(
+                            selectedLyrics = selectedLyrics,
+                            modifier = Modifier
+                                .size(
+                                    width = with(density) { bounds.width.toDp() },
+                                    height = with(density) { bounds.height.toDp() },
+                                )
+                                .graphicsLayer {
+                                    translationX = bounds.left
+                                    translationY = bounds.top
+                                    alpha = pillContentAlpha
+                                },
+                        )
+                    }
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { alpha = pageContentAlpha }
+                    ) {
+                        LyricsSelectionPage(
+                            selectedLyrics = selectedLyrics,
+                            items = demoLyricsSelections,
+                            topPadding = topPadding,
+                            bottomPadding = bottomPadding,
+                            onSelect = { selection ->
+                                val index = demoLyricsSelections.indexOf(selection)
+                                if (index >= 0) {
+                                    selectedLyricsIndex = index
+                                    showLyricsSelector = false
+                                }
+                            },
+                            onClearSelection = { selectedLyricsIndex = null },
+                            onBack = { showLyricsSelector = false },
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -1206,7 +1531,6 @@ fun LyricsToggle(
     FilledTonalIconToggleButton(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        modifier = Modifier.size(48.dp),
         shapes = IconButtonDefaults.toggleableShapes(
             checkedShape = RoundedCornerShape(100)
         ),
@@ -1218,10 +1542,18 @@ fun LyricsToggle(
             checkedContentColor = colorScheme.onPrimaryContainer,
         ),
     ) {
-        Icon(
-            painterResource(Res.drawable.ic_mic_music_3),
-            contentDescription = if (checked) "Hide lyrics" else "Show lyrics"
-        )
+        Crossfade(
+            targetState = checked,
+            animationSpec = tween(LyricsTransitionDurationMs),
+        ) { isChecked ->
+            Icon(
+                painterResource(
+                    if (isChecked) Res.drawable.ic_lyrics_mic_off
+                    else Res.drawable.ic_lyrics_mic,
+                ),
+                contentDescription = if (isChecked) "Hide lyrics" else "Show lyrics",
+            )
+        }
     }
 }
 
@@ -1299,7 +1631,7 @@ private enum class PlayerHeroSlot {
 @Composable
 private fun PlayerHero(
     i: Int,
-    lyrics: Lyrics,
+    lyrics: Lyrics?,
     showLyrics: Boolean,
     userScrollEnabled: Boolean,
     topPadding: Dp,
@@ -1327,8 +1659,8 @@ private fun PlayerHero(
         }.single().measure(childConstraints)
 
         val coverHeight = (
-            constraints.maxHeight - topBar.height - timeline.height - controller.height
-        ).coerceAtLeast(0)
+                constraints.maxHeight - topBar.height - timeline.height - controller.height
+                ).coerceAtLeast(0)
         val coverHeightDp = coverHeight.toDp()
         val coverMaxSize = minOf(
             maxSongCoverSize.dp,
@@ -1354,11 +1686,24 @@ private fun PlayerHero(
                 },
             ) { lyricsVisible ->
                 if (lyricsVisible) {
-                    LyricsPanel(
-                        lyrics = lyrics,
-                        userScrollEnabled = userScrollEnabled,
-                        modifier = transformModifier.fillMaxSize(),
-                    )
+                    if (lyrics != null) {
+                        LyricsPanel(
+                            lyrics = lyrics,
+                            userScrollEnabled = userScrollEnabled,
+                            modifier = transformModifier.fillMaxSize(),
+                        )
+                    } else {
+                        Box(
+                            modifier = transformModifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = "No Lyrics",
+                                style = typography.headlineSmall,
+                                color = colorScheme.primary,
+                            )
+                        }
+                    }
                 } else {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -1496,15 +1841,26 @@ private fun LyricsPanel(
     val isPlaying = LocalPlayerControls.current?.isPlaying != false
     val contentModifier = modifier.padding(horizontal = 12.dp)
     when (lyrics) {
-        is Lyrics.Simple -> Box(
+        is Lyrics.Simple -> BoxWithConstraints(
             modifier = contentModifier.fillMaxSize(),
-            contentAlignment = Alignment.CenterStart,
         ) {
-            Text(
-                text = lyrics.text,
-                style = typography.headlineMedium,
-                color = colorScheme.onPrimaryContainer,
-            )
+            val verticalContentPadding = if (constraints.hasBoundedHeight) maxHeight / 2 else 64.dp
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .lyricsEdgeFade(),
+                userScrollEnabled = userScrollEnabled,
+                contentPadding = PaddingValues(vertical = verticalContentPadding),
+            ) {
+                item {
+                    Text(
+                        text = lyrics.text,
+                        modifier = Modifier.fillMaxWidth(),
+                        style = typography.headlineMedium,
+                        color = colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
         }
 
         is Lyrics.Line -> FullTimedLyrics(
@@ -1698,7 +2054,7 @@ private fun FullTimedLyrics(
                                 retainsEndTrail = lineIndex == latestCompletedLineIndex &&
                                         activeWaitingGapAfterIndex != lineIndex,
                                 trailTiming = (timingIndex.lines.getOrNull(currentLineIndex)
-                                    as? WordLineTiming)
+                                        as? WordLineTiming)
                                     ?.takeIf { currentLineIndex > lineIndex },
                                 onClick = onLineClick,
                             )
@@ -1758,7 +2114,12 @@ private fun FullTimedLyrics(
                         }
                     }
                 },
-                contentPadding = PaddingValues(start = 16.dp, top = 10.dp, end = 8.dp, bottom = 10.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 10.dp,
+                    end = 8.dp,
+                    bottom = 10.dp
+                ),
                 shapes = ButtonDefaults.shapes(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorScheme.onSecondaryContainer,
@@ -1903,8 +2264,8 @@ private fun FullTimedLyricsLine(
                             val positionMs = timelineState.positionMs.toLong()
                             val gapDurationMs = (waitingGapEndMs - line.endMs).coerceAtLeast(1L)
                             val gapProgress = (
-                                (positionMs - line.endMs).toFloat() / gapDurationMs.toFloat()
-                            ).coerceIn(0f, 1f)
+                                    (positionMs - line.endMs).toFloat() / gapDurationMs.toFloat()
+                                    ).coerceIn(0f, 1f)
                             lineText.lastIndex.toFloat() + lineText.length * gapProgress
                         }
                     }
@@ -2090,10 +2451,14 @@ private fun FullLineLyricsLine(
 
 
 @Composable
-fun BottomBar(
+private fun BottomBar(
     index: Int = 0,
     isSticky: Boolean = false,
     lyricsVisible: Boolean = false,
+    selectedLyrics: LyricsSelectionItem? = demoLyricsSelections.first(),
+    lyricsSelectorActive: Boolean = false,
+    onLyricsSelectorClick: () -> Unit = {},
+    onLyricsPillBoundsChanged: (Rect) -> Unit = {},
     onLyricsClick: () -> Unit = {}
 ) {
     val stickyProgress by animateFloatAsState(
@@ -2104,14 +2469,21 @@ fun BottomBar(
         Modifier
             .fillMaxWidth()
             .background(colorScheme.primaryContainer.copy(alpha = stickyProgress))
-            .padding(8.dp)
+            .padding(playerBottomBarInset)
     ) {
         Crossfade(
             targetState = isSticky,
             animationSpec = tween()
         ) { sticky ->
             if (sticky) StickyMiniPlayer(index)
-            else LyricsBottomBar(lyricsVisible, onLyricsClick)
+            else LyricsBottomBar(
+                lyricsVisible = lyricsVisible,
+                selectedLyrics = selectedLyrics,
+                lyricsSelectorActive = lyricsSelectorActive,
+                onLyricsSelectorClick = onLyricsSelectorClick,
+                onLyricsPillBoundsChanged = onLyricsPillBoundsChanged,
+                onLyricsClick = onLyricsClick,
+            )
         }
     }
 }
@@ -2119,12 +2491,16 @@ fun BottomBar(
 @Composable
 private fun LyricsBottomBar(
     lyricsVisible: Boolean,
+    selectedLyrics: LyricsSelectionItem?,
+    lyricsSelectorActive: Boolean,
+    onLyricsSelectorClick: () -> Unit,
+    onLyricsPillBoundsChanged: (Rect) -> Unit,
     onLyricsClick: () -> Unit
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
     Row(
-        Modifier.fillMaxWidth().height(48.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        Modifier.fillMaxWidth().height(playerBottomBarControlSize),
+        horizontalArrangement = Arrangement.spacedBy(playerBottomBarItemSpacing),
         verticalAlignment = Alignment.CenterVertically
     ) {
         LyricsToggle(
@@ -2132,32 +2508,373 @@ private fun LyricsBottomBar(
             onCheckedChange = { onLyricsClick() }
         )
         Box(
-            Modifier.height(48.dp)
+            Modifier.height(playerBottomBarControlSize)
                 .weight(1f)
-                .clip(RoundedCornerShape(24.dp))
+                .onGloballyPositioned { onLyricsPillBoundsChanged(it.boundsInRoot()) }
+                .graphicsLayer { alpha = if (lyricsSelectorActive) 0f else 1f }
+                .clip(RoundedCornerShape(playerBottomBarControlSize / 2f))
                 .background(colorScheme.primary.copy(0.1f))
-                .clickable(onClick = onLyricsClick)
+                .clickable(
+                    onClick = if (lyricsVisible) onLyricsSelectorClick else onLyricsClick
+                )
         ) {
             Crossfade(
                 targetState = lyricsVisible,
                 animationSpec = tween(LyricsTransitionDurationMs)
             ) { modeVisible ->
-                if (modeVisible) Box(Modifier.fillMaxSize(), Alignment.Center) {
-                    Text(
-                        text = "Lyrics",
-                        style = typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                } else TimedLyricsTicker(
-                    lyrics = niceLyrics,
+                if (modeVisible) {
+                    LyricsSelectionPillContent(selectedLyrics)
+                } else if (selectedLyrics != null) LyricsTicker(
+                    lyrics = selectedLyrics.lyrics,
                     timelineState = timelineState,
+                ) else NoLyricsTicker()
+            }
+        }
+
+        IconButton(
+            onClick = { },
+            shapes = IconButtonDefaults.shapes()
+        ) {
+            Icon(
+                painterResource(Res.drawable.ic_keyboard_arrow_up),
+                contentDescription = "Scroll to Top"
+            )
+        }
+    }
+}
+
+@Composable
+private fun LyricsSelectionPillContent(
+    selectedLyrics: LyricsSelectionItem?,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        if (selectedLyrics != null) {
+            Text(
+                text = selectedLyrics.title,
+                style = typography.labelLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = selectedLyrics.extension,
+                style = typography.labelSmall,
+                color = colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        } else {
+            Text(
+                text = "Choose Lyrics",
+                style = typography.labelLarge,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LyricsSelectionPage(
+    selectedLyrics: LyricsSelectionItem?,
+    items: List<LyricsSelectionItem>,
+    topPadding: Dp,
+    bottomPadding: Dp,
+    onSelect: (LyricsSelectionItem) -> Unit,
+    onClearSelection: () -> Unit,
+    onBack: () -> Unit,
+) {
+    var query by remember { mutableStateOf("") }
+    var appliedQuery by remember { mutableStateOf("") }
+    val filteredItems = remember(items, appliedQuery) {
+        val needle = appliedQuery.trim()
+        if (needle.isEmpty()) {
+            items
+        } else {
+            items.filter { item ->
+                item.title.contains(needle, ignoreCase = true) ||
+                        item.subtitle.contains(needle, ignoreCase = true) ||
+                        item.extension.contains(needle, ignoreCase = true)
+            }
+        }
+    }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val resultsListState = rememberLazyListState()
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Transparent,
+        contentColor = colorScheme.onSurface,
+    ) {
+        Scaffold(
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            containerColor = Color.Transparent,
+            contentColor = colorScheme.onSurface,
+            contentWindowInsets = WindowInsets(0.dp),
+            topBar = {
+                ScaledTopAppBar(
+                    modifier = Modifier.padding(top = topPadding),
+                    title = selectedLyrics?.title ?: "No lyrics selected",
+                    subtitle = selectedLyrics?.subtitle ?: "Choose a lyrics source",
+                    actions = {
+                        IconButton(
+                            onClick = onClearSelection,
+                            enabled = selectedLyrics != null,
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_playlist_remove),
+                                contentDescription = "Deselect lyrics",
+                            )
+                        }
+                    },
+                    windowInsets = WindowInsets(0.dp),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
+                    ),
+                    scrollBehavior = scrollBehavior,
+                )
+            },
+            bottomBar = {
+                LyricsSelectionSearchBar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    onClear = {
+                        query = ""
+                        appliedQuery = ""
+                    },
+                    onSearch = { appliedQuery = query.trim() },
+                    onBack = onBack,
+                    bottomPadding = bottomPadding,
+                )
+            },
+        ) { contentPadding ->
+            val cardColors = CardDefaults.cardColors(
+                containerColor = colorScheme.surface
+            )
+            LazyColumn(
+                state = resultsListState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+                reverseLayout = true,
+                verticalArrangement = Arrangement.Bottom,
+            ) {
+                materialGroup(
+                    lazyListState = resultsListState,
+                    gap = 3.dp,
+                    reverseLayout = true,
+                ) {
+                    filteredItems.forEach { item ->
+                        card(
+                            key = "${item.extension}:${item.title}:${item.subtitle}",
+                            contentType = "lyrics-selection",
+                            colors = cardColors
+                        ) {
+                            LyricsSelectionRow(
+                                item = item,
+                                selected = item == selectedLyrics,
+                                onClick = { onSelect(item) },
+                            )
+                        }
+                    }
+                }
+                if (filteredItems.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No lyrics found",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            style = typography.bodyLarge,
+                            color = colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LyricsSelectionRow(
+    item: LyricsSelectionItem,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = item.title,
+                style = typography.titleMedium,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                color = colorScheme.onSurface,
+            )
+            Text(
+                text = item.subtitle.substringAfter(" • "),
+                style = typography.bodyMedium,
+                color = colorScheme.onSurfaceVariant,
+            )
+        }
+        if (selected) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_check_circle),
+                contentDescription = "Selected lyrics",
+                modifier = Modifier.size(24.dp),
+                tint = colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LyricsSelectionSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClear: () -> Unit,
+    onSearch: () -> Unit,
+    onBack: () -> Unit,
+    bottomPadding: Dp,
+) {
+    val focusManager = LocalFocusManager.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = playerBottomBarInset,
+                end = playerBottomBarInset,
+                top = playerBottomBarInset,
+                bottom = bottomPadding + playerBottomBarInset,
+            ),
+        horizontalArrangement = Arrangement.spacedBy(playerBottomBarItemSpacing),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(
+            onClick = onBack,
+            shapes = IconButtonDefaults.shapes()
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_back),
+                contentDescription = "Back",
+            )
+        }
+        Row(
+            modifier = Modifier
+                .height(playerBottomBarControlSize)
+                .weight(1f)
+                .clip(RoundedCornerShape(24.dp))
+                .background(colorScheme.primary.copy(alpha = 0.08f))
+                .padding(start = 16.dp, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                if (query.isEmpty()) {
+                    Text(
+                        text = "Search lyrics",
+                        style = typography.bodyLarge,
+                        color = colorScheme.onSurfaceVariant,
+                    )
+                }
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onPreviewKeyEvent { event ->
+                            if (event.type != KeyEventType.KeyDown) {
+                                return@onPreviewKeyEvent false
+                            }
+                            when (event.key) {
+                                Key.Escape -> {
+                                    focusManager.clearFocus()
+                                    true
+                                }
+
+                                Key.Enter -> {
+                                    onSearch()
+                                    true
+                                }
+
+                                else -> false
+                            }
+                        },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+                    textStyle = typography.bodyLarge.copy(color = colorScheme.onSurface),
+                    cursorBrush = Brush.verticalGradient(
+                        listOf(colorScheme.primary, colorScheme.primary)
+                    ),
+                )
+            }
+            if (query.isNotEmpty()) {
+                IconButton(
+                    onClick = onClear,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_close_small),
+                        contentDescription = "Clear search",
+                    )
+                }
+            }
+            IconButton(
+                onClick = onSearch,
+                modifier = Modifier.size(40.dp),
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_search_outline),
+                    contentDescription = "Search lyrics",
                 )
             }
         }
-        Icon(
-            painterResource(Res.drawable.ic_queue_music),
-            modifier = Modifier.size(48.dp).padding(12.dp),
-            contentDescription = null
+        IconButton(
+            onClick = { },
+            shapes = IconButtonDefaults.shapes()
+        ) {
+            BetterImage(
+                model = { "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN" },
+                "Spotify",
+                modifier = Modifier.padding(4.dp).clip(Circle.toShape())
+            )
+        }
+    }
+}
+
+@Composable
+private fun NoLyricsTicker() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "Lyrics",
+            style = typography.titleMedium,
+            color = colorScheme.onPrimaryContainer,
+            maxLines = 1,
         )
     }
 }
@@ -2188,6 +2905,89 @@ private fun lyricsTickerContent(
 }
 
 @Composable
+private fun LyricsTicker(
+    lyrics: Lyrics,
+    timelineState: PlayerTimelineState,
+) {
+    when (lyrics) {
+        is Lyrics.Word -> TimedLyricsTicker(lyrics, timelineState)
+        is Lyrics.Line -> LineLyricsTicker(lyrics, timelineState)
+        is Lyrics.Simple -> Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "Lyrics",
+                style = typography.titleMedium,
+                color = colorScheme.onPrimaryContainer,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LineLyricsTicker(
+    lyrics: Lyrics.Line,
+    timelineState: PlayerTimelineState,
+) {
+    val timingIndex = remember(lyrics.lines) { LyricsTimingIndex.line(lyrics.lines) }
+    val isPlaying = LocalPlayerControls.current?.isPlaying != false
+    val content by remember(timingIndex, timelineState) {
+        derivedStateOf {
+            lyricsTickerContent(timingIndex, timelineState.positionMs.toLong())
+        }
+    }
+    AnimatedContent(
+        targetState = content,
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+        transitionSpec = {
+            val direction = if (targetState.order >= initialState.order) 1 else -1
+            val animation = tween<IntOffset>(
+                durationMillis = LyricsTransitionDurationMs,
+                easing = FastOutSlowInEasing,
+            )
+            val enter = slideInVertically(animation) { direction * it } +
+                    fadeIn(tween(LyricsTransitionDurationMs))
+            val exit = slideOutVertically(animation) { -direction * it } +
+                    fadeOut(tween(LyricsTransitionDurationMs))
+            enter togetherWith exit
+        },
+    ) { target ->
+        val lineTiming = target.lineIndex
+            ?.let(timingIndex.lines::getOrNull) as? LineTiming
+        if (lineTiming == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                LyricsWaitingDots(
+                    animated = isPlaying,
+                    modifier = Modifier.size(width = 32.dp, height = 32.dp),
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = lineTiming.text,
+                    style = typography.titleMedium,
+                    color = colorScheme.onPrimaryContainer,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun TimedLyricsTicker(
     lyrics: Lyrics.Word,
     timelineState: PlayerTimelineState,
@@ -2197,12 +2997,6 @@ private fun TimedLyricsTicker(
     val content by remember(timingIndex, timelineState) {
         derivedStateOf {
             lyricsTickerContent(timingIndex, timelineState.positionMs.toLong())
-        }
-    }
-    val waitingPosition by remember(timingIndex, timelineState) {
-        derivedStateOf {
-            val previousIndex = timingIndex.lineIndexAtOrBefore(timelineState.positionMs.toLong())
-            timingIndex.lines.getOrNull(previousIndex)?.line?.position ?: LyricsPosition.Start
         }
     }
     AnimatedContent(
@@ -2227,15 +3021,14 @@ private fun TimedLyricsTicker(
         if (lineTiming == null) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = waitingPosition.contentAlignment,
+                contentAlignment = Alignment.Center,
             ) {
                 LyricsWaitingDots(
                     animated = isPlaying,
                     modifier = Modifier.size(width = 32.dp, height = 32.dp),
                 )
             }
-        }
-        else TimedLyricsLine(lineTiming, timelineState)
+        } else TimedLyricsLine(lineTiming, timelineState)
     }
 }
 
@@ -2267,8 +3060,8 @@ private fun LyricsWaitingDots(
     ) {
         repeat(3) { index ->
             val pulse = (
-                cos(phase.value * 2f * PI.toFloat() - index * 2f * PI.toFloat() / 3f) + 1f
-            ) / 2f
+                    cos(phase.value * 2f * PI.toFloat() - index * 2f * PI.toFloat() / 3f) + 1f
+                    ) / 2f
             val animatedScale = 0.55f + pulse * 0.45f
             val animatedAlpha = 0.55f + pulse * 0.4f
             val scale = 0.78f + (animatedScale - 0.78f) * motionStrength
@@ -2412,7 +3205,6 @@ private fun StickyMiniPlayer(
             IconButton(
                 onClick = { scope.launch { sheetState?.show() } },
                 interactionSource = interactionSource,
-                modifier = Modifier.size(40.dp),
                 shapes = IconButtonDefaults.shapes()
             ) {
                 Icon(
@@ -2661,7 +3453,7 @@ private fun PlayerSlider(
         timelineState.isSeeking = isDragged
     }
 
-    SquigglySeekBar(
+    SquigglySlider(
         valueRange = rangeMS,
         value = { timelineState.positionMs },
         onValueChange = { newValue ->
@@ -2696,34 +3488,50 @@ private fun PlayerSlider(
 fun VolumeAdjuster() {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered = interactionSource.collectIsHoveredAsState()
+    val hasTouch = hasTouchInput.value
     val position = remember { mutableFloatStateOf(1f) }
+    val lastAudiblePosition = remember { mutableFloatStateOf(1f) }
+    var isSliderPinned by remember { mutableStateOf(false) }
     val sliderInteraction = remember { MutableInteractionSource() }
+    val isSliderDragged = sliderInteraction.collectIsDraggedAsState()
+
+    fun setVolume(value: Float) {
+        val volume = value.coerceIn(0f, 1f)
+        position.floatValue = volume
+        if (volume > 0f) lastAudiblePosition.floatValue = volume
+    }
+
+    fun toggleMute() {
+        if (position.floatValue > 0f) {
+            lastAudiblePosition.floatValue = position.floatValue
+            position.floatValue = 0f
+        } else {
+            position.floatValue = lastAudiblePosition.floatValue.coerceAtLeast(0.01f)
+        }
+    }
 
     Row(
         modifier = Modifier
             .height(40.dp)
             .clip(RoundedCornerShape(100))
             .hoverable(interactionSource)
-            .clickable(interactionSource = interactionSource) {
-
-            }
             .onPointerScrollY { delta ->
                 val newVolume = position.floatValue - delta * 0.05f
-                position.floatValue = newVolume.coerceIn(0f, 1f)
+                setVolume(newVolume)
             }
-            .background(colorScheme.primary.copy(0.25f))
-            .padding(8.dp),
+            .background(colorScheme.primary.copy(0.25f)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AnimatedVisibility(isHovered.value) {
-            SquigglySeekBar(
+        AnimatedVisibility(isHovered.value || isSliderDragged.value || (hasTouch && isSliderPinned)) {
+            SquigglySlider(
                 value = { position.floatValue },
                 modifier = Modifier
                     .width(96.dp)
-                    .padding(horizontal = 8.dp)
+                    .height(40.dp)
+                    .padding(start = 12.dp, end = 4.dp)
                     .pointerHoverIcon(PointerIcon.Hand),
                 interactionSource = sliderInteraction,
-                onValueChange = { position.floatValue = it },
+                onValueChange = ::setVolume,
                 squiggleAmplitude = 0f,
                 trackStrokeWidth = 4.dp,
                 draggedTrackStrokeWidth = 8.dp,
@@ -2732,10 +3540,25 @@ fun VolumeAdjuster() {
                 inactiveColor = colorScheme.primary.copy(0.25f),
             )
         }
-        Icon(
-            painterResource(Res.drawable.ic_volume_up),
-            contentDescription = "Volume",
-            modifier = Modifier.size(24.dp),
-        )
+        IconButton(
+            onClick = {
+                if (hasTouch) isSliderPinned = !isSliderPinned
+                else toggleMute()
+            },
+            modifier = Modifier.size(40.dp),
+        ) {
+            Icon(
+                painterResource(
+                    if (position.floatValue == 0f) Res.drawable.ic_volume_off
+                    else Res.drawable.ic_volume_up,
+                ),
+                contentDescription = if (hasTouch) {
+                    if (isSliderPinned) "Unpin volume slider" else "Pin volume slider"
+                } else {
+                    if (position.floatValue == 0f) "Unmute" else "Mute"
+                },
+                modifier = Modifier.size(24.dp),
+            )
+        }
     }
 }

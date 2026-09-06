@@ -32,9 +32,32 @@ import kotlin.math.roundToInt
 private var variableLyricsBaseTypeface by mutableStateOf<Typeface?>(null)
 private var variableLyricsTypefaceLoading by mutableStateOf(false)
 private val variableLyricsTypefaces = mutableMapOf<Int, Typeface>()
+private val variableTextUniformTypefaces = mutableMapOf<Int, Typeface>()
 
 private fun variableLyricsFontKey(weight: Int, roundness: Int): Int =
     (weight shl 8) or roundness
+
+private fun variableTextUniformFontKey(weight: Int, width: Int): Int =
+    (weight shl 9) or width
+
+private suspend fun ensureVariableTextBaseTypeface(
+    environment: org.jetbrains.compose.resources.ResourceEnvironment,
+): Typeface {
+    variableLyricsBaseTypeface?.let { return it }
+    if (variableLyricsTypefaceLoading) {
+        while (variableLyricsTypefaceLoading) kotlinx.coroutines.yield()
+        return requireNotNull(variableLyricsBaseTypeface)
+    }
+
+    variableLyricsTypefaceLoading = true
+    return try {
+        val bytes = getFontResourceBytes(environment, Res.font.GoogleSansFlex)
+        requireNotNull(FontMgr.default.makeFromData(Data.makeFromBytes(bytes)))
+            .also { variableLyricsBaseTypeface = it }
+    } finally {
+        variableLyricsTypefaceLoading = false
+    }
+}
 
 @Composable
 internal actual fun VariableText(
@@ -46,24 +69,25 @@ internal actual fun VariableText(
     offsetY: Float,
     color: Color,
     fontSize: TextUnit,
+    uniformWeight: (() -> Float)?,
+    uniformWidth: (() -> Float)?,
+    fontScale: () -> Float,
+    scaleFromBottom: Boolean,
+    uniformLines: (() -> List<String>)?,
+    lineHeight: TextUnit,
     modifier: Modifier,
 ) {
     val environment = rememberResourceEnvironment()
     LaunchedEffect(environment) {
-        if (variableLyricsBaseTypeface == null && !variableLyricsTypefaceLoading) {
-            variableLyricsTypefaceLoading = true
-            try {
-                val bytes = getFontResourceBytes(environment, Res.font.GoogleSansFlex)
-                variableLyricsBaseTypeface = FontMgr.default.makeFromData(Data.makeFromBytes(bytes))
-            } finally {
-                variableLyricsTypefaceLoading = false
-            }
-        }
+        ensureVariableTextBaseTypeface(environment)
     }
 
     val density = LocalDensity.current
     val fontSizePx = with(density) {
         if (fontSize.isSp) fontSize.toPx() else 16.sp.toPx()
+    }
+    val lineHeightPx = with(density) {
+        if (lineHeight.isSp) lineHeight.toPx() else fontSizePx
     }
     val glyphTexts = remember(text) { text.map { it.toString() } }
     val baseTypeface = variableLyricsBaseTypeface
@@ -79,8 +103,38 @@ internal actual fun VariableText(
         if (glyphTexts.isEmpty()) return@Canvas
 
         val lastPosition = glyphTexts.lastIndex.toFloat()
-        val peakPosition = peakPosition()
+        val resolvedScale = fontScale().coerceAtLeast(0f)
         cache.paint.color = color.toArgb()
+
+        if (uniformWeight != null || uniformWidth != null) {
+            val weight = (((uniformWeight?.invoke() ?: 400f) / 8f).roundToInt() * 8)
+                .coerceIn(1, 1000)
+            val width = (uniformWidth?.invoke() ?: 100f).roundToInt().coerceIn(25, 200)
+            val font = cache.uniformFontFor(weight, width).font
+            font.size = fontSizePx * resolvedScale
+            cache.paint.setAlphaf(1f)
+            val baseline = glyphBaselines.firstOrNull() ?: 0f
+            val baselineY = if (scaleFromBottom) {
+                size.height - (size.height - offsetY - baseline) * resolvedScale
+            } else {
+                offsetY + baseline * resolvedScale
+            }
+            val firstX = glyphXPositions.firstOrNull() ?: 0f
+            val drawX = offsetX + firstX
+            val lines = uniformLines?.invoke() ?: listOf(text)
+            lines.forEachIndexed { index, line ->
+                drawContext.canvas.skiaCanvas.drawString(
+                    line,
+                    drawX,
+                    baselineY + index * lineHeightPx * resolvedScale,
+                    font,
+                    cache.paint,
+                )
+            }
+            return@Canvas
+        }
+
+        val peakPosition = peakPosition()
         if (peakPosition == null) {
             val font = cache.staticFont.font
             cache.paint.setAlphaf(1f)
@@ -126,12 +180,29 @@ private class VariableLyricsSkiaFontCache(
     private val fontSize: Float,
 ) {
     private val fonts = mutableMapOf<Int, VariableLyricsSkiaFont>()
+    private val uniformFonts = mutableMapOf<Int, VariableLyricsSkiaFont>()
     val paint = Paint().apply { isAntiAlias = true }
     val staticFont by lazy(LazyThreadSafetyMode.NONE) {
         fontFor(
             weight = LyricsMinWeight.toInt(),
             roundness = LyricsMaxRoundness.toInt(),
         )
+    }
+
+    fun uniformFontFor(weight: Int, width: Int): VariableLyricsSkiaFont {
+        val key = variableTextUniformFontKey(weight, width)
+        return uniformFonts.getOrPut(key) {
+            VariableLyricsSkiaFont(
+                typeface = variableTextUniformTypeface(
+                    baseTypeface = baseTypeface,
+                    key = key,
+                    weight = weight,
+                    width = width,
+                ),
+                weight = weight,
+                fontSize = fontSize,
+            )
+        }
     }
 
     fun fontFor(
@@ -166,7 +237,9 @@ private class VariableLyricsSkiaFontCache(
 
     fun close() {
         fonts.values.forEach(VariableLyricsSkiaFont::close)
+        uniformFonts.values.forEach(VariableLyricsSkiaFont::close)
         fonts.clear()
+        uniformFonts.clear()
         paint.close()
     }
 }
@@ -181,6 +254,20 @@ private fun variableLyricsTypeface(
         arrayOf(
             FontVariation("wght", weight.toFloat()),
             FontVariation("ROND", roundness.toFloat()),
+        )
+    )
+}
+
+private fun variableTextUniformTypeface(
+    baseTypeface: Typeface,
+    key: Int,
+    weight: Int,
+    width: Int,
+): Typeface = variableTextUniformTypefaces.getOrPut(key) {
+    baseTypeface.makeClone(
+        arrayOf(
+            FontVariation("wght", weight.toFloat()),
+            FontVariation("wdth", width.toFloat()),
         )
     )
 }

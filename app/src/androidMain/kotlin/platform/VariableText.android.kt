@@ -25,9 +25,13 @@ private const val GoogleSansFlexAssetPath =
 private var variableLyricsAndroidBaseTypeface: Typeface? = null
 private var variableLyricsAndroidBaseFont: AndroidFont? = null
 private val variableLyricsAndroidTypefaces = mutableMapOf<Int, Typeface>()
+private val variableTextAndroidUniformTypefaces = mutableMapOf<Int, Typeface>()
 
 private fun variableLyricsFontKey(weight: Int, roundness: Int): Int =
     (weight shl 8) or roundness
+
+private fun variableTextUniformFontKey(weight: Int, width: Int): Int =
+    (weight shl 9) or width
 
 @Composable
 internal actual fun VariableText(
@@ -39,12 +43,21 @@ internal actual fun VariableText(
     offsetY: Float,
     color: Color,
     fontSize: TextUnit,
+    uniformWeight: (() -> Float)?,
+    uniformWidth: (() -> Float)?,
+    fontScale: () -> Float,
+    scaleFromBottom: Boolean,
+    uniformLines: (() -> List<String>)?,
+    lineHeight: TextUnit,
     modifier: Modifier,
 ) {
     val assets = LocalContext.current.assets
     val density = LocalDensity.current
     val fontSizePx = with(density) {
         if (fontSize.isSp) fontSize.toPx() else 16.sp.toPx()
+    }
+    val lineHeightPx = with(density) {
+        if (lineHeight.isSp) lineHeight.toPx() else fontSizePx
     }
     val glyphTexts = remember(text) { text.map { it.toString() } }
     val cache = remember(assets, fontSizePx) {
@@ -55,9 +68,41 @@ internal actual fun VariableText(
         if (glyphTexts.isEmpty()) return@Canvas
 
         val lastPosition = glyphTexts.lastIndex.toFloat()
-        val peakPosition = peakPosition()
+        val resolvedScale = fontScale().coerceAtLeast(0f)
         cache.drawPaint.color = color.toArgb()
-        cache.drawPaint.textSize = fontSizePx
+        cache.drawPaint.textSize = fontSizePx * resolvedScale
+        cache.drawPaint.textScaleX = 1f
+
+        if (uniformWeight != null || uniformWidth != null) {
+            val weight = (((uniformWeight?.invoke() ?: 400f) / 8f).roundToInt() * 8)
+                .coerceIn(1, 1000)
+            val width = (uniformWidth?.invoke() ?: 100f).roundToInt().coerceIn(25, 200)
+            cache.drawPaint.typeface = cache.uniformTypeface(weight, width)
+            if (Build.VERSION.SDK_INT < 31) {
+                cache.drawPaint.textScaleX = width / 100f
+            }
+            cache.drawPaint.alpha = 255
+            val baseline = glyphBaselines.firstOrNull() ?: 0f
+            val baselineY = if (scaleFromBottom) {
+                size.height - (size.height - offsetY - baseline) * resolvedScale
+            } else {
+                offsetY + baseline * resolvedScale
+            }
+            val firstX = glyphXPositions.firstOrNull() ?: 0f
+            val drawX = offsetX + firstX
+            val lines = uniformLines?.invoke() ?: listOf(text)
+            lines.forEachIndexed { index, line ->
+                drawContext.canvas.nativeCanvas.drawText(
+                    line,
+                    drawX,
+                    baselineY + index * lineHeightPx * resolvedScale,
+                    cache.drawPaint,
+                )
+            }
+            return@Canvas
+        }
+
+        val peakPosition = peakPosition()
         if (peakPosition == null) {
             cache.drawPaint.typeface = cache.staticFont.typeface
             cache.drawPaint.alpha = 255
@@ -115,6 +160,14 @@ private class VariableLyricsAndroidFontCache(
             hinting = Paint.HINTING_OFF
         }
     }
+
+    fun uniformTypeface(weight: Int, width: Int): Typeface =
+        variableTextAndroidUniformTypeface(
+            assets = assets,
+            key = variableTextUniformFontKey(weight, width),
+            weight = weight,
+            width = width,
+        )
 
     fun fontFor(
         position: Float,
@@ -189,6 +242,46 @@ private fun variableLyricsAndroidTypeface(
                     ?: Typeface.createFromAsset(assets, GoogleSansFlexAssetPath)
                         .also { variableLyricsAndroidBaseTypeface = it }
             }
+        }
+    }
+}
+
+private fun variableTextAndroidUniformTypeface(
+    assets: android.content.res.AssetManager,
+    key: Int,
+    weight: Int,
+    width: Int,
+): Typeface = variableTextAndroidUniformTypefaces.getOrPut(key) {
+    when {
+        Build.VERSION.SDK_INT >= 31 -> {
+            val baseFont = variableLyricsAndroidBaseFont ?: AndroidFont.Builder(
+                assets,
+                GoogleSansFlexAssetPath,
+            ).build().also { variableLyricsAndroidBaseFont = it }
+            val variableFont = AndroidFont.Builder(baseFont)
+                .setWeight(weight)
+                .setFontVariationSettings(
+                    arrayOf(
+                        FontVariationAxis("wght", weight.toFloat()),
+                        FontVariationAxis("wdth", width.toFloat()),
+                    )
+                )
+                .build()
+            val family = AndroidFontFamily.Builder(variableFont).build()
+            Typeface.CustomFallbackBuilder(family).build()
+        }
+
+        Build.VERSION.SDK_INT >= 28 -> {
+            val baseTypeface = variableLyricsAndroidBaseTypeface
+                ?: Typeface.createFromAsset(assets, GoogleSansFlexAssetPath)
+                    .also { variableLyricsAndroidBaseTypeface = it }
+            Typeface.create(baseTypeface, weight, false)
+        }
+
+        else -> {
+            variableLyricsAndroidBaseTypeface
+                ?: Typeface.createFromAsset(assets, GoogleSansFlexAssetPath)
+                    .also { variableLyricsAndroidBaseTypeface = it }
         }
     }
 }

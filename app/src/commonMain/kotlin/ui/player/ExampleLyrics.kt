@@ -57,6 +57,18 @@ data class TimedToken(
 @Immutable
 data class Translation(val language: String, val text: String)
 
+val plainLyricsExample = Lyrics.Simple(
+    text = """
+        Late nights, city lights
+        Running through the avenues
+        Every word arrives untimed
+        But the song still carries through
+
+        This is a plain lyrics example
+        with no timing information attached.
+    """.trimIndent()
+)
+
 val lineLyricsExample = Lyrics.Line(
     lines = listOf(
         LineLyric(
@@ -104,12 +116,6 @@ val lineLyricsExample = Lyrics.Line(
     )
 )
 
-/*
- * The original files contained large manually supplied word-timing datasets.
- * Their MFT records were damaged and the complete datasets were never printed
- * in the recovery logs. These compact entries preserve the recovered model and
- * exercise token timing, spacing, translations, gaps, and background vocals.
- */
 val selfLoveLyrics = Lyrics.Word(
     lines = listOf(
         WordsLyric(

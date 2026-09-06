@@ -6,11 +6,13 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -46,7 +48,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * A seek bar whose active track can be rendered as a configurable squiggle.
+ * A slider whose active track can be rendered as a configurable squiggle.
  *
  * [segmentGaps] contains values in [valueRange] where the visual track should be split. Seeking
  * remains continuous across a gap; the gaps are purely visual. This makes them suitable for things
@@ -54,7 +56,7 @@ import kotlin.math.sqrt
  * indicator convention: by default the wave travels one [squiggleWavelength] per second.
  */
 @Composable
-fun SquigglySeekBar(
+fun SquigglySlider(
     value: () -> Float,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
@@ -88,20 +90,25 @@ fun SquigglySeekBar(
     val layoutDirection = LocalLayoutDirection.current
     val waveOffset = remember { Animatable(0f) }
     val isDragged by source.collectIsDraggedAsState()
+    val isHovered by source.collectIsHoveredAsState()
     val animatedThumbWidth by animateDpAsState(
         targetValue = if (isDragged) thumbSize.width / 2f else thumbSize.width,
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "Squiggly seek bar thumb width",
+        label = "Squiggly slider thumb width",
     )
     val animatedTrackStrokeWidth by animateDpAsState(
-        targetValue = if (isDragged) draggedTrackStrokeWidth else trackStrokeWidth,
+        targetValue = if (isDragged || (isHovered && enabled)) {
+            draggedTrackStrokeWidth
+        } else {
+            trackStrokeWidth
+        },
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "Squiggly seek bar track width",
+        label = "Squiggly slider track width",
     )
     val animatedSquiggleAmplitude by animateFloatAsState(
         targetValue = squiggleAmplitude.coerceIn(0f, 1f),
         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-        label = "Squiggly seek bar amplitude",
+        label = "Squiggly slider amplitude",
     )
 
     LaunchedEffect(squiggleAmplitude, squiggleWavelength, waveSpeed) {
@@ -186,6 +193,7 @@ fun SquigglySeekBar(
     Canvas(
         modifier = modifier
             .defaultMinSize(minHeight = thumbSize.height)
+            .hoverable(source, enabled = enabled)
             .semantics {
                 progressBarRangeInfo = ProgressBarRangeInfo(
                     current = value().coerceIn(valueRange.start, valueRange.endInclusive),
@@ -227,7 +235,7 @@ fun SquigglySeekBar(
             thumbTrackGap.toPx() < stopIndicatorCenter - stopIndicatorRadius
         ) 1f else 0f
 
-        drawSeekBar(
+        drawSlider(
             progress = progress,
             segmentGaps = segmentGapFractions,
             segmentGapWidthPx = segmentGapWidth.toPx(),
@@ -253,7 +261,7 @@ fun SquigglySeekBar(
     }
 }
 
-private fun DrawScope.drawSeekBar(
+private fun DrawScope.drawSlider(
     progress: Float,
     segmentGaps: List<Float>,
     segmentGapWidthPx: Float,

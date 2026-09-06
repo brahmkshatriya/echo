@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -38,15 +39,20 @@ data class CardParams(
 fun LazyListScope.materialGroup(
     lazyListState: LazyListState,
     roundedCornerRadius: Dp = 22.dp,
+    gap: Dp = 0.dp,
     clipPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
     ignoredStickyHeaderKeys: Set<Any> = emptySet(),
     content: MaterialGroupScope.() -> Unit,
 ) {
+    require(gap >= 0.dp) { "Material group gap must be non-negative" }
     val scope = MaterialGroupScope(
         radius = roundedCornerRadius,
+        gap = gap,
         clipPadding = clipPadding,
         lazyListState = lazyListState,
         lazyListScope = this,
+        reverseLayout = reverseLayout,
         ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
     )
 
@@ -56,9 +62,11 @@ fun LazyListScope.materialGroup(
 
 class MaterialGroupScope(
     private val radius: Dp,
+    private val gap: Dp,
     private val clipPadding: PaddingValues,
     private val lazyListState: LazyListState,
     private val lazyListScope: LazyListScope,
+    private val reverseLayout: Boolean,
     private val ignoredStickyHeaderKeys: Set<Any>,
 ) {
     private val items = mutableListOf<CardParams>()
@@ -78,6 +86,7 @@ class MaterialGroupScope(
     fun emit() {
         if (items.isEmpty()) return
         val lastIndex = items.size - 1
+        val gapCornerRadius = minOf(radius, gap * 2f)
         val itemKeys = items.mapTo(mutableSetOf()) { it.key }
         val firstKey = items.first().key
         val lastKey = items.last().key
@@ -96,8 +105,18 @@ class MaterialGroupScope(
                 Card(
                     modifier = params.modifier
                         .padding(
-                            top = if (index == 0) clipPadding.calculateTopPadding() else 0.dp,
-                            bottom = if (index == lastIndex) clipPadding.calculateBottomPadding() else 0.dp
+                            top = when {
+                                reverseLayout && index == lastIndex -> clipPadding.calculateTopPadding()
+                                reverseLayout -> 0.dp
+                                index == 0 -> clipPadding.calculateTopPadding()
+                                else -> 0.dp
+                            },
+                            bottom = when {
+                                reverseLayout && index == 0 -> clipPadding.calculateBottomPadding()
+                                reverseLayout -> gap
+                                index != lastIndex -> gap
+                                else -> clipPadding.calculateBottomPadding()
+                            },
                         )
                         .clipToRoundedViewport(
                             lazyListState = lazyListState,
@@ -107,12 +126,22 @@ class MaterialGroupScope(
                             itemKeys = itemKeys,
                             firstKey = firstKey,
                             lastKey = lastKey,
+                            reverseLayout = reverseLayout,
                             ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
                         ),
                     colors = params.colors ?: CardDefaults.cardColors(),
                     elevation = params.elevation ?: CardDefaults.cardElevation(),
                     border = params.border,
-                    shape = RectangleShape
+                    shape = if (gap > 0.dp) {
+                        RoundedCornerShape(
+                            topStart = if (if (reverseLayout) index < lastIndex else index > 0) gapCornerRadius else 0.dp,
+                            topEnd = if (if (reverseLayout) index < lastIndex else index > 0) gapCornerRadius else 0.dp,
+                            bottomStart = if (if (reverseLayout) index > 0 else index < lastIndex) gapCornerRadius else 0.dp,
+                            bottomEnd = if (if (reverseLayout) index > 0 else index < lastIndex) gapCornerRadius else 0.dp,
+                        )
+                    } else {
+                        RectangleShape
+                    }
                 ) {
                     params.content(this)
                 }
@@ -135,6 +164,7 @@ private fun materialGroupClipInfo(
     itemKeys: Set<Any>,
     firstKey: Any,
     lastKey: Any,
+    reverseLayout: Boolean,
     ignoredStickyHeaderKeys: Set<Any>
 ): Pair<Int?, Int?> {
     val layoutInfo = lazyListState.layoutInfo
@@ -142,24 +172,53 @@ private fun materialGroupClipInfo(
     val currentItem = visibleItems.firstOrNull { it.key == params.key }
         ?: return null to null
 
+    fun physicalOffset(itemOffset: Int, itemSize: Int): Int =
+        if (reverseLayout) {
+            layoutInfo.viewportSize.height - itemOffset - itemSize
+        } else {
+            itemOffset
+        }
+
     val stickyHeaderItem = visibleItems.asSequence().filter { item ->
         item.index < currentItem.index &&
                 item.key !in itemKeys &&
                 item.key !in ignoredStickyHeaderKeys
     }.maxByOrNull { item -> item.index }
-    val viewportStart = layoutInfo.viewportStartOffset
-    val viewportEnd = layoutInfo.viewportEndOffset
-    val stickyHeaderBottom = stickyHeaderItem?.let { it.offset + it.size }
-    val firstGroupItem = visibleItems.firstOrNull { it.key == firstKey }
-    val lastGroupItem = visibleItems.firstOrNull { it.key == lastKey }
-    val groupTop = firstGroupItem?.offset
-    val groupBottom = lastGroupItem?.let { it.offset + it.size }
-    val visibleGroupTop = maxOf(stickyHeaderBottom ?: viewportStart, groupTop ?: viewportStart)
-    val visibleGroupBottom = minOf(groupBottom ?: viewportEnd, viewportEnd)
+    val viewportStart = if (reverseLayout) {
+        layoutInfo.viewportSize.height - layoutInfo.viewportEndOffset
+    } else {
+        layoutInfo.viewportStartOffset
+    }
+    val viewportEnd = if (reverseLayout) {
+        layoutInfo.viewportSize.height - layoutInfo.viewportStartOffset
+    } else {
+        layoutInfo.viewportEndOffset
+    }
+    val stickyHeaderStart = stickyHeaderItem?.let { physicalOffset(it.offset, it.size) }
+    val stickyHeaderEnd = stickyHeaderItem?.let {
+        physicalOffset(it.offset, it.size) + it.size
+    }
+    val topGroupKey = if (reverseLayout) lastKey else firstKey
+    val bottomGroupKey = if (reverseLayout) firstKey else lastKey
+    val topGroupItem = visibleItems.firstOrNull { it.key == topGroupKey }
+    val bottomGroupItem = visibleItems.firstOrNull { it.key == bottomGroupKey }
+    val groupTop = topGroupItem?.let { physicalOffset(it.offset, it.size) }
+    val groupBottom = bottomGroupItem?.let {
+        physicalOffset(it.offset, it.size) + it.size
+    }
+    val visibleGroupTop = maxOf(
+        if (reverseLayout) viewportStart else stickyHeaderEnd ?: viewportStart,
+        groupTop ?: viewportStart,
+    )
+    val visibleGroupBottom = minOf(
+        if (reverseLayout) stickyHeaderStart ?: viewportEnd else viewportEnd,
+        groupBottom ?: viewportEnd,
+    )
+    val currentItemOffset = physicalOffset(currentItem.offset, currentItem.size)
     val top =
-        visibleGroupTop - currentItem.offset + clipPadding.top
+        visibleGroupTop - currentItemOffset + clipPadding.top
     val bottom =
-        visibleGroupBottom - currentItem.offset - clipPadding.bottom
+        visibleGroupBottom - currentItemOffset - clipPadding.bottom
     return top to bottom
 }
 
@@ -171,6 +230,7 @@ private fun Modifier.clipToRoundedViewport(
     itemKeys: Set<Any>,
     firstKey: Any,
     lastKey: Any,
+    reverseLayout: Boolean,
     ignoredStickyHeaderKeys: Set<Any>
 ): Modifier = drawWithCache {
     val path = Path()
@@ -182,6 +242,7 @@ private fun Modifier.clipToRoundedViewport(
             itemKeys = itemKeys,
             firstKey = firstKey,
             lastKey = lastKey,
+            reverseLayout = reverseLayout,
             ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
         )
         val hasNoBoundaries = topBoundary == null && bottomBoundary == null
@@ -230,6 +291,7 @@ private fun Modifier.clipToRoundedViewport(
                 itemKeys = itemKeys,
                 firstKey = firstKey,
                 lastKey = lastKey,
+                reverseLayout = reverseLayout,
                 ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
             )
             val isOutOfBounds = event.changes.any {

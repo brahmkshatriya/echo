@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.isUnspecified
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.brahmkshatriya.echo.app.platform.PreloadComposeResources
 import dev.brahmkshatriya.echo.app.platform.getPlatform
 import dev.brahmkshatriya.echo.app.ui.components.BetterNavDisplay
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
@@ -76,6 +77,7 @@ private val config = SavedStateConfiguration { serializersModule = module }
 
 @Composable
 fun App() = EchoTheme {
+    PreloadComposeResources()
     val initialSheetValue = LocalInitialPlayerSheetValue.current
     val betterSheet = rememberBetterSheet(80.dp, initialSheetValue)
     val backStack = rememberNavBackStack(config, Main(MainRoute.Home))

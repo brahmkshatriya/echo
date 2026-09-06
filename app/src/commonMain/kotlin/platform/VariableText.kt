@@ -69,5 +69,11 @@ internal expect fun VariableText(
     offsetY: Float = 0f,
     color: Color,
     fontSize: TextUnit,
+    uniformWeight: (() -> Float)? = null,
+    uniformWidth: (() -> Float)? = null,
+    fontScale: () -> Float = { 1f },
+    scaleFromBottom: Boolean = false,
+    uniformLines: (() -> List<String>)? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
     modifier: Modifier = Modifier,
 )

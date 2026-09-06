@@ -147,6 +147,21 @@ fun PlayerBottomSheet(
             PaddingValues(start = startPadding, end = endPadding, bottom = bottomPadding)
         }
     ) {
+        val artWorks = LocalPlayerItems.current
+        val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
+        val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
+        val pageLyricsSelectorOpen = remember { mutableStateMapOf<Int, Boolean>() }
+        val lyricsSelectorOpen by remember {
+            derivedStateOf {
+                pageLyricsSelectorOpen[pagerState.currentPage] == true
+            }
+        }
+        val pagerUserScrollEnabled by remember {
+            derivedStateOf {
+                !lyricsSelectorOpen && pageScrolledToTop[pagerState.currentPage] != false
+            }
+        }
+
         val modifier = Modifier.graphicsLayer {
             val backProgress = betterSheet.backProgressState.floatValue
             val scale = 1 - 0.15f * backProgress
@@ -160,14 +175,6 @@ fun PlayerBottomSheet(
                     val sheetProgress by betterSheet.progressState
                     alpha = 1 + sheetProgress.coerceIn(-1f, 0f)
                 }) {
-                    val artWorks = LocalPlayerItems.current
-                    val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
-                    val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
-                    val pagerUserScrollEnabled by remember {
-                        derivedStateOf {
-                            pageScrolledToTop[pagerState.currentPage] != false
-                        }
-                    }
                     ProvidePlayerControls(pagerState) {
                         HorizontalPager(
                             pagerState,
@@ -177,9 +184,15 @@ fun PlayerBottomSheet(
                             Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
                                 betterSheet.progressState.floatValue.coerceIn(0f, 1f)
                             }) {
-                                PlayerItem(page) { scrolledToTop ->
-                                    pageScrolledToTop[page] = scrolledToTop
-                                }
+                                PlayerItem(
+                                    i = page,
+                                    onScrolledToTopChanged = { scrolledToTop ->
+                                        pageScrolledToTop[page] = scrolledToTop
+                                    },
+                                    onLyricsSelectorOpenChanged = { open ->
+                                        pageLyricsSelectorOpen[page] = open
+                                    },
+                                )
                             }
                         }
                     }
@@ -192,6 +205,7 @@ fun PlayerBottomSheet(
             sheetShadowElevation = 0.dp,
             sheetContainerColor = Color.Unspecified,
             sheetMaxWidth = Dp.Unspecified,
+            sheetSwipeEnabled = !lyricsSelectorOpen,
             containerColor = Color.Unspecified,
             content = {
                 Box(Modifier.paddingMask().then(modifier).applyPlayerTranslation()) {
